@@ -4,6 +4,15 @@ import { getMonthName } from '@/utils/classroom/attendance/track-attendance-util
 import { IncomeStatementDto } from '@ecdlink/core';
 import { formatCurrentValue } from '@/utils/statements/statements-utils';
 import { WhatsappCall } from '../contact/whatsapp-call';
+import { useCallback, useEffect } from 'react';
+import { differenceInBusinessDays } from 'date-fns';
+import { useAppDispatch } from '@/store';
+import {
+  practitionerForCoachActions,
+  practitionerForCoachThunkActions,
+} from '@/store/practitionerForCoach';
+import { useParams } from 'react-router';
+import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 
 export type MonthsProfitProps = {
   statements: IncomeStatementDto[];
@@ -17,7 +26,8 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
   onBack,
 }) => {
   const { isOnline } = useOnlineStatus();
-
+  const appDispatch = useAppDispatch();
+  const { userId } = useParams<PractitionerBusinessParams>();
   const lastStatement = statements[statements.length - 1];
   const previousStatement = statements[statements.length - 2];
 
@@ -36,6 +46,53 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
   const lastStatementBalance = lastStatement.balance || 0;
   const previousStatementBalance = previousStatement.balance || 0;
   const balance = lastStatementBalance + previousStatementBalance;
+  const totalDiffDays = !!lastStatement
+    ? differenceInBusinessDays(
+        new Date(),
+        new Date(lastStatement.year, lastStatement.month, 1)
+      )
+    : 0;
+
+  useEffect(() => {
+    // Dismiss the alert after 21 days.
+    if (totalDiffDays >= 21 && balance < 0 && !lastStatement.contactedByCoach) {
+      appDispatch(
+        practitionerForCoachThunkActions.updateUserContactStatusForStatement({
+          statementId: lastStatement.id,
+        })
+      )
+        .unwrap()
+        .then((result) =>
+          appDispatch(
+            practitionerForCoachActions.updateStatementForPractitioner({
+              userId: userId,
+              statementId: result.id,
+            })
+          )
+        );
+    }
+  }, [totalDiffDays, balance, appDispatch, lastStatement, userId]);
+
+  const onDismiss = useCallback(() => {
+    // Dismiss the alert when the user taps "I have contacted ....."
+    if (balance < 0 && !lastStatement.contactedByCoach) {
+      appDispatch(
+        practitionerForCoachThunkActions.updateUserContactStatusForStatement({
+          statementId: lastStatement.id,
+        })
+      )
+        .unwrap()
+        .then((result) =>
+          appDispatch(
+            practitionerForCoachActions.updateStatementForPractitioner({
+              userId: userId,
+              statementId: result.id,
+            })
+          )
+        );
+    }
+    onBack();
+  }, [appDispatch, balance, lastStatement, onBack, userId]);
 
   return (
     <>
@@ -152,14 +209,14 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
               </tbody>
             </table>
             <WhatsappCall />
-            {balance < 0 && (
+            {balance < 0 && !lastStatement.contactedByCoach && (
               <div className="flex flex-col justify-center">
                 <Button
                   shape="normal"
                   color="primary"
                   type="filled"
                   icon="CheckCircleIcon"
-                  onClick={onBack}
+                  onClick={onDismiss}
                   className="mt-6 rounded-2xl"
                 >
                   <Typography

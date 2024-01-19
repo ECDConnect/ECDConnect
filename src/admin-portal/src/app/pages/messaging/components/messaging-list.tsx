@@ -6,7 +6,7 @@ import debounce from 'lodash.debounce';
 import { GetAllMessageLogsForAdmin, GetTenantContext } from '@ecdlink/graphql';
 import { useQuery, useLazyQuery } from '@apollo/client';
 import { SearchDropDown, SearchDropDownOption, Dropdown } from '@ecdlink/ui';
-import { format, parseISO, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';

@@ -170,7 +170,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const currentAbsentee = validAbsenteesDates?.find(
     (item) => item?.absentDate === orderedDates?.[0]
   ) as AbsenteeDto;
-  console.log({ currentAbsentee });
   const practitionerIsOnLeave = useMemo(
     () =>
       isPast(new Date(currentAbsentee?.absentDate as string)) &&
@@ -179,7 +178,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       ),
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
-  console.log({ practitionerIsOnLeave });
   const handleComebackDay = useCallback((date: Date) => {
     if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
       return nextMonday(new Date(date));

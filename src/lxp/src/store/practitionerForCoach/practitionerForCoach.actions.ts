@@ -14,6 +14,8 @@ import { CoachService } from '@/services/CoachService';
 
 export const PractitionersForCoachActions = {
   GET_CHILD_PROGRESS_REPORTS_STATUS: 'getChildProgressReportsStatus',
+  UPDATE_USER_CONTACT_STATUS_FOR_STATEMENT:
+    'updateUserContactStatusForStatement',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -129,6 +131,32 @@ export const getUserStatementsForCoach = createAsyncThunk<
       }
 
       return statements;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateUserContactStatusForStatement = createAsyncThunk<
+  IncomeStatementDto,
+  { statementId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionersForCoachActions.UPDATE_USER_CONTACT_STATUS_FOR_STATEMENT,
+  async ({ statementId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (userAuth?.auth_token) {
+        const response = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).updateUserContactStatusForStatement(statementId);
+
+        return response;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -467,6 +467,16 @@ namespace ECDLink.Core.Services
             return allDuePractitioners;
         }
 
+        public StatementsIncomeStatement UpdateUserContactStatusForStatement(Guid statementId)
+        {
+            StatementsIncomeStatement statement = _statementsRepo.GetById(statementId);
+
+            statement.ContactedByCoach = true;
+            statement.UpdatedBy = _applicationUserId;
+            statement.UpdatedDate = DateTime.Now;
+            return _statementsRepo.Update(statement);
+        }
+
         #endregion
 
         #region PDF STUFF

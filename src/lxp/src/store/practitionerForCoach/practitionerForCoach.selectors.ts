@@ -78,8 +78,8 @@ export const getPointsSummaryWithLibraryForPractitioner = (
           // Get the points summary for the user for
           const pointsSummaryForMonth = usersPointsSummaries.find(
             (x) =>
-              x.month == month &&
-              x.year == year &&
+              x.month === month &&
+              x.year === year &&
               x.pointsLibrary?.id === pointsLibrary.id
           );
 

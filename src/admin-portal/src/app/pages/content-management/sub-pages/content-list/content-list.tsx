@@ -50,6 +50,8 @@ export default function ContentList({
   const { hasPermission } = useUser();
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
+  const [searchText, setSearchText] = useState('Search by title or content...');
+  const [buttonText, setButtonText] = useState(contentType.name);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
@@ -73,7 +75,8 @@ export default function ContentList({
       orderedList.forEach((x) => {
         if (
           ((x.fieldType.dataType === FieldType.Text ||
-            x.fieldType.dataType === FieldType.Link) &&
+            x.fieldType.dataType === FieldType.Link ||
+            x.fieldType.dataType === FieldType.DatePicker) &&
             !!x.displayMainTable) ||
           x?.displayName === 'CTF45 - Languages' ||
           x?.displayName === 'Languages'
@@ -81,9 +84,35 @@ export default function ContentList({
           displayFields.push(x);
       });
 
+      // if (contentType.name === 'CoachingCircleTopics') {
+      //   displayFields.push(
+      //     {
+      //       "__typename": "ContentTypeField",
+      //       "fieldOrder": orderedList.length + 1,
+      //       "fieldName": "dateUpdated",
+      //       "fieldType": {
+      //           "__typename": "FieldType",
+      //           "name": "Text",
+      //           "dataType": "text"
+      //       },
+      //       "dataLinkName": "",
+      //       "displayName": "Date Updated",
+      //       "displayMainTable": true,
+      //       "displayPage": false
+      //   });
+      // }
+
       if (choosedSectionTitle === 'Small/large group activities') {
         const smallLargeGroupsDisplayFields = displayFields?.filter(
           (item) => item?.fieldName !== 'subType'
+        );
+        setDisplayFields(smallLargeGroupsDisplayFields);
+        return;
+      }
+
+      if (choosedSectionTitle === 'Story activities') {
+        const smallLargeGroupsDisplayFields = displayFields?.filter(
+          (item) => item?.fieldName !== 'subCategories'
         );
         setDisplayFields(smallLargeGroupsDisplayFields);
         return;
@@ -155,25 +184,24 @@ export default function ContentList({
       }));
 
       if (selectedTab === 1) {
-        let clientProfileData = moreInforItems.filter(
-          (item: { type: string }) => {
-            return (
-              item.type === 'client profile' ||
-              item.type === 'Info Page' ||
-              item?.type === 'Income Statements' ||
-              item?.type === 'Taking Child Attendance' ||
-              item?.type === 'League Of Stars' ||
-              item?.type === 'Purple Clubs' ||
-              item?.type === 'Learning Through Play' ||
-              item?.type === 'The Daily Routine' ||
-              item?.type === 'Tracking Progress' ||
-              item?.type === 'Trainee Onboarding'
-            );
-          }
-        );
-        setTableData(
-          clientProfileData?.length > 0 ? clientProfileData : moreInforItems
-        );
+        // Wait for validation on dev
+        // let clientProfileData = moreInforItems.filter(
+        //   (item: { type: string }) => {
+        //     return (
+        //       item.type === 'client profile' ||
+        //       item.type === 'Info Page' ||
+        //       item?.type === 'Income Statements' ||
+        //       item?.type === 'Taking Child Attendance' ||
+        //       item?.type === 'League Of Stars' ||
+        //       item?.type === 'Purple Clubs' ||
+        //       item?.type === 'Learning Through Play' ||
+        //       item?.type === 'The Daily Routine' ||
+        //       item?.type === 'Tracking Progress' ||
+        //       item?.type === 'Trainee Onboarding'
+        //     );
+        //   }
+        // );
+        setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
@@ -205,6 +233,23 @@ export default function ContentList({
         setTableData(
           anteNatalData?.length > 0 ? anteNatalData : moreInforItems
         );
+      } else if (selectedTab === 4) {
+        const getFormattedDateString = (mDate: String) => {
+          const dateItems = mDate.split('T');
+          return dateItems[0];
+        };
+
+        const copyItems = contentData[getAllCall].map((item: any) => ({
+          ...item,
+          startDate:
+            item.startDate !== null
+              ? getFormattedDateString(item.startDate)
+              : '',
+          endDate:
+            item.startDate !== null ? getFormattedDateString(item.endDate) : '',
+        }));
+
+        setTableData(copyItems);
       } else {
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
@@ -227,6 +272,15 @@ export default function ContentList({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
+
+  useEffect(() => {
+    if (contentType.name === 'CoachingCircleTopics') {
+      setSearchText('Search by topic…');
+      setButtonText('Topic');
+    } else if (contentType?.name === 'StoryBook') {
+      setButtonText('Story');
+    }
+  }, [contentType.name]);
 
   const getContentGroupContentByLanguageId = (languageId: string) => {
     setLanguageId(languageId);
@@ -301,12 +355,14 @@ export default function ContentList({
               </span>
               <input
                 className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
-                placeholder="Search by title, section or content..."
+                placeholder={searchText}
                 onChange={onSearch}
               />
             </div>
             {hasPermission(PermissionEnum.create_static) &&
-              contentType?.name !== 'Consent' && (
+              contentType?.name !== 'Consent' &&
+              contentType?.name !== 'ProgressTrackingLevel' &&
+              contentType?.name !== 'ProgressTrackingCategory' && (
                 <button
                   onClick={() => {
                     hasPermission(PermissionEnum.update_static) &&
@@ -316,7 +372,7 @@ export default function ContentList({
                   className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
                 >
                   <PlusIcon width="22px" className="pl-1" />
-                  Add {camelCaseToSentanceCase(contentType.name)}
+                  Add {camelCaseToSentanceCase(buttonText)}
                 </button>
               )}
           </div>

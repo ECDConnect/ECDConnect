@@ -127,6 +127,7 @@ import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/clu
 import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
 import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
 import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
+import { PlaygroupsReassigned } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly/playgroups-reassigned';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -284,6 +285,11 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS}
         component={MeetingDetails}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.PLAYGROUP_REASSIGNED}
+        component={PlaygroupsReassigned}
         exact
       />
       <Route
