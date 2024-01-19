@@ -836,7 +836,7 @@ namespace EcdLink.Api.CoreApi.Services
                 foreach (var participant in calendarEvent.Participants)
                 {
                     meetingParticipants.Add(
-                        new ClubUser { UserId = participant.UserId, 
+                        new ClubUser { UserId = participant.ParticipantUserId, 
                                        FirstName = participant.ParticipantUser.FirstName, 
                                        Surname = participant.ParticipantUser.Surname, 
                                        ProfileImageUrl = participant.ParticipantUser.ProfileImageUrl });
