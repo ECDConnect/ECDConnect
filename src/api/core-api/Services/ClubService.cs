@@ -781,6 +781,7 @@ namespace EcdLink.Api.CoreApi.Services
                     MeetingParticipants = meetingParticipants,
                     MeetingAbsentees = meetingAbsentees,
                     ClubLeaderContacted = item.ClubLeaderContacted,
+                    EventId = item.EventId,
                     Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
                 });
             }
