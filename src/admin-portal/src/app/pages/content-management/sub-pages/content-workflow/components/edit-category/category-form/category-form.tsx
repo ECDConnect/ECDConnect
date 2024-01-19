@@ -207,6 +207,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <CombinedDatePickers
+                  contentValue={
+                    field.contentValue ? field.contentValue.value : ''
+                  }
                   label={title}
                   nameProp={propName}
                   control={control}
