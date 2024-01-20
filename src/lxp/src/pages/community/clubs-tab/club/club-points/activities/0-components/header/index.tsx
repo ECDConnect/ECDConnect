@@ -11,7 +11,12 @@ interface HeaderProps {
 export const Header = ({ date, imageUrl, icon, title }: HeaderProps) => (
   <div className="flex gap-4">
     {(icon || imageUrl) && (
-      <RoundIcon icon={icon} imageUrl={imageUrl} backgroundColor="tertiary" />
+      <RoundIcon
+        icon={icon}
+        imageUrl={imageUrl}
+        backgroundColor="tertiary"
+        iconColor="white"
+      />
     )}
     <div>
       <Typography type="h2" text={title} />

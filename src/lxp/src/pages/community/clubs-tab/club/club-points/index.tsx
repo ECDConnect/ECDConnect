@@ -129,6 +129,7 @@ export const ClubPoints: React.FC = () => {
     ...(item.menuIcon && { menuIcon: item.menuIcon }),
     titleStyle: 'text-textDark whitespace-normal',
     iconBackgroundColor: 'tertiary',
+    iconColor: 'white',
     showIcon: true,
     subItem: item.subItem,
     onActionClick: () => history.push(item.route),
