@@ -120,24 +120,37 @@ export const ClubTab: React.FC = () => {
     (club?.leagueRanking && club?.leagueRanking <= 3) ||
     (clubRankingPercentage && clubRankingPercentage <= 25);
 
+  const termNumber = getTermNumberForCurrentMonth();
+
   // From EC-1515
   const onAddMeetingOrEvent = () => {
     // Scenario 1
-    if (!addedMeetingRegularThisMonth && addedFamilyDayThisQuarter) {
+    if (
+      !addedMeetingRegularThisMonth &&
+      (addedFamilyDayThisQuarter || !termNumber)
+    ) {
       return history.push(
         ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
       );
     }
 
     // Scenario 2
-    if (addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter) {
+    if (
+      addedMeetingRegularThisMonth &&
+      !addedFamilyDayThisQuarter &&
+      termNumber
+    ) {
       return history.push(
         ROUTES.PRACTITIONER.COMMUNITY.CLUB.FAMILY_DAY_EVENT.ADD_EVENT
       );
     }
 
     // Scenario 3
-    if (!addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter) {
+    if (
+      !addedMeetingRegularThisMonth &&
+      !addedFamilyDayThisQuarter &&
+      termNumber
+    ) {
       return dialog({
         position: DialogPosition.Middle,
         blocking: false,
@@ -147,10 +160,7 @@ export const ClubTab: React.FC = () => {
       });
     }
 
-    // Scenario 4
-    if (addedMeetingRegularThisMonth && addedFamilyDayThisQuarter) {
-      return;
-    }
+    return;
   };
 
   const showSupportRoleAlert = useCallback(() => {
