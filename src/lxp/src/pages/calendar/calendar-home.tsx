@@ -29,8 +29,8 @@ import { CalendarEventModel } from '@ecdlink/core';
 import { useCalendarViewEvent } from './components/calendar-view-event/calendar-view-event';
 import { CalendarAddEventInfo } from './components/calendar-add-event/calendar-add-event.types';
 import ROUTES from '@/routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
 import { clubSelectors } from '@/store/club';
+import { userSelectors } from '@/store/user';
 
 export const CalendarHome: React.FC = () => {
   const history = useHistory();
@@ -50,6 +50,11 @@ export const CalendarHome: React.FC = () => {
   const eventById = useSelector(
     calendarSelectors.getCalendarEventById(selectedEventId)
   );
+  const user = useSelector(userSelectors.getUser);
+  const club = useSelector(clubSelectors.getClubForPractitionerSelector);
+
+  const isClubLeader = club?.clubLeader?.userId === user?.id;
+  const isClubSupport = club?.clubSupport?.userId === user?.id;
 
   const isClubMonthlyMeeting =
     (eventById?.eventType as CalendarAddEventInfo['eventType']) ===
@@ -142,20 +147,21 @@ export const CalendarHome: React.FC = () => {
       // Added this blocking because this type of event is linked to a club and cannot be changed
       eventTypeDisabled: isClubMonthlyMeeting,
       hideAddParticipantsButton: isClubMonthlyMeeting,
-      actionButton: isClubMonthlyMeeting
-        ? {
-            name: 'Record meeting',
-            icon: 'ArrowCircleRightIcon',
-            onClick: () => {
-              history.push(
-                ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
-                  ':eventId',
-                  event.id
-                )
-              );
-            },
-          }
-        : undefined,
+      actionButton:
+        (isClubLeader || isClubSupport) && isClubMonthlyMeeting
+          ? {
+              name: 'Record meeting',
+              icon: 'ArrowCircleRightIcon',
+              onClick: () => {
+                history.push(
+                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
+                    ':eventId',
+                    event.id
+                  )
+                );
+              },
+            }
+          : undefined,
     });
   };
 

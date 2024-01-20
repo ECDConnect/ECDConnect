@@ -290,6 +290,7 @@ class ClubService {
             meetingAttendancePerc
             meetingAttendanceColor
             points
+            eventId
             meetingParticipants {
             userId
             firstName

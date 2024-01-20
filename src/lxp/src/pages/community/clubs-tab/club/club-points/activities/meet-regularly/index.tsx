@@ -125,7 +125,7 @@ export const MeetRegularly: React.FC = () => {
         mutableMeetingArray?.push({
           meetingAbsentees: [],
           meetingAttendanceColor: 'Error',
-          meetingAttendancePerc: 0,
+          meetingAttendancePerc: -1,
           meetingDate: date,
           meetingNotes: '',
           meetingParticipants: [],
@@ -174,17 +174,20 @@ export const MeetRegularly: React.FC = () => {
           subTitle: `Scheduled: ${formattedDate}`,
           avatarColor: '',
           hideAvatar: true,
-          onActionClick: () =>
-            history.push(
-              ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
-                ':eventId',
-                item?.eventId ?? ''
-              ),
-              { clubId }
-            ),
+          onActionClick:
+            isLeader || isSupportRole
+              ? () =>
+                  history.push(
+                    ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
+                      ':eventId',
+                      item?.eventId ?? ''
+                    ),
+                    { clubId }
+                  )
+              : undefined,
         };
       }) ?? [],
-    [clubId, details?.upcomingMeetings, history]
+    [clubId, details?.upcomingMeetings, history, isLeader, isSupportRole]
   );
 
   const pastMeetings: UserAlertListDataItem[] = useMemo(
@@ -199,9 +202,11 @@ export const MeetRegularly: React.FC = () => {
           return {
             title: monthName,
             subItem: isToShowPoints ? `+ ${item?.points ?? 0}` : '',
-            subTitle: item?.meetingAttendancePerc
-              ? `${Math.round(item?.meetingAttendancePerc)}% attendance`
-              : 'No register submitted',
+            subTitle:
+              item?.meetingAttendancePerc !== -1 &&
+              item?.meetingAttendancePerc !== undefined
+                ? `${Math.round(item?.meetingAttendancePerc)}% attendance`
+                : 'No register submitted',
             alertSeverity: getAlertSeverity(item?.meetingAttendanceColor ?? ''),
             titleStyle: 'text-textDark',
             avatarColor: '',

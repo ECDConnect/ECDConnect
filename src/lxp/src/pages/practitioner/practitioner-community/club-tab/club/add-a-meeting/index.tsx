@@ -130,7 +130,7 @@ export const AddMeeting: React.FC = () => {
   const onSuccess = useCallback(() => {
     appDispatch(clubActions.forceMeetRegularlyDataReload());
 
-    if (eventId) {
+    if (eventId && clubId) {
       appDispatch(
         clubThunkActions.getActivityMeetRegularDetails({
           clubId,
