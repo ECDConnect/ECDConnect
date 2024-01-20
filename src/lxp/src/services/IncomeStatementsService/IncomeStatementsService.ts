@@ -407,6 +407,7 @@ class IncomeStatementsService {
             balance
             month
             year
+            contactedByCoach
             incomeItems {
               incomeTypeId
               id
@@ -616,6 +617,51 @@ class IncomeStatementsService {
       );
     }
     return response.data.data.allStatementsExpenses;
+  }
+
+  async updateUserContactStatusForStatement(
+    statementId: string
+  ): Promise<IncomeStatementDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateUserContactStatusForStatement: IncomeStatementDto };
+    }>(``, {
+      query: `
+        mutation UpdateUserContactStatusForStatement($statementId: UUID!) {
+          updateUserContactStatusForStatement(statementId: $statementId) {
+            id 
+            incomeTotal
+            expenseTotal
+            balance
+            month
+            year
+            contactedByCoach
+            incomeItems {
+              incomeTypeId
+              id
+              dateReceived
+              amount
+              childUserId
+            } 
+            expenseItems {
+              expenseTypeId
+              id
+              datePaid
+              amount
+            }
+          }
+        }
+      `,
+      variables: {
+        statementId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating infant failed - Server connection error');
+    }
+
+    return response.data.data.updateUserContactStatusForStatement;
   }
 }
 

@@ -1297,44 +1297,47 @@ namespace EcdLink.Api.CoreApi.Services
 
             Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
 
-            var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList(); ;
-            var childCount = children.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
-
-            if (childCount > 0)
+            if (practitioner != null)
             {
-                PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
-                int activityPoints = childCount * activity.Points;
+                var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                var childCount = children.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
 
-                if (activity_record == null)
+                if (childCount > 0)
                 {
-                    InsertIndividualUserPoints(
-                        new PointsUser
-                        {
-                            Id = Guid.NewGuid(),
-                            IsActive = true,
-                            InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
-                            Month = today.Month,
-                            Year = today.Year,
-                            Points = activityPoints,
-                            UserId = userId,
-                            PointsLibraryId = activity.Id,
-                            Comment = "Total: " + childCount
-                        }
-                    );
+                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    int activityPoints = childCount * activity.Points;
+
+                    if (activity_record == null)
+                    {
+                        InsertIndividualUserPoints(
+                            new PointsUser
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                Points = activityPoints,
+                                UserId = userId,
+                                PointsLibraryId = activity.Id,
+                                Comment = "Total: " + childCount
+                            }
+                        );
+                    }
+                    else
+                    {
+                        activity_record.Points = activityPoints;
+                        activity_record.UpdatedDate = DateTime.Now;
+                        activity_record.UpdatedBy = _uId;
+                        UpdateIndividualUserPoints(activity_record);
+                    }
+                    UpdateUserSummaryPoints(
+                        userId,
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
                 }
-                else
-                {
-                    activity_record.Points = activityPoints;
-                    activity_record.UpdatedDate = DateTime.Now;
-                    activity_record.UpdatedBy = _uId;
-                    UpdateIndividualUserPoints(activity_record);
-                }
-                UpdateUserSummaryPoints(
-                    userId, 
-                    activity, 
-                    today, 
-                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }
@@ -1582,7 +1585,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var clubUserIds = _clubMemberRepo.GetAll()
                 .Include(x => x.Practitioner)
-                .Where(x => x.ClubId == clubMember.ClubId)
+                .Where(x => x.ClubId == clubMember.ClubId && x.IsActive)
                 .Select(x => x.Practitioner.UserId)
                 .ToList();
 
@@ -1602,44 +1605,43 @@ namespace EcdLink.Api.CoreApi.Services
                 .OrderByDescending(x => x.PointsTotal)
                 .ToList();
 
-            var userMonthPosition = usersByMonth.FindIndex(x => x.UserId == userId);
-            var userYearPosition = usersByYear.FindIndex(x => x.UserId == userId);
-
-            var standing = new UserClubStandingModel();
 
             var totalMembers = clubUserIds.Count();
 
-            // Check for first place tie
-            var isUserTiedFirstThisMonth = usersByMonth.Count() < 2
-                ? false
-                : usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal && usersByMonth[0].PointsTotal == usersByMonth[userMonthPosition].PointsTotal;
+            var userMonthPoints = usersByMonth.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
+            var userYearPoints = usersByYear.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
 
-            var isUserTiedFirstThisYear = usersByYear.Count() < 2
-                ? false
-                : usersByYear[0].PointsTotal == usersByYear[1].PointsTotal && usersByYear[0].PointsTotal == usersByYear[userYearPosition].PointsTotal;
+            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints && userId != x.UserId).Count();
+            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints && userId != x.UserId).Count();
+
+            var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / (totalMembers - 1) * 100;
+
+            var usersWithNoPoints = clubUserIds.Where(x => !usersByMonth.Any(y => y.UserId == x)).Count();
+            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId).Count() + usersWithNoPoints;
+            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId).Count() + usersWithNoPoints;
+
+            var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithFewerPointsThisYear = (double)userWithFewerPointsThisYear / (totalMembers - 1) * 100;
 
 
-            var standingForCurrentMonth = usersByMonth.Count() == 0 || userMonthPosition < 0 
-                ? 0
-                    : usersByMonth[userMonthPosition].PointsTotal == 0 
-                    ? 0
-                        : isUserTiedFirstThisMonth
-                        ? 99
-                        : (totalMembers - userMonthPosition) * 100 / totalMembers;
+            // Offset for first place ties
+            if (percentageWithFewerPointsThisMonth == 100 && usersByMonth.Count() > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisMonth = 99;
+            }
 
-            var standingForCurrentYear = usersByYear.Count() == 0 || userYearPosition < 0
-                ? 0
-                : usersByYear[userYearPosition].PointsTotal == 0
-                ? 0 
-                : isUserTiedFirstThisYear
-                    ? 99
-                    : (totalMembers - userYearPosition) * 100 / totalMembers;
-
+            if (percentageWithFewerPointsThisYear == 100 && usersByYear.Count() > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisYear = 99;
+            }
 
             return new UserClubStandingModel
             {
-                PercentileStandingForCurrentMonth = standingForCurrentMonth,
-                PercentileStandingForCurrentYear = standingForCurrentYear,
+                PercentageMembersWithFewerPointsForCurrentMonth = (int)percentageWithFewerPointsThisMonth,
+                PercentageMembersWithFewerPointsForCurrentYear = (int)percentageWithFewerPointsThisYear,
+                PercentageMembersWithMorePointsForCurrentMonth = (int)percentageWithMorePointsThisMonth,
+                PercentageMembersWithMorePointsForCurrentYear = (int)percentageWithMorePointsThisYear
             };
         }
        

@@ -1,3 +1,6 @@
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using System;
+
 namespace EcdLink.Api.CoreApi
 {
     public static class Constants
@@ -281,10 +284,13 @@ namespace EcdLink.Api.CoreApi
             public const string step12_q1_a13 = "If children use an outdoor area, it is clean, with no litter or animal faeces.";
             public const string step12_q1_a14 = "The venue is in an area that is known as a safe place in the community.";
             public const string step12_q1_a15 = "There is at minimum a bucket of sand available in case of fires or fire blanket or extinguisher.";
+            public const string step12_q1_a15b = "There is at minimum a bucket of sand available in case of fires or the fire blanket or extinguisher.";
             public const string step12_q1_a16 = "There is a basic first aid kit in case of accidents.";
             public const string step12_q1_a17 = "There is an emergency plan displayed on the wall (can use one from Starter pack).";
+            public const string step12_q1_a18 = "There is an emergency plan displayed on the wall (can use one from Start pack).";
 
             public const string step13_q1 = "These standards are also required.  If they are not in place, SmartStarters should be able to show how they are working towards them.";
+
             public const string step13_q1_b = "Additional standards";
             public const string step13_q1_a1 = "The venue offers children enough space to play freely (about one square metre per child).";
             public const string step13_q1_a2 = "If children use an outdoor area, it is fenced with a lockable gate.";
@@ -405,6 +411,16 @@ namespace EcdLink.Api.CoreApi
             public const string own_property = "Do you own the property where you will run your SmartStart programme?";
             public const string number_assistants = "How many assistants will attend every session?";
             public const string capacity = "Capacity";
+            public const string observation_notes = "Observation notes";
+            public const string summary_discussion_notes = "Summary of discussion";
+            public const string total_children_present = "How many children are present today?";
+            public const string smart_space_check = "SmartSpace check";
+            public const string franchisee_agreement = "Franchisee agreement";
+
+            public const string franchisee_agreement_q1 = "I agree to take the actions described in the box above in order to meet & maintain all SmartSpace standards.";
+            public const string franchisee_agreement_q2 = "I understand that the Club Coach will visit again within 2 weeks to make sure changes have been made and that my Practice Licence may be withdrawn if they have not.";
+            public const string franchisee_agreement_q3 = "I understand that I cannot have more children in the programme than my space can accommodate.";
+
         }
         public static class GGSettings
         {
@@ -769,6 +785,9 @@ namespace EcdLink.Api.CoreApi
             //PQA
             public const string SSPQA = "PQA";
             public const string SLPQA = "PQA";
+            //Re-accreditation
+            public const string SSAnnualAccreditation = "AnnualAccreditation";
+            public const string SLAnnualAccreditation = "AnnualAccreditation";
             //SmartSpaceVisits
             public const string SSSmartSpaceVisit = "SmartSpaceVisit";
             public const string SLSmartSpaceVisit = "SmartSpaceVisit";

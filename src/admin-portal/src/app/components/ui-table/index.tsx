@@ -365,6 +365,52 @@ export default function UiTable({
           })}
         </div>
       );
+    } else if (display_value === 'Read aloud') {
+      const splitValues = display_value?.split(', ');
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer gap-1">
+          {splitValues?.map((item) => {
+            return (
+              <div
+                className={`${
+                  item === 'Story book'
+                    ? 'bg-secondary'
+                    : item === 'Read aloud'
+                    ? 'bg-darkBlue'
+                    : 'bg-successMain'
+                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+              >
+                <span className="text-xs">
+                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    } else if (display_value === 'Other') {
+      const splitValues = display_value?.split(', ');
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer gap-1">
+          {splitValues?.map((item) => {
+            return (
+              <div
+                className={`${
+                  item === 'Story book'
+                    ? 'bg-secondary'
+                    : item === 'Read aloud'
+                    ? 'bg-darkBlue'
+                    : 'bg-successMain'
+                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+              >
+                <span className="text-xs">
+                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      );
     } else if (display_value === 'Story book, Read aloud, other') {
       const splitValues = display_value?.split(', ');
       rowValue = (

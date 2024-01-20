@@ -26,6 +26,8 @@ import {
   updateCoachAboutInfo,
   getActivityChildAttendanceDetails,
   updateClubSupportStatus,
+  getClubMeetingsWithMissingRegisters,
+  setContactClubLeaderStatusForMeeting,
 } from './club.actions';
 import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
@@ -197,6 +199,56 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, getActivityLeaveNoOneBehindDetails);
     setThunkActionStatus(builder, getActivityChildProgressDetails);
     setThunkActionStatus(builder, getActivityChildAttendanceDetails);
+    setThunkActionStatus(builder, getClubMeetingsWithMissingRegisters);
+    setThunkActionStatus(builder, setContactClubLeaderStatusForMeeting);
+    builder.addCase(
+      setContactClubLeaderStatusForMeeting.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
+    builder.addCase(
+      getClubMeetingsWithMissingRegisters.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+
+        const clubId = action.meta.arg.clubId;
+
+        const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+        const updatedPoints = {
+          meetRegularly: {
+            ...state.clubsForCoach[clubId]?.points?.meetRegularly,
+            missingMeetings: action.payload,
+          },
+        };
+
+        if (isCoach) {
+          // TODO -> Fix type
+          // @ts-ignore
+          state.clubsForCoach = {
+            ...state.clubsForCoach,
+            [clubId]: {
+              ...state.clubsForCoach[clubId],
+              points: {
+                ...state.clubsForCoach[clubId]?.points,
+                meetRegularly: updatedPoints,
+              },
+            },
+          };
+        } else {
+          state.clubForPractitioner = {
+            ...state.clubForPractitioner,
+            points: {
+              ...state.clubForPractitioner?.points,
+              // @ts-ignore
+              meetRegularly: updatedPoints,
+            },
+          };
+        }
+      }
+    );
+
     builder.addCase(
       getActivityChildAttendanceDetails.fulfilled,
       (state, action) => {

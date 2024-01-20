@@ -1,5 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Mutations;
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+﻿using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -177,8 +176,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
         if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
         if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-        if (this.Enabled)
-        {
+       if (this.Enabled)
+       {
             _uId = _hierarchyEngine.GetIntegrationUserId();
 
             //Generic static repos
@@ -221,7 +220,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
             _incomeManager = incomeManager;
             _visitManager = visitManager;
             _attendanceService = attendanceService;
-        }
+       }
     }
 
     public bool Enabled {  get { return this._apiMode != MappingMode.None; } }
@@ -453,69 +452,587 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
         return success;
     }
-
-    /// <summary>
-    /// Pull past Smart Space Visits for practitioners, that were created on SmartLink and outside of the Funda app.
-    /// 
-    /// NOTE: This will only pull data for trainees
-    /// </summary>
-    /// <returns></returns>
-    public async Task<bool> PullSmartSpaceVisitsData()
+    public async Task<bool> PushPQAData()
     {
-        if (!this.Enabled) return true;
+       if (!this.Enabled) return false;
 
-        // We currently don't need to create a smart space visit, and we can import the license data when importing the practitioner
-        throw new NotImplementedException();
+        await _logManager.IntegrationLog($"PushPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushPQAData");
+
+        List<Visit> visits = _visitsRepo
+            .GetAll()
+            .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 && x.Attended == true && !x.IntegrationSubmitDate.HasValue)
+            .Include(x => x.VisitAnswers)
+            .ToList();
+
+        foreach (Visit visit in visits)
+        {
+            StringBuilder jsonPutPostString = new StringBuilder();
+            jsonPutPostString.AppendLine("[{");
+
+            // Mapped Ids
+            var mappedCoachId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.CoachHierarchy.ToString()))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedPractitionerId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.UserId))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPQA) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedSpartSpaceVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+
+            if (mappedPractitionerId != null)
+            {
+                // get smart space visit ID if available
+                if (mappedSpartSpaceVisitId == null)
+                {
+                    mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                                                                                        mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
+                }
+
+                if (mappedVisitId == null)
+                {
+                    // License
+                    var delicensingNotes = "";
+                    var isSmartSpaceStillFine = "true";
+                    var isFranchiseeDelicensed = "false";
+                    var hasCollectedHandbook = "false";
+                    var hasCollectedPlaykit = "false";
+                
+                    License license = _licenseRepo.GetAll().Where(x => x.UserId == visit.Practitioner.UserId && x.LicenseType.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
+                    if (license != null)
+                    {
+                        delicensingNotes = license.DelicensedComment;
+                        isSmartSpaceStillFine = license.DelicensedDate.HasValue ? "true" : "false";
+                        isFranchiseeDelicensed = license.DelicensedDate.HasValue ? "true" : "false";
+                        hasCollectedHandbook = (bool)license.CollectedSSHandbook ? "true" : "false";
+                        hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
+                    }
+
+                    // Consent
+                    var userConsent = _dbContext.UserConsents.Where(x => string.Equals(x.UserId, visit.Practitioner.UserId) && string.Equals(x.ConsentType, Constants.SSSettings.consent_type_franchisee)).FirstOrDefault();
+                    var didAcceptAgreements = userConsent != null ? "true" : "false";
+                    var observationNotes = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    // Scores
+                    // Section 1 total = 12(step 2) StimulatingAndResourcedScore
+                    // Section 2 total = 16(step 3 & 4) UseOfSmartStartRoutineScore
+                    // Section 3 total = 12(step 5) StableAndNurturingScore
+                    // Section 4 total = 10(step 6) PositiveInteractionScore
+                    // Section 5 total = 10(step 7) ChildOpportunitiesScore
+                    // Section 6 total = 8(step 8) InteractiveStoryTellingScore
+
+                    var stimulatingAndResourcedScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step2_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var stableAndNurturingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step5_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var positiveInteractionScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step6_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var childOpportunitiesScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step7_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var interactiveStoryTellingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
+                    
+                    var step3 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step3_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var step4 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step4_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var useOfSmartStartRoutineScore = step3 + step4;
+
+                    var totalScore = stableAndNurturingScore + stimulatingAndResourcedScore + useOfSmartStartRoutineScore + interactiveStoryTellingScore + childOpportunitiesScore + positiveInteractionScore;
+
+                    var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var numberOfChildrenNotRegistered = 0;
+                    var wasSuccessful = visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() ? "true" : "false";
+                
+                    var isFranchiseeHittingChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isVenueSafe = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    var presentChildrenNotRegistered = "false";
+
+                    var statusOutcome = "Red";
+                    
+                    if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                    {
+                        statusOutcome = "Green";
+                    } else if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString())
+                    {
+                        statusOutcome = "Orange";
+                    }
+
+                    jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
+                    jsonPutPostString.AppendLine("\"DelicensingNotes\":\"" + delicensingNotes + "\",");
+                    jsonPutPostString.AppendLine("\"StableAndNurturingScore\":" + stableAndNurturingScore + ",");
+                    jsonPutPostString.AppendLine("\"StimulatingAndResourcedScore\":" + stimulatingAndResourcedScore + ",");
+                    jsonPutPostString.AppendLine("\"UseOfSmartStartRoutineScore\":" + useOfSmartStartRoutineScore + ",");
+                    jsonPutPostString.AppendLine("\"InteractiveStoryTellingScore\":" + interactiveStoryTellingScore + ",");
+                    jsonPutPostString.AppendLine("\"ChildOpportunitiesScore\":" + childOpportunitiesScore + ",");
+                    jsonPutPostString.AppendLine("\"PositiveInteractionScore\":" + positiveInteractionScore + ",");
+                    jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfChildrenPresent\":" + (numberOfChildrenPresent != null ? numberOfChildrenPresent : 0) + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfChildrenNotRegistered\":" + numberOfChildrenNotRegistered + ",");
+                    jsonPutPostString.AppendLine("\"Latitude\": null,");
+                    jsonPutPostString.AppendLine("\"Longitude\": null,");
+                    jsonPutPostString.AppendLine("\"WasSuccessful\":" + wasSuccessful + ",");
+                    jsonPutPostString.AppendLine("\"IsFranchiseeHittingChildren\":" + (isFranchiseeHittingChildren == null ? "false" : isFranchiseeHittingChildren) + ",");
+                    jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + (isSmartSpaceStillFine == null ? "false": isSmartSpaceStillFine) + ",");
+                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe) + ",");
+                    jsonPutPostString.AppendLine("\"IsThereTooManyChildren\":" + (isThereTooManyChildren == null ? "false" : isThereTooManyChildren) + ",");
+                    jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
+                    jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
+                    jsonPutPostString.AppendLine("\"PresentChildrenNotRegistered\":" + presentChildrenNotRegistered + ",");
+                    jsonPutPostString.AppendLine("\"IsFranchiseeDelicensed\":" + isFranchiseeDelicensed + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedHandbook\":" + hasCollectedHandbook + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedPlaykit\":" + hasCollectedPlaykit + ",");
+                    jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+                    jsonPutPostString.AppendLine("\"StatusOutcome\":\"" + statusOutcome + "\",");
+                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
+
+                    _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":{\"Guid\": \"" + mappedCoachId + "\"},");
+                    _ = string.IsNullOrEmpty(mappedSpartSpaceVisitId) ? jsonPutPostString.AppendLine("\"SmartSpaceVisit\": null") : jsonPutPostString.AppendLine("\"SmartSpaceVisit\":\"" + mappedSpartSpaceVisitId + "\"");
+                    
+                    jsonPutPostString.AppendLine("}]");
+
+                    try
+                    {
+                        var createPQAUrl = Constants.SSIntegrationSettings.SLPQA + Constants.SSIntegrationSettings.CreateMultiple;
+                        var createApiResponse = await _apiManager.GetAPIHandlerResponse(createPQAUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                        if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+                        {
+                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                            var remoteRecordId = "";
+                            if (returnObj != null)
+                            {
+                                if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                                {
+                                    remoteRecordId = returnObj[0].Guid.ToString();
+                                }
+                            }
+                            if (remoteRecordId != "")
+                            {
+                                // Update visit
+                                visit.IntegrationSubmitDate = DateTime.Now;
+                                _visitsRepo.Update(visit);
+
+                                IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSPQA;
+                                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLPQA;
+                                cgMapping.LocalId = visit.Id.ToString();
+                                cgMapping.RemoteId = remoteRecordId;
+                                cgMapping.UserId = visit.Practitioner.UserId;
+                                cgMapping.UpdatedBy = _uId;
+                                cgMapping.UpdatedDate = DateTime.Now;
+                                cgMapping.IsComplete = true;
+                                cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                                _mapperRepo.Insert(cgMapping);
+                            }
+
+                            await _logManager.IntegrationLog($"PushPQAData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushPQAData");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushPQAData ");
+                    }
+                }
+            }
+        }
+            
+        await _logManager.IntegrationLog($"PushPQAData Completed at {DateTime.Now}", "", null, LogRelatedType.Log, "PushPQAData");
+        return true;
     }
-    //{
-    //    var success = true;
-    //    var mappedTrainees = await GetMappedEntities(Constants.SSIntegrationSettings.SSTrainee); // TODO Why only trainees
-    //    var smartSpaceVisitTypeId = _visitTypeRepo.GetAll().First(x => x.Name == Constants.SSSettings.smart_space_checklist).Id;
 
-    //    foreach (var practitioner in mappedTrainees)
-    //    {
-    //        try
-    //        {
-    //            var smartSpaceVisits = await _apiManager.GetSmartSpaceVisitsByFranchiseeTrainee(practitioner.RemoteId);
-    //            var existingVisits = _visitsRepo.GetAll().Where(x => string.Equals(x.TraineeId, practitioner.Id) && x.VisitTypeId == smartSpaceVisitTypeId).ToList(); //reload all meetings
+    private async Task<string> AddSmartSpaceForPQAAndAccreditation(ICollection<VisitData> visitAnswers, 
+                                                                   DateTime dateOfVisit,
+                                                                   string mappedPractitionerId,
+                                                                   string mappedCoachId,
+                                                                   string visitId,
+                                                                   string userId)
+    {
+        await _logManager.IntegrationLog($"SmartSpaceForPQAAndAccreditation Started at {DateTime.Now}", null, null, LogRelatedType.Log, "SmartSpaceForPQAAndAccreditation");
 
-    //            var createdVisits = new List<Visit>();
-    //            foreach (var slVisit in smartSpaceVisits)
-    //            {
-    //                if (existingVisits.Any(x => x.Id == Guid.Parse(slVisit.Guid)))
-    //                {
-    //                    continue;
-    //                }
+        var smartSpaceId = "";
+        var smartSpaceAnswers = visitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var spaceEmergencyPlanning = visitAnswers.Where(x =>
+                (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
+                x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
 
-    //                // Create visit
-    //                var visit = new Visit()
-    //                {
-    //                    Id = Guid.Parse(slVisit.Guid),
-    //                    ActualVisitDate = slVisit.DateOfVisit,
-    //                    CoachId = Guid.Parse(slVisit.Coach.Guid),
-    //                    HasAnswerData = false,
-    //                    VisitTypeId = smartSpaceVisitTypeId,
-    //                    TenantId = _tenantId,
-    //                    Attended = true,
-    //                    DueDate = slVisit.DateOfVisit,
-    //                    PlannedVisitDate = slVisit.DateOfVisit,
-    //                    TraineeId = practitioner.Id,                  
-    //                };
-    //                createdVisits.Add(visit);
+        var hasCleanWater = "false";
+        var hasToilet = "false";
+        var hasHandwashing = "false";
+        var hasNoHarmfulSubstances = "false";
+        var hasNoFireHazards = "false";
+        var hasNoSharpObjects = "false";
+        var hasNoBurnRisks = "false";
+        var hasNoDrowningRisks = "false";
+        var hasNoElectrocutionRisks = "false";
+        var hasNoSmokeRisks = "false";
+        var hasNoFallingRisks = "false";
+        var hasNoAnimalRisks = "false";
+        var isInSafePlace = "false";
+        var hasFireExtinguishment = "false";
+        var hasFirstAidKit = "false";
+        var hasEnoughPlaySpace = "false";
+        var isOutdoorsFenced = "false";
+        var isOutdoorsClean = "false";
+        var areEmergencyNumbersVisible = "false";
+        var isEmergencyPlanVisible = "false";
+        var hasNaturalVentilation = "false";
+        var numberOfAssistants = "false";
+        var capacity = "false";
+        var ownsProperty = "false"; // not available on PQA or ReAccreditation
+        var doesNotExceedMaximumCapacity = "false";
+        var hasAcceptedSmartSpaceAgreement = "false";
+        int programmeCount = 0; // not available on PQA and Accreditation
+        int healthCount = 0; // pqa step 12, re-accreditation step 2;
+        int safetyCount = 0; // pqa step 12, re-accreditation step 2;
+        int unrequiredItemsScore = 0;
 
-    //                // Do I need to save license info ???
-    //            }
-    //            _visitsRepo.InsertMany(createdVisits);
-    //        }
-    //        catch (Exception e)
-    //        {
-    //            await _logManager.IntegrationLog("IntegrationPQASmartSpaceVisitsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationPQASmartSpaceVisitsData > GetSmartSpaceVisitsByFranchiseeTrainee");
-    //            success = false;
-    //        }
-    //    }
+        if (smartSpaceAnswers != null)
+        {
+            hasCleanWater = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) != -1 ? "true" : "false";
+            hasToilet = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) != -1 ? "true" : "false";
+            hasHandwashing = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) != -1 ? "true" : "false";
+            hasNoHarmfulSubstances = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) != -1 ? "true" : "false";
+            hasNoFireHazards = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) != -1 ? "true" : "false";
+            hasNoSharpObjects = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) != -1 ? "true" : "false";
+            hasNoBurnRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) != -1 ? "true" : "false";
+            hasNoDrowningRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) != -1 ? "true" : "false";
+            hasNoElectrocutionRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) != -1 ? "true" : "false";
+            hasNoSmokeRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) != -1 ? "true" : "false";
+            hasNoFallingRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) != -1 ? "true" : "false";
+            hasNoAnimalRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) != -1 ? "true" : "false";
+            isInSafePlace = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) != -1 ? "true" : "false";
+            hasFireExtinguishment = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) != -1 ? "true" : "false";
+            hasFirstAidKit = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) != -1 ? "true" : "false";
+            hasEnoughPlaySpace = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a1) != -1 ? "true" : "false";
+            isOutdoorsFenced = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a2) != -1 ? "true" : "false";
+            isOutdoorsClean = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) != -1 ? "true" : "false";
+            areEmergencyNumbersVisible = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a3) != -1 ? "true" : "false";
+            isEmergencyPlanVisible = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) != -1 ? "true" : "false";
+            hasNaturalVentilation = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a4) != -1 ? "true" : "false";
+            numberOfAssistants = smartSpaceAnswers.IndexOf(Constants.SSSettings.number_assistants) != -1 ? "true" : "false";
+            capacity = smartSpaceAnswers.IndexOf(Constants.SSSettings.capacity) != -1 ? "true" : "false";
 
-    //    return success;
-    //}
+            // Health Count
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) == -1 ? 0 : 1;
+
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15b) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a18) == -1 ? 0 : 1;
+        }
+
+        if (visitAnswers != null)
+        {
+            var maximumCapacity = visitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+            doesNotExceedMaximumCapacity = maximumCapacity == null? "false" : maximumCapacity; 
+        }
+
+        if (spaceEmergencyPlanning != null)
+        {
+            unrequiredItemsScore = spaceEmergencyPlanning.Where(x => x.QuestionAnswer == "true").Count(); // step 13 on pqa
+        }
+        
+        // Scores
+        int requiredItemsScore = programmeCount + healthCount + safetyCount;
+        int totalScore = requiredItemsScore + unrequiredItemsScore;
+
+        StringBuilder jsonPutPostString = new StringBuilder();
+        jsonPutPostString.AppendLine("[{");
+        jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + (numberOfAssistants == null ? 0 : numberOfAssistants) + ",");
+        jsonPutPostString.AppendLine("\"Capacity\":" + (capacity == null ? 0 : capacity) + ",");
+        jsonPutPostString.AppendLine("\"RequiredItemsScore\":" + requiredItemsScore + ",");
+        jsonPutPostString.AppendLine("\"UnrequiredItemsScore\":" + unrequiredItemsScore + ",");
+        jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+        jsonPutPostString.AppendLine("\"Latitude\": null,");
+        jsonPutPostString.AppendLine("\"Longitude\": null,");
+        jsonPutPostString.AppendLine("\"OwnsProperty\":" + (ownsProperty == null ? "false" : ownsProperty) + ",");
+        jsonPutPostString.AppendLine("\"HasAcceptedSmartSpaceAgreement\":" + hasAcceptedSmartSpaceAgreement + ",");
+        // smart_space_checklist
+        jsonPutPostString.AppendLine("\"HasCleanWater\":" + hasCleanWater + ",");
+        jsonPutPostString.AppendLine("\"HasToilet\":" + hasToilet + ",");
+        jsonPutPostString.AppendLine("\"HasHandwashing\":" + hasHandwashing + ",");
+        jsonPutPostString.AppendLine("\"HasNoHarmfulSubstances\":" + hasNoHarmfulSubstances + ",");
+        jsonPutPostString.AppendLine("\"HasNoFireHazards\":" + hasNoFireHazards + ",");
+        jsonPutPostString.AppendLine("\"HasNoSharpObjects\":" + hasNoSharpObjects + ",");
+        jsonPutPostString.AppendLine("\"HasNoBurnRisks\":" + hasNoBurnRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoDrowningRisks\":" + hasNoDrowningRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoElectrocutionRisks\":" + hasNoElectrocutionRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoSmokeRisks\":" + hasNoSmokeRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoFallingRisks\":" + hasNoFallingRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoAnimalRisks\":" + hasNoAnimalRisks + ",");
+        jsonPutPostString.AppendLine("\"IsInSafePlace\":" + isInSafePlace + ",");
+        jsonPutPostString.AppendLine("\"HasFireExtinguishment\":" + hasFireExtinguishment + ",");
+        jsonPutPostString.AppendLine("\"HasFirstAidKit\":" + hasFirstAidKit + ",");
+        jsonPutPostString.AppendLine("\"DoesNotExceedMaximumCapacity\":" + doesNotExceedMaximumCapacity + ",");
+        jsonPutPostString.AppendLine("\"HasEnoughPlaySpace\":" + hasEnoughPlaySpace + ",");
+        jsonPutPostString.AppendLine("\"IsOutdoorsFenced\":" + isOutdoorsFenced + ",");
+        jsonPutPostString.AppendLine("\"IsOutdoorsClean\":" + isOutdoorsClean + ",");
+        jsonPutPostString.AppendLine("\"AreEmergencyNumbersVisible\":" + areEmergencyNumbersVisible + ",");
+        jsonPutPostString.AppendLine("\"IsEmergencyPlanVisible\":" + isEmergencyPlanVisible + ",");
+        jsonPutPostString.AppendLine("\"HasNaturalVentilation\":" + hasNaturalVentilation + ",");
+        jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + dateOfVisit.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+        jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
+        _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":\"" + mappedCoachId + "\"");
+
+        jsonPutPostString.AppendLine("}]");
+
+        try
+        {
+            var createSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.CreateMultiple;
+            var createApiResponse = await _apiManager.GetAPIHandlerResponse(createSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
+            if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+            {
+                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                if (returnObj != null)
+                {
+                    if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                    {
+                        smartSpaceId = returnObj[0].Guid.ToString();
+                    }
+                }
+                if (smartSpaceId != "")
+                {
+                    IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                    cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSSmartSpaceVisit;
+                    cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLSmartSpaceVisit;
+                    cgMapping.LocalId = visitId;
+                    cgMapping.RemoteId = smartSpaceId;
+                    cgMapping.UserId = userId;
+                    cgMapping.UpdatedBy = _uId;
+                    cgMapping.UpdatedDate = DateTime.Now;
+                    cgMapping.IsComplete = true;
+                    cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                    _mapperRepo.Insert(cgMapping);
+                }
+
+                await _logManager.IntegrationLog($"SmartSpaceForPQAAndAccreditation Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "SmartSpaceForPQAAndAccreditation");
+            }
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SmartSpaceForPQAAndAccreditation");
+        }
+
+        await _logManager.IntegrationLog($"SmartSpaceForPQAAndAccreditation Completed at {DateTime.Now}", "", null, LogRelatedType.Log, "SmartSpaceForPQAAndAccreditation");
+
+        return smartSpaceId;
+    }
+
+    public async Task<bool> PushReAccreditationData()
+    {
+        if (!this.Enabled) return false;
+
+        await _logManager.IntegrationLog($"PushReAccreditationData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushReAccreditationData");
+
+        List<Visit> visits = _visitsRepo
+            .GetAll()
+            .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 && x.Attended == true && !x.IntegrationSubmitDate.HasValue)
+            .Include(x => x.VisitAnswers)
+            .ToList();
+
+
+        foreach (Visit visit in visits)
+        {
+            StringBuilder jsonPutPostString = new StringBuilder();
+            jsonPutPostString.AppendLine("[{");
+
+            // Mapped Ids
+            var mappedCoachId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.CoachHierarchy.ToString()))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedPractitionerId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.UserId))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSAnnualAccreditation) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedSpartSpaceVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+
+            if (mappedPractitionerId != null)
+            {
+                // get smart space visit ID if available
+                if (mappedSpartSpaceVisitId == null)
+                {
+                    var smartSpaceCheckAnswers = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    if (smartSpaceCheckAnswers != null)
+                    {
+                        var spaceEmergencyPlanning = visit.VisitAnswers.Where(x =>
+                                (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
+                                x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
+                        mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                                                                                        mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
+
+                    }
+                }
+
+                if (mappedVisitId == null && mappedSpartSpaceVisitId != null)
+                {
+                    // License
+                    var delicensingNotes = "";
+                    var isSmartSpaceStillFine = "true";
+                    var isFranchiseeDelicensed = "false";
+                    var hasCollectedHandbook = "false";
+                    var hasCollectedPlaykit = "false";
+
+                    License license = _licenseRepo.GetAll().Where(x => x.UserId == visit.Practitioner.UserId && x.LicenseType.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
+                    if (license != null)
+                    {
+                        delicensingNotes = license.DelicensedComment;
+                        isSmartSpaceStillFine = license.DelicensedDate.HasValue ? "true" : "false";
+                        isFranchiseeDelicensed = license.DelicensedDate.HasValue ? "true" : "false";
+                        hasCollectedHandbook = (bool)license.CollectedSSHandbook ? "true" : "false";
+                        hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
+                    }
+
+                    var observationNotes = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var discussionSummary = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.summary_discussion_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    // A.The learning environment & use of the SmartStart routine -score LearningEnvironment_Score
+                    var learningEnvironmentScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
+                    // B. Programme implementation - score	ProgrammeImplementation_Score
+                    var programmeImplementationScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step_10_section).Select(x => x.SectionScore).FirstOrDefault();
+                    // C. Records - score	Records_Score
+                    var recordsScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step_11_section).Select(x => x.SectionScore).FirstOrDefault();
+                    // D. Operational standards - score	OperationalStandards_Score
+                    var operationalStandardsScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var totalScore = learningEnvironmentScore + programmeImplementationScore + recordsScore + operationalStandardsScore;
+
+                    var numberOfAssistants = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var wasSuccessful = visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() ? "true" : "false";
+
+                    var isHittingChild = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var wasSmartSpaceChecked = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    var pqaAgreement = _visitDataRepo.GetAll().Where(x => x.Visit.PractitionerId == visit.PractitionerId &&
+                                                                     x.Visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
+                                                                     x.Question == Constants.SSSettings.franchisee_agreement).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var acceptedItems = 0;
+                    if (pqaAgreement != null)
+                    {
+                        if (pqaAgreement.IndexOf(Constants.SSSettings.franchisee_agreement_q1) != -1)
+                        {
+                            acceptedItems++;
+                        } else if (pqaAgreement.IndexOf(Constants.SSSettings.franchisee_agreement_q2) != -1)
+                        {
+                            acceptedItems++;
+                        } else if (pqaAgreement.IndexOf(Constants.SSSettings.franchisee_agreement_q3) != -1)
+                        {
+                            acceptedItems++;
+                        }
+                    }
+
+                    var didAcceptAgreements = acceptedItems >= 3 ? "true" : "false";
+                    var areThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var statusOutcome = "Red";
+                    if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                    {
+                        statusOutcome = "Green";
+                    }
+                    else if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString())
+                    {
+                        statusOutcome = "Orange";
+                    }
+                    var starRating = visit.PQARating.OverallRatingStars[1];
+                    var siteName = _classroomGenericRepo.GetAll().Where(x => x.UserId == visit.Practitioner.UserId).Select(x => x.Name).FirstOrDefault();
+                    var visitStatus = "Completed";
+
+                    jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
+                    jsonPutPostString.AppendLine("\"SiteName\":\"" + siteName + "\",");
+                    jsonPutPostString.AppendLine("\"DelicensingNotes\":\"" + delicensingNotes + "\",");
+                    jsonPutPostString.AppendLine("\"DiscussionSummary\":\"" + discussionSummary + "\",");
+                    jsonPutPostString.AppendLine("\"OperationalStandardsScore\":" + operationalStandardsScore + ",");
+                    jsonPutPostString.AppendLine("\"LearningEnvironmentScore\":" + learningEnvironmentScore + ",");
+                    jsonPutPostString.AppendLine("\"ProgrammeImplementationScore\":" + programmeImplementationScore + ",");
+                    jsonPutPostString.AppendLine("\"RecordsScore\":" + recordsScore + ",");
+                    jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + numberOfAssistants + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfChildrenPresent\":" + (numberOfChildrenPresent != null ? numberOfChildrenPresent : 0) + ",");
+                    jsonPutPostString.AppendLine("\"Latitude\": null,");
+                    jsonPutPostString.AppendLine("\"Longitude\": null,");
+                    jsonPutPostString.AppendLine("\"IsHittingChild\":" + (isHittingChild == null ? "false" : isHittingChild) + ",");
+                    jsonPutPostString.AppendLine("\"WasSmartSpaceChecked\":" + (wasSmartSpaceChecked == null ? "false" : "true") + ",");
+                    jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
+                    jsonPutPostString.AppendLine("\"AreThereTooManyChildren\":" + (areThereTooManyChildren == null ? "false" : areThereTooManyChildren) + ",");
+                    jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
+                    jsonPutPostString.AppendLine("\"IsFranchiseeDelicensed\":" + isFranchiseeDelicensed + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedHandbook\":" + hasCollectedHandbook + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedPlaykit\":" + hasCollectedPlaykit + ",");
+                    jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+                    jsonPutPostString.AppendLine("\"StarRating\":" + starRating + ",");
+                    jsonPutPostString.AppendLine("\"StatusOutcome\":\"" + statusOutcome + "\",");
+                    jsonPutPostString.AppendLine("\"VisitStatus\":\"" + visitStatus + "\",");
+
+                    _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":{\"Guid\": \"" + mappedCoachId + "\"},");
+                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
+                    jsonPutPostString.AppendLine("\"SmartSpaceVisit\":{\"Guid\": \"" + mappedSpartSpaceVisitId + "\"},");
+
+                    jsonPutPostString.AppendLine("}]");
+
+                    try
+                    {
+                        var createPQAUrl = Constants.SSIntegrationSettings.SLAnnualAccreditation + Constants.SSIntegrationSettings.CreateMultiple;
+                        var createApiResponse = await _apiManager.GetAPIHandlerResponse(createPQAUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                        if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+                        {
+                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                            var remoteRecordId = "";
+                            if (returnObj != null)
+                            {
+                                if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                                {
+                                    remoteRecordId = returnObj[0].Guid.ToString();
+                                }
+                            }
+
+                            if (remoteRecordId != "")
+                            {
+                                // Update visit
+                                visit.IntegrationSubmitDate = DateTime.Now;
+                                _visitsRepo.Update(visit);
+
+                                IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSAnnualAccreditation;
+                                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLAnnualAccreditation;
+                                cgMapping.LocalId = visit.Id.ToString();
+                                cgMapping.RemoteId = remoteRecordId;
+                                cgMapping.UserId = visit.Practitioner.UserId;
+                                cgMapping.UpdatedBy = _uId;
+                                cgMapping.UpdatedDate = DateTime.Now;
+                                cgMapping.IsComplete = true;
+                                cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                                _mapperRepo.Insert(cgMapping);
+                            }
+                            await _logManager.IntegrationLog($"PushReAccreditationData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushReAccreditationData");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushReAccreditationData ");
+                    }
+                }
+            }
+        }
+        
+        await _logManager.IntegrationLog($"PushReAccreditationData Completed at {DateTime.Now}", "", null, LogRelatedType.Log, "PushReAccreditationData");
+        return true;
+    }
 
     public async Task IntegrationStatementsData()
     {
@@ -872,8 +1389,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
             * 6) start with income statements and attendance and push only to SL
             */
 
-            //Only allow data pulling when api mode has been set
-            await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
+                    //Only allow data pulling when api mode has been set
+                    await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
 
             if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
             {
@@ -1159,142 +1676,165 @@ public partial class SmartStartIntegrationService : IIntegrationService
         }
     }
 
-    public async Task<bool> PushSmartSpaceVisitsData(Guid visitId, Guid traineeId, string traineeUserId, string coachUserId)
+    public async Task<bool> PushSmartSpaceVisitsData()
     {
-        if (!this.Enabled) return true;
+        if (!this.Enabled) return false;
 
         await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
 
-        List<VisitData> ssVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).ToList();
+        List<Visit> visitsToUpdate = new List<Visit>();
 
-        var _traineeMappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSTrainee);
-        var _coachMappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSCoach);
-        var mappedTraineeId = _traineeMappedEntities.Where(c => string.Equals(c.UserId, traineeUserId) && c.LocalEntity == Constants.SSIntegrationSettings.SSTrainee).Select(x => x.RemoteId).FirstOrDefault();
-        var mappedCoachId = _coachMappedEntities.Where(c => string.Equals(c.UserId, coachUserId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).Select(x => x.RemoteId).FirstOrDefault();
+        List<Visit> visits = _visitsRepo
+            .GetAll()
+            .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_trainee_visit && 
+                        x.VisitType.Type == Constants.SSSettings.client_coach &&
+                        x.Attended == true && x.IsActive == true && !x.IntegrationSubmitDate.HasValue
+                        )
+            .Include(x => x.VisitAnswers)
+            .ToList();
 
-        // Answers for questions - smart_space_checklist
-        var hasCleanWater = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasToilet = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasHandwashing = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoHarmfulSubstances = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoFireHazards = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a5).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoSharpObjects = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a6).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoBurnRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a7).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoDrowningRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a8).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoElectrocutionRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a9).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoSmokeRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a10).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoFallingRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a11).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNoAnimalRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a12).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var isInSafePlace = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a14).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasFireExtinguishment = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a15).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasFirstAidKit = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a16).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var doesNotExceedMaximumCapacity = "false"; // not available in funda
-        var hasEnoughPlaySpace = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var isOutdoorsFenced = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var isOutdoorsClean = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a13).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var areEmergencyNumbersVisible = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var isEmergencyPlanVisible = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a17).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var hasNaturalVentilation = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var numberOfAssistants = ssVisitData.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var capacity = ssVisitData.Where(x => x.Question == Constants.SSSettings.capacity).Select(x => x.QuestionAnswer).FirstOrDefault(); 
-        
-        // trainee question/answer
-        var ownsProperty = _visitDataRepo.GetAll().Where(x => x.Visit.TraineeId == traineeId && x.Question == Constants.SSSettings.own_property).Select(x => x.QuestionAnswer).FirstOrDefault();
+        foreach (Visit visit in visits)
+        {
+            // We do a post for each visit to save the remote ids in the entity table to prevent wrong mappings with the list of Guids returned
+            StringBuilder jsonPutPostString = new StringBuilder();
+            jsonPutPostString.AppendLine("[{");
 
-        // Scores
-        int programmeCount = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_programme).Count();
-        int healthCount = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_health && x.QuestionAnswer == "true").Count();
-        int safetyCount = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_safety && x.QuestionAnswer == "true").Count();
-        int requiredItemsScore = programmeCount + healthCount + safetyCount;
-        int unrequiredItemsScore = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_space && x.QuestionAnswer == "true").Count();
-        int totalScore = requiredItemsScore + unrequiredItemsScore;
+            var mappedTraineeId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSTrainee) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Trainee.UserId))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedCoachId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Trainee.CoachHierarchy.ToString()))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
 
-        // Consent
-        var userConsent = _dbContext.UserConsents.Where(x => string.Equals(x.UserId, traineeUserId) && string.Equals(x.ConsentType, Constants.SSSettings.consent_type_franchisee)).FirstOrDefault();
-        var hasAcceptedSmartSpaceAgreement = userConsent != null ? "true" : "false";
-
-        DateTime dateOfVisit = ssVisitData.Select(x => x.Visit.ActualVisitDate.Value).FirstOrDefault();
-
-        StringBuilder jsonPutPostString = new StringBuilder();
-        jsonPutPostString.AppendLine("[{");
-        jsonPutPostString.AppendLine("\"Capacity\":" + capacity + ",");
-        jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + dateOfVisit.Date + "\",");
-        jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + numberOfAssistants + ",");
-        jsonPutPostString.AppendLine("\"OwnsProperty\":" + (ownsProperty == null ? "false" : ownsProperty) + ",");  
-
-        // smart_space_checklist
-        jsonPutPostString.AppendLine("\"HasCleanWater\":" + hasCleanWater + ",");
-        jsonPutPostString.AppendLine("\"HasToilet\":" + hasToilet + ",");
-        jsonPutPostString.AppendLine("\"HasHandwashing\":" + hasHandwashing + ",");
-        jsonPutPostString.AppendLine("\"HasNoHarmfulSubstances\":" + hasNoHarmfulSubstances + ",");
-        jsonPutPostString.AppendLine("\"HasNoFireHazards\":" + hasNoFireHazards + ",");
-        jsonPutPostString.AppendLine("\"HasNoSharpObjects\":" + hasNoSharpObjects + ",");
-        jsonPutPostString.AppendLine("\"HasNoBurnRisks\":" + hasNoBurnRisks + ",");
-        jsonPutPostString.AppendLine("\"HasNoDrowningRisks\":" + hasNoDrowningRisks + ",");
-        jsonPutPostString.AppendLine("\"HasNoElectrocutionRisks\":" + hasNoElectrocutionRisks + ",");
-        jsonPutPostString.AppendLine("\"HasNoSmokeRisks\":" + hasNoSmokeRisks + ",");
-        jsonPutPostString.AppendLine("\"HasNoFallingRisks\":" + hasNoFallingRisks + ",");
-        jsonPutPostString.AppendLine("\"HasNoAnimalRisks\":" + hasNoAnimalRisks + ",");
-        jsonPutPostString.AppendLine("\"IsInSafePlace\":" + isInSafePlace + ",");
-        jsonPutPostString.AppendLine("\"HasFireExtinguishment\":" + hasFireExtinguishment + ",");
-        jsonPutPostString.AppendLine("\"HasFirstAidKit\":" + hasFirstAidKit + ",");
-        jsonPutPostString.AppendLine("\"DoesNotExceedMaximumCapacity\":" + doesNotExceedMaximumCapacity + ",");
-        jsonPutPostString.AppendLine("\"HasEnoughPlaySpace\":" + hasEnoughPlaySpace + ",");
-        jsonPutPostString.AppendLine("\"IsOutdoorsFenced\":" + isOutdoorsFenced + ",");
-        jsonPutPostString.AppendLine("\"IsOutdoorsClean\":" + isOutdoorsClean + ",");
-        jsonPutPostString.AppendLine("\"AreEmergencyNumbersVisible\":" + areEmergencyNumbersVisible + ",");
-        jsonPutPostString.AppendLine("\"IsEmergencyPlanVisible\":" + isEmergencyPlanVisible + ",");
-        jsonPutPostString.AppendLine("\"HasNaturalVentilation\":" + hasNaturalVentilation + ",");
-        
-        jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
-        jsonPutPostString.AppendLine("\"RequiredItemsScore\":" + requiredItemsScore + ",");
-        jsonPutPostString.AppendLine("\"UnrequiredItemsScore\":" + unrequiredItemsScore + ",");
-        jsonPutPostString.AppendLine("\"Trainee\":{\"Guid\": \"" + mappedTraineeId + "\"},");
-        jsonPutPostString.AppendLine("\"Coach\":{\"" + mappedCoachId + "\"},");
-        jsonPutPostString.AppendLine("\"HasAcceptedSmartSpaceAgreement\":" + hasAcceptedSmartSpaceAgreement + ",");
-
-        jsonPutPostString.AppendLine("\"Latitude\": null,");
-        jsonPutPostString.AppendLine("\"Longitude\": null");
-        jsonPutPostString.AppendLine("}]");
-
-        StringBuilder jsonPullString = new StringBuilder();
-        jsonPullString.AppendLine("{");
-        jsonPullString.AppendLine("\"Columns\":[\"Name\"],");
-        jsonPullString.AppendLine("\"Conditions\":[{\"Column\": \"Trainee\", \"Operator\": \"Equals\", \"Value\": \"" + mappedTraineeId + "\"}]");
-        jsonPullString.AppendLine("}");
-
-        try 
-        { 
-            string getSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.QueryAll;
-
-            // First check to see if the record exist on SL
-            var getResponse = await _apiManager.GetAPIHandlerResponse(getSmartSpaceUrl, null, null, null, false, false, jsonPullString.ToString());
-            if (!string.IsNullOrEmpty(getResponse.ResponseString) && getResponse.Success)
+            if (mappedTraineeId != null && mappedCoachId != null && mappedVisitId == null)
             {
-                var updateSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.UpdateMultiple;
-                var updateApiResponse = await _apiManager.GetAPIHandlerResponse(updateSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
-                if (!string.IsNullOrEmpty(updateApiResponse.ResponseString) && updateApiResponse.Success)
+                // Answers for questions - smart_space_checklist
+                var hasCleanWater = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasToilet = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasHandwashing = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoHarmfulSubstances = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoFireHazards = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a5).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoSharpObjects = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a6).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoBurnRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a7).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoDrowningRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a8).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoElectrocutionRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a9).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoSmokeRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a10).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoFallingRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a11).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoAnimalRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a12).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isInSafePlace = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a14).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasFireExtinguishment = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a15).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasFirstAidKit = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a16).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var doesNotExceedMaximumCapacity = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasEnoughPlaySpace = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isOutdoorsFenced = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isOutdoorsClean = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a13).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var areEmergencyNumbersVisible = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isEmergencyPlanVisible = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a17).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNaturalVentilation = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var numberOfAssistants = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var capacity = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.capacity).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                // trainee question/answer and not coach
+                var ownsProperty = _visitDataRepo.GetAll().Where(x => x.Visit.TraineeId == visit.TraineeId && x.Question == Constants.SSSettings.own_property).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                // Scores
+                int programmeCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_programme).Count();
+                int healthCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_health && x.QuestionAnswer == "true").Count();
+                int safetyCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_safety && x.QuestionAnswer == "true").Count();
+                int requiredItemsScore = programmeCount + healthCount + safetyCount;
+                int unrequiredItemsScore = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_space && x.QuestionAnswer == "true").Count();
+                int totalScore = requiredItemsScore + unrequiredItemsScore;
+
+                // Consent
+                var userConsent = visit.VisitAnswers.Where(x => x.Visit.VisitType.Name == Constants.SSSettings.visitType_coach_franchisee_agreement).FirstOrDefault();
+                var hasAcceptedSmartSpaceAgreement = userConsent != null ? "true" : "false";
+
+                jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + (numberOfAssistants == null ? 0 : numberOfAssistants) + ",");
+                jsonPutPostString.AppendLine("\"Capacity\":" + (capacity == null ? 0 : capacity) + ",");
+                jsonPutPostString.AppendLine("\"RequiredItemsScore\":" + requiredItemsScore + ",");
+                jsonPutPostString.AppendLine("\"UnrequiredItemsScore\":" + unrequiredItemsScore + ",");
+                jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+                jsonPutPostString.AppendLine("\"Latitude\": null,");
+                jsonPutPostString.AppendLine("\"Longitude\": null,");
+                jsonPutPostString.AppendLine("\"OwnsProperty\":" + (ownsProperty == null ? "false" : ownsProperty) + ",");
+                jsonPutPostString.AppendLine("\"HasAcceptedSmartSpaceAgreement\":" + hasAcceptedSmartSpaceAgreement + ",");
+                // smart_space_checklist
+                jsonPutPostString.AppendLine("\"HasCleanWater\":" + (hasCleanWater == null ? "false" : hasCleanWater) + ",");
+                jsonPutPostString.AppendLine("\"HasToilet\":" + (hasToilet == null ? "false" : hasToilet) + ",");
+                jsonPutPostString.AppendLine("\"HasHandwashing\":" + (hasHandwashing == null ? "false" : hasHandwashing) + ",");
+                jsonPutPostString.AppendLine("\"HasNoHarmfulSubstances\":" + (hasNoHarmfulSubstances == null ? "false" : hasNoHarmfulSubstances) + ",");
+                jsonPutPostString.AppendLine("\"HasNoFireHazards\":" + (hasNoFireHazards == null ? "false" : hasNoFireHazards) + ",");
+                jsonPutPostString.AppendLine("\"HasNoSharpObjects\":" + (hasNoSharpObjects == null ? "false" : hasNoSharpObjects) + ",");
+                jsonPutPostString.AppendLine("\"HasNoBurnRisks\":" + (hasNoBurnRisks == null ? "false" : hasNoBurnRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoDrowningRisks\":" + (hasNoDrowningRisks == null ? "false" : hasNoDrowningRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoElectrocutionRisks\":" + (hasNoElectrocutionRisks == null ? "false" : hasNoElectrocutionRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoSmokeRisks\":" + (hasNoSmokeRisks == null ? "false" : hasNoSmokeRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoFallingRisks\":" + (hasNoFallingRisks == null ? "false" : hasNoFallingRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoAnimalRisks\":" + (hasNoAnimalRisks == null ? "false" : hasNoAnimalRisks) + ",");
+                jsonPutPostString.AppendLine("\"IsInSafePlace\":" + (isInSafePlace == null ? "false" : isInSafePlace) + ",");
+                jsonPutPostString.AppendLine("\"HasFireExtinguishment\":" + (hasFireExtinguishment == null ? "false" : hasFireExtinguishment) + ",");
+                jsonPutPostString.AppendLine("\"HasFirstAidKit\":" + (hasFirstAidKit == null ? "false" : hasFirstAidKit) + ",");
+                jsonPutPostString.AppendLine("\"DoesNotExceedMaximumCapacity\":" + (doesNotExceedMaximumCapacity == null ? "false" : doesNotExceedMaximumCapacity) + ",");
+                jsonPutPostString.AppendLine("\"HasEnoughPlaySpace\":" + (hasEnoughPlaySpace == null ? "false" : hasEnoughPlaySpace) + ",");
+                jsonPutPostString.AppendLine("\"IsOutdoorsFenced\":" + (isOutdoorsFenced == null ? "false" : isOutdoorsFenced) + ",");
+                jsonPutPostString.AppendLine("\"IsOutdoorsClean\":" + (isOutdoorsClean == null ? "false" : isOutdoorsClean) + ",");
+                jsonPutPostString.AppendLine("\"AreEmergencyNumbersVisible\":" + (areEmergencyNumbersVisible == null ? "false" : areEmergencyNumbersVisible) + ",");
+                jsonPutPostString.AppendLine("\"IsEmergencyPlanVisible\":" + (isEmergencyPlanVisible == null ? "false" : isEmergencyPlanVisible) + ",");
+                jsonPutPostString.AppendLine("\"HasNaturalVentilation\":" + (hasNaturalVentilation == null ? "false" : hasNaturalVentilation) + ",");
+                jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+                jsonPutPostString.AppendLine("\"Trainee\":{\"Guid\": \"" + mappedTraineeId + "\"},");
+                _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":\"" + mappedCoachId + "\"");
+
+                jsonPutPostString.AppendLine("}]");
+
+                // Send data for integration
+                try
                 {
-                    await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Updated at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+                    var createSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.CreateMultiple;
+                    var createApiResponse = await _apiManager.GetAPIHandlerResponse(createSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                    if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+                    {
+                        // Update visit
+                        visit.IntegrationSubmitDate = DateTime.Now;
+                        _visitsRepo.Update(visit);
+
+                        var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                        var remoteRecordId = "";
+                        if (returnObj != null)
+                        {
+                            if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                            {
+                                remoteRecordId = returnObj[0].Guid.ToString();
+                            }
+                        }
+
+                        IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                        cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSSmartSpaceVisit;
+                        cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLSmartSpaceVisit;
+                        cgMapping.LocalId = visit.Id.ToString();
+                        cgMapping.RemoteId = remoteRecordId;
+                        cgMapping.UserId = visit.Coach.UserId;
+                        cgMapping.UpdatedBy = _uId;
+                        cgMapping.UpdatedDate = DateTime.Now;
+                        cgMapping.IsComplete = true;
+                        cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                        _mapperRepo.Insert(cgMapping);
+
+                        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushSmartSpaceVisitsData");
                 }
 
-            } else
-            {
-                var createSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.CreateMultiple;
-                var createApiResponse = await _apiManager.GetAPIHandlerResponse(createSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
-                if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
-                {
-                    await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
-                }
             }
         }
-        catch (Exception e)
-        {
-            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushSmartSpaceVisitsData > GetAPIHandlerResponse > Remote ID : " + mappedTraineeId);
-        }
 
-        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Completed at {DateTime.Now}", $"visitId {visitId}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
-
+        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Completed at {DateTime.Now}", $"", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
         return true;
     }
 
@@ -3004,7 +3544,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     //TODO:
                     MappedTrainee trainee = await _apiManager.GetTraineesById(model.Guid);
                     break;
-
+                case Constants.SSIntegrationSettings.SLPQA:
+                    break;
+                case Constants.SSIntegrationSettings.SLAnnualAccreditation:
+                    break;
             }
 
             //}

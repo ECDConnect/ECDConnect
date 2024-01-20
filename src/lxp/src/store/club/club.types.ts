@@ -13,12 +13,14 @@ import {
   ActivityHostFamilyDays,
   ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
+  ClubMeeting,
 } from '@ecdlink/graphql';
 
 export type Points = {
   meetRegularly?: {
     dataLoaded?: string;
     data: ActivityMeetRegular;
+    missingMeetings?: ClubMeeting[];
   };
   beCreative?: ActivityBeCreative;
   hostFamily?: ActivityHostFamilyDays;

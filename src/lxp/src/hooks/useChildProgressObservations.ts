@@ -716,6 +716,7 @@ export const useChildProgressObservation = (
           ReportDate: currentReportCopy.reportingDate,
           ReportContent: JSON.stringify(currentReportCopy),
           IsActive: true,
+          DateCompleted: new Date(),
         })
       ).unwrap();
       // await appDispatch(

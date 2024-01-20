@@ -24,11 +24,15 @@ export const MeetingDetails: React.FC = () => {
   const isUpcomingVisit = currentDate < meetingDate;
 
   const meeting = isUpcomingVisit
-    ? details?.upcomingMeetings?.find((item) =>
-        item?.meetingDate.includes(meetingId)
+    ? details?.upcomingMeetings?.find(
+        (item) =>
+          getPointsActivityDateDetails(item?.meetingDate).meetingId ===
+          meetingId
       )
-    : details?.pastMeetings?.find((item) =>
-        item?.meetingDate.includes(meetingId)
+    : details?.pastMeetings?.find(
+        (item) =>
+          getPointsActivityDateDetails(item?.meetingDate).meetingId ===
+          meetingId
       );
 
   const { formattedDate } = getPointsActivityDateDetails(meeting?.meetingDate);

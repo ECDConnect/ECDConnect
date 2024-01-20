@@ -1,0 +1,1 @@
+ALTER TABLE public."StatementsIncomeStatement" ADD "ContactedByCoach" bool NOT NULL DEFAULT false;

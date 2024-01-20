@@ -1,0 +1,1 @@
+ALTER TABLE public."Visit" ADD "IntegrationSubmitDate" timestamp NULL;

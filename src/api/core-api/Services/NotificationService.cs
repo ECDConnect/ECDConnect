@@ -236,6 +236,8 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var notification = _messageRepo.GetById(Guid.Parse(notificationId));
                 notification.IsActive = false;
+                notification.MessageEndDate = DateTime.Now;
+                notification.UpdatedDate = DateTime.Now;
                 _messageRepo.Update(notification);
             }
             return true;
@@ -246,16 +248,17 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var notification = _messageRepo.GetById(Guid.Parse(notificationId));
                 notification.MessageEndDate = DateTime.Now;
+                notification.UpdatedDate = DateTime.Now;
                 _messageRepo.Update(notification);
             }
             return true;
         }
 
-        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType)
+        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null)
         {
             if (userId != null && templateType != null)
             {
-                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType).ToList();
+                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType && (searchCriteria != null ? n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) : n.IsActive == true)).ToList();
                 if (notifications.Any())
                 {
                     foreach (var notification in notifications)

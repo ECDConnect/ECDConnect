@@ -68,7 +68,14 @@ export const FormInput = <T extends FieldValues>({
     }
 
     if (disabled) {
+      if (isAdminPortalField) {
+        return styles.portalDisabledInputStyle;
+      }
       return styles.disabledInputStyle;
+    }
+
+    if (isAdminPortalField) {
+      return styles.portalDdefaultInputStyle;
     }
 
     return styles.defaultInputStyle;
@@ -89,6 +96,9 @@ export const FormInput = <T extends FieldValues>({
               className={getInputStyle()}
               defaultValue={''}
               onKeyDown={(e: any) => {}}
+              style={{
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
+              }}
               {...restProps}
             />
           );
@@ -102,6 +112,9 @@ export const FormInput = <T extends FieldValues>({
               maxLength={maxLength}
               className={getInputStyle()}
               defaultValue={value ?? ''}
+              style={{
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
+              }}
               {...restProps}
             />
           );

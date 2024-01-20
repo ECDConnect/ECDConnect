@@ -38,6 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
 
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
+        public DateTime? DateCompleted { get; set; }
     }
 
     public interface ChildProgressReportJoin<TKey>

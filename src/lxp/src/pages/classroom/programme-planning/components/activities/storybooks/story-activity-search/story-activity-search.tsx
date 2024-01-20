@@ -171,10 +171,12 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       selectedLanguageFilterOptions &&
       selectedLanguageFilterOptions.length > 0
     ) {
-      allStoriesCopy = allStoriesCopy.filter((story) =>
-        story.availableLanguages.some(
-          (x) => x.id === selectedLanguageFilterOptions[0].id
-        )
+      allStoriesCopy = allStoriesCopy.filter(
+        (story) =>
+          story.availableLanguages &&
+          story.availableLanguages.some(
+            (x) => x.id === selectedLanguageFilterOptions[0].id
+          )
       );
     }
 
@@ -308,7 +310,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
         >
           <SearchDropDown<number>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             className={'mr-1'}
             options={categoriesDropDownOptions}
@@ -325,7 +327,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           <SearchDropDown<string>
             className={'mr-1'}
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             options={languagesDropDownOptions}
             selectedOptions={selectedLanguageFilterOptions}
@@ -340,7 +342,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 
           <SearchDropDown<StoryBookTypes>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             options={StoryTypeOptions}
             selectedOptions={selectedTypeFilterOptions}

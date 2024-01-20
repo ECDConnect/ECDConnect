@@ -340,7 +340,7 @@ export default function Shell() {
           </div>
         </div>
 
-        <main className="focus:outline-none relative flex-1 overflow-y-auto">
+        <main className="focus:outline-none relative flex-1 overflow-y-auto bg-white">
           <div className="h-full py-6">
             <div className="mx-auto h-full bg-white px-4 sm:px-6 md:px-8">
               <AuthRoutes />

@@ -69,6 +69,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
             return true;
         }
 
+        public async Task<bool> PushSmartSpaceVisitsData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushSmartSpaceVisitsData();
+            return true;
+        }
+
+        public async Task<bool> PushPQAData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushPQAData();
+            return true;
+        }
+
+        public async Task<bool> PushReAccreditationData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushReAccreditationData();
+            return true;
+        }
         #endregion
     }
 }

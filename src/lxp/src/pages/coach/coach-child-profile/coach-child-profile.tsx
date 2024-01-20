@@ -4,6 +4,7 @@ import {
   useTheme,
   Document,
   ContentConsentTypeEnum,
+  getAgeInYearsMonthsAndDays,
 } from '@ecdlink/core';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import {
@@ -216,6 +217,11 @@ export const CoachChildProfile: React.FC = () => {
     setAttendancePercentage(attendanceReport.attendancePercentage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceReport]);
+
+  useEffect(() => {
+    const dateOfBirth = child?.user?.dateOfBirth as string;
+    setChildAge(getAgeInYearsMonthsAndDays(dateOfBirth));
+  });
 
   useEffect(() => {
     if (!attendancePercentage) return;

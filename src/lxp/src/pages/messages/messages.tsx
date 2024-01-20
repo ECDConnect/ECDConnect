@@ -53,6 +53,31 @@ export const Messages: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const removeNotification = (notification: Notification) => {
+    if (notification.message?.isFromBackend) {
+      appDispatch(
+        markAsReadNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+      appDispatch(
+        disableBackendNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+    }
+
+    appDispatch(notificationActions.removeNotification(notification!));
+
+    const notificationIndex = paging.visibleItems?.findIndex(
+      (n) => n.message.reference === notification.message.reference
+    );
+
+    if (notificationIndex!! < 0) return;
+
+    paging.visibleItems?.splice(notificationIndex!!, 1);
+  };
+
   const messageActioned = (notification: Notification) => {
     if (notification.message?.isFromBackend) {
       appDispatch(
@@ -121,7 +146,11 @@ export const Messages: React.FC = () => {
               actionText={notification.message.actionText || 'Remove'}
               icon={notification.message.icon}
               iconBackgroundColor={notification.message.color}
-              onAction={() => messageActioned(notification)}
+              onAction={() =>
+                notification.message.actionText
+                  ? messageActioned(notification)
+                  : removeNotification(notification)
+              }
             />
           );
         })}

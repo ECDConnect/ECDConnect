@@ -7,6 +7,7 @@ import {
   PractitionerInput,
   MutationUpdatePractitionerProgressArgs,
   MutationUpdatePractitionerUsePhotoInReportArgs,
+  MutationUpdatePractitionerShareInfoArgs,
   LicenseModelInput,
   NotificationDisplay,
 } from '@ecdlink/graphql';
@@ -24,6 +25,7 @@ export const PractitionerActions = {
   GET_ALL_INCOME_FOR_PRACTITIONER: 'getAllIncomeForPractitioner',
   UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH:
     'updatePractitionerBusinessWalkThrough',
+  UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -306,6 +308,29 @@ export const updatePractitionerProgress = createAsyncThunk<
         return await new PractitionerService(
           userAuth.auth_token
         ).UpdatePractitionerProgress(id, input.progress);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerShareInfo = createAsyncThunk<
+  any,
+  MutationUpdatePractitionerShareInfoArgs,
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_SHARE_INFO,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    const id = input.practitionerId;
+    try {
+      if (userAuth?.auth_token && id) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerShareInfo(id);
       }
     } catch (err) {
       return rejectWithValue(err);

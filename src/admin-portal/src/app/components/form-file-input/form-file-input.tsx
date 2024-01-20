@@ -25,6 +25,7 @@ export interface FormFileInputProps {
   isImage?: boolean;
   byPassCompression?: boolean;
   setValue: UseFormSetValue<any>;
+  isSubcategoryInput?: boolean;
 }
 
 const containerBaseStyle =
@@ -49,6 +50,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   isImage = true,
   byPassCompression = false,
   setValue,
+  isSubcategoryInput,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -231,15 +233,33 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
   return (
     <>
-      <label
-        htmlFor={nameProp}
-        className="font-lg block pb-1 text-sm text-gray-900"
-      >
-        {label}
-        {acceptedFormats && (
-          <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
-        )}
-      </label>
+      {isSubcategoryInput ? (
+        <>
+          <label htmlFor={nameProp} className="font-h4 block pb-1 font-bold">
+            {label}
+          </label>
+          <label
+            htmlFor={nameProp}
+            className="font-md block pb-1 text-sm text-gray-900"
+          >
+            Size limit:{' '}
+            <span className="text-errorMain font-semibold">1MB</span>. To
+            improve the image position & size, edit the image to fit 32px by
+            32px before uploading.
+          </label>
+        </>
+      ) : (
+        <label
+          htmlFor={nameProp}
+          className="font-lg block pb-1 text-sm text-gray-900"
+        >
+          {label}
+          {acceptedFormats && (
+            <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
+          )}
+        </label>
+      )}
+
       {isPdfRule && acceptedFormats?.length === 1 && (
         <p className="text-textMid mb-2 text-sm">
           Size limit: <span className="text-errorMain font-semibold">5</span>{' '}
@@ -343,7 +363,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         fileName && <p className="pb-4">{fileName}</p>
       )}
 
-      {contentUrl && !fileName && (
+      {contentUrl && !fileName && !isSubcategoryInput && (
         <Alert
           className="mt-5 mb-3"
           message="Wrong file type. Please try again."

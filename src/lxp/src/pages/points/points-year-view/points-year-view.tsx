@@ -31,9 +31,7 @@ export const PointsYearView: React.FC = () => {
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const children = useSelector(childrenSelectors.getChildren);
-  const userStanding = useSelector(
-    pointsSelectors.getCurrentClubPercentileStandingForYear()
-  );
+  const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
 
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
@@ -65,21 +63,8 @@ export const PointsYearView: React.FC = () => {
   }, [monthsLoaded, setMonthsLoaded, setLoadNextMonthDisabled]);
 
   const celebrationCard = useMemo(() => {
-    if (pointsTotalForYear === 0) {
-      return (
-        <CelebrationCard
-          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
-          primaryMessage="No points earned yet"
-          secondaryMessage="Keep going to earn points."
-          primaryTextColour="alertMain"
-          secondaryTextColour="alertMain"
-          backgroundColour="alertBg"
-        />
-      );
-    }
-
-    if (!!userStanding) {
-      if (userStanding === 100) {
+    if (!!userStanding && !!practitioner?.clubId) {
+      if (userStanding.percentageMembersWithFewerPointsForCurrentYear === 100) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -91,7 +76,7 @@ export const PointsYearView: React.FC = () => {
           />
         );
       }
-      if (userStanding > 75) {
+      if (userStanding.percentageMembersWithFewerPointsForCurrentYear > 75) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -103,17 +88,19 @@ export const PointsYearView: React.FC = () => {
           />
         );
       }
-      if (userStanding >= 50) {
-        <CelebrationCard
-          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-          secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
-          primaryTextColour="secondary"
-          secondaryTextColour="black"
-          backgroundColour="infoBb"
-        />;
+      if (userStanding.percentageMembersWithFewerPointsForCurrentYear >= 50) {
+        return (
+          <CelebrationCard
+            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
+            secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
+            primaryTextColour="secondary"
+            secondaryTextColour="black"
+            backgroundColour="infoBb"
+          />
+        );
       }
-      if (userStanding < 50) {
+      if (userStanding.percentageMembersWithMorePointsForCurrentYear > 50) {
         return (
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
@@ -127,6 +114,19 @@ export const PointsYearView: React.FC = () => {
       }
     }
 
+    if (pointsTotalForYear === 0) {
+      return (
+        <CelebrationCard
+          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+          primaryMessage="No points earned yet"
+          secondaryMessage="Keep going to earn points."
+          primaryTextColour="alertMain"
+          secondaryTextColour="alertMain"
+          backgroundColour="alertBg"
+        />
+      );
+    }
+
     if (percentageScore < 60) {
       return (
         <CelebrationCard
@@ -138,7 +138,9 @@ export const PointsYearView: React.FC = () => {
           backgroundColour="alertBg"
         />
       );
-    } else if (percentageScore < 80) {
+    }
+
+    if (percentageScore < 80) {
       return (
         <CelebrationCard
           image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
@@ -149,18 +151,18 @@ export const PointsYearView: React.FC = () => {
           backgroundColour="infoBb"
         />
       );
-    } else {
-      return (
-        <CelebrationCard
-          image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Well done ${practitioner?.user?.firstName}!`}
-          secondaryMessage="You're doing well, keep it up!"
-          primaryTextColour="successMain"
-          secondaryTextColour="successMain"
-          backgroundColour="successBg"
-        />
-      );
     }
+
+    return (
+      <CelebrationCard
+        image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+        primaryMessage={`Well done ${practitioner?.user?.firstName}!`}
+        secondaryMessage="You're doing well, keep it up!"
+        primaryTextColour="successMain"
+        secondaryTextColour="successMain"
+        backgroundColour="successBg"
+      />
+    );
   }, [
     userStanding,
     pointsTotalForYear,
@@ -291,7 +293,9 @@ export const PointsYearView: React.FC = () => {
           pointsSummaries={yearSummaries}
           userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
           childCount={children?.length || 0}
-          clubStanding={userStanding}
+          clubStanding={
+            userStanding?.percentageMembersWithFewerPointsForCurrentYear || 0
+          }
           clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>

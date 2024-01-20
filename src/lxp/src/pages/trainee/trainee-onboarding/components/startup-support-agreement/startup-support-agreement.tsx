@@ -116,6 +116,9 @@ export const StartupSupportAgreement: React.FC<
   };
 
   useEffect(() => {
+    if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT1) {
+      setAgreementStepCount('Step 1 of 4');
+    }
     if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT2) {
       setAgreementStepCount('Step 2 of 4');
     }
@@ -131,11 +134,16 @@ export const StartupSupportAgreement: React.FC<
   }, [agreementStep]);
 
   const handleBackButton = () => {
-    if (agreementStep > 1 && agreementStep !== 4) {
+    if (agreementStep === 0) {
+      setNotificationStep('');
+      return;
+    }
+
+    if ((agreementStep: number) => 1 && agreementStep !== 4) {
       setAgreementStep(agreementStep - 1);
       return;
     }
-    if (agreementStep > 1 && agreementStep === 4) {
+    if (agreementStep === 4) {
       setAgreementStep(agreementStep - 2);
       return;
     }

@@ -100,10 +100,7 @@ export const EditPractitionerProfile: React.FC = () => {
           // explicitly checking that the user concent to share info
           await new PractitionerService(
             userAuth.auth_token
-          ).UpdatePractitionerShareInfo(
-            user.id,
-            practitioner.principalHierarchy
-          );
+          ).UpdatePractitionerShareInfo(user.id);
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerRegistered(user.id, true);

@@ -63,5 +63,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             return true;
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public ClubMeeting SetContactClubLeaderStatusForMeeting([Service] IClubService clubService, Guid clubMeetingId)
+        {
+            return clubService.SetContactClubLeaderStatusForMeeting(clubMeetingId);
+        }
     }
 }

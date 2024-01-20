@@ -15,6 +15,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public double Balance { get; set;}
         public List<IncomeItemModel> IncomeItems { get; set; }
         public List<ExpenseItemModel> ExpenseItems { get; set; }
+        public bool ContactedByCoach { get; set; }
 
         public IncomeStatementModel(StatementsIncomeStatement statement)
         {
@@ -26,6 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             Balance = statement.Balance;
             IncomeItems = statement.IncomeItems.Select(x => new IncomeItemModel(x)).ToList();
             ExpenseItems = statement.ExpenseItems.Select(x => new ExpenseItemModel(x)).ToList();
+            ContactedByCoach = statement.ContactedByCoach;
         }
     }
 }

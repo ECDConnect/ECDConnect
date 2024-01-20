@@ -69,12 +69,7 @@ export const MeetRegularly: React.FC = () => {
 
   const activityId = 'meet-regularly';
 
-  // SUPPRESS DATE RULES
-  /////////////////////////////////////////////////////////
-  // Date rules
-  // const isLeagueStarts = currentMonth >= 3;
-  const isLeagueStarts = true;
-  /////////////////////////////////////////////////////////
+  const isLeagueStarts = currentMonth >= 3;
 
   const isClubInALeague = !!club?.league;
   const isCoach = user?.roles?.some(
@@ -130,6 +125,8 @@ export const MeetRegularly: React.FC = () => {
           meetingNotes: '',
           meetingParticipants: [],
           points: 0,
+          clubLeaderContacted: false,
+          id: '',
         });
       }
     }

@@ -49,12 +49,14 @@ export default function ContentEdit({
   savedContent,
   cancelCompare,
 }: ContentViewProps) {
+  const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit } = useForm();
+  const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
+    control: control,
   };
 
   const mutationName = `update${contentType?.name}`;
@@ -177,6 +179,14 @@ export default function ContentEdit({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentType, contentValues, selectedLanguageId]);
 
+  useEffect(() => {
+    if (contentType) {
+      if (contentType.name === 'CoachingCircleTopics') {
+        setAcceptedFileFormats(['pdf']);
+      }
+    }
+  }, [contentType]);
+
   const getRenderField = (
     field: ContentTypeFieldDto
   ): FormTemplateField | undefined => {
@@ -244,6 +254,8 @@ export default function ContentEdit({
     savedContent();
 
     setLoading(false);
+
+    cancelEdit();
   };
 
   if (
@@ -313,6 +325,7 @@ export default function ContentEdit({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              acceptedFileFormats={acceptedFileFormats}
             />
           </div>
 
@@ -324,7 +337,7 @@ export default function ContentEdit({
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
-            {content?.id && (
+            {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
               <button
                 onClick={deleteAndRefresh}
                 className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"

@@ -32,6 +32,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string RelatedDocumentId { get; set; }
         public virtual ICollection<StatementsIncome> IncomeItems { get; set; }
         public virtual ICollection<StatementsExpenses> ExpenseItems { get; set; }
+        public bool ContactedByCoach { get; set; }
     }
 
     public interface StatementsIncomeStatementJoin<TKey>
