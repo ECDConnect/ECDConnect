@@ -43,8 +43,6 @@ export const CurrentMonthSummary: React.FC = () => {
     ? getPreviousMonth(currentDate)
     : currentDate;
 
-  console.log('Summary Date', summaryDate);
-
   return (
     <BannerWrapper
       showBackground={false}

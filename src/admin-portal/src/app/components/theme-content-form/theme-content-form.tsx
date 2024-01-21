@@ -115,7 +115,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   const [handleInitialState, setHandleInitialState] = useState(true);
   const [currentThemeDaysArr, setCurrentThemeDaysArr] = useState([]);
   const [themeDaysArr, setThemeDaysArr] = useState([]);
-  console.log({ themeDaysArr });
+
   useEffect(() => {
     if (themeDaysArr?.length > 0) {
       setFilteredThemeDays(themeDaysArr);
@@ -255,8 +255,6 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   };
 
   const handleGroupChange = (e, idx, storyType) => {
-    console.log({ e, idx, storyType });
-
     let tempArray = [...themeDaysArr];
 
     let item = { ...tempArray[idx] };

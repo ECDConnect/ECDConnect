@@ -25,6 +25,7 @@ import {
   XIcon,
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import CategoryForm from './category-form/category-form';
 
 export interface ContentViewProps {
   content: any;
@@ -38,7 +39,7 @@ export interface ContentViewProps {
   cancelCompare?: () => void;
 }
 
-export default function ContentEdit({
+export default function EditCategory({
   content,
   selectedLanguageId,
   defaultLanguageId,
@@ -49,7 +50,6 @@ export default function ContentEdit({
   savedContent,
   cancelCompare,
 }: ContentViewProps) {
-  const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
@@ -83,6 +83,22 @@ export default function ContentEdit({
     ${creationMutationName} (input: $input, localeId: $localeId) 
     }
 `;
+
+  const updateSubcategory = gql`
+    mutation updateProgressTrackingSubCategory(
+      $id: String!
+      $input: ProgressTrackingSubCategoryInput!
+      $localeId: String!
+    ) {
+      updateProgressTrackingSubCategory(
+        id: $id
+        input: $input
+        localeId: $localeId
+      ) {
+        id
+      }
+    }
+  `;
 
   const dialog = useDialog();
 
@@ -146,9 +162,11 @@ export default function ContentEdit({
 
   const [updateContent] = useMutation(updateMutation);
   const [createContent] = useMutation(createMutation);
+  const [updateSubcategoryContent] = useMutation(updateSubcategory);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [filteredSubcategories, setFilteredSubcategories] = useState([]);
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -178,14 +196,6 @@ export default function ContentEdit({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentType, contentValues, selectedLanguageId]);
-
-  useEffect(() => {
-    if (contentType) {
-      if (contentType.name === 'CoachingCircleTopics') {
-        setAcceptedFileFormats(['pdf']);
-      }
-    }
-  }, [contentType]);
 
   const getRenderField = (
     field: ContentTypeFieldDto
@@ -250,6 +260,51 @@ export default function ContentEdit({
       title: 'Successfully Updated Content!',
       variant: NOTIFICATION.SUCCESS,
     });
+
+    if (filteredSubcategories?.length > 0) {
+      for (let item of filteredSubcategories) {
+        if (!item?.id) {
+          savedContent();
+
+          setLoading(false);
+          return;
+        }
+
+        if (
+          item?.id &&
+          (item?.smallGroupActivity?.[0]?.id !== '' ||
+            item?.smallGroupActivity?.id !== '')
+        ) {
+          let subCategorySkills = item?.skills
+            ?.map((skill) => skill?.id)
+            ?.toString();
+
+          const updateThemeDayResponse = await updateSubcategoryContent({
+            variables: {
+              id: item?.id.toString(),
+              input: {
+                description: item?.description,
+                imageUrl: item?.imageUrl,
+                name: item?.name,
+                skills: subCategorySkills,
+              },
+              localeId: selectedLanguageId.toString(),
+            },
+          });
+          if (updateThemeDayResponse) {
+            setNotification({
+              title: `Changes saved!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+          }
+        }
+      }
+
+      savedContent();
+
+      setLoading(false);
+      cancelEdit();
+    }
 
     savedContent();
 
@@ -320,12 +375,12 @@ export default function ContentEdit({
               />
             )}
 
-            <DynamicForm
+            <CategoryForm
               template={template}
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
-              acceptedFileFormats={acceptedFileFormats}
+              setFilteredSubcategories={setFilteredSubcategories}
             />
           </div>
 

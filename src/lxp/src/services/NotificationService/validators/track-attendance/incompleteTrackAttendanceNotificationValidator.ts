@@ -19,7 +19,7 @@ export class IncompleteTrackAttendanceNotificationValidator
 
   constructor(store: EnhancedStore<RootState, any>, currentDate: Date) {
     this.store = store;
-    this.interval = NotificationIntervals.hour;
+    this.interval = NotificationIntervals.halfhour;
     this.lastCheckTimestamp = 0;
     this.currentDate = currentDate;
   }
@@ -28,26 +28,36 @@ export class IncompleteTrackAttendanceNotificationValidator
     const {
       classroomData: classroomState,
       attendanceData: attendanceState,
+      practitioner: practitionerState,
       user: userState,
     } = this.store.getState();
 
     const isCoach = userState?.user?.roles?.some(
-      (role) => role.name === 'Coach'
+      (role: { name: string }) => role.name === 'Coach'
     );
 
     if (isCoach) return [];
 
     if (!classroomState) return [];
 
-    if (!isFriday(this.currentDate)) return [];
-
     const hours = getHours(this.currentDate);
 
-    // 4pm
-    if (hours < 16) return [];
+    // 12pm
+    if (hours < 12) return [];
+
+    const classroomGroups =
+      classroomState?.classroomGroups?.filter(
+        (classroomGroup) =>
+          classroomGroup.isActive &&
+          classroomGroup.userId === userState?.user?.id
+      ) || [];
+
+    if (!classroomGroups) return [];
+
+    const isOnStipend = practitionerState?.practitioner?.isOnStipend;
 
     const missedAttendance = getMissedClassAttendance(
-      classroomState.classroomGroups || [],
+      classroomGroups || [],
       classroomState.classroomProgrammes || [],
       attendanceState.attendance || [],
       this.currentDate
@@ -60,9 +70,10 @@ export class IncompleteTrackAttendanceNotificationValidator
         reference: `attendance-${getWeek(this.currentDate)}-${getYear(
           this.currentDate
         )}`,
-        title: '2 days left to submit attendance registers',
-        message:
-          'Submit all of your registers for this week to receive your stipend and get SmartStart points.',
+        title: "Today's attendance register is incomplete",
+        message: `You have not submitted today's attendance register. Submit attendance registers daily ${
+          isOnStipend && 'to receive your stipend'
+        } and get SmartStart points.`,
         dateCreated: this.currentDate.toISOString(),
         priority: NotificationPriority.low,
         viewOnDashboard: true,
