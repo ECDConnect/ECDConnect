@@ -280,7 +280,7 @@ namespace ECDLink.Core.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
             //get all principals and FAAs
-            List<Practitioner> principals = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.IsPrincipal.Equals(true) || x.IsFundaAppAdmin.Equals(true))).ToList();
+            List<Practitioner> principals = practitionerRepo.GetAll().Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).ToList();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
