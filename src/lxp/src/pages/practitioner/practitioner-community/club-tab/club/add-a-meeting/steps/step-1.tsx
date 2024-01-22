@@ -71,10 +71,15 @@ export const Step1 = ({
   );
 
   const currentDate = useMemo(() => new Date(), []);
-  const minDate = useMemo(
+  const firstDayOfMonth = useMemo(
     () => new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
     [currentDate]
   );
+  const lastDayOfMonth = useMemo(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    return new Date(year, month + 1, 0);
+  }, [currentDate]);
 
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -254,8 +259,8 @@ export const Step1 = ({
             placeholderText="Tap to choose a date"
             selected={date}
             onChange={setDate}
-            minDate={hasMeetingHappened ? minDate : currentDate}
-            maxDate={hasMeetingHappened ? currentDate : undefined}
+            minDate={hasMeetingHappened ? firstDayOfMonth : currentDate}
+            maxDate={hasMeetingHappened ? currentDate : lastDayOfMonth}
             disabled={!!upcomingMeeting}
           />
         )}
@@ -278,7 +283,8 @@ export const Step1 = ({
     hasMeetingInCurrentMonth,
     isOnline,
     isUpcomingMeetingAttended,
-    minDate,
+    firstDayOfMonth,
+    lastDayOfMonth,
     monthName,
     upcomingMeeting,
   ]);
