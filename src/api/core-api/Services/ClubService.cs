@@ -192,6 +192,7 @@ namespace EcdLink.Api.CoreApi.Services
                     _pointsEngineService.CalculateHostFamilyDays(input.ClubId, _applicationUserId, input.MeetingDate.Date);
                 }
             }
+
             return clubMeeting;
         }
         
@@ -970,13 +971,22 @@ namespace EcdLink.Api.CoreApi.Services
             DateTime term3Start = new DateTime(year, 08, 01);
             DateTime term3End = new DateTime(year, 12, 31); // TODO: reset date after testing!!! SUPPRESS
 
-            ActivityHostFamilyDays activityHostFamilyDays = new ActivityHostFamilyDays();
-            List<ActivityHostFamilyDaysDetail> terms = new List<ActivityHostFamilyDaysDetail>
+            var activityHostFamilyDays = new ActivityHostFamilyDays()
             {
-                new ActivityHostFamilyDaysDetail() { TermNr = 1, TermName = "Term 1: January to April" },
-                new ActivityHostFamilyDaysDetail() { TermNr = 2, TermName = "Term 2: May to July" },
-                new ActivityHostFamilyDaysDetail() { TermNr = 3, TermName = "Term 3: August to October" }
+                Terms = new List<ActivityHostFamilyDaysDetail>()
+                {
+                    new ActivityHostFamilyDaysDetail() { TermNr = 1, TermName = "Term 1: January to April" }
+                }
             };
+
+            if (DateTime.Now > term2Start)
+            {
+                activityHostFamilyDays.Terms.Add(new ActivityHostFamilyDaysDetail() { TermNr = 2, TermName = "Term 2: May to July" });
+            }
+            if (DateTime.Now > term3Start)
+            {
+                activityHostFamilyDays.Terms.Add(new ActivityHostFamilyDaysDetail() { TermNr = 3, TermName = "Term 3: August to October" });
+            }
 
             int points = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
                                                         x.Year == year &&
@@ -994,7 +1004,7 @@ namespace EcdLink.Api.CoreApi.Services
                 activityHostFamilyDays.PointsColor = MetricsColorEnum.Success.ToString();
             }
 
-            List<ClubMeeting> clubMeetings = _clubMeetingRepo.GetAll()
+            var clubMeetings = _clubMeetingRepo.GetAll()
                 .Where(x => x.ClubId == clubId && x.IsActive && x.MeetingDate.Value.Year == year &&
                       (x.MeetingType.Name == Constants.ClubSettings.meeting_type_play_day ||
                       x.MeetingType.Name == Constants.ClubSettings.meeting_type_story_day ||
@@ -1003,25 +1013,21 @@ namespace EcdLink.Api.CoreApi.Services
                       x.MeetingType.Name == Constants.ClubSettings.meeting_type_other))
                 .OrderBy(x => x.MeetingDate).ToList();
 
-            List<ClubActivityUpload> clubUploads = _clubActivityUploadRepo.GetAll()
+            var clubUploads = _clubActivityUploadRepo.GetAll()
                .Where(x => x.IsActive && x.ClubId == clubId &&
                       x.ClubActivityUploadType.Name == Constants.ClubSettings.upload_type_family_days &&
                       x.Year == year).ToList();
 
-            ClubActivityUpload clubActivityUpload;
-            var documentStatus = "";
-            var documentStatusColor = "";
-            var termPoints = 0;
             foreach (var meeting in clubMeetings)
             {
-                clubActivityUpload = clubUploads.Where(x => x.Month == meeting.MeetingDate.Value.Month && x.Year == meeting.MeetingDate.Value.Year).FirstOrDefault();
-                documentStatus = clubActivityUpload != null ? "Attendance register uploaded" : "Not completed";
-                documentStatusColor = clubActivityUpload != null ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Error.ToString();
-                termPoints = clubActivityUpload != null ? 100 : 0;
+                var clubActivityUpload = clubUploads.Where(x => x.Month == meeting.MeetingDate.Value.Month && x.Year == meeting.MeetingDate.Value.Year).FirstOrDefault();
+                var documentStatus = clubActivityUpload != null ? "Attendance register uploaded" : "Not completed";
+                var documentStatusColor = clubActivityUpload != null ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Error.ToString();
+                var termPoints = clubActivityUpload != null ? 100 : 0;
 
                 if (meeting.MeetingDate >= term1Start && meeting.MeetingDate <= term1End)
                 {
-                    var term = terms.GetItemByIndex(0);
+                    var term = activityHostFamilyDays.Terms.GetItemByIndex(0);
                     term.EventName = meeting.MeetingType.NormalizedName;
                     term.Description = meeting.MeetingNotes;
                     term.Points = termPoints;
@@ -1030,9 +1036,9 @@ namespace EcdLink.Api.CoreApi.Services
                     term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
 
                 } 
-                else if (meeting.MeetingDate >= term2Start && meeting.MeetingDate <= term2End)
+                else if (DateTime.Now > term2Start && meeting.MeetingDate >= term2Start && meeting.MeetingDate <= term2End)
                 {
-                    var term = terms.GetItemByIndex(1);
+                    var term = activityHostFamilyDays.Terms.GetItemByIndex(1);
                     term.EventName = meeting.MeetingType.NormalizedName;
                     term.Description = meeting.MeetingNotes;
                     term.Points = termPoints;
@@ -1040,9 +1046,9 @@ namespace EcdLink.Api.CoreApi.Services
                     term.DocumentStatusColor = documentStatusColor;
                     term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
                 }
-                else if (meeting.MeetingDate >= term3Start && meeting.MeetingDate <= term3End)
+                else if (DateTime.Now > term3Start && meeting.MeetingDate >= term3Start && meeting.MeetingDate <= term3End)
                 {
-                    var term = terms.GetItemByIndex(2);
+                    var term = activityHostFamilyDays.Terms.GetItemByIndex(2);
                     term.EventName = meeting.MeetingType.NormalizedName;
                     term.Description = meeting.MeetingNotes;
                     term.Points = termPoints;
@@ -1051,7 +1057,6 @@ namespace EcdLink.Api.CoreApi.Services
                     term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
                 }
             }
-            activityHostFamilyDays.Terms = terms;
             return activityHostFamilyDays;
         }
 

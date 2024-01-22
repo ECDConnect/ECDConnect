@@ -8,11 +8,20 @@ import { AddMeetingProps } from '../index.types';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { coachSelectors } from '@/store/coach';
+import { clubSelectors } from '@/store/club';
+import { LeagueType } from '@/constants/club';
 
-export const Step3 = ({ setIsEnabledButton, setStep3 }: AddMeetingProps) => {
+export const Step3 = ({
+  setIsEnabledButton,
+  setStep3,
+  clubId,
+}: AddMeetingProps) => {
   const [coachAttend, setCoachAttend] = useState<boolean | boolean[]>();
   const [meetingNotes, setMeetingNotes] = useState<string>();
   const [createdResource, setCreatedResource] = useState<boolean | boolean[]>();
+
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const isPurpleLeagueClub = club?.league.leagueTypeName === LeagueType.Purple;
 
   const yesNoOptions = [
     { text: 'Yes', value: true },
@@ -23,9 +32,10 @@ export const Step3 = ({ setIsEnabledButton, setStep3 }: AddMeetingProps) => {
 
   useEffect(() => {
     setIsEnabledButton(
-      coachAttend !== undefined && createdResource !== undefined
+      coachAttend !== undefined &&
+        (isPurpleLeagueClub || createdResource !== undefined)
     );
-  }, [coachAttend, createdResource, setIsEnabledButton]);
+  }, [coachAttend, createdResource, isPurpleLeagueClub, setIsEnabledButton]);
 
   useEffect(() => {
     setStep3?.({
@@ -60,19 +70,23 @@ export const Step3 = ({ setIsEnabledButton, setStep3 }: AddMeetingProps) => {
         value={meetingNotes}
         onChange={(event) => setMeetingNotes(event.target.value)}
       />
-      <Typography
-        type="h4"
-        color="textDark"
-        className="mb-2"
-        text="Did you create a resource during this meeting as part of a “Be creative” activity?"
-      />
-      <ButtonGroup<boolean>
-        options={yesNoOptions}
-        onOptionSelected={setCreatedResource}
-        color="secondary"
-        type={ButtonGroupTypes.Button}
-        className="mb-4"
-      />
+      {!isPurpleLeagueClub && (
+        <>
+          <Typography
+            type="h4"
+            color="textDark"
+            className="mb-2"
+            text="Did you create a resource during this meeting as part of a “Be creative” activity?"
+          />
+          <ButtonGroup<boolean>
+            options={yesNoOptions}
+            onOptionSelected={setCreatedResource}
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            className="mb-4"
+          />
+        </>
+      )}
     </>
   );
 };
