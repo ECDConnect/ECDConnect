@@ -30,6 +30,7 @@ export interface DynamicFormProps {
   setValue: any;
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
+  allowedFileSize?: number;
 }
 
 const contentWrapper = '';
@@ -40,6 +41,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   setValue,
   defaultLanguageId,
   acceptedFileFormats,
+  allowedFileSize,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -111,6 +113,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   }
                   returnFullUrl={true}
                   setValue={setValue}
+                  allowedFileSize={allowedFileSize}
                 />
               </div>
             </div>
