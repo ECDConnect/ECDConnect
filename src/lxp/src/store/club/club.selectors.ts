@@ -60,15 +60,15 @@ export const getClubMeetingsWithMissingRegistersSelector = (clubId: string) =>
 export const getClubByIdSelector = (clubId: string) =>
   createSelector(
     (state: RootState) => {
-      if (!clubId || clubId === '') {
-        return undefined;
-      }
-
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
         role.name.includes(UserTypeEnum.Coach)
       );
+
+      if (isCoach && (!clubId || clubId === '')) {
+        return undefined;
+      }
 
       if (isCoach) {
         return state?.clubs?.clubsForCoach?.[clubId]?.club;
@@ -111,7 +111,7 @@ export const getActivityMeetRegularDetailsSelector = (clubId: string) =>
       );
 
       if (isCoach) {
-        return state.clubs.clubsForCoach[clubId].points?.meetRegularly?.data;
+        return state.clubs.clubsForCoach?.[clubId]?.points?.meetRegularly?.data;
       } else {
         return state.clubs.clubForPractitioner?.points?.meetRegularly?.data;
       }

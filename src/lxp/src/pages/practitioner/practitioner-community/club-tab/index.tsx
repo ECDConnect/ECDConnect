@@ -135,7 +135,7 @@ export const ClubTab: React.FC = () => {
   const onAddMeetingOrEvent = () => {
     if (isScenario1) {
       return history.push(
-        ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+        ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT
       );
     }
 
