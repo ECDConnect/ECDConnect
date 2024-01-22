@@ -76,7 +76,10 @@ export const Step3 = ({ setIsEnabledButton, setStep3 }: AddMeetingProps) => {
           <PhotoPrompt
             title="Attendance register"
             onClose={() => setPhotoActionBarVisible(false)}
-            onAction={(imageUrl: string) => setPhotoUrl(imageUrl)}
+            onAction={(imageUrl: string) => {
+              setPhotoUrl(imageUrl);
+              setPhotoActionBarVisible(false);
+            }}
             onDelete={!!photoUrl ? () => setPhotoUrl('') : undefined}
           />
         </Dialog>
