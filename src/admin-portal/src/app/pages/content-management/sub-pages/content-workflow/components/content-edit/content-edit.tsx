@@ -50,7 +50,7 @@ export default function ContentEdit({
   cancelCompare,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
-  const [allowedFileSize, setAllowedFileSize] = useState(13000); // 13 MB
+  const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
