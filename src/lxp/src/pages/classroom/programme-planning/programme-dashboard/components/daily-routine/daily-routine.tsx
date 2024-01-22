@@ -118,6 +118,19 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     }
   }, [isHoliday, selectedDate]);
 
+  const isPastDay = () => {
+    if (selectedDate) {
+      if (
+        selectedDate <= new Date() &&
+        selectedDate?.setHours(0, 0, 0, 0) !== new Date().setHours(0, 0, 0, 0)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  };
+
   const handleAddProgramme = () => {
     if (isOnline) {
       if (themes.length === 0) {
@@ -460,6 +473,19 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
   };
 
+  // {isPastDay() ? ('') : (' ')}
+  if (
+    currentDailyProgramme &&
+    (currentDailyProgramme.smallGroupActivityId ||
+      currentDailyProgramme.largeGroupActivityId ||
+      currentDailyProgramme.storyActivityId)
+  ) {
+    // Past day with activity
+    if (isPastDay()) console.log('Past');
+    else console.log('Future');
+    console.log('Not Empty Day In Past');
+  }
+
   return (
     <div className={'mb-20 flex flex-col pt-4'}>
       <ProgrammePlanningHeaderUpdated
@@ -506,6 +532,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                     key={`id_${routineItem.id}`}
                     routineItem={routineItem}
                     day={currentDailyProgramme}
+                    selectedDate={selectedDate}
                     onClick={() => onProgrammeClick(routineItem)}
                   />
                 );
@@ -567,18 +594,21 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           </Card>
         </div>
       )}
-
-      <Button
-        id="gtm-add-programme"
-        className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
-        size="small"
-        type={'filled'}
-        color={'primary'}
-        onClick={handleAddProgramme}
-      >
-        {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-        <Typography type={'small'} color={'white'} text={'Add new theme'} />
-      </Button>
+      {!isPastDay() ? (
+        <Button
+          id="gtm-add-programme"
+          className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
+          size="small"
+          type={'filled'}
+          color={'primary'}
+          onClick={handleAddProgramme}
+        >
+          {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
+          <Typography type={'small'} color={'white'} text={'Add new theme'} />
+        </Button>
+      ) : (
+        ''
+      )}
     </div>
   );
 };
