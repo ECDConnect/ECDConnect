@@ -123,34 +123,29 @@ export const ClubTab: React.FC = () => {
   const termNumber = getTermNumberForCurrentMonth();
 
   // From EC-1515
+  //////////////////////////////////////////////
+  const isScenario1 =
+    !addedMeetingRegularThisMonth && (addedFamilyDayThisQuarter || !termNumber);
+  const isScenario2 =
+    addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter && termNumber;
+  const isScenario3 =
+    !addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter && termNumber;
+  //////////////////////////////////////////////
+
   const onAddMeetingOrEvent = () => {
-    // Scenario 1
-    if (
-      !addedMeetingRegularThisMonth &&
-      (addedFamilyDayThisQuarter || !termNumber)
-    ) {
+    if (isScenario1) {
       return history.push(
         ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
       );
     }
 
-    // Scenario 2
-    if (
-      addedMeetingRegularThisMonth &&
-      !addedFamilyDayThisQuarter &&
-      termNumber
-    ) {
+    if (isScenario2) {
       return history.push(
         ROUTES.PRACTITIONER.COMMUNITY.CLUB.FAMILY_DAY_EVENT.ADD_EVENT
       );
     }
 
-    // Scenario 3
-    if (
-      !addedMeetingRegularThisMonth &&
-      !addedFamilyDayThisQuarter &&
-      termNumber
-    ) {
+    if (isScenario3) {
       return dialog({
         position: DialogPosition.Middle,
         blocking: false,
@@ -593,17 +588,18 @@ export const ClubTab: React.FC = () => {
           )}
           {renderActivitiesContent}
           <div className={`mt-auto flex flex-col py-4`}>
-            {(isLeader || isSupportRole) && (
-              <Button
-                icon="PlusCircleIcon"
-                className="mb-4 mt-8"
-                type="filled"
-                textColor="white"
-                color="primary"
-                text="Add a meeting or event"
-                onClick={onAddMeetingOrEvent}
-              />
-            )}
+            {(isLeader || isSupportRole) &&
+              (isScenario1 || isScenario2 || isScenario3) && (
+                <Button
+                  icon="PlusCircleIcon"
+                  className="mb-4 mt-8"
+                  type="filled"
+                  textColor="white"
+                  color="primary"
+                  text="Add a meeting or event"
+                  onClick={onAddMeetingOrEvent}
+                />
+              )}
             <Button
               icon="UserGroupIcon"
               type={isLeader || isSupportRole ? 'outlined' : 'filled'}
