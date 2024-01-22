@@ -335,43 +335,43 @@ namespace ECDLink.ContentManagement.Repositories
         {
             var fileExt = "";
 
-            if (fileStr.ToLower().EndsWith("svg"))
+            if (fileStr.ToLower().Contains("svg"))
             {
                 fileExt = ".svg";
             }
-            if (fileStr.ToLower().EndsWith("png"))
+            if (fileStr.ToLower().Contains("png"))
             {
                 fileExt = ".png";
             }
-            if (fileStr.ToLower().EndsWith("jpg") || fileStr.ToLower().EndsWith("jpeg"))
+            if (fileStr.ToLower().Contains("jpg") || fileStr.ToLower().Contains("jpeg"))
             {
                 fileExt = ".jpg";
             }
-            if (fileStr.ToLower().EndsWith("mov"))
+            if (fileStr.ToLower().Contains("mov"))
             {
                 fileExt = ".mov";
             }
-            if (fileStr.ToLower().EndsWith("mkv"))
+            if (fileStr.ToLower().Contains("mkv"))
             {
                 fileExt = ".mkv";
             }
-            if (fileStr.ToLower().EndsWith("m4v"))
+            if (fileStr.ToLower().Contains("m4v"))
             {
                 fileExt = ".m4v";
             }
-            if (fileStr.ToLower().EndsWith("mp4"))
+            if (fileStr.ToLower().Contains("mp4"))
             {
                 fileExt = ".mp4";
             }
-            if (fileStr.ToLower().EndsWith("mpg"))
+            if (fileStr.ToLower().Contains("mpg"))
             {
                 fileExt = ".mpg";
             }
-            if (fileStr.ToLower().EndsWith("webm"))
+            if (fileStr.ToLower().Contains("webm"))
             {
                 fileExt = ".webm";
             }
-            if (fileStr.ToLower().EndsWith("pdf"))
+            if (fileStr.ToLower().Contains("pdf"))
             {
                 fileExt = ".pdf";
             }

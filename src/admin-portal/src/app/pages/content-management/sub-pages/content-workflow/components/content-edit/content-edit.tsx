@@ -50,6 +50,7 @@ export default function ContentEdit({
   cancelCompare,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
+  const [allowedFileSize, setAllowedFileSize] = useState(13000); // 13 MB
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
@@ -183,6 +184,7 @@ export default function ContentEdit({
     if (contentType) {
       if (contentType.name === 'CoachingCircleTopics') {
         setAcceptedFileFormats(['pdf']);
+        setAllowedFileSize(5242880);
       }
     }
   }, [contentType]);
@@ -326,6 +328,7 @@ export default function ContentEdit({
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               acceptedFileFormats={acceptedFileFormats}
+              allowedFileSize={allowedFileSize}
             />
           </div>
 
