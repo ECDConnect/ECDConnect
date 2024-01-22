@@ -13,7 +13,7 @@ import { useHistory } from 'react-router';
 import PositiveEmoticon from '@/assets/positive-bonus-emoticon.png';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
-import { clubSelectors } from '@/store/club';
+import { clubSelectors, clubThunkActions } from '@/store/club';
 import { useCallback, useEffect, useState } from 'react';
 import {
   notificationActions,
@@ -113,6 +113,9 @@ export const AcceptClubLeaderRole: React.FC = () => {
         showMessage({
           message: 'You have accepted the club leader role!',
         });
+        appDispatch(
+          clubThunkActions.getClubForUser({ userId: user?.id ?? '' })
+        );
         appDispatch(notificationActions.removeNotification(notification!));
         appDispatch(
           disableBackendNotification({
@@ -130,6 +133,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
     isRejected,
     notification,
     showMessage,
+    user?.id,
     wasLoading,
   ]);
 
