@@ -1,12 +1,7 @@
 import { TraineeDto } from '@ecdlink/core';
 import { RootState } from '../types';
 import { TraineeOnBoardTimeline, VisitData } from '@ecdlink/graphql';
-import {
-  Question,
-  SectionQuestions,
-} from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
-import { useEffect } from 'react';
-import { questions } from '@/pages/coach/coach-practitioner-journey/forms/pre-pqa-visits/programme-observations/questions';
+import { SectionQuestions } from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
 
 export const getTrainee = (state: RootState): TraineeDto | undefined =>
   state.trainee.trainee;
