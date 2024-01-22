@@ -48,12 +48,15 @@ import {
 } from '@/store/content/programme-theme';
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
-import { isSameWeek, isWeekend } from 'date-fns';
+import { isSameWeek, isWeekend, nextMonday } from 'date-fns';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { userSelectors } from '@/store/user';
 import format from 'date-fns/format';
+import { ReactComponent as NoProgressEmoticon } from '@/assets/ECD_Connect_emoji4.svg';
+import { activityActions } from '@/store/content/activity';
+import { getActivities } from '@/store/content/activity/activity.actions';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -473,142 +476,193 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
   };
 
-  // {isPastDay() ? ('') : (' ')}
-  if (
-    currentDailyProgramme &&
-    (currentDailyProgramme.smallGroupActivityId ||
-      currentDailyProgramme.largeGroupActivityId ||
-      currentDailyProgramme.storyActivityId)
-  ) {
-    // Past day with activity
-    if (isPastDay()) console.log('Past');
-    else console.log('Future');
-    console.log('Not Empty Day In Past');
-  }
-
-  return (
-    <div className={'mb-20 flex flex-col pt-4'}>
-      <ProgrammePlanningHeaderUpdated
-        headerText={`Today's daily Routine`}
-        subHeaderText={currentDate}
-        themeName={programme?.name || 'No theme'}
-        theme={programme}
-        showCount={false}
-        plannedWeeks={
-          programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length
-        }
-        totalWeeks={programmeWeeks.length}
-        chosedTheme={chosedTheme}
-        setSelectedDate={setSelectedDate}
-        selectedDate={selectedDate}
-        isWeekendDay={isWeekendDay}
-      />
-
-      {(isCurrentDayEmpty || currentDailyProgramme) &&
-        (isCurrentDayHoliday || isWeekendDay ? (
-          isWeekendDay ? (
-            <WeekendDayIndicator
-              date={new Date(selectedDate!)}
-              nextProgrammeDaysWithoutActivity={
-                nextProgrammeDaysWithoutActivity
-              }
-              setSelectedDate={setSelectedDate}
-            />
-          ) : (
-            <PublicHolidayIndicator
-              date={new Date(selectedDate!)}
-              nextProgrammeDaysWithoutActivity={
-                nextProgrammeDaysWithoutActivity
-              }
-              setSelectedDate={setSelectedDate}
-            />
-          )
-        ) : (
-          <div className="mt-4">
-            {programmeRoutine?.routineItems.map((routineItem) => {
-              if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
-                return (
-                  <ProgrammePlanningRoutineListItemUpdated
-                    key={`id_${routineItem.id}`}
-                    routineItem={routineItem}
-                    day={currentDailyProgramme}
-                    selectedDate={selectedDate}
-                    onClick={() => onProgrammeClick(routineItem)}
-                  />
-                );
-              }
-              return null;
-            })}
-          </div>
-        ))}
-
-      {celebrateMessage && (
-        <CustomSuccessCard
-          className="my-4"
-          customIcon={<CelebrateIcon className="h-14	w-14" />}
-          text={celebrateMessage}
-          textColour="successDark"
-          color="successBg"
-        />
-      )}
-      {skillMixMessage && (
-        <Alert
-          type="success"
-          variant="flat"
-          customMessage={
-            <div>
-              <Typography type="body" color="textDark" text={skillMixMessage} />
-            </div>
+  if (plannedActivities.length !== 0 && isPastDay() && !currentDailyProgramme) {
+    return (
+      <div className={'mb-20 flex flex-col pt-4'}>
+        <ProgrammePlanningHeaderUpdated
+          headerText={`Today's daily Routine`}
+          subHeaderText={currentDate}
+          themeName={programme?.name || 'No theme'}
+          theme={programme}
+          showCount={false}
+          plannedWeeks={
+            programmeWeeks.filter((week) => week.totalIncompleteDays === 0)
+              .length
           }
-          messageColor="textMid"
-          customIcon={<BalloonsIcon />}
+          totalWeeks={programmeWeeks.length}
+          chosedTheme={chosedTheme}
+          setSelectedDate={setSelectedDate}
+          selectedDate={selectedDate}
+          isWeekendDay={isWeekendDay}
         />
-      )}
-      {improveProgrammeMessage && (
-        <div className="px-4">
+
+        <div className={'mt-8 flex flex-col items-center p-4'}>
+          <NoProgressEmoticon className="mr-2 h-40 w-40" />
           <Typography
-            type={'h4'}
-            text={improveProgrammeMessage}
-            className="mt-4"
+            className="mt-2 text-center"
+            color="textMid"
+            text={`You did not plan for this day.`}
+            type={'h1'}
           />
-          <Typography type={'h4'} text="Add more of these skills:" />
-          <Card className="border-primary mt-2 w-full rounded-xl border-2 bg-white py-4 px-2">
-            {recommendedActivities &&
-              recommendedActivities?.map((activityItem) => {
-                if (activityItem?.subCategory) {
+          <Typography
+            className="mt-2 text-center"
+            color="textMid"
+            text={`You can only plan for future days`}
+            type={'body'}
+          />
+          <Button
+            color={'primary'}
+            type={'outlined'}
+            onClick={() =>
+              setSelectedDate && nextProgrammeDaysWithoutActivity?.length
+                ? setSelectedDate(
+                    new Date(nextProgrammeDaysWithoutActivity?.[0]?.dayDate!)
+                  )
+                : setSelectedDate && setSelectedDate(nextMonday(new Date()))
+            }
+            className={'w-25 mt-6 mb-4'}
+          >
+            {renderIcon('ClipboardListIcon', `w-5 h-5 text-primary`)}
+            <Typography
+              color={'primary'}
+              type={'help'}
+              weight={'normal'}
+              text={'Start planning'}
+            />
+          </Button>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div className={'mb-20 flex flex-col pt-4'}>
+        <ProgrammePlanningHeaderUpdated
+          headerText={`Today's daily Routine`}
+          subHeaderText={currentDate}
+          themeName={programme?.name || 'No theme'}
+          theme={programme}
+          showCount={false}
+          plannedWeeks={
+            programmeWeeks.filter((week) => week.totalIncompleteDays === 0)
+              .length
+          }
+          totalWeeks={programmeWeeks.length}
+          chosedTheme={chosedTheme}
+          setSelectedDate={setSelectedDate}
+          selectedDate={selectedDate}
+          isWeekendDay={isWeekendDay}
+        />
+
+        {(isCurrentDayEmpty || currentDailyProgramme) &&
+          (isCurrentDayHoliday || isWeekendDay ? (
+            isWeekendDay ? (
+              <WeekendDayIndicator
+                date={new Date(selectedDate!)}
+                nextProgrammeDaysWithoutActivity={
+                  nextProgrammeDaysWithoutActivity
+                }
+                setSelectedDate={setSelectedDate}
+              />
+            ) : (
+              <PublicHolidayIndicator
+                date={new Date(selectedDate!)}
+                nextProgrammeDaysWithoutActivity={
+                  nextProgrammeDaysWithoutActivity
+                }
+                setSelectedDate={setSelectedDate}
+              />
+            )
+          ) : (
+            <div className="mt-4">
+              {programmeRoutine?.routineItems.map((routineItem) => {
+                if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
                   return (
-                    <div className="mb-1 flex items-center gap-3">
-                      <RoundIcon
-                        imageUrl={activityItem?.subCategory.imageUrl}
-                        backgroundColor="tertiary"
-                      />
-                      <Typography
-                        type={'body'}
-                        text={activityItem?.subCategory.name}
-                      />
-                    </div>
+                    <ProgrammePlanningRoutineListItemUpdated
+                      key={`id_${routineItem.id}`}
+                      routineItem={routineItem}
+                      day={currentDailyProgramme}
+                      selectedDate={selectedDate}
+                      onClick={() => onProgrammeClick(routineItem)}
+                    />
                   );
                 }
                 return null;
               })}
-          </Card>
-        </div>
-      )}
-      {!isPastDay() ? (
-        <Button
-          id="gtm-add-programme"
-          className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
-          size="small"
-          type={'filled'}
-          color={'primary'}
-          onClick={handleAddProgramme}
-        >
-          {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-          <Typography type={'small'} color={'white'} text={'Add new theme'} />
-        </Button>
-      ) : (
-        ''
-      )}
-    </div>
-  );
+            </div>
+          ))}
+
+        {celebrateMessage && (
+          <CustomSuccessCard
+            className="my-4"
+            customIcon={<CelebrateIcon className="h-14	w-14" />}
+            text={celebrateMessage}
+            textColour="successDark"
+            color="successBg"
+          />
+        )}
+        {skillMixMessage && (
+          <Alert
+            type="success"
+            variant="flat"
+            customMessage={
+              <div>
+                <Typography
+                  type="body"
+                  color="textDark"
+                  text={skillMixMessage}
+                />
+              </div>
+            }
+            messageColor="textMid"
+            customIcon={<BalloonsIcon />}
+          />
+        )}
+        {improveProgrammeMessage && (
+          <div className="px-4">
+            <Typography
+              type={'h4'}
+              text={improveProgrammeMessage}
+              className="mt-4"
+            />
+            <Typography type={'h4'} text="Add more of these skills:" />
+            <Card className="border-primary mt-2 w-full rounded-xl border-2 bg-white py-4 px-2">
+              {recommendedActivities &&
+                recommendedActivities?.map((activityItem) => {
+                  if (activityItem?.subCategory) {
+                    return (
+                      <div className="mb-1 flex items-center gap-3">
+                        <RoundIcon
+                          imageUrl={activityItem?.subCategory.imageUrl}
+                          backgroundColor="tertiary"
+                        />
+                        <Typography
+                          type={'body'}
+                          text={activityItem?.subCategory.name}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+            </Card>
+          </div>
+        )}
+        {!isPastDay() ? (
+          <Button
+            id="gtm-add-programme"
+            className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
+            size="small"
+            type={'filled'}
+            color={'primary'}
+            onClick={handleAddProgramme}
+          >
+            {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
+            <Typography type={'small'} color={'white'} text={'Add new theme'} />
+          </Button>
+        ) : (
+          ''
+        )}
+      </div>
+    );
+  }
 };
