@@ -13,6 +13,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Linq;
 
@@ -116,7 +117,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             trainee.HomeAddressLine2 = input.HomeAddressLine2;
             trainee.HomeAddressLine3 = input.HomeAddressLine3;
             trainee.HomeAddressPostalCode = input.HomeAddressPostalCode;
-            
+
+            //update the address for the trainee's classroom
+            var _classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
+            var _addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: userId);
+
+            var classroom = _classroomRepo.GetByUserId(userId);
+
+            if (classroom != null)
+            {
+                var newAddress = new SiteAddress();
+                newAddress.AddressLine1 = input.HomeAddressLine1;
+                newAddress.AddressLine2 = input.HomeAddressLine2;
+                newAddress.AddressLine3 = input.HomeAddressLine3;
+                newAddress.PostalCode = input.HomeAddressPostalCode;
+
+                var updateAddressResult = _addressRepo.Update(newAddress);
+                if (updateAddressResult != null)
+                {
+                    classroom.SiteAddressId = updateAddressResult.Id;
+                    _classroomRepo.Update(classroom);
+                }
+            }
             return _traineeRepo.Update(trainee);
         }
 

@@ -82,8 +82,8 @@ export class IncompletePractitionerInformationNotificationValidator
         ).filter((item) => item?.type === 'completed');
 
         if (
-          (isOnStipend && completedSteps?.length < 7) ||
-          (isOnStipend !== true && completedSteps?.length < 6)
+          (isOnStipend && completedSteps?.length < 8) ||
+          (isOnStipend !== true && completedSteps?.length < 7)
         ) {
           return [
             {

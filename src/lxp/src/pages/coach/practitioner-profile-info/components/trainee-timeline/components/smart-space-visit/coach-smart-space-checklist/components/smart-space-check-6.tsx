@@ -209,9 +209,9 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   }, [answer, newAddress, questions]);
 
   const changeSmartSpaceCheckAddress = async () => {
-    if (questions[0].answer === false && answer !== '') {
+    if (questions[0].answer === false && newAddress !== '') {
       const input = {
-        homeAddressLine1: answer,
+        homeAddressLine1: newAddress,
         homeAddressLine2: '',
         homeAddressLine3: '',
         homeAddressPostalCode: '',
