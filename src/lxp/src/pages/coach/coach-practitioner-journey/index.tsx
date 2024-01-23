@@ -111,9 +111,20 @@ export const CoachPractitionerJourney = () => {
     'pqa',
     PqaActions.ADD_REQUESTED_SUPPORT_VISIT_FORM_DATA
   );
+  const { isLoading: isAddingVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_VISIT_FORM_DATA
+  );
+  const { isLoading: isAddingReAccreditationVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA
+  );
 
   const isLoadingSyncData =
-    isAddingSupportVisit || isAddingRequestedSupportVisit;
+    isAddingSupportVisit ||
+    isAddingRequestedSupportVisit ||
+    isAddingVisit ||
+    isAddingReAccreditationVisit;
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
