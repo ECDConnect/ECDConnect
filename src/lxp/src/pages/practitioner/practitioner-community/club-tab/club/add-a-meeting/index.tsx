@@ -1,10 +1,16 @@
 import { BannerWrapper, Button, DialogPosition } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { Step3 } from './steps/step-3';
-import { Step1Props, Step2Props, Step3Props } from './index.types';
+import {
+  AddMeetingRouteParams,
+  AddMeetingRouteState,
+  Step1Props,
+  Step2Props,
+  Step3Props,
+} from './index.types';
 import { getAvatarColor, useDialog, useSnackbar } from '@ecdlink/core';
 import { AddCollageDialog } from '../../0-components/add-collage';
 import { ClubMeetingInput } from '@/services/ClubService/types';
@@ -26,9 +32,14 @@ export const AddMeeting: React.FC = () => {
   const [step, setStep] = useState(0);
   const [isEnabledButton, setIsEnabledButton] = useState(false);
 
-  const club = useSelector(clubSelectors.getClubForPractitionerSelector);
+  const location = useLocation<AddMeetingRouteState>();
+
+  const clubId = location?.state?.clubId ?? '';
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
+
+  const { eventId } = useParams<AddMeetingRouteParams>();
 
   const dialog = useDialog();
 
@@ -119,6 +130,16 @@ export const AddMeeting: React.FC = () => {
   const onSuccess = useCallback(() => {
     appDispatch(clubActions.forceMeetRegularlyDataReload());
 
+    if (eventId && clubId) {
+      appDispatch(
+        clubThunkActions.getActivityMeetRegularDetails({
+          clubId,
+          month: 0,
+          year: new Date().getFullYear(),
+        })
+      );
+    }
+
     showMessage({
       message: `Meeting added! ${
         !isOnline ? 'It will be updated when you sync the app.' : ''
@@ -126,7 +147,7 @@ export const AddMeeting: React.FC = () => {
       type: 'success',
       duration: isOnline ? 5000 : 10000,
     });
-  }, [appDispatch, isOnline, showMessage]);
+  }, [appDispatch, clubId, eventId, isOnline, showMessage]);
 
   const onSubmit = async () => {
     const payload: ClubMeetingInput = {
@@ -136,6 +157,7 @@ export const AddMeeting: React.FC = () => {
       coachAttend: step3?.coachAttend ?? false,
       totalCaregiversAttended: 0,
       clubMeetingParticipants: step2?.participants ?? [],
+      ...(eventId && { eventId }),
     };
 
     appDispatch(clubActions.addClubMeeting(payload));
@@ -250,13 +272,25 @@ export const AddMeeting: React.FC = () => {
       displayOffline={!isOnline}
     >
       {isFirstStep && (
-        <Step1 setIsEnabledButton={setIsEnabledButton} setStep1={setStep1} />
+        <Step1
+          setIsEnabledButton={setIsEnabledButton}
+          setStep1={setStep1}
+          clubId={club?.id ?? ''}
+        />
       )}
       {isSecondStep && (
-        <Step2 setIsEnabledButton={setIsEnabledButton} setStep2={setStep2} />
+        <Step2
+          setIsEnabledButton={setIsEnabledButton}
+          setStep2={setStep2}
+          clubId={club?.id ?? ''}
+        />
       )}
       {isLastStep && (
-        <Step3 setIsEnabledButton={setIsEnabledButton} setStep3={setStep3} />
+        <Step3
+          setIsEnabledButton={setIsEnabledButton}
+          setStep3={setStep3}
+          clubId={club?.id ?? ''}
+        />
       )}
       <Button
         className="mt-auto"

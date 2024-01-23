@@ -58,8 +58,8 @@ export const CompleteProfile: React.FC = () => {
     (hasPractitionerRole || addedByPrincipal) && notRegistered;
   if (
     practitioner?.isTrainee === true &&
-    ((practitioner?.isOnStipend && completedSteps?.length < 7) ||
-      (practitioner?.isOnStipend !== true && completedSteps?.length < 6))
+    ((practitioner?.isOnStipend && completedSteps?.length < 8) ||
+      (practitioner?.isOnStipend !== true && completedSteps?.length < 7))
   ) {
     return (
       <div className="px-4">

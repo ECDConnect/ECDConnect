@@ -75,6 +75,8 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const onEdit = () => {
     props.onClose();
     calendarEditEvent({
+      hideAddParticipantsButton: props.hideAddParticipantsButton,
+      eventTypeDisabled: props.eventTypeDisabled,
       event: { id: event.id },
     });
   };
@@ -266,6 +268,23 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
             </Button>
           </div>
         )}
+        {props.actionButton?.name && (
+          <div className="mx-4 border-t py-4">
+            <Button
+              onClick={() => {
+                props?.actionButton?.onClick();
+                props.onClose();
+              }}
+              className="w-full"
+              size="small"
+              textColor="white"
+              icon={props.actionButton.icon}
+              color="primary"
+              type="filled"
+              text={props.actionButton.name}
+            />
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );
@@ -283,6 +302,9 @@ export const useCalendarViewEvent = (): ((
           <CalendarViewEvent
             canEdit={options.canEdit}
             event={options.event}
+            actionButton={options.actionButton}
+            eventTypeDisabled={options.eventTypeDisabled}
+            hideAddParticipantsButton={options.hideAddParticipantsButton}
             onClose={() => {
               onCancel();
             }}

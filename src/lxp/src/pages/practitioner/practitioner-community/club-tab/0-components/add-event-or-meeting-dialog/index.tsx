@@ -30,7 +30,7 @@ export const AddEventOrMeetingDialog = ({
           leadingIcon: 'CalendarIcon',
           onClick: () => {
             history.push(
-              ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+              ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT
             );
             onClose();
           },

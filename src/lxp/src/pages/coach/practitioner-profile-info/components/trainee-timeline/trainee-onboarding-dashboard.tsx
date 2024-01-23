@@ -72,7 +72,8 @@ export const OnboardingTraineeDashboard: React.FC<
         item?.title === 'SmartSpace visit from coach' && !item?.extraData?.date
       ) &&
       item?.title !== 'SmartSpace Licence' &&
-      item?.title !== 'Sign franchisee agreement'
+      item?.title !== 'Sign franchisee agreement' &&
+      item?.title !== 'Sign start-up support agreement'
   );
 
   const checkOverdueDate = (date?: Date | null) => {

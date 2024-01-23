@@ -54,6 +54,9 @@ import { CalendarActions } from '@/store/calendar/calendar.actions';
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
   guests,
+  optionsToHide,
+  eventTypeDisabled,
+  hideAddParticipantsButton,
   onUpdated,
   onCancel,
 }) => {
@@ -421,14 +424,18 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           <Dropdown
             className="mb-4"
             placeholder={'Tap to choose event type'}
-            list={calendarEventTypes.map((et) => ({
-              label: et.name,
-              value: et.name,
-            }))}
+            list={calendarEventTypes
+              .filter(
+                (type) => !optionsToHide?.some((option) => option === type.name)
+              )
+              .map((et) => ({
+                label: et.name,
+                value: et.name,
+              }))}
             fillType="clear"
             fullWidth={true}
             label={'Choose event type'}
-            disabled={eventProps?.eventTypeDisabled}
+            disabled={eventProps?.eventTypeDisabled || eventTypeDisabled}
             selectedValue={getEventFormValues().eventType}
             onChange={(item: string) => {
               setEventFormValue('eventType', item);
@@ -487,21 +494,23 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
               type={'UserAlertList'}
               onClickItem={onRemoveParticipant}
             />
-            <Button
-              size="small"
-              type="filled"
-              color="primary"
-              className={`mx-auto w-4/12 rounded-xl`}
-              onClick={onAddParticipant}
-            >
-              {renderIcon('PlusIcon', 'h-4 w-4 text-white mr-1')}
-              <Typography
-                type="buttonSmall"
-                color="white"
-                text={'Add participants'}
-                className={'w-full whitespace-nowrap'}
-              />
-            </Button>
+            {!hideAddParticipantsButton && (
+              <Button
+                size="small"
+                type="filled"
+                color="primary"
+                className={`mx-auto w-4/12 rounded-xl`}
+                onClick={onAddParticipant}
+              >
+                {renderIcon('PlusIcon', 'h-4 w-4 text-white mr-1')}
+                <Typography
+                  type="buttonSmall"
+                  color="white"
+                  text={'Add participants'}
+                  className={'w-full whitespace-nowrap'}
+                />
+              </Button>
+            )}
           </div>
           <FormInput<CalendarAddEventFormModel>
             label={'Describe the event'}
@@ -596,6 +605,7 @@ export const useCalendarAddEvent = (): ((
               if (!!options.onUpdated) options.onUpdated(isNew, event);
               onSubmit();
             }}
+            optionsToHide={options.optionsToHide}
             onCancel={() => {
               if (!!options.onCancel) options.onCancel();
               onCancel();
@@ -622,6 +632,8 @@ export const useCalendarEditEvent = (): ((
               if (!!options.onUpdated) options.onUpdated(event);
               onSubmit();
             }}
+            eventTypeDisabled={options.eventTypeDisabled}
+            hideAddParticipantsButton={options.hideAddParticipantsButton}
             onCancel={() => {
               if (!!options.onCancel) options.onCancel();
               onCancel();

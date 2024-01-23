@@ -1617,9 +1617,18 @@ namespace EcdLink.Api.CoreApi.Services
             var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / (totalMembers - 1) * 100;
             var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / (totalMembers - 1) * 100;
 
-            var usersWithNoPoints = clubUserIds.Where(x => !usersByMonth.Any(y => y.UserId == x)).Count();
-            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId).Count() + usersWithNoPoints;
-            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId).Count() + usersWithNoPoints;
+            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId).Count();
+            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId).Count();
+
+            if (userMonthPoints > 0)
+            {
+                userWithFewerPointsThisMonth += clubUserIds.Where(x => x != userId && !usersByMonth.Any(y => y.UserId == x)).Count();
+            }
+
+            if (userYearPoints > 0)
+            {
+                userWithFewerPointsThisYear += clubUserIds.Where(x => x != userId && !usersByYear.Any(y => y.UserId == x)).Count();
+            }
 
             var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / (totalMembers - 1) * 100;
             var percentageWithFewerPointsThisYear = (double)userWithFewerPointsThisYear / (totalMembers - 1) * 100;

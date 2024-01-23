@@ -11,10 +11,9 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../../../../content-management-models';
-import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
+import { Alert } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
-import StoryContentForm from '../../../../../../../components/story-content-form/story-content-form';
-import { StoryBookPartDto, StoryBookQuestionDto } from '@ecdlink/core';
+import CategoryContentForm from '../../../../../../../components/category-content-form/category-content-form';
 
 const acceptedFormats = [
   'svg',
@@ -26,42 +25,26 @@ const acceptedFormats = [
   ...videoExtensions,
 ];
 
-export enum StoryBookTypes {
-  storyBook = 'Story book',
-  readAloud = 'Read aloud',
-  other = 'Other',
-}
-
-export interface CreateStoryFormProps {
+export interface CategoryFormProps {
   template: DynamicFormTemplate;
   handleform: any;
   setValue: any;
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
-  setFilteredStoryBookParts?: (item?: StoryBookPartDto[]) => void;
-  setFilteredStoryBookPartsQuestions?: (item?: StoryBookQuestionDto[]) => void;
-  formType?: StoryBookTypes;
+  setFilteredSubcategories?: (item: any[]) => void;
 }
 
 const contentWrapper = '';
 
-const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
+const CategoryForm: React.FC<CategoryFormProps> = ({
   template,
   handleform,
   setValue,
   defaultLanguageId,
   acceptedFileFormats,
-  setFilteredStoryBookParts,
-  setFilteredStoryBookPartsQuestions,
-  formType,
+  setFilteredSubcategories,
 }) => {
   const { register, control, errors } = handleform;
-
-  const storyBookTypeOptions = [
-    { text: 'Story book', value: 'Story book' },
-    { text: 'Read aloud', value: 'Read aloud' },
-    { text: 'other', value: 'Other' },
-  ];
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -70,12 +53,12 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   const [fields, setFields] = useState<any>();
 
   useEffect(() => {
-    if (template || formType) {
+    if (template) {
       const fields = renderFields(template.fields);
       setFields(fields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template, formType]);
+  }, [template]);
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields.map((field) => {
@@ -85,36 +68,6 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
 
       switch (type) {
         case FieldType.Text:
-          if (
-            propName === 'type' &&
-            template?.fields?.find((item) => item?.propName === 'name')
-              ?.contentValue === undefined
-          ) {
-            return (
-              <div key={propName} className={contentWrapper}>
-                <div className="bg-uiBg sm:col-span-12">
-                  <ButtonGroup
-                    options={storyBookTypeOptions}
-                    onOptionSelected={(value: string | string[]) => {
-                      onStateChange(propName, value);
-                    }}
-                    selectedOptions={formType}
-                    color="tertiary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                    multiple={false}
-                  />
-                </div>
-              </div>
-            );
-          }
-          if (
-            propName === 'type' &&
-            template?.fields?.find((item) => item?.propName === 'name')
-              ?.contentValue !== undefined
-          ) {
-            return null;
-          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -130,25 +83,6 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             </div>
           );
         case FieldType.Markdown:
-          if (propName === 'bookLocation') {
-            return (
-              <div key={propName} className={contentWrapper}>
-                <div className="sm:col-span-12">
-                  <div className="mb-2 font-semibold">
-                    Where can you find a copy of this story book?
-                  </div>
-                  <FormField
-                    label={title}
-                    nameProp={propName}
-                    register={register}
-                    error={errors[propName]?.message}
-                    required={required}
-                    validation={validation}
-                  />
-                </div>
-              </div>
-            );
-          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -185,36 +119,23 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             </div>
           );
         case FieldType.Link: {
-          if (propName === 'storyBookParts') {
-            if (
-              formType === StoryBookTypes.storyBook ||
-              formType === StoryBookTypes.readAloud
-            ) {
-              return (
-                <div key={propName} className={contentWrapper}>
-                  <div className="sm:col-span-12">
-                    <StoryContentForm
-                      title={field.title}
-                      isReview={false}
-                      contentValue={field.contentValue}
-                      languageId={defaultLanguageId}
-                      optionDefinition={field.optionDefinition}
-                      setSelectedItems={(value) =>
-                        onStateChange(propName, value)
-                      }
-                      setFilteredStoryBookParts={setFilteredStoryBookParts}
-                      setFilteredStoryBookPartsQuestions={
-                        setFilteredStoryBookPartsQuestions
-                      }
-                      formType={formType}
-                    />
-                  </div>
+          if (propName === 'subCategories') {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <CategoryContentForm
+                    title={field.title}
+                    isReview={false}
+                    contentValue={field.contentValue}
+                    languageId={defaultLanguageId}
+                    optionDefinition={field.optionDefinition}
+                    setSelectedItems={(value) => onStateChange(propName, value)}
+                    acceptedFileFormats={acceptedFileFormats}
+                    setFilteredSubcategories={setFilteredSubcategories}
+                  />
                 </div>
-              );
-            }
-            if (formType === StoryBookTypes.other) {
-              return null;
-            }
+              </div>
+            );
           }
           if (title === 'G T -  Skills' || title === 'Skills') {
             return (
@@ -233,7 +154,20 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               </div>
             );
           }
-          return null;
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <DynamicSelector
+                  title={field.title}
+                  isReview={false}
+                  contentValue={field.contentValue}
+                  languageId={defaultLanguageId}
+                  optionDefinition={field.optionDefinition}
+                  setSelectedItems={(value) => onStateChange(propName, value)}
+                />
+              </div>
+            </div>
+          );
         }
         case FieldType.StaticLink: {
           return (
@@ -273,7 +207,9 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <CombinedDatePickers
-                  contentValue={field.contentValue.value}
+                  contentValue={
+                    field.contentValue ? field.contentValue.value : ''
+                  }
                   label={title}
                   nameProp={propName}
                   control={control}
@@ -302,4 +238,4 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   );
 };
 
-export default CreateStoryForm;
+export default CategoryForm;

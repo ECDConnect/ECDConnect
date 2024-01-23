@@ -15,9 +15,11 @@ interface ComponentProps {
   label: string;
   error?: string;
   onChange: (date: Date) => void;
+  contentValue: string;
 }
 
 interface CombinedDatePickersProps {
+  contentValue: string;
   label: string;
   error?: string;
   nameProp: string;
@@ -26,7 +28,12 @@ interface CombinedDatePickersProps {
   validation?: RegisterOptions['validate'];
 }
 
-const Component = ({ label, onChange, error }: ComponentProps) => {
+const Component = ({
+  label,
+  onChange,
+  error,
+  contentValue,
+}: ComponentProps) => {
   const [dayPicker, setDay] = useState<Date>();
   const [monthPicker, setMonth] = useState<Date>();
   const [yearPicker, setYear] = useState<Date>();
@@ -38,6 +45,25 @@ const Component = ({ label, onChange, error }: ComponentProps) => {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
+  const minDateSelect = new Date(currentYear, currentMonth, 1);
+
+  useEffect(() => {
+    if (contentValue && contentValue !== '') {
+      const dateItem = contentValue.split('T');
+      const dateItems = dateItem[0].split('-');
+
+      if (dateItems.length > 1) {
+        const formattedDate = new Date(
+          +dateItems[0],
+          +dateItems[1] - 1,
+          +dateItems[2]
+        );
+        setDay(formattedDate);
+        setMonth(formattedDate);
+        setYear(formattedDate);
+      }
+    }
+  }, [contentValue]);
 
   const minDate =
     yearPicker && monthPicker ? new Date(year, month, 1) : undefined;
@@ -173,7 +199,7 @@ const Component = ({ label, onChange, error }: ComponentProps) => {
           disabledKeyboardNavigation
           onFocus={(e) => e.target.blur()}
           showYearPicker
-          minDate={currentDate}
+          minDate={minDateSelect}
         />
       </div>
       <span className="text-errorMain text-xs"> {error && error} </span>
@@ -182,6 +208,7 @@ const Component = ({ label, onChange, error }: ComponentProps) => {
 };
 
 export const CombinedDatePickers = ({
+  contentValue,
   label,
   nameProp,
   control,
@@ -191,11 +218,17 @@ export const CombinedDatePickers = ({
 }: CombinedDatePickersProps) => {
   return (
     <Controller
+      defaultValue={contentValue}
       name={nameProp}
       control={control}
       rules={{ validate: validation, required }}
       render={({ field }) => (
-        <Component label={label} error={error} onChange={field.onChange} />
+        <Component
+          label={label}
+          error={error}
+          onChange={field.onChange}
+          contentValue={contentValue}
+        />
       )}
     />
   );
