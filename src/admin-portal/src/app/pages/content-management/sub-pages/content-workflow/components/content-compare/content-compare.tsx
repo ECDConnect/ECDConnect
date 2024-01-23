@@ -110,6 +110,7 @@ export default function ContentCompare({
                 </div>
 
                 <ContentEdit
+                  key={'firstLanguageContent'}
                   optionDefinitions={optionDefinitions}
                   content={contentView.content}
                   selectedLanguageId={selectedFirstLanguageId}
@@ -132,6 +133,7 @@ export default function ContentCompare({
                   />
                 </div>
                 <ContentEdit
+                  key={'secondLanguageContent'}
                   optionDefinitions={optionDefinitions}
                   content={contentView.content}
                   selectedLanguageId={selectedSecondLanguageId}

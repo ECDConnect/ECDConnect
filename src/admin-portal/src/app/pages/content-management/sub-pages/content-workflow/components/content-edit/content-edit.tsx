@@ -25,6 +25,7 @@ import {
   XIcon,
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import { ContentTypes } from '../../../../../../constants/content-management';
 
 export interface ContentViewProps {
   content: any;
@@ -36,6 +37,11 @@ export interface ContentViewProps {
   savedContent: () => void;
   cancelEdit?: () => void;
   cancelCompare?: () => void;
+}
+
+export interface RequirementProps {
+  value: boolean;
+  message: string;
 }
 
 export default function ContentEdit({
@@ -182,7 +188,7 @@ export default function ContentEdit({
 
   useEffect(() => {
     if (contentType) {
-      if (contentType.name === 'CoachingCircleTopics') {
+      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
         setAcceptedFileFormats(['pdf']);
         setAllowedFileSize(5242880);
       }
@@ -202,13 +208,15 @@ export default function ContentEdit({
       (x) => x.contentName === field?.dataLinkName
     );
 
+    const requirementValues: RequirementProps = getRequiredValueForField(field);
+
     const returnField: FormTemplateField = {
       propName: field?.fieldName ?? '',
       type: field?.fieldType.dataType ?? '',
       title: camelCaseToSentanceCase(field?.displayName ?? ''),
       required: {
-        value: false,
-        message: '',
+        value: requirementValues.value,
+        message: requirementValues.message,
       },
       contentValue: item,
       optionDefinition: optionDefinition,
@@ -224,9 +232,29 @@ export default function ContentEdit({
     return returnField;
   };
 
+  const getRequiredValueForField = (field: ContentTypeFieldDto) => {
+    let answer: RequirementProps = { value: false, message: '' };
+    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      if (field.fieldName === 'title') {
+        answer.value = true;
+        answer.message = 'Please provide a title';
+      }
+      if (field.fieldName === 'startDate') {
+        answer.value = true;
+        answer.message = 'Please provide a start date';
+      }
+      if (field.fieldName === 'resource') {
+        answer.value = true;
+        answer.message = 'Please upload a pdf resource';
+      }
+    }
+    return answer;
+  };
+
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
+
     if (!content?.id) {
       await createContent({
         variables: {
@@ -257,7 +285,9 @@ export default function ContentEdit({
 
     setLoading(false);
 
-    cancelEdit();
+    if (cancelEdit) {
+      cancelEdit();
+    }
   };
 
   if (

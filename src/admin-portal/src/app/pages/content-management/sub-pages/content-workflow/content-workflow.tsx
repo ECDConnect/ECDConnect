@@ -13,8 +13,6 @@ import ContentEdit from './components/content-edit/content-edit';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import CreateStory from '../content-list/components/create-story/create-story';
 import CreateTheme from './components/create-theme/create-theme';
-import CategoryContentForm from '../../../../components/category-content-form/category-content-form';
-import CategoryForm from './components/edit-category/category-form/category-form';
 import EditCategory from './components/edit-category/edit-category';
 
 export interface ContentWorkflowProps {
