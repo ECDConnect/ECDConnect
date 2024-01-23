@@ -41,7 +41,6 @@ namespace ECDLink.SmartStart.Reports
             //retrieve only groups the user is allowed to see            
             List<ClassroomGroup> groups = _attendanceService.GetUserClassroomGroups(userId);
 
-            var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
             var attendanceForPeriod = GetAttendanceRecordsForPeriod(classroom, userId, startMonth, endMonth);
             var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
@@ -52,6 +51,8 @@ namespace ECDLink.SmartStart.Reports
                 // Nest into class per month on only groups user is allowed to see
                 foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
                 {
+                    var validClassDays = GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
+
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
                         var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
