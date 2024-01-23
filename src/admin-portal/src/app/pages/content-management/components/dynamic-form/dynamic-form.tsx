@@ -11,7 +11,7 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
-import { Alert } from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
 const acceptedFormats = [
@@ -31,6 +31,8 @@ export interface DynamicFormProps {
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
   allowedFileSize?: number;
+  formType?: string;
+  choosedSectionTitle?: string;
 }
 
 const contentWrapper = '';
@@ -42,8 +44,24 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   defaultLanguageId,
   acceptedFileFormats,
   allowedFileSize,
+  formType,
+  choosedSectionTitle,
 }) => {
   const { register, control, errors } = handleform;
+
+  const storyBookTypeOptions = [
+    { text: 'Story book', value: 'Story book' },
+    { text: 'Read aloud', value: 'Read aloud' },
+    { text: 'other', value: 'Other' },
+  ];
+
+  const smallLargeGroupOptions = [
+    { text: 'Small group', value: 'Small group' },
+    { text: 'Large group', value: 'Large group' },
+  ];
+
+  const isSmallLargeGroup =
+    choosedSectionTitle === 'Small/large group activities';
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -67,6 +85,41 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
       switch (type) {
         case FieldType.Text:
+          if (
+            propName === 'type' &&
+            template?.title === 'Activity Form' &&
+            template?.fields?.find((item) => item?.propName === 'name')
+              ?.contentValue === undefined
+          ) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="bg-uiBg sm:col-span-12">
+                  <ButtonGroup
+                    options={
+                      isSmallLargeGroup
+                        ? smallLargeGroupOptions
+                        : storyBookTypeOptions
+                    }
+                    onOptionSelected={(value: string | string[]) => {
+                      onStateChange(propName, value);
+                    }}
+                    color="tertiary"
+                    type={ButtonGroupTypes.Button}
+                    className={'w-full'}
+                    multiple={false}
+                  />
+                </div>
+              </div>
+            );
+          }
+          if (
+            propName === 'type' &&
+            template?.title === 'Activity Form' &&
+            template?.fields?.find((item) => item?.propName === 'name')
+              ?.contentValue !== undefined
+          ) {
+            return null;
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">

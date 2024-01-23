@@ -449,6 +449,7 @@ export function ContentManagement() {
               languages={languages.GetAllLanguage}
               goBack={() => setSelectedContent(undefined)}
               savedContent={() => refreshParent()}
+              choosedSectionTitle={choosedSectionTitle}
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
