@@ -103,6 +103,17 @@ export const CoachPractitionerJourney = () => {
     'pqa',
     PqaActions.GET_PRACTITIONER_TIMELINE
   );
+  const { isLoading: isAddingSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
+  );
+  const { isLoading: isAddingRequestedSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_REQUESTED_SUPPORT_VISIT_FORM_DATA
+  );
+
+  const isLoadingSyncData =
+    isAddingSupportVisit || isAddingRequestedSupportVisit;
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -441,9 +452,20 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const getTimeline = useCallback(() => {
-    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  const getTimeline = useCallback(async () => {
+    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   }, [appDispatch, practitionerId]);
+
+  const syncData = useCallback(async () => {
+    if (!isOnline) return;
+
+    await appDispatch(pqaThunkActions.addSupportVisitFormData());
+    await appDispatch(pqaThunkActions.addRequestedSupportVisitFormData());
+    await appDispatch(pqaThunkActions.addVisitFormData());
+    await appDispatch(pqaThunkActions.addReAccreditationVisitData());
+
+    getTimeline();
+  }, [appDispatch, getTimeline, isOnline]);
 
   useLayoutEffect(() => {
     if (selectedForm) {
@@ -452,14 +474,10 @@ export const CoachPractitionerJourney = () => {
   }, [selectedForm]);
 
   useEffect(() => {
-    getTimeline();
-  }, [getTimeline]);
-
-  useEffect(() => {
     if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
-      getTimeline();
+      syncData();
     }
-  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
+  }, [getTimeline, isOnline, previousShowForm, showForm, syncData, wasOnline]);
 
   useEffect(() => {
     if (lastAttendedReAccreditationFollowUpVisit?.id) {
@@ -696,14 +714,22 @@ export const CoachPractitionerJourney = () => {
       subTitle={`${practitionerFirstName} ${practitioner?.user?.surname}`}
       onBack={() => history.goBack()}
       className="p-4"
+      renderBorder
+      isLoading={isLoadingTimeline}
     >
-      {isLoadingTimeline ? (
-        <LoadingSpinner
-          size="medium"
-          spinnerColor="primary"
-          backgroundColor="uiLight"
-          className="tex pt-4"
-        />
+      {isLoadingSyncData ? (
+        <>
+          <LoadingSpinner
+            size="medium"
+            spinnerColor="primary"
+            backgroundColor="uiLight"
+          />
+          <Typography
+            className="mt-4 mb-2 text-center"
+            type="body"
+            text="Syncing journey..."
+          />
+        </>
       ) : (
         <>
           {!!currentVisit && (
