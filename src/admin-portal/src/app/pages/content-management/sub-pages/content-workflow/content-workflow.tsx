@@ -16,6 +16,7 @@ import CreateTheme from './components/create-theme/create-theme';
 import CategoryContentForm from '../../../../components/category-content-form/category-content-form';
 import CategoryForm from './components/edit-category/category-form/category-form';
 import EditCategory from './components/edit-category/edit-category';
+import EditSkills from './components/edit-skills/edit-skills';
 
 export interface ContentWorkflowProps {
   contentView: ContentManagementView;
@@ -194,6 +195,34 @@ export default function ContentWorkflow({
             </div>
           </>
         );
+      case 'ProgressTrackingSkill':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditSkills
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        cancelEdit={() => goBack()}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
       default:
         return null;
     }
@@ -229,7 +258,8 @@ export default function ContentWorkflow({
           {!isCompareMode ? (
             contentType?.name === 'StoryBook' ||
             contentType?.name === 'Theme' ||
-            contentType?.name === 'ProgressTrackingCategory' ? (
+            contentType?.name === 'ProgressTrackingCategory' ||
+            contentType?.name === 'ProgressTrackingSkill' ? (
               handleNoDynamicForms(contentType?.name)
             ) : (
               <>
