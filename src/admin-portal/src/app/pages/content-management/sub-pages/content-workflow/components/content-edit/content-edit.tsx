@@ -10,7 +10,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { MouseEvent, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
@@ -37,6 +37,7 @@ export interface ContentViewProps {
   savedContent: () => void;
   cancelEdit?: () => void;
   cancelCompare?: () => void;
+  choosedSectionTitle?: string;
 }
 
 export interface RequirementProps {
@@ -54,6 +55,7 @@ export default function ContentEdit({
   cancelEdit,
   savedContent,
   cancelCompare,
+  choosedSectionTitle,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -65,6 +67,7 @@ export default function ContentEdit({
     errors: errors,
     control: control,
   };
+  const { type: formType } = useWatch({ control });
 
   const mutationName = `update${contentType?.name}`;
 
@@ -359,6 +362,8 @@ export default function ContentEdit({
               defaultLanguageId={defaultLanguageId}
               acceptedFileFormats={acceptedFileFormats}
               allowedFileSize={allowedFileSize}
+              formType={formType}
+              choosedSectionTitle={choosedSectionTitle}
             />
           </div>
 

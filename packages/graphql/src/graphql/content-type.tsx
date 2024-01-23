@@ -128,6 +128,7 @@ export const contentDefinitions = gql`
         displayName
         displayMainTable
         displayPage
+        isRequired
       }
     }
   }
