@@ -125,7 +125,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     if (selectedDate) {
       if (
         selectedDate <= new Date() &&
-        selectedDate?.setHours(0, 0, 0, 0) !== new Date().setHours(0, 0, 0, 0)
+        selectedDate?.toDateString() !== new Date().toDateString()
       ) {
         return true;
       } else {
