@@ -37,7 +37,9 @@ export const ProgrammeTypeAgreement: React.FC<ProgrammeTypeAgreementProps> = ({
   const [programmeType, setProgrammeType] = useState('');
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const franchisorAgreement = consentList?.find(
-    (item) => item.type === 'FranchiseeAgreement'
+    (item) =>
+      item.type === 'FranchiseeAgreement' ||
+      item.name === 'Franchisee agreement'
   );
 
   const handleSetInfoModelPage = (model: string) => {

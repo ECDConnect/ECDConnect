@@ -1,4 +1,3 @@
-import { PractitionerDto, TraineeDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {

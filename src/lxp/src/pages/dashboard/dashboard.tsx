@@ -15,7 +15,7 @@ import {
   TitleListItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -23,7 +23,6 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
-import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import {
   notificationActions,
@@ -33,13 +32,12 @@ import { settingSelectors, settingThunkActions } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
-import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
+
 import {
   practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { staticDataThunkActions } from '@store/static-data';
@@ -227,10 +225,10 @@ export const Dashboard: React.FC = () => {
     if (
       (practitioner?.isTrainee &&
         practitioner?.isOnStipend &&
-        completedSteps?.length === 7) ||
+        completedSteps?.length === 8) ||
       (practitioner?.isTrainee &&
         practitioner?.isOnStipend !== true &&
-        completedSteps?.length === 6)
+        completedSteps?.length === 7)
     ) {
       const copy = Object.assign({}, practitioner);
 
@@ -390,20 +388,6 @@ export const Dashboard: React.FC = () => {
             userId: userData?.id!,
           })
         ).unwrap())();
-
-      if (isCoach) {
-        (async (id) =>
-          await appDispatch(
-            classroomsForCoachThunkActions.getClassroomForCoach({
-              id: userData?.id!,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            childrenThunkActions.getChildrenForCoach({})
-          ).unwrap())();
-      }
 
       if (
         userData.roles?.some(
