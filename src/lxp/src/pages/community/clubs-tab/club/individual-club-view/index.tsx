@@ -212,6 +212,7 @@ export const Club: React.FC = () => {
   const activities: MenuListDataItem[] = [
     {
       title: ClubActivities.MeetRegularly,
+
       menuIconUrl: partnershipIcon,
       route: ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
         ':clubId',
@@ -278,6 +279,7 @@ export const Club: React.FC = () => {
     ...(item.menuIcon && { menuIcon: item.menuIcon }),
     titleStyle: 'text-textDark whitespace-normal',
     iconBackgroundColor: 'tertiary',
+    iconColor: 'white',
     showIcon: true,
     onActionClick: () => history.push(item.route),
   }));

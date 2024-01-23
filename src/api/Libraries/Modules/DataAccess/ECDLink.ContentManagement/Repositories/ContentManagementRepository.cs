@@ -335,43 +335,43 @@ namespace ECDLink.ContentManagement.Repositories
         {
             var fileExt = "";
 
-            if (fileStr.ToLower().EndsWith("svg"))
+            if (fileStr.ToLower().Contains("svg"))
             {
                 fileExt = ".svg";
             }
-            if (fileStr.ToLower().EndsWith("png"))
+            if (fileStr.ToLower().Contains("png"))
             {
                 fileExt = ".png";
             }
-            if (fileStr.ToLower().EndsWith("jpg") || fileStr.ToLower().EndsWith("jpeg"))
+            if (fileStr.ToLower().Contains("jpg") || fileStr.ToLower().Contains("jpeg"))
             {
                 fileExt = ".jpg";
             }
-            if (fileStr.ToLower().EndsWith("mov"))
+            if (fileStr.ToLower().Contains("mov"))
             {
                 fileExt = ".mov";
             }
-            if (fileStr.ToLower().EndsWith("mkv"))
+            if (fileStr.ToLower().Contains("mkv"))
             {
                 fileExt = ".mkv";
             }
-            if (fileStr.ToLower().EndsWith("m4v"))
+            if (fileStr.ToLower().Contains("m4v"))
             {
                 fileExt = ".m4v";
             }
-            if (fileStr.ToLower().EndsWith("mp4"))
+            if (fileStr.ToLower().Contains("mp4"))
             {
                 fileExt = ".mp4";
             }
-            if (fileStr.ToLower().EndsWith("mpg"))
+            if (fileStr.ToLower().Contains("mpg"))
             {
                 fileExt = ".mpg";
             }
-            if (fileStr.ToLower().EndsWith("webm"))
+            if (fileStr.ToLower().Contains("webm"))
             {
                 fileExt = ".webm";
             }
-            if (fileStr.ToLower().EndsWith("pdf"))
+            if (fileStr.ToLower().Contains("pdf"))
             {
                 fileExt = ".pdf";
             }
@@ -415,56 +415,63 @@ namespace ECDLink.ContentManagement.Repositories
 
             // Remove existing data for this locale
             var fieldList = content.ContentValues.Where(x => x.LocaleId == localeId).ToList();
-            _context.ContentValues.RemoveRange(fieldList);
-            _context.SaveChanges();
+            //_context.ContentValues.RemoveRange(fieldList);
+            //_context.SaveChanges();
 
             var contentValues = new List<ContentValue>();
 
             // Get the content type fields and populate them to be the new values
             foreach (var field in content.ContentType.Fields.Where(x => x.IsActive))
             {
-                if (input.TryGetValue(field.FieldName, out var value))
+                if (input.TryGetValue(field.FieldName, out var value) && fieldList.Where(x => x.ContentTypeField.FieldName == field.FieldName).Any())
                 {
-
-                    // if we get the string base64 in the value we know it is a file upload 
-                    var fileIndex = value?.ToString()?.IndexOf("base64");
-
-                    if (fileIndex != null && fileIndex != -1)
-                    {
-
-                        var fileStr = value?.ToString();
-                        var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
-                        var bytes = Convert.FromBase64String(b64Str);
-                        using MemoryStream fileStream = new MemoryStream(bytes);
-
-                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-                        var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
-                        fileStream.Dispose();
-
-                        contentValues.Add(new ContentValue
+                    var valToCompare = fieldList.Where(x => x.ContentTypeField.FieldName == field.FieldName && x.Value != null).Select(x => x.Value).FirstOrDefault();
+                    if ((value != null && valToCompare != null) && value.ToString() != valToCompare.ToString()) { //only update if the values arent the same as before
+                        //remove value as we will reinsert just this
+                        var cValueToRemove = content.ContentValues.Where(x => x.ContentTypeField.FieldName == field.FieldName && x.ContentTypeField.Id == field.Id).FirstOrDefault();
+                        if (cValueToRemove != null)
                         {
-                            Value = fileUrl.ToString(),
-                            ContentTypeFieldId = field.Id,
-                            LocaleId = localeId,
-                            TenantId = currentTenant,
-                            InsertedDate = DateTime.UtcNow,
-                            UpdatedDate = DateTime.UtcNow
-                        });
+                            _context.ContentValues.Remove(cValueToRemove);
+                        }
+                        // if we get the string base64 in the value we know it is a file upload 
+                        var fileIndex = value?.ToString()?.IndexOf("base64");
 
-                    }
-                    else
-                    {
-                        contentValues.Add(new ContentValue
+                        if (fileIndex != null && fileIndex != -1)
                         {
-                            Value = value?.ToString(),
-                            ContentTypeFieldId = field.Id,
-                            LocaleId = localeId,
-                            TenantId = currentTenant,
-                            InsertedDate = DateTime.UtcNow,
-                            UpdatedDate = DateTime.UtcNow
-                        });
-                    }
 
+                            var fileStr = value?.ToString();
+                            var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
+                            var bytes = Convert.FromBase64String(b64Str);
+                            using MemoryStream fileStream = new MemoryStream(bytes);
+
+                            var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
+                            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+                            fileStream.Dispose();
+
+                            contentValues.Add(new ContentValue
+                            {
+                                Value = fileUrl.ToString(),
+                                ContentTypeFieldId = field.Id,
+                                LocaleId = localeId,
+                                TenantId = currentTenant,
+                                InsertedDate = DateTime.UtcNow,
+                                UpdatedDate = DateTime.UtcNow
+                            });
+
+                        }
+                        else
+                        {
+                            contentValues.Add(new ContentValue
+                            {
+                                Value = value?.ToString(),
+                                ContentTypeFieldId = field.Id,
+                                LocaleId = localeId,
+                                TenantId = currentTenant,
+                                InsertedDate = DateTime.UtcNow,
+                                UpdatedDate = DateTime.UtcNow
+                            });
+                        }
+                    }
                 }
             }
 
@@ -506,6 +513,7 @@ namespace ECDLink.ContentManagement.Repositories
             }
 
             content.IsActive = false;
+            content.UpdatedDate = DateTime.UtcNow;
 
             _context.SaveChanges();
 

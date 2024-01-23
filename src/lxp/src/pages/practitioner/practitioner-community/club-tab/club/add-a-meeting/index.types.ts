@@ -14,10 +14,19 @@ export interface Step3Props {
 }
 
 export interface AddMeetingProps {
+  clubId: string;
   step1?: Step1Props;
   step2?: unknown;
   setStep1?: (step1: Step1Props) => void;
   setStep2?: (step2: Step2Props) => void;
   setStep3?: (step3: Step3Props) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
+}
+
+export interface AddMeetingRouteParams {
+  eventId?: string;
+}
+
+export interface AddMeetingRouteState {
+  clubId?: string;
 }

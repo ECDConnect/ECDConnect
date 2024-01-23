@@ -30,6 +30,7 @@ export interface DynamicFormProps {
   setValue: any;
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
+  allowedFileSize?: number;
 }
 
 const contentWrapper = '';
@@ -40,6 +41,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   setValue,
   defaultLanguageId,
   acceptedFileFormats,
+  allowedFileSize,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -69,7 +71,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormField
-                  label={title}
+                  label={required.value ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
                   error={errors[propName]?.message}
@@ -84,7 +86,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <Editor
-                  label={title}
+                  label={required.value ? title + ' *' : title}
                   currentValue={
                     field.contentValue ? field.contentValue.value : undefined
                   }
@@ -104,13 +106,14 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
-                  label={title}
+                  label={required.value ? title + ' *' : title}
                   nameProp={propName}
                   contentUrl={
                     field.contentValue ? field.contentValue.value : undefined
                   }
                   returnFullUrl={true}
                   setValue={setValue}
+                  allowedFileSize={allowedFileSize}
                 />
               </div>
             </div>
@@ -121,7 +124,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
                   <DynamicSelector
-                    title={field.title}
+                    title={required.value ? field.title + ' *' : field.title}
                     isReview={false}
                     contentValue={field.contentValue}
                     languageId={defaultLanguageId}
@@ -137,7 +140,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <DynamicSelector
-                  title={field.title}
+                  title={required.value ? field.title + ' *' : field.title}
                   isReview={false}
                   contentValue={field.contentValue}
                   languageId={defaultLanguageId}
@@ -153,7 +156,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <DynamicStaticSelector
-                  title={field.title}
+                  title={required.value ? field.title + ' *' : field.title}
                   isReview={false}
                   contentValue={field.contentValue}
                   entityName={field.dataLinkName}
@@ -172,7 +175,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   currentColor={
                     field.contentValue ? field.contentValue.value : ''
                   }
-                  label={title}
+                  label={required.value ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
                   error={errors[propName]?.message}
@@ -189,7 +192,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   contentValue={
                     field.contentValue ? field.contentValue.value : ''
                   }
-                  label={title}
+                  label={required.value ? title + ' *' : title}
                   nameProp={propName}
                   control={control}
                   error={errors[propName]?.message}

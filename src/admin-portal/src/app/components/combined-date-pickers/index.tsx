@@ -45,16 +45,17 @@ const Component = ({
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
+  const minDateSelect = new Date(currentYear, currentMonth, 1);
 
   useEffect(() => {
     if (contentValue && contentValue !== '') {
       const dateItem = contentValue.split('T');
       const dateItems = dateItem[0].split('-');
 
-      if (dateItems.length) {
+      if (dateItems.length > 1) {
         const formattedDate = new Date(
-          +dateItems[0] - 1,
-          +dateItems[1],
+          +dateItems[0],
+          +dateItems[1] - 1,
           +dateItems[2]
         );
         setDay(formattedDate);
@@ -198,7 +199,7 @@ const Component = ({
           disabledKeyboardNavigation
           onFocus={(e) => e.target.blur()}
           showYearPicker
-          minDate={currentDate}
+          minDate={minDateSelect}
         />
       </div>
       <span className="text-errorMain text-xs"> {error && error} </span>

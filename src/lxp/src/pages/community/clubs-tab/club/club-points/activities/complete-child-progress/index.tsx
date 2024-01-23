@@ -94,7 +94,7 @@ export const CompleteChildProgressReports: React.FC = () => {
     monthlyRecords?.caregiverPerc === 100 &&
     monthlyRecords?.progressPerc === 100;
   const isToShowCaregiverMeetingButton =
-    monthlyRecords?.caregiverPerc !== 0 && monthlyRecords?.progressPerc !== 0;
+    monthlyRecords?.caregiverPerc !== 0 || monthlyRecords?.progressPerc !== 0;
 
   const isCelebratoryMessage = points?.points === pointsConfig.max;
 
