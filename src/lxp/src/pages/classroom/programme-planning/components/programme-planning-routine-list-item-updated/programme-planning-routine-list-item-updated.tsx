@@ -44,7 +44,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
     if (selectedDate) {
       if (
         selectedDate < new Date() &&
-        selectedDate?.toDateString() === new Date().toDateString()
+        selectedDate.toDateString() === new Date().toDateString()
       ) {
         return true;
       } else {
