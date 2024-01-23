@@ -476,7 +476,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
   };
 
-  if (plannedActivities.length !== 0 && isPastDay() && !currentDailyProgramme) {
+  if (
+    (isPastDay() && !currentDailyProgramme) ||
+    (!currentDailyProgramme?.smallGroupActivityId &&
+      !currentDailyProgramme?.largeGroupActivityId &&
+      !currentDailyProgramme?.storyActivityId)
+  ) {
     return (
       <div className={'mb-20 flex flex-col pt-4'}>
         <ProgrammePlanningHeaderUpdated
