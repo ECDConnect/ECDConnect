@@ -5,29 +5,51 @@ import {
   Checkbox,
   Typography,
 } from '@ecdlink/ui';
-import { AddMeetingProps } from '../index.types';
+import { AddMeetingProps, AddMeetingRouteParams } from '../index.types';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { usePrevious } from '@ecdlink/core';
+import { useParams } from 'react-router';
+import { clubSelectors } from '@/store/club';
 
-export const Step2 = ({ setIsEnabledButton, setStep2 }: AddMeetingProps) => {
+export const Step2 = ({
+  setIsEnabledButton,
+  setStep2,
+  clubId,
+}: AddMeetingProps) => {
   const [attendance, setAttendance] = useState<AttendanceListDataItem[]>([]);
   const [isChecked, setIsChecked] = useState<boolean>(false);
 
-  const club = useSelector(getClubForPractitionerSelector);
-
-  const initialAttendance = club?.clubMembers.map(
-    (member): AttendanceListDataItem => ({
-      title: `${member.firstName ?? ''} ${member.surname ?? ''}`,
-      profileText:
-        member.firstName?.charAt(0) ?? '' + member.surname?.charAt(0) ?? '',
-      attenendeeId: member.practitionerId ?? '',
-      profileDataUrl: member.profileImageUrl ?? '',
-      avatarColor: '#D7D1E6',
-      status: AttendanceStatus.Present,
-    })
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const details = useSelector(
+    clubSelectors.getActivityMeetRegularDetailsSelector(club?.id ?? '')
   );
+
+  const { eventId } = useParams<AddMeetingRouteParams>();
+
+  const upcomingMeeting = details?.upcomingMeetings?.find(
+    (item) => item?.eventId === eventId
+  );
+
+  const initialAttendance = club?.clubMembers
+    ?.filter((member) =>
+      !!upcomingMeeting
+        ? upcomingMeeting?.meetingParticipants?.some(
+            (item) => item?.userId === member?.userId
+          )
+        : member
+    )
+    ?.map(
+      (member): AttendanceListDataItem => ({
+        title: `${member.firstName ?? ''} ${member.surname ?? ''}`,
+        profileText:
+          member.firstName?.charAt(0) ?? '' + member.surname?.charAt(0) ?? '',
+        attenendeeId: member.practitionerId ?? '',
+        profileDataUrl: member.profileImageUrl ?? '',
+        avatarColor: '#D7D1E6',
+        status: AttendanceStatus.Present,
+      })
+    );
 
   const presentList = useMemo(() => {
     if (!attendance.length) {

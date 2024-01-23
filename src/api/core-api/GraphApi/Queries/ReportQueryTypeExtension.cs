@@ -1203,6 +1203,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var pqaRatingRepo = repoFactory.CreateGenericRepository<PQARating>(userContext: uId);
             //var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
             var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId); 
+            var clubMemberRepo = repoFactory.CreateGenericRepository<ClubMember>(userContext: uId);
+            var clubMeetingRepo = repoFactory.CreateGenericRepository<ClubMeeting>(userContext: uId);
 
             var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
@@ -1218,7 +1220,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     practitioners = practRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(uId)).ToList();
                     break;
                 default:
-                    // How/Does this get used by a single practitioner ???
                     practitioners = practRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
                     break;
             }
@@ -1229,6 +1230,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId)).ToList();
             var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId)).ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            var clubMemberDictionary = clubMemberRepo.GetAll().Where(x => x.IsActive).Select(x => new { x.PractitionerId, x.ClubId }).ToList();
+                        
+            var lastMonthClubMeetings = clubMeetingRepo.GetAll()
+                .Where(x => x.IsActive && x.MeetingDate.HasValue && x.MeetingDate.Value.Month == DateTime.Now.Month && x.MeetingDate.Value.Year == DateTime.Now.Year)
+                .Include(x => x.ClubMeetingRegister)
+                .ToList();            
+                
+            var practitionerClubAbsenceDictionary = clubMeetingRegisterRepo.GetAll()
+                .Where(x => x.InsertedDate.Year == DateTime.Now.Year && x.IsActive && !x.Attended)
+                .GroupBy(x => x.PractitionerId)
+                .ToDictionary(x => x.First().PractitionerId, x => x.Count());
 
             foreach (var practitioner in practitioners)
             {
@@ -1338,7 +1350,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (traineeTimeline.StarterLicenseColor == null || traineeTimeline.StarterLicenseColor == warningString) warningCount++;
                         if (traineeTimeline.ThreeChildrenRegisteredColor == null || traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
 
-                        if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28) || 
+                        if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28) ||
                             traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-28))
                         {
                             if (warningCount > 0)
@@ -1616,7 +1628,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         continue;
                     }
                     #endregion
-                }  
+                }
 
                 #region ON LEAVE
                 if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date == DateTime.Now.Date))
@@ -1659,7 +1671,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     continue;
                 }
                 #endregion
-                
+
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
                 {
 
@@ -1724,14 +1736,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     if (numberOfLearners < 5)
                     {
-                       notification.Subject = "Less than 5 children registered";
-                       notification.Icon = MetricsIconEnum.Error.ToString();
-                       notification.Color = MetricsColorEnum.Error.ToString();
-                       notification.Message = "";
-                       notification.Notes = "";
-                       notification.GroupingName = "Less than 5 children registered";
-                       yield return notification;
-                    }                   
+                        notification.Subject = "Less than 5 children registered";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Less than 5 children registered";
+                        yield return notification;
+                    }
                     #endregion
                 }
 
@@ -1758,7 +1770,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     continue;
                 }
                 #endregion
-               
+
                 if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {
                     #region 50% CHILD ATTENDANCE
@@ -1804,6 +1816,41 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                     #endregion
                 }
+
+                #region NOT ASSIGNED TO CLUB
+
+                if (!clubMemberDictionary.Any(x => x.PractitionerId == practitioner.Id))
+                {
+                    notification.Subject = "Not assigned to a club";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Not assigned to a club";
+                    yield return notification;
+                    continue;
+                }
+
+                #endregion
+
+                #region MISSED 3 CLUB MEETINGS
+
+                var clubId = clubMemberDictionary.First(x => x.PractitionerId == practitioner.Id).ClubId;
+                var lastMonthMeeting = lastMonthClubMeetings.FirstOrDefault(x => x.ClubId == clubId);
+                if (lastMonthMeeting != null && lastMonthMeeting.ClubMeetingRegister.Any(x => !x.Attended && x.PractitionerId == practitioner.Id))
+                {
+                    var missedMeetings = practitionerClubAbsenceDictionary.ContainsKey(practitioner.Id) ? practitionerClubAbsenceDictionary[practitioner.Id] : 1;
+                    notification.Subject = $"Missed {missedMeetings} club meetings";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Missed club meetings";
+                    yield return notification;
+                    continue;
+                }
+
+                #endregion
 
                 #region BUSINESS SKILLS TRAINING DUE
                 if (!practitioner.AttendedBusinessSkills.HasValue || !practitioner.AttendedBusinessSkills.Value)

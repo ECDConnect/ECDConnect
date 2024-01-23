@@ -25,7 +25,7 @@ import {
   XIcon,
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import { ContentTypes } from '../../../../../../constants/content-management';
+import CategoryForm from './category-form/category-form';
 
 export interface ContentViewProps {
   content: any;
@@ -39,12 +39,7 @@ export interface ContentViewProps {
   cancelCompare?: () => void;
 }
 
-export interface RequirementProps {
-  value: boolean;
-  message: string;
-}
-
-export default function ContentEdit({
+export default function EditCategory({
   content,
   selectedLanguageId,
   defaultLanguageId,
@@ -55,8 +50,6 @@ export default function ContentEdit({
   savedContent,
   cancelCompare,
 }: ContentViewProps) {
-  const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
-  const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
@@ -90,6 +83,22 @@ export default function ContentEdit({
     ${creationMutationName} (input: $input, localeId: $localeId) 
     }
 `;
+
+  const updateSubcategory = gql`
+    mutation updateProgressTrackingSubCategory(
+      $id: String!
+      $input: ProgressTrackingSubCategoryInput!
+      $localeId: String!
+    ) {
+      updateProgressTrackingSubCategory(
+        id: $id
+        input: $input
+        localeId: $localeId
+      ) {
+        id
+      }
+    }
+  `;
 
   const dialog = useDialog();
 
@@ -153,9 +162,11 @@ export default function ContentEdit({
 
   const [updateContent] = useMutation(updateMutation);
   const [createContent] = useMutation(createMutation);
+  const [updateSubcategoryContent] = useMutation(updateSubcategory);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [filteredSubcategories, setFilteredSubcategories] = useState([]);
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -186,15 +197,6 @@ export default function ContentEdit({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentType, contentValues, selectedLanguageId]);
 
-  useEffect(() => {
-    if (contentType) {
-      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-        setAcceptedFileFormats(['pdf']);
-        setAllowedFileSize(5242880);
-      }
-    }
-  }, [contentType]);
-
   const getRenderField = (
     field: ContentTypeFieldDto
   ): FormTemplateField | undefined => {
@@ -208,15 +210,13 @@ export default function ContentEdit({
       (x) => x.contentName === field?.dataLinkName
     );
 
-    const requirementValues: RequirementProps = getRequiredValueForField(field);
-
     const returnField: FormTemplateField = {
       propName: field?.fieldName ?? '',
       type: field?.fieldType.dataType ?? '',
       title: camelCaseToSentanceCase(field?.displayName ?? ''),
       required: {
-        value: requirementValues.value,
-        message: requirementValues.message,
+        value: false,
+        message: '',
       },
       contentValue: item,
       optionDefinition: optionDefinition,
@@ -232,29 +232,9 @@ export default function ContentEdit({
     return returnField;
   };
 
-  const getRequiredValueForField = (field: ContentTypeFieldDto) => {
-    let answer: RequirementProps = { value: false, message: '' };
-    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-      if (field.fieldName === 'title') {
-        answer.value = true;
-        answer.message = 'Please provide a title';
-      }
-      if (field.fieldName === 'startDate') {
-        answer.value = true;
-        answer.message = 'Please provide a start date';
-      }
-      if (field.fieldName === 'resource') {
-        answer.value = true;
-        answer.message = 'Please upload a pdf resource';
-      }
-    }
-    return answer;
-  };
-
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
-
     if (!content?.id) {
       await createContent({
         variables: {
@@ -281,13 +261,56 @@ export default function ContentEdit({
       variant: NOTIFICATION.SUCCESS,
     });
 
+    if (filteredSubcategories?.length > 0) {
+      for (let item of filteredSubcategories) {
+        if (!item?.id) {
+          savedContent();
+
+          setLoading(false);
+          return;
+        }
+
+        if (
+          item?.id &&
+          (item?.smallGroupActivity?.[0]?.id !== '' ||
+            item?.smallGroupActivity?.id !== '')
+        ) {
+          let subCategorySkills = item?.skills
+            ?.map((skill) => skill?.id)
+            ?.toString();
+
+          const updateThemeDayResponse = await updateSubcategoryContent({
+            variables: {
+              id: item?.id.toString(),
+              input: {
+                description: item?.description,
+                imageUrl: item?.imageUrl,
+                name: item?.name,
+                skills: subCategorySkills,
+              },
+              localeId: selectedLanguageId.toString(),
+            },
+          });
+          if (updateThemeDayResponse) {
+            setNotification({
+              title: `Changes saved!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+          }
+        }
+      }
+
+      savedContent();
+
+      setLoading(false);
+      cancelEdit();
+    }
+
     savedContent();
 
     setLoading(false);
 
-    if (cancelEdit) {
-      cancelEdit();
-    }
+    cancelEdit();
   };
 
   if (
@@ -352,13 +375,12 @@ export default function ContentEdit({
               />
             )}
 
-            <DynamicForm
+            <CategoryForm
               template={template}
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
-              acceptedFileFormats={acceptedFileFormats}
-              allowedFileSize={allowedFileSize}
+              setFilteredSubcategories={setFilteredSubcategories}
             />
           </div>
 

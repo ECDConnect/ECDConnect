@@ -56,6 +56,7 @@ import {
   childrenForPractitionerActions,
   childrenForPractitionerThunkActions,
 } from './store/childrenForPractitioner';
+import { classroomsForCoachThunkActions } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
@@ -254,14 +255,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
     ).unwrap();
 
-    // POINTS
-    (async () =>
-      await appDispatch(
-        pointsThunkActions.getPointsLibrary({
-          userId: userData?.id!,
-        })
-      ).unwrap())();
-
     setStaticDataLoading(false);
   };
 
@@ -404,6 +397,17 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             coachThunkActions.getAllClubsForCoach({
               userId: userData?.id!,
             })
+          ).unwrap())();
+        (async (id) =>
+          await appDispatch(
+            classroomsForCoachThunkActions.getClassroomForCoach({
+              id: userData?.id!,
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            childrenThunkActions.getChildrenForCoach({})
           ).unwrap())();
       }
       if (!isCoach) {

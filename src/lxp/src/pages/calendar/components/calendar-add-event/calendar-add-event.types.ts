@@ -41,6 +41,9 @@ export type CalendarEditEventInfo = {
 export interface CalendarAddEventProps {
   event?: CalendarAddEventInfo;
   guests?: ListDataItem[];
+  optionsToHide?: CalendarAddEventInfo['eventType'][];
+  eventTypeDisabled?: boolean;
+  hideAddParticipantsButton?: boolean;
   onUpdated: (isNew: boolean, event: CalendarEventModel) => void;
   onCancel: () => void;
 }
@@ -82,12 +85,15 @@ export const CalendarAddEventFormSchema = Yup.object().shape({
 export interface CalendarAddEventOptions {
   event: CalendarAddEventInfo;
   guests?: ListDataItem[];
+  optionsToHide?: CalendarAddEventInfo['eventType'][];
   onUpdated?: (isNew: boolean, event: CalendarEventModel) => void;
   onCancel?: () => void;
 }
 
 export interface CalendarEditEventOptions {
   event: CalendarEditEventInfo;
+  eventTypeDisabled?: boolean;
+  hideAddParticipantsButton?: boolean;
   onUpdated?: (event: CalendarEventModel) => void;
   onCancel?: () => void;
 }
