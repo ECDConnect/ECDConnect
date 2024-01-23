@@ -43,8 +43,8 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   const isPastDay = () => {
     if (selectedDate) {
       if (
-        selectedDate <= new Date() &&
-        selectedDate?.toDateString() !== new Date().toDateString()
+        selectedDate < new Date() &&
+        selectedDate?.toDateString() === new Date().toDateString()
       ) {
         return true;
       } else {

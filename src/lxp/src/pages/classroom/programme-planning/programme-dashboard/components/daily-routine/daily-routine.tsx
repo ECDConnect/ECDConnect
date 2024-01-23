@@ -124,8 +124,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const isPastDay = () => {
     if (selectedDate) {
       if (
-        selectedDate <= new Date() &&
-        selectedDate?.toDateString() !== new Date().toDateString()
+        selectedDate < new Date() &&
+        selectedDate?.getTime() === new Date().getTime()
       ) {
         return true;
       } else {
