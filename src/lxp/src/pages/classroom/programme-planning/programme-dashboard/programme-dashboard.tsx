@@ -118,7 +118,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
                 history.push(ROUTES.PROGRAMMES.THEME);
                 onCancel();
               },
-              leadingIcon: 'CheckCircleIcon',
+              leadingIcon: 'PencilIcon',
             },
           ]}
         />

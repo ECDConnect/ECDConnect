@@ -478,7 +478,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   if (
     (isPastDay() && !currentDailyProgramme) ||
-    (!currentDailyProgramme?.smallGroupActivityId &&
+    (isPastDay() &&
+      !currentDailyProgramme?.smallGroupActivityId &&
       !currentDailyProgramme?.largeGroupActivityId &&
       !currentDailyProgramme?.storyActivityId)
   ) {
