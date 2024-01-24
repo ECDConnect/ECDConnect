@@ -114,7 +114,6 @@ export default function ContentWorkflow({
   };
 
   const handleNoDynamicForms = (type: string) => {
-    console.log({ type });
     switch (type) {
       case 'StoryBook':
         return (
