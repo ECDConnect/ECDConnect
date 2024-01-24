@@ -52,6 +52,13 @@ namespace EcdLink.Api.CoreApi.Services
                     if (!auditLogs.Any(x => x.Submitted.HasValue))
                     {
                         var remoteDocId = await PushNewDocument(document);
+
+                        await _logManager.IntegrationLog(
+                            $"Success: PDF pushed to smart start",
+                            $"Remote Doc Id: {remoteDocId}",
+                            mappedPractitioner.UserId,
+                            LogRelatedType.Log,
+                            "PushMonthlyAttendancePdf");
                     }
 
                     // Mark the audit logs as submitted so we don't resend it
