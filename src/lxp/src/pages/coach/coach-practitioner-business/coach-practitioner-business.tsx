@@ -196,6 +196,7 @@ export const CoachPractitionerBusiness = () => {
     isStartUpSupportEnding,
     isSubmitWindowOpen,
     isThisMonthSubmitted,
+    lastStatementContactByCoach,
     lastStatementsBalance,
     lossProfitMonths,
     practitionerFirstName,
