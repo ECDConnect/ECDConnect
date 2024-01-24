@@ -38,6 +38,7 @@ export interface FormTemplateField {
   optionDefinition?: ContentDefinitionModelDto;
   selectedLanguageId?: string;
   dataLinkName?: string;
+  isRequired?: boolean;
 }
 
 export interface FormTemplateFieldRequired {

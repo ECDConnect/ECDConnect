@@ -9,7 +9,7 @@ import {
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
@@ -61,13 +61,15 @@ export default function ContentEdit({
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
     control: control,
   };
+
   const { type: formType } = useWatch({ control });
 
   const mutationName = `update${contentType?.name}`;
@@ -164,6 +166,13 @@ export default function ContentEdit({
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
+  const initialValues = getValues();
+  const disableButton = template?.fields?.filter(
+    (item) =>
+      item?.isRequired &&
+      initialValues?.hasOwnProperty(item?.propName) &&
+      !initialValues[item?.propName]
+  );
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -230,6 +239,7 @@ export default function ContentEdit({
       optionDefinition: optionDefinition,
       selectedLanguageId: selectedLanguageId,
       dataLinkName: field.dataLinkName,
+      isRequired: field?.isRequired,
     };
 
     if (item && item.localeId === selectedLanguageId) {
@@ -385,13 +395,17 @@ export default function ContentEdit({
               allowedFileSize={allowedFileSize}
               formType={formType}
               choosedSectionTitle={choosedSectionTitle}
+              getValues={getValues}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className={`bg-secondary ${
+                disableButton?.length > 0 ? 'opacity-25' : ''
+              } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
+              disabled={disableButton?.length > 0}
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish

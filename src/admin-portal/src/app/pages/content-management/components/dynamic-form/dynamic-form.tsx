@@ -11,7 +11,7 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
-import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
 const acceptedFormats = [
@@ -33,6 +33,7 @@ export interface DynamicFormProps {
   allowedFileSize?: number;
   formType?: string;
   choosedSectionTitle?: string;
+  getValues?: any;
 }
 
 const contentWrapper = '';
@@ -46,6 +47,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   allowedFileSize,
   formType,
   choosedSectionTitle,
+  getValues,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -66,8 +68,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
   };
+  const initialValues = getValues();
 
   const [fields, setFields] = useState<any>();
+  const requiredMessage = 'This field is required';
 
   useEffect(() => {
     if (template) {
@@ -79,7 +83,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields.map((field) => {
-      const { type, title, propName, required, validation } = field;
+      const { type, title, propName, required, validation, isRequired } = field;
 
       register(propName, { required: required });
 
@@ -127,8 +131,14 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   label={required.value ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
-                  error={errors[propName]?.message}
-                  required={required}
+                  error={
+                    isRequired &&
+                    initialValues?.hasOwnProperty(propName) &&
+                    !initialValues[propName]
+                      ? requiredMessage
+                      : ''
+                  }
+                  required={isRequired}
                   validation={validation}
                 />
               </div>
@@ -145,6 +155,15 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   }
                   onStateChange={(data) => onStateChange(propName, data)}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );

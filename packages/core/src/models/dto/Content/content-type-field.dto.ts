@@ -11,4 +11,5 @@ export interface ContentTypeFieldDto extends EntityBase {
   fieldType: FieldTypeDto;
   fieldTypeId: string;
   isActive: boolean;
+  isRequired?: boolean;
 }
