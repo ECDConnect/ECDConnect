@@ -213,7 +213,7 @@ export const CoachChildProfile: React.FC = () => {
   useEffect(() => {
     const dateOfBirth = child?.user?.dateOfBirth as string;
     setChildAge(getAgeInYearsMonthsAndDays(dateOfBirth));
-  });
+  }, [child?.user?.dateOfBirth]);
 
   useEffect(() => {
     if (!attendancePercentage) return;
