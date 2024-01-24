@@ -7,6 +7,8 @@ interface NotificationTagConfigParams {
   GetStartedTrainee: Partial<Message>;
   StartJourney: Partial<Message>;
   AddedToProgramme: Partial<Message>;
+  SayHello: Partial<Message>;
+  UpdateFee: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AcceptAgreement: {
@@ -36,6 +38,13 @@ export const notificationTagConfig: NotificationTagConfigParams = {
       route: ROUTES.PRACTITIONER.PROFILE.EDIT,
     },
     viewType: 'Messages',
+  },
+  SayHello: {
+    cta: '[[SayHello]]',
+    routeConfig: {
+      route: ROUTES.PRACTITIONER.COMMUNITY.WELCOME,
+    },
+    viewType: 'Both',
   },
   UpdateFee: {
     cta: '[[UpdateFee]]',
