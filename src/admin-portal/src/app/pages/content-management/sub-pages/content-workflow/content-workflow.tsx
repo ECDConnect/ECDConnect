@@ -17,6 +17,8 @@ import { ContentLoader } from '../../../../components/content-loader/content-loa
 import CreateStory from '../content-list/components/create-story/create-story';
 import CreateTheme from './components/create-theme/create-theme';
 import EditCategory from './components/edit-category/edit-category';
+import EditSkillsForm from './components/edit-skills/components/edit-skills-form/edit-skills-form';
+import EditSkills from './components/edit-skills/edit-skills';
 
 export interface ContentWorkflowProps {
   contentView: ContentManagementView;
@@ -112,6 +114,7 @@ export default function ContentWorkflow({
   };
 
   const handleNoDynamicForms = (type: string) => {
+    console.log({ type });
     switch (type) {
       case 'StoryBook':
         return (
@@ -197,6 +200,34 @@ export default function ContentWorkflow({
             </div>
           </>
         );
+      case 'ProgressTrackingSkill':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditSkills
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        cancelEdit={() => goBack()}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
       default:
         return null;
     }
@@ -232,7 +263,8 @@ export default function ContentWorkflow({
           {!isCompareMode ? (
             contentType?.name === ContentName.StoryBook ||
             contentType?.name === ContentName.Theme ||
-            contentType?.name === ContentName.ProgressTrackingCategory ? (
+            contentType?.name === ContentName.ProgressTrackingCategory ||
+            contentType?.name === ContentName.ProgressTrackingSkill ? (
               handleNoDynamicForms(contentType?.name)
             ) : (
               <>
