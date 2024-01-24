@@ -274,7 +274,7 @@ export default function ContentList({
   }, [languages]);
 
   useEffect(() => {
-    if (contentType.name === 'CoachingCircleTopics') {
+    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
       setSearchText('Search by topic…');
       setButtonText('Topic');
     } else if (contentType?.name === 'StoryBook') {

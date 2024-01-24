@@ -26,6 +26,7 @@ import {
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import { ContentTypes } from '../../../../../../constants/content-management';
+import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
 
 export interface ContentViewProps {
   content: any;
@@ -92,7 +93,11 @@ export default function ContentEdit({
   mutation ${creationMutationName} ($input: ${contentType.name}Input!, $localeId: String!) {
     ${creationMutationName} (input: $input, localeId: $localeId) 
     }
-`;
+  `;
+
+  const [saveCoachCircleDates] = useMutation(
+    bulkUpdateCoachingCircleTopicDates
+  );
 
   const dialog = useDialog();
 
@@ -237,6 +242,7 @@ export default function ContentEdit({
 
   const getRequiredValueForField = (field: ContentTypeFieldDto) => {
     let answer: RequirementProps = { value: false, message: '' };
+    // this will be replaced by the new isRequired column being implemented
     if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
       if (field.fieldName === 'title') {
         answer.value = true;
@@ -274,9 +280,24 @@ export default function ContentEdit({
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
-      }).catch(() => {
+      }).catch((err) => {
         setLoading(false);
       });
+
+      // the requirement is that when you save the dates for a coaching circle, you need to update all other languages with same dates.
+      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+        await saveCoachCircleDates({
+          variables: {
+            contentId: +content.id,
+            contentTypeId: +contentType.id,
+            localeId: selectedLanguageId.toString(),
+            startDate: model['startDate'],
+            endDate: model['endDate'] === '' ? null : model['endDate'],
+          },
+        }).catch((error) => {
+          console.log(error);
+        });
+      }
     }
 
     setNotification({

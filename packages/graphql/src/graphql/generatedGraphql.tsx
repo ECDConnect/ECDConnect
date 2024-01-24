@@ -3560,6 +3560,7 @@ export type FieldDefinitionModel = {
   displayPage: Scalars['Boolean'];
   fieldTypeId: Scalars['Int'];
   graphDataTypeName?: Maybe<Scalars['String']>;
+  isRequired: Scalars['Boolean'];
   name?: Maybe<Scalars['String']>;
 };
 
@@ -5621,6 +5622,7 @@ export type Mutation = {
   autoSubmitStatement?: Maybe<ResultReturnObject>;
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
+  bulkUpdateCoachingCircleTopicDates: Scalars['Int'];
   calculateCaregiverReportBack: Scalars['Boolean'];
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   calculateClubChildAttendance: Scalars['Boolean'];
@@ -5912,6 +5914,7 @@ export type Mutation = {
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
   pushPQAData: Scalars['Boolean'];
+  pushReAccreditationData: Scalars['Boolean'];
   pushSmartSpaceVisitsData: Scalars['Boolean'];
   reassignAbsenteeFromHistory: Scalars['Boolean'];
   reassignAbsentees: Scalars['Boolean'];
@@ -6391,6 +6394,14 @@ export type MutationBulkDeleteCoachingCircleTopicsArgs = {
 
 export type MutationBulkDeleteUserArgs = {
   ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type MutationBulkUpdateCoachingCircleTopicDatesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  localeId: Scalars['UUID'];
+  startDate: Scalars['DateTime'];
 };
 
 export type MutationCalculateChildrenRegistrationRemovalArgs = {

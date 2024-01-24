@@ -581,14 +581,12 @@ export default function UiTable({
       ),
     });
   }, [
-    component,
     confirmationFalse,
     confirmationMessage,
     confirmationTitle,
     confirmationTrue,
     deleteCoachingCircleTopics,
     dialog,
-    selectedRows,
   ]);
 
   const renderBulkActions = useMemo(() => {

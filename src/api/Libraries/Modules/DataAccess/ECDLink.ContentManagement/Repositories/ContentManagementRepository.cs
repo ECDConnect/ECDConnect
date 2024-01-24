@@ -145,6 +145,19 @@ namespace ECDLink.ContentManagement.Repositories
             return contentValues.ToObject();
         }
 
+        public List<Guid> GetAllLanguagesForContentId(int contentId, int contentTypeId)
+        {
+            var currentTenant = TenantExecutionContext.Tenant.Id;
+            var content = _context.Contents
+                            .Include(i => i.ContentValues)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.ContentTypeId == contentTypeId
+                                    && x.TenantId == currentTenant)
+                            .FirstOrDefault();
+            return content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
+        }
+
         public IEnumerable<object> GetByIds(Guid localeId, params int[] contentIds)
         {
             // TODO: Do we need to selectively skip the IsActive check?
