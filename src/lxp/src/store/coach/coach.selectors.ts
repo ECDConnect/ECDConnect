@@ -5,8 +5,6 @@ import {
   CoachingCircleTopicDto,
 } from '@ecdlink/core';
 import { RootState } from '../types';
-import { createSelector } from '@reduxjs/toolkit';
-import { isAfter } from 'date-fns';
 
 export const getCoach = (state: RootState): CoachDto | undefined =>
   state.coach.coach;

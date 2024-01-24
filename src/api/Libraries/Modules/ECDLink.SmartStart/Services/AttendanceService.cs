@@ -253,7 +253,7 @@ namespace ECDLink.SmartStart.Services
 
                     foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                     {
-                        var validClassDays = GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
+                        var validClassDays = GetDayRangeWithoutHolidays(DateTime.Now, DateTime.Now);
                         var daysOfClass = CalculateDaysOfClassForMonth(dt, programme.MeetingDay, validClassDays, learner.StartedAttendance, learner.StoppedAttendance);
 
                         var attendedClasses = attendanceForPeriod
