@@ -21,7 +21,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
-> = ({ routineItem, onClick, day }) => {
+> = ({ routineItem, onClick, day, selectedDate }) => {
   const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
@@ -40,6 +40,16 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
     )
   );
 
+  const isPastDay = () => {
+    if (selectedDate) {
+      if (selectedDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  };
+
   const showOnlineOnly = () => {
     dialog({
       color: 'bg-white',
@@ -51,10 +61,11 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   };
 
   const handleOnClick = () => {
-    if (isOnline || (!isOnline && !!activity?.name)) {
+    if (isPastDay()) {
+      return;
+    } else if (isOnline || (!isOnline && !!activity?.name)) {
       return onClick();
     }
-
     return showOnlineOnly();
   };
 
@@ -113,28 +124,8 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       routineItem.name === DailyRoutineItemType.greeting ||
       routineItem.name === DailyRoutineItemType.freePlay
     ) {
-      return (
-        <Card className="bg-primaryAccent1 w-full rounded-xl py-4 px-2">
-          <div className={'flex w-full flex-row items-center justify-between'}>
-            <Typography
-              type={'help'}
-              text={routineItem?.name}
-              color={'white'}
-            />
-            <div className="flex">
-              <Typography
-                type={'help'}
-                text={routineItem.timeSpan}
-                color={'white'}
-              />
-
-              {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
-            </div>
-          </div>
-        </Card>
-      );
     }
-    if (!activity?.name) {
+    if (!activity?.name && !isPastDay()) {
       return (
         <Card className="border-secondary w-full rounded-xl border-2 bg-white py-4 px-2">
           <div
@@ -146,6 +137,23 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
             <Typography type={'h4'} text={'Add Activity'} color={'secondary'} />
 
             {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
+          </div>
+        </Card>
+      );
+    } else if (!activity?.name && isPastDay()) {
+      return (
+        <Card className="bg-primaryAccent2 w-full rounded-xl py-4 px-2">
+          <div
+            className={
+              'ml-4 flex w-full flex-row items-center justify-start gap-4'
+            }
+          >
+            <Typography type={'h1'} text={'+'} color={'primaryAccent1'} />
+            <Typography
+              type={'h4'}
+              text={'Add Activity'}
+              color={'primaryAccent1'}
+            />
           </div>
         </Card>
       );

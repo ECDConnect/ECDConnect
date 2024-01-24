@@ -1,6 +1,7 @@
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { isSameDay } from 'date-fns';
 import { useSelector } from 'react-redux';
+import { userSelectors } from '@store/user';
 import { programmeSelectors } from '@store/programme';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
 import { useCallback, useEffect, useState } from 'react';
@@ -15,8 +16,18 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
+import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
+import walktroughImage from '../../../../assets/walktroughImage.png';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import {
+  programmeThemeSelectors,
+  programmeThemeThunkActions,
+} from '@/store/content/programme-theme';
+import ROUTES from '@routes/routes';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+
 const { usePDF } = require('react-to-pdf');
 
 interface ProgrammeDashboardProps {
@@ -31,6 +42,10 @@ export interface iSkills {
 export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   programmeStartDate,
 }) => {
+  const [showFirstVisitModal, setShowFirstVisitModal] = useState(true);
+  const history = useHistory();
+  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+  const user = useSelector(userSelectors.getUser);
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const [showReport, setShowReport] = useState(false);
@@ -70,6 +85,53 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
     setTimeout(() => toPDF(), 600);
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
+
+  const storageFirstVisit = getStorageItem<number>(
+    LocalStorageKeys.hasVisitedProgrammeDashboard
+  );
+
+  const showFirstVisit = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <ActionModal
+          customIcon={
+            <div className="flex">
+              <img src={walktroughImage} alt="profile" className="mb-2" />
+            </div>
+          }
+          importantText={`Hello, ${user?.firstName}! Start planning your daily routine`}
+          detailText={
+            'Choose a theme and create your own programme for this week'
+          }
+          actionButtons={[
+            {
+              text: 'Create my own programme',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.hasVisitedProgrammeDashboard
+                );
+                history.push(ROUTES.PROGRAMMES.THEME);
+                onCancel();
+              },
+              leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  useEffect(() => {
+    if (showFirstVisitModal && !storageFirstVisit) {
+      showFirstVisit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showFirstVisitModal]);
 
   useEffect(() => {
     if (!progressSummary) {
