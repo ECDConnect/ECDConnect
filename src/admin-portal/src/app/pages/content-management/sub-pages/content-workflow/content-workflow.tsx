@@ -7,7 +7,10 @@ import {
 } from '@ecdlink/core';
 import { classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { ContentManagementView } from '../../content-management-models';
+import {
+  ContentManagementView,
+  ContentName,
+} from '../../content-management-models';
 import ContentCompare from './components/content-compare/content-compare';
 import ContentEdit from './components/content-edit/content-edit';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -227,9 +230,9 @@ export default function ContentWorkflow({
         </div>
         <div className="min-w-0 flex-1 rounded xl:flex">
           {!isCompareMode ? (
-            contentType?.name === 'StoryBook' ||
-            contentType?.name === 'Theme' ||
-            contentType?.name === 'ProgressTrackingCategory' ? (
+            contentType?.name === ContentName.StoryBook ||
+            contentType?.name === ContentName.Theme ||
+            contentType?.name === ContentName.ProgressTrackingCategory ? (
               handleNoDynamicForms(contentType?.name)
             ) : (
               <>
