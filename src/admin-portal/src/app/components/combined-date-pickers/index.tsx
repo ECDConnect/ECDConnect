@@ -55,7 +55,7 @@ const Component = ({
       if (dateItems.length > 1) {
         const formattedDate = new Date(
           +dateItems[0],
-          +dateItems[1] - 1,
+          +dateItems[1],
           +dateItems[2]
         );
         setDay(formattedDate);
