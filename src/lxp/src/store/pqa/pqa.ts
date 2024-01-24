@@ -84,9 +84,7 @@ const pqaSlice = createSlice({
         const { userId, formType } = action.meta;
 
         const visitId = action.payload.visitId;
-        const syncId = action.payload?.syncId;
 
-        console.log({ syncId });
         switch (formType) {
           case 'follow-up-visit':
             handleAddFollowUpVisit({ payload: action.payload, state, userId });
