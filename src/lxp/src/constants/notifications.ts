@@ -37,6 +37,13 @@ export const notificationTagConfig: NotificationTagConfigParams = {
     },
     viewType: 'Messages',
   },
+  UpdateFee: {
+    cta: '[[UpdateFee]]',
+    routeConfig: {
+      route: ROUTES.CLASSROOM.UPDATE_FEE,
+    },
+    viewType: 'Both',
+  },
 };
 
 export const enum MessageStatusConstants {
