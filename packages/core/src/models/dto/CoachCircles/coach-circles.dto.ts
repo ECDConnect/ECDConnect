@@ -23,4 +23,6 @@ export interface CoachingCircleTopicDto {
   title: string;
   description: string;
   topicContent: string;
+  startDate: Date;
+  endDate?: Date;
 }
