@@ -3017,6 +3017,7 @@ export type ContentTypeField = {
   id: Scalars['Int'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isRequired: Scalars['Boolean'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
