@@ -113,7 +113,7 @@ export const CoachChildProfile: React.FC = () => {
   const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildExternalLink
   );
-  console.log('Loop');
+
   const [attendancePercentage, setAttendancePercentage] = useState<number>(0);
   const [notifications, setNotifications] = useState<ListItemProps[]>([]);
   const [profileOptions, setProfileOptions] = useState<ListItemProps[]>([
