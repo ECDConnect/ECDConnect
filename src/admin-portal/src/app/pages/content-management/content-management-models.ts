@@ -15,6 +15,13 @@ export enum FieldType {
   DatePicker = 'date-picker',
 }
 
+export enum ContentName {
+  StoryBook = 'StoryBook',
+  Theme = 'Theme',
+  ProgressTrackingCategory = 'ProgressTrackingCategory',
+  ProgressTrackingSkill = 'ProgressTrackingSkill',
+}
+
 export interface DynamicFormTemplate {
   title: string;
   fields: FormTemplateField[];

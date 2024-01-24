@@ -5,6 +5,7 @@ import {
   addFollowUpVisitForPractitioner,
   addReAccreditationFollowUpVisitForPractitioner,
   addReAccreditationVisitData,
+  addRequestedSupportVisitFormData,
   addSelfAssessmentForPractitioner,
   addSupportVisitFormData,
   addVisitFormData,
@@ -72,7 +73,7 @@ const pqaSlice = createSlice({
       reducer: (
         state,
         action: PayloadAction<
-          CmsVisitDataInputModelInput,
+          CmsVisitDataInputModelInput & { syncId: string },
           string,
           {
             userId: string;
@@ -81,7 +82,11 @@ const pqaSlice = createSlice({
         >
       ) => {
         const { userId, formType } = action.meta;
+
         const visitId = action.payload.visitId;
+        const syncId = action.payload?.syncId;
+
+        console.log({ syncId });
         switch (formType) {
           case 'follow-up-visit':
             handleAddFollowUpVisit({ payload: action.payload, state, userId });
@@ -184,7 +189,7 @@ const pqaSlice = createSlice({
         }
       },
       prepare: (
-        payload: CmsVisitDataInputModelInput,
+        payload: CmsVisitDataInputModelInput & { syncId: string },
         meta: {
           userId: string;
           formType: PQAFormType;
@@ -200,6 +205,7 @@ const pqaSlice = createSlice({
     setThunkActionStatus(builder, addFollowUpVisitForPractitioner);
     setThunkActionStatus(builder, getPractitionerTimeline);
     setThunkActionStatus(builder, addCoachVisitInviteForPractitioner);
+    setThunkActionStatus(builder, addRequestedSupportVisitFormData);
     setThunkActionStatus(
       builder,
       addReAccreditationFollowUpVisitForPractitioner
@@ -305,14 +311,78 @@ const pqaSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      const input = action.meta?.arg;
+
+      if (input) {
+        state.prePqaFormData = state?.prePqaFormData?.filter(
+          (item) => item?.formData?.syncId !== input?.syncId
+        );
+        state.pqaFormData = state?.pqaFormData?.filter(
+          (item) => item?.formData?.syncId !== input?.syncId
+        );
+        state.followUpVisitFormData = state?.followUpVisitFormData?.filter(
+          (item) => item?.formData?.syncId !== input?.syncId
+        );
+        state.reAccreditationFollowUpVisitFormData =
+          state?.reAccreditationFollowUpVisitFormData?.filter(
+            (item) => item?.formData?.syncId !== input?.syncId
+          );
+        state.selfAssessmentFormData = state?.selfAssessmentFormData?.filter(
+          (item) => item?.formData?.syncId !== input?.syncId
+        );
+      } else {
+        state.prePqaFormData = [];
+        state.pqaFormData = [];
+        state.followUpVisitFormData = [];
+        state.reAccreditationFollowUpVisitFormData = [];
+        state.selfAssessmentFormData = [];
+      }
+
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addReAccreditationVisitData.fulfilled, (state, action) => {
+      const input = action.meta?.arg;
+
+      if (input) {
+        state.reAccreditationFormData = state?.reAccreditationFormData?.filter(
+          (item) => item?.formData?.syncId !== input?.syncId
+        );
+      } else {
+        state.reAccreditationFormData = [];
+      }
+
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addSupportVisitFormData.fulfilled, (state, action) => {
+      const input = action.meta?.arg;
+
+      if (input) {
+        state.supportVisitFormData = state?.supportVisitFormData?.filter(
+          (item) => item?.formData?.syncId !== input?.syncId
+        );
+      } else {
+        state.supportVisitFormData = [];
+      }
+
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(
+      addRequestedSupportVisitFormData.fulfilled,
+      (state, action) => {
+        const input = action.meta?.arg;
+
+        if (input) {
+          state.requestedSupportVisitFormData =
+            state?.requestedSupportVisitFormData?.filter(
+              (item) => item?.formData?.syncId !== input?.syncId
+            );
+        } else {
+          state.requestedSupportVisitFormData = [];
+        }
+
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
     builder.addCase(
       addFollowUpVisitForPractitioner.fulfilled,
       (state, action) => {

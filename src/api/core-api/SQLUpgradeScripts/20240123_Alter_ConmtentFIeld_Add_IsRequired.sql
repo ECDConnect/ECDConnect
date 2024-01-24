@@ -1,0 +1,1 @@
+ALTER TABLE public."ContentTypeField" ADD "IsRequired" bool NULL DEFAULT false;

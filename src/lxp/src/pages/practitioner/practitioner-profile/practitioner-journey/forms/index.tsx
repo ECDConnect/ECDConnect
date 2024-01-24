@@ -53,6 +53,7 @@ import {
   question2,
 } from './request-coaching-visit-or-call/constants';
 import { OfflineStep } from './offline';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -278,14 +279,19 @@ export const Form = ({ onBack }: FormProps) => {
   const onSubmitSelfAssessment = async (
     payload: CmsVisitDataInputModelInput
   ) => {
+    const syncId = newGuid();
+
     appDispatch(
-      pqaActions.addVisitFormData(payload, {
-        userId: user?.id!,
-        formType: 'self-assessment',
-      })
+      pqaActions.addVisitFormData(
+        { syncId, ...payload },
+        {
+          userId: user?.id!,
+          formType: 'self-assessment',
+        }
+      )
     );
 
-    await appDispatch(pqaThunkActions.addVisitFormData(payload));
+    await appDispatch(pqaThunkActions.addVisitFormData({ syncId, ...payload }));
   };
 
   const onSubmitRequestCoachingVisitOrCall = async () => {
@@ -419,7 +425,7 @@ export const Form = ({ onBack }: FormProps) => {
         onClose={onBack}
         onSubmit={handleOnSubmit}
         submitButton={renderSubmitButtonStyle}
-        isLoading={isLoading}
+        isLoading={isLoading || isLoadingCoachRequest}
         isView={isView}
         {...(isViewPqaOrReAccreditation && { onView })}
       />
