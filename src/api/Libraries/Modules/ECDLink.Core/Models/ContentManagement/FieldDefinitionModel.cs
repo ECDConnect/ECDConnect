@@ -12,8 +12,6 @@ namespace ECDLink.Core.Models.ContentManagement
         public bool DisplayPage { get; set; }
         public bool IsRequired { get; set; }
         public string AssemblyDataTypeName { get; set; }
-
         public string GraphDataTypeName { get; set; }
-        public bool IsRequired { get; set; }
     }
 }
