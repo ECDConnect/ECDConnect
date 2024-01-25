@@ -290,19 +290,10 @@ namespace ECDLink.ContentManagement.Repositories
 
                     if (fileIndex != null && fileIndex != -1)
                     {
-
-                        var fileStr = value?.ToString();
-                        var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
-                        var bytes = Convert.FromBase64String(b64Str);
-                        using MemoryStream fileStream = new MemoryStream(bytes);
-
-                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-                        var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
-                        fileStream.Dispose();
-
+                        var fileUrl = uploadFile(value?.ToString(), field.FieldName);
                         contentValues.Add(new ContentValue
                         {
-                            Value = fileUrl.ToString(),
+                            Value = fileUrl,
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = TenantExecutionContext.Tenant.Id,
@@ -439,7 +430,6 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentId.ToString());
             }
 
-            var contentValues = new List<ContentValue>();
             // loop through the list of fields for the content type
             foreach (var field in content.ContentType.Fields.Where(x => x.IsActive))
             {

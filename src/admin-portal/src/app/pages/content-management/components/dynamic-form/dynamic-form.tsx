@@ -83,7 +83,16 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields.map((field) => {
-      const { type, title, propName, required, validation, isRequired } = field;
+      const {
+        type,
+        title,
+        propName,
+        required,
+        validation,
+        isRequired,
+        subHeading,
+        fieldAlert,
+      } = field;
 
       register(propName, { required: required });
 
@@ -128,7 +137,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormField
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
                   error={
@@ -149,7 +158,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <Editor
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   currentValue={
                     field.contentValue ? field.contentValue.value : undefined
                   }
@@ -170,15 +179,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         case FieldType.Image:
           return (
             <div key={propName} className={contentWrapper}>
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Editing the file here will update the file for all translations of this page.`}
-                type="warning"
-              />
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   contentUrl={
                     field.contentValue ? field.contentValue.value : undefined
@@ -187,6 +191,15 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   setValue={setValue}
                   allowedFileSize={allowedFileSize}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );
@@ -196,7 +209,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
                   <DynamicSelector
-                    title={required.value ? field.title + ' *' : field.title}
+                    title={isRequired ? field.title + ' *' : field.title}
                     isReview={false}
                     contentValue={field.contentValue}
                     languageId={defaultLanguageId}
@@ -212,7 +225,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <DynamicSelector
-                  title={required.value ? field.title + ' *' : field.title}
+                  title={isRequired ? field.title + ' *' : field.title}
                   isReview={false}
                   contentValue={field.contentValue}
                   languageId={defaultLanguageId}
@@ -228,7 +241,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <DynamicStaticSelector
-                  title={required.value ? field.title + ' *' : field.title}
+                  title={isRequired ? field.title + ' *' : field.title}
                   isReview={false}
                   contentValue={field.contentValue}
                   entityName={field.dataLinkName}
@@ -247,11 +260,20 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   currentColor={
                     field.contentValue ? field.contentValue.value : ''
                   }
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
                   error={errors[propName]?.message}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );
@@ -264,13 +286,24 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   contentValue={
                     field.contentValue ? field.contentValue.value : ''
                   }
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   control={control}
                   error={errors[propName]?.message}
                   required={required}
                   validation={validation}
+                  subHeading={subHeading}
+                  fieldAlert={fieldAlert}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );

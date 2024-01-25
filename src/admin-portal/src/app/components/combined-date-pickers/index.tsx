@@ -9,13 +9,15 @@ import {
   RegisterOptions,
   ValidationRule,
 } from 'react-hook-form';
-import { Typography } from '@ecdlink/ui';
+import { Alert, Typography } from '@ecdlink/ui';
 
 interface ComponentProps {
   label: string;
   error?: string;
   onChange: (date: Date) => void;
   contentValue: string;
+  subHeading?: string;
+  fieldAlert?: string;
 }
 
 interface CombinedDatePickersProps {
@@ -26,6 +28,8 @@ interface CombinedDatePickersProps {
   control: Control<FieldValues, object>;
   required?: Message | ValidationRule<boolean>;
   validation?: RegisterOptions['validate'];
+  subHeading?: string;
+  fieldAlert?: string;
 }
 
 const Component = ({
@@ -33,6 +37,8 @@ const Component = ({
   onChange,
   error,
   contentValue,
+  subHeading,
+  fieldAlert,
 }: ComponentProps) => {
   const [dayPicker, setDay] = useState<Date>();
   const [monthPicker, setMonth] = useState<Date>();
@@ -150,6 +156,16 @@ const Component = ({
         color="textMid"
         text={label}
       />
+      {subHeading && (
+        <Typography type="small" color="textMid" text={subHeading} />
+      )}
+      {fieldAlert && (
+        <Alert
+          className="mt-2 mb-2 rounded-md"
+          message={fieldAlert}
+          type="warning"
+        />
+      )}
       <div className="flex items-center gap-1 sm:col-span-12">
         <ReactDatePicker
           popperClassName="z-50"
@@ -202,6 +218,7 @@ const Component = ({
           minDate={minDateSelect}
         />
       </div>
+
       <span className="text-errorMain text-xs"> {error && error} </span>
     </>
   );
@@ -215,6 +232,8 @@ export const CombinedDatePickers = ({
   error,
   required,
   validation,
+  subHeading,
+  fieldAlert,
 }: CombinedDatePickersProps) => {
   return (
     <Controller
@@ -228,6 +247,8 @@ export const CombinedDatePickers = ({
           error={error}
           onChange={field.onChange}
           contentValue={contentValue}
+          subHeading={subHeading}
+          fieldAlert={fieldAlert}
         />
       )}
     />

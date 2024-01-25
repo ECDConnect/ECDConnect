@@ -9,7 +9,7 @@ import {
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
-import { MouseEvent, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
@@ -25,7 +25,10 @@ import {
   XIcon,
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import { ContentTypes } from '../../../../../../constants/content-management';
+import {
+  CoachingCircleText,
+  ContentTypes,
+} from '../../../../../../constants/content-management';
 import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
 
 export interface ContentViewProps {
@@ -225,21 +228,21 @@ export default function ContentEdit({
       (x) => x.contentName === field?.dataLinkName
     );
 
-    const requirementValues: RequirementProps = getRequiredValueForField(field);
-
     const returnField: FormTemplateField = {
       propName: field?.fieldName ?? '',
       type: field?.fieldType.dataType ?? '',
       title: camelCaseToSentanceCase(field?.displayName ?? ''),
       required: {
-        value: requirementValues.value,
-        message: requirementValues.message,
+        value: false,
+        message: '',
       },
       contentValue: item,
       optionDefinition: optionDefinition,
       selectedLanguageId: selectedLanguageId,
       dataLinkName: field.dataLinkName,
       isRequired: field?.isRequired,
+      subHeading: getSubHeading(field),
+      fieldAlert: getFieldAlert(field),
     };
 
     if (item && item.localeId === selectedLanguageId) {
@@ -250,24 +253,30 @@ export default function ContentEdit({
     return returnField;
   };
 
-  const getRequiredValueForField = (field: ContentTypeFieldDto) => {
-    let answer: RequirementProps = { value: false, message: '' };
+  const getSubHeading = (field: ContentTypeFieldDto) => {
     // this will be replaced by the new isRequired column being implemented
     if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-      if (field.fieldName === 'title') {
-        answer.value = true;
-        answer.message = 'Please provide a title';
+      if (field.fieldName === CoachingCircleText.START_DATE) {
+        return CoachingCircleText.START_DATE_SUB_HEADING;
       }
-      if (field.fieldName === 'startDate') {
-        answer.value = true;
-        answer.message = 'Please provide a start date';
-      }
-      if (field.fieldName === 'resource') {
-        answer.value = true;
-        answer.message = 'Please upload a pdf resource';
+      if (field.fieldName === CoachingCircleText.END_DATE) {
+        return CoachingCircleText.END_DATE_SUB_HEADING;
       }
     }
-    return answer;
+    return '';
+  };
+
+  const getFieldAlert = (field: ContentTypeFieldDto) => {
+    // this will be replaced by the new isRequired column being implemented
+    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      if (field.fieldName === CoachingCircleText.START_DATE) {
+        return CoachingCircleText.START_DATE_ALERT;
+      }
+      if (field.fieldName === CoachingCircleText.END_DATE) {
+        return CoachingCircleText.END_DATE_ALERT;
+      }
+    }
+    return '';
   };
 
   const onSubmit = async (values: any) => {
@@ -301,8 +310,11 @@ export default function ContentEdit({
             contentId: +content.id,
             contentTypeId: +contentType.id,
             localeId: selectedLanguageId.toString(),
-            startDate: model['startDate'],
-            endDate: model['endDate'] === '' ? null : model['endDate'],
+            startDate: model[CoachingCircleText.START_DATE],
+            endDate:
+              model[CoachingCircleText.END_DATE] === ''
+                ? null
+                : model[CoachingCircleText.END_DATE],
           },
         }).catch((error) => {
           console.log(error);
