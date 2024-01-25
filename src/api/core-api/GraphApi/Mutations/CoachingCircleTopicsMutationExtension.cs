@@ -67,8 +67,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     Dictionary<string, object> connectDict = new Dictionary<string, object>
                     {
-                        { "startDate", startDate },
-                        { "endDate", endDate == null ? "" : endDate }
+                        { "startDate", startDate.ToString("yyyy-MM-dd") + "T00:00:00.000Z" },
+                        { "endDate", endDate == null ? "" : endDate.Value.ToString("yyyy-MM-dd") + "T00:00:00.000Z"  }
                     };
 
                     contentRepo.Update(contentId, id, connectDict);
