@@ -122,10 +122,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             calendarEvent.IsActive = false;
             calendarEvent.UpdatedDate = DateTime.Now;
             calendarEvent.UpdatedBy = uId;
-            repoCalendarEvent.Update(calendarEvent);
-
-            return calendarEvent;
-            
+            return repoCalendarEvent.Update(calendarEvent);
         }
     }
 
