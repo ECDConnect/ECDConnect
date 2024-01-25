@@ -419,9 +419,6 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         }
                         placeholder={'Type to search...'}
                         color={'secondary'}
-                        info={{
-                          name: `Document type:`,
-                        }}
                         className="grid-cols-subgrid my-2 w-48"
                       />
                     </div>

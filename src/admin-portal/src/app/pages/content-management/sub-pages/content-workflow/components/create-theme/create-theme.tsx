@@ -175,6 +175,7 @@ export default function CreateTheme({
       item.storyBook &&
       item.storyActivity
   );
+  const allowedFileSize = 13631488;
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -457,6 +458,7 @@ export default function CreateTheme({
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               setFilteredThemeDays={setFilteredThemeDays}
+              allowedFileSize={allowedFileSize}
             />
           </div>
 
