@@ -13,6 +13,7 @@ import { ContentLoader } from '../../../../components/content-loader/content-loa
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
+  ActivitiesTitles,
   ContentManagementView,
   FieldType,
 } from '../../content-management-models';
@@ -182,7 +183,6 @@ export default function ContentList({
       const moreInforItems = contentData[getAllCall].map((item: any) => ({
         ...item,
       }));
-
       if (selectedTab === 1) {
         // Wait for validation on dev
         // let clientProfileData = moreInforItems.filter(
@@ -214,7 +214,9 @@ export default function ContentList({
           (item: { type: string }) => item.type === 'antenatal'
         );
 
-        if (choosedSectionTitle === 'Small/large group activities') {
+        if (
+          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+        ) {
           setTableData(
             moreInforItems?.filter(
               (item) =>
@@ -224,12 +226,13 @@ export default function ContentList({
           return;
         }
 
-        if (choosedSectionTitle === 'Story activities') {
+        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
           setTableData(
             moreInforItems?.filter((item) => item?.type === 'Story time')
           );
           return;
         }
+
         setTableData(
           anteNatalData?.length > 0 ? anteNatalData : moreInforItems
         );

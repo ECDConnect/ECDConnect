@@ -7,6 +7,7 @@ import FormFileInput from '../../../../components/form-file-input/form-file-inpu
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 import { videoExtensions } from '../../../../utils/constants';
 import {
+  ActivitiesTitles,
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
@@ -63,7 +64,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   ];
 
   const isSmallLargeGroup =
-    choosedSectionTitle === 'Small/large group activities';
+    choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities;
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -72,6 +73,16 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   const [fields, setFields] = useState<any>();
   const requiredMessage = 'This field is required';
+
+  useEffect(() => {
+    if (
+      choosedSectionTitle === ActivitiesTitles.StoryActivities &&
+      initialValues?.hasOwnProperty('type') &&
+      !initialValues['type']
+    ) {
+      setValue('type', 'Story time');
+    }
+  }, [choosedSectionTitle, initialValues, setValue]);
 
   useEffect(() => {
     if (template) {
@@ -89,8 +100,18 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
       switch (type) {
         case FieldType.Text:
+          if (propName === 'subType' && isSmallLargeGroup) {
+            return null;
+          }
           if (
             propName === 'type' &&
+            choosedSectionTitle === ActivitiesTitles.StoryActivities
+          ) {
+            return null;
+          }
+          if (
+            propName === 'type' &&
+            isSmallLargeGroup &&
             template?.title === 'Activity Form' &&
             template?.fields?.find((item) => item?.propName === 'name')
               ?.contentValue === undefined
@@ -99,11 +120,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <div className="bg-uiBg sm:col-span-12">
                   <ButtonGroup
-                    options={
-                      isSmallLargeGroup
-                        ? smallLargeGroupOptions
-                        : storyBookTypeOptions
-                    }
+                    options={smallLargeGroupOptions}
                     onOptionSelected={(value: string | string[]) => {
                       onStateChange(propName, value);
                     }}
@@ -123,6 +140,27 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               ?.contentValue !== undefined
           ) {
             return null;
+          }
+          if (
+            propName === 'subType' &&
+            choosedSectionTitle === ActivitiesTitles.StoryActivities
+          ) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <DynamicSelector
+                    title={required.value ? field.title + ' *' : field.title}
+                    isReview={false}
+                    contentValue={field.contentValue}
+                    languageId={defaultLanguageId}
+                    optionDefinition={field.optionDefinition}
+                    setSelectedItems={(value) => onStateChange(propName, value)}
+                    isSkillType={true}
+                    choosedSectionTitle={choosedSectionTitle}
+                  />
+                </div>
+              </div>
+            );
           }
           return (
             <div key={propName} className={contentWrapper}>

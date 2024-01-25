@@ -9,7 +9,10 @@ import {
   contentTypes,
 } from '@ecdlink/graphql';
 import { ContentTypeDto, usePrevious } from '@ecdlink/core';
-import { ContentManagementView } from './content-management-models';
+import {
+  ActivitiesTitles,
+  ContentManagementView,
+} from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, TitleListDataItem, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
@@ -341,7 +344,9 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'Activity'
             );
-            setChoosedSectionTitleSectionTitle('Small/large group activities');
+            setChoosedSectionTitleSectionTitle(
+              ActivitiesTitles.SmallLargeGroupActivities
+            );
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -357,6 +362,7 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'StoryBook'
             );
+            setChoosedSectionTitleSectionTitle(ActivitiesTitles.Storybooks);
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -372,6 +378,7 @@ export function ContentManagement() {
               (type: ContentTypeDto) => type.name === 'StoryBookParts'
             );
             showGroupContentTypes(selectedTypeObject);
+            setChoosedSectionTitleSectionTitle(ActivitiesTitles.StorybookParts);
           },
           classNames: 'bg-white',
         },
@@ -387,7 +394,9 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'Activity'
             );
-            setChoosedSectionTitleSectionTitle('Story activities');
+            setChoosedSectionTitleSectionTitle(
+              ActivitiesTitles.StoryActivities
+            );
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
