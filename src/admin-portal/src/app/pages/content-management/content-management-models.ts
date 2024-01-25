@@ -22,6 +22,19 @@ export enum ContentName {
   ProgressTrackingSkill = 'ProgressTrackingSkill',
 }
 
+export enum StoryActivitiesTypes {
+  Storybook = 'Story book',
+  ReadAloud = 'Read aloud',
+  Other = 'other',
+}
+
+export enum ActivitiesTitles {
+  StorybookParts = 'StorybookParts',
+  StoryActivities = 'Story activities',
+  Storybooks = 'Storybooks',
+  SmallLargeGroupActivities = 'Small/large group activities',
+}
+
 export interface DynamicFormTemplate {
   title: string;
   fields: FormTemplateField[];
