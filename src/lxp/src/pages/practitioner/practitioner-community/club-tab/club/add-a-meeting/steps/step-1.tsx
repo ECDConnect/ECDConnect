@@ -244,7 +244,7 @@ export const Step1 = ({
 
     return (
       <>
-        {hasMeetingHappened && (
+        {hasMeetingHappened && !hasMeetingSubmittedInCurrentMonth && (
           <Alert
             className="mb-4"
             type="warning"
