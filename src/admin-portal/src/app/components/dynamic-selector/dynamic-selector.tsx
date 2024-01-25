@@ -82,6 +82,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     variables: {
       localeId: languageId?.toString(),
     },
+    skip: choosedSectionTitle === ActivitiesTitles.StoryActivities,
   });
 
   const [displayFields, setDisplayFields] = useState<string[]>();
@@ -114,8 +115,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
-      if (choosedSectionTitle === 'Story activities') {
+      if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
         setTempData(storyActivitiesTypes);
+        return;
       }
       if (isReview) {
         const data = contentData[getAllCall].filter((x) =>
