@@ -92,6 +92,14 @@ export const CoachPractitionerBusiness = () => {
     [statements]
   );
 
+  var lastStatementContactByCoach = useMemo(
+    () =>
+      statements.length === 0
+        ? false
+        : statements[statements.length - 1]?.contactedByCoach,
+    [statements]
+  );
+
   const renderData = useMemo(() => {
     const listItems = [];
 
@@ -142,8 +150,11 @@ export const CoachPractitionerBusiness = () => {
         classNames: 'bg-uiBg',
       });
     }
-
-    if (statements.length >= 2 && lastStatementsBalance !== 0) {
+    if (
+      statements.length >= 2 &&
+      lastStatementsBalance !== 0 &&
+      !lastStatementContactByCoach
+    ) {
       listItems.push({
         title:
           lastStatementsBalance > 0
@@ -185,6 +196,7 @@ export const CoachPractitionerBusiness = () => {
     isStartUpSupportEnding,
     isSubmitWindowOpen,
     isThisMonthSubmitted,
+    lastStatementContactByCoach,
     lastStatementsBalance,
     lossProfitMonths,
     practitionerFirstName,
