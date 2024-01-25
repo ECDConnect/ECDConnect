@@ -121,7 +121,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
     const isVideoExtension = videoExtensions.includes(fileExtension);
-    console.log({ fileExtension });
+
     setIsVideo(isVideoExtension);
 
     const compressedFile =
