@@ -111,6 +111,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     filterName: 'Theme',
     filterHint: 'You can select a theme to filter by',
   };
+
+  useEffect(() => {
+    selectedActivity ? setShowNextButton(true) : setShowNextButton(false);
+  }, [selectedActivity]);
+
   useEffect(() => {
     const theme = allThemes?.find((x) => x.name === programme?.name);
 
@@ -356,11 +361,15 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           />
         </SearchHeader>
         <div className="bg-white px-4 pt-2">
-          <Typography
-            type="body"
-            text={`Choose a ${title}`}
-            className={'mt-4'}
-          />
+          {!selectedStory ? (
+            <Typography
+              type="h2"
+              text={`Choose a ${title}`}
+              className={'mt-4'}
+            />
+          ) : (
+            ''
+          )}
           {!selectedStory && (
             <Typography type="body" text="Step 1 of 2" className={'mt-4'} />
           )}
@@ -402,10 +411,13 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             className="mb-32 w-full"
             color="primary"
             icon="SaveIcon"
-            text={!selectedStory ? submitButtonText : 'Save'}
+            text={!selectedActivity ? submitButtonText : 'Save'}
             textColor="white"
             iconPosition="start"
-            onClick={() => onButtonClick()}
+            onClick={() => {
+              onButtonClick();
+              setShowNextButton(false);
+            }}
             disabled={!showNextButton}
           />
         </div>
