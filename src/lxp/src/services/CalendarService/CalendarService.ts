@@ -164,11 +164,10 @@ class CalendarService {
     return true;
   }
 
-  async cancelCalendarEvent(input: { id: string }): Promise<any> {
+  async cancelCalendarEvent(input: { id: string }): Promise<{ id: string }> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      // TODO: Fix this type
-      data: { cancelCalendarEvent: any };
+      data: { cancelCalendarEvent: { id: string } };
       errors?: {};
     }>(``, {
       query: `

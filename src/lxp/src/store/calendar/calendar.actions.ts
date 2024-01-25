@@ -143,8 +143,7 @@ export const updateCalendarEvent = createAsyncThunk<
 );
 
 export const cancelCalendarEvent = createAsyncThunk<
-  // TODO: add type
-  any,
+  { id: string } | { id: string }[] | undefined,
   { id: string } | undefined,
   ThunkApiType<RootState>
 >(

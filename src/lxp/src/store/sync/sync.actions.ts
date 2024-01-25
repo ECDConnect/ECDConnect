@@ -20,7 +20,7 @@ import { clubActions, clubThunkActions } from '../club';
 
 type SyncStep = {
   title: string;
-  action: AsyncThunk<boolean[], any, any>;
+  action: AsyncThunk<boolean[] | any, any, any>;
 };
 export const syncOfflineData = createAsyncThunk<
   SyncOfflineDataProps,
