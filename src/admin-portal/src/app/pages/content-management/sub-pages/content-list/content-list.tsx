@@ -235,6 +235,7 @@ export default function ContentList({
         );
       } else if (selectedTab === 4) {
         const getFormattedDateString = (mDate: String) => {
+          if (mDate == null || '') return '';
           const dateItems = mDate.split('T');
           return dateItems[0];
         };

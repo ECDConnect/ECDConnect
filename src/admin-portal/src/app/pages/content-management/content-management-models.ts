@@ -39,6 +39,8 @@ export interface FormTemplateField {
   selectedLanguageId?: string;
   dataLinkName?: string;
   isRequired?: boolean;
+  subHeading?: string;
+  fieldAlert?: string;
 }
 
 export interface FormTemplateFieldRequired {
