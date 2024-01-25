@@ -120,10 +120,30 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
 
   const getRoutineItemPostSlotRender = () => {
     if (
-      // routineItem.name === DailyRoutineItemType.messageBoard ||
+      routineItem.name === DailyRoutineItemType.messageBoard ||
       routineItem.name === DailyRoutineItemType.greeting ||
       routineItem.name === DailyRoutineItemType.freePlay
     ) {
+      return (
+        <Card className="bg-primaryAccent1 w-full rounded-xl py-4 px-2">
+          <div className={'flex w-full flex-row items-center justify-between'}>
+            <Typography
+              type={'help'}
+              text={routineItem?.name}
+              color={'white'}
+            />
+            <div className="flex">
+              <Typography
+                type={'help'}
+                text={routineItem.timeSpan}
+                color={'white'}
+              />
+
+              {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
+            </div>
+          </div>
+        </Card>
+      );
     }
     if (!activity?.name && !isPastDay()) {
       return (

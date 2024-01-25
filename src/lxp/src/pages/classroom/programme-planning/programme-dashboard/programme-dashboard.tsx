@@ -87,7 +87,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   }, [setShowReport, toPDF]);
 
   const storageFirstVisit = getStorageItem<number>(
-    LocalStorageKeys.hasVisitedProgrammeDashboard
+    LocalStorageKeys.hasVisitedProgrammeDashboard || false
   );
 
   const showFirstVisit = () => {
@@ -106,7 +106,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
           }
           actionButtons={[
             {
-              text: 'Create my own programme',
+              text: 'Choose a theme',
               textColour: 'white',
               colour: 'primary',
               type: 'filled',
@@ -118,6 +118,20 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
                 history.push(ROUTES.PROGRAMMES.THEME);
                 onCancel();
               },
+              leadingIcon: 'BookOpenIcon',
+            },
+            {
+              text: 'Create my own programme',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.hasVisitedProgrammeDashboard
+                );
+                onCancel();
+              },
               leadingIcon: 'PencilIcon',
             },
           ]}
@@ -127,7 +141,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   };
 
   useEffect(() => {
-    if (showFirstVisitModal && !storageFirstVisit) {
+    if (storageFirstVisit) {
       showFirstVisit();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
