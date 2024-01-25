@@ -5,5 +5,6 @@ export interface ProgrammePlanningRoutineListItemProps
   extends ComponentBaseProps {
   day?: DailyProgrammeDto;
   routineItem: ProgrammeRoutineItemDto;
+  selectedDate?: Date;
   onClick: () => void;
 }

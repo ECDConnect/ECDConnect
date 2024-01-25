@@ -446,10 +446,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     type="filled"
                     onClick={() => setEditRemovalDialogVisable(true)}
                   >
-                    {renderIcon(
-                      'PencilIcon',
-                      'w-5 h-5 color-primary text-primary mr-2'
-                    )}
+                    {renderIcon('PencilIcon', 'w-5 h-5 mr-2')}
                     <Typography
                       type="body"
                       className="mr-4"
@@ -472,22 +469,24 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   />
                 </div>
               )}
-            <AbsenceCard
-              absenceIsToday={absenceIsToday}
-              currentAbsentee={currentAbsentee}
-              handleComebackDay={handleComebackDay}
-              practitioner={practitioner!}
-              isOnLeave={isOnLeave}
-              handleReassignClass={handleReassignClass}
-              handleAbsenceModal={(item: AbsenteeDto) =>
-                handleAbsenceModal(item)
-              }
-              isLeave={isLeave}
-              allAbsenteeClasses={allAbsenteeClasses}
-              practitionerUserId={practitionerUserId}
-              classesWithAbsence={classesWithAbsence}
-              practitionerAbsentees={practitionerAbsentees}
-            />
+            {!existingRemoval && (
+              <AbsenceCard
+                absenceIsToday={absenceIsToday}
+                currentAbsentee={currentAbsentee}
+                handleComebackDay={handleComebackDay}
+                practitioner={practitioner!}
+                isOnLeave={isOnLeave}
+                handleReassignClass={handleReassignClass}
+                handleAbsenceModal={(item: AbsenteeDto) =>
+                  handleAbsenceModal(item)
+                }
+                isLeave={isLeave}
+                allAbsenteeClasses={allAbsenteeClasses}
+                practitionerUserId={practitionerUserId}
+                classesWithAbsence={classesWithAbsence}
+                practitionerAbsentees={practitionerAbsentees}
+              />
+            )}
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(
@@ -861,7 +860,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         className={'mb-16 px-4'}
         stretch={true}
         visible={editRemovalDialogVisable}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <EditRemovePractitionerFromProgrammePrompt
           practitioner={practitioner}

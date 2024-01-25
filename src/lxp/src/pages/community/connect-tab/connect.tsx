@@ -27,7 +27,7 @@ export const Connect: React.FC = () => {
 
   const connectData = useSelector(communitySelectors.getConnectData);
 
-  const connectItemData = useSelector(communitySelectors.GetConnectItems);
+  const connectItemData = useSelector(communitySelectors.getConnectItems);
 
   useEffect(() => {
     if (isOnline && connectData?.length === 0) {

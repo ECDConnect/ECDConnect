@@ -358,6 +358,7 @@ export default function UiTable({
           {splitValues?.map((item) => {
             return (
               <div
+                key={item}
                 className={`${
                   item === 'Story book'
                     ? 'bg-secondary'
@@ -420,13 +421,21 @@ export default function UiTable({
           })}
         </div>
       );
-    } else if (display_value === 'Story book, Read aloud, other') {
-      const splitValues = display_value?.split(', ');
+    } else if (
+      display_value === 'Story book, Read aloud, other' ||
+      display_value === 'Story book,Read aloud,other'
+    ) {
+      const splitValues =
+        display_value === 'Story book,Read aloud,other'
+          ? display_value?.split(',')
+          : display_value?.split(', ');
+
       rowValue = (
         <div className="ml-1 flex cursor-pointer gap-1">
           {splitValues?.map((item) => {
             return (
               <div
+                key={item}
                 className={`${
                   item === 'Story book'
                     ? 'bg-secondary'
@@ -581,14 +590,12 @@ export default function UiTable({
       ),
     });
   }, [
-    component,
     confirmationFalse,
     confirmationMessage,
     confirmationTitle,
     confirmationTrue,
     deleteCoachingCircleTopics,
     dialog,
-    selectedRows,
   ]);
 
   const renderBulkActions = useMemo(() => {

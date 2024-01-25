@@ -21,4 +21,9 @@ export const getCoachClubs = (state: RootState): ClubDto[] | undefined => {
 
 export const getCircleTopics = (
   state: RootState
-): CoachingCircleTopicDto[] | undefined => state.coach.coachCicleTopics;
+): CoachingCircleTopicDto[] | undefined => {
+  return state.coach?.coachCicleTopics?.filter(
+    (topic) =>
+      topic.startDate.toString() !== '' && topic.startDate <= new Date()
+  );
+};

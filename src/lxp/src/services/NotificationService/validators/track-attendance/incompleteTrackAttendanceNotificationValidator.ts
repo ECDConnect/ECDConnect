@@ -60,7 +60,8 @@ export class IncompleteTrackAttendanceNotificationValidator
       classroomGroups || [],
       classroomState.classroomProgrammes || [],
       attendanceState.attendance || [],
-      this.currentDate
+      this.currentDate,
+      classroomState.classroomGroupLearners
     );
 
     if (!missedAttendance.length) return [];
@@ -72,10 +73,10 @@ export class IncompleteTrackAttendanceNotificationValidator
         )}`,
         title: "Today's attendance register is incomplete",
         message: `You have not submitted today's attendance register. Submit attendance registers daily ${
-          isOnStipend && 'to receive your stipend'
+          isOnStipend ? 'to receive your stipend' : ''
         } and get SmartStart points.`,
         dateCreated: this.currentDate.toISOString(),
-        priority: NotificationPriority.low,
+        priority: NotificationPriority.highest,
         viewOnDashboard: true,
         area: 'tracking-attendance',
         icon: 'ExclamationCircleIcon',

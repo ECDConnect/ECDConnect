@@ -13,4 +13,5 @@ export interface FieldDefinitionModelDto {
   displayName: string;
   displayMainTable: boolean;
   displayPage: boolean;
+  isRequired?: boolean;
 }

@@ -1,4 +1,4 @@
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
@@ -10,9 +10,8 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { MouseEvent, useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
-import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
   DynamicFormTemplate,
   FormTemplateField,
@@ -25,11 +24,7 @@ import {
   XIcon,
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import {
-  CoachingCircleText,
-  ContentTypes,
-} from '../../../../../../constants/content-management';
-import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
+import EditSkillsForm from './components/edit-skills-form/edit-skills-form';
 
 export interface ContentViewProps {
   content: any;
@@ -41,15 +36,9 @@ export interface ContentViewProps {
   savedContent: () => void;
   cancelEdit?: () => void;
   cancelCompare?: () => void;
-  choosedSectionTitle?: string;
 }
 
-export interface RequirementProps {
-  value: boolean;
-  message: string;
-}
-
-export default function ContentEdit({
+export default function EditSkills({
   content,
   selectedLanguageId,
   defaultLanguageId,
@@ -59,33 +48,16 @@ export default function ContentEdit({
   cancelEdit,
   savedContent,
   cancelCompare,
-  choosedSectionTitle,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
-  const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control, getValues } =
-    useForm();
+  const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
     control: control,
   };
-
-  const { type: formType } = useWatch({ control });
-
-  const mutationName = `update${contentType?.name}`;
-
-  const creationMutationName = `create${contentType?.name}`;
-
-  const updateMutation = gql` 
-    mutation ${mutationName} ($id: String!, $input: ${contentType?.name}Input!, $localeId: String!) {
-      ${mutationName} (id: $id, input: $input, localeId: $localeId) {
-        id
-      } 
-    }
-  `;
 
   const deleteMutationName = `delete${contentType?.name}`;
   const deleteMutation = gql` 
@@ -94,15 +66,64 @@ export default function ContentEdit({
       }
   `;
 
-  const createMutation = gql` 
-  mutation ${creationMutationName} ($input: ${contentType.name}Input!, $localeId: String!) {
-    ${creationMutationName} (input: $input, localeId: $localeId) 
+  const updateProgressTrackingSkill = gql`
+    mutation updateProgressTrackingSkill(
+      $input: ProgressTrackingSkillInput!
+      $id: String!
+      $localeId: String!
+    ) {
+      updateProgressTrackingSkill(input: $input, id: $id, localeId: $localeId) {
+        id
+      }
     }
   `;
 
-  const [saveCoachCircleDates] = useMutation(
-    bulkUpdateCoachingCircleTopicDates
-  );
+  const createProgressTrackingSkill = gql`
+    mutation createProgressTrackingSkill(
+      $input: ProgressTrackingSkillInput!
+      $localeId: String!
+    ) {
+      createProgressTrackingSkill(input: $input, localeId: $localeId)
+    }
+  `;
+
+  const deleteProgressTrackingSkill = gql`
+    mutation deleteProgressTrackingSkill($id: String!) {
+      deleteProgressTrackingSkill(id: $id)
+    }
+  `;
+
+  const updateProgressTrackingSubCategory = gql`
+    mutation updateProgressTrackingSubCategory(
+      $input: ProgressTrackingSubCategoryInput!
+      $id: String!
+      $localeId: String!
+    ) {
+      updateProgressTrackingSubCategory(
+        input: $input
+        id: $id
+        localeId: $localeId
+      ) {
+        id
+      }
+    }
+  `;
+
+  const subcategoriesQuery = gql`
+    query GetAllProgressTrackingSubCategory($localeId: String) {
+      GetAllProgressTrackingSubCategory(localeId: $localeId) {
+        id
+        skills {
+          id
+          __typename
+        }
+        imageUrl
+        description
+        name
+        __typename
+      }
+    }
+  `;
 
   const dialog = useDialog();
 
@@ -164,18 +185,30 @@ export default function ContentEdit({
     });
   };
 
-  const [updateContent] = useMutation(updateMutation);
-  const [createContent] = useMutation(createMutation);
+  const [updateSkillContent] = useMutation(updateProgressTrackingSkill);
+  const [createSkillContent] = useMutation(createProgressTrackingSkill);
+  const [deleteSkillContent] = useMutation(deleteProgressTrackingSkill);
+  const [updateSubcategoryContent] = useMutation(
+    updateProgressTrackingSubCategory
+  );
+
+  const {
+    data: subcategoriesContentData,
+    refetch: refetchSubcategoriesContent,
+    loading: loadingSubCategoriesContent,
+  } = useQuery(subcategoriesQuery, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: selectedLanguageId,
+    },
+  });
+
+  const subCategories =
+    subcategoriesContentData?.GetAllProgressTrackingSubCategory;
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
-  const initialValues = getValues();
-  const disableButton = template?.fields?.filter(
-    (item) =>
-      item?.isRequired &&
-      initialValues?.hasOwnProperty(item?.propName) &&
-      !initialValues[item?.propName]
-  );
+  const [changedCategory, setChangedCategory] = useState([]);
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -208,9 +241,8 @@ export default function ContentEdit({
 
   useEffect(() => {
     if (contentType) {
-      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      if (contentType.name === 'CoachingCircleTopics') {
         setAcceptedFileFormats(['pdf']);
-        setAllowedFileSize(5242880);
       }
     }
   }, [contentType]);
@@ -240,9 +272,6 @@ export default function ContentEdit({
       optionDefinition: optionDefinition,
       selectedLanguageId: selectedLanguageId,
       dataLinkName: field.dataLinkName,
-      isRequired: field?.isRequired,
-      subHeading: getSubHeading(field),
-      fieldAlert: getFieldAlert(field),
     };
 
     if (item && item.localeId === selectedLanguageId) {
@@ -253,73 +282,147 @@ export default function ContentEdit({
     return returnField;
   };
 
-  const getSubHeading = (field: ContentTypeFieldDto) => {
-    // this will be replaced by the new isRequired column being implemented
-    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-      if (field.fieldName === CoachingCircleText.START_DATE) {
-        return CoachingCircleText.START_DATE_SUB_HEADING;
-      }
-      if (field.fieldName === CoachingCircleText.END_DATE) {
-        return CoachingCircleText.END_DATE_SUB_HEADING;
-      }
-    }
-    return '';
-  };
-
-  const getFieldAlert = (field: ContentTypeFieldDto) => {
-    // this will be replaced by the new isRequired column being implemented
-    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-      if (field.fieldName === CoachingCircleText.START_DATE) {
-        return CoachingCircleText.START_DATE_ALERT;
-      }
-      if (field.fieldName === CoachingCircleText.END_DATE) {
-        return CoachingCircleText.END_DATE_ALERT;
-      }
-    }
-    return '';
-  };
-
   const onSubmit = async (values: any) => {
     setLoading(true);
-    const model = { ...values };
 
     if (!content?.id) {
-      await createContent({
-        variables: {
-          input: { ...model },
-          localeId: selectedLanguageId.toString(),
-        },
-      }).catch(() => {
-        setLoading(false);
-      });
+      return null;
     } else {
-      await updateContent({
-        variables: {
-          id: content.id.toString(),
-          input: { ...model },
-          localeId: selectedLanguageId.toString(),
-        },
-      }).catch((err) => {
-        setLoading(false);
-      });
+      if (changedCategory?.length > 0) {
+        for (let cat of changedCategory) {
+          if (cat?.subCategories?.length > 0) {
+            for (let subCat of cat?.subCategories) {
+              if (subCat?.skills.length > 0) {
+                for (let skill of subCat?.skills) {
+                  if (skill?.id) {
+                    const skillModelInput = {
+                      name: skill?.name,
+                      level: skill?.level?.[0]?.id.toString(),
+                    };
+                    await updateSkillContent({
+                      variables: {
+                        id: skill?.id.toString(),
+                        input: { ...skillModelInput },
+                        localeId: selectedLanguageId.toString(),
+                      },
+                    }).catch(() => {
+                      setLoading(false);
+                    });
+                  }
 
-      // the requirement is that when you save the dates for a coaching circle, you need to update all other languages with same dates.
-      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-        await saveCoachCircleDates({
-          variables: {
-            contentId: +content.id,
-            contentTypeId: +contentType.id,
-            localeId: selectedLanguageId.toString(),
-            startDate: model[CoachingCircleText.START_DATE],
-            endDate:
-              model[CoachingCircleText.END_DATE] === ''
-                ? null
-                : model[CoachingCircleText.END_DATE],
-          },
-        }).catch((error) => {
-          console.log(error);
-        });
+                  if (!skill?.id && skill?.name) {
+                    const newSkillModelInput = {
+                      name: skill?.name,
+                      level: cat?.level?.toString(),
+                    };
+
+                    const createSkillResponse = await createSkillContent({
+                      variables: {
+                        input: { ...newSkillModelInput },
+                        localeId: selectedLanguageId.toString(),
+                      },
+                    }).catch(() => {
+                      setLoading(false);
+                    });
+                    if (createSkillResponse) {
+                      const subCatToUpdate = subCategories?.find(
+                        (sub) => sub?.id === subCat?.id
+                      );
+                      let subCatToUpdateSkills = subCatToUpdate?.skills?.map(
+                        (item) => item?.id
+                      );
+                      subCatToUpdateSkills?.push(
+                        Number(
+                          createSkillResponse?.data?.createProgressTrackingSkill
+                        )
+                      );
+                      let skillStringArray = subCatToUpdateSkills?.map(String);
+                      const skillsArrayFormatted = skillStringArray?.toString();
+
+                      const subCatInput = {
+                        imageUrl: subCatToUpdate?.imageUrl,
+                        name: subCatToUpdate?.name,
+                        skills: skillsArrayFormatted,
+                      };
+
+                      await updateSubcategoryContent({
+                        variables: {
+                          id: subCatToUpdate?.id?.toString(),
+                          input: { ...subCatInput },
+                          localeId: selectedLanguageId.toString(),
+                        },
+                      }).catch(() => {
+                        setLoading(false);
+                      });
+                    }
+                  }
+
+                  if (
+                    skill?.id &&
+                    (skill?.name === '' || skill?.name === undefined)
+                  ) {
+                    const deleteResponse = deleteSkillContent({
+                      variables: {
+                        id: skill?.id.toString(),
+                        localeId: selectedLanguageId.toString(),
+                      },
+                    });
+                    if (deleteResponse) {
+                      const subCatToUpdate = subCategories?.find(
+                        (sub) => sub?.id === subCat?.id
+                      );
+                      let subCatToUpdateSkills = subCatToUpdate?.skills?.map(
+                        (item) => item?.id
+                      );
+                      subCatToUpdateSkills?.filter(
+                        (item) => item !== skill?.id
+                      );
+                      let skillStringArray = subCatToUpdateSkills?.map(String);
+                      const skillsArrayFormatted = skillStringArray?.toString();
+                      const subCatInput = {
+                        imageUrl: subCatToUpdate?.imageUrl,
+                        name: subCatToUpdate?.name,
+                        skills: skillsArrayFormatted,
+                      };
+
+                      await updateSubcategoryContent({
+                        variables: {
+                          id: subCatToUpdate?.id?.toString(),
+                          input: { ...subCatInput },
+                          localeId: selectedLanguageId.toString(),
+                        },
+                      }).catch(() => {
+                        setLoading(false);
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
+      // await updateContent({
+      //   variables: {
+      //     id: content.id.toString(),
+      //     input: { ...model },
+      //     localeId: selectedLanguageId.toString(),
+      //   },
+      // }).catch(() => {
+      //   setLoading(false);
+      // });
+
+      // export type ProgressTrackingSkillInput = {
+      //   level?: InputMaybe<Scalars['String']>;
+      //   name?: InputMaybe<Scalars['String']>;
+      //   value?: InputMaybe<Scalars['String']>;
+      // };
+
+      //   description?: InputMaybe<Scalars['String']>;
+      //   imageUrl?: InputMaybe<Scalars['String']>;
+      //   name?: InputMaybe<Scalars['String']>;
+      //   skills?: InputMaybe<Scalars['String']>;
+      // };
     }
 
     setNotification({
@@ -331,9 +434,7 @@ export default function ContentEdit({
 
     setLoading(false);
 
-    if (cancelEdit) {
-      cancelEdit();
-    }
+    cancelEdit();
   };
 
   if (
@@ -350,7 +451,8 @@ export default function ContentEdit({
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 {cancelEdit &&
-                  camelCaseToSentanceCase(content?.name ?? content?.type)}
+                  camelCaseToSentanceCase(content?.name ?? content?.type)}{' '}
+                category
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
@@ -398,26 +500,29 @@ export default function ContentEdit({
               />
             )}
 
-            <DynamicForm
+            {/* <DynamicForm
               template={template}
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               acceptedFileFormats={acceptedFileFormats}
-              allowedFileSize={allowedFileSize}
-              formType={formType}
-              choosedSectionTitle={choosedSectionTitle}
-              getValues={getValues}
+            /> */}
+            <EditSkillsForm
+              template={template}
+              handleform={handleform}
+              setValue={setValue}
+              defaultLanguageId={defaultLanguageId}
+              acceptedFileFormats={acceptedFileFormats}
+              contentId={content?.id}
+              setChangedCategory={setChangedCategory}
+              changedCategory={changedCategory}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className={`bg-secondary ${
-                disableButton?.length > 0 ? 'opacity-25' : ''
-              } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-              disabled={disableButton?.length > 0}
+              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish

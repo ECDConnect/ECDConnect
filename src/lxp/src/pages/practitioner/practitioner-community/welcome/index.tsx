@@ -29,6 +29,12 @@ import { userSelectors } from '@/store/user';
 import { AddPhotoDialog } from '@/pages/community/welcome/add-photo-dialog';
 import { PractitionerAboutRouteState } from '../../practitioner-about/practitioner-about.types';
 import { PractitionerCommunityRouteState } from '../index.types';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const PractitionerCommunityWelcome: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -64,6 +70,12 @@ export const PractitionerCommunityWelcome: React.FC = () => {
   const { message } = watch();
   const { errors, isValid } = formState;
 
+  const notification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(notificationTagConfig?.SayHello?.cta ?? '')
+  );
+
   const onSave = async () => {
     if ((!isRequired || (isRequired && isValid)) && !!club && !!practitioner) {
       const values = getValues();
@@ -76,6 +88,15 @@ export const PractitionerCommunityWelcome: React.FC = () => {
             values.shareContactInfo || isLeader || isSupportRole,
         })
       );
+
+      if (notification) {
+        appDispatch(notificationActions.removeNotification(notification!));
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification?.message?.reference ?? '',
+          })
+        );
+      }
 
       if (isToShowAddPhotoScreen) {
         return dialog({

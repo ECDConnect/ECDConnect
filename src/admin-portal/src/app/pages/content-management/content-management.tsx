@@ -9,7 +9,10 @@ import {
   contentTypes,
 } from '@ecdlink/graphql';
 import { ContentTypeDto, usePrevious } from '@ecdlink/core';
-import { ContentManagementView } from './content-management-models';
+import {
+  ActivitiesTitles,
+  ContentManagementView,
+} from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, TitleListDataItem, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
@@ -21,6 +24,7 @@ import {
   ContentTypes,
 } from '../../constants/content-management';
 import { LinksShared } from './components/links-shared/links-shared';
+import ProgressToolsContentList from './sub-pages/content-list/components/progress-tools-content-list/progress-tools-content-list';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -340,7 +344,9 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'Activity'
             );
-            setChoosedSectionTitleSectionTitle('Small/large group activities');
+            setChoosedSectionTitleSectionTitle(
+              ActivitiesTitles.SmallLargeGroupActivities
+            );
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -356,6 +362,7 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'StoryBook'
             );
+            setChoosedSectionTitleSectionTitle(ActivitiesTitles.Storybooks);
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -371,6 +378,7 @@ export function ContentManagement() {
               (type: ContentTypeDto) => type.name === 'StoryBookParts'
             );
             showGroupContentTypes(selectedTypeObject);
+            setChoosedSectionTitleSectionTitle(ActivitiesTitles.StorybookParts);
           },
           classNames: 'bg-white',
         },
@@ -386,7 +394,9 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'Activity'
             );
-            setChoosedSectionTitleSectionTitle('Story activities');
+            setChoosedSectionTitleSectionTitle(
+              ActivitiesTitles.StoryActivities
+            );
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -449,6 +459,7 @@ export function ContentManagement() {
               languages={languages.GetAllLanguage}
               goBack={() => setSelectedContent(undefined)}
               savedContent={() => refreshParent()}
+              choosedSectionTitle={choosedSectionTitle}
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
@@ -484,6 +495,7 @@ export function ContentManagement() {
                 >
                   {selectedType &&
                     selectedType.name !== ContentTypes.CONNECT &&
+                    selectedType.name !== 'ProgressTrackingSkill' &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
@@ -497,6 +509,24 @@ export function ContentManagement() {
                         searchValue={searchValue}
                         choosedSectionTitle={choosedSectionTitle}
                       ></ContentList>
+                    )}
+
+                  {selectedType &&
+                    selectedType.name !== ContentTypes.CONNECT &&
+                    selectedType.name === 'ProgressTrackingSkill' &&
+                    languages?.GetAllLanguage &&
+                    specialType === '' && (
+                      <ProgressToolsContentList
+                        optionDefinitions={dataDefinitions.contentDefinitions}
+                        contentType={selectedType}
+                        languages={languages.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                        onSearch={search}
+                        searchValue={searchValue}
+                        choosedSectionTitle={choosedSectionTitle}
+                      ></ProgressToolsContentList>
                     )}
                   {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
                   {selectedType?.name === ContentTypes.CONNECT &&

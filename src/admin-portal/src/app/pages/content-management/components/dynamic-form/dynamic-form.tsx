@@ -7,11 +7,12 @@ import FormFileInput from '../../../../components/form-file-input/form-file-inpu
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 import { videoExtensions } from '../../../../utils/constants';
 import {
+  ActivitiesTitles,
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
-import { Alert } from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
 const acceptedFormats = [
@@ -31,6 +32,9 @@ export interface DynamicFormProps {
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
   allowedFileSize?: number;
+  formType?: string;
+  choosedSectionTitle?: string;
+  getValues?: any;
 }
 
 const contentWrapper = '';
@@ -42,14 +46,43 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   defaultLanguageId,
   acceptedFileFormats,
   allowedFileSize,
+  formType,
+  choosedSectionTitle,
+  getValues,
 }) => {
   const { register, control, errors } = handleform;
+
+  const storyBookTypeOptions = [
+    { text: 'Story book', value: 'Story book' },
+    { text: 'Read aloud', value: 'Read aloud' },
+    { text: 'other', value: 'Other' },
+  ];
+
+  const smallLargeGroupOptions = [
+    { text: 'Small group', value: 'Small group' },
+    { text: 'Large group', value: 'Large group' },
+  ];
+
+  const isSmallLargeGroup =
+    choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities;
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
   };
+  const initialValues = getValues();
 
   const [fields, setFields] = useState<any>();
+  const requiredMessage = 'This field is required';
+
+  useEffect(() => {
+    if (
+      choosedSectionTitle === ActivitiesTitles.StoryActivities &&
+      initialValues?.hasOwnProperty('type') &&
+      !initialValues['type']
+    ) {
+      setValue('type', 'Story time');
+    }
+  }, [choosedSectionTitle, initialValues, setValue]);
 
   useEffect(() => {
     if (template) {
@@ -61,21 +94,98 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields.map((field) => {
-      const { type, title, propName, required, validation } = field;
+      const {
+        type,
+        title,
+        propName,
+        required,
+        validation,
+        isRequired,
+        subHeading,
+        fieldAlert,
+      } = field;
 
       register(propName, { required: required });
 
       switch (type) {
         case FieldType.Text:
+          if (propName === 'subType' && isSmallLargeGroup) {
+            return null;
+          }
+          if (
+            propName === 'type' &&
+            choosedSectionTitle === ActivitiesTitles.StoryActivities
+          ) {
+            return null;
+          }
+          if (
+            propName === 'type' &&
+            isSmallLargeGroup &&
+            template?.title === 'Activity Form' &&
+            template?.fields?.find((item) => item?.propName === 'name')
+              ?.contentValue === undefined
+          ) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="bg-uiBg sm:col-span-12">
+                  <ButtonGroup
+                    options={smallLargeGroupOptions}
+                    onOptionSelected={(value: string | string[]) => {
+                      onStateChange(propName, value);
+                    }}
+                    color="tertiary"
+                    type={ButtonGroupTypes.Button}
+                    className={'w-full'}
+                    multiple={false}
+                  />
+                </div>
+              </div>
+            );
+          }
+          if (
+            propName === 'type' &&
+            template?.title === 'Activity Form' &&
+            template?.fields?.find((item) => item?.propName === 'name')
+              ?.contentValue !== undefined
+          ) {
+            return null;
+          }
+          if (
+            propName === 'subType' &&
+            choosedSectionTitle === ActivitiesTitles.StoryActivities
+          ) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <DynamicSelector
+                    title={required.value ? field.title + ' *' : field.title}
+                    isReview={false}
+                    contentValue={field.contentValue}
+                    languageId={defaultLanguageId}
+                    optionDefinition={field.optionDefinition}
+                    setSelectedItems={(value) => onStateChange(propName, value)}
+                    isSkillType={true}
+                    choosedSectionTitle={choosedSectionTitle}
+                  />
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormField
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
-                  error={errors[propName]?.message}
-                  required={required}
+                  error={
+                    isRequired &&
+                    initialValues?.hasOwnProperty(propName) &&
+                    !initialValues[propName]
+                      ? requiredMessage
+                      : ''
+                  }
+                  required={isRequired}
                   validation={validation}
                 />
               </div>
@@ -86,27 +196,31 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <Editor
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   currentValue={
                     field.contentValue ? field.contentValue.value : undefined
                   }
                   onStateChange={(data) => onStateChange(propName, data)}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );
         case FieldType.Image:
           return (
             <div key={propName} className={contentWrapper}>
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Editing the file here will update the file for all translations of this page.`}
-                type="warning"
-              />
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   contentUrl={
                     field.contentValue ? field.contentValue.value : undefined
@@ -115,6 +229,15 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   setValue={setValue}
                   allowedFileSize={allowedFileSize}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );
@@ -124,7 +247,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
                   <DynamicSelector
-                    title={required.value ? field.title + ' *' : field.title}
+                    title={isRequired ? field.title + ' *' : field.title}
                     isReview={false}
                     contentValue={field.contentValue}
                     languageId={defaultLanguageId}
@@ -140,7 +263,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <DynamicSelector
-                  title={required.value ? field.title + ' *' : field.title}
+                  title={isRequired ? field.title + ' *' : field.title}
                   isReview={false}
                   contentValue={field.contentValue}
                   languageId={defaultLanguageId}
@@ -156,7 +279,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <DynamicStaticSelector
-                  title={required.value ? field.title + ' *' : field.title}
+                  title={isRequired ? field.title + ' *' : field.title}
                   isReview={false}
                   contentValue={field.contentValue}
                   entityName={field.dataLinkName}
@@ -175,11 +298,20 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   currentColor={
                     field.contentValue ? field.contentValue.value : ''
                   }
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
                   error={errors[propName]?.message}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );
@@ -192,13 +324,24 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   contentValue={
                     field.contentValue ? field.contentValue.value : ''
                   }
-                  label={required.value ? title + ' *' : title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   control={control}
                   error={errors[propName]?.message}
                   required={required}
                   validation={validation}
+                  subHeading={subHeading}
+                  fieldAlert={fieldAlert}
                 />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             </div>
           );

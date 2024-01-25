@@ -35,6 +35,7 @@ export const contentTypes = gql`
             displayName
             displayMainTable
             displayPage
+            isRequired
           }
         }
       }
@@ -49,6 +50,7 @@ export const contentTypes = gql`
         displayName
         displayMainTable
         displayPage
+        isRequired
       }
     }
   }
@@ -128,6 +130,7 @@ export const contentDefinitions = gql`
         displayName
         displayMainTable
         displayPage
+        isRequired
       }
     }
   }
