@@ -320,7 +320,7 @@ export function ContentManagement() {
         {
           title: 'Themes',
           description:
-            'An organized set of activities based around a particular topic',
+            'An organised set of activities based around a particular topic',
           titleIcon: 'SparklesIcon',
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
@@ -367,21 +367,22 @@ export function ContentManagement() {
           },
           classNames: 'bg-white',
         },
-        {
-          title: 'Story Book Parts',
-          description: 'Read aloud stories and story books',
-          titleIcon: 'BookOpenIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'StoryBookParts'
-            );
-            showGroupContentTypes(selectedTypeObject);
-            setChoosedSectionTitleSectionTitle(ActivitiesTitles.StorybookParts);
-          },
-          classNames: 'bg-white',
-        },
+        // Let the code here, to make possible to delete story book parts direct in the app
+        // {
+        //   title: 'Story Book Parts',
+        //   description: 'Read aloud stories and story books',
+        //   titleIcon: 'BookOpenIcon',
+        //   titleIconClassName: 'bg-secondary text-white',
+        //   onActionClick: () => {
+        //     setSpecialType('');
+        //     const selectedTypeObject = dataTypes?.contentTypes.find(
+        //       (type: ContentTypeDto) => type.name === 'StoryBookParts'
+        //     );
+        //     showGroupContentTypes(selectedTypeObject);
+        //     setChoosedSectionTitleSectionTitle(ActivitiesTitles.StorybookParts);
+        //   },
+        //   classNames: 'bg-white',
+        // },
         {
           title: 'Story activities',
           description: 'Activities to do during story time ',
