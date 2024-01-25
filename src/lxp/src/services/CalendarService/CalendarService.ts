@@ -163,6 +163,34 @@ class CalendarService {
     }
     return true;
   }
+
+  async cancelCalendarEvent(input: { id: string }): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      // TODO: Fix this type
+      data: { cancelCalendarEvent: any };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation CancelCalendarEvent($id: UUID!) {
+        cancelCalendarEvent(
+          id: $id
+        ) {
+          id
+        }
+      }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Cancel calendar event - Server connection error');
+    }
+
+    return response.data.data.cancelCalendarEvent;
+  }
 }
 
 export default CalendarService;

@@ -22,6 +22,7 @@ import {
 import { useAppDispatch } from '@/store';
 import { useDialog, usePrevious, useSnackbar } from '@ecdlink/core';
 import { useHistory, useParams } from 'react-router';
+import { OfflineAlert } from '@/components/offline-alert';
 
 export const Step1 = ({
   setIsEnabledButton,
@@ -92,7 +93,7 @@ export const Step1 = ({
     isUpcomingMeetingInCurrentMonth
   );
 
-  const hasMeetingInCurrentMonth = allMeetings.some(
+  const hasMeetingSubmittedInCurrentMonth = details?.pastMeetings?.some(
     (meeting) =>
       new Date(meeting?.meetingDate).getMonth() === currentMonth &&
       new Date(meeting?.meetingDate).getFullYear() === currentYear
@@ -211,6 +212,10 @@ export const Step1 = ({
   }, [error, isRejected, showMessage, isLoading, wasLoading]);
 
   const renderContent = useMemo(() => {
+    if (hasMeetingHappened === false && !isOnline) {
+      return <OfflineAlert />;
+    }
+
     if (isUpcomingMeetingAttended) {
       return (
         <Alert
@@ -239,7 +244,7 @@ export const Step1 = ({
 
     return (
       <>
-        {hasMeetingHappened && !hasMeetingInCurrentMonth && (
+        {hasMeetingHappened && (
           <Alert
             className="mb-4"
             type="warning"
@@ -249,29 +254,31 @@ export const Step1 = ({
             ]}
           />
         )}
-        {hasMeetingHappened !== undefined && !hasMeetingInCurrentMonth && (
-          <DatePicker
-            label={
-              hasMeetingHappened
-                ? 'What day did the meeting happen?'
-                : 'What day will the meeting happen?'
-            }
-            placeholderText="Tap to choose a date"
-            selected={date}
-            onChange={setDate}
-            minDate={hasMeetingHappened ? firstDayOfMonth : currentDate}
-            maxDate={hasMeetingHappened ? currentDate : lastDayOfMonth}
-            disabled={!!upcomingMeeting}
-          />
-        )}
-        {hasMeetingHappened !== undefined && hasMeetingInCurrentMonth && (
-          <Alert
-            className="mb-4"
-            type="warning"
-            title={`You cannot submit another meeting this month - you have already submitted a meeting for ${monthName}!`}
-            list={['You can only submit 1 meeting per month.']}
-          />
-        )}
+        {hasMeetingHappened !== undefined &&
+          !hasMeetingSubmittedInCurrentMonth && (
+            <DatePicker
+              label={
+                hasMeetingHappened
+                  ? 'What day did the meeting happen?'
+                  : 'What day will the meeting happen?'
+              }
+              placeholderText="Tap to choose a date"
+              selected={date}
+              onChange={setDate}
+              minDate={hasMeetingHappened ? firstDayOfMonth : currentDate}
+              maxDate={hasMeetingHappened ? currentDate : lastDayOfMonth}
+              disabled={!!upcomingMeeting}
+            />
+          )}
+        {hasMeetingHappened !== undefined &&
+          hasMeetingSubmittedInCurrentMonth && (
+            <Alert
+              className="mb-4"
+              type="warning"
+              title={`You cannot submit another meeting this month - you have already submitted a meeting for ${monthName}!`}
+              list={['You can only submit 1 meeting per month.']}
+            />
+          )}
       </>
     );
   }, [
@@ -280,7 +287,7 @@ export const Step1 = ({
     date,
     error,
     hasMeetingHappened,
-    hasMeetingInCurrentMonth,
+    hasMeetingSubmittedInCurrentMonth,
     isOnline,
     isUpcomingMeetingAttended,
     firstDayOfMonth,

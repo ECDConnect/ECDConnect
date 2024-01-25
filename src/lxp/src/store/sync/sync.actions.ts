@@ -16,7 +16,7 @@ import { practitionerThunkActions } from '../practitioner';
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
-import { clubThunkActions } from '../club';
+import { clubActions, clubThunkActions } from '../club';
 
 type SyncStep = {
   title: string;
@@ -119,6 +119,10 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'Caregiver report back meeting',
       action: clubThunkActions.addCaregiverReportBackMeeting,
+    },
+    {
+      title: 'Calendar events',
+      action: calendarThunkActions.cancelCalendarEvent,
     },
   ];
 
@@ -276,9 +280,15 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         title: 'Caregiver report back meeting',
         action: clubThunkActions.addCaregiverReportBackMeeting,
       },
+      {
+        title: 'Calendar events',
+        action: calendarThunkActions.cancelCalendarEvent,
+      },
     ];
 
     let error: Error | null = null;
+
+    dispatch(clubActions.forceMeetRegularlyDataReload());
 
     for (let i = 0; i < syncSteps.length; i++) {
       const step = syncSteps[i];
