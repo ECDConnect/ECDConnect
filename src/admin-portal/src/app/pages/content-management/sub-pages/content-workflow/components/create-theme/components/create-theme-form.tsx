@@ -15,15 +15,7 @@ import { Alert } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import ThemeContentSelector from '../../../../../../../components/theme-content-form/theme-content-form';
 
-const acceptedFormats = [
-  'svg',
-  'png',
-  'PNG',
-  'jpg',
-  'JPG',
-  'jpeg',
-  ...videoExtensions,
-];
+const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
 export interface CreateThemeFormProps {
   template: DynamicFormTemplate;

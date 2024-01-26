@@ -15,15 +15,7 @@ import {
 import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
-const acceptedFormats = [
-  'svg',
-  'png',
-  'PNG',
-  'jpg',
-  'JPG',
-  'jpeg',
-  ...videoExtensions,
-];
+const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
 export interface DynamicFormProps {
   template: DynamicFormTemplate;
@@ -127,6 +119,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           ) {
             return (
               <div key={propName} className={contentWrapper}>
+                <label
+                  htmlFor={propName}
+                  className="mb-1 block text-lg font-medium text-gray-800"
+                >
+                  {field?.title}
+                </label>
                 <div className="bg-uiBg sm:col-span-12">
                   <ButtonGroup
                     options={smallLargeGroupOptions}
