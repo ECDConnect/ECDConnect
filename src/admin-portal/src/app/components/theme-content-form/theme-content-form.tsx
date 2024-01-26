@@ -121,7 +121,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
       setFilteredThemeDays(themeDaysArr);
     }
   }, [setFilteredThemeDays, themeDaysArr]);
-  console.log({ themeDaysArr });
+
   const [currentIds, setCurrentIds] = useState<string[]>();
 
   const query = gql` 
@@ -190,7 +190,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
       label: item?.name,
       value: item?.id,
     }));
-  console.log({ storyTimeOptions });
+
   const storyBookOptions: SearchDropDownOption<string>[] =
     storyBookActivitiesData?.GetAllStoryBook?.map((item) => ({
       id: item?.id,
@@ -255,7 +255,6 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   };
 
   const handleGroupChange = (e, idx, storyType) => {
-    console.log({ e });
     let tempArray = [...themeDaysArr];
 
     let item = { ...tempArray[idx] };
@@ -564,7 +563,6 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         }
                         showSearch
                         onChange={(e: string | string[]) => {
-                          console.log({ item });
                           const newItem = storyTimeOptions?.filter(
                             (item) => item?.id === e
                           );
