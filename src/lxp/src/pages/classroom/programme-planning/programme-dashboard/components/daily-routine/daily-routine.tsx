@@ -391,7 +391,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       }
       // Improve programme
       if (
-        plannedActivities.length >= 10 &&
+        plannedActivities.length <= 10 &&
         recommendedActivities.length !== 0
       ) {
         setImproveProgrammeMessage('Want to improve your programme?');
