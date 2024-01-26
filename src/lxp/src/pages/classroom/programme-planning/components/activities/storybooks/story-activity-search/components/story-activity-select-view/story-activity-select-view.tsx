@@ -1,5 +1,5 @@
 import { Button, Typography } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../../../constants/ActivitySearch';
 import { activitySelectors } from '@store/content/activity';
@@ -35,9 +35,9 @@ export const StoryActivitySelectView: React.FC<
     <div className={'flex flex-col'}>
       <Typography
         text={`Story chosen: ${story.name}`}
-        hasMarkup
+        className={'mt-4'}
         color={'textDark'}
-        type={'h1'}
+        type={'h2'}
         onClick={handleClearStory}
       />
       <Button

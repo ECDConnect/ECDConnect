@@ -62,6 +62,7 @@ import {
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { options } from './reaccreditation/step-2/options';
 import ROUTES from '@/routes/routes';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -326,19 +327,31 @@ export const Form = ({
       type: 'support-visit' | 'requested-support-visit',
       visitType?: InputMaybe<string>
     ) => {
+      const syncId = newGuid();
+
       appDispatch(
-        pqaActions.addVisitFormData(payload, {
-          userId: practitionerId,
-          formType: 'support-visit',
-        })
+        pqaActions.addVisitFormData(
+          { syncId, ...payload },
+          {
+            userId: practitionerId,
+            formType: type,
+          }
+        )
       );
 
-      if (type === 'support-visit') {
-        await appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
-      } else {
-        await appDispatch(
-          pqaThunkActions.addRequestedSupportVisitFormData(payload)
-        );
+      if (isOnline) {
+        if (type === 'support-visit') {
+          await appDispatch(
+            pqaThunkActions.addSupportVisitFormData({ syncId, ...payload })
+          );
+        } else {
+          await appDispatch(
+            pqaThunkActions.addRequestedSupportVisitFormData({
+              syncId,
+              ...payload,
+            })
+          );
+        }
       }
 
       onBack?.();
@@ -366,14 +379,24 @@ export const Form = ({
       payload: CmsVisitDataInputModelInput,
       type: 'pqa' | 're-accreditation'
     ) => {
+      const syncId = newGuid();
+
       if (type === 'pqa') {
         appDispatch(
-          pqaActions.addVisitFormData(payload, {
-            userId: practitionerId,
-            formType: 'follow-up-visit',
-          })
+          pqaActions.addVisitFormData(
+            { syncId, ...payload },
+            {
+              userId: practitionerId,
+              formType: 'follow-up-visit',
+            }
+          )
         );
-        await appDispatch(pqaThunkActions.addVisitFormData(payload));
+
+        if (isOnline) {
+          await appDispatch(
+            pqaThunkActions.addVisitFormData({ syncId, ...payload })
+          );
+        }
         // TODO: check if it is needed
         // window.sessionStorage.setItem(
         //   currentActivityKey,
@@ -384,17 +407,25 @@ export const Form = ({
 
       if (type === 're-accreditation') {
         appDispatch(
-          pqaActions.addVisitFormData(payload, {
-            userId: practitionerId,
-            formType: 'follow-up-visit',
-          })
+          pqaActions.addVisitFormData(
+            { syncId, ...payload },
+            {
+              userId: practitionerId,
+              formType: 'follow-up-visit',
+            }
+          )
         );
-        await appDispatch(pqaThunkActions.addVisitFormData(payload));
+
+        if (isOnline) {
+          await appDispatch(
+            pqaThunkActions.addVisitFormData({ syncId, ...payload })
+          );
+        }
       }
 
       onBack?.();
     },
-    [appDispatch, onBack, practitionerId]
+    [appDispatch, onBack, practitionerId, isOnline]
   );
 
   const handleSubmitExtraVisit = useCallback(
@@ -443,20 +474,31 @@ export const Form = ({
 
   const onSubmitPrePqa = useCallback(
     async ({ payload }: SubmitProps) => {
+      const syncId = newGuid();
+
       appDispatch(
-        pqaActions.addVisitFormData(payload, {
-          userId: practitionerId,
-          formType: 'pre-pqa',
-        })
+        pqaActions.addVisitFormData(
+          { syncId, ...payload },
+          {
+            userId: practitionerId,
+            formType: 'pre-pqa',
+          }
+        )
       );
-      await appDispatch(pqaThunkActions.addVisitFormData(payload));
+
+      if (isOnline) {
+        await appDispatch(
+          pqaThunkActions.addVisitFormData({ syncId, ...payload })
+        );
+      }
+
       displayChildrenDialog(
         activityName === visitTypes.prePqa.first.name
           ? 'First site visit'
           : 'Second site visit'
       );
     },
-    [activityName, appDispatch, displayChildrenDialog, practitionerId]
+    [activityName, appDispatch, displayChildrenDialog, practitionerId, isOnline]
   );
 
   const onSubmitPqa = useCallback(
@@ -470,18 +512,27 @@ export const Form = ({
         (item) => item?.question === step19Question2Pqa
       )?.answer;
 
+      const syncId = newGuid();
+
       appDispatch(
-        pqaActions.addVisitFormData(payload, {
-          userId: practitionerId,
-          formType: 'pqa',
-        })
+        pqaActions.addVisitFormData(
+          { syncId, ...payload },
+          {
+            userId: practitionerId,
+            formType: 'pqa',
+          }
+        )
       );
-      await appDispatch(
-        pqaThunkActions.addVisitFormData({
-          ...payload,
-          visitId: visitId,
-        })
-      );
+
+      if (isOnline) {
+        await appDispatch(
+          pqaThunkActions.addVisitFormData({
+            syncId,
+            ...payload,
+            visitId: visitId,
+          })
+        );
+      }
 
       if (isToRemoveSmartStarter) return;
 
@@ -493,6 +544,7 @@ export const Form = ({
       onBack();
     },
     [
+      isOnline,
       isToRemoveSmartStarter,
       appDispatch,
       displayChildrenDialog,
@@ -505,13 +557,23 @@ export const Form = ({
 
   const onSubmitReAccreditation = useCallback(
     async ({ payload }: SubmitProps) => {
+      const syncId = newGuid();
+
       appDispatch(
-        pqaActions.addVisitFormData(payload, {
-          userId: practitionerId,
-          formType: 're-accreditation',
-        })
+        pqaActions.addVisitFormData(
+          { syncId, ...payload },
+          {
+            userId: practitionerId,
+            formType: 're-accreditation',
+          }
+        )
       );
-      await appDispatch(pqaThunkActions.addVisitFormData(payload));
+
+      if (isOnline) {
+        await appDispatch(
+          pqaThunkActions.addVisitFormData({ syncId, ...payload })
+        );
+      }
 
       if (isToRemoveSmartStarter) return;
 
@@ -524,6 +586,7 @@ export const Form = ({
       onBack();
     },
     [
+      isOnline,
       appDispatch,
       isBasicSmartSpaceStandardsCompleted,
       isToRemoveSmartStarter,

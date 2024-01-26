@@ -1,4 +1,9 @@
-import { ContentConsentTypeEnum, ProgrammeTypeDto } from '@ecdlink/core';
+import {
+  ContentConsentTypeEnum,
+  ProgrammeTypeDto,
+  ClassroomDto,
+  SiteAddressDto,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -33,6 +38,13 @@ import { AddressMap } from '../map/map';
 import tool_R4c_form from '@/assets/tool_R4c_form.pdf';
 import tool_R4b_form from '@/assets/tool_R4b_form.pdf';
 import tool_R4a_form from '@/assets/tool_R4a_form.pdf';
+import { useAppDispatch } from '@/store';
+import { newGuid } from '@utils/common/uuid.utils';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
@@ -61,7 +73,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     ownTheProperty,
     unproclaimedLand,
     liveAtTheProperty,
-    r4bPhoto,
   } = useWatch<ProgrammeDetailsModel>({
     control: programmeFormControl,
     defaultValue: {},
@@ -78,6 +89,14 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   const [showMap, setShowMap] = useState(false);
   const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] =
     useState<boolean>(false);
+
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+  const [editedAddress, setEditedAddress] = useState(
+    classroom?.siteAddress?.addressLine1 || ''
+  );
+
+  const appDispatch = useAppDispatch();
+
   const [questions, setAnswers] = useState([
     {
       question:
@@ -199,6 +218,31 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     setProgrammeFormValue('r4bPhoto', '');
     setR4bPhotoUrl('');
     setDisplayPhotoDeleteWarning(false);
+  };
+
+  const changeSmartSpaceCheckAddress = async () => {
+    const classroomCopy = { ...classroom };
+    const siteAddressId = classroomCopy.siteAddressId || newGuid();
+
+    const siteAddress: SiteAddressDto = {
+      id: siteAddressId,
+      addressLine1: editedAddress || '',
+    };
+    classroomCopy.siteAddress = siteAddress;
+    classroomCopy.siteAddressId = siteAddressId;
+
+    if (classroomCopy.siteAddress) {
+      appDispatch(
+        classroomsActions.updateClassroomSiteAddress(
+          classroomCopy as ClassroomDto
+        )
+      );
+      if (isOnline) {
+        await appDispatch(
+          classroomsThunkActions.upsertClassroomSiteAddress({})
+        );
+      }
+    }
   };
 
   useEffect(() => {
@@ -825,6 +869,8 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           onClose={() => setShowMap?.(false)}
           onSubmit={(address) => {
             setProgrammeFormValue('programmeAddress', address);
+            setEditedAddress(address);
+            changeSmartSpaceCheckAddress();
             onOptionSelected(address, 3);
           }}
         />

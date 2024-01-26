@@ -107,17 +107,27 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
         <div className="mt-4 flex justify-center">
           <div className="w-11/12">
             <div className="flex items-center gap-2">
-              <span
-                className={`text-l p-3 font-semibold text-white bg-${
-                  balance > 0 ? 'successMain' : 'alertMain'
-                } rounded-full`}
-              >
-                &nbsp;2&nbsp;
-              </span>
-              <Typography
-                type="h3"
-                text={` Months of making a ${balance > 0 ? 'profit' : 'loss'}`}
-              />
+              {balance > 0 ? (
+                <>
+                  <span
+                    className={`text-l bg-successMain rounded-full p-3 font-semibold text-white`}
+                  >
+                    &nbsp;2&nbsp;
+                  </span>
+                  <Typography type="h3" text={` Months of making a profit}`} />
+                </>
+              ) : !lastStatement.contactedByCoach ? (
+                <>
+                  <span
+                    className={`text-l bg-alertMain rounded-full p-3 font-semibold text-white`}
+                  >
+                    &nbsp;2&nbsp;
+                  </span>
+                  <Typography type="h3" text={` Months of making a loss`} />
+                </>
+              ) : (
+                <div />
+              )}
             </div>
 
             <div>
@@ -130,15 +140,21 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
             </div>
 
             <div>
-              <Alert
-                type={balance > 0 ? 'info' : 'warning'}
-                className="items-left justify-left mt-4 flex"
-                title={
-                  balance > 0
-                    ? `Over the past two months ${practitionerFirstName} has made more money than they have spent.`
-                    : `Over the past two months ${practitionerFirstName} has made less money than they have earned.`
-                }
-              />
+              {balance > 0 ? (
+                <Alert
+                  type={'info'}
+                  className="items-left justify-left mt-4 flex"
+                  title={`Over the past two months ${practitionerFirstName} has made more money than they have spent.`}
+                />
+              ) : !lastStatement.contactedByCoach ? (
+                <Alert
+                  type={'warning'}
+                  className="items-left justify-left mt-4 flex"
+                  title={`Over the past two months ${practitionerFirstName} has made less money than they have earned.`}
+                />
+              ) : (
+                <div />
+              )}
             </div>
 
             <table className="mt-4" width={`100%`}>

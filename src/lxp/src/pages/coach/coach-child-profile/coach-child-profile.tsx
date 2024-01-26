@@ -1,5 +1,4 @@
 import {
-  AttendanceDto,
   ChildAttendanceReportModel,
   useTheme,
   Document,
@@ -21,7 +20,6 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { getWeek, startOfISOWeekYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -30,11 +28,6 @@ import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remov
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { Age } from '@models/common/Age';
-import { AttendanceService } from '@services/AttendanceService';
-import { attendanceSelectors } from '@store/attendance';
-import { authSelectors } from '@store/auth';
-import { caregiverSelectors } from '@store/caregiver';
-import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
 import { childrenActions, childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { documentActions, documentSelectors } from '@store/document';
@@ -55,7 +48,6 @@ import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const CoachChildProfile: React.FC = () => {
-  const currentDate = new Date();
   const { isOnline } = useOnlineStatus();
   const { theme } = useTheme();
   const history = useHistory();
@@ -221,7 +213,7 @@ export const CoachChildProfile: React.FC = () => {
   useEffect(() => {
     const dateOfBirth = child?.user?.dateOfBirth as string;
     setChildAge(getAgeInYearsMonthsAndDays(dateOfBirth));
-  });
+  }, [child?.user?.dateOfBirth]);
 
   useEffect(() => {
     if (!attendancePercentage) return;

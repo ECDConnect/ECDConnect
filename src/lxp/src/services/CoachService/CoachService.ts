@@ -358,6 +358,8 @@ class CoachService {
           resource
           title
           topicContent
+          startDate
+          endDate
         }
       }
       `,

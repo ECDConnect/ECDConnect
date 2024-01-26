@@ -92,10 +92,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   }, [selectedDate, setSelectedDate]);
 
   const setDayCurrentDate = () => {
-    var selectDate = new Date(selectedDate!);
-    if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
-      setSelectedDate(selectDate!, 1);
-    }
+    setSelectedDate(new Date());
   };
 
   // Build new list of months for dropdown, which includes year

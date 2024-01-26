@@ -51,7 +51,7 @@ export const isValidAttendableDate = (
 ) => {
   let isValid = isWorkingDay(date, holidays);
 
-  if (!isValid) return false;
+  if (!isValid || programmeAttendanceDays.length === 0) return false;
 
   isValid = isAttendableDay(date, programmeAttendanceDays);
 
@@ -140,7 +140,7 @@ export const getMissedClassAttendance = (
     return programStartDateDay === dateDay
       ? (x.meetingDay || -1) === currentDayFilter
       : (x.meetingDay || -1) <= currentDayFilter &&
-          isBefore(programStartDateDay, dateDay);
+          programStartDate.getTime() < date.getTime();
   });
 
   const meetingDays = getClassroomGroupSchoolDays(
@@ -347,7 +347,24 @@ export const getMissedAttendanceSummaryGroups = (
   currentDate: Date,
   classroomGroupLearners: LearnerDto[]
 ) => {
-  const meetingDays = getClassroomGroupSchoolDays(classProgrammes);
+  const dayOfWeek = getDay(currentDate);
+  const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+  const classProgrammesUpToCurrentDay = classProgrammes?.filter((x) => {
+    const programStartDate =
+      typeof x.programmeStartDate !== 'undefined'
+        ? new Date(x.programmeStartDate)
+        : new Date();
+
+    return programStartDate.getUTCDate() === currentDate.getUTCDate()
+      ? (x.meetingDay || -1) === currentDayFilter
+      : (x.meetingDay || -1) <= currentDayFilter &&
+          programStartDate.getTime() < currentDate.getTime();
+  });
+
+  const meetingDays = getClassroomGroupSchoolDays(
+    classProgrammesUpToCurrentDay
+  );
 
   if (classroomGroups?.length > 0) {
     const attendanceToDoList: MissedAttendanceGroups[] = [];

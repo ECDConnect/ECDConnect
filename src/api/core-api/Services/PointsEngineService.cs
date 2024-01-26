@@ -2171,20 +2171,20 @@ namespace EcdLink.Api.CoreApi.Services
                     .Where(x => (!x.IsPrincipal.HasValue || !x.IsPrincipal.Value) && (!x.IsFundaAppAdmin.HasValue || !x.IsFundaAppAdmin.Value))
                     .Select(x => x.UserId).ToList();
 
-                var totalPrincipalsWithMaxPoints = _pointsUserRepo.GetAll()
+                var totalPrincipalsWithMaxPoints = _pointsUserSummaryRepo.GetAll()
                     .Where(x => principalUserIds.Contains(x.UserId) 
                         && x.PointsLibraryId == userAttendanceActivity.Id 
                         && x.Month == startDate.Month 
                         && x.Year == startDate.Year
-                        && x.Points == userAttendanceActivity.MaxPointsPrincipalMonthly)
+                        && x.PointsTotal == userAttendanceActivity.MaxPointsPrincipalMonthly)
                     .Select(x => x.UserId).Distinct().Count();
 
-                var totalNonPrincipalsWithMaxPoints = _pointsUserRepo.GetAll()
-                    .Where(x => principalUserIds.Contains(x.UserId)
+                var totalNonPrincipalsWithMaxPoints = _pointsUserSummaryRepo.GetAll()
+                    .Where(x => nonPrincipalUserIds.Contains(x.UserId)
                         && x.PointsLibraryId == userAttendanceActivity.Id
                         && x.Month == startDate.Month
                         && x.Year == startDate.Year
-                        && x.Points == userAttendanceActivity.MaxPointsNonPrincipalMonthly)
+                        && x.PointsTotal == userAttendanceActivity.MaxPointsNonPrincipalMonthly)
                     .Select(x => x.UserId).Distinct().Count();
 
                 var pointsScored = (int) Math.Round(clubAttendanceActivity.Points * (

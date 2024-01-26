@@ -9,6 +9,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router-dom';
+import ROUTES from '@/routes/routes';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { useSelector } from 'react-redux';
@@ -19,6 +20,12 @@ import { UpdatePreschoolFeeModel } from '@/schemas/classroom/update-preschool-fe
 import { preschoolFeesSchema } from '@/schemas/income-statements/preschool-fees';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { moneyInputFormat } from '@/utils/statements/statements-utils';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const UpdatePreschoolFee: React.FC = () => {
   const history = useHistory();
@@ -52,6 +59,12 @@ export const UpdatePreschoolFee: React.FC = () => {
     control: formControl,
   });
 
+  const notification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(notificationTagConfig?.UpdateFee?.cta ?? '')
+  );
+
   const onSubmit = async () => {
     await appDispatch(
       classroomsThunkActions.updatePreschoolFee({
@@ -59,6 +72,15 @@ export const UpdatePreschoolFee: React.FC = () => {
         amount: askForFee ? moneyInputFormat(amount!) : undefined,
       })
     );
+    if (notification) {
+      appDispatch(notificationActions.removeNotification(notification!));
+      appDispatch(
+        disableBackendNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+      history.push(ROUTES.DASHBOARD);
+    }
     history.goBack();
   };
 

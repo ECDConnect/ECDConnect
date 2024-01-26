@@ -32,6 +32,7 @@ export interface CreateThemeFormProps {
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
   setFilteredThemeDays?: (item: any[]) => void;
+  allowedFileSize?: number;
 }
 
 const contentWrapper = '';
@@ -43,6 +44,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   defaultLanguageId,
   acceptedFileFormats,
   setFilteredThemeDays,
+  allowedFileSize,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -114,6 +116,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                   }
                   returnFullUrl={true}
                   setValue={setValue}
+                  allowedFileSize={allowedFileSize}
                 />
               </div>
             </div>
