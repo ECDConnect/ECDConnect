@@ -21,7 +21,7 @@ export const Step3 = ({
   const [createdResource, setCreatedResource] = useState<boolean | boolean[]>();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
-  const isPurpleLeagueClub = club?.league.leagueTypeName === LeagueType.Purple;
+  const isPurpleLeagueClub = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const yesNoOptions = [
     { text: 'Yes', value: true },
