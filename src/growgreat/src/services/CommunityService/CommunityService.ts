@@ -12,7 +12,7 @@ class CommunityService {
   async getAllConnect(locale: string): Promise<Connect[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { GetAllCommunityConnect: Connect[] };
+      data: { GetAllConnect: Connect[] };
       errors?: {};
     }>(``, {
       query: `
@@ -31,7 +31,7 @@ class CommunityService {
     if (response.status !== 200) {
       throw new Error('Get All Connect Failed - Server connection error');
     }
-    return response.data.data.GetAllCommunityConnect;
+    return response.data.data.GetAllConnect;
   }
 
   async getAllConnectItem(locale: string): Promise<ConnectItem[]> {

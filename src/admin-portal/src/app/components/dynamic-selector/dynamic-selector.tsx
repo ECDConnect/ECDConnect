@@ -6,7 +6,11 @@ import {
 } from '@ecdlink/core';
 import { CheckboxGroup, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { FieldType } from '../../pages/content-management/content-management-models';
+import {
+  ActivitiesTitles,
+  FieldType,
+  StoryActivitiesTypes,
+} from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
 
 export interface DynamicSelectorProps {
@@ -17,7 +21,23 @@ export interface DynamicSelectorProps {
   isReview: boolean;
   setSelectedItems?: (value: string) => void;
   isSkillType?: boolean;
+  choosedSectionTitle?: string;
 }
+
+const storyActivitiesTypes = [
+  {
+    name: StoryActivitiesTypes?.Storybook,
+    id: StoryActivitiesTypes?.Storybook,
+  },
+  {
+    name: StoryActivitiesTypes?.ReadAloud,
+    id: StoryActivitiesTypes?.ReadAloud,
+  },
+  {
+    name: StoryActivitiesTypes?.Other,
+    id: StoryActivitiesTypes?.Other,
+  },
+];
 
 const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   contentValue,
@@ -27,6 +47,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   isReview,
   setSelectedItems,
   isSkillType,
+  choosedSectionTitle,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -61,6 +82,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     variables: {
       localeId: languageId?.toString(),
     },
+    skip: choosedSectionTitle === ActivitiesTitles.StoryActivities,
   });
 
   const [displayFields, setDisplayFields] = useState<string[]>();
@@ -86,7 +108,17 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   }, [contentValue]);
 
   useEffect(() => {
+    if (choosedSectionTitle) {
+      setTempData(storyActivitiesTypes);
+    }
+  }, []);
+
+  useEffect(() => {
     if (contentData && contentData[getAllCall]) {
+      if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+        setTempData(storyActivitiesTypes);
+        return;
+      }
       if (isReview) {
         const data = contentData[getAllCall].filter((x) =>
           currentIds?.some((z) => z === x.id.toString())
@@ -119,7 +151,11 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }
   };
 
-  if (tempData && displayFields) {
+  if (
+    choosedSectionTitle === ActivitiesTitles.StoryActivities
+      ? tempData
+      : tempData && displayFields
+  ) {
     if (isSkillType) {
       return (
         <div>
@@ -161,7 +197,11 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     value={item?.title}
                     onChange={() => selectItem(item?.id)}
                     className="bg-secondary mb-1 w-full"
-                    disabled={maximumItemsChecked?.length === 2 && !itemChecked}
+                    disabled={
+                      choosedSectionTitle === ActivitiesTitles.StoryActivities
+                        ? null
+                        : maximumItemsChecked?.length === 2 && !itemChecked
+                    }
                   />
                 );
               })}
@@ -169,7 +209,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             <Pagination
               recordsPerPage={8}
               items={tempData}
-              responseData={setTableData}
+              responseData={setTableData || setTempData}
             />
           </div>
         </div>
@@ -244,7 +284,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           <Pagination
             recordsPerPage={8}
             items={tempData}
-            responseData={setTableData}
+            responseData={setTableData || setTempData}
           />
         </div>
       </div>

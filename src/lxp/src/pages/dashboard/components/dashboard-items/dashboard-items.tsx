@@ -6,18 +6,14 @@ import {
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useAppDispatch } from '@store';
-import { Notification, notificationActions } from '@store/notifications';
+import { Notification } from '@store/notifications';
 import { MessageActionConfig } from '@models/messages/messages';
 import { NotificationHeaderCard } from '../notification-header-card/notification-header-card';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { notificationTagConfig } from '@/constants/notifications';
-import {
-  disableBackendNotification,
-  markAsReadNotification,
-} from '@/store/notifications/notifications.actions';
-
+import { markAsReadNotification } from '@/store/notifications/notifications.actions';
 interface DashboardItemsProps extends ComponentBaseProps {
   listItems: StackedListItemType[];
   notification?: Notification;

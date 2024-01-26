@@ -1,4 +1,9 @@
-import { LanguageDto, getWeekDate, useDialog } from '@ecdlink/core';
+import {
+  LanguageDto,
+  getWeekDate,
+  useDialog,
+  getFirstFriday,
+} from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -102,7 +107,7 @@ const ProgrammeTiming: React.FC = () => {
   };
 
   const handleDialogClick = useCallback(() => {
-    var friday = getWeekDate('friday');
+    var friday = getFirstFriday(new Date());
 
     if (isPrincipal && practitioners?.length! >= 1) {
       history.push(ROUTES.CLASSROOM.ROOT, {
@@ -312,7 +317,7 @@ const ProgrammeTiming: React.FC = () => {
               setAlert(date);
             }}
             dateFormat="EEE, dd MMM yyyy"
-            minDate={addDays(new Date(), 1)}
+            minDate={selectedDate ? new Date(selectedDate) : undefined}
             maxDate={getThemedProgrammeEndDate(validStartdDate!)}
           />
         </div>

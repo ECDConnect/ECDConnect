@@ -145,6 +145,19 @@ namespace ECDLink.ContentManagement.Repositories
             return contentValues.ToObject();
         }
 
+        public List<Guid> GetAllLanguagesForContentId(int contentId, int contentTypeId)
+        {
+            var currentTenant = TenantExecutionContext.Tenant.Id;
+            var content = _context.Contents
+                            .Include(i => i.ContentValues)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.ContentTypeId == contentTypeId
+                                    && x.TenantId == currentTenant)
+                            .FirstOrDefault();
+            return content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
+        }
+
         public IEnumerable<object> GetByIds(Guid localeId, params int[] contentIds)
         {
             // TODO: Do we need to selectively skip the IsActive check?
@@ -277,19 +290,10 @@ namespace ECDLink.ContentManagement.Repositories
 
                     if (fileIndex != null && fileIndex != -1)
                     {
-
-                        var fileStr = value?.ToString();
-                        var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
-                        var bytes = Convert.FromBase64String(b64Str);
-                        using MemoryStream fileStream = new MemoryStream(bytes);
-
-                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-                        var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
-                        fileStream.Dispose();
-
+                        var fileUrl = uploadFile(value?.ToString(), field.FieldName);
                         contentValues.Add(new ContentValue
                         {
-                            Value = fileUrl.ToString(),
+                            Value = fileUrl,
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = TenantExecutionContext.Tenant.Id,
@@ -378,10 +382,23 @@ namespace ECDLink.ContentManagement.Repositories
             return fileExt;
         }
 
+        private string uploadFile(string fileStr, string fieldName)
+        {
+            var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
+            var bytes = Convert.FromBase64String(b64Str);
+            using MemoryStream fileStream = new MemoryStream(bytes);
+
+            var fileName = DateTime.Now.Ticks + "_" + fieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
+            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+            fileStream.Dispose();
+
+            return fileUrl.ToString();
+        }
+
         public object Update(int contentId, Guid localeId, IDictionary<string, object> input)
         {
             // Can probably inject Id and fields
-            Guid? currentTenant = TenantExecutionContext.Tenant.Id;
+            Guid? currentTenantId = TenantExecutionContext.Tenant.Id;
 
             var content = _context.Contents
                             .Include(i => i.ContentType)
@@ -390,7 +407,7 @@ namespace ECDLink.ContentManagement.Repositories
                                 .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => x.Id == contentId
                                     && x.IsActive
-                                    && x.TenantId == currentTenant)
+                                    && x.TenantId == currentTenantId)
                             .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
@@ -413,74 +430,38 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentId.ToString());
             }
 
-            // Remove existing data for this locale
-            var fieldList = content.ContentValues.Where(x => x.LocaleId == localeId).ToList();
-            //_context.ContentValues.RemoveRange(fieldList);
-            //_context.SaveChanges();
-
-            var contentValues = new List<ContentValue>();
-
-            // Get the content type fields and populate them to be the new values
+            // loop through the list of fields for the content type
             foreach (var field in content.ContentType.Fields.Where(x => x.IsActive))
             {
-                if (input.TryGetValue(field.FieldName, out var value) && fieldList.Where(x => x.ContentTypeField.FieldName == field.FieldName).Any())
+                // get the current content value record
+                ContentValue currentRecord = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id && x.LocaleId == localeId).FirstOrDefault();
+                // add check to see if field is available in the input
+                if (input.TryGetValue(field.FieldName, out var value) && value != null)
                 {
-                    var valToCompare = fieldList.Where(x => x.ContentTypeField.FieldName == field.FieldName && x.Value != null).Select(x => x.Value).FirstOrDefault();
-                    if ((value != null && valToCompare != null) && value.ToString() != valToCompare.ToString()) { //only update if the values arent the same as before
-                        //remove value as we will reinsert just this
-                        var cValueToRemove = content.ContentValues.Where(x => x.ContentTypeField.FieldName == field.FieldName && x.ContentTypeField.Id == field.Id).FirstOrDefault();
-                        if (cValueToRemove != null)
+                    string fieldAnswer = input[field.FieldName].ToString();
+                    string fileUrl = fieldAnswer.IndexOf("base64") != -1 ? uploadFile(fieldAnswer, field.FieldName) : "";
+
+                    // if no record is found, add item
+                    if (currentRecord == null) // Add
+                    {
+                        content.ContentValues.Add(new ContentValue
                         {
-                            _context.ContentValues.Remove(cValueToRemove);
-                        }
-                        // if we get the string base64 in the value we know it is a file upload 
-                        var fileIndex = value?.ToString()?.IndexOf("base64");
-
-                        if (fileIndex != null && fileIndex != -1)
-                        {
-
-                            var fileStr = value?.ToString();
-                            var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
-                            var bytes = Convert.FromBase64String(b64Str);
-                            using MemoryStream fileStream = new MemoryStream(bytes);
-
-                            var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-                            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
-                            fileStream.Dispose();
-
-                            contentValues.Add(new ContentValue
-                            {
-                                Value = fileUrl.ToString(),
-                                ContentTypeFieldId = field.Id,
-                                LocaleId = localeId,
-                                TenantId = currentTenant,
-                                InsertedDate = DateTime.UtcNow,
-                                UpdatedDate = DateTime.UtcNow
-                            });
-
-                        }
-                        else
-                        {
-                            contentValues.Add(new ContentValue
-                            {
-                                Value = value?.ToString(),
-                                ContentTypeFieldId = field.Id,
-                                LocaleId = localeId,
-                                TenantId = currentTenant,
-                                InsertedDate = DateTime.UtcNow,
-                                UpdatedDate = DateTime.UtcNow
-                            });
-                        }
+                            Value = (fileUrl != "" ? fileUrl : fieldAnswer),
+                            ContentId = contentId,
+                            ContentTypeFieldId = field.Id,
+                            LocaleId = localeId,
+                            TenantId = currentTenantId,
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
+                        });
+                    } else // Update
+                    {
+                        currentRecord.Value = (fileUrl != "" ? fileUrl : fieldAnswer);
                     }
                 }
+                content.UpdatedDate = DateTime.UtcNow;
+                _context.SaveChanges();
             }
-
-            // Add existing content to the new content and replace the existing content.
-            contentValues.AddRange(content.ContentValues);
-            content.ContentValues = contentValues;
-            content.UpdatedDate = DateTime.UtcNow;
-
-            _context.SaveChanges();
 
             var objDict = content.ContentValues
                             .Where(x => x.LocaleId == localeId)

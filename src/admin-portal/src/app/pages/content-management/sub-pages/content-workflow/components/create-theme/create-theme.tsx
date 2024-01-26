@@ -175,6 +175,7 @@ export default function CreateTheme({
       item.storyBook &&
       item.storyActivity
   );
+  const allowedFileSize = 13631488;
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -403,21 +404,12 @@ export default function CreateTheme({
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 {cancelEdit &&
-                  camelCaseToSentanceCase(content?.name ?? content?.type)}
+                  camelCaseToSentanceCase(
+                    (content?.name ?? content?.type) || 'Add theme'
+                  )}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
-                <button
-                  type="button"
-                  onClick={cancelCompare}
-                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                >
-                  Compare Languages
-                  <BookOpenIcon width="20px" className="pl-1" />
-                </button>
-              )}
-
               {!!cancelEdit && (
                 <button
                   onClick={cancelDialog}
@@ -457,6 +449,7 @@ export default function CreateTheme({
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               setFilteredThemeDays={setFilteredThemeDays}
+              allowedFileSize={allowedFileSize}
             />
           </div>
 

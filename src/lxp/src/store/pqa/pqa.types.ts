@@ -11,9 +11,13 @@ export interface PractitionerTimelineState {
   timeline: PractitionerTimeline;
 }
 
+export type MergedCmsVisitDataInputModelInput = CmsVisitDataInputModelInput & {
+  syncId: string;
+};
+
 export interface FormData {
   practitionerId: string;
-  formData: CmsVisitDataInputModelInput;
+  formData: MergedCmsVisitDataInputModelInput;
 }
 
 export interface PreviousFormData {

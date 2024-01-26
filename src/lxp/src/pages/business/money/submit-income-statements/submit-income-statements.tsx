@@ -294,16 +294,18 @@ export const SubmitIncomeStatements: React.FC = () => {
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
 
-    setPointsMessageDismissedDate(storageItem);
+    if (storageItem) {
+      setPointsMessageDismissedDate(new Date(storageItem).toDateString());
+    }
   }, []);
 
   const onDismissCelebration = useCallback(() => {
-    const dismissedDate = new Date().toDateString();
+    const dismissedDate = new Date();
     setStorageItem(
-      dismissedDate,
+      JSON.stringify(dismissedDate),
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
-    setPointsMessageDismissedDate(dismissedDate);
+    setPointsMessageDismissedDate(dismissedDate.toDateString());
   }, []);
 
   const celebrationCard = useMemo<JSX.Element>(() => {
@@ -330,7 +332,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       isThisMonthSubmitted &&
       !!messageDismissedDate &&
       messageDismissedDate.getMonth() === currentDate.getMonth() &&
-      messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay
+      messageDismissedDate.getDate() >= IncomeStatementDates.SubmitStartDay
     ) {
       return <></>;
     }
@@ -343,14 +345,14 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     if (
-      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
+      currentDate.getDate() < IncomeStatementDates.SubmitEndDay &&
       isLastMonthSubmitted &&
       !!messageDismissedDate &&
-      ((messageDismissedDate.getMonth() ==
+      ((messageDismissedDate.getMonth() ===
         getPreviousMonth(currentDate).getMonth() &&
         messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay) ||
-        (messageDismissedDate.getMonth() == currentDate.getMonth() &&
-          messageDismissedDate.getDate() < IncomeStatementDates.SubmitEndDay))
+        (messageDismissedDate.getMonth() === currentDate.getMonth() &&
+          messageDismissedDate.getDate() <= IncomeStatementDates.SubmitEndDay))
     ) {
       return <></>;
     }

@@ -1,14 +1,14 @@
+import { InputMaybe, VisitData } from '@ecdlink/graphql';
 import {
-  CmsVisitDataInputModelInput,
-  InputMaybe,
-  VisitData,
-} from '@ecdlink/graphql';
-import { PQAState, PQAStateKeys } from './pqa.types';
+  MergedCmsVisitDataInputModelInput,
+  PQAState,
+  PQAStateKeys,
+} from './pqa.types';
 import { PayloadAction } from '@reduxjs/toolkit';
 
 interface AddState {
   state: PQAState;
-  payload: CmsVisitDataInputModelInput;
+  payload: MergedCmsVisitDataInputModelInput;
   userId: string;
   visitId?: InputMaybe<string>;
 }

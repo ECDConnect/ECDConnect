@@ -28,5 +28,6 @@ namespace ECDLink.ContentManagement.Entities
         public string DisplayName { get; set; }
         public bool DisplayMainTable { get; set; }
         public bool DisplayPage { get; set; }
+        public bool IsRequired { get; set; }
     }
 }

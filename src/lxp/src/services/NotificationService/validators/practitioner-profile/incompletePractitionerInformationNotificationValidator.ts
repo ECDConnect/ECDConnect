@@ -1,4 +1,5 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
+import { StepItem } from '@ecdlink/ui';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
@@ -8,6 +9,7 @@ import {
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { format } from 'date-fns';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -69,7 +71,7 @@ export class IncompletePractitionerInformationNotificationValidator
 
       if (isTrainee) {
         const timeline = traineeState?.traineeOnboardTimeline;
-        const completedSteps = timelineSteps(
+        const steps = timelineSteps(
           timeline!,
           () => {},
           false,
@@ -79,11 +81,57 @@ export class IncompletePractitionerInformationNotificationValidator
           '',
           timeline?.consolidationMeetingStatus,
           isOnStipend
-        ).filter((item) => item?.type === 'completed');
+        );
+
+        const completedSteps = steps.filter(
+          (item) => item?.type === 'completed'
+        );
+        const overdueSteps = steps
+          .filter((item) => {
+            const overdueDate = (item as StepItem<{ date: Date }>)?.extraData
+              ?.date;
+            return (
+              (item?.type === 'todo' || item?.type === 'inProgress') &&
+              overdueDate &&
+              overdueDate < new Date()
+            );
+          })
+          .sort(
+            (stepA, stepB) =>
+              ((stepA as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
+                0) -
+              ((stepB as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
+                0)
+          ) as StepItem<{ date: Date }>[];
+
+        if (overdueSteps?.length > 0) {
+          const overdueDate = overdueSteps[0].extraData?.date || new Date();
+          return [
+            {
+              reference: `trainee-profile`,
+              title: 'Onboarding tasks overdue',
+              message: `You have overdue onboarding tasks. Tasks were due by ${format(
+                overdueDate,
+                'd MMM yyyy'
+              )}. If you do not complete these tasks, your coach will be asked to remove you from the programme.`,
+              dateCreated: new Date().toISOString(),
+              priority: NotificationPriority.lower,
+              viewOnDashboard: true,
+              area: 'practitioner',
+              icon: 'SwitchVerticalIcon',
+              color: 'primary',
+              actionText: 'See onboarding tasks',
+              viewType: 'Hub',
+              routeConfig: {
+                route: ROUTES.TRAINEE.TRAINEE_ONBOARDING,
+              },
+            },
+          ];
+        }
 
         if (
           (isOnStipend && completedSteps?.length < 8) ||
-          (isOnStipend !== true && completedSteps?.length < 7)
+          (!isOnStipend && completedSteps?.length < 7)
         ) {
           return [
             {

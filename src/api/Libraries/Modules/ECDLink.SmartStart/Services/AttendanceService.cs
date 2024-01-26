@@ -1,4 +1,5 @@
 ﻿using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -83,7 +84,7 @@ namespace ECDLink.SmartStart.Services
             var learners = _dbContext.Learners
                             .Include(x => x.User)
                             .Include(x => x.ClassroomGroup)
-                            .ThenInclude(x => x.ClassProgrammes)
+                            .ThenInclude(x => x.ClassProgrammes.Where(x => x.IsActive))
                             .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
 
             return learners.ToList();
@@ -104,16 +105,16 @@ namespace ECDLink.SmartStart.Services
             Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId));
 
             var classroom = _dbContext.Classrooms
-                                .Include(x => x.ClassroomGroups)
-                                .ThenInclude(c => c.ClassProgrammes)
+                                .Include(x => x.ClassroomGroups.Where(x => x.IsActive))
+                                .ThenInclude(c => c.ClassProgrammes.Where(x => x.IsActive))
                                 .Where(x => x.UserId == userId)
                                 .FirstOrDefault();
 
             if (classroom == default(Classroom) || classroomId != default(Guid))
             {
                 classroom = (Classroom)_dbContext.Classrooms
-                                .Include(x => x.ClassroomGroups)
-                                .ThenInclude(c => c.ClassProgrammes)
+                                .Include(x => x.ClassroomGroups.Where(x => x.IsActive))
+                                .ThenInclude(c => c.ClassProgrammes.Where(x => x.IsActive))
                                 .Where(x => x.Id == classroomId)
                                 .FirstOrDefault(); 
             }
@@ -127,8 +128,8 @@ namespace ECDLink.SmartStart.Services
                 {
                     //now test the practitioners principal userid, if its theirs, then show results. If it still doesnt match, throw the error
                     classroom = _dbContext.Classrooms
-                    .Include(x => x.ClassroomGroups)
-                    .ThenInclude(c => c.ClassProgrammes)
+                    .Include(x => x.ClassroomGroups.Where(x => x.IsActive))
+                    .ThenInclude(c => c.ClassProgrammes.Where(x => x.IsActive))
                     .FirstOrDefault(c => c.UserId.Contains(practi.PrincipalHierarchy.ToString()));// c.Id == classroomId &&
                 }
 
@@ -145,7 +146,7 @@ namespace ECDLink.SmartStart.Services
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
             var groups = _classGroupRepo.GetAll()
-                .Include(x => x.ClassProgrammes)
+                .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
                 .Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
                 .OrderBy(x => x.Id)
                 .ToList();
@@ -239,7 +240,7 @@ namespace ECDLink.SmartStart.Services
 
             var learnerReports = new List<ChildGroupingAttendanceReportModel>();
 
-            var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
+           
 
             foreach (var learner in learners)
             {
@@ -254,6 +255,7 @@ namespace ECDLink.SmartStart.Services
 
                     foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                     {
+                        var validClassDays = GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
                         var daysOfClass = CalculateDaysOfClassForMonth(dt, programme.MeetingDay, validClassDays, learner.StartedAttendance, learner.StoppedAttendance);
 
                         var attendedClasses = attendanceForPeriod

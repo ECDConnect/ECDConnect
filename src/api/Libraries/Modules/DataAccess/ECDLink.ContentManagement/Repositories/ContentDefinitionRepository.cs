@@ -116,6 +116,7 @@ namespace ECDLink.ContentManagement.Repositories
                     GraphDataTypeName = GetFieldType(x),
                     DisplayMainTable = x.DisplayMainTable,
                     DisplayPage = x.DisplayPage,
+                    IsRequired = x.IsRequired
                 })
             };
         }
