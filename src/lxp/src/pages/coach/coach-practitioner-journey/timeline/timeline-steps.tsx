@@ -21,7 +21,9 @@ export type ScheduleEventType =
   | 'First PQA'
   | 'PQA follow-up'
   | 'Re-accreditation'
-  | 'Re-accreditation follow-up';
+  | 'Re-accreditation follow-up'
+  | 'First site visit'
+  | 'Second site visit';
 
 export interface ScheduleProps {
   visit: Visit;
@@ -190,8 +192,15 @@ export const timelineSteps = ({
           visit1?.attended ? visit1.actualVisitDate : visit1?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions);
 
+    const currentVisit = visits?.some(
+      (item) =>
+        item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
+    )
+      ? visit2
+      : visit1;
+
     const isLateDate =
-      new Date(date) < new Date() &&
+      new Date(date).getTime() < new Date().getTime() &&
       timeline.prePQASiteVisits.some((item) => !item?.attended);
     const isAllCompleted = timeline.prePQASiteVisits?.every(
       (item) => !!item?.attended
@@ -215,11 +224,14 @@ export const timelineSteps = ({
       },
       accordionContent: (
         <PrePqaVisits
+          currentVisit={currentVisit!}
           isLoading={isLoading}
           isOnline={isOnline}
           onView={onView}
           timeline={timeline}
           visits={visits}
+          onStart={onStart}
+          onScheduleOrStart={onScheduleOrStart}
         />
       ),
     });
