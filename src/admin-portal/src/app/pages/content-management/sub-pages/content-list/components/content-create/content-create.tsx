@@ -36,6 +36,9 @@ export default function ContentCreate({
 }: ContentCreateProps) {
   const [defaultLanguageId, setDefaultLanguageId] = useState<string>();
   const { register, formState, setValue, handleSubmit, control } = useForm();
+  const [requiredMessage, setRequiredMessage] = useState(
+    'This field is required'
+  );
   const { errors } = formState;
   const handleform = {
     control,
@@ -169,6 +172,7 @@ export default function ContentCreate({
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               acceptedFileFormats={acceptedFileFormats}
+              requiredMessage={requiredMessage}
             />
           </div>
         </form>

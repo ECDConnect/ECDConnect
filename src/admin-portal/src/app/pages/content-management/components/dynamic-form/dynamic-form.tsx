@@ -12,7 +12,7 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
-import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
 const acceptedFormats = [
@@ -35,6 +35,7 @@ export interface DynamicFormProps {
   formType?: string;
   choosedSectionTitle?: string;
   getValues?: any;
+  requiredMessage?: string;
 }
 
 const contentWrapper = '';
@@ -49,6 +50,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   formType,
   choosedSectionTitle,
   getValues,
+  requiredMessage,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -72,7 +74,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const initialValues = getValues();
 
   const [fields, setFields] = useState<any>();
-  const requiredMessage = 'This field is required';
+  // const requiredMessage = 'This field is required';
 
   useEffect(() => {
     if (
