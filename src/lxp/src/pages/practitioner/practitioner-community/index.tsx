@@ -21,6 +21,7 @@ import { PractitionerLeagueView } from './league-tab';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { useWindowSize } from '@reach/window-size';
 import { practitionerSelectors } from '@/store/practitioner';
+import { Connect } from '@/pages/community/connect-tab/connect';
 
 export const PractitionerCommunity: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -74,7 +75,7 @@ export const PractitionerCommunity: React.FC = () => {
     {
       title: 'Connect',
       initActive: false,
-      child: <div className="text-textDark p-4">Coming soon</div>,
+      child: <Connect />,
     },
   ];
 
