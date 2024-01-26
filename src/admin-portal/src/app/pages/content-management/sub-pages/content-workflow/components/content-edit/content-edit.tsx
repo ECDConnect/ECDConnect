@@ -283,7 +283,7 @@ export default function ContentEdit({
   };
 
   const onSubmit = async (values: any) => {
-    //setLoading(true);
+    setLoading(true);
     const model = { ...values };
 
     // make sure that we work with a date, we send a string to ensure correct dates
