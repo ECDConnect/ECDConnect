@@ -496,7 +496,7 @@ export const CoachPractitionerJourney = () => {
 
   useEffect(() => {
     if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
-      // syncData();
+      syncData();
     }
   }, [getTimeline, isOnline, previousShowForm, showForm, syncData, wasOnline]);
 
