@@ -16,6 +16,7 @@ import {
 } from './utils';
 import { visitTypes } from '../coach-practitioner-journey.types';
 import { ClubMeetingMeeting } from './club-meetings';
+import { visitIdKey } from '../forms';
 
 export type ScheduleEventType =
   | 'First PQA'
@@ -131,8 +132,10 @@ export const timelineSteps = ({
 }): StepItem[] => {
   const onActionButtonClick = (options: ScheduleOrStartProps) => {
     if (!options.visit?.eventId) {
+      window.sessionStorage.setItem(visitIdKey, options.visit?.id);
       onScheduleOrStart(options);
     } else {
+      window.sessionStorage.setItem(visitIdKey, options.visit?.id);
       onStart(options.visit.visitType?.name as string);
     }
   };
