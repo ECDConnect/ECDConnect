@@ -184,7 +184,6 @@ export default function ContentList({
         ...item,
       }));
       if (selectedTab === 1) {
-        console.log('tab 1');
         setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
