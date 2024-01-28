@@ -184,23 +184,7 @@ export default function ContentList({
         ...item,
       }));
       if (selectedTab === 1) {
-        // Wait for validation on dev
-        // let clientProfileData = moreInforItems.filter(
-        //   (item: { type: string }) => {
-        //     return (
-        //       item.type === 'client profile' ||
-        //       item.type === 'Info Page' ||
-        //       item?.type === 'Income Statements' ||
-        //       item?.type === 'Taking Child Attendance' ||
-        //       item?.type === 'League Of Stars' ||
-        //       item?.type === 'Purple Clubs' ||
-        //       item?.type === 'Learning Through Play' ||
-        //       item?.type === 'The Daily Routine' ||
-        //       item?.type === 'Tracking Progress' ||
-        //       item?.type === 'Trainee Onboarding'
-        //     );
-        //   }
-        // );
+        console.log('tab 1');
         setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
@@ -259,7 +243,16 @@ export default function ContentList({
           ...item,
         }));
 
-        setTableData(copyItems);
+        let clientProfileData = copyItems.filter(
+          (item: { type: string; name: string }) => {
+            return (
+              item.type !== 'TermsAndConditions' &&
+              item.name !== 'Personal Information'
+            );
+          }
+        );
+
+        setTableData(clientProfileData);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
