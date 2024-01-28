@@ -294,43 +294,6 @@ export default function ContentList({
     viewContent(model);
   };
 
-  //TO BE REMOVED AFTER NEW CREATE BE VALIDATED
-  // const displayCreatePanel = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Create ${type}`,
-  //     render: (onSubmit: any) => (
-  //       <ContentCreate
-  //         key={`contentPanelCreate`}
-  //         acceptedFileFormats={
-  //           selectedTab === ContentManagementTabs.COMMUNITY.id
-  //             ? ['pdf']
-  //             : undefined
-  //         }
-  //         selectedLanguageId={languageId}
-  //         languages={languages}
-  //         contentType={contentType}
-  //         optionDefinitions={optionDefinitions}
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
-
-  //           if (created) {
-  //             refetchContent({
-  //               localeId: languageId.toString(),
-  //             });
-  //             refreshParent();
-
-  //             setNotification({
-  //               title: 'Successfully Created Content!',
-  //               variant: NOTIFICATION.SUCCESS,
-  //             });
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
-
   const onBulkActionCallback = (status: BulkActionStatus) => {
     if (status !== 'success') return;
 
@@ -357,6 +320,7 @@ export default function ContentList({
             </div>
             {hasPermission(PermissionEnum.create_static) &&
               contentType?.name !== 'Consent' &&
+              contentType?.name !== 'MoreInformation' &&
               contentType?.name !== 'ProgressTrackingLevel' &&
               contentType?.name !== 'ProgressTrackingCategory' && (
                 <button
