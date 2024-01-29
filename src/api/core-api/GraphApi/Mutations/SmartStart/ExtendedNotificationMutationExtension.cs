@@ -161,6 +161,21 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeOverdueTasks, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
         }
 
+        public async Task<bool> SendProgressreportsNotCreatedNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, DateTime dueDate)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "DueDate",
+                ReplacementValue = dueDate.ToString()
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressreportsNotCreated, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+        }
+
         public async Task<bool> SendTraineeSetupVenueNotification(
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId)
