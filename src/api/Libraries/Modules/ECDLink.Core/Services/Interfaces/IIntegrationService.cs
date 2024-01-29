@@ -21,5 +21,6 @@ namespace ECDLink.Core.Services.Interfaces
         Task AutoSubmitStatements();
         Task<bool> IntegrationByNewCoach(string remoteCoachId);
         Task IntegrationLeagueData();
+        Task PushChildProgressReports();
     }
 }

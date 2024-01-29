@@ -184,23 +184,6 @@ export default function ContentList({
         ...item,
       }));
       if (selectedTab === 1) {
-        // Wait for validation on dev
-        // let clientProfileData = moreInforItems.filter(
-        //   (item: { type: string }) => {
-        //     return (
-        //       item.type === 'client profile' ||
-        //       item.type === 'Info Page' ||
-        //       item?.type === 'Income Statements' ||
-        //       item?.type === 'Taking Child Attendance' ||
-        //       item?.type === 'League Of Stars' ||
-        //       item?.type === 'Purple Clubs' ||
-        //       item?.type === 'Learning Through Play' ||
-        //       item?.type === 'The Daily Routine' ||
-        //       item?.type === 'Tracking Progress' ||
-        //       item?.type === 'Trainee Onboarding'
-        //     );
-        //   }
-        // );
         setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
@@ -259,7 +242,16 @@ export default function ContentList({
           ...item,
         }));
 
-        setTableData(copyItems);
+        let clientProfileData = copyItems.filter(
+          (item: { type: string; name: string }) => {
+            return (
+              item.type !== 'TermsAndConditions' &&
+              item.name !== 'Personal Information'
+            );
+          }
+        );
+
+        setTableData(clientProfileData);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -302,43 +294,6 @@ export default function ContentList({
     viewContent(model);
   };
 
-  //TO BE REMOVED AFTER NEW CREATE BE VALIDATED
-  // const displayCreatePanel = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Create ${type}`,
-  //     render: (onSubmit: any) => (
-  //       <ContentCreate
-  //         key={`contentPanelCreate`}
-  //         acceptedFileFormats={
-  //           selectedTab === ContentManagementTabs.COMMUNITY.id
-  //             ? ['pdf']
-  //             : undefined
-  //         }
-  //         selectedLanguageId={languageId}
-  //         languages={languages}
-  //         contentType={contentType}
-  //         optionDefinitions={optionDefinitions}
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
-
-  //           if (created) {
-  //             refetchContent({
-  //               localeId: languageId.toString(),
-  //             });
-  //             refreshParent();
-
-  //             setNotification({
-  //               title: 'Successfully Created Content!',
-  //               variant: NOTIFICATION.SUCCESS,
-  //             });
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
-
   const onBulkActionCallback = (status: BulkActionStatus) => {
     if (status !== 'success') return;
 
@@ -365,6 +320,7 @@ export default function ContentList({
             </div>
             {hasPermission(PermissionEnum.create_static) &&
               contentType?.name !== 'Consent' &&
+              contentType?.name !== 'MoreInformation' &&
               contentType?.name !== 'ProgressTrackingLevel' &&
               contentType?.name !== 'ProgressTrackingCategory' && (
                 <button

@@ -12,18 +12,10 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
-import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
-const acceptedFormats = [
-  'svg',
-  'png',
-  'PNG',
-  'jpg',
-  'JPG',
-  'jpeg',
-  ...videoExtensions,
-];
+const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
 export interface DynamicFormProps {
   template: DynamicFormTemplate;
@@ -35,6 +27,7 @@ export interface DynamicFormProps {
   formType?: string;
   choosedSectionTitle?: string;
   getValues?: any;
+  requiredMessage?: string;
 }
 
 const contentWrapper = '';
@@ -49,6 +42,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   formType,
   choosedSectionTitle,
   getValues,
+  requiredMessage,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -72,7 +66,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const initialValues = getValues();
 
   const [fields, setFields] = useState<any>();
-  const requiredMessage = 'This field is required';
+  // const requiredMessage = 'This field is required';
 
   useEffect(() => {
     if (
@@ -127,6 +121,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           ) {
             return (
               <div key={propName} className={contentWrapper}>
+                <label
+                  htmlFor={propName}
+                  className="mb-1 block text-lg font-medium text-gray-800"
+                >
+                  {field?.title}
+                </label>
                 <div className="bg-uiBg sm:col-span-12">
                   <ButtonGroup
                     options={smallLargeGroupOptions}

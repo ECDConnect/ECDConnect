@@ -30,6 +30,7 @@ import {
   ContentTypes,
 } from '../../../../../../constants/content-management';
 import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
+import { format } from 'date-fns';
 
 export interface ContentViewProps {
   content: any;
@@ -63,6 +64,9 @@ export default function ContentEdit({
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
+  const [requiredMessage, setRequiredMessage] = useState(
+    'This field is required'
+  );
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control, getValues } =
     useForm();
@@ -211,6 +215,7 @@ export default function ContentEdit({
       if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
         setAcceptedFileFormats(['pdf']);
         setAllowedFileSize(5242880);
+        setRequiredMessage('');
       }
     }
   }, [contentType]);
@@ -254,7 +259,6 @@ export default function ContentEdit({
   };
 
   const getSubHeading = (field: ContentTypeFieldDto) => {
-    // this will be replaced by the new isRequired column being implemented
     if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
       if (field.fieldName === CoachingCircleText.START_DATE) {
         return CoachingCircleText.START_DATE_SUB_HEADING;
@@ -267,7 +271,6 @@ export default function ContentEdit({
   };
 
   const getFieldAlert = (field: ContentTypeFieldDto) => {
-    // this will be replaced by the new isRequired column being implemented
     if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
       if (field.fieldName === CoachingCircleText.START_DATE) {
         return CoachingCircleText.START_DATE_ALERT;
@@ -282,6 +285,13 @@ export default function ContentEdit({
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
+
+    // make sure that we work with a date, we send a string to ensure correct dates
+    Object.keys(model).forEach((key) => {
+      if (model[key] instanceof Date) {
+        model[key] = format(model[key], 'yyyy-MM-dd') + 'T00:00:00.000Z';
+      }
+    });
 
     if (!content?.id) {
       await createContent({
@@ -408,6 +418,7 @@ export default function ContentEdit({
               formType={formType}
               choosedSectionTitle={choosedSectionTitle}
               getValues={getValues}
+              requiredMessage={requiredMessage}
             />
           </div>
 

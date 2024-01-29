@@ -10,7 +10,7 @@ import {
   StackedList,
   BannerWrapper,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
@@ -45,7 +45,6 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   );
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
-  const children = useSelector(childrenSelectors.getChildren);
   const childrenForPractitioner = useSelector(
     childrenForPractitionerSelectors.getChildrenForPractitioner
   );
@@ -77,8 +76,9 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     SearchDropDownOption<string>[]
   >([]);
 
-  const childrenForPractitionerList = children?.filter((item) =>
-    childrenForPractitioner?.find((item2) => item.id === item2.id)
+  const childrenForPractitionerList = useMemo(
+    () => childrenForPractitioner?.filter((child) => child?.isActive),
+    [childrenForPractitioner]
   );
 
   const filterInfo: FilterInfo = {
@@ -208,6 +208,20 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
         const childLearnerTwo = classroomGroupLearners?.find(
           (x) => x.userId === a.userId
         );
+        const childClassroomGroupOne = classroomGroups?.filter(
+          (x) => x.id === childLearnerOne?.classroomGroupId
+        );
+        const childClassroomGroupTwo = classroomGroups?.filter(
+          (x) => x.id === childLearnerTwo?.classroomGroupId
+        );
+        const childClassroomGroupProgrammeOne =
+          classroomGroupProgrammes?.filter(
+            (x) => x.classroomGroupId === childLearnerOne?.classroomGroupId
+          );
+        const childClassroomGroupProgrammeTwo =
+          classroomGroupProgrammes?.filter(
+            (x) => x.classroomGroupId === childLearnerTwo?.classroomGroupId
+          );
 
         switch (column) {
           case 'priority': {
@@ -224,8 +238,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
               a,
               childUserDocumentsOne,
               attendanceData,
-              classroomGroups,
-              classroomGroupProgrammes,
+              childClassroomGroupOne,
+              childClassroomGroupProgrammeOne,
               childReportsOne,
               practitioner?.attendedChildProgress || false,
               'coach'
@@ -243,8 +257,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
               b,
               childUserDocumentsTwo,
               attendanceData,
-              classroomGroups,
-              classroomGroupProgrammes,
+              childClassroomGroupTwo,
+              childClassroomGroupProgrammeTwo,
               childReportsTwo,
               practitioner?.attendedChildProgress || false,
               'coach'
@@ -294,6 +308,14 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     const reports = childReportSummaries?.filter(
       (x) => x.childId === childRecord?.id
     );
+    const childClassroomGroup = classroomGroups?.filter(
+      (classroomGroup) => classroomGroup.id === childLearner?.classroomGroupId
+    );
+    const childClassroomGroupProgramme = classroomGroupProgrammes?.filter(
+      (classroomGroupProgramme) =>
+        classroomGroupProgramme.classroomGroupId ===
+        childLearner?.classroomGroupId
+    );
 
     const childAlert = getChildAlertModel(
       childLearner,
@@ -302,8 +324,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       childRecord,
       childDocuments,
       attendanceData,
-      classroomGroups,
-      classroomGroupProgrammes,
+      childClassroomGroup,
+      childClassroomGroupProgramme,
       reports,
       practitioner?.attendedChildProgress || false,
       'coach'
