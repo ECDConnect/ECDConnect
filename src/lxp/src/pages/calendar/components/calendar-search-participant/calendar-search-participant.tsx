@@ -204,7 +204,7 @@ export const CalendarSearchParticipant: React.FC<
             type={'UserAlertList'}
             onClickItem={onPractitionerRemove}
           />
-          <div>
+          <div className="mb-4 mt-6 flex items-center justify-between">
             <Button
               onClick={onClickDone}
               className="w-full"
