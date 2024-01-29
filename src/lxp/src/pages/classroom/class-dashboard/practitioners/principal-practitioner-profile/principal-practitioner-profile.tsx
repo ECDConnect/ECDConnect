@@ -258,17 +258,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const [editRemovalDialogVisable, setEditRemovalDialogVisable] =
     useState<boolean>(false);
-  const [existingRemoval, setExisitingRemoval] = useState<
+  const [existingRemoval, setExistingRemoval] = useState<
     PractitionerRemovalHistory | undefined
   >();
 
   const getRemovalForPractitioner = async () => {
-    const removalDetails = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getRemovalForPractitioner(practitioner?.userId!);
-    setExisitingRemoval(removalDetails);
+    const ps = await new PractitionerService(userAuth?.auth_token!);
+    let attempt = 0;
+    let result = undefined;
 
-    return removalDetails;
+    while (attempt <= 3 && !result) {
+      result = await ps.getRemovalForPractitioner(practitioner?.userId!);
+      !result ? attempt++ : setExistingRemoval(result);
+    }
   };
 
   const classroomsMetrics = async () => {
@@ -300,7 +302,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     await new PractitionerService(
       userAuth?.auth_token || ''
     ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
-    setExisitingRemoval(undefined);
+    setExistingRemoval(undefined);
   };
 
   const notificationItem: MenuListDataItem[] = [
@@ -472,22 +474,25 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   />
                 </div>
               )}
-            <AbsenceCard
-              absenceIsToday={absenceIsToday}
-              currentAbsentee={currentAbsentee}
-              handleComebackDay={handleComebackDay}
-              practitioner={practitioner!}
-              isOnLeave={isOnLeave}
-              handleReassignClass={handleReassignClass}
-              handleAbsenceModal={(item: AbsenteeDto) =>
-                handleAbsenceModal(item)
-              }
-              isLeave={isLeave}
-              allAbsenteeClasses={allAbsenteeClasses}
-              practitionerUserId={practitionerUserId}
-              classesWithAbsence={classesWithAbsence}
-              practitionerAbsentees={practitionerAbsentees}
-            />
+            {!existingRemoval && (
+              <AbsenceCard
+                absenceIsToday={absenceIsToday}
+                currentAbsentee={currentAbsentee}
+                handleComebackDay={handleComebackDay}
+                practitioner={practitioner!}
+                isOnLeave={isOnLeave}
+                handleReassignClass={handleReassignClass}
+                handleAbsenceModal={(item: AbsenteeDto) =>
+                  handleAbsenceModal(item)
+                }
+                isLeave={isLeave}
+                allAbsenteeClasses={allAbsenteeClasses}
+                practitionerUserId={practitionerUserId}
+                classesWithAbsence={classesWithAbsence}
+                practitionerAbsentees={practitionerAbsentees}
+              />
+            )}
+
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(
@@ -556,7 +561,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               type={'body'}
                               weight={'bold'}
                               text={`attendance in ${getMonthName(
-                                getMonth(new Date()) - 1
+                                getMonth(new Date())
                                 // eslint-disable-next-line no-useless-concat
                               )}\u00A0${item?.year}`}
                               color={'textMid'}

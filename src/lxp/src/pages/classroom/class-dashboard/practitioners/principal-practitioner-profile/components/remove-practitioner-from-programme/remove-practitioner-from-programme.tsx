@@ -449,7 +449,7 @@ export const RemovePractitionerFromProgramme: React.FC<
             <Typography
               type="h6"
               className="ml-2"
-              text={'Remove SmartStarter'}
+              text={'Remove Practitioner'}
               color="white"
             />
           </Button>
@@ -474,7 +474,7 @@ export const RemovePractitionerFromProgramme: React.FC<
         className={'mb-16 px-4'}
         stretch={true}
         visible={removePractionerPromptVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <RemovePractitionerFromProgrammePrompt
           practitioner={practitioner}
