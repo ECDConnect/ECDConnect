@@ -14,6 +14,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
+  ActivitiesTitles,
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
@@ -175,14 +176,34 @@ export default function ContentEdit({
   const [createContent] = useMutation(createMutation);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
+
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues = getValues();
-  const disableButton = template?.fields?.filter(
-    (item) =>
-      item?.isRequired &&
-      initialValues?.hasOwnProperty(item?.propName) &&
-      !initialValues[item?.propName]
-  );
+  const disableButton =
+    choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+      ? template?.fields
+          ?.filter((x) => x?.propName !== 'subType')
+          .filter(
+            (item) =>
+              item?.isRequired &&
+              initialValues?.hasOwnProperty(item?.propName) &&
+              !initialValues[item?.propName]
+          )
+      : choosedSectionTitle === ActivitiesTitles.StoryActivities
+      ? template?.fields
+          ?.filter((x) => x?.propName !== 'subCategories')
+          .filter(
+            (item) =>
+              item?.isRequired &&
+              initialValues?.hasOwnProperty(item?.propName) &&
+              !initialValues[item?.propName]
+          )
+      : template?.fields?.filter(
+          (item) =>
+            item?.isRequired &&
+            initialValues?.hasOwnProperty(item?.propName) &&
+            !initialValues[item?.propName]
+        );
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -422,6 +443,7 @@ export default function ContentEdit({
               choosedSectionTitle={choosedSectionTitle}
               getValues={getValues}
               requiredMessage={requiredMessage}
+              useWatch={useWatch}
             />
           </div>
 
