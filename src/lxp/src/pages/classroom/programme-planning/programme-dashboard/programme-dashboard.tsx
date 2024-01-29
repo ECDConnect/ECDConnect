@@ -42,7 +42,6 @@ export interface iSkills {
 export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   programmeStartDate,
 }) => {
-  const [showFirstVisitModal, setShowFirstVisitModal] = useState(true);
   const history = useHistory();
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const user = useSelector(userSelectors.getUser);
@@ -86,7 +85,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
 
-  const storageFirstVisit = getStorageItem<number>(
+  const hasVisitedDashboard = getStorageItem<number>(
     LocalStorageKeys.hasVisitedProgrammeDashboard || false
   );
 
@@ -141,11 +140,10 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   };
 
   useEffect(() => {
-    if (storageFirstVisit) {
+    if (!hasVisitedDashboard) {
       showFirstVisit();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showFirstVisitModal]);
+  }, []);
 
   useEffect(() => {
     if (!progressSummary) {
