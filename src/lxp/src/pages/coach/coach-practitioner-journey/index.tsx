@@ -696,14 +696,18 @@ export const CoachPractitionerJourney = () => {
         endDate: currentDate,
       })
     ).then((userPoints) => {
-      setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      if (Array.isArray(userPoints.payload)) {
+        setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      } else {
+        setUserPointsSummaries([]);
+      }
     });
   }, [appDispatch, practitionerId]);
 
   const userPointsTotalForYear = useMemo(
     () =>
-      userPointsSummaries.reduce(
-        (total, current) => (total += current.pointsYTD),
+      userPointsSummaries?.reduce(
+        (total, current) => (total += current?.pointsYTD),
         0
       ),
     [userPointsSummaries]

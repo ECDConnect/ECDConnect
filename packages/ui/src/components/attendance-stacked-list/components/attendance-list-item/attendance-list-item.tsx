@@ -79,6 +79,7 @@ export const AttendanceListItem = ({
     <div
       className={classNames(
         className,
+        attendanceItem?.className,
         styles.menulistItemContainer(attendanceItem.status)
       )}
       onClick={() => {
@@ -111,6 +112,12 @@ export const AttendanceListItem = ({
               weight="bold"
               color="textMid"
               text={attendanceItem.title}
+            ></Typography>
+            <Typography
+              className="truncate"
+              type="help"
+              color="textMid"
+              text={attendanceItem.subTitle}
             ></Typography>
           </div>
         </div>
