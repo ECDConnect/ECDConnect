@@ -79,6 +79,9 @@ class CalendarService {
               firstName
               surname
             }
+            visit {
+              attended
+            }
           }
         }
     `,
