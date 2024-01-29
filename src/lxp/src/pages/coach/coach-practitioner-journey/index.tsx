@@ -370,6 +370,16 @@ export const CoachPractitionerJourney = () => {
         scheduleStartText:
           visitTypes.reaccreditation.followUp.scheduleStartText,
       };
+    if (visit.visitType?.name === visitTypes.prePqa.first.name)
+      return {
+        eventType: visitTypes.prePqa.first.eventType,
+        scheduleStartText: visitTypes.prePqa.first.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.prePqa.second.name)
+      return {
+        eventType: visitTypes.prePqa.second.eventType,
+        scheduleStartText: visitTypes.prePqa.second.scheduleStartText,
+      };
   };
 
   const getScheduleOrStartProps = (
@@ -686,14 +696,18 @@ export const CoachPractitionerJourney = () => {
         endDate: currentDate,
       })
     ).then((userPoints) => {
-      setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      if (Array.isArray(userPoints.payload)) {
+        setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      } else {
+        setUserPointsSummaries([]);
+      }
     });
   }, [appDispatch, practitionerId]);
 
   const userPointsTotalForYear = useMemo(
     () =>
-      userPointsSummaries.reduce(
-        (total, current) => (total += current.pointsYTD),
+      userPointsSummaries?.reduce(
+        (total, current) => (total += current?.pointsYTD),
         0
       ),
     [userPointsSummaries]

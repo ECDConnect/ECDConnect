@@ -30,14 +30,14 @@ namespace EcdLink.Api.CoreApi.Services
             await _logManager.IntegrationLog($"PushMonthlyAttendancePdf started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushMonthlyAttendancePdf");
 
             var startPeriod = DateTime.Now.GetStartOfMonth();
-            _mappedEntities = await this.GetMappedEntities();
+            _mappedEntities = await this.GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
             var mappedPractitioners = _mappedEntities.Where(x => x.LocalEntity == Constants.SSIntegrationSettings.SSPractitioner); 
             
             // Get start and end of last month
             var startDate = DateTime.Now.AddMonths(-1).GetStartOfMonth();
             var endDate = DateTime.Now.AddMonths(-1).GetEndOfMonth();
 
-            foreach (var mappedPractitioner  in _mappedEntities)
+            foreach (var mappedPractitioner in mappedPractitioners)
             {
                 try
                 {

@@ -348,6 +348,7 @@ namespace ECDLink.SmartStart.Services
                     foreach (var reportCat in report.Categories)
                     {
                         if (reportCat.SupportingTask == null) continue;
+                        if (!_skillMap.ContainsKey(reportCat.SupportingTask.TaskId)) continue;
                         var skill = _skillMap[reportCat.SupportingTask.TaskId];
                         if (skill == null) continue;
                         var cat = classSummary.Categories.Where(c => c.Id == skill.Category.Id).FirstOrDefault();

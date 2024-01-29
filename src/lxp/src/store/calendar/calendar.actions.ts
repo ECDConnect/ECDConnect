@@ -10,6 +10,7 @@ import { calendarConvert } from './calendar.util';
 
 export const CalendarActions = {
   UPDATE_CALENDAR_EVENT: 'updateCalendarEvent',
+  CANCEL_CALENDAR_EVENT: 'cancelCalendarEvent',
 };
 
 export const upsertCalendarEvents = createAsyncThunk<
@@ -134,6 +135,46 @@ export const updateCalendarEvent = createAsyncThunk<
         return input;
       } else {
         return rejectWithValue('no access token');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const cancelCalendarEvent = createAsyncThunk<
+  { id: string } | { id: string }[] | undefined,
+  { id: string } | undefined,
+  ThunkApiType<RootState>
+>(
+  CalendarActions.CANCEL_CALENDAR_EVENT,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      calendar: { eventIdsToCancel },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!Object.keys(input).length) {
+          return await new CalendarService(
+            userAuth?.auth_token
+          ).cancelCalendarEvent(input);
+        }
+
+        if (!!eventIdsToCancel?.length) {
+          const promises = eventIdsToCancel
+            ?.filter((id) => !!id)
+            ?.map(async (id) => {
+              return await new CalendarService(
+                userAuth?.auth_token
+              ).cancelCalendarEvent({ id });
+            });
+
+          return await Promise.all(promises);
+        }
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
     } catch (err) {
       return rejectWithValue(err);
