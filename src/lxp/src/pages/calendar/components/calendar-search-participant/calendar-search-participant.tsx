@@ -204,25 +204,23 @@ export const CalendarSearchParticipant: React.FC<
             type={'UserAlertList'}
             onClickItem={onPractitionerRemove}
           />
-          <div>
-            <Button
-              onClick={onClickDone}
-              className="w-full"
-              size="normal"
-              color="primary"
-              type="filled"
-              isLoading={busySaving}
-              disabled={busySaving}
-            >
-              {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
-              <Typography
-                type="h6"
-                className="ml-2"
-                text={'Done'}
-                color="white"
-              />
-            </Button>
-          </div>
+          <Button
+            onClick={onClickDone}
+            className="mb-4 mt-6 w-full"
+            size="normal"
+            color="primary"
+            type="filled"
+            isLoading={busySaving}
+            disabled={busySaving}
+          >
+            {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text={'Done'}
+              color="white"
+            />
+          </Button>
         </div>
       </div>
     </BannerWrapper>

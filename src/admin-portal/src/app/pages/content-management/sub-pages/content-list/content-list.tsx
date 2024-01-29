@@ -8,7 +8,7 @@ import {
   LanguageDto,
   PermissionEnum,
 } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -56,12 +56,12 @@ export default function ContentList({
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
-  function filterByValue(array, value) {
+  const filterByValue = useCallback((array, value) => {
     return array.filter(
       (data) =>
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
-  }
+  }, []);
 
   useEffect(() => {
     if (contentType && contentType.fields) {
@@ -313,9 +313,11 @@ export default function ContentList({
                 <SearchIcon className="text-textMid h-5 w-5" />
               </span>
               <input
+                id="search-input"
                 className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
                 placeholder={searchText}
                 onChange={onSearch}
+                // value={searchValue}
               />
             </div>
             {hasPermission(PermissionEnum.create_static) &&
@@ -354,7 +356,7 @@ export default function ContentList({
                     };
                   })}
                   rows={
-                    searchValue
+                    searchValue !== 'Search by title or content...'
                       ? filterByValue(tableData, searchValue)
                       : tableData
                   }
