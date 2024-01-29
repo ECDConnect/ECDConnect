@@ -483,8 +483,6 @@ namespace ECDLink.Core.Services
                     var traineeTimeline = _personnelService.GetOnBoardTraineeTimeline(trainee.UserId);
                     if (traineeTimeline != null)
                     {
-
-
                         //await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
                         //1) check trainees ready for smartspace visits - SendCoachTraineeReadySmartspaceCheckNotification
                         /*
@@ -524,8 +522,11 @@ namespace ECDLink.Core.Services
                                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), true);
                             }
                         }
-                        //switch off starter notifications for this trainee if there was any
-                        await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
+                        if (cancelStarter)
+                        {
+                            //switch off starter notifications for this trainee if there was any
+                            await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
+                        }
                     }
                 }
                 var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.CoachHierarchy.HasValue && x.CoachHierarchy.ToString() == coach.UserId)).ToList();
