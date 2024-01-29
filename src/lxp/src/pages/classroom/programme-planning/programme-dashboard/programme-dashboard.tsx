@@ -85,7 +85,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
 
-  const hasVisitedDashboard = getStorageItem<number>(
+  const hasVisitedDashboard = getStorageItem<boolean>(
     LocalStorageKeys.hasVisitedProgrammeDashboard || false
   );
 
