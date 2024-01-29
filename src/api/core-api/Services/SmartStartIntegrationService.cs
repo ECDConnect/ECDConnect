@@ -128,7 +128,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
     private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
     private readonly InvitationNotificationManager _notificationManager;
-    private readonly IHttpContextAccessor _accessor; 
+    private readonly IHttpContextAccessor _accessor;
 
     public SmartStartIntegrationService(
         IGenericRepositoryFactory repositoryFactory,
@@ -170,14 +170,14 @@ public partial class SmartStartIntegrationService : IIntegrationService
         _notificationService = notificationService;
         _notificationManager = notificationManager;
         _invitationManager = invitationManager;
-        _accessor = accessor; 
+        _accessor = accessor;
         _attendancePdfService = attendancePdfService;
 
         if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
         if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-       if (this.Enabled)
-       {
+        if (this.Enabled)
+        {
             _uId = _hierarchyEngine.GetIntegrationUserId();
 
             //Generic static repos
@@ -220,6 +220,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
             _incomeManager = incomeManager;
             _visitManager = visitManager;
             _attendanceService = attendanceService;
+        }
     }
 
     public bool Enabled {  get { return this._apiMode != MappingMode.None; } }
