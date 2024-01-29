@@ -156,7 +156,6 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<IPersonnelService, PersonnelService>();
-            services.AddTransient<ChildManager>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
@@ -172,6 +171,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IPointsService, PointsEngineService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IClubService, ClubService>();
+            services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
             services.AddTransient<IntegrationHelperManager>();
