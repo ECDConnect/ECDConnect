@@ -293,29 +293,30 @@ namespace EcdLink.Api.CoreApi.Managers
 
                 // First validate if document is already in db
                 Document doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                if (doc != null)
+                {
+                    return doc;
+                }
 
                 // Upload the document
                 try
                 {
-                    if (doc == null)
+                    var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.ClubActivityUpload);
+                    // Save new document to the database
+                    doc = new Document
                     {
-                        var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.ClubActivityUpload);
-                        // Save new document to the database
-                        doc = new Document
-                        {
-                            Id = Guid.NewGuid(),
-                            CreatedUserId = input.CreatedUserId,
-                            Name = input.FileName,
-                            UpdatedBy = input.CreatedUserId,
-                            InsertedDate = DateTime.Now,
-                            Reference = document.Url.TrimEnd('/'),
-                            UserId = input.UserId,
-                            DocumentTypeId = docType.Id,
-                            WorkflowStatusId = ws.Id,
-                            TenantId = TenantExecutionContext.Tenant.Id
-                        };
-                        return _documentRepo.Insert(doc);
-                    }
+                        Id = Guid.NewGuid(),
+                        CreatedUserId = input.CreatedUserId,
+                        Name = input.FileName,
+                        UpdatedBy = input.CreatedUserId,
+                        InsertedDate = DateTime.Now,
+                        Reference = document.Url.TrimEnd('/'),
+                        UserId = input.UserId,
+                        DocumentTypeId = docType.Id,
+                        WorkflowStatusId = ws.Id,
+                        TenantId = TenantExecutionContext.Tenant.Id
+                    };
+                    return _documentRepo.Insert(doc);
                     
                 }
                 catch (Exception e)
