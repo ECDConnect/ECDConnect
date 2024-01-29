@@ -60,7 +60,6 @@ import { classroomsForCoachThunkActions } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
-import { pointsThunkActions } from './store/points';
 import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
@@ -175,7 +174,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
     setOtherLoading(true);
-    await appDispatch(notesThunkActions.getNotes({})).unwrap();
+    await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
     await appDispatch(
@@ -184,19 +183,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();
-    await appDispatch(userThunkActions.getUser({})).unwrap();
-    await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
-    await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
-    await appDispatch(documentThunkActions.getDocuments({})).unwrap();
-    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
-    await appDispatch(
-      contentReportThunkActions.getChildProgressReportSummary(50)
-    ).unwrap();
-    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
@@ -204,6 +191,18 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         weekOfYear: getWeek(new Date()),
       })
     ).unwrap();
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+    await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
+    await appDispatch(documentThunkActions.getDocuments({})).unwrap();
+    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
+    await appDispatch(
+      contentReportThunkActions.getChildProgressReportSummary(50)
+    ).unwrap();
+    await appDispatch(notesThunkActions.getNotes({})).unwrap();
+    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
+    await appDispatch(userThunkActions.getUserConsents({})).unwrap();
     await appDispatch(
       calendarThunkActions.getCalendarEvents({
         start: subMonths(

@@ -25,6 +25,7 @@ using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -96,6 +97,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
     private IGenericRepository<License, Guid> _licenseRepo;
     private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
+    private IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
+    private IGenericRepository<UserHierarchyEntity, Guid> _userHierarchyRepo;
 
     private IAttendancePdfService _attendancePdfService;
     IHolidayService<Holiday> _holidayService;
@@ -215,6 +218,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
             _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
             _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+            _childProgressReportRepo = repositoryFactory.CreateGenericRepository<ChildProgressReport>(userContext: _uId);
+            _userHierarchyRepo = repositoryFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: _uId);
 
             _attendanceTrackingRepository = attendanceTrackingRepository;
             _incomeManager = incomeManager;

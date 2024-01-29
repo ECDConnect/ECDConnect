@@ -8,3 +8,21 @@ export const bulkDeleteCoachingCircleTopics = gql`
     }
   }
 `;
+
+export const bulkUpdateCoachingCircleTopicDates = gql`
+  mutation BulkUpdateCoachingCircleTopicDates(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $startDate: DateTime!
+    $endDate: DateTime
+  ) {
+    bulkUpdateCoachingCircleTopicDates(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      startDate: $startDate
+      endDate: $endDate
+    )
+  }
+`;

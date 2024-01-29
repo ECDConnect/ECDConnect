@@ -448,10 +448,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     type="filled"
                     onClick={() => setEditRemovalDialogVisable(true)}
                   >
-                    {renderIcon(
-                      'PencilIcon',
-                      'w-5 h-5 color-primary text-primary mr-2'
-                    )}
+                    {renderIcon('PencilIcon', 'w-5 h-5 mr-2')}
                     <Typography
                       type="body"
                       className="mr-4"
@@ -866,7 +863,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         className={'mb-16 px-4'}
         stretch={true}
         visible={editRemovalDialogVisable}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <EditRemovePractitionerFromProgrammePrompt
           practitioner={practitioner}

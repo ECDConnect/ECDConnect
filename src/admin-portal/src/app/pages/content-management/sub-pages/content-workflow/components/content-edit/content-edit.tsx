@@ -10,7 +10,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { MouseEvent, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
@@ -25,6 +25,12 @@ import {
   XIcon,
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import {
+  CoachingCircleText,
+  ContentTypes,
+} from '../../../../../../constants/content-management';
+import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
+import { format } from 'date-fns';
 
 export interface ContentViewProps {
   content: any;
@@ -36,6 +42,12 @@ export interface ContentViewProps {
   savedContent: () => void;
   cancelEdit?: () => void;
   cancelCompare?: () => void;
+  choosedSectionTitle?: string;
+}
+
+export interface RequirementProps {
+  value: boolean;
+  message: string;
 }
 
 export default function ContentEdit({
@@ -48,17 +60,24 @@ export default function ContentEdit({
   cancelEdit,
   savedContent,
   cancelCompare,
+  choosedSectionTitle,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
+  const [requiredMessage, setRequiredMessage] = useState(
+    'This field is required'
+  );
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
     control: control,
   };
+
+  const { type: formType } = useWatch({ control });
 
   const mutationName = `update${contentType?.name}`;
 
@@ -83,7 +102,11 @@ export default function ContentEdit({
   mutation ${creationMutationName} ($input: ${contentType.name}Input!, $localeId: String!) {
     ${creationMutationName} (input: $input, localeId: $localeId) 
     }
-`;
+  `;
+
+  const [saveCoachCircleDates] = useMutation(
+    bulkUpdateCoachingCircleTopicDates
+  );
 
   const dialog = useDialog();
 
@@ -150,6 +173,13 @@ export default function ContentEdit({
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
+  const initialValues = getValues();
+  const disableButton = template?.fields?.filter(
+    (item) =>
+      item?.isRequired &&
+      initialValues?.hasOwnProperty(item?.propName) &&
+      !initialValues[item?.propName]
+  );
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -182,9 +212,10 @@ export default function ContentEdit({
 
   useEffect(() => {
     if (contentType) {
-      if (contentType.name === 'CoachingCircleTopics') {
+      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
         setAcceptedFileFormats(['pdf']);
         setAllowedFileSize(5242880);
+        setRequiredMessage('');
       }
     }
   }, [contentType]);
@@ -214,6 +245,9 @@ export default function ContentEdit({
       optionDefinition: optionDefinition,
       selectedLanguageId: selectedLanguageId,
       dataLinkName: field.dataLinkName,
+      isRequired: field?.isRequired,
+      subHeading: getSubHeading(field),
+      fieldAlert: getFieldAlert(field),
     };
 
     if (item && item.localeId === selectedLanguageId) {
@@ -224,9 +258,41 @@ export default function ContentEdit({
     return returnField;
   };
 
+  const getSubHeading = (field: ContentTypeFieldDto) => {
+    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      if (field.fieldName === CoachingCircleText.START_DATE) {
+        return CoachingCircleText.START_DATE_SUB_HEADING;
+      }
+      if (field.fieldName === CoachingCircleText.END_DATE) {
+        return CoachingCircleText.END_DATE_SUB_HEADING;
+      }
+    }
+    return '';
+  };
+
+  const getFieldAlert = (field: ContentTypeFieldDto) => {
+    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      if (field.fieldName === CoachingCircleText.START_DATE) {
+        return CoachingCircleText.START_DATE_ALERT;
+      }
+      if (field.fieldName === CoachingCircleText.END_DATE) {
+        return CoachingCircleText.END_DATE_ALERT;
+      }
+    }
+    return '';
+  };
+
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
+
+    // make sure that we work with a date, we send a string to ensure correct dates
+    Object.keys(model).forEach((key) => {
+      if (model[key] instanceof Date) {
+        model[key] = format(model[key], 'yyyy-MM-dd') + 'T00:00:00.000Z';
+      }
+    });
+
     if (!content?.id) {
       await createContent({
         variables: {
@@ -243,9 +309,27 @@ export default function ContentEdit({
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
-      }).catch(() => {
+      }).catch((err) => {
         setLoading(false);
       });
+
+      // the requirement is that when you save the dates for a coaching circle, you need to update all other languages with same dates.
+      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+        await saveCoachCircleDates({
+          variables: {
+            contentId: +content.id,
+            contentTypeId: +contentType.id,
+            localeId: selectedLanguageId.toString(),
+            startDate: model[CoachingCircleText.START_DATE],
+            endDate:
+              model[CoachingCircleText.END_DATE] === ''
+                ? null
+                : model[CoachingCircleText.END_DATE],
+          },
+        }).catch((error) => {
+          console.log(error);
+        });
+      }
     }
 
     setNotification({
@@ -257,7 +341,9 @@ export default function ContentEdit({
 
     setLoading(false);
 
-    cancelEdit();
+    if (cancelEdit) {
+      cancelEdit();
+    }
   };
 
   if (
@@ -329,13 +415,20 @@ export default function ContentEdit({
               defaultLanguageId={defaultLanguageId}
               acceptedFileFormats={acceptedFileFormats}
               allowedFileSize={allowedFileSize}
+              formType={formType}
+              choosedSectionTitle={choosedSectionTitle}
+              getValues={getValues}
+              requiredMessage={requiredMessage}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className={`bg-secondary ${
+                disableButton?.length > 0 ? 'opacity-25' : ''
+              } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
+              disabled={disableButton?.length > 0}
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish

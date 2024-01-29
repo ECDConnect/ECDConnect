@@ -49,6 +49,15 @@ export default function UiTable({
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
+  const [confirmationTitle, setConfirmTitle] = useState(
+    'Are you sure you want to delete this content?'
+  );
+  const [confirmationMessage, setConfirmMessage] = useState(
+    'You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.'
+  );
+  const [confirmationTrue, setConfirmTrue] = useState('Delete');
+  const [confirmationFalse, setConfirmFalse] = useState('Keep editing');
+
   const [searchRows, setSearchRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const searchKeys = useRef(columns.map(({ field }) => field));
@@ -349,6 +358,7 @@ export default function UiTable({
           {splitValues?.map((item) => {
             return (
               <div
+                key={item}
                 className={`${
                   item === 'Story book'
                     ? 'bg-secondary'
@@ -411,13 +421,21 @@ export default function UiTable({
           })}
         </div>
       );
-    } else if (display_value === 'Story book, Read aloud, other') {
-      const splitValues = display_value?.split(', ');
+    } else if (
+      display_value === 'Story book, Read aloud, other' ||
+      display_value === 'Story book,Read aloud,other'
+    ) {
+      const splitValues =
+        display_value === 'Story book,Read aloud,other'
+          ? display_value?.split(',')
+          : display_value?.split(', ');
+
       rowValue = (
         <div className="ml-1 flex cursor-pointer gap-1">
           {splitValues?.map((item) => {
             return (
               <div
+                key={item}
                 className={`${
                   item === 'Story book'
                     ? 'bg-secondary'
@@ -541,16 +559,29 @@ export default function UiTable({
     );
   };
 
+  useEffect(() => {
+    if (component === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      setConfirmTitle(
+        'Are you sure you want to delete ' + selectedRows.length + ' items?'
+      );
+      setConfirmMessage(
+        'Coaches will no longer be able to see this content in the app.'
+      );
+      setConfirmTrue('Yes, delete');
+      setConfirmFalse('No, cancel');
+    }
+  }, [component, selectedRows.length]);
+
   const deleteDialog = useCallback(() => {
     dialog({
       color: 'bg-white',
       position: DialogPosition.Middle,
       render: (onClose) => (
         <AlertModal
-          title="Are you sure you want to delete this content?"
-          message="You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously."
+          title={confirmationTitle}
+          message={confirmationMessage}
           onCancel={onClose}
-          btnText={['Delete', 'Keep editing']}
+          btnText={[`${confirmationTrue}`, `${confirmationFalse}`]}
           onSubmit={() => {
             deleteCoachingCircleTopics();
             onClose();
@@ -558,7 +589,14 @@ export default function UiTable({
         />
       ),
     });
-  }, [deleteCoachingCircleTopics, dialog]);
+  }, [
+    confirmationFalse,
+    confirmationMessage,
+    confirmationTitle,
+    confirmationTrue,
+    deleteCoachingCircleTopics,
+    dialog,
+  ]);
 
   const renderBulkActions = useMemo(() => {
     if (component === ContentTypes.COACHING_CIRCLE_TOPICS) {

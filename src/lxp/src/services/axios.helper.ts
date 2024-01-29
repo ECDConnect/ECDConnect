@@ -53,6 +53,16 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
 
   axiosInstance.interceptors.request.use(
     async (config) => {
+      if (!navigator.onLine) {
+        return new Promise((resolve) => {
+          resolve({
+            data: null,
+            status: 'offline',
+            statusText: 'Browser is offline',
+          });
+        });
+      }
+
       if (store && !blacklistCheckup(config.url ?? '', blackList)) {
         const user = store?.getState()?.auth?.userAuth;
 

@@ -201,6 +201,7 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, getActivityChildAttendanceDetails);
     setThunkActionStatus(builder, getClubMeetingsWithMissingRegisters);
     setThunkActionStatus(builder, setContactClubLeaderStatusForMeeting);
+    setThunkActionStatus(builder, addNewClubMembers);
     builder.addCase(
       setContactClubLeaderStatusForMeeting.fulfilled,
       (state, action) => {

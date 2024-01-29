@@ -6,7 +6,7 @@ import {
 } from '@ecdlink/core';
 import {
   CheckboxGroup,
-  SearchDropDown,
+  Dropdown,
   SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui';
@@ -285,6 +285,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
       setCurrentThemeDaysArr(currentTempData);
       setHandleInitialState(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTempData]);
 
   useEffect(() => {
@@ -314,7 +315,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
             }
           />
 
-          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <div className="mt-4 overflow-scroll border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&
               tableData.map((item: any) => {
                 const maximumItemsChecked = tableData.filter((x) =>
@@ -367,7 +368,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
           />
         )}
 
-        <div className="mt-4 overflow-hidden sm:rounded-lg">
+        <div className="mt-4 sm:rounded-lg">
           {tableData &&
             tableData.map((item: any, idx: number) => (
               <>
@@ -390,39 +391,43 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                           className="my-2"
                         />
                       )}
-                      <SearchDropDown<any>
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
-                        options={smallGroupOptions}
-                        multiple={false}
-                        selectedOptions={
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={smallGroupOptions}
+                        fillType="filled"
+                        fillColor="secondary"
+                        textColor="white"
+                        fullWidth
+                        className="h-full w-48 text-white"
+                        selectedValue={
                           smallGroupOptions?.filter(
                             (option) =>
                               option?.id ===
-                              themeDaysArr?.[idx]?.smallGroupActivity
+                              themeDaysArr?.[idx]?.smallGroupActivity?.[0]?.id
                           )?.length > 0
-                            ? smallGroupOptions?.filter(
+                            ? smallGroupOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.smallGroupActivity?.[0]
+                                    ?.id
+                              ).id
+                            : smallGroupOptions?.find(
                                 (option) =>
                                   option?.id ===
                                   themeDaysArr?.[idx]?.smallGroupActivity
-                              )
-                            : smallGroupOptions?.filter(
-                                (option) =>
-                                  option?.id ===
-                                  currentThemeDaysArr?.[idx]
-                                    ?.smallGroupActivity?.[0]?.id
-                              )
+                              )?.id
                         }
-                        onChange={(e) =>
-                          handleGroupChange(e, idx, ThemeStoryTypes?.smallGroup)
-                        }
-                        placeholder={'Type to search...'}
-                        color={'secondary'}
-                        info={{
-                          name: `Document type:`,
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = smallGroupOptions?.filter(
+                            (item) => item?.id === e
+                          );
+                          handleGroupChange(
+                            newItem,
+                            idx,
+                            ThemeStoryTypes?.smallGroup
+                          );
                         }}
-                        className="grid-cols-subgrid my-2 w-48"
                       />
                     </div>
                     <div>
@@ -435,40 +440,43 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                           className="my-2"
                         />
                       )}
-                      <SearchDropDown<string>
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
-                        overlayTopOffset={'120'}
-                        options={largeGroupOptions}
-                        selectedOptions={
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={largeGroupOptions}
+                        fillType="filled"
+                        fillColor="secondary"
+                        textColor="white"
+                        fullWidth
+                        className="h-full w-48 text-white"
+                        selectedValue={
                           largeGroupOptions?.filter(
                             (option) =>
                               option?.id ===
-                              themeDaysArr?.[idx]?.largeGroupActivity
+                              themeDaysArr?.[idx]?.largeGroupActivity?.[0]?.id
                           )?.length > 0
-                            ? largeGroupOptions?.filter(
+                            ? largeGroupOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.largeGroupActivity?.[0]
+                                    ?.id
+                              ).id
+                            : largeGroupOptions?.find(
                                 (option) =>
                                   option?.id ===
                                   themeDaysArr?.[idx]?.largeGroupActivity
-                              )
-                            : largeGroupOptions?.filter(
-                                (option) =>
-                                  option?.id ===
-                                  currentThemeDaysArr?.[idx]
-                                    ?.largeGroupActivity?.[0]?.id
-                              )
+                              )?.id
                         }
-                        onChange={(e) =>
-                          handleGroupChange(e, idx, ThemeStoryTypes?.largeGroup)
-                        }
-                        placeholder={'Type to search...'}
-                        multiple={false}
-                        color={'secondary'}
-                        info={{
-                          name: `Document type:`,
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = largeGroupOptions?.filter(
+                            (item) => item?.id === e
+                          );
+                          handleGroupChange(
+                            newItem,
+                            idx,
+                            ThemeStoryTypes?.largeGroup
+                          );
                         }}
-                        className="w-48"
                       />
                     </div>
                     <div>
@@ -481,37 +489,41 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                           className="my-2"
                         />
                       )}
-                      <SearchDropDown<string>
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
-                        overlayTopOffset={'120'}
-                        options={storyBookOptions}
-                        selectedOptions={
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={storyBookOptions}
+                        fillType="filled"
+                        fillColor="secondary"
+                        textColor="white"
+                        fullWidth
+                        className="h-full w-48 text-white"
+                        selectedValue={
                           storyBookOptions?.filter(
                             (option) =>
-                              option?.id === themeDaysArr?.[idx]?.storyBook
+                              option?.id ===
+                              themeDaysArr?.[idx]?.storyBook?.[0]?.id
                           )?.length > 0
-                            ? storyBookOptions?.filter(
-                                (option) =>
-                                  option?.id === themeDaysArr?.[idx]?.storyBook
-                              )
-                            : storyBookOptions?.filter(
+                            ? storyBookOptions?.find(
                                 (option) =>
                                   option?.id ===
-                                  currentThemeDaysArr?.[idx]?.storyBook?.[0]?.id
-                              )
+                                  themeDaysArr?.[idx]?.storyBook?.[0]?.id
+                              ).id
+                            : storyBookOptions?.find(
+                                (option) =>
+                                  option?.id === themeDaysArr?.[idx]?.storyBook
+                              )?.id
                         }
-                        onChange={(e) =>
-                          handleGroupChange(e, idx, ThemeStoryTypes?.storyBook)
-                        }
-                        placeholder={'Type to search...'}
-                        multiple={false}
-                        color={'secondary'}
-                        info={{
-                          name: `Document type:`,
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = storyBookOptions?.filter(
+                            (item) => item?.id === e
+                          );
+                          handleGroupChange(
+                            newItem,
+                            idx,
+                            ThemeStoryTypes?.storyBook
+                          );
                         }}
-                        className="w-48"
                       />
                     </div>
                     <div>
@@ -524,43 +536,42 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                           className="my-2"
                         />
                       )}
-                      <SearchDropDown<string>
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
-                        overlayTopOffset={'120'}
-                        options={storyTimeOptions}
-                        selectedOptions={
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={storyTimeOptions}
+                        fillType="filled"
+                        fillColor="secondary"
+                        textColor="white"
+                        fullWidth
+                        className="h-full w-48 text-white"
+                        selectedValue={
                           storyTimeOptions?.filter(
                             (option) =>
-                              option?.id === themeDaysArr?.[idx]?.storyActivity
+                              option?.id ===
+                              themeDaysArr?.[idx]?.storyActivity?.[0]?.id
                           )?.length > 0
-                            ? storyTimeOptions?.filter(
+                            ? storyTimeOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.storyActivity?.[0]?.id
+                              ).id
+                            : storyTimeOptions?.find(
                                 (option) =>
                                   option?.id ===
                                   themeDaysArr?.[idx]?.storyActivity
-                              )
-                            : storyTimeOptions?.filter(
-                                (option) =>
-                                  option?.id ===
-                                  currentThemeDaysArr?.[idx]?.storyActivity?.[0]
-                                    ?.id
-                              )
+                              )?.id
                         }
-                        onChange={(e) =>
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = storyTimeOptions?.filter(
+                            (item) => item?.id === e
+                          );
                           handleGroupChange(
-                            e,
+                            newItem,
                             idx,
                             ThemeStoryTypes?.storyActivity
-                          )
-                        }
-                        placeholder={'Type to search...'}
-                        multiple={false}
-                        color={'secondary'}
-                        info={{
-                          name: `Document type:`,
+                          );
                         }}
-                        className="w-48"
                       />
                     </div>
                   </div>
