@@ -23,7 +23,15 @@ export const getCircleTopics = (
   state: RootState
 ): CoachingCircleTopicDto[] | undefined => {
   return state.coach?.coachCicleTopics?.filter(
-    (topic) =>
-      topic.startDate.toString() !== '' && topic.startDate <= new Date()
+    (
+      topic // start date is compulsory in portal admin, but adding the check for incase
+    ) =>
+      (topic.startDate.toString() !== '' &&
+        new Date(topic.startDate).getTime() <= new Date().getTime() &&
+        (topic?.endDate?.toString() === '' || topic?.endDate === null)) ||
+      (topic.startDate.toString() !== '' &&
+        new Date(topic.startDate).getTime() <= new Date().getTime() &&
+        (topic?.endDate?.toString() !== '' || topic?.endDate !== null) &&
+        new Date(topic.endDate!).getTime() >= new Date().getTime())
   );
 };

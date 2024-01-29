@@ -35,7 +35,6 @@ export function ContentManagement() {
   const [subTabs, setSubTabs] = useState<TitleListDataItem[]>();
   const [choosedSectionTitle, setChoosedSectionTitleSectionTitle] =
     useState('');
-
   const previousTab = usePrevious(selectedTab);
 
   const [selectedContent, setSelectedContent] =
@@ -461,6 +460,7 @@ export function ContentManagement() {
               goBack={() => setSelectedContent(undefined)}
               savedContent={() => refreshParent()}
               choosedSectionTitle={choosedSectionTitle}
+              setSearchValue={setSearchValue}
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">

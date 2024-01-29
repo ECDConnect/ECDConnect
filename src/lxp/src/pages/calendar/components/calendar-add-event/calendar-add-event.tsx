@@ -523,7 +523,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             nameProp={'description'}
             placeholder={'Describe the event...'}
           />
-          <div>
+          <div className="mb-4 mt-6 flex items-center justify-between">
             <Button
               onClick={() => handleFormSubmit(getEventFormValues())}
               className="w-full"

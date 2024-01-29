@@ -189,7 +189,7 @@ export const DynamicForm = ({
   ]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" id="dynamicForm">
       {renderContent}
       {!isTipPage && (
         <div id="button" className="mx-4 mt-auto flex flex-col items-end">

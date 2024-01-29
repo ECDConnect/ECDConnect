@@ -43,6 +43,7 @@ export interface ContentViewProps {
   cancelEdit?: () => void;
   cancelCompare?: () => void;
   choosedSectionTitle?: string;
+  setSearchValue?: (item: string) => void;
 }
 
 export interface RequirementProps {
@@ -61,6 +62,7 @@ export default function ContentEdit({
   savedContent,
   cancelCompare,
   choosedSectionTitle,
+  setSearchValue,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -160,6 +162,7 @@ export default function ContentEdit({
           message={` If you leave now, you will lose all of your changes.`}
           onCancel={onCancel}
           onSubmit={() => {
+            setSearchValue('');
             cancelEdit();
             onCancel();
           }}
@@ -433,15 +436,17 @@ export default function ContentEdit({
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
-            {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
-              <button
-                onClick={deleteAndRefresh}
-                className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
-              >
-                <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
-                Delete {content?.name}
-              </button>
-            )}
+            {content?.id &&
+              content?.__typename !== 'ProgressTrackingLevel' &&
+              content?.__typename !== 'MoreInformation' && (
+                <button
+                  onClick={deleteAndRefresh}
+                  className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+                >
+                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
+                  Delete {content?.name}
+                </button>
+              )}
           </div>
         </form>
       </div>
