@@ -20,6 +20,8 @@ import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
 import walktroughImage from '../../../../assets/walktroughImage.png';
+import { childrenSelectors } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   programmeThemeSelectors,
@@ -27,6 +29,7 @@ import {
 } from '@/store/content/programme-theme';
 import ROUTES from '@routes/routes';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -59,8 +62,10 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   );
   const holiday = useHolidays();
   const isHoliday = holiday?.isHoliday(selectedDate);
-
+  const children = useSelector(childrenSelectors.getChildren);
+  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   // Progress Summary Report
+  const hasNoLearners = children?.length === 0 || learners?.length === 0;
   const progressSummary = useSelector(
     progressTrackingSelectors?.getPractitionerProgressReportSummary
   );
@@ -140,7 +145,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   };
 
   useEffect(() => {
-    if (!hasVisitedDashboard) {
+    if (!hasVisitedDashboard && !hasNoLearners) {
       showFirstVisit();
     }
   }, []);
@@ -297,25 +302,36 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   //   });
   // };
 
-  return (
-    <>
-      <DailyRoutine
-        programme={currentProgramme}
-        currentDailyProgramme={currentDailyProgramme}
-        setSelectedDate={setSelectedDate}
-        selectedDate={selectedDate}
-        isHoliday={isHoliday}
-      />
+  if (hasNoLearners) {
+    return (
+      <div className={'h-full flex-1 bg-white px-4 pt-4'}>
+        <IconInformationIndicator
+          title="You don't have any children yet!"
+          subTitle="Tap the add a child button below to start"
+        />
+      </div>
+    );
+  } else {
+    return (
+      <>
+        <DailyRoutine
+          programme={currentProgramme}
+          currentDailyProgramme={currentDailyProgramme}
+          setSelectedDate={setSelectedDate}
+          selectedDate={selectedDate}
+          isHoliday={isHoliday}
+        />
 
-      {showReport && (
-        <div className="mt-10 h-screen overflow-y-scroll">
-          <div ref={targetRef}>
-            <ProgressReport progressSummary={progressSummary!} />
+        {showReport && (
+          <div className="mt-10 h-screen overflow-y-scroll">
+            <div ref={targetRef}>
+              <ProgressReport progressSummary={progressSummary!} />
+            </div>
           </div>
-        </div>
-      )}
-    </>
-  );
+        )}
+      </>
+    );
+  }
 };
 
 export default ProgrammeDashboard;
