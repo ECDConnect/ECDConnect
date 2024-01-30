@@ -1,6 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -11,7 +10,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
