@@ -898,7 +898,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var club = _clubRepo.GetAll()
                 .Where(x => x.Id == clubId && x.IsActive)
-                .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year && x.ClubPointsLibrary.Activity == Constants.ClubSettings.be_creative))
+                .Include(x => x.ClubPoints.Where(x => x.Year == today.Year && x.ClubPointsLibrary.Activity == Constants.ClubSettings.be_creative))
                 .SingleOrDefault();
 
             if (club.LeagueId.HasValue)
@@ -979,6 +979,7 @@ namespace EcdLink.Api.CoreApi.Services
                         documentColor = MetricsColorEnum.Success.ToString();
                     }
 
+
                     activityBeCreative.MonthlyRecords.Add(
                         new ActivityBeCreativeDetail()
                         {
@@ -988,7 +989,7 @@ namespace EcdLink.Api.CoreApi.Services
                             ImageApproved = clubBeCreative?.ImageApproved,
                             DocumentStatusColor = documentColor,
                             DocumentStatus = documentStatus,
-                            Points = 0, // pending - will implemented when integration is done
+                            Points = club.ClubPoints.Where(x => x.Month == date.Month).Select(x => x.Points).Sum(),
                             ImageRating = clubBeCreative.ImageRating
                         }
                     );
