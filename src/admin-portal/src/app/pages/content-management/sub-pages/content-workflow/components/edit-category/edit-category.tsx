@@ -397,7 +397,8 @@ export default function EditCategory({
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
-            {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
+            {/* Let code commented, to allow delete categories if needed. */}
+            {/* {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
               <button
                 onClick={deleteAndRefresh}
                 className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
@@ -405,7 +406,7 @@ export default function EditCategory({
                 <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
                 Delete {content?.name}
               </button>
-            )}
+            )} */}
           </div>
         </form>
       </div>
