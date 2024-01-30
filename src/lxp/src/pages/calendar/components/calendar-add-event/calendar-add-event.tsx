@@ -512,16 +512,18 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
               </Button>
             )}
           </div>
-          <FormInput<CalendarAddEventFormModel>
-            label={'Describe the event'}
-            subLabel="Optional"
-            className={'mb-4'}
-            textInputType="textarea"
-            register={eventFormRegister}
-            nameProp={'description'}
-            placeholder={'Describe the event...'}
-          />
-          <div className="mb-4 mt-6 flex items-center justify-between">
+          <div className="mb-4">
+            <FormInput<CalendarAddEventFormModel>
+              label={'Describe the event'}
+              subLabel="Optional"
+              className={'mb-4'}
+              textInputType="textarea"
+              register={eventFormRegister}
+              nameProp={'description'}
+              placeholder={'Describe the event...'}
+            />
+          </div>
+          <div className="mb-4">
             <Button
               onClick={() => handleFormSubmit(getEventFormValues())}
               className="w-full"
