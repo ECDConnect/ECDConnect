@@ -1050,7 +1050,7 @@ namespace EcdLink.Api.CoreApi.Services
                     var term = activityHostFamilyDays.Terms.GetItemByIndex(2);
                     term.EventName = meeting.MeetingType.NormalizedName;
                     term.Description = meeting.MeetingNotes;
-                    term.Points = term.Points = clubPoints.Where(x => x.Month >= 8 && x.Month <= 12).Select(x => x.Points).Sum(); ;
+                    term.Points = term.Points = clubPoints.Where(x => x.Month >= 8 && x.Month <= 12).Select(x => x.Points).Sum();
                     term.DocumentStatus = documentStatus;
                     term.DocumentStatusColor = documentStatusColor;
                     term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
