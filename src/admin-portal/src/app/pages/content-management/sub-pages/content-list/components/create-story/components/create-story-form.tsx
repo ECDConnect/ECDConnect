@@ -11,7 +11,13 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../../../../content-management-models';
-import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
+import {
+  Alert,
+  ButtonGroup,
+  ButtonGroupTypes,
+  Checkbox,
+  Typography,
+} from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import StoryContentForm from '../../../../../../../components/story-content-form/story-content-form';
 import { StoryBookPartDto, StoryBookQuestionDto } from '@ecdlink/core';
@@ -41,6 +47,11 @@ export interface CreateStoryFormProps {
   setFilteredStoryBookParts?: (item?: StoryBookPartDto[]) => void;
   setFilteredStoryBookPartsQuestions?: (item?: StoryBookQuestionDto[]) => void;
   formType?: StoryBookTypes;
+  getValues?: any;
+  requiredMessage?: string;
+  useWatch?: any;
+  setAuthorsAuthorization?: (item: boolean) => void;
+  authorsAuthorization?: boolean;
 }
 
 const contentWrapper = '';
@@ -54,9 +65,14 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   setFilteredStoryBookParts,
   setFilteredStoryBookPartsQuestions,
   formType,
+  getValues,
+  requiredMessage,
+  useWatch,
+  setAuthorsAuthorization,
+  authorsAuthorization,
 }) => {
   const { register, control, errors } = handleform;
-
+  const initialValues = getValues();
   const storyBookTypeOptions = [
     { text: 'Story book', value: 'Story book' },
     { text: 'Read aloud', value: 'Read aloud' },
@@ -68,18 +84,19 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   };
 
   const [fields, setFields] = useState<any>();
+  const watchFields = useWatch({ control });
 
   useEffect(() => {
-    if (template || formType) {
-      const fields = renderFields(template.fields);
+    if (template && watchFields) {
+      const fields = renderFields(template?.fields);
       setFields(fields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template, formType]);
+  }, [template, watchFields, authorsAuthorization]);
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields.map((field) => {
-      const { type, title, propName, required, validation } = field;
+      const { type, title, propName, required, validation, isRequired } = field;
 
       register(propName, { required: required });
 
@@ -105,6 +122,15 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     multiple={false}
                   />
                 </div>
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             );
           }
@@ -119,14 +145,49 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormField
-                  label={title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
-                  error={errors[propName]?.message}
-                  required={required}
+                  error={
+                    isRequired &&
+                    initialValues?.hasOwnProperty(propName) &&
+                    !initialValues[propName]
+                      ? requiredMessage
+                      : ''
+                  }
+                  required={isRequired}
                   validation={validation}
                 />
               </div>
+              {propName === 'author' && (
+                <div className="mt-2">
+                  <Typography
+                    type="h4"
+                    color="textDark"
+                    text={`Confirm that the author has given you permission to make this story publicly available on the app *`}
+                  />
+                  <div className="mt-2 flex items-center gap-2">
+                    <Checkbox
+                      onCheckboxChange={() =>
+                        setAuthorsAuthorization(!authorsAuthorization)
+                      }
+                      checked={authorsAuthorization}
+                    />
+                    <Typography
+                      text={`I confirm that the author has given me permission to post this story`}
+                      type="body"
+                      color={'textMid'}
+                    />
+                  </div>
+                  {!authorsAuthorization && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           );
         case FieldType.Markdown:
@@ -138,11 +199,17 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     Where can you find a copy of this story book?
                   </div>
                   <FormField
-                    label={title}
+                    label={isRequired ? title + ' *' : title}
                     nameProp={propName}
                     register={register}
-                    error={errors[propName]?.message}
-                    required={required}
+                    error={
+                      isRequired &&
+                      initialValues?.hasOwnProperty(propName) &&
+                      !initialValues[propName]
+                        ? requiredMessage
+                        : ''
+                    }
+                    required={isRequired}
                     validation={validation}
                   />
                 </div>
@@ -153,7 +220,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <Editor
-                  label={title}
+                  label={isRequired ? title + ' *' : title}
                   currentValue={
                     field.contentValue ? field.contentValue.value : undefined
                   }
@@ -173,7 +240,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
-                  label={title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   contentUrl={
                     field.contentValue ? field.contentValue.value : undefined
@@ -259,7 +326,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                   currentColor={
                     field.contentValue ? field.contentValue.value : ''
                   }
-                  label={title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   register={register}
                   error={errors[propName]?.message}
@@ -274,7 +341,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               <div className="sm:col-span-12">
                 <CombinedDatePickers
                   contentValue={field.contentValue.value}
-                  label={title}
+                  label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   control={control}
                   error={errors[propName]?.message}

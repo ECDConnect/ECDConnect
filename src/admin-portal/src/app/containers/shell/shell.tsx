@@ -33,8 +33,6 @@ type menuItemProps = {
 };
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeMatch = useRouteMatch(item.route);
-  const routeViewUserMatch = useRouteMatch('/view-user/');
-  const routeUploadUserMatch = useRouteMatch('/upload-users/');
 
   return (
     <Link
