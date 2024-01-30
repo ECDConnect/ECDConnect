@@ -24,7 +24,6 @@ using static ECDLink.Core.SystemSettings.SettingGroups;
 using EcdLink.Api.CoreApi;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using DotLiquid;
 
 namespace ECDLink.Core.Services
 {
