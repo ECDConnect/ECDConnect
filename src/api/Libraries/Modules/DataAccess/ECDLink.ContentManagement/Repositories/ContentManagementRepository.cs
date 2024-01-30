@@ -306,7 +306,7 @@ namespace ECDLink.ContentManagement.Repositories
                     {
                         contentValues.Add(new ContentValue
                         {
-                            Value = value?.ToString(),
+                            Value = field.FieldName != "availableLanguages" ? value?.ToString() : localeId.ToString(),
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = TenantExecutionContext.Tenant.Id,
@@ -314,7 +314,6 @@ namespace ECDLink.ContentManagement.Repositories
                             UpdatedDate = DateTime.UtcNow
                         });
                     }
-
                 }
             }
 
@@ -454,9 +453,35 @@ namespace ECDLink.ContentManagement.Repositories
                             InsertedDate = DateTime.UtcNow,
                             UpdatedDate = DateTime.UtcNow
                         });
-                    } else // Update
+                    }
+                    else // Update
                     {
                         currentRecord.Value = (fileUrl != "" ? fileUrl : fieldAnswer);
+                    }
+                }
+                else if (field.FieldName.ToString() == "availableLanguages") //update languages of the item if its a language field and the locale doesnt match or is null
+                {
+                    ContentValue currentLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id).FirstOrDefault();// && x.LocaleId == localeId
+
+                    if (currentLanguages.Value != null)
+                    {
+                        var languages = currentLanguages.Value.ToString().Split(',').ToList();
+                        if (!languages.Contains(localeId.ToString()))
+                        {
+                            languages.Add(localeId.ToString());
+                        }
+                        if (languages.Count > 1)
+                        {
+                            currentLanguages.Value = string.Join(",", languages);
+                        }
+                        else
+                        {
+                            currentLanguages.Value = localeId.ToString();
+                        }
+                    }
+                    else
+                    {
+                        currentLanguages.Value = localeId.ToString();
                     }
                 }
                 content.UpdatedDate = DateTime.UtcNow;
