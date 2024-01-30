@@ -390,6 +390,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 if (isRolePrincipal) { practitionerToPromote.IsPrincipal = true; }
                 if (isRoleFAA) { practitionerToPromote.IsFundaAppAdmin = true; }
+
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -399,6 +400,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 if (isRolePrincipal) { practitionerToDemote.IsPrincipal = false; }
                 if (isRoleFAA) { practitionerToDemote.IsFundaAppAdmin = false; }
+
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
@@ -407,7 +409,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
-                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(Guid.Parse(oldPrincipalUserId))).ToList();
+                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy.Equals(Guid.Parse(oldPrincipalUserId))).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
@@ -437,43 +439,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 IdentityResult result = null;
                 _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.PRACTITIONER, userToPromote.Id, _applicationUserId);
                 result = _userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                if (isRolePrincipal) 
+                if (isRolePrincipal || isRoleFAA) 
                 {
                     _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.PRINCIPAL, userToPromote.Id, _applicationUserId); 
                     result = _userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; 
                 }
-                if (isRoleFAA) 
-                {
-                    _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.ADMINISTRATOR, userToPromote.Id, _applicationUserId);
-                    result = _userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; 
-                }
-                if (userToPromote != null)
-                {
-                    List<TagsReplacements> replacements = new List<TagsReplacements>();
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "PrincipalOrFAA",
-                        ReplacementValue = "Principal"
-                    });
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "ProgrammeName",
-                        ReplacementValue = classroom.Name
-                    });
-                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
-                }
 
                 var userToDemote = _userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                if (isRolePrincipal) 
+                if (isRolePrincipal || isRoleFAA) 
                 {
                     _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRINCIPAL, userToDemote.Id, _applicationUserId);
                     result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; 
                 }
-                if (isRoleFAA) 
-                {
-                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.ADMINISTRATOR, userToDemote.Id, _applicationUserId);
-                    result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; 
-                }
+                
                 _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRACTITIONER, userToDemote.Id, _applicationUserId);
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
