@@ -62,7 +62,7 @@ const ROUTES = {
       POINTS: addPrefix('/points', {
         MEET_REGULARLY: addPrefix('/meet-regularly', {
           MEETING_DETAILS: '/:meetingId/meeting-details',
-          PLAYGROUP_REASSIGNED: '/playgroup-reassigned',
+          MISSING_MEETING_REGISTERS: '/missing-meeting-registers',
         }),
         BE_CREATIVE: '/be-creative',
         HOST_FAMILY_EVENT: '/host-family-event',
