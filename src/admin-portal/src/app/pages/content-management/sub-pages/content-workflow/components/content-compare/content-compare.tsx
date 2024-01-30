@@ -29,6 +29,7 @@ export interface ContentCompareProps {
   defaultLanguageId: string;
   cancelCompare: () => void;
   savedContent: () => void;
+  choosedSectionTitle?: string;
 }
 
 export default function ContentCompare({
@@ -40,6 +41,7 @@ export default function ContentCompare({
   selectedLanguageId,
   cancelCompare,
   savedContent,
+  choosedSectionTitle,
 }: ContentCompareProps) {
   const [selectedFirstLanguageId, setSelectedFirstLanguageId] =
     useState<string>(selectedLanguageId);
@@ -285,7 +287,9 @@ export default function ContentCompare({
                 <div className=" flwx w-2/12">
                   <LanguageSelector
                     disabled={false}
-                    languages={languages}
+                    languages={languages?.filter(
+                      (item) => item?.isActive === true
+                    )}
                     currentLanguageId={selectedFirstLanguageId}
                     selectLanguage={setSelectedFirstLanguageId}
                   />
@@ -307,6 +311,8 @@ export default function ContentCompare({
                     contentType={contentType}
                     savedContent={savedContent}
                     defaultLanguageId={defaultLanguageId}
+                    choosedSectionTitle={choosedSectionTitle}
+                    contentView={contentView}
                   />
                 )}
               </div>
@@ -315,7 +321,9 @@ export default function ContentCompare({
                 <div className=" flex w-2/12 ">
                   <LanguageSelector
                     disabled={false}
-                    languages={languages}
+                    languages={languages?.filter(
+                      (item) => item?.isActive === true
+                    )}
                     currentLanguageId={selectedSecondLanguageId}
                     selectLanguage={setSelectedSecondLanguageId}
                   />
@@ -336,6 +344,8 @@ export default function ContentCompare({
                     contentType={contentType}
                     savedContent={savedContent}
                     defaultLanguageId={defaultLanguageId}
+                    choosedSectionTitle={choosedSectionTitle}
+                    contentView={contentView}
                   />
                 )}
               </div>

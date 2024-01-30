@@ -15,6 +15,7 @@ import { ContentLoader } from '../../../../../../components/content-loader/conte
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
   ActivitiesTitles,
+  ContentManagementView,
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
@@ -45,6 +46,7 @@ export interface ContentViewProps {
   cancelCompare?: () => void;
   choosedSectionTitle?: string;
   setSearchValue?: (item: string) => void;
+  contentView?: ContentManagementView;
 }
 
 export interface RequirementProps {
@@ -64,6 +66,7 @@ export default function ContentEdit({
   cancelCompare,
   choosedSectionTitle,
   setSearchValue,
+  contentView,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -427,7 +430,10 @@ export default function ContentEdit({
             ) : (
               <Alert
                 className="mt-2 mb-2 rounded-md"
-                message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
+                message={`Note that any changes made below are not made to SmartLink.`}
+                list={[
+                  'If you make any major edits below, discuss them with the SmartLink team.',
+                ]}
                 type="warning"
               />
             )}
@@ -444,6 +450,7 @@ export default function ContentEdit({
               getValues={getValues}
               requiredMessage={requiredMessage}
               useWatch={useWatch}
+              contentView={contentView}
             />
           </div>
 
