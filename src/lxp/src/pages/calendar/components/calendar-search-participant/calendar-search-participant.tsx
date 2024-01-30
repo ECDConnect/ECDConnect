@@ -184,6 +184,7 @@ export const CalendarSearchParticipant: React.FC<
       title={'Search for participants...'}
       color={'primary'}
       onBack={onBack}
+      renderOverflow
     >
       <SearchHeader<ListDataItem>
         searchItems={filteredData || []}

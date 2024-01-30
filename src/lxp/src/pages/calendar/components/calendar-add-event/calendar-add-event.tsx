@@ -407,6 +407,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         size={'small'}
         backgroundColour={'white'}
         renderBorder={true}
+        renderOverflow
         title={isNewEvent ? 'Add event' : 'Update event'}
         subTitle={format(startDate, 'EEEE, d LLLL yyyy')}
         color={'primary'}
