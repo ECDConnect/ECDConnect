@@ -508,6 +508,44 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        private bool SendNewClubLeaderNotifications(Guid clubId, Guid newLeaderPracttitionerId)
+        {
+            // Notifications
+            Club club = _clubRepo.GetById(clubId);
+            List<ClubMember> clubMembers = _clubMemberRepo.GetAll()
+                                            .Where(x => x.ClubId == clubId && x.IsActive == true)
+                                             .Include(x => x.Practitioner)
+                                             .ThenInclude(x => x.User).ToList();
+            Practitioner leader = _practitionerRepo.GetById(newLeaderPracttitionerId);
+            if (leader != null)
+            {
+                List<TagsReplacements> replacements = new List<TagsReplacements>
+                {
+                    new TagsReplacements()
+                    {
+                        FindValue = "ClubName",
+                        ReplacementValue = club.Name
+                    }
+                };
+                if (leader.User!=null)
+                {
+                    replacements.Add(
+                    new TagsReplacements()
+                    {
+                        FindValue = "ClubLeaderName",
+                        ReplacementValue = leader.User.FirstName
+                    });
+                }
+
+                foreach (ClubMember clubMember in clubMembers)
+                {
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NewClubleader, DateTime.Now, clubMember.Practitioner.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14), true);
+                }
+            }
+
+            return true;
+        }
+
         public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId)
         {
             List<ClubLeader> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId).OrderBy(x => x.InsertedDate).ToList();
@@ -538,6 +576,8 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 ChangeClubSupportRole(clubId, clubSupportPractitionerId);
             }
+            //notify members of the new leader
+            SendNewClubLeaderNotifications(clubId, practitionerId);
 
             return newClubLeader != null;
         }

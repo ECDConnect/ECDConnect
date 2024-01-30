@@ -447,6 +447,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.ADMINISTRATOR, userToPromote.Id, _applicationUserId);
                     result = _userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; 
                 }
+                if (userToPromote != null)
+                {
+                    List<TagsReplacements> replacements = new List<TagsReplacements>();
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "PrincipalOrFAA",
+                        ReplacementValue = "Principal"
+                    });
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "ProgrammeName",
+                        ReplacementValue = classroom.Name
+                    });
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                }
 
                 var userToDemote = _userManager.FindByIdAsync(oldPrincipalUserId).Result;
                 if (isRolePrincipal) 
