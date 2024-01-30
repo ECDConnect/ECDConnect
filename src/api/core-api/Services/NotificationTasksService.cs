@@ -24,6 +24,7 @@ using static ECDLink.Core.SystemSettings.SettingGroups;
 using EcdLink.Api.CoreApi;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using EcdLink.Api.CoreApi.Services;
 
 namespace ECDLink.Core.Services
 {
@@ -465,6 +466,7 @@ namespace ECDLink.Core.Services
             var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
             var coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: adminId);
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            int traineeOnboardingCount = 9;
 
             ////find all trainees thats new in last 7 days
             await this.WeeklyCoachTraineesCheckReminderAsync();
@@ -523,6 +525,31 @@ namespace ECDLink.Core.Services
                             //switch off starter notifications for this trainee if there was any
                             await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
                         }
+                        //count how many onboarding steps has been completed and fire off notifications if only 2 more is left etc
+                        int traineeCount = 0;
+                        if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received)
+                            traineeCount ++;
+                        if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
+                            traineeCount++;
+                        if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
+                            traineeCount++;
+                        if (traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting) 
+                            traineeCount++;
+                        if (traineeTimeline.SmartSpaceChecklistStatus == "SmartSpace Checklist done")
+                            traineeCount++;
+                        if (traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support)
+                            traineeCount++;
+                        if (traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered)
+                            traineeCount++;
+                        if (traineeTimeline.SignFranchiseeAgreementStatus == Constants.SSSettings.franchisee_signed)
+                            traineeCount++;
+
+                        if (traineeOnboardingCount - traineeCount == 2)
+                        {
+                            if (trainee.User!=null)
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                        }
+
                     }
                 }
                 var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.IsTrainee == false && (x.CoachHierarchy.HasValue && x.CoachHierarchy.ToString() == coach.UserId)).ToList();
