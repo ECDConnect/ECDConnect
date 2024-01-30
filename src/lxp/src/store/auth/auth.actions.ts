@@ -1,6 +1,7 @@
 import { Config, LoginRequestModel, AuthUser } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AuthService } from '@services/AuthService';
+import type { AxiosError } from 'axios';
 import { RootState, ThunkApiType } from '../types';
 
 export const login = createAsyncThunk<
@@ -11,6 +12,9 @@ export const login = createAsyncThunk<
   try {
     return await new AuthService().login(Config.authApi, body);
   } catch (err) {
+    if ((err as AxiosError).response?.data?.error) {
+      return rejectWithValue((err as AxiosError).response?.data?.error);
+    }
     return rejectWithValue((err as Error).message);
   }
 });
