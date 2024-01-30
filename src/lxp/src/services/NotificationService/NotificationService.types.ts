@@ -23,5 +23,5 @@ export enum NotificationIntervals {
 export interface NotificationValidator {
   interval: NotificationIntervals; // enum;
   lastCheckTimestamp: number;
-  getNotifications: () => Message[];
+  getNotifications: () => Message[] | Promise<Message[] | undefined>;
 }

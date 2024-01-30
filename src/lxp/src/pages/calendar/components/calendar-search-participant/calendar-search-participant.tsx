@@ -184,6 +184,7 @@ export const CalendarSearchParticipant: React.FC<
       title={'Search for participants...'}
       color={'primary'}
       onBack={onBack}
+      renderOverflow
     >
       <SearchHeader<ListDataItem>
         searchItems={filteredData || []}
@@ -196,17 +197,19 @@ export const CalendarSearchParticipant: React.FC<
       >
         <div></div>
       </SearchHeader>
-      <div className="flex justify-center">
-        <div className="w-11/12">
+      <div className="w-full p-4">
+        <div className="flex justify-center">
           <StackedList
             className={styles.stackedList}
             listItems={selectedData}
             type={'UserAlertList'}
             onClickItem={onPractitionerRemove}
           />
+        </div>
+        <div>
           <Button
             onClick={onClickDone}
-            className="mb-4 mt-6 w-full"
+            className="w-full"
             size="normal"
             color="primary"
             type="filled"

@@ -27,8 +27,6 @@ class CommunityService {
         locale,
       },
     });
-    console.log('getAllConnect', locale);
-    console.log('getAllConnect', response.data.data.GetAllConnect);
 
     if (response.status !== 200) {
       throw new Error('Get All Connect Failed - Server connection error');

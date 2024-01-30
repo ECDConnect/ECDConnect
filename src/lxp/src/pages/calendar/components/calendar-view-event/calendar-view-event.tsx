@@ -20,8 +20,6 @@ import { userSelectors } from '@/store/user';
 import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
 import { getEventAction } from '../calendar.utils';
-import { pqaSelectors } from '@/store/pqa';
-import { Visit } from '@ecdlink/graphql';
 
 export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const { isOnline } = useOnlineStatus();
@@ -41,11 +39,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const user = useSelector(userSelectors.getUser);
   const canEdit = !!props.canEdit ? props.canEdit : user?.id === event.userId;
   const canAction = user?.id === event.userId;
-  const visit = useSelector(pqaSelectors.getCalendarEventLinkedVisit(event.id));
-
-  const getVisitForEvent = (eventId: string): Visit | null => {
-    return visit;
-  };
+  const isVisitDone = event?.visit?.attended;
 
   const displayCannotStartVisit = () => {
     dialog({
@@ -83,15 +77,9 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
 
   const onAction = () => {
     props.onClose();
-    if (!!visit) {
-      const now = new Date();
-      if (
-        new Date(visit.plannedVisitDate).getTime() > now.getTime() ||
-        !!visit.actualVisitDate
-      ) {
-        displayCannotStartVisit();
-        return;
-      }
+    if (isVisitDone) {
+      displayCannotStartVisit();
+      return;
     }
     if (!!eventAction) {
       history.push(eventAction.url, eventAction.state);

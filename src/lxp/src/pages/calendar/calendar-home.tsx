@@ -43,6 +43,7 @@ export const CalendarHome: React.FC = () => {
   const [calendarDate, setCalendarDate] = useState<Date>(date);
   const [calendarView, setCalendarView] = useState<ViewType>('day');
   const calendarRef = createRef<ToastUIReactCalendar>();
+  const [calendarEventsSet, setCalendarEventsSet] = useState<boolean>(false);
 
   const [selectedEventId, setSelectedEventId] = useState('');
 
@@ -175,7 +176,7 @@ export const CalendarHome: React.FC = () => {
   ) => {};
 
   useEffect(() => {
-    if (!isCalendarInstanceValid()) return;
+    if (!isCalendarInstanceValid() || calendarEventsSet) return;
 
     calendarInstance()?.on('selectDateTime', (e: SelectDateTimeInfo) => {
       addEvent(e.start, e.end, e.isAllday);
@@ -185,18 +186,21 @@ export const CalendarHome: React.FC = () => {
       updateEvent(e.event);
     });
 
+    setCalendarEventsSet(true);
+
     // calendarInstance()?.on('clickDayName', (e: DayNameInfo) => {
     //   advanceToDate(new Date(e.date));
     // });
 
     return () => {
       if (!isCalendarInstanceValid()) return;
+      if (!calendarEventsSet) return;
       calendarInstance()?.off('selectDateTime');
       calendarInstance()?.off('clickEvent');
       // calendarInstance()?.off('clickDayName');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventById]);
+  }, [calendarRef, calendarRef?.current, calendarRef?.current?.getInstance()]);
 
   return (
     <div className={styles.contentWrapper}>

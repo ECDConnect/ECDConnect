@@ -776,6 +776,7 @@ export type CalendarEvent = {
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['String']>;
+  visit?: Maybe<Visit>;
 };
 
 export type CalendarEventFilterInput = {
@@ -796,6 +797,7 @@ export type CalendarEventFilterInput = {
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<StringOperationFilterInput>;
+  visit?: InputMaybe<VisitFilterInput>;
 };
 
 export type CalendarEventInput = {
@@ -812,6 +814,7 @@ export type CalendarEventInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
+  Visit?: InputMaybe<VisitInput>;
 };
 
 export type CalendarEventModelInput = {
@@ -893,6 +896,7 @@ export type CalendarEventSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
+  visit?: InputMaybe<VisitSortInput>;
 };
 
 export type CalendarEventType = {
@@ -5623,13 +5627,14 @@ export type Mutation = {
   autoSubmitStatement?: Maybe<ResultReturnObject>;
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
-  bulkUpdateCoachingCircleTopicDates: Scalars['Int'];
+  bulkUpdateCoachingCircleTopicDates: Scalars['Boolean'];
   calculateCaregiverReportBack: Scalars['Boolean'];
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   calculateClubChildAttendance: Scalars['Boolean'];
   calculateLeaveNoOneBehind: Scalars['Boolean'];
   calculateMeetRegularly: Scalars['Boolean'];
   calculateProgressReports: Scalars['Boolean'];
+  cancelCalendarEvent?: Maybe<CalendarEvent>;
   cancelRemovalFromProgramme: Scalars['Boolean'];
   changeClubName?: Maybe<Club>;
   changeClubSupportRole: Scalars['Boolean'];
@@ -6412,6 +6417,10 @@ export type MutationCalculateChildrenRegistrationRemovalArgs = {
 export type MutationCalculateMeetRegularlyArgs = {
   clubId: Scalars['UUID'];
   clubMeetingId: Scalars['UUID'];
+};
+
+export type MutationCancelCalendarEventArgs = {
+  id: Scalars['UUID'];
 };
 
 export type MutationCancelRemovalFromProgrammeArgs = {
@@ -16049,6 +16058,7 @@ export type Visit = {
   comment?: Maybe<Scalars['String']>;
   delicenseQuestionAnswered: Scalars['Boolean'];
   dueDate?: Maybe<Scalars['DateTime']>;
+  event?: Maybe<CalendarEvent>;
   eventId?: Maybe<Scalars['UUID']>;
   hasAnswerData: Scalars['Boolean'];
   id: Scalars['UUID'];
@@ -16307,6 +16317,7 @@ export type VisitFilterInput = {
   comment?: InputMaybe<StringOperationFilterInput>;
   delicenseQuestionAnswered?: InputMaybe<BooleanOperationFilterInput>;
   dueDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  event?: InputMaybe<CalendarEventFilterInput>;
   eventId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   hasAnswerData?: InputMaybe<BooleanOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -16467,6 +16478,7 @@ export type VisitInput = {
   Comment?: InputMaybe<Scalars['String']>;
   DelicenseQuestionAnswered: Scalars['Boolean'];
   DueDate?: InputMaybe<Scalars['DateTime']>;
+  Event?: InputMaybe<CalendarEventInput>;
   EventId?: InputMaybe<Scalars['UUID']>;
   HasAnswerData: Scalars['Boolean'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -16523,6 +16535,7 @@ export type VisitSortInput = {
   comment?: InputMaybe<SortEnumType>;
   delicenseQuestionAnswered?: InputMaybe<SortEnumType>;
   dueDate?: InputMaybe<SortEnumType>;
+  event?: InputMaybe<CalendarEventSortInput>;
   eventId?: InputMaybe<SortEnumType>;
   hasAnswerData?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;

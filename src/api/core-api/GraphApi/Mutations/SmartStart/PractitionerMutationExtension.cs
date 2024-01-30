@@ -24,6 +24,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -338,7 +339,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
                 absenteeService.AddAbsenteeForPractitioner(practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, false, null, null, null, removalHistory.Id);
             }
-
+            var userToSend = userManager.FindByIdAsync(practitionerUserId).Result;
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var classRoom = classroomRepo.GetById(Guid.Parse(classroomId));
@@ -354,11 +355,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     FindValue = "PrincipalName",
                     ReplacementValue = principalUser.FirstName + " " + principalUser.Surname
-                }); 
-            }
+                });
 
-            var userToSend = userManager.FindByIdAsync(practitionerUserId).Result;
+                //principaluser to send
+                if (principalUser != null && userToSend != null )
+                {
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now, principalUser, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = userToSend.FirstName } }, DateTime.Now.AddDays(7));
+                }
+            }
             notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval, userToSend, "", MessageStatusConstants.Red, replacements, null,true);
+
+
 
             return true;
         }
