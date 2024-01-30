@@ -52,12 +52,15 @@ export default function CreateStory({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
+    control: control,
   };
+  const initialValues = getValues();
 
   const { type: formType } = useWatch({ control });
 
@@ -144,29 +147,23 @@ export default function CreateStory({
   const [deleteContent, { loading: isLoadingDeleteContent }] =
     useMutation(deleteMutation);
 
-  const [updateStoryBookPartContent, { loading: isLoadingUpdateContent }] =
-    useMutation(updateStoryBookPart);
+  const [updateStoryBookPartContent] = useMutation(updateStoryBookPart);
 
-  const [createStoryBookPartContent, { loading: isLoadingCreateContent }] =
-    useMutation(createStoryBookPart);
+  const [createStoryBookPartContent] = useMutation(createStoryBookPart);
 
-  const [deleteStoryBookPartContent, { loading: isLoadingDeleteStoryContent }] =
-    useMutation(deleteStoryBookPart);
+  const [deleteStoryBookPartContent] = useMutation(deleteStoryBookPart);
 
-  const [
-    createStoryBookPartQuestionContent,
-    { loading: isLoadingCreateQuestionContent },
-  ] = useMutation(createStoryBookPartQuestion);
+  const [createStoryBookPartQuestionContent] = useMutation(
+    createStoryBookPartQuestion
+  );
 
-  const [
-    updateStoryBookPartQuestionContent,
-    { loading: isLoadingUpdateQuestionContent },
-  ] = useMutation(updateStoryBookPartQuestion);
+  const [updateStoryBookPartQuestionContent] = useMutation(
+    updateStoryBookPartQuestion
+  );
 
-  const [
-    deleteStoryBookPartQuestionContent,
-    { loading: isLoadingDeleteStoryQuestionContent },
-  ] = useMutation(deleteStoryBookPartQuestion);
+  const [deleteStoryBookPartQuestionContent] = useMutation(
+    deleteStoryBookPartQuestion
+  );
 
   const [storybookPartsIds, setStorybookPartsIds] = useState([]);
 
@@ -234,6 +231,16 @@ export default function CreateStory({
     useState<StoryBookPartDto[]>();
   const [filteredStoryBookPartsQuestions, setFilteredStoryBookPartsQuestions] =
     useState<StoryBookQuestionDto[]>();
+  const [requiredMessage, setRequiredMessage] = useState(
+    'This field is required'
+  );
+  const [authorsAuthorization, setAuthorsAuthorization] = useState(false);
+  const disableButton = template?.fields?.filter(
+    (item) =>
+      item?.isRequired &&
+      initialValues?.hasOwnProperty(item?.propName) &&
+      !initialValues[item?.propName]
+  );
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -289,6 +296,7 @@ export default function CreateStory({
       optionDefinition: optionDefinition,
       selectedLanguageId: selectedLanguageId,
       dataLinkName: field.dataLinkName,
+      isRequired: field.isRequired,
     };
 
     if (item && item.localeId === selectedLanguageId) {
@@ -671,13 +679,23 @@ export default function CreateStory({
                 setFilteredStoryBookPartsQuestions
               }
               formType={formType}
+              getValues={getValues}
+              useWatch={useWatch}
+              requiredMessage={requiredMessage}
+              setAuthorsAuthorization={setAuthorsAuthorization}
+              authorsAuthorization={authorsAuthorization}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className={`bg-secondary ${
+                disableButton?.length > 0 || !authorsAuthorization
+                  ? 'opacity-25'
+                  : ''
+              } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
+              disabled={disableButton?.length > 0 || !authorsAuthorization}
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish

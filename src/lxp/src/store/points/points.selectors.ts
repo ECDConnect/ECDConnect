@@ -34,8 +34,8 @@ export const getPointsSummaryWithLibrary = (date: Date) =>
           // Get the points summary for the user for
           const pointsSummaryForMonth = pointsSummary.find(
             (x) =>
-              x.month == month &&
-              x.year == year &&
+              x.month === month &&
+              x.year === year &&
               x.pointsLibrary?.id === pointsLibrary.id
           );
 
@@ -115,7 +115,7 @@ export const getPointsSummariesForActivity = (
 
         const pointsSummaryForMonth = pointsSummary.find(
           (x) =>
-            x.month == month && x.year == year && x.pointsLibrary?.id === id
+            x.month === month && x.year === year && x.pointsLibrary?.id === id
         );
 
         // Get the max pointsYTD from all the summaries for the year, this will be out total for the year
@@ -171,7 +171,7 @@ export const getPointsSummaryForYear = () =>
 
       pointsLibrary.forEach((activity) => {
         const activitySummaries = pointsSummary.filter(
-          (x) => x.year == year && x.pointsLibrary?.id === activity.id
+          (x) => x.year === year && x.pointsLibrary?.id === activity.id
         );
 
         const pointsForYear = Math.max(

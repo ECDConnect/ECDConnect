@@ -772,6 +772,8 @@ namespace EcdLink.Api.CoreApi
             //ChildAttendanceRegister Queries
             public const string SSChildAttendanceRegister = "Attendance";
             public const string SLChildAttendanceRegister = "ChildAttendanceRegister";
+            // Child Progress
+            public const string SSChildProgressReport = "ChildProgressReport";
             //Note Queries
             public const string SSNote = "Note";
             public const string SLNote = "Note";

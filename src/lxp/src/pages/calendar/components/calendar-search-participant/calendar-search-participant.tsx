@@ -196,33 +196,33 @@ export const CalendarSearchParticipant: React.FC<
       >
         <div></div>
       </SearchHeader>
-      <div className="flex justify-center">
-        <div className="w-11/12">
+      <div className="w-full p-4">
+        <div className="flex justify-center">
           <StackedList
             className={styles.stackedList}
             listItems={selectedData}
             type={'UserAlertList'}
             onClickItem={onPractitionerRemove}
           />
-          <div>
-            <Button
-              onClick={onClickDone}
-              className="w-full"
-              size="normal"
-              color="primary"
-              type="filled"
-              isLoading={busySaving}
-              disabled={busySaving}
-            >
-              {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
-              <Typography
-                type="h6"
-                className="ml-2"
-                text={'Done'}
-                color="white"
-              />
-            </Button>
-          </div>
+        </div>
+        <div>
+          <Button
+            onClick={onClickDone}
+            className="w-full"
+            size="normal"
+            color="primary"
+            type="filled"
+            isLoading={busySaving}
+            disabled={busySaving}
+          >
+            {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text={'Done'}
+              color="white"
+            />
+          </Button>
         </div>
       </div>
     </BannerWrapper>

@@ -241,9 +241,10 @@ export const PointsSummary: React.FC = () => {
             />
           )}
           {!!pointsTodoList &&
-            pointsTodoList.map((pointsLibraryScore) => {
+            pointsTodoList.map((pointsLibraryScore, index) => {
               return (
                 <PointsProgressCard
+                  key={'points_' + index}
                   currentPoints={pointsLibraryScore.pointsTotal}
                   maxPoints={
                     pointsLibraryScore.maxMonthlyPoints !== 0

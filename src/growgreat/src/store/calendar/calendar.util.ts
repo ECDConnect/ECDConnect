@@ -59,6 +59,7 @@ export const calendarConvert = {
           firstName: input.user.firstName,
           surname: input.user.surname,
         },
+        visit: null,
       };
     },
   },
@@ -160,6 +161,7 @@ export const calendarConvert = {
           firstName: input.user?.firstName || '',
           surname: input.user?.surname || '',
         },
+        visit: !input.visit ? null : { attended: input.visit.attended },
       };
     },
 

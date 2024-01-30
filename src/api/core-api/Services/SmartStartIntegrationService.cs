@@ -25,6 +25,7 @@ using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -96,6 +97,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
     private IGenericRepository<License, Guid> _licenseRepo;
     private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
+    private IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
+    private IGenericRepository<UserHierarchyEntity, Guid> _userHierarchyRepo;
 
     private IAttendancePdfService _attendancePdfService;
     IHolidayService<Holiday> _holidayService;
@@ -128,7 +131,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
     private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
     private readonly InvitationNotificationManager _notificationManager;
-    private readonly IHttpContextAccessor _accessor; 
+    private readonly IHttpContextAccessor _accessor;
 
     public SmartStartIntegrationService(
         IGenericRepositoryFactory repositoryFactory,
@@ -170,14 +173,14 @@ public partial class SmartStartIntegrationService : IIntegrationService
         _notificationService = notificationService;
         _notificationManager = notificationManager;
         _invitationManager = invitationManager;
-        _accessor = accessor; 
+        _accessor = accessor;
         _attendancePdfService = attendancePdfService;
 
         if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
         if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-       if (this.Enabled)
-       {
+        if (this.Enabled)
+        {
             _uId = _hierarchyEngine.GetIntegrationUserId();
 
             //Generic static repos
@@ -215,12 +218,14 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
             _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
             _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+            _childProgressReportRepo = repositoryFactory.CreateGenericRepository<ChildProgressReport>(userContext: _uId);
+            _userHierarchyRepo = repositoryFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: _uId);
 
             _attendanceTrackingRepository = attendanceTrackingRepository;
             _incomeManager = incomeManager;
             _visitManager = visitManager;
             _attendanceService = attendanceService;
-       }
+        }
     }
 
     public bool Enabled {  get { return this._apiMode != MappingMode.None; } }
@@ -523,22 +528,41 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     // Section 4 total = 10(step 6) PositiveInteractionScore
                     // Section 5 total = 10(step 7) ChildOpportunitiesScore
                     // Section 6 total = 8(step 8) InteractiveStoryTellingScore
+                    var stimulatingAndResourcedScore = 0.0;
+                    var stableAndNurturingScore = 0.0;
+                    var positiveInteractionScore = 0.0;
+                    var childOpportunitiesScore = 0.0;
+                    var interactiveStoryTellingScore = 0.0;
+                    var step3 = 0.0;
+                    var step4 = 0.0;
+                    var wasSuccessful = "false";
+                    var statusOutcome = "Red";
 
-                    var stimulatingAndResourcedScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step2_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var stableAndNurturingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step5_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var positiveInteractionScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step6_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var childOpportunitiesScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step7_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var interactiveStoryTellingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
-                    
-                    var step3 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step3_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var step4 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step4_section).Select(x => x.SectionScore).FirstOrDefault();
+                    if (visit.PQARating != null)
+                    {
+                        stimulatingAndResourcedScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step2_section).Select(x => x.SectionScore).FirstOrDefault();
+                        stableAndNurturingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step5_section).Select(x => x.SectionScore).FirstOrDefault();
+                        positiveInteractionScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step6_section).Select(x => x.SectionScore).FirstOrDefault();
+                        childOpportunitiesScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step7_section).Select(x => x.SectionScore).FirstOrDefault();
+                        interactiveStoryTellingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
+                        step3 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step3_section).Select(x => x.SectionScore).FirstOrDefault();
+                        step4 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step4_section).Select(x => x.SectionScore).FirstOrDefault();
+                        wasSuccessful = visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() ? "true" : "false";
+
+                        if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                        {
+                            statusOutcome = "Green";
+                        }
+                        else if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString())
+                        {
+                            statusOutcome = "Orange";
+                        }
+                    }
                     var useOfSmartStartRoutineScore = step3 + step4;
-
                     var totalScore = stableAndNurturingScore + stimulatingAndResourcedScore + useOfSmartStartRoutineScore + interactiveStoryTellingScore + childOpportunitiesScore + positiveInteractionScore;
 
                     var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var numberOfChildrenNotRegistered = 0;
-                    var wasSuccessful = visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() ? "true" : "false";
                 
                     var isFranchiseeHittingChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isVenueSafe = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
@@ -546,16 +570,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                     var presentChildrenNotRegistered = "false";
-
-                    var statusOutcome = "Red";
-                    
-                    if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
-                    {
-                        statusOutcome = "Green";
-                    } else if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString())
-                    {
-                        statusOutcome = "Orange";
-                    }
 
                     jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
                     jsonPutPostString.AppendLine("\"DelicensingNotes\":\"" + delicensingNotes + "\",");

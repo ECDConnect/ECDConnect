@@ -140,29 +140,27 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     },
   });
 
-  const { data: storyActivitiesData, loading: storyActivitiesLoading } =
-    useQuery(
-      smallLargeActivitiesQuery,
+  const { data: storyActivitiesData } = useQuery(
+    smallLargeActivitiesQuery,
 
-      {
-        fetchPolicy: 'cache-and-network',
-        variables: {
-          localeId: languageId?.toString(),
-        },
-      }
-    );
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        localeId: languageId?.toString(),
+      },
+    }
+  );
 
-  const { data: storyBookActivitiesData, loading: storybooksLoading } =
-    useQuery(
-      storiesActivitiesQuery,
+  const { data: storyBookActivitiesData } = useQuery(
+    storiesActivitiesQuery,
 
-      {
-        fetchPolicy: 'cache-and-network',
-        variables: {
-          localeId: languageId?.toString(),
-        },
-      }
-    );
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        localeId: languageId?.toString(),
+      },
+    }
+  );
 
   const smallGroupOptions: SearchDropDownOption<any>[] =
     storyActivitiesData?.GetAllActivity?.filter(

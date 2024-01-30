@@ -508,6 +508,44 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        private bool SendNewClubLeaderNotifications(Guid clubId, Guid newLeaderPracttitionerId)
+        {
+            // Notifications
+            Club club = _clubRepo.GetById(clubId);
+            List<ClubMember> clubMembers = _clubMemberRepo.GetAll()
+                                            .Where(x => x.ClubId == clubId && x.IsActive == true)
+                                             .Include(x => x.Practitioner)
+                                             .ThenInclude(x => x.User).ToList();
+            Practitioner leader = _practitionerRepo.GetById(newLeaderPracttitionerId);
+            if (leader != null)
+            {
+                List<TagsReplacements> replacements = new List<TagsReplacements>
+                {
+                    new TagsReplacements()
+                    {
+                        FindValue = "ClubName",
+                        ReplacementValue = club.Name
+                    }
+                };
+                if (leader.User!=null)
+                {
+                    replacements.Add(
+                    new TagsReplacements()
+                    {
+                        FindValue = "ClubLeaderName",
+                        ReplacementValue = leader.User.FirstName
+                    });
+                }
+
+                foreach (ClubMember clubMember in clubMembers)
+                {
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NewClubleader, DateTime.Now, clubMember.Practitioner.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14), true);
+                }
+            }
+
+            return true;
+        }
+
         public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId)
         {
             List<ClubLeader> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId).OrderBy(x => x.InsertedDate).ToList();
@@ -538,6 +576,8 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 ChangeClubSupportRole(clubId, clubSupportPractitionerId);
             }
+            //notify members of the new leader
+            SendNewClubLeaderNotifications(clubId, practitionerId);
 
             return newClubLeader != null;
         }
@@ -806,7 +846,7 @@ namespace EcdLink.Api.CoreApi.Services
             // get linked event ids to exclude from upcoming meetings in calendar table
             List<Guid> excludeEventIds = allMeetings.Where(x => x.EventId.HasValue).Select(x => (Guid)x.EventId).Distinct().ToList();
             // Add upcoming calendar event records
-            upcomingMeetings.AddRange(getUpcomingCalendarEventsForClub(userIds, excludeEventIds));
+            upcomingMeetings.AddRange(GetUpcomingCalendarEventsForClub(userIds, excludeEventIds));
 
             activityMeetRegular.PastMeetings = pastMeetings;
             activityMeetRegular.UpcomingMeetings = upcomingMeetings;
@@ -814,7 +854,7 @@ namespace EcdLink.Api.CoreApi.Services
             return activityMeetRegular;
         }
 
-        private List<ActivityMeetRegularDetail> getUpcomingCalendarEventsForClub(List<string> userIds, List<Guid> excludeEventIds)
+        private List<ActivityMeetRegularDetail> GetUpcomingCalendarEventsForClub(List<string> userIds, List<Guid> excludeEventIds)
         {
             List<ActivityMeetRegularDetail> upcomingMeetings = new List<ActivityMeetRegularDetail>();
             List<CalendarEvent> calendarEvents = _calendarEventRepo.GetAll().Where(x => userIds.Contains(x.UserId) && !excludeEventIds.Contains(x.Id) &&
@@ -858,7 +898,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var club = _clubRepo.GetAll()
                 .Where(x => x.Id == clubId && x.IsActive)
-                .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year && x.ClubPointsLibrary.Activity == Constants.ClubSettings.be_creative))
+                .Include(x => x.ClubPoints.Where(x => x.Year == today.Year && x.ClubPointsLibrary.Activity == Constants.ClubSettings.be_creative))
                 .SingleOrDefault();
 
             if (club.LeagueId.HasValue)
@@ -880,10 +920,10 @@ namespace EcdLink.Api.CoreApi.Services
             // Populate months for year
             for (int i = 1; i <= today.Month; i++)
             {
-                if (i > 4 && i <= 12)
-                {
+                //if (i > 4 && i <= 12)
+                //{
                     yearMonths.Add(new DateTime(today.Year, i, 1));
-                }
+                //}
             }
 
             ClubActivityUpload clubBeCreative = new ClubActivityUpload();
@@ -939,6 +979,7 @@ namespace EcdLink.Api.CoreApi.Services
                         documentColor = MetricsColorEnum.Success.ToString();
                     }
 
+
                     activityBeCreative.MonthlyRecords.Add(
                         new ActivityBeCreativeDetail()
                         {
@@ -948,7 +989,7 @@ namespace EcdLink.Api.CoreApi.Services
                             ImageApproved = clubBeCreative?.ImageApproved,
                             DocumentStatusColor = documentColor,
                             DocumentStatus = documentStatus,
-                            Points = 0, // pending - will implemented when integration is done
+                            Points = club.ClubPoints.Where(x => x.Month == date.Month).Select(x => x.Points).Sum(),
                             ImageRating = clubBeCreative.ImageRating
                         }
                     );
@@ -988,18 +1029,18 @@ namespace EcdLink.Api.CoreApi.Services
                 activityHostFamilyDays.Terms.Add(new ActivityHostFamilyDaysDetail() { TermNr = 3, TermName = "Term 3: August to October" });
             }
 
-            int points = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
+            List<ClubPoints> clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
                                                         x.Year == year &&
-                                                        x.ClubPointsLibrary.Activity == Constants.ClubSettings.host_family_days).Select(x => x.Points).Sum();
+                                                        x.ClubPointsLibrary.Activity == Constants.ClubSettings.host_family_days).ToList();
 
-            activityHostFamilyDays.Points = points;
+            activityHostFamilyDays.Points = clubPoints.Select(x => x.Points).Sum();
             activityHostFamilyDays.PointsColor = MetricsColorEnum.Error.ToString();
             // set the color for points
-            if (points > 0 && points <= 599)
+            if (activityHostFamilyDays.Points > 0 && activityHostFamilyDays.Points <= 599)
             {
                 activityHostFamilyDays.PointsColor = MetricsColorEnum.Warning.ToString();
             }
-            else if (points > 599 && points <= 800)
+            else if (activityHostFamilyDays.Points > 599 && activityHostFamilyDays.Points <= 800)
             {
                 activityHostFamilyDays.PointsColor = MetricsColorEnum.Success.ToString();
             }
@@ -1017,20 +1058,19 @@ namespace EcdLink.Api.CoreApi.Services
                .Where(x => x.IsActive && x.ClubId == clubId &&
                       x.ClubActivityUploadType.Name == Constants.ClubSettings.upload_type_family_days &&
                       x.Year == year).ToList();
-
+            
             foreach (var meeting in clubMeetings)
             {
                 var clubActivityUpload = clubUploads.Where(x => x.Month == meeting.MeetingDate.Value.Month && x.Year == meeting.MeetingDate.Value.Year).FirstOrDefault();
                 var documentStatus = clubActivityUpload != null ? "Attendance register uploaded" : "Not completed";
                 var documentStatusColor = clubActivityUpload != null ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Error.ToString();
-                var termPoints = clubActivityUpload != null ? 100 : 0;
 
                 if (meeting.MeetingDate >= term1Start && meeting.MeetingDate <= term1End)
                 {
                     var term = activityHostFamilyDays.Terms.GetItemByIndex(0);
                     term.EventName = meeting.MeetingType.NormalizedName;
                     term.Description = meeting.MeetingNotes;
-                    term.Points = termPoints;
+                    term.Points = clubPoints.Where(x => x.Month >= 1 && x.Month <= 4).Select(x => x.Points).Sum();
                     term.DocumentStatus = documentStatus;
                     term.DocumentStatusColor = documentStatusColor;
                     term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
@@ -1041,7 +1081,7 @@ namespace EcdLink.Api.CoreApi.Services
                     var term = activityHostFamilyDays.Terms.GetItemByIndex(1);
                     term.EventName = meeting.MeetingType.NormalizedName;
                     term.Description = meeting.MeetingNotes;
-                    term.Points = termPoints;
+                    term.Points = clubPoints.Where(x => x.Month >= 5 && x.Month <= 7).Select(x => x.Points).Sum();
                     term.DocumentStatus = documentStatus;
                     term.DocumentStatusColor = documentStatusColor;
                     term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
@@ -1051,7 +1091,7 @@ namespace EcdLink.Api.CoreApi.Services
                     var term = activityHostFamilyDays.Terms.GetItemByIndex(2);
                     term.EventName = meeting.MeetingType.NormalizedName;
                     term.Description = meeting.MeetingNotes;
-                    term.Points = termPoints;
+                    term.Points = term.Points = clubPoints.Where(x => x.Month >= 8 && x.Month <= 12).Select(x => x.Points).Sum();
                     term.DocumentStatus = documentStatus;
                     term.DocumentStatusColor = documentStatusColor;
                     term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
@@ -1854,38 +1894,41 @@ namespace EcdLink.Api.CoreApi.Services
             if (document != null)
             {
                 ClubActivityUploadType uploadType = _clubActivityUploadTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.upload_type_be_creative).FirstOrDefault();
-                ClubActivityUpload uploadedRecord = _clubActivityUploadRepo.Insert(new ClubActivityUpload()
-                                                                                    {
-                                                                                        Id = Guid.NewGuid(),
-                                                                                        IsActive = true,
-                                                                                        InsertedDate = DateTime.Now,
-                                                                                        UpdatedDate = DateTime.Now,
-                                                                                        UpdatedBy = _applicationUserId,
-                                                                                        ClubId = input.ClubId,
-                                                                                        Description = input.Description,
-                                                                                        DocumentId = document.Id,
-                                                                                        ClubActivityUploadTypeId = uploadType.Id,
-                                                                                        ImageApproved = false,
-                                                                                        Month = input.DateUploaded.Month,
-                                                                                        Year = input.DateUploaded.Year
-                                                                                    });
-                Club club = _clubRepo.GetById(input.ClubId);
-                if (club.LeagueId.HasValue)
+                ClubActivityUpload record = _clubActivityUploadRepo.GetAll().Where(x => x.ClubId == input.ClubId && x.Month == input.DateUploaded.Month && x.Year == input.DateUploaded.Year && x.IsActive == true && x.ClubActivityUploadTypeId == uploadType.Id).FirstOrDefault();
+                if (record == null)
                 {
-                    // Add integration record
-                    _integrationAuditRepo.Insert(new IntegrationAudit()
+                    ClubActivityUpload uploadedRecord = _clubActivityUploadRepo.Insert(new ClubActivityUpload()
+                                                                                        {
+                                                                                            Id = Guid.NewGuid(),
+                                                                                            IsActive = true,
+                                                                                            InsertedDate = DateTime.Now,
+                                                                                            UpdatedDate = DateTime.Now,
+                                                                                            UpdatedBy = _applicationUserId,
+                                                                                            ClubId = input.ClubId,
+                                                                                            Description = input.Description,
+                                                                                            DocumentId = document.Id,
+                                                                                            ClubActivityUploadTypeId = uploadType.Id,
+                                                                                            ImageApproved = false,
+                                                                                            Month = input.DateUploaded.Month,
+                                                                                            Year = input.DateUploaded.Year
+                                                                                        });
+                    Club club = _clubRepo.GetById(input.ClubId);
+                    if (club.LeagueId.HasValue)
                     {
-                        ChangeType = "Insert",
-                        Entity = "ClubActivityUpload",
-                        UserId = _applicationUserId,
-                        RelatedId = uploadedRecord.Id.ToString(),
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    });
+                        // Add integration record
+                        _integrationAuditRepo.Insert(new IntegrationAudit()
+                        {
+                            ChangeType = "Insert",
+                            Entity = "ClubActivityUpload",
+                            UserId = _applicationUserId,
+                            RelatedId = uploadedRecord.Id.ToString(),
+                            TenantId = TenantExecutionContext.Tenant.Id
+                        });
 
+                    }
+                    return true;
                 }
-                return true;
             }
-
             return false;
         }
 

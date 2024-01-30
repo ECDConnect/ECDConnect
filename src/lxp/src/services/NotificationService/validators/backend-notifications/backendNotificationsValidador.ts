@@ -25,9 +25,9 @@ export class BackendNotificationsValidator implements NotificationValidator {
     this.lastCheckTimestamp = 0;
   }
 
-  // TODO: update type of getNotifications
-  // @ts-ignore
   getNotifications = async () => {
+    if (!this.user?.id) return [];
+
     const notifications: Message[] = [];
 
     const allNotifications = await this.getAllNotifications({
@@ -156,7 +156,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
     });
 
     if (response.status !== 200 || response.data.errors) {
-      throw new Error('get all notification failed - Server connection error');
+      return [];
     }
 
     return response.data.data.allNotifications;
