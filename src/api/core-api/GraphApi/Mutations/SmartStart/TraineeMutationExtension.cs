@@ -13,6 +13,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using NPOI.SS.Formula.Functions;
 using System;
 using System.Linq;
