@@ -58,6 +58,7 @@ export default function EditCategory({
     errors: errors,
     control: control,
   };
+  const allowedFileSize = 2631488;
 
   const mutationName = `update${contentType?.name}`;
 
@@ -370,7 +371,10 @@ export default function EditCategory({
             ) : (
               <Alert
                 className="mt-2 mb-2 rounded-md"
-                message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
+                message={`Note that any changes made below are not made to SmartLink.`}
+                list={[
+                  'If you make any major edits below, discuss them with the SmartLink team.',
+                ]}
                 type="warning"
               />
             )}
@@ -381,6 +385,7 @@ export default function EditCategory({
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               setFilteredSubcategories={setFilteredSubcategories}
+              allowedFileSize={allowedFileSize}
             />
           </div>
 

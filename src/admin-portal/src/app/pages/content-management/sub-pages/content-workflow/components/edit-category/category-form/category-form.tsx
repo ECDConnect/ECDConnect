@@ -32,6 +32,7 @@ export interface CategoryFormProps {
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
   setFilteredSubcategories?: (item: any[]) => void;
+  allowedFileSize?: number;
 }
 
 const contentWrapper = '';
@@ -43,6 +44,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   defaultLanguageId,
   acceptedFileFormats,
   setFilteredSubcategories,
+  allowedFileSize,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -99,11 +101,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         case FieldType.Image:
           return (
             <div key={propName} className={contentWrapper}>
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Editing the image here will update the image for all translations of this page.`}
-                type="warning"
-              />
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
@@ -114,6 +111,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                   }
                   returnFullUrl={true}
                   setValue={setValue}
+                  allowedFileSize={allowedFileSize}
+                  isSubcategoryInput={true}
+                  isIconInput={true}
                 />
               </div>
             </div>
