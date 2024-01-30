@@ -81,6 +81,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
             return true;
         }
 
+        public async Task<bool> PushChildProgressReports([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushChildProgressReports();
+            return true;
+        }
+        
         public async Task<bool> PushReAccreditationData([Service] IIntegrationService integrationService)
         {
             await integrationService.PushReAccreditationData();

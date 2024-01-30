@@ -28,6 +28,7 @@ export interface ContentWorkflowProps {
   goBack: () => void;
   savedContent: () => void;
   choosedSectionTitle?: string;
+  setSearchValue?: (item: string) => void;
 }
 
 export default function ContentWorkflow({
@@ -38,6 +39,7 @@ export default function ContentWorkflow({
   goBack,
   savedContent,
   choosedSectionTitle,
+  setSearchValue,
 }: ContentWorkflowProps) {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
     contentView.languageId
@@ -237,6 +239,7 @@ export default function ContentWorkflow({
       <div className="flex flex-col">
         <div className="mb-6 flex flex-row gap-2 overflow-auto rounded-md bg-white px-2">
           {!isCompareMode &&
+            contentType?.name !== ContentName.Theme &&
             languages
               ?.filter((item) => item?.isActive === true)
               .map((item: LanguageDto, index: number) => (
@@ -288,6 +291,7 @@ export default function ContentWorkflow({
                             defaultLanguageId={defaultLanguageId}
                             cancelCompare={() => setIsCompareMode(!isEdit)}
                             choosedSectionTitle={choosedSectionTitle}
+                            setSearchValue={setSearchValue}
                           />
                         </div>
                       </div>

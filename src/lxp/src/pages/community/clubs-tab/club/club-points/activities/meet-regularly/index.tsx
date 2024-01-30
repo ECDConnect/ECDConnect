@@ -334,6 +334,7 @@ export const MeetRegularly: React.FC = () => {
           ).replace(':activityId', activityId)
         )
       }
+      renderBorder
     >
       <Header
         imageUrl={partnershipIcon}

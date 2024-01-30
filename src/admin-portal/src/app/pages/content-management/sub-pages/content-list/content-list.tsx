@@ -8,7 +8,7 @@ import {
   LanguageDto,
   PermissionEnum,
 } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -56,12 +56,12 @@ export default function ContentList({
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
-  function filterByValue(array, value) {
+  const filterByValue = useCallback((array, value) => {
     return array.filter(
       (data) =>
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
-  }
+  }, []);
 
   useEffect(() => {
     if (contentType && contentType.fields) {
@@ -184,23 +184,6 @@ export default function ContentList({
         ...item,
       }));
       if (selectedTab === 1) {
-        // Wait for validation on dev
-        // let clientProfileData = moreInforItems.filter(
-        //   (item: { type: string }) => {
-        //     return (
-        //       item.type === 'client profile' ||
-        //       item.type === 'Info Page' ||
-        //       item?.type === 'Income Statements' ||
-        //       item?.type === 'Taking Child Attendance' ||
-        //       item?.type === 'League Of Stars' ||
-        //       item?.type === 'Purple Clubs' ||
-        //       item?.type === 'Learning Through Play' ||
-        //       item?.type === 'The Daily Routine' ||
-        //       item?.type === 'Tracking Progress' ||
-        //       item?.type === 'Trainee Onboarding'
-        //     );
-        //   }
-        // );
         setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
@@ -259,7 +242,16 @@ export default function ContentList({
           ...item,
         }));
 
-        setTableData(copyItems);
+        let clientProfileData = copyItems.filter(
+          (item: { type: string; name: string }) => {
+            return (
+              item.type !== 'TermsAndConditions' &&
+              item.name !== 'Personal Information'
+            );
+          }
+        );
+
+        setTableData(clientProfileData);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -302,43 +294,6 @@ export default function ContentList({
     viewContent(model);
   };
 
-  //TO BE REMOVED AFTER NEW CREATE BE VALIDATED
-  // const displayCreatePanel = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Create ${type}`,
-  //     render: (onSubmit: any) => (
-  //       <ContentCreate
-  //         key={`contentPanelCreate`}
-  //         acceptedFileFormats={
-  //           selectedTab === ContentManagementTabs.COMMUNITY.id
-  //             ? ['pdf']
-  //             : undefined
-  //         }
-  //         selectedLanguageId={languageId}
-  //         languages={languages}
-  //         contentType={contentType}
-  //         optionDefinitions={optionDefinitions}
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
-
-  //           if (created) {
-  //             refetchContent({
-  //               localeId: languageId.toString(),
-  //             });
-  //             refreshParent();
-
-  //             setNotification({
-  //               title: 'Successfully Created Content!',
-  //               variant: NOTIFICATION.SUCCESS,
-  //             });
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
-
   const onBulkActionCallback = (status: BulkActionStatus) => {
     if (status !== 'success') return;
 
@@ -358,13 +313,16 @@ export default function ContentList({
                 <SearchIcon className="text-textMid h-5 w-5" />
               </span>
               <input
+                id="search-input"
                 className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
                 placeholder={searchText}
                 onChange={onSearch}
+                // value={searchValue}
               />
             </div>
             {hasPermission(PermissionEnum.create_static) &&
               contentType?.name !== 'Consent' &&
+              contentType?.name !== 'MoreInformation' &&
               contentType?.name !== 'ProgressTrackingLevel' &&
               contentType?.name !== 'ProgressTrackingCategory' && (
                 <button
@@ -398,7 +356,7 @@ export default function ContentList({
                     };
                   })}
                   rows={
-                    searchValue
+                    searchValue !== 'Search by title or content...'
                       ? filterByValue(tableData, searchValue)
                       : tableData
                   }

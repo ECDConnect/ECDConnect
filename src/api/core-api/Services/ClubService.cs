@@ -920,10 +920,10 @@ namespace EcdLink.Api.CoreApi.Services
             // Populate months for year
             for (int i = 1; i <= today.Month; i++)
             {
-                if (i > 4 && i <= 12)
-                {
+                //if (i > 4 && i <= 12)
+                //{
                     yearMonths.Add(new DateTime(today.Year, i, 1));
-                }
+                //}
             }
 
             ClubActivityUpload clubBeCreative = new ClubActivityUpload();
@@ -1894,38 +1894,41 @@ namespace EcdLink.Api.CoreApi.Services
             if (document != null)
             {
                 ClubActivityUploadType uploadType = _clubActivityUploadTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.upload_type_be_creative).FirstOrDefault();
-                ClubActivityUpload uploadedRecord = _clubActivityUploadRepo.Insert(new ClubActivityUpload()
-                                                                                    {
-                                                                                        Id = Guid.NewGuid(),
-                                                                                        IsActive = true,
-                                                                                        InsertedDate = DateTime.Now,
-                                                                                        UpdatedDate = DateTime.Now,
-                                                                                        UpdatedBy = _applicationUserId,
-                                                                                        ClubId = input.ClubId,
-                                                                                        Description = input.Description,
-                                                                                        DocumentId = document.Id,
-                                                                                        ClubActivityUploadTypeId = uploadType.Id,
-                                                                                        ImageApproved = false,
-                                                                                        Month = input.DateUploaded.Month,
-                                                                                        Year = input.DateUploaded.Year
-                                                                                    });
-                Club club = _clubRepo.GetById(input.ClubId);
-                if (club.LeagueId.HasValue)
+                ClubActivityUpload record = _clubActivityUploadRepo.GetAll().Where(x => x.ClubId == input.ClubId && x.Month == input.DateUploaded.Month && x.Year == input.DateUploaded.Year && x.IsActive == true && x.ClubActivityUploadTypeId == uploadType.Id).FirstOrDefault();
+                if (record == null)
                 {
-                    // Add integration record
-                    _integrationAuditRepo.Insert(new IntegrationAudit()
+                    ClubActivityUpload uploadedRecord = _clubActivityUploadRepo.Insert(new ClubActivityUpload()
+                                                                                        {
+                                                                                            Id = Guid.NewGuid(),
+                                                                                            IsActive = true,
+                                                                                            InsertedDate = DateTime.Now,
+                                                                                            UpdatedDate = DateTime.Now,
+                                                                                            UpdatedBy = _applicationUserId,
+                                                                                            ClubId = input.ClubId,
+                                                                                            Description = input.Description,
+                                                                                            DocumentId = document.Id,
+                                                                                            ClubActivityUploadTypeId = uploadType.Id,
+                                                                                            ImageApproved = false,
+                                                                                            Month = input.DateUploaded.Month,
+                                                                                            Year = input.DateUploaded.Year
+                                                                                        });
+                    Club club = _clubRepo.GetById(input.ClubId);
+                    if (club.LeagueId.HasValue)
                     {
-                        ChangeType = "Insert",
-                        Entity = "ClubActivityUpload",
-                        UserId = _applicationUserId,
-                        RelatedId = uploadedRecord.Id.ToString(),
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    });
+                        // Add integration record
+                        _integrationAuditRepo.Insert(new IntegrationAudit()
+                        {
+                            ChangeType = "Insert",
+                            Entity = "ClubActivityUpload",
+                            UserId = _applicationUserId,
+                            RelatedId = uploadedRecord.Id.ToString(),
+                            TenantId = TenantExecutionContext.Tenant.Id
+                        });
 
+                    }
+                    return true;
                 }
-                return true;
             }
-
             return false;
         }
 

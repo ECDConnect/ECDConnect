@@ -95,8 +95,8 @@ export const Connect: React.FC = () => {
       </div>
       <Divider className="mb-4" dividerType="dashed" />
 
-      {connectItems?.map((item) => (
-        <div key={item.name}>
+      {connectItems?.map((item, index) => (
+        <div key={'connect' + index}>
           <Typography
             type="h2"
             weight="bold"
@@ -106,10 +106,10 @@ export const Connect: React.FC = () => {
             text={item?.name || ''}
           />
 
-          {item?.children?.map((child) => (
+          {item?.children?.map((child, childIndex) => (
             <div
               className="bg-uiBg mb-2 flex items-center gap-1 rounded-2xl p-4"
-              key={child?.id}
+              key={'connectItem' + childIndex}
             >
               <table
                 className="border border-gray-100"

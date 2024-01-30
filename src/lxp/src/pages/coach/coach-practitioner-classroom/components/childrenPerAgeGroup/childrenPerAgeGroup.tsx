@@ -1,7 +1,6 @@
 import { Typography, Card } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { childrenSelectors } from '@store/children';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import * as styles from './childrenPerAgeGroup.styles';
 import { ChildrenPerAgeGroupProps } from './childrenperAgeGroup.types';
@@ -10,13 +9,8 @@ import { differenceInCalendarMonths } from 'date-fns';
 export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   practitionerId,
 }) => {
-  const children = useSelector(childrenSelectors.getChildren);
   const childrenForPractitioner = useSelector(
     childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
-
-  const childrenForPractitionerList = children?.filter((item) =>
-    childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
 
   const [ageGroup1, setAgeGroup1] = useState(0);
@@ -41,10 +35,8 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   };
 
   useEffect(() => {
-    // eslint-disable-next-line array-callback-return
-    if (childrenForPractitionerList) {
-      // eslint-disable-next-line array-callback-return
-      childrenForPractitionerList?.map((item) => {
+    if (!!childrenForPractitioner?.length) {
+      childrenForPractitioner?.map((item) => {
         const childBirthDate = item?.user?.dateOfBirth
           ? new Date(item?.user?.dateOfBirth)
           : undefined;
@@ -54,8 +46,9 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
           new Date(childBirthDate || new Date())
         );
 
-        handleAgeGroups(childAgeInMonths);
+        return handleAgeGroups(childAgeInMonths);
       });
+
       return () => {
         setAgeGroup1(0);
         setAgeGroup2(0);
@@ -63,8 +56,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
         setAgeGroup4(0);
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenForPractitionerList]);
+  }, [childrenForPractitioner]);
 
   return (
     <div>

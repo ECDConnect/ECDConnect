@@ -23,6 +23,7 @@ import { ClubActions } from '@/store/club/club.actions';
 import { OfflineModal } from '../../0-components/offline-modal';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 import { ListDataItem } from '@/pages/calendar/components/calendar.types';
+import { calendarActions, calendarThunkActions } from '@/store/calendar';
 
 export const AddMeeting: React.FC = () => {
   const [step1, setStep1] = useState<Step1Props>();
@@ -36,6 +37,9 @@ export const AddMeeting: React.FC = () => {
 
   const clubId = location?.state?.clubId ?? '';
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const details = useSelector(
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
+  );
 
   const history = useHistory();
 
@@ -127,10 +131,26 @@ export const AddMeeting: React.FC = () => {
     });
   };
 
+  const handleScheduledEvents = async () => {
+    if (!eventId && !!details?.upcomingMeetings?.length) {
+      for (const meeting of details?.upcomingMeetings) {
+        appDispatch(
+          calendarActions.cancelCalendarEvent({ id: meeting?.eventId })
+        );
+
+        if (isOnline) {
+          await appDispatch(
+            calendarThunkActions.cancelCalendarEvent({ id: meeting?.eventId })
+          );
+        }
+      }
+    }
+  };
+
   const onSuccess = useCallback(() => {
     appDispatch(clubActions.forceMeetRegularlyDataReload());
 
-    if (eventId && clubId) {
+    if (eventId && clubId && isOnline) {
       appDispatch(
         clubThunkActions.getActivityMeetRegularDetails({
           clubId,
@@ -159,6 +179,8 @@ export const AddMeeting: React.FC = () => {
       clubMeetingParticipants: step2?.participants ?? [],
       ...(eventId && { eventId }),
     };
+
+    await handleScheduledEvents();
 
     appDispatch(clubActions.addClubMeeting(payload));
 
@@ -192,7 +214,8 @@ export const AddMeeting: React.FC = () => {
           start,
           end,
         },
-        onUpdated: () => {
+        onUpdated: async () => {
+          await handleScheduledEvents();
           onSuccess();
           history.goBack();
         },

@@ -25,6 +25,7 @@ import {
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import EditSkillsForm from './components/edit-skills-form/edit-skills-form';
+import { ContentTypes } from '../../../../../../constants/content-management';
 
 export interface ContentViewProps {
   content: any;
@@ -241,7 +242,7 @@ export default function EditSkills({
 
   useEffect(() => {
     if (contentType) {
-      if (contentType.name === 'CoachingCircleTopics') {
+      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
         setAcceptedFileFormats(['pdf']);
       }
     }

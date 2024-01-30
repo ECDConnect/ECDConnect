@@ -14,6 +14,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
+  ActivitiesTitles,
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
@@ -30,6 +31,7 @@ import {
   ContentTypes,
 } from '../../../../../../constants/content-management';
 import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
+import { format } from 'date-fns';
 
 export interface ContentViewProps {
   content: any;
@@ -42,6 +44,7 @@ export interface ContentViewProps {
   cancelEdit?: () => void;
   cancelCompare?: () => void;
   choosedSectionTitle?: string;
+  setSearchValue?: (item: string) => void;
 }
 
 export interface RequirementProps {
@@ -60,9 +63,13 @@ export default function ContentEdit({
   savedContent,
   cancelCompare,
   choosedSectionTitle,
+  setSearchValue,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
+  const [requiredMessage, setRequiredMessage] = useState(
+    'This field is required'
+  );
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control, getValues } =
     useForm();
@@ -156,6 +163,7 @@ export default function ContentEdit({
           message={` If you leave now, you will lose all of your changes.`}
           onCancel={onCancel}
           onSubmit={() => {
+            setSearchValue('');
             cancelEdit();
             onCancel();
           }}
@@ -168,14 +176,34 @@ export default function ContentEdit({
   const [createContent] = useMutation(createMutation);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
+
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues = getValues();
-  const disableButton = template?.fields?.filter(
-    (item) =>
-      item?.isRequired &&
-      initialValues?.hasOwnProperty(item?.propName) &&
-      !initialValues[item?.propName]
-  );
+  const disableButton =
+    choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+      ? template?.fields
+          ?.filter((x) => x?.propName !== 'subType')
+          .filter(
+            (item) =>
+              item?.isRequired &&
+              initialValues?.hasOwnProperty(item?.propName) &&
+              !initialValues[item?.propName]
+          )
+      : choosedSectionTitle === ActivitiesTitles.StoryActivities
+      ? template?.fields
+          ?.filter((x) => x?.propName !== 'subCategories')
+          .filter(
+            (item) =>
+              item?.isRequired &&
+              initialValues?.hasOwnProperty(item?.propName) &&
+              !initialValues[item?.propName]
+          )
+      : template?.fields?.filter(
+          (item) =>
+            item?.isRequired &&
+            initialValues?.hasOwnProperty(item?.propName) &&
+            !initialValues[item?.propName]
+        );
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -211,6 +239,7 @@ export default function ContentEdit({
       if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
         setAcceptedFileFormats(['pdf']);
         setAllowedFileSize(5242880);
+        setRequiredMessage('');
       }
     }
   }, [contentType]);
@@ -254,7 +283,6 @@ export default function ContentEdit({
   };
 
   const getSubHeading = (field: ContentTypeFieldDto) => {
-    // this will be replaced by the new isRequired column being implemented
     if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
       if (field.fieldName === CoachingCircleText.START_DATE) {
         return CoachingCircleText.START_DATE_SUB_HEADING;
@@ -267,7 +295,6 @@ export default function ContentEdit({
   };
 
   const getFieldAlert = (field: ContentTypeFieldDto) => {
-    // this will be replaced by the new isRequired column being implemented
     if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
       if (field.fieldName === CoachingCircleText.START_DATE) {
         return CoachingCircleText.START_DATE_ALERT;
@@ -282,6 +309,13 @@ export default function ContentEdit({
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
+
+    // make sure that we work with a date, we send a string to ensure correct dates
+    Object.keys(model).forEach((key) => {
+      if (model[key] instanceof Date) {
+        model[key] = format(model[key], 'yyyy-MM-dd') + 'T00:00:00.000Z';
+      }
+    });
 
     if (!content?.id) {
       await createContent({
@@ -408,6 +442,8 @@ export default function ContentEdit({
               formType={formType}
               choosedSectionTitle={choosedSectionTitle}
               getValues={getValues}
+              requiredMessage={requiredMessage}
+              useWatch={useWatch}
             />
           </div>
 
@@ -422,15 +458,18 @@ export default function ContentEdit({
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
-            {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
-              <button
-                onClick={deleteAndRefresh}
-                className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
-              >
-                <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
-                Delete {content?.name}
-              </button>
-            )}
+            {content?.id &&
+              content?.__typename !== 'ProgressTrackingLevel' &&
+              content?.__typename !== 'MoreInformation' &&
+              content?.__typename !== 'Consent' && (
+                <button
+                  onClick={deleteAndRefresh}
+                  className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+                >
+                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
+                  Delete {content?.name}
+                </button>
+              )}
           </div>
         </form>
       </div>

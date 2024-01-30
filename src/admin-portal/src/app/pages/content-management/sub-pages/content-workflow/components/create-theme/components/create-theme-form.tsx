@@ -15,15 +15,7 @@ import { Alert } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import ThemeContentSelector from '../../../../../../../components/theme-content-form/theme-content-form';
 
-const acceptedFormats = [
-  'svg',
-  'png',
-  'PNG',
-  'jpg',
-  'JPG',
-  'jpeg',
-  ...videoExtensions,
-];
+const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
 export interface CreateThemeFormProps {
   template: DynamicFormTemplate;
@@ -32,6 +24,7 @@ export interface CreateThemeFormProps {
   defaultLanguageId: string;
   acceptedFileFormats?: string[];
   setFilteredThemeDays?: (item: any[]) => void;
+  allowedFileSize?: number;
 }
 
 const contentWrapper = '';
@@ -43,6 +36,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   defaultLanguageId,
   acceptedFileFormats,
   setFilteredThemeDays,
+  allowedFileSize,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -114,6 +108,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                   }
                   returnFullUrl={true}
                   setValue={setValue}
+                  allowedFileSize={allowedFileSize}
                 />
               </div>
             </div>

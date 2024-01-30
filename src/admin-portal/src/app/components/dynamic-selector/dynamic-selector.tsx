@@ -82,6 +82,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     variables: {
       localeId: languageId?.toString(),
     },
+    skip: choosedSectionTitle === ActivitiesTitles.StoryActivities,
   });
 
   const [displayFields, setDisplayFields] = useState<string[]>();
@@ -114,8 +115,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
-      if (choosedSectionTitle === 'Story activities') {
+      if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
         setTempData(storyActivitiesTypes);
+        return;
       }
       if (isReview) {
         const data = contentData[getAllCall].filter((x) =>
@@ -166,13 +168,15 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
               camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
             }
           />
-          <Typography
-            type={'body'}
-            color={'textMid'}
-            text={
-              'You must choose exactly 2 skills from the list below. To change your selection, deselect the skills and choose a new pair.'
-            }
-          />
+          {choosedSectionTitle !== ActivitiesTitles.StoryActivities && (
+            <Typography
+              type={'body'}
+              color={'textMid'}
+              text={
+                'You must choose exactly 2 skills from the list below. To change your selection, deselect the skills and choose a new pair.'
+              }
+            />
+          )}
 
           <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&
@@ -190,7 +194,6 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     key={item?.title}
                     image={item?.imageUrl}
                     title={item?.name}
-                    description={item?.description}
                     checked={itemChecked}
                     value={item?.title}
                     onChange={() => selectItem(item?.id)}
