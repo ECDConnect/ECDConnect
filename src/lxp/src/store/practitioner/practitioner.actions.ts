@@ -10,6 +10,7 @@ import {
   MutationUpdatePractitionerShareInfoArgs,
   LicenseModelInput,
   NotificationDisplay,
+  PractitionerRemovalHistory,
 } from '@ecdlink/graphql';
 
 export const PractitionerActions = {
@@ -60,6 +61,44 @@ export const getPractitionersForCoach = createAsyncThunk<
       }
     } else {
       return practitionersCache;
+    }
+  }
+);
+
+export const getRemovalForPractitioner = createAsyncThunk<
+  PractitionerRemovalHistory,
+  { id: string },
+  ThunkApiType<RootState>
+>(
+  'getRemovalForPractitioner',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let removals: PractitionerRemovalHistory | undefined;
+
+      if (id === null || id.trim() === '') {
+        return rejectWithValue('no practitioner id supplied');
+      }
+
+      if (userAuth?.auth_token) {
+        removals = await new PractitionerService(
+          userAuth?.auth_token
+        ).getRemovalForPractitioner(id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!removals) {
+        return rejectWithValue('No removals scheduled');
+      }
+
+      return removals;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

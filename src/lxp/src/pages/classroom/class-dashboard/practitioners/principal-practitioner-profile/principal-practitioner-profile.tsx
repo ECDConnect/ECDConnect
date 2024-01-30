@@ -32,7 +32,10 @@ import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
@@ -56,6 +59,8 @@ import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
 import { AbsencesView } from './components/absences-view/absences-view';
+import { useAppDispatch } from '@/store';
+import { ThunkActionStatuses } from '@/store/types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -67,6 +72,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const appDispatch = useAppDispatch();
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
@@ -263,14 +269,20 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   >();
 
   const getRemovalForPractitioner = async () => {
-    const ps = await new PractitionerService(userAuth?.auth_token!);
-    let attempt = 0;
-    let result = undefined;
+    const pendingRemovals = await appDispatch(
+      practitionerThunkActions.getRemovalForPractitioner({
+        id: practitionerUserId,
+      })
+    );
+    const isFulfilled =
+      pendingRemovals?.meta?.requestStatus === ThunkActionStatuses.Fulfilled;
 
-    while (attempt <= 3 && !result) {
-      result = await ps.getRemovalForPractitioner(practitioner?.userId!);
-      !result ? attempt++ : setExistingRemoval(result);
-    }
+    const removal = isFulfilled
+      ? (pendingRemovals?.payload as PractitionerRemovalHistory)
+      : undefined;
+
+    setExistingRemoval(removal);
+    return removal;
   };
 
   const classroomsMetrics = async () => {
@@ -420,10 +432,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           <div className="flex flex-wrap justify-center">
             {existingRemoval && (
               <Card className={styles.removalCard}>
-                <div className="mt-2 mr-4 flex items-center">
+                <div className="mt-2 mr-4 mb-2 flex items-center">
                   <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                     <XCircleIcon
-                      className="text-errorMain h-5 w-5"
+                      className="text-errorMain mt-2 h-5 w-5"
                       aria-hidden="true"
                     />
                     <Typography
@@ -438,7 +450,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                             )
                           : ''
                       }`}
-                      className={styles.absentCardSubTitle}
+                      className={'text-errorMain ml-4 mt-2'}
                     />
                   </div>
                   <Button
