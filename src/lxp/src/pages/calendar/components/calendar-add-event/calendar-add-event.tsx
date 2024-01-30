@@ -123,6 +123,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       firstName: currentUser.firstName || '',
       surname: currentUser.surname || '',
     },
+    visit: null,
   };
 
   const calendarEventTypes = useSelector(
@@ -250,6 +251,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           firstName: currentUser.firstName || '',
           surname: currentUser.surname || '',
         },
+        visit: null,
       };
 
       setModel(currentModel);

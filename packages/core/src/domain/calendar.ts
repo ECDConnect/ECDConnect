@@ -30,6 +30,9 @@ export interface CalendarEventModel {
     firstName: string;
     surname: string;
   };
+  visit: {
+    attended: boolean | null;
+  } | null;
 }
 
 export interface CalendarEventParticipantModelInputModel {
