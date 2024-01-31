@@ -20,7 +20,6 @@ import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
 import walktroughImage from '../../../../assets/walktroughImage.png';
-import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
@@ -29,10 +28,6 @@ import {
 } from '@/store/content/programme-theme';
 import ROUTES from '@routes/routes';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
-import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
-import { classroomGroupId } from '@/utils/child/child-profile-utils.mock';
-import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { practitionerSelectors } from '@/store/practitioner';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -57,22 +52,6 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
   );
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const isPrincipal = practitioner?.isPrincipal === true;
-  const allClassroomGroups = useSelector(
-    classroomsSelectors.getClassroomGroups
-  );
-  const userData = useSelector(userSelectors.getUser);
-  const classroomGroupsForPrincipal = allClassroomGroups.filter(
-    (item) => item?.userId === userData?.id
-  );
-  const classroomGroups = isPrincipal
-    ? classroomGroupsForPrincipal.filter(
-        (x) => x.name !== NoPlaygroupClassroomType.name
-      )
-    : allClassroomGroups.filter(
-        (x) => x.name !== NoPlaygroupClassroomType.name
-      );
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDate(new Date(selectedDate))
   );
@@ -161,10 +140,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   };
 
   useEffect(() => {
-    if (
-      !hasVisitedDashboard &&
-      !(!classroomGroups || classroomGroups?.length === 0)
-    ) {
+    if (!hasVisitedDashboard) {
       showFirstVisit();
     }
   }, []);
@@ -320,36 +296,25 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   //     },
   //   });
   // };
-  if (!classroomGroups || classroomGroups?.length === 0) {
-    return (
-      <div className={'h-full flex-1 bg-white px-4 pt-4'}>
-        <IconInformationIndicator
-          title="You don't have any classes yet!"
-          subTitle="Assign a class to capture attendance."
-        />
-      </div>
-    );
-  } else {
-    return (
-      <>
-        <DailyRoutine
-          programme={currentProgramme}
-          currentDailyProgramme={currentDailyProgramme}
-          setSelectedDate={setSelectedDate}
-          selectedDate={selectedDate}
-          isHoliday={isHoliday}
-        />
+  return (
+    <>
+      <DailyRoutine
+        programme={currentProgramme}
+        currentDailyProgramme={currentDailyProgramme}
+        setSelectedDate={setSelectedDate}
+        selectedDate={selectedDate}
+        isHoliday={isHoliday}
+      />
 
-        {showReport && (
-          <div className="mt-10 h-screen overflow-y-scroll">
-            <div ref={targetRef}>
-              <ProgressReport progressSummary={progressSummary!} />
-            </div>
+      {showReport && (
+        <div className="mt-10 h-screen overflow-y-scroll">
+          <div ref={targetRef}>
+            <ProgressReport progressSummary={progressSummary!} />
           </div>
-        )}
-      </>
-    );
-  }
+        </div>
+      )}
+    </>
+  );
 };
 
 export default ProgrammeDashboard;
