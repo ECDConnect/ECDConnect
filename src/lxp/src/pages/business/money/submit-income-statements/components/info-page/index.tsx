@@ -66,60 +66,58 @@ export const InfoPage = ({ onClose }: InfoPageProps) => {
   }, [section, selectedLanguage, userAuth]);
 
   return (
-    <>
-      <MoreInformationPage
-        isClosable={false}
-        isLoading={isLoading}
-        languages={languages.map((x) => ({
-          value: x.locale,
-          label: x.description,
-        }))}
-        moreInformation={!!data ? data[0] : {}}
-        title={formatStringWithFirstLetterCapitalized(section)}
-        onClose={onClose}
-        setSelectedLanguage={setSelectedLanguage}
-      >
-        <Typography
-          type="h3"
-          text="Contact your coach for support"
-          color="textDark"
-        />
-        <Typography
-          type="body"
-          text={`${coach?.user?.firstName}’s Phone number:`}
-          color="textMid"
-        />
-        <Typography
-          type="body"
-          text={phoneNumber || whatsAppNumber || '000 000 0000'}
+    <MoreInformationPage
+      isClosable={false}
+      isLoading={isLoading}
+      languages={languages.map((x) => ({
+        value: x.locale,
+        label: x.description,
+      }))}
+      moreInformation={!!data ? data[0] : {}}
+      title={formatStringWithFirstLetterCapitalized(section)}
+      onClose={onClose}
+      setSelectedLanguage={setSelectedLanguage}
+    >
+      <Typography
+        type="h3"
+        text="Contact your coach for support"
+        color="textDark"
+      />
+      <Typography
+        type="body"
+        text={`${coach?.user?.firstName}’s Phone number:`}
+        color="textMid"
+      />
+      <Typography
+        type="body"
+        text={phoneNumber || whatsAppNumber || '000 000 0000'}
+        color="primary"
+      />
+      <div className="mt-4 flex  flex-wrap gap-4">
+        <Button color="primary" type="outlined" onClick={onWhatsapp}>
+          <div className="flex items-center justify-center">
+            <img
+              src={getLogo(LogoSvgs.whatsapp)}
+              alt="whatsapp"
+              className="text-primary mr-1 h-5 w-5"
+            />
+            <Typography
+              text={`Whatsapp ${coach?.user?.firstName}`}
+              type="button"
+              weight="skinny"
+              color="primary"
+            />
+          </div>
+        </Button>
+        <Button
+          icon="PhoneIcon"
+          type="outlined"
           color="primary"
+          textColor="primary"
+          text={`Call ${coach?.user?.firstName}`}
+          onClick={onCall}
         />
-        <div className="mt-4 flex  flex-wrap gap-4">
-          <Button color="primary" type="outlined" onClick={onWhatsapp}>
-            <div className="flex items-center justify-center">
-              <img
-                src={getLogo(LogoSvgs.whatsapp)}
-                alt="whatsapp"
-                className="text-primary mr-1 h-5 w-5"
-              />
-              <Typography
-                text={`Whatsapp ${coach?.user?.firstName}`}
-                type="button"
-                weight="skinny"
-                color="primary"
-              />
-            </div>
-          </Button>
-          <Button
-            icon="PhoneIcon"
-            type="outlined"
-            color="primary"
-            textColor="primary"
-            text={`Call ${coach?.user?.firstName}`}
-            onClick={onCall}
-          />
-        </div>
-      </MoreInformationPage>
-    </>
+      </div>
+    </MoreInformationPage>
   );
 };
