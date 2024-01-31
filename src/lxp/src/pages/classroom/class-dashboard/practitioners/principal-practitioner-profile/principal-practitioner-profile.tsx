@@ -32,10 +32,7 @@ import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
@@ -59,8 +56,6 @@ import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
 import { AbsencesView } from './components/absences-view/absences-view';
-import { useAppDispatch } from '@/store';
-import { ThunkActionStatuses } from '@/store/types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -72,7 +67,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const appDispatch = useAppDispatch();
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
@@ -269,20 +263,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   >();
 
   const getRemovalForPractitioner = async () => {
-    const pendingRemovals = await appDispatch(
-      practitionerThunkActions.getRemovalForPractitioner({
-        id: practitionerUserId,
-      })
-    );
-    const isFulfilled =
-      pendingRemovals?.meta?.requestStatus === ThunkActionStatuses.Fulfilled;
+    const removalDetails = await new PractitionerService(
+      userAuth?.auth_token!
+    ).getRemovalForPractitioner(practitioner?.userId!);
+    setExistingRemoval(removalDetails);
 
-    const removal = isFulfilled
-      ? (pendingRemovals?.payload as PractitionerRemovalHistory)
-      : undefined;
-
-    setExistingRemoval(removal);
-    return removal;
+    return removalDetails;
   };
 
   const classroomsMetrics = async () => {
@@ -354,7 +340,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             size="medium"
             renderBorder={true}
             renderOverflow={false}
-            onBack={() => history.goBack()}
+            onBack={() =>
+              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 })
+            }
             displayOffline={!isOnline}
           >
             <div className={styles.avatarWrapper}>

@@ -481,9 +481,7 @@ export const RemovePractitionerFromProgramme: React.FC<
           onProceed={() => {
             handleFormSubmit(getRemovePractionerFormValues());
             setRemovePractionerPromptVisible(false);
-            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-              practitionerId: practitionerUserId,
-            });
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
             showMessage({
               message: `${practitioner?.user?.firstName} removed`,
             });
