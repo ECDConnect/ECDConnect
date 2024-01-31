@@ -22,6 +22,6 @@ namespace ECDLink.Core.Services.Interfaces
         //Task MonthlyStartupSupportEndReminderAsync();
         Task MonthlyPlanningReminderAsync();
         Task MonthlyAttendanceSLSyncAsync();
-
+        Task SelfAssessmentReminderAsync();
     }
 }

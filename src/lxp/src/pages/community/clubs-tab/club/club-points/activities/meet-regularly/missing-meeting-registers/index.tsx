@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 
-export const PlaygroupsReassigned = () => {
+export const MissingMeetingRegisters = () => {
   const { isOnline } = useOnlineStatus();
 
   const history = useHistory();
@@ -91,7 +91,7 @@ export const PlaygroupsReassigned = () => {
       showBackground={false}
       className="flex flex-col p-4"
       size="small"
-      title="Playgroups Reassigned"
+      title="Missing meeting registers"
       onBack={() => history.goBack()}
       displayOffline={!isOnline}
     >

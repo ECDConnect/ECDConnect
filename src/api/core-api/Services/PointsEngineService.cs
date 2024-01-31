@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -65,6 +66,8 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly ChildAttendanceReport _childAttendanceReport;
         private readonly MonthlyAttendanceReport _monthlyAttendanceReportService;
 
+        private readonly IChildService _childService;
+
         private VisitManager _visitManager;
         private HierarchyEngine _hierarchyEngine;
 
@@ -76,12 +79,14 @@ namespace EcdLink.Api.CoreApi.Services
             ChildAttendanceReport childAttendanceReport,
             VisitManager visitManager,
             HierarchyEngine hierarchyEngine,
-            [Service] MonthlyAttendanceReport monthlyAttendanceReportService)
+            [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
+            [Service] IChildService childService)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _monthlyAttendanceReportService = monthlyAttendanceReportService;
+            _childService = childService;
             _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
 
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
@@ -1480,22 +1485,27 @@ namespace EcdLink.Api.CoreApi.Services
             var feesActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac2).FirstOrDefault();
 
             // Fetch all children for principal
-            var practitionerChildrenUserIds = _childRepo.GetAll()
-                .Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy))
-                .Select(x => x.UserId)
-                .ToList();
+            var classroom = _classRepo.GetByUserId(userId);
 
-            // Check preschool fees exist for all children
-            var allChildrenHaveFees = practitionerChildrenUserIds.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x));
-
-            if (allChildrenHaveFees)
+            if (classroom != null)
             {
-                UpdateUserSummaryPoints(
-                   userId,
-                   feesActivity,
-                   pointsMonth,
-                   isPrincipalOrAdmin,
-                   practitionerChildrenUserIds.Count());
+                var children = _childService.GetChildrenForClassroom(classroom.Id);
+
+                if (children.Any())
+                {
+                    // Check preschool fees exist for all children
+                    var allChildrenHaveFees = children.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.UserId));
+
+                    if (allChildrenHaveFees)
+                    {
+                        UpdateUserSummaryPoints(
+                           userId,
+                           feesActivity,
+                           pointsMonth,
+                           isPrincipalOrAdmin,
+                           children.Count());
+                    }
+                }
             }
 
             // THREE SUBMITS IN A ROW

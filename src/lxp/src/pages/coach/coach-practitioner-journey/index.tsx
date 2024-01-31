@@ -474,8 +474,10 @@ export const CoachPractitionerJourney = () => {
   };
 
   const getTimeline = useCallback(async () => {
-    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId]);
+    if (!timeline) {
+      await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+    }
+  }, [practitionerId, timeline]);
 
   const syncData = useCallback(async () => {
     if (!isOnline) return;
@@ -486,7 +488,7 @@ export const CoachPractitionerJourney = () => {
     await appDispatch(pqaThunkActions.addReAccreditationVisitData());
 
     getTimeline();
-  }, [appDispatch, getTimeline, isOnline]);
+  }, [getTimeline, isOnline]);
 
   useLayoutEffect(() => {
     if (selectedForm) {
@@ -509,7 +511,7 @@ export const CoachPractitionerJourney = () => {
         })
       );
     }
-  }, [appDispatch, lastAttendedReAccreditationFollowUpVisit, practitionerId]);
+  }, [lastAttendedReAccreditationFollowUpVisit, practitionerId]);
 
   const renderAlert = () => {
     const isPqaRedRating =

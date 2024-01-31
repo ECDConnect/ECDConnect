@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import DynamicSelector from '../../../../components/dynamic-selector/dynamic-selector';
 import DynamicStaticSelector from '../../../../components/dynamic-static-selector/dynamic-static-selector';
 import FormColorField from '../../../../components/form-color-field/form-color-field';
@@ -8,11 +8,12 @@ import Editor from '../../../../components/form-markdown-editor/form-markdown-ed
 import { videoExtensions } from '../../../../utils/constants';
 import {
   ActivitiesTitles,
+  ContentManagementView,
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
-import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
@@ -28,6 +29,8 @@ export interface DynamicFormProps {
   choosedSectionTitle?: string;
   getValues?: any;
   requiredMessage?: string;
+  useWatch?: any;
+  contentView?: ContentManagementView;
 }
 
 const contentWrapper = '';
@@ -43,14 +46,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   choosedSectionTitle,
   getValues,
   requiredMessage,
+  useWatch,
+  contentView,
 }) => {
   const { register, control, errors } = handleform;
-
-  const storyBookTypeOptions = [
-    { text: 'Story book', value: 'Story book' },
-    { text: 'Read aloud', value: 'Read aloud' },
-    { text: 'other', value: 'Other' },
-  ];
 
   const smallLargeGroupOptions = [
     { text: 'Small group', value: 'Small group' },
@@ -59,6 +58,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   const isSmallLargeGroup =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities;
+  const [disableActivitiesInputs, setDisableActivitiesInputs] = useState(false);
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -66,7 +66,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const initialValues = getValues();
 
   const [fields, setFields] = useState<any>();
-  // const requiredMessage = 'This field is required';
 
   useEffect(() => {
     if (
@@ -78,16 +77,39 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     }
   }, [choosedSectionTitle, initialValues, setValue]);
 
+  const watchFields = useWatch({ control });
+
   useEffect(() => {
-    if (template) {
-      const fields = renderFields(template.fields);
+    if (template && watchFields) {
+      const fields = renderFields(template?.fields);
       setFields(fields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template]);
+  }, [template, watchFields]);
+
+  const setStoriesGeneralInputsValues = useCallback(() => {
+    onStateChange('type', contentView?.content?.['type']);
+    onStateChange('image', contentView?.content?.['image']);
+    onStateChange(
+      'subCategories',
+      contentView?.content?.['subCategories']
+        ?.map((item) => item?.id)
+        ?.toString()
+    );
+    setDisableActivitiesInputs(true);
+  }, [contentView?.content, onStateChange]);
+
+  useEffect(() => {
+    if (
+      isSmallLargeGroup &&
+      template?.fields?.[0]?.selectedLanguageId !== defaultLanguageId
+    ) {
+      setStoriesGeneralInputsValues();
+    }
+  }, [defaultLanguageId, isSmallLargeGroup, template?.fields]);
 
   const renderFields = (fields: FormTemplateField[]) => {
-    return fields.map((field) => {
+    return fields?.map((field) => {
       const {
         type,
         title,
@@ -115,9 +137,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           if (
             propName === 'type' &&
             isSmallLargeGroup &&
-            template?.title === 'Activity Form' &&
-            template?.fields?.find((item) => item?.propName === 'name')
-              ?.contentValue === undefined
+            template?.title === 'Activity Form'
           ) {
             return (
               <div key={propName} className={contentWrapper}>
@@ -127,18 +147,43 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 >
                   {field?.title}
                 </label>
-                <div className="bg-uiBg sm:col-span-12">
+                {disableActivitiesInputs && (
+                  <Alert
+                    className="mt-2 mb-4 rounded-md"
+                    message={`Editing the activity type here will update the activity type for all translations of this page.`}
+                    type="warning"
+                  />
+                )}
+                <div
+                  className={`bg-uiBg sm:col-span-12 ${
+                    disableActivitiesInputs ? 'pointer-events-none' : ''
+                  }`}
+                >
                   <ButtonGroup
                     options={smallLargeGroupOptions}
                     onOptionSelected={(value: string | string[]) => {
                       onStateChange(propName, value);
                     }}
                     color="tertiary"
+                    selectedOptions={
+                      field.contentValue
+                        ? field.contentValue.value
+                        : contentView?.content?.[propName]
+                    }
                     type={ButtonGroupTypes.Button}
-                    className={'w-full'}
+                    className={'w-full rounded-2xl'}
                     multiple={false}
                   />
                 </div>
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
               </div>
             );
           }
@@ -158,7 +203,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
                   <DynamicSelector
-                    title={required.value ? field.title + ' *' : field.title}
+                    title={isRequired ? field.title + ' *' : field.title}
                     isReview={false}
                     contentValue={field.contentValue}
                     languageId={defaultLanguageId}
@@ -202,19 +247,61 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   }
                   onStateChange={(data) => onStateChange(propName, data)}
                 />
-                {isRequired &&
-                  initialValues?.hasOwnProperty(propName) &&
-                  !initialValues[propName] && (
-                    <Typography
-                      type="help"
-                      color="errorMain"
-                      text={requiredMessage}
-                    />
-                  )}
               </div>
+              {isRequired &&
+                initialValues?.hasOwnProperty(propName) &&
+                !initialValues[propName] && (
+                  <Typography
+                    type="help"
+                    color="errorMain"
+                    text={requiredMessage}
+                  />
+                )}
             </div>
           );
         case FieldType.Image:
+          if (
+            propName === 'image' &&
+            isSmallLargeGroup &&
+            template?.title === 'Activity Form'
+          ) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  {disableActivitiesInputs && (
+                    <Alert
+                      className="mt-2 mb-4 rounded-md"
+                      message={`Editing the image here will update the image for all translations of this page.`}
+                      type="warning"
+                    />
+                  )}
+                  <FormFileInput
+                    acceptedFormats={acceptedFileFormats || acceptedFormats}
+                    label={isRequired ? title + ' *' : title}
+                    nameProp={propName}
+                    contentUrl={
+                      field.contentValue
+                        ? field.contentValue.value
+                        : initialValues?.[propName]
+                    }
+                    returnFullUrl={true}
+                    setValue={setValue}
+                    allowedFileSize={allowedFileSize}
+                    disabled={disableActivitiesInputs}
+                  />
+                  {isRequired &&
+                    initialValues?.hasOwnProperty(propName) &&
+                    !initialValues[propName] && (
+                      <Typography
+                        type="help"
+                        color="errorMain"
+                        text={requiredMessage}
+                      />
+                    )}
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -242,20 +329,81 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Link: {
+          const englishCatValues = contentView?.content?.[propName]
+            ?.map((item) => item?.id)
+            .toString();
+          let subCategoriesValue = template?.fields.find(
+            (item) => item?.propName === propName
+          );
+          subCategoriesValue = {
+            ...subCategoriesValue,
+            contentValue: {
+              localeId: defaultLanguageId,
+              value: englishCatValues,
+              contentTypeFieldId: '1',
+              contentTypeField: {
+                fieldTypeId: '1',
+                displayMainTable: true,
+                displayName: 'GT - Skills',
+                displayPage: 1,
+                fieldName: 'subCategories',
+                fieldOrder: 6,
+                isRequired: true,
+                isActive: true,
+                dataLinkName: '',
+                fieldType: {
+                  name: 'fieldType',
+                  description: '',
+                  dataType: '',
+                  assemblyDataType: '',
+                  graphQLDataType: '',
+                },
+              },
+            },
+          };
+
           if (title === 'G T -  Skills' || title === 'Skills') {
+            if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+              return null;
+            }
+            const valueFormattedToArray = initialValues[propName]?.split(',');
+
             return (
               <div key={propName} className={contentWrapper}>
-                <div className="sm:col-span-12">
+                {disableActivitiesInputs && (
+                  <Alert
+                    className="mt-2 mb-4 rounded-md"
+                    message={`Editing the skills here will update the skills for all translations of this page.`}
+                    type="warning"
+                  />
+                )}
+                <div
+                  className={`sm:col-span-12 ${
+                    disableActivitiesInputs ? 'pointer-events-none' : ''
+                  }`}
+                >
                   <DynamicSelector
                     title={isRequired ? field.title + ' *' : field.title}
                     isReview={false}
-                    contentValue={field.contentValue}
+                    contentValue={
+                      field.contentValue || subCategoriesValue?.contentValue
+                    }
                     languageId={defaultLanguageId}
                     optionDefinition={field.optionDefinition}
                     setSelectedItems={(value) => onStateChange(propName, value)}
                     isSkillType={true}
                   />
                 </div>
+                {((isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName]) ||
+                  valueFormattedToArray?.length < 2) && (
+                  <Typography
+                    type="help"
+                    color="errorMain"
+                    text={requiredMessage}
+                  />
+                )}
               </div>
             );
           }

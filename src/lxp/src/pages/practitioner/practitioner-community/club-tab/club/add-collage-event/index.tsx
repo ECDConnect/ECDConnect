@@ -175,7 +175,10 @@ export const AddCollageEvent: React.FC = () => {
           <PhotoPrompt
             title="Collage photo"
             onClose={() => setPhotoActionBarVisible(false)}
-            onAction={(imageUrl: string) => setPhotoUrl(imageUrl)}
+            onAction={(imageUrl: string) => {
+              setPhotoUrl(imageUrl);
+              setPhotoActionBarVisible(false);
+            }}
             onDelete={!!photoUrl ? () => setPhotoUrl('') : undefined}
           />
         </Dialog>

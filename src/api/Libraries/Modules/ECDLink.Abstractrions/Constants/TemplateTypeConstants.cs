@@ -77,6 +77,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string CoachAddresUpdatedScheduleVisit = "coach-address-updated-schedule-visit";
         public const string CoachNewPractitionersLinked = "coach-new-practitioners-linked";
         public const string CoachTraineeReadySmartspaceCheck = "coach-trainee-ready-smartspace-check";
+        public const string CoachSelfAssessmentFormReminder = "coach-fillin-self-asessment-form";
 
         //GG notifications
         public const string GGWalkthroughNotification = "gg-walkthrough-notification";

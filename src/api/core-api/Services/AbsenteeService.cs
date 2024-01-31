@@ -208,7 +208,7 @@ namespace ECDLink.Api.CoreApi.Services
             var classRoomRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             List<AbsenteeDetail> absenteeDetails = new List<AbsenteeDetail>();
 
-            var absentees = _absenteeRepo.GetAll().Where(a => a.UserId.Equals(userId)).ToList();
+            var absentees = _absenteeRepo.GetAll().Where(a => a.UserId.Equals(userId) && a.IsActive == true).ToList();
             if (startDate != null)
             {
                 absentees = absentees.Where(a => a.AbsentDate >= startDate).ToList();
@@ -262,7 +262,7 @@ namespace ECDLink.Api.CoreApi.Services
                         ReassignedToPerson = reassignedToPerson,
                         ReassignedToUserId = item.ReassignedToPractitioner,
                         LoggedByUserId = item.LoggedBy,
-                        LoggedByPerson = loggedByPerson
+                        LoggedByPerson = loggedByPerson,
                     });
                 }
             }

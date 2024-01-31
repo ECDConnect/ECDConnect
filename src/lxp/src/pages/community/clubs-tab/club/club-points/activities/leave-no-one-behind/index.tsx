@@ -186,6 +186,7 @@ export const LeaveNoOneBehind: React.FC = () => {
                   ) : (
                     <>
                       <span className={`text-${color}`}>{item}</span> PQA
+                      re-accreditation
                     </>
                   )}
                   :
@@ -296,10 +297,11 @@ export const LeaveNoOneBehind: React.FC = () => {
         date={new Date()}
         imageUrl={inclusiveIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
+        className="mb-5"
       />
       {isToShowPoints && hasItems && (
         <ScoreCard
-          className="my-5"
+          className="mb-5"
           mainText={String(details?.points ?? 0)}
           hint="points"
           currentPoints={details?.points || 2}

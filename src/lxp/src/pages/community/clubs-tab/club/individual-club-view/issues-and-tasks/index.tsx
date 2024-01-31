@@ -172,7 +172,7 @@ export const IssuesAndTasks = ({
         backgroundColor: 'errorBg',
         onActionClick: () =>
           onOnlineNavigation(
-            ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.PLAYGROUP_REASSIGNED.replace(
+            ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MISSING_MEETING_REGISTERS.replace(
               ':clubId',
               clubId
             )
