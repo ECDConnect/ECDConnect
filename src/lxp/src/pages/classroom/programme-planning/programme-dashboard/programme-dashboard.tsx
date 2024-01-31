@@ -30,6 +30,9 @@ import {
 import ROUTES from '@routes/routes';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
+import { classroomGroupId } from '@/utils/child/child-profile-utils.mock';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -54,6 +57,22 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal === true;
+  const allClassroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroups
+  );
+  const userData = useSelector(userSelectors.getUser);
+  const classroomGroupsForPrincipal = allClassroomGroups.filter(
+    (item) => item?.userId === userData?.id
+  );
+  const classroomGroups = isPrincipal
+    ? classroomGroupsForPrincipal.filter(
+        (x) => x.name !== NoPlaygroupClassroomType.name
+      )
+    : allClassroomGroups.filter(
+        (x) => x.name !== NoPlaygroupClassroomType.name
+      );
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDate(new Date(selectedDate))
   );
@@ -62,10 +81,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   );
   const holiday = useHolidays();
   const isHoliday = holiday?.isHoliday(selectedDate);
-  const children = useSelector(childrenSelectors.getChildren);
-  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   // Progress Summary Report
-  const hasNoLearners = children?.length === 0 || learners?.length === 0;
   const progressSummary = useSelector(
     progressTrackingSelectors?.getPractitionerProgressReportSummary
   );
@@ -145,7 +161,10 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   };
 
   useEffect(() => {
-    if (!hasVisitedDashboard && !hasNoLearners) {
+    if (
+      !hasVisitedDashboard &&
+      !(!classroomGroups || classroomGroups?.length === 0)
+    ) {
       showFirstVisit();
     }
   }, []);
@@ -301,13 +320,12 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   //     },
   //   });
   // };
-
-  if (hasNoLearners) {
+  if (!classroomGroups || classroomGroups?.length === 0) {
     return (
       <div className={'h-full flex-1 bg-white px-4 pt-4'}>
         <IconInformationIndicator
-          title="You don't have any children yet!"
-          subTitle="Tap the add a child button below to start"
+          title="You don't have any classes yet!"
+          subTitle="Assign a class to capture attendance."
         />
       </div>
     );
