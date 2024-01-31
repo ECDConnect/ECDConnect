@@ -37,13 +37,15 @@ namespace EcdLink.Api.CoreApi.Services
         public List<Child> GetChildrenForClassroom(Guid classroomId)
         {
             var learnerUserIds = _classroomGroupRepo.GetAll()
-                .Where(x => x.ClassroomId == classroomId)
+                .Where(x => x.IsActive && x.ClassroomId == classroomId)
                 .SelectMany(x => x.Learners)
+                .Where(x => x.IsActive)
                 .Select(x => x.UserId)
                 .ToList();
 
             var children = _childRepo.GetAll()
-                .Where(x => learnerUserIds.Contains(x.UserId) && x.User.IsActive && x.IsActive)
+                .Where(x => learnerUserIds.Contains(x.UserId) && x.IsActive)
+                .Distinct()
                 .ToList();
 
             return children;
