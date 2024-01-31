@@ -432,40 +432,12 @@ export default function ProgressToolsContentList({
                 onChange={onSearch}
               />
             </div>
-            {hasPermission(PermissionEnum.create_static) &&
-              contentType?.name !== 'Consent' &&
-              contentType?.name !== 'ProgressTrackingLevel' &&
-              contentType?.name !== 'ProgressTrackingCategory' && (
-                <button
-                  onClick={() => {
-                    hasPermission(PermissionEnum.update_static) &&
-                      viewSelectedRow();
-                  }}
-                  type="button"
-                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
-                >
-                  <PlusIcon width="22px" className="pl-1" />
-                  Add {camelCaseToSentanceCase(buttonText)}
-                </button>
-              )}
           </div>
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   isLoading={!tableData.length && loadingContent}
-                  // columns={displayFields.map((item) => {
-                  //   return {
-                  //     field:
-                  //       typeof item.fieldName === 'string'
-                  //         ? item.fieldName
-                  //         : JSON?.stringify(item.fieldName),
-                  //     use:
-                  //       typeof item.displayName === 'string'
-                  //         ? item.displayName
-                  //         : JSON?.stringify(item.displayName),
-                  //   };
-                  // })}
                   columns={[
                     { field: 'name', use: 'Name' },
                     { field: 'skills', use: '# skills' },
