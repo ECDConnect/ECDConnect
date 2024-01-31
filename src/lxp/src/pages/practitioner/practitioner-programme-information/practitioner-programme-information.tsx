@@ -80,6 +80,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const { theme } = useTheme();
 
+  const missingProgramme =
+    (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
+    !practitioner?.principalHierarchy &&
+    !isPrincipal;
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -199,9 +204,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         subTitle:
           classroomForPractitionerAnyType?.id &&
           practitioner?.isPrincipal !== true &&
+          !missingProgramme &&
           practitioner?.isRegistered
             ? classroomForPractitionerAnyType?.name
-            : practitioner?.isRegistered
+            : practitioner?.isRegistered && !missingProgramme
             ? classroom?.name || 'None'
             : 'None',
         switchTextStyles: true,
@@ -227,8 +233,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     ];
 
     if (
-      practitioner?.isRegistered !== null ||
-      practitioner?.isLeaving !== null
+      (practitioner?.isRegistered !== null ||
+        practitioner?.isLeaving !== null) &&
+      !missingProgramme
     ) {
       stackedActionList.push(
         {
@@ -249,9 +256,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
 
     if (
-      practitioner?.isRegistered !== null ||
-      isPrincipal !== false ||
-      practitioner?.isLeaving !== null
+      (practitioner?.isRegistered !== null ||
+        isPrincipal !== false ||
+        practitioner?.isLeaving !== null) &&
+      !missingProgramme
     ) {
       if (isPrincipal) {
         practitionersList?.push(practitioner);
@@ -277,7 +285,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       });
     }
 
-    if (classroomGroups.length > 0) {
+    if (classroomGroups.length > 0 && !missingProgramme) {
       stackedActionList.push({
         title: 'Classes',
         subTitle: classroomGroups
