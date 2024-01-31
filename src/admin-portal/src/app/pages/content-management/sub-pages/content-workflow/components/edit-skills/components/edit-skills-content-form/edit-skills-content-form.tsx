@@ -131,6 +131,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       localeId: languageId,
     },
   });
+
   const categories = categoriesContentData?.GetAllProgressTrackingCategory;
   const currentCategory = categories?.find((cat) => cat?.id === contentId);
 
@@ -177,6 +178,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   };
 
   const movingOnLevel = levels?.find((lvl) => lvl?.id === 657);
+
   const advancingFurtherLevel = levels?.find((lvl) => lvl?.id === 658);
   const towardsGradeRLevel = levels?.find((lvl) => lvl?.id === 659);
   const movingOnLevelObj = useMemo(
@@ -304,9 +306,8 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   const onChange = useCallback(
     (e, idx, itemIdx, levelType) => {
       if (levelType === 'movingOn') {
-        let newObj = { ...movingOnLevelObj };
-        let newSubCategory =
-          movingOnLevelObj?.subCategories[itemIdx]?.skills?.[idx];
+        let newObj = { ...movingOnState };
+        let newSubCategory = newObj?.subCategories[itemIdx]?.skills?.[idx];
         newSubCategory = {
           ...newSubCategory,
           name: e?.target.value,
@@ -318,11 +319,12 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
         const tempArr = changedArr?.filter(
           (item) => item?.level !== newObj?.level
         );
+
         setChangedArr([...tempArr, newObj]);
       }
 
       if (levelType === 'advancingFurther') {
-        let newObj = { ...advancingFurtherLevelObj };
+        let newObj = { ...advancingFurtherState };
         let newSubCategory =
           advancingFurtherLevelObj?.subCategories[itemIdx]?.skills?.[idx];
         newSubCategory = {
@@ -340,7 +342,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       }
 
       if (levelType === 'towardsGradeR') {
-        let newObj = { ...towardsGradeRLevelObj };
+        let newObj = { ...towardsGradeRState };
         let newSubCategory =
           towardsGradeRLevelObj?.subCategories[itemIdx]?.skills?.[idx];
         newSubCategory = {
@@ -365,18 +367,18 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   );
 
   useEffect(() => {
-    if (movingOnLevelObj && handleInitialValue) {
+    if (
+      movingOnLevelObj?.subCategories?.length > 0 &&
+      advancingFurtherLevelObj?.subCategories?.length > 0 &&
+      towardsGradeRLevelObj?.subCategories?.length > 0 &&
+      handleInitialValue
+    ) {
       setMovinOnState(movingOnLevelObj);
-    }
-
-    if (advancingFurtherLevelObj && handleInitialValue) {
       setAdvancingFurtherState(advancingFurtherLevelObj);
-    }
-
-    if (towardsGradeRLevelObj && handleInitialValue) {
       setTowardsGradeRState(towardsGradeRLevelObj);
+
+      setHandleInitialValue(false);
     }
-    setHandleInitialValue(false);
   }, [
     advancingFurtherLevelObj,
     handleInitialValue,
@@ -391,61 +393,6 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   }, [changedArr, setChangedCategory]);
 
   if (tempData && displayFields) {
-    if (isSkillType) {
-      return (
-        <div>
-          <Typography
-            type={'body'}
-            weight={'bold'}
-            color={'textMid'}
-            text={
-              title ??
-              camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
-            }
-          />
-          <Typography
-            type={'body'}
-            color={'textMid'}
-            text={
-              'You must choose exactly 2 skills from the list below. To change your selection, deselect the skills and choose a new pair.'
-            }
-          />
-
-          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-            {tableData &&
-              tableData.map((item: any) => {
-                const maximumItemsChecked = tableData.filter((x) =>
-                  currentIds?.includes(x.id?.toString())
-                );
-                const itemChecked = currentIds?.some(
-                  (x) => x === item?.id?.toString()
-                );
-                return (
-                  <CheckboxGroup
-                    checkboxColor="primary"
-                    id={item?.title}
-                    key={item?.title}
-                    image={item?.imageUrl}
-                    title={item?.name}
-                    description={item?.description}
-                    checked={itemChecked}
-                    value={item?.title}
-                    onChange={() => selectItem(item?.id)}
-                    className="bg-secondary mb-1 w-full"
-                    disabled={maximumItemsChecked?.length === 2 && !itemChecked}
-                  />
-                );
-              })}
-
-            <Pagination
-              recordsPerPage={8}
-              items={tempData}
-              responseData={setTableData}
-            />
-          </div>
-        </div>
-      );
-    }
     return (
       <div>
         <Typography
@@ -457,15 +404,6 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
           }
         />
-        {(title === 'C T F35 - theme Days' || title === 'theme Days') && (
-          <Typography
-            type={'body'}
-            color={'textMid'}
-            text={
-              'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
-            }
-          />
-        )}
 
         <div className="mt-4 overflow-hidden sm:rounded-lg">
           <Typography
@@ -476,7 +414,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           {movingOnState?.subCategories &&
             movingOnState?.subCategories?.map((item, itemIdx) => {
               return (
-                <>
+                <div key={item + itemIdx}>
                   <div className="mt-4 flex items-center gap-4">
                     <div className="bg-tertiary flex h-8 w-8 items-center justify-center rounded-full">
                       <img
@@ -520,7 +458,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                       </>
                     );
                   })}
-                </>
+                </div>
               );
             })}
           <Typography
@@ -635,12 +573,6 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                 </>
               );
             })}
-
-          <Pagination
-            recordsPerPage={8}
-            items={tempData}
-            responseData={setTableData}
-          />
         </div>
       </div>
     );
