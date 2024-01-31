@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public bool VisitInProgress { get; set; }
         public DateTime? DueDate { get; set; }
         public Guid? EventId { get; set; }
+        [ForeignKey(nameof(EventId))]
+        public virtual CalendarEvent Event { get; set; }
         [NotMapped]
         public bool HasAnswerData { get; set; }
         public string Rating { get; set; }

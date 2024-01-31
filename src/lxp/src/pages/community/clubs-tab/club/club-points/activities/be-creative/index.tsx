@@ -283,7 +283,9 @@ export const BeCreative: React.FC = () => {
         />
       )}
       <Button
-        className={isFromAddCollageEvent ? '' : 'mt-auto'}
+        className={
+          isFromAddCollageEvent || isToShowAddImageEventButton ? '' : 'mt-auto'
+        }
         icon="ArrowCircleLeftIcon"
         type="outlined"
         textColor="primary"

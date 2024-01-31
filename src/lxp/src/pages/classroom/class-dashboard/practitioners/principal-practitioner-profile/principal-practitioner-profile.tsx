@@ -258,7 +258,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const [editRemovalDialogVisable, setEditRemovalDialogVisable] =
     useState<boolean>(false);
-  const [existingRemoval, setExisitingRemoval] = useState<
+  const [existingRemoval, setExistingRemoval] = useState<
     PractitionerRemovalHistory | undefined
   >();
 
@@ -266,7 +266,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     const removalDetails = await new PractitionerService(
       userAuth?.auth_token!
     ).getRemovalForPractitioner(practitioner?.userId!);
-    setExisitingRemoval(removalDetails);
+    setExistingRemoval(removalDetails);
 
     return removalDetails;
   };
@@ -300,7 +300,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     await new PractitionerService(
       userAuth?.auth_token || ''
     ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
-    setExisitingRemoval(undefined);
+    setExistingRemoval(undefined);
   };
 
   const notificationItem: MenuListDataItem[] = [
@@ -340,7 +340,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             size="medium"
             renderBorder={true}
             renderOverflow={false}
-            onBack={() => history.goBack()}
+            onBack={() =>
+              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 })
+            }
             displayOffline={!isOnline}
           >
             <div className={styles.avatarWrapper}>
@@ -418,10 +420,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           <div className="flex flex-wrap justify-center">
             {existingRemoval && (
               <Card className={styles.removalCard}>
-                <div className="mt-2 mr-4 flex items-center">
+                <div className="mt-2 mr-4 mb-2 flex items-center">
                   <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                     <XCircleIcon
-                      className="text-errorMain h-5 w-5"
+                      className="text-errorMain mt-2 h-5 w-5"
                       aria-hidden="true"
                     />
                     <Typography
@@ -436,7 +438,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                             )
                           : ''
                       }`}
-                      className={styles.absentCardSubTitle}
+                      className={'text-errorMain ml-4 mt-2'}
                     />
                   </div>
                   <Button
@@ -487,6 +489,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 practitionerAbsentees={practitionerAbsentees}
               />
             )}
+
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(
@@ -555,7 +558,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               type={'body'}
                               weight={'bold'}
                               text={`attendance in ${getMonthName(
-                                getMonth(new Date()) - 1
+                                getMonth(new Date())
                                 // eslint-disable-next-line no-useless-concat
                               )}\u00A0${item?.year}`}
                               color={'textMid'}

@@ -28,6 +28,7 @@ export interface ContentWorkflowProps {
   goBack: () => void;
   savedContent: () => void;
   choosedSectionTitle?: string;
+  setSearchValue?: (item: string) => void;
 }
 
 export default function ContentWorkflow({
@@ -38,6 +39,7 @@ export default function ContentWorkflow({
   goBack,
   savedContent,
   choosedSectionTitle,
+  setSearchValue,
 }: ContentWorkflowProps) {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
     contentView.languageId
@@ -289,6 +291,8 @@ export default function ContentWorkflow({
                             defaultLanguageId={defaultLanguageId}
                             cancelCompare={() => setIsCompareMode(!isEdit)}
                             choosedSectionTitle={choosedSectionTitle}
+                            setSearchValue={setSearchValue}
+                            contentView={contentView}
                           />
                         </div>
                       </div>
@@ -308,6 +312,7 @@ export default function ContentWorkflow({
               contentType={contentType}
               cancelCompare={() => setIsCompareMode(!isCompareMode)}
               savedContent={savedContent}
+              choosedSectionTitle={choosedSectionTitle}
             />
           )}
         </div>

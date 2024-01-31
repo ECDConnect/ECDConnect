@@ -27,6 +27,7 @@ export interface FormFileInputProps {
   setValue: UseFormSetValue<any>;
   isSubcategoryInput?: boolean;
   allowedFileSize?: number;
+  isIconInput?: boolean;
 }
 
 const containerBaseStyle =
@@ -53,6 +54,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   setValue,
   isSubcategoryInput,
   allowedFileSize,
+  isIconInput,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -243,15 +245,27 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           <label htmlFor={nameProp} className="font-h4 block pb-1 font-bold">
             {label}
           </label>
-          <label
-            htmlFor={nameProp}
-            className="font-md block pb-1 text-sm text-gray-900"
-          >
-            Size limit:{' '}
-            <span className="text-errorMain font-semibold">1MB</span>. To
-            improve the image position & size, edit the image to fit 32px by
-            32px before uploading.
-          </label>
+          {isIconInput ? (
+            <label
+              htmlFor={nameProp}
+              className="font-md block pb-1 text-sm text-gray-900"
+            >
+              Size limit:{' '}
+              <span className="text-errorMain font-semibold">1MB</span>. To
+              improve the image position & size, edit the image to fit 64px by
+              64px before uploading.
+            </label>
+          ) : (
+            <label
+              htmlFor={nameProp}
+              className="font-md block pb-1 text-sm text-gray-900"
+            >
+              Size limit:{' '}
+              <span className="text-errorMain font-semibold">1MB</span>. To
+              improve the image position & size, edit the image to fit 32px by
+              32px before uploading.
+            </label>
+          )}
         </>
       ) : (
         <label

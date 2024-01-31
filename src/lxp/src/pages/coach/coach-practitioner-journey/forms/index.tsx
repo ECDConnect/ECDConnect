@@ -273,6 +273,11 @@ export const Form = ({
     setStep((preState) => preState + 1);
   }, []);
 
+  useEffect(() => {
+    var form = document.getElementById('dynamicForm');
+    if (form?.parentElement) form.parentElement.scrollTo(0, 0);
+  }, [step]);
+
   const displayChildrenDialog = useCallback(
     (name: string) => {
       dialog({

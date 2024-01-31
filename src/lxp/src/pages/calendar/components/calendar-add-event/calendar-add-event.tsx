@@ -50,6 +50,7 @@ import {
 import { clubThunkActions } from '@/store/club';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CalendarActions } from '@/store/calendar/calendar.actions';
+import { useWindowSize } from '@reach/window-size';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
@@ -123,6 +124,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       firstName: currentUser.firstName || '',
       surname: currentUser.surname || '',
     },
+    visit: null,
   };
 
   const calendarEventTypes = useSelector(
@@ -199,6 +201,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     defaultValue: defaultValues,
   });
 
+  const { height } = useWindowSize();
+
   useEffect(() => {
     if (JSON.stringify(defaultValues) !== JSON.stringify(watchValues)) {
       setHasChangesOnEvent(true);
@@ -250,6 +254,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           firstName: currentUser.firstName || '',
           surname: currentUser.surname || '',
         },
+        visit: null,
       };
 
       setModel(currentModel);
@@ -400,7 +405,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   );
 
   return (
-    <>
+    <div className="overflow-auto" style={{ height }}>
       <BannerWrapper
         size={'small'}
         backgroundColour={'white'}
@@ -411,107 +416,108 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         onBack={() => exitUpdateEvent()}
         onClose={() => exitUpdateEvent()}
         displayOffline={!isOnline}
+        className="px-4 pt-4"
       >
-        <div className={'px-4 pt-4'}>
-          <FormInput<CalendarAddEventFormModel>
-            className="mb-4"
-            label="Name your event"
+        <FormInput<CalendarAddEventFormModel>
+          className="mb-4"
+          label="Name your event"
+          register={eventFormRegister}
+          nameProp={'name'}
+          maxLength={50}
+          placeholder="Name your event"
+        />
+        <Dropdown
+          className="mb-4"
+          placeholder={'Tap to choose event type'}
+          list={calendarEventTypes
+            .filter(
+              (type) => !optionsToHide?.some((option) => option === type.name)
+            )
+            .map((et) => ({
+              label: et.name,
+              value: et.name,
+            }))}
+          fillType="clear"
+          fullWidth={true}
+          label={'Choose event type'}
+          disabled={eventProps?.eventTypeDisabled || eventTypeDisabled}
+          selectedValue={getEventFormValues().eventType}
+          onChange={(item: string) => {
+            setEventFormValue('eventType', item);
+          }}
+        />
+        <div className="text-md text-textDark mb-4 block font-semibold">
+          <Checkbox<CalendarAddEventFormModel>
             register={eventFormRegister}
-            nameProp={'name'}
-            maxLength={50}
-            placeholder="Name your event"
+            nameProp="allDay"
+            className="flex-1"
+            description="All day"
           />
-          <Dropdown
-            className="mb-4"
-            placeholder={'Tap to choose event type'}
-            list={calendarEventTypes
-              .filter(
-                (type) => !optionsToHide?.some((option) => option === type.name)
-              )
-              .map((et) => ({
-                label: et.name,
-                value: et.name,
-              }))}
-            fillType="clear"
-            fullWidth={true}
-            label={'Choose event type'}
-            disabled={eventProps?.eventTypeDisabled || eventTypeDisabled}
-            selectedValue={getEventFormValues().eventType}
-            onChange={(item: string) => {
-              setEventFormValue('eventType', item);
-            }}
+        </div>
+        <div className="mb-4">
+          <label className="text-md text-textDark mb-1 block font-semibold">
+            {`Start date${getEventFormValues().allDay ? '' : ' and time'}`}
+          </label>
+          <DatePicker
+            className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
+            wrapperClassName="text-center"
+            selected={getEventFormValues().start}
+            onChange={onChangeStartDate}
+            dateFormat={
+              getEventFormValues().allDay
+                ? 'EEE, dd MMM yyyy'
+                : 'EEE, dd MMM yyyy  HH:mm'
+            }
+            minDate={minDate}
+            maxDate={maxDate}
+            showTimeInput={!getEventFormValues().allDay}
           />
-          <div className="text-md text-textDark mb-4 block font-semibold">
-            <Checkbox<CalendarAddEventFormModel>
-              register={eventFormRegister}
-              nameProp="allDay"
-              className="flex-1"
-              description="All day"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="text-md text-textDark mb-1 block font-semibold">
-              {`Start date${getEventFormValues().allDay ? '' : ' and time'}`}
-            </label>
-            <DatePicker
-              className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-              wrapperClassName="text-center"
-              selected={getEventFormValues().start}
-              onChange={onChangeStartDate}
-              dateFormat={
-                getEventFormValues().allDay
-                  ? 'EEE, dd MMM yyyy'
-                  : 'EEE, dd MMM yyyy  HH:mm'
-              }
-              minDate={minDate}
-              maxDate={maxDate}
-              showTimeInput={!getEventFormValues().allDay}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="text-md text-textDark block font-semibold">
-              {`End date${getEventFormValues().allDay ? '' : ' and time'}`}
-            </label>
-            <DatePicker
-              wrapperClassName="text-center"
-              className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-              selected={getEventFormValues().end}
-              onChange={onChangeEndDate}
-              dateFormat={
-                getEventFormValues().allDay
-                  ? 'EEE, dd MMM yyyy'
-                  : 'EEE, dd MMM yyyy  HH:mm'
-              }
-              minDate={minDate}
-              maxDate={maxDate}
-              showTimeInput={!getEventFormValues().allDay}
-            />
-          </div>
-          <div className="mb-4">
-            <StackedList
-              className={styles.stackedList}
-              listItems={getParticipantList(getEventFormValues().participants)}
-              type={'UserAlertList'}
-              onClickItem={onRemoveParticipant}
-            />
-            {!hideAddParticipantsButton && (
-              <Button
-                size="small"
-                type="filled"
-                color="primary"
-                className={`mx-auto w-4/12 rounded-xl`}
-                onClick={onAddParticipant}
-              >
-                {renderIcon('PlusIcon', 'h-4 w-4 text-white mr-1')}
-                <Typography
-                  type="buttonSmall"
-                  color="white"
-                  text={'Add participants'}
-                  className={'w-full whitespace-nowrap'}
-                />
-              </Button>
-            )}
-          </div>
+        </div>
+        <div className="mb-4">
+          <label className="text-md text-textDark block font-semibold">
+            {`End date${getEventFormValues().allDay ? '' : ' and time'}`}
+          </label>
+          <DatePicker
+            wrapperClassName="text-center"
+            className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
+            selected={getEventFormValues().end}
+            onChange={onChangeEndDate}
+            dateFormat={
+              getEventFormValues().allDay
+                ? 'EEE, dd MMM yyyy'
+                : 'EEE, dd MMM yyyy  HH:mm'
+            }
+            minDate={minDate}
+            maxDate={maxDate}
+            showTimeInput={!getEventFormValues().allDay}
+          />
+        </div>
+        <div className="mb-4">
+          <StackedList
+            className={styles.stackedList}
+            listItems={getParticipantList(getEventFormValues().participants)}
+            type={'UserAlertList'}
+            onClickItem={onRemoveParticipant}
+          />
+          {!hideAddParticipantsButton && (
+            <Button
+              size="small"
+              type="filled"
+              color="primary"
+              className={`mx-auto w-4/12 rounded-xl`}
+              onClick={onAddParticipant}
+            >
+              {renderIcon('PlusIcon', 'h-4 w-4 text-white mr-1')}
+              <Typography
+                type="buttonSmall"
+                color="white"
+                text={'Add participants'}
+                className={'w-full whitespace-nowrap'}
+              />
+            </Button>
+          )}
+        </div>
+        <div className="mb-4">
           <FormInput<CalendarAddEventFormModel>
             label={'Describe the event'}
             subLabel="Optional"
@@ -521,25 +527,25 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             nameProp={'description'}
             placeholder={'Describe the event...'}
           />
-          <div className="mb-4 mt-6 flex items-center justify-between">
-            <Button
-              onClick={() => handleFormSubmit(getEventFormValues())}
-              className="w-full"
-              size="small"
-              color="primary"
-              type="filled"
-              disabled={!isValid || isLoading}
-              isLoading={isLoading}
-            >
-              {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
-              <Typography
-                type="h6"
-                className="ml-2"
-                text={isNewEvent ? 'Create event' : 'Update event'}
-                color="white"
-              />
-            </Button>
-          </div>
+        </div>
+        <div className="mb-4">
+          <Button
+            onClick={() => handleFormSubmit(getEventFormValues())}
+            className="w-full"
+            size="small"
+            color="primary"
+            type="filled"
+            disabled={!isValid || isLoading}
+            isLoading={isLoading}
+          >
+            {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text={isNewEvent ? 'Create event' : 'Update event'}
+              color="white"
+            />
+          </Button>
         </div>
       </BannerWrapper>
       <Dialog
@@ -585,7 +591,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           onDone={onSearchParticipantDone}
         />
       </Dialog>
-    </>
+    </div>
   );
 };
 
@@ -596,6 +602,7 @@ export const useCalendarAddEvent = (): ((
   return (options: CalendarAddEventOptions) => {
     dialog({
       position: DialogPosition.Full,
+      blocking: true,
       render: (onSubmit: () => void, onCancel: () => void) => {
         return (
           <CalendarAddEvent

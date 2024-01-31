@@ -10,6 +10,7 @@ import {
   MutationUpdatePractitionerShareInfoArgs,
   LicenseModelInput,
   NotificationDisplay,
+  PractitionerRemovalHistory,
 } from '@ecdlink/graphql';
 
 export const PractitionerActions = {

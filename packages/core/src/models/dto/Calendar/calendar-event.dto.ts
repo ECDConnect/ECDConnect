@@ -16,4 +16,7 @@ export interface CalendarEventDto {
     firstName: string | null;
     surname: string | null;
   } | null;
+  visit: {
+    attended: boolean | null;
+  } | null;
 }
