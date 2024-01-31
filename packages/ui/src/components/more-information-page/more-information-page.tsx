@@ -23,8 +23,11 @@ export const MoreInformationPage = ({
   languages,
   setSelectedLanguage,
   isLoading,
+  children,
+  isClosable = true,
 }: {
   isLoading?: boolean;
+  isClosable?: boolean;
   subTitle?: string;
   name?: string;
   onClose: () => void;
@@ -32,6 +35,7 @@ export const MoreInformationPage = ({
   title?: string;
   moreInformation: any; // TODO - doesn't ref the graphQL library which is what we are passing in here :/ Could make a DTO
   languages: { value: string; label: string }[];
+  children?: React.ReactNode;
 }) => {
   const { height } = useWindowSize();
 
@@ -193,7 +197,7 @@ export const MoreInformationPage = ({
       onBack={onClose}
       title={title}
       renderOverflow
-      onClose={onClose}
+      {...(isClosable && { onClose })}
     >
       <div className="bg-uiBg border-primary border-t px-4">
         <LanguageSelector
@@ -206,6 +210,7 @@ export const MoreInformationPage = ({
         style={{ height: height - SELECTOR_HEIGHT }}
       >
         {renderContent}
+        {children}
         <Button
           className="mt-auto mb-4"
           type="filled"

@@ -10,6 +10,8 @@ import {
   Alert,
   renderIcon,
   CelebrationCard,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { differenceInDays, format } from 'date-fns';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -36,8 +38,11 @@ import {
   setStorageItem,
 } from '@/utils/common/local-storage.utils';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
+import { InfoPage } from './components/info-page';
 
 export const SubmitIncomeStatements: React.FC = () => {
+  const [isLearnMore, setIsLearnMore] = useState(false);
+
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
@@ -136,7 +141,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               type={'filled'}
               color={'primary'}
               textColor={'white'}
-              onClick={() => {}}
+              onClick={() => setIsLearnMore(true)}
             />
           }
           customIcon={
@@ -724,6 +729,13 @@ export const SubmitIncomeStatements: React.FC = () => {
           id="startStatements"
         />
       </div>
+      <Dialog
+        fullScreen={true}
+        visible={isLearnMore}
+        position={DialogPosition.Full}
+      >
+        <InfoPage onClose={() => setIsLearnMore(false)} />
+      </Dialog>
     </>
   );
 };
