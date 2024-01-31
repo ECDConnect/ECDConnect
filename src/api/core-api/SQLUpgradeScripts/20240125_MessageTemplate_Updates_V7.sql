@@ -52,3 +52,6 @@ INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","Upd
 
 INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTAText","CTA","TypeCode","NotificationColor","Ordering","Action") VALUES
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(), NOW(),NULL,'push','new-clubleader','[[ClubLeaderName]] is the new club leader, assigned by your coach.','258a15e6-3736-45ea-875c-48d9377de4c8','New [[ClubName]] club leader','See club members','[[SeeClubMembers]]',NULL,NULL,34,'{"url":"/community/club"}');
+
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(), NOW(),NULL,'push','promoted-to-prinicpal-or-faa','Go to your profile to manage practitioners & classes.','258a15e6-3736-45ea-875c-48d9377de4c8','You have been given the [[PrincipalOrFAA]] role for [[ProgrammeName]]','[[ViewProgramme]]','View programme',NULL,NULL,11,'{"url":"/practitioner/programme-information"}');
