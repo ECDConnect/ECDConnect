@@ -302,7 +302,7 @@ export default function ContentList({
     });
     refreshParent();
   };
-
+  console.log(contentType?.name);
   if (tableData && displayFields) {
     return (
       <div>
