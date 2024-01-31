@@ -292,6 +292,7 @@ export default function ContentWorkflow({
                             cancelCompare={() => setIsCompareMode(!isEdit)}
                             choosedSectionTitle={choosedSectionTitle}
                             setSearchValue={setSearchValue}
+                            contentView={contentView}
                           />
                         </div>
                       </div>
@@ -311,6 +312,7 @@ export default function ContentWorkflow({
               contentType={contentType}
               cancelCompare={() => setIsCompareMode(!isCompareMode)}
               savedContent={savedContent}
+              choosedSectionTitle={choosedSectionTitle}
             />
           )}
         </div>
