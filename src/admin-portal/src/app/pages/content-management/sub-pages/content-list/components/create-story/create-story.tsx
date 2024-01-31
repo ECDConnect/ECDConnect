@@ -40,6 +40,12 @@ export interface ContentViewProps {
   cancelCompare?: () => void;
 }
 
+export enum StoryBookTypes {
+  storyBook = 'Story book',
+  readAloud = 'Read aloud',
+  other = 'Other',
+}
+
 export default function CreateStory({
   content,
   selectedLanguageId,
@@ -235,6 +241,12 @@ export default function CreateStory({
     'This field is required'
   );
   const [authorsAuthorization, setAuthorsAuthorization] = useState(false);
+  const storyBookAndReadAloudRequiredPart =
+    initialValues?.type === StoryBookTypes.storyBook ||
+    initialValues?.type === StoryBookTypes.readAloud;
+  const filledStoryParts = filteredStoryBookParts?.filter(
+    (item) => item?.partText !== ''
+  );
   const disableButton = template?.fields?.filter(
     (item) =>
       item?.isRequired &&
@@ -691,11 +703,19 @@ export default function CreateStory({
             <button
               type="submit"
               className={`bg-secondary ${
-                disableButton?.length > 0 || !authorsAuthorization
+                disableButton?.length > 0 ||
+                !authorsAuthorization ||
+                (storyBookAndReadAloudRequiredPart &&
+                  filledStoryParts?.length < 1)
                   ? 'opacity-25'
                   : ''
               } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-              disabled={disableButton?.length > 0 || !authorsAuthorization}
+              disabled={
+                disableButton?.length > 0 ||
+                !authorsAuthorization ||
+                (storyBookAndReadAloudRequiredPart &&
+                  filledStoryParts?.length < 1)
+              }
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish

@@ -21,6 +21,7 @@ import {
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import StoryContentForm from '../../../../../../../components/story-content-form/story-content-form';
 import { StoryBookPartDto, StoryBookQuestionDto } from '@ecdlink/core';
+import { StoryBookTypes } from '../create-story';
 
 const acceptedFormats = [
   'svg',
@@ -31,12 +32,6 @@ const acceptedFormats = [
   'jpeg',
   ...videoExtensions,
 ];
-
-export enum StoryBookTypes {
-  storyBook = 'Story book',
-  readAloud = 'Read aloud',
-  other = 'Other',
-}
 
 export interface CreateStoryFormProps {
   template: DynamicFormTemplate;
@@ -109,6 +104,12 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           ) {
             return (
               <div key={propName} className={contentWrapper}>
+                <label
+                  htmlFor={propName}
+                  className="mb-1 block text-lg font-medium text-gray-800"
+                >
+                  {isRequired ? `${field?.title} *` : field?.title}
+                </label>
                 <div className="bg-uiBg sm:col-span-12">
                   <ButtonGroup
                     options={storyBookTypeOptions}
