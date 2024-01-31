@@ -24,6 +24,7 @@ import {
 } from '../calendar.utils';
 import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
 import { coachSelectors } from '@/store/coach';
+import { useWindowSize } from '@reach/window-size';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
@@ -38,6 +39,8 @@ export const CalendarSearchParticipant: React.FC<
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState<boolean>(false);
   const [busySaving, setBusySaving] = useState<boolean>(false);
+
+  const { height } = useWindowSize();
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
   const isCoach = currentUser?.roles?.some((role) => role.name === 'Coach');
@@ -178,55 +181,57 @@ export const CalendarSearchParticipant: React.FC<
   }, [practitioners, clubs, customList]);
 
   return (
-    <BannerWrapper
-      size={'small'}
-      renderBorder={true}
-      title={'Search for participants...'}
-      color={'primary'}
-      onBack={onBack}
-      renderOverflow
-    >
-      <SearchHeader<ListDataItem>
-        searchItems={filteredData || []}
-        onScroll={handleListScroll}
-        onSearchChange={onSearchChange}
-        isTextSearchActive={searchTextActive}
-        onBack={onSearchDone}
-        onSearchButtonClick={onSearch}
-        onClickItem={onPractitionerAdd}
+    <div className="overflow-auto" style={{ height }}>
+      <BannerWrapper
+        size={'small'}
+        renderBorder={true}
+        title={'Search for participants...'}
+        color={'primary'}
+        onBack={onBack}
+        renderOverflow
       >
-        <div></div>
-      </SearchHeader>
-      <div className="w-full p-4">
-        <div className="flex justify-center">
-          <StackedList
-            className={styles.stackedList}
-            listItems={selectedData}
-            type={'UserAlertList'}
-            onClickItem={onPractitionerRemove}
-          />
-        </div>
-        <div>
-          <Button
-            onClick={onClickDone}
-            className="w-full"
-            size="normal"
-            color="primary"
-            type="filled"
-            isLoading={busySaving}
-            disabled={busySaving}
-          >
-            {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
-            <Typography
-              type="h6"
-              className="ml-2"
-              text={'Done'}
-              color="white"
+        <SearchHeader<ListDataItem>
+          searchItems={filteredData || []}
+          onScroll={handleListScroll}
+          onSearchChange={onSearchChange}
+          isTextSearchActive={searchTextActive}
+          onBack={onSearchDone}
+          onSearchButtonClick={onSearch}
+          onClickItem={onPractitionerAdd}
+        >
+          <div></div>
+        </SearchHeader>
+        <div className="w-full p-4">
+          <div className="flex justify-center">
+            <StackedList
+              className={styles.stackedList}
+              listItems={selectedData}
+              type={'UserAlertList'}
+              onClickItem={onPractitionerRemove}
             />
-          </Button>
+          </div>
+          <div>
+            <Button
+              onClick={onClickDone}
+              className="w-full"
+              size="normal"
+              color="primary"
+              type="filled"
+              isLoading={busySaving}
+              disabled={busySaving}
+            >
+              {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
+              <Typography
+                type="h6"
+                className="ml-2"
+                text={'Done'}
+                color="white"
+              />
+            </Button>
+          </div>
         </div>
-      </div>
-    </BannerWrapper>
+      </BannerWrapper>
+    </div>
   );
 };
 
