@@ -427,9 +427,16 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool AddNewClubMembers(NewClubMember input)
         {
+            // Validation 
             List<ClubMember> members = new List<ClubMember>();
-            foreach (Guid Id in input.PractitionerIds)
+            foreach (Guid id in input.PractitionerIds)
             {
+                if (_clubMemberRepo.GetAll().Any(x => x.ClubId == input.ClubId && x.PractitionerId == id && x.IsActive))
+                {
+                    // Already a member
+                    continue;
+                }
+
                 members.Add(new ClubMember
                 {
                     Id = Guid.NewGuid(),
@@ -437,55 +444,66 @@ namespace EcdLink.Api.CoreApi.Services
                     InsertedDate = DateTime.Now,
                     DateClubJoined = DateTime.Now,
                     UpdatedBy = _applicationUserId,
-                    Practitioner = _practitionerRepo.GetById(Id),
-                    PractitionerId = Id,
+                    PractitionerId = id,
                     ClubId = input.ClubId,
                     IsNewInClub = true
                 });
                
             }
             _clubMemberRepo.InsertMany(members);
-            SendNewClubMemberNotifications(input.ClubId, members);
+            SendNewClubMemberNotifications(input.ClubId, members.Select(x => x.PractitionerId).ToList());
 
             return true;
         }
 
         public bool MoveClubMembers(NewClubMember input)
-        {
-            ClubMember oldClubMember = new ClubMember();
-            ClubMember newClubMember = new ClubMember();
-            List<ClubMember> clubMembers = new List<ClubMember>();
-            foreach (var Id in input.PractitionerIds)
+        {            
+            var clubMembers = new List<ClubMember>();
+            foreach (var id in input.PractitionerIds)
             {
-                oldClubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == Id && x.IsActive == true)
-                    .Include(x => x.Practitioner)
-                    .ThenInclude(x => x.User)
-                    .FirstOrDefault();
-               
-                newClubMember.IsNewInClub = true;
-                newClubMember.ClubId = input.ClubId;
-                newClubMember.UpdatedBy = _applicationUserId;
-                newClubMember.UpdatedDate = DateTime.Now;
-                newClubMember.DateClubJoined = DateTime.Now;
-                newClubMember.PractitionerId = Id;
-                newClubMember.ShareContactInfo = oldClubMember.ShareContactInfo;
-                newClubMember.IsActive = true;
-                newClubMember.WelcomeMessage = oldClubMember.WelcomeMessage;
+                // Make sure they aren't already a member
+                if (_clubMemberRepo.GetAll().Any(x => x.ClubId == input.ClubId && x.PractitionerId == id && x.IsActive))
+                {
+                    // Already a member
+                    continue;
+                }
 
-                _clubMemberRepo.Delete(oldClubMember.Id);
-                newClubMember = _clubMemberRepo.Insert(newClubMember);
+                var oldClubMemberships = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == id && x.IsActive == true)
+                    .ToList();
+
+                foreach(var oldClubMember in  oldClubMemberships) 
+                {
+                    oldClubMember.IsActive = false;
+                    _clubMemberRepo.Update(oldClubMember);
+                }
+
+                var newClubMember = new ClubMember()
+                {
+                    IsNewInClub = true,
+                    ClubId = input.ClubId,
+                    UpdatedBy = _applicationUserId,
+                    UpdatedDate = DateTime.Now,
+                    DateClubJoined = DateTime.Now,
+                    PractitionerId = id,
+                    ShareContactInfo = oldClubMemberships.FirstOrDefault().ShareContactInfo,
+                    IsActive = true,
+                    WelcomeMessage = oldClubMemberships.FirstOrDefault().WelcomeMessage,
+                };
+
                 clubMembers.Add(newClubMember);
             }
 
+            // Insert all
+            _clubMemberRepo.InsertMany(clubMembers);
+
             // Notify club members that they are in a new club
-            return SendNewClubMemberNotifications(input.ClubId, clubMembers) ;
+            return SendNewClubMemberNotifications(input.ClubId, clubMembers.Select(x => x.PractitionerId).ToList());
         }
 
-        private bool SendNewClubMemberNotifications(Guid clubId, List<ClubMember> clubMembers)
+        private bool SendNewClubMemberNotifications(Guid clubId, List<Guid> practitionerIds)
         {
             // Notifications
-            Club club = _clubRepo.GetById(clubId);
-            ApplicationUser user = null;
+            var club = _clubRepo.GetById(clubId);
             List<TagsReplacements> replacements = new List<TagsReplacements>
             {
                 new TagsReplacements()
@@ -495,13 +513,13 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             };
 
-            foreach(ClubMember clubMember in clubMembers)
+            var users = _practitionerRepo.GetAll().Where(x => practitionerIds.Contains(x.Id)).Select(x => x.User).ToList();
+            foreach (var user in users)
             {
                 // Expire notification for user if exist
-                _notificationService.ExpireNotificationsTypesForUser(clubMember.Practitioner.UserId, TemplateTypeConstants.UserAddedToClub);
+                _notificationService.ExpireNotificationsTypesForUser(user.Id, TemplateTypeConstants.UserAddedToClub);
 
                 // Add notification to show user is new to club
-                user = _userManager.FindByIdAsync(clubMember.Practitioner.UserId).Result;
                 _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
             }
 
