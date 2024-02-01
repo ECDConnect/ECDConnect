@@ -196,7 +196,7 @@ export function Dropdown<T>({
                                 className={`text-md flex flex-row gap-2.5 text-${
                                   item.value === selectedItem?.value
                                     ? 'dark font-medium'
-                                    : 'textMid font-normal'
+                                    : 'textDark font-normal'
                                 }`}
                               >
                                 <CheckCircleIcon
@@ -215,7 +215,7 @@ export function Dropdown<T>({
                     );
                   })
                 ) : (
-                  <p className="text-textMid flex items-center justify-center">
+                  <p className="text-textDark flex items-center justify-center">
                     No results
                   </p>
                 )}
