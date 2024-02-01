@@ -615,7 +615,7 @@ export const useCalendarAddEvent = (): ((
             optionsToHide={options.optionsToHide}
             onCancel={() => {
               if (!!options.onCancel) options.onCancel();
-              onCancel();
+              onSubmit();
             }}
           />
         );

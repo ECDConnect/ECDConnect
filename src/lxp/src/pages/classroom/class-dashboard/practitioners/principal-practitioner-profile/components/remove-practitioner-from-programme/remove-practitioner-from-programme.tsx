@@ -449,7 +449,7 @@ export const RemovePractitionerFromProgramme: React.FC<
             <Typography
               type="h6"
               className="ml-2"
-              text={'Remove SmartStarter'}
+              text={'Remove Practitioner'}
               color="white"
             />
           </Button>
@@ -474,16 +474,14 @@ export const RemovePractitionerFromProgramme: React.FC<
         className={'mb-16 px-4'}
         stretch={true}
         visible={removePractionerPromptVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <RemovePractitionerFromProgrammePrompt
           practitioner={practitioner}
           onProceed={() => {
             handleFormSubmit(getRemovePractionerFormValues());
             setRemovePractionerPromptVisible(false);
-            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-              practitionerId: practitionerUserId,
-            });
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
             showMessage({
               message: `${practitioner?.user?.firstName} removed`,
             });

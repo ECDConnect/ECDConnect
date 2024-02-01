@@ -182,6 +182,8 @@ export default function ContentEdit({
 
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues = getValues();
+  const [smallLargeGroupsSkills, setSmallLargeGroupsSkills] = useState([]);
+
   const disableButton =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
       ? template?.fields
@@ -207,6 +209,16 @@ export default function ContentEdit({
             initialValues?.hasOwnProperty(item?.propName) &&
             !initialValues[item?.propName]
         );
+  const disbleButtonStyles =
+    choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+      ? `bg-secondary ${
+          disableButton?.length > 0 || smallLargeGroupsSkills?.length < 2
+            ? 'opacity-25'
+            : ''
+        } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`
+      : `bg-secondary ${
+          disableButton?.length > 0 ? 'opacity-25' : ''
+        } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -451,16 +463,21 @@ export default function ContentEdit({
               requiredMessage={requiredMessage}
               useWatch={useWatch}
               contentView={contentView}
+              setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className={`bg-secondary ${
-                disableButton?.length > 0 ? 'opacity-25' : ''
-              } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-              disabled={disableButton?.length > 0}
+              className={disbleButtonStyles}
+              disabled={
+                choosedSectionTitle ===
+                ActivitiesTitles.SmallLargeGroupActivities
+                  ? disableButton?.length > 0 &&
+                    smallLargeGroupsSkills?.length < 2
+                  : disableButton?.length > 0
+              }
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish

@@ -43,6 +43,18 @@ namespace EcdLink.Api.CoreApi.Services
                     // Just pass in the default Guid, it then ends up fetching the class based on the userId or their principal. TODO: Make it a nullable parameter
                     var document = await _attendancePdfService.GetClassroomAttendanceReportPDFFile(mappedPractitioner.UserId, new Guid(), startDate, endDate);
 
+                    if (document == null) 
+                    {
+                        await _logManager.IntegrationLog(
+                            $"Log: No attendance data/document for user",
+                            null,
+                            mappedPractitioner.UserId,
+                            LogRelatedType.Log,
+                            "PushMonthlyAttendancePdf");
+
+                        continue;
+                    }
+
                     // Fetch any audit logs, we might have already sent the document
                     var auditLogs = _auditRepo.GetAll().Where(x => x.RelatedId == document.Id.ToString()).ToList(); // Could be a list if we updated it at any point
 
@@ -50,17 +62,27 @@ namespace EcdLink.Api.CoreApi.Services
                     if (!auditLogs.Any(x => x.Submitted.HasValue))
                     {
                         var remoteDocId = await PushNewDocument(document);
-                    }
 
-                    // Mark the audit logs as submitted so we don't resend it
-                    foreach (var auditLog in auditLogs)
-                    {
-                        auditLog.UpdatedDate = DateTime.Now;
-                        auditLog.UpdatedBy = _uId;
-                        auditLog.Submitted = DateTime.Now;
+                        if (remoteDocId != null)
+                        {
+                            // Mark the audit logs as submitted so we don't resend it
+                            foreach (var auditLog in auditLogs)
+                            {
+                                auditLog.UpdatedDate = DateTime.Now;
+                                auditLog.UpdatedBy = _uId;
+                                auditLog.Submitted = DateTime.Now;
 
-                        _auditRepo.Update(auditLog);
-                    }
+                                _auditRepo.Update(auditLog);
+                            }
+
+                            await _logManager.IntegrationLog(
+                                $"Log: Attendance document sent for user",
+                                null,
+                                mappedPractitioner.UserId,
+                                LogRelatedType.Log,
+                                "PushMonthlyAttendancePdf");
+                        }
+                    }                    
                 }
                 catch (Exception e)
                 {

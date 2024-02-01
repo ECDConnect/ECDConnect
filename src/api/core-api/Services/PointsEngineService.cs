@@ -2027,6 +2027,12 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool CalculateMeetRegularly(Guid clubId, Guid clubMeetingId)
         {
+            // Can only be scored April - November
+            if (DateTime.Now.Month < 4 || DateTime.Now.Month == 12)
+            {
+                return true;
+            }
+
             ClubMeeting clubMeeting = _clubMeetingRepo.GetAll()
                                         .Where(x => x.Id == clubMeetingId && x.IsActive == true)
                                         .Include(x => x.ClubMeetingRegister.Where(x => x.IsActive))

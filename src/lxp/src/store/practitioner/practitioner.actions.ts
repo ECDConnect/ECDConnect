@@ -10,6 +10,7 @@ import {
   MutationUpdatePractitionerShareInfoArgs,
   LicenseModelInput,
   NotificationDisplay,
+  PractitionerRemovalHistory,
   PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 
