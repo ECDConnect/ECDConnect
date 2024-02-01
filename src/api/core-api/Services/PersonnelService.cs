@@ -476,7 +476,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 List<TagsReplacements> principalreplacements = new List<TagsReplacements>();
                 principalreplacements.Add(new TagsReplacements()
                 {
-                    FindValue = "principalOrFAA",
+                    FindValue = "PrincipalOrFAA",
                     ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
                 });
                 principalreplacements.Add(new TagsReplacements()
