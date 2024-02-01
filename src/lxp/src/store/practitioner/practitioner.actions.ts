@@ -10,6 +10,7 @@ import {
   MutationUpdatePractitionerShareInfoArgs,
   LicenseModelInput,
   NotificationDisplay,
+  PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 
 export const PractitionerActions = {
@@ -447,7 +448,7 @@ export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
 );
 
 export const updatePrincipalInvitation = createAsyncThunk<
-  boolean | undefined,
+  PrincipalInvitationStatus | undefined,
   {
     userId: string;
     principalHierarchy: string;
@@ -465,11 +466,14 @@ export const updatePrincipalInvitation = createAsyncThunk<
     } = getState();
 
     try {
+      let result: PrincipalInvitationStatus | undefined;
+
       if (userAuth?.auth_token) {
-        await new PractitionerService(
+        result = await new PractitionerService(
           userAuth?.auth_token || ''
         ).UpdatePrincipalInvitation(userId, principalHierarchy, accepted);
       }
+      return result;
     } catch (err) {
       return rejectWithValue(err);
     }

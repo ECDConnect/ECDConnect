@@ -91,12 +91,10 @@ const practitionerSlice = createSlice({
       state.practitioner = { ...state.practitioner, progress: action.payload };
     });
     builder.addCase(updatePrincipalInvitation.fulfilled, (state, action) => {
-      if (action.meta.arg.accepted) {
-        state.practitioner = {
-          ...state.practitioner,
-          dateAccepted: new Date().toISOString(),
-        };
-      }
+      state.practitioner = {
+        ...state.practitioner,
+        dateAccepted: action.payload?.acceptedDate,
+      };
     });
     builder.addCase(deActivatePractitioner.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
