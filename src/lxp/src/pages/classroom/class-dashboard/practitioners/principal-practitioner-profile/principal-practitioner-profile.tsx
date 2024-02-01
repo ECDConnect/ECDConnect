@@ -877,6 +877,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           onCancel={() => {
             cancelPractitionerRemoval();
             setEditRemovalDialogVisable(false);
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
           }}
           onClose={() => {
             setEditRemovalDialogVisable(false);
