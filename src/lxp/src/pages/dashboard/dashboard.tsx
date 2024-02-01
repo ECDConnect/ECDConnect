@@ -118,11 +118,16 @@ export const Dashboard: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
+  const missingProgramme =
+    (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
+    !practitioner?.principalHierarchy &&
+    !isPrincipal;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
 
+  // this acceptAgreement is for club leader
   const isPractitionerAcceptAgreementNotification =
     dashboardNotification?.message?.cta?.includes(
       notificationTagConfig.AcceptAgreement.cta!
@@ -418,6 +423,7 @@ export const Dashboard: React.FC = () => {
     }
   }, [userData]);
 
+  // This dialog prevents a user to access classrooms, before completing profile/programme info
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
@@ -478,7 +484,8 @@ export const Dashboard: React.FC = () => {
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
-        hasConsent) ||
+        hasConsent &&
+        !missingProgramme) ||
       isTrainee
     ) {
       history.push(navItem.href, navItem.params);
@@ -845,7 +852,8 @@ export const Dashboard: React.FC = () => {
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
-        hasConsent) ||
+        hasConsent &&
+        !missingProgramme) ||
       isTrainee
     ) {
       history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
