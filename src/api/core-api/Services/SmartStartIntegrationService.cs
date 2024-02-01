@@ -3146,6 +3146,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 }
                                 //notify trainee to stary journey
                                 await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, DateTime.Now, newTrainee.User);
+                                if (entity.ConsolidationMeetingDate != null)
+                                {
+                                    await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.TraineeSetupVenue, DateTime.Now, newTrainee.User);
+                                }
 
                                 pracCreated = true;
                             }

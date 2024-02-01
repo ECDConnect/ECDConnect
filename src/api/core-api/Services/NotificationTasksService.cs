@@ -310,11 +310,12 @@ namespace ECDLink.Core.Services
             ).ToList();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var item in assessmentsDue)
-            {                            
+            {
+                DateTime dueDate = (item.visitData.DueDate.HasValue ? (DateTime)item.visitData.DueDate : DateTime.Now.AddDays(21));
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "DueDate",
-                    ReplacementValue = item.visitData.DueDate.ToString()
+                    ReplacementValue = dueDate.ToString("dddd, dd MMMM yyyy")
                 });
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, item.pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90));
             }
@@ -529,8 +530,6 @@ namespace ECDLink.Core.Services
                         int traineeCount = 0;
                         if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received)
                             traineeCount ++;
-                        if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
-                            traineeCount++;
                         if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
                             traineeCount++;
                         if (traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting) 
