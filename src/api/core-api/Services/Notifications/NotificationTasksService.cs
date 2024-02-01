@@ -20,15 +20,13 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.SmartStart.Services.Interfaces;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 using EcdLink.Api.CoreApi;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using EcdLink.Api.CoreApi.Services;
 
-namespace ECDLink.Core.Services
+namespace EcdLink.Api.CoreApi.Services
 {
-    public class NotificationTasksService : INotificationTasksService
+    public partial class NotificationTasksService : INotificationTasksService
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly HierarchyEngine _hierarchyEngine;
@@ -36,6 +34,7 @@ namespace ECDLink.Core.Services
         private readonly INotificationService _notificationService;
         private readonly IIncomeExpenseService _incomeService;
         private readonly IPersonnelService _personnelService;
+        private readonly IPointsEngineService _pointsService;
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
         IHolidayService<Holiday> _holidayService;
 
@@ -47,7 +46,8 @@ namespace ECDLink.Core.Services
             HierarchyEngine hierarchyEngine, 
             [Service] AttendanceTrackingRepository attendanceTrackingRepository, 
             IHolidayService<Holiday> holidayService,
-            IPersonnelService personnelService)
+            IPersonnelService personnelService,
+            IPointsEngineService pointsService)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
@@ -57,6 +57,7 @@ namespace ECDLink.Core.Services
             _holidayService = holidayService;
             _incomeService = incomeService;
             _personnelService = personnelService;
+            _pointsService = pointsService;
         }
 
         public async Task DailyUnassignedClassesNotification()

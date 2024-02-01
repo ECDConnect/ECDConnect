@@ -856,6 +856,8 @@ namespace EcdLink.Api.CoreApi
             public const string income_statement_ac3 = "Monthly income statement submitted by the deadline";
             public const string income_statement_ac4 = "Practitioner submits 3 consecutive months' income statements";
 
+            public const int monthly_points_max_practitioner = 100;
+            public const int monthly_points_max_principal_or_admin = 150;
         }
 
         public static class CoachingCircleSettings

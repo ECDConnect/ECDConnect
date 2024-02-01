@@ -144,6 +144,10 @@ namespace EcdLink.Api.CoreApi.Services
             return _pointsLibraryRepo.GetAll().Where(x => x.TenantId == tenantId).ToList();
         }
 
+        /// <summary>
+        /// NOTE: THIS IS FETCHING FROM THE PointsUser TABLE WHICH WE DO NOT CURRENTLY USE. THIS SHOULD BE REMOVED
+        /// </summary>
+        /// <returns></returns>
         public List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year)
         {
             return _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == pointsLibraryId && x.UserId == userId && x.Month == month && x.Year == year).ToList();
@@ -1577,6 +1581,30 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
         #endregion
+
+        public List<KeyValuePair<string, int>> GetClubMemberPointsTotals(Guid clubId, int year, int? month = null)
+        {
+            var clubUserIds = _clubMemberRepo.GetAll()
+                .Include(x => x.Practitioner)
+                .Where(x => x.ClubId == clubId && x.IsActive)
+                .Select(x => x.Practitioner.UserId)
+                .ToList();
+
+           return GetUserPointsTotals(clubUserIds, year, month);
+        }
+
+        public List<KeyValuePair<string, int>> GetUserPointsTotals(List<string> userIds, int year, int? month = null)
+        {
+            var usersPoints = _pointsUserSummaryRepo.GetAll()
+               .Where(x => userIds.Contains(x.UserId)
+                    && x.Year == year
+                    && (month == null || x.Month == month.Value))
+               .GroupBy(x => x.UserId)
+               .Select(x => new KeyValuePair<string, int>(x.First().UserId, x.Sum(y => y.PointsTotal)))
+               .ToList();
+
+            return usersPoints;
+        }
 
         /// <summary>
         /// Gets the percentile standing of a user within relative to others within the club
