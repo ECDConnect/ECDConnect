@@ -150,7 +150,7 @@ export const CoachSmartSpaceChecklist: React.FC<
 
   const handleBackButton = () => {
     if (activeStep === 1) {
-      if (practitioner?.isTrainee) {
+      if (history.location.pathname === ROUTES.TRAINEE.TRAINEE_ONBOARDING) {
         setNotificationStep('');
       } else {
         history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
