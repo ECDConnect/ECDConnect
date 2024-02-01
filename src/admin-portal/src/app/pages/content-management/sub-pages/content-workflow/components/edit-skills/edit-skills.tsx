@@ -285,6 +285,7 @@ export default function EditSkills({
 
   const onSubmit = async (values: any) => {
     setLoading(true);
+    let categorySKillsIds = [];
 
     if (!content?.id) {
       return null;
@@ -295,7 +296,7 @@ export default function EditSkills({
             for (let subCat of cat?.subCategories) {
               if (subCat?.skills.length > 0) {
                 for (let skill of subCat?.skills) {
-                  if (skill?.id) {
+                  if (skill?.id && skill?.name !== '') {
                     const skillModelInput = {
                       name: skill?.name,
                       level: skill?.level?.[0]?.id.toString(),
@@ -337,13 +338,22 @@ export default function EditSkills({
                           createSkillResponse?.data?.createProgressTrackingSkill
                         )
                       );
+
+                      categorySKillsIds = [
+                        ...categorySKillsIds,
+                        createSkillResponse?.data?.createProgressTrackingSkill,
+                      ];
+
                       let skillStringArray = subCatToUpdateSkills?.map(String);
                       const skillsArrayFormatted = skillStringArray?.toString();
 
                       const subCatInput = {
                         imageUrl: subCatToUpdate?.imageUrl,
                         name: subCatToUpdate?.name,
-                        skills: skillsArrayFormatted,
+                        skills:
+                          skillsArrayFormatted +
+                          ',' +
+                          categorySKillsIds.toString(),
                       };
 
                       await updateSubcategoryContent({
@@ -380,6 +390,7 @@ export default function EditSkills({
                       );
                       let skillStringArray = subCatToUpdateSkills?.map(String);
                       const skillsArrayFormatted = skillStringArray?.toString();
+
                       const subCatInput = {
                         imageUrl: subCatToUpdate?.imageUrl,
                         name: subCatToUpdate?.name,
@@ -403,27 +414,6 @@ export default function EditSkills({
           }
         }
       }
-      // await updateContent({
-      //   variables: {
-      //     id: content.id.toString(),
-      //     input: { ...model },
-      //     localeId: selectedLanguageId.toString(),
-      //   },
-      // }).catch(() => {
-      //   setLoading(false);
-      // });
-
-      // export type ProgressTrackingSkillInput = {
-      //   level?: InputMaybe<Scalars['String']>;
-      //   name?: InputMaybe<Scalars['String']>;
-      //   value?: InputMaybe<Scalars['String']>;
-      // };
-
-      //   description?: InputMaybe<Scalars['String']>;
-      //   imageUrl?: InputMaybe<Scalars['String']>;
-      //   name?: InputMaybe<Scalars['String']>;
-      //   skills?: InputMaybe<Scalars['String']>;
-      // };
     }
 
     setNotification({
