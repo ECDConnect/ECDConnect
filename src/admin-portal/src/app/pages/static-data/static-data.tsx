@@ -98,7 +98,7 @@ const growgreatNavigation = [
   },
   {
     name: 'Languages',
-    section: 'ChHW registration',
+    section: 'CHW registration',
     href: '/data/languages',
     query: 'GetAllLanguage',
   },
