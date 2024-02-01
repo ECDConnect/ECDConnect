@@ -39,6 +39,7 @@ import {
 } from '@/utils/common/local-storage.utils';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
+import { CoachInfo } from '../../components/coach-info';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const [isLearnMore, setIsLearnMore] = useState(false);
@@ -729,12 +730,15 @@ export const SubmitIncomeStatements: React.FC = () => {
           id="startStatements"
         />
       </div>
-      <Dialog
-        fullScreen={true}
-        visible={isLearnMore}
-        position={DialogPosition.Full}
-      >
-        <InfoPage onClose={() => setIsLearnMore(false)} />
+      <Dialog fullScreen visible={isLearnMore} position={DialogPosition.Full}>
+        <InfoPage
+          title="Ideas for making a profit"
+          section="ideas-for-making-a-profit"
+          childrenPosition="bottom"
+          onClose={() => setIsLearnMore(false)}
+        >
+          <CoachInfo />
+        </InfoPage>
       </Dialog>
     </>
   );

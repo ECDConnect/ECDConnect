@@ -14,18 +14,7 @@ const replaceBraces = (sentenceWithBraces: string, value: string) => {
   });
 };
 
-export const MoreInformationPage = ({
-  name,
-  subTitle,
-  onClose,
-  title,
-  moreInformation,
-  languages,
-  setSelectedLanguage,
-  isLoading,
-  children,
-  isClosable = true,
-}: {
+export interface MoreInformationPageProps {
   isLoading?: boolean;
   isClosable?: boolean;
   subTitle?: string;
@@ -36,7 +25,22 @@ export const MoreInformationPage = ({
   moreInformation: any; // TODO - doesn't ref the graphQL library which is what we are passing in here :/ Could make a DTO
   languages: { value: string; label: string }[];
   children?: React.ReactNode;
-}) => {
+  childrenPosition?: 'top' | 'bottom';
+}
+
+export const MoreInformationPage = ({
+  name,
+  subTitle,
+  onClose,
+  title,
+  moreInformation,
+  languages,
+  setSelectedLanguage,
+  isLoading,
+  children,
+  childrenPosition = 'top',
+  isClosable = true,
+}: MoreInformationPageProps) => {
   const { height } = useWindowSize();
 
   const SELECTOR_HEIGHT = 110;
@@ -209,8 +213,9 @@ export const MoreInformationPage = ({
         className="flex flex-col p-4"
         style={{ height: height - SELECTOR_HEIGHT }}
       >
+        {childrenPosition === 'top' && children}
         {renderContent}
-        {children}
+        {childrenPosition === 'bottom' && children}
         <Button
           className="mt-auto mb-4"
           type="filled"
