@@ -393,10 +393,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={smallGroupOptions}
                         fillType="filled"
-                        fillColor="secondary"
-                        textColor="white"
+                        fillColor="adminPortalBg"
+                        textColor="textDark"
                         fullWidth
-                        className="h-full w-48 text-white"
+                        className="text-textDark h-full w-48"
                         selectedValue={
                           smallGroupOptions?.filter(
                             (option) =>
@@ -442,10 +442,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={largeGroupOptions}
                         fillType="filled"
-                        fillColor="secondary"
-                        textColor="white"
+                        fillColor="adminPortalBg"
+                        textColor="textDark"
                         fullWidth
-                        className="h-full w-48 text-white"
+                        className="text-textDark h-full w-48"
                         selectedValue={
                           largeGroupOptions?.filter(
                             (option) =>
@@ -491,10 +491,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={storyBookOptions}
                         fillType="filled"
-                        fillColor="secondary"
-                        textColor="white"
+                        fillColor="adminPortalBg"
+                        textColor="textDark"
                         fullWidth
-                        className="h-full w-48 text-white"
+                        className="text-textDark h-full w-48"
                         selectedValue={
                           storyBookOptions?.filter(
                             (option) =>
@@ -538,10 +538,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={storyTimeOptions}
                         fillType="filled"
-                        fillColor="secondary"
-                        textColor="white"
+                        fillColor="adminPortalBg"
+                        textColor="textDark"
                         fullWidth
-                        className="h-full w-48 text-white"
+                        className="text-textDark h-full w-48"
                         selectedValue={
                           storyTimeOptions?.filter(
                             (option) =>

@@ -8,6 +8,7 @@ import { FormInput, Typography } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
+import FormFileInput from '../form-file-input/form-file-input';
 
 export interface CategoryContentFormProps {
   contentValue?: ContentValueDto;
@@ -122,7 +123,7 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
       }
 
       if (propName === 'icon') {
-        item.imageUrl = e?.target?.value;
+        item.imageUrl = e;
       }
 
       if (propName === 'description') {
@@ -187,37 +188,15 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
                     />
 
                     <div className="w-full rounded-lg" onClick={(e) => {}}>
-                      {/* Wait for testing validation to remove FormFileInput /*}
-                        {/* <FormFileInput
-                        acceptedFormats={acceptedFileFormats || acceptedFormats}
+                      <FormFileInput
+                        acceptedFormats={acceptedFileFormats}
                         label={`Subcategory ${idx + 1} icon *`}
-                        nameProp={'imageUrl'}
-                        contentUrl={
-                            item?.imageUrl ? item?.imageUrl : undefined
-                        }
+                        nameProp={String(idx)}
+                        contentUrl={item?.imageUrl ? item?.imageUrl : undefined}
                         returnFullUrl={true}
-                        setValue={(e) => console.log({e})}
+                        setValue={() => {}}
                         isSubcategoryInput={true}
-                        /> */}
-                      <Typography
-                        type={'body'}
-                        color={'textDark'}
-                        text={`Subcategory ${idx + 1} icon *`}
-                        className="mt-4"
-                        weight="bold"
-                      />
-                      <label className="font-md block pb-1 text-sm text-gray-900">
-                        Size limit:{' '}
-                        <span className="text-errorMain font-semibold">
-                          1MB
-                        </span>
-                        . To improve the image position & size, edit the image
-                        to fit 32px by 32px before uploading.
-                      </label>
-                      <img
-                        src={item?.imageUrl}
-                        alt="subcategory"
-                        className="bg-adminPortalBg h-64 w-64 p-4"
+                        onChange={(e) => onChange(e, idx, 'icon')}
                       />
                     </div>
                     <Typography
