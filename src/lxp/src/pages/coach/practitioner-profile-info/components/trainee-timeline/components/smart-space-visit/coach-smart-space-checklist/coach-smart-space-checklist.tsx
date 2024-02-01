@@ -150,9 +150,13 @@ export const CoachSmartSpaceChecklist: React.FC<
 
   const handleBackButton = () => {
     if (activeStep === 1) {
-      history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-        practitionerId: practitioner?.userId,
-      });
+      if (practitioner?.isTrainee) {
+        setNotificationStep('');
+      } else {
+        history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+          practitionerId: practitioner?.userId,
+        });
+      }
     }
     setActiveStep(activeStep - 1);
   };
