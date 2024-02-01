@@ -26,7 +26,6 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
 import { StorageFull } from './storage-full/storage-full';
-import { getTime } from 'date-fns';
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
@@ -34,6 +33,9 @@ export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
+  const [displayMessage, setDisplayMessage] = useState(
+    'Password or ID incorrect. Please try again'
+  );
   const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
@@ -125,11 +127,12 @@ export const Login: React.FC = () => {
               setIsLoading(false);
               history.push(ROUTES.DASHBOARD);
             } else {
+              setDisplayMessage(isAuthenticated?.payload!);
               setDisplayError(true);
               setIsLoading(false);
             }
           })
-          .catch(() => {
+          .catch((err) => {
             setDisplayError(true);
             setIsLoading(false);
           });
@@ -248,7 +251,7 @@ export const Login: React.FC = () => {
             {displayError && (
               <Alert
                 className={'mt-5 mb-3'}
-                message={'Password or ID incorrect. Please try again'}
+                message={displayMessage}
                 type={'error'}
               />
             )}
