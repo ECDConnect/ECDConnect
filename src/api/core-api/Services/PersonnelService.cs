@@ -932,6 +932,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             _traineeRepo.Update(trainee);
 
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "SupportDate",
+                ReplacementValue = trainee.InsertedDate.AddDays(21).ToShortDateString(),
+            });
+
+            var userToSend = _userManager.FindByIdAsync(userId).Result;
+            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+
+
             return trainee;
         }
 

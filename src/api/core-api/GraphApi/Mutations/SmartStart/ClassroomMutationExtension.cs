@@ -17,6 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Abstractrions.Constants;
+using EcdLink.Api.CoreApi.Services;
+using ECDLink.DataAccessLayer.Entities.Notifications;
+using Microsoft.AspNetCore.Identity;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -131,6 +134,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] INotificationService notificationService,
             Guid id,
             Classroom input)
         {
@@ -139,6 +144,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepository<Classroom, Guid> dbRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
 
             Classroom updateClass = dbRepo.GetById(input.Id);
+            bool sendNotification = false;
 
             if (input.SiteAddress != null)
             {
@@ -159,6 +165,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input?.SiteAddress.ProvinceId != null)
                         address.ProvinceId = input.SiteAddress.ProvinceId;
                     var updateAddressResult = addressRepo.Update(address);
+                    sendNotification = true;
                 }
 
                 if (address is null)
@@ -181,6 +188,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (updateAddressResult != null)
                         updateClass.SiteAddressId = updateAddressResult.Id;
                         var updateResult = dbRepo.Update(updateClass);
+                    sendNotification = true;
+                }
+                //send notification of change to Coach
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                var principal = userManager.FindByIdAsync(updateClass.UserId).Result;
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PrincipalOrFAA",
+                    ReplacementValue = principal.FirstName + " " + principal.Surname
+                });
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = updateClass.Name != null  ? updateClass.Name : ""
+                });
+                
+                var parentId = engine.GetUserParentUserId(principal.Id);
+                if (parentId != null) {
+                   var coachToSend = userManager.FindByIdAsync(parentId).Result;
+                    if (coachToSend != null)
+                    {
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
+                    }
                 }
             }
 
