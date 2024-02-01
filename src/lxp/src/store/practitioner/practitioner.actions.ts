@@ -26,6 +26,7 @@ export const PractitionerActions = {
   UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH:
     'updatePractitionerBusinessWalkThrough',
   UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
+  UPDATE_PRINCIPAL_INVITATION: 'updatePrincipalInvitation',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -438,6 +439,36 @@ export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
         return await new PractitionerService(
           userAuth.auth_token
         ).UpdatePractitionerBusinessWalkthrough(userId);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePrincipalInvitation = createAsyncThunk<
+  boolean | undefined,
+  {
+    userId: string;
+    principalHierarchy: string;
+    accepted: boolean;
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRINCIPAL_INVITATION,
+  async (
+    { userId, principalHierarchy, accepted },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        await new PractitionerService(
+          userAuth?.auth_token || ''
+        ).UpdatePrincipalInvitation(userId, principalHierarchy, accepted);
       }
     } catch (err) {
       return rejectWithValue(err);

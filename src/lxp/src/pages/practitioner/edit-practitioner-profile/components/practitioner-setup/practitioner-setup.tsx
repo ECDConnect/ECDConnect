@@ -24,6 +24,7 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsActions } from '@/store/classroom';
+import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -67,12 +68,11 @@ export const PractitionerSetup = ({
   }, []);
 
   const getPractitionerResponse = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      user?.id!,
-      practitioner?.principalHierarchy!,
-      practitionerToProgramme
+    const principalHierarchy = practitioner?.principalHierarchy!;
+    const userId = user?.id!;
+    const accepted = practitionerToProgramme!;
+    await appDispatch(
+      updatePrincipalInvitation({ userId, principalHierarchy, accepted })
     );
   };
 

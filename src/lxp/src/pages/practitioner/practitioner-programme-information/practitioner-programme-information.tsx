@@ -85,6 +85,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     !practitioner?.principalHierarchy &&
     !isPrincipal;
 
+  const hasAccepted =
+    (practitioner?.isRegistered === null &&
+      practitioner?.principalHierarchy &&
+      !isPrincipal) ||
+    (practitioner?.dateAccepted !== null && !practitioner?.isLeaving);
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -368,58 +374,53 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        {practitioner?.isRegistered === null &&
-          practitioner?.principalHierarchy &&
-          !isPrincipal && (
-            <div className="flex justify-center">
-              <Alert
-                type="info"
-                title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
-                list={[`Edit your profile to accept or disagree. `]}
-                className={'mt-4 w-11/12'}
-                button={
-                  <Button
-                    text="Edit profile"
-                    icon="PencilIcon"
-                    type={'filled'}
-                    color={'primary'}
-                    textColor={'white'}
-                    onClick={() =>
-                      history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
-                    }
-                  />
-                }
-              />
-            </div>
-          )}
 
-        {practitioner?.isRegistered === null &&
-          !practitioner?.principalHierarchy &&
-          !isPrincipal && (
-            <div className="flex justify-center">
-              <Alert
-                type="error"
-                title={`You have not been added to a programme.`}
-                list={[
-                  `Ask the principal/owner of your programme to add you to Funda App. `,
-                  `If you are the principal/owner of the programme, edit your profile. `,
-                ]}
-                className={'mt-4 w-11/12'}
-                button={
-                  <Button
-                    text="Edit profile"
-                    icon="PencilIcon"
-                    type={'filled'}
-                    color={'primary'}
-                    textColor={'white'}
-                    onClick={() =>
-                      history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)
-                    }
-                  />
-                }
-              />
-            </div>
-          )}
+        {!hasAccepted && !missingProgramme && (
+          <div className="flex justify-center">
+            <Alert
+              type="info"
+              title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
+              list={[`Edit your profile to accept or disagree. `]}
+              className={'mt-4 w-11/12'}
+              button={
+                <Button
+                  text="Edit profile"
+                  icon="PencilIcon"
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  onClick={() =>
+                    history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+                  }
+                />
+              }
+            />
+          </div>
+        )}
+
+        {missingProgramme && (
+          <div className="flex justify-center">
+            <Alert
+              type="error"
+              title={`You have not been added to a programme.`}
+              list={[
+                `Ask the principal/owner of your programme to add you to Funda App. `,
+                `If you are the principal/owner of the programme, edit your profile. `,
+              ]}
+              className={'mt-4 w-11/12'}
+              button={
+                <Button
+                  text="Edit profile"
+                  icon="PencilIcon"
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  onClick={() => history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)}
+                />
+              }
+            />
+          </div>
+        )}
         <StackedList
           className="px-4"
           listItems={listItems}

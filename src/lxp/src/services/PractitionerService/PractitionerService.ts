@@ -939,8 +939,7 @@ class PractitionerService {
         'Get Practitioner by ID number Failed - Server connection error'
       );
     }
-
-    return response.data.data.updatePractitionerRegistered;
+    return response.data.data.updatePrincipalInvitation;
   }
 
   async RemovePractitioner(
