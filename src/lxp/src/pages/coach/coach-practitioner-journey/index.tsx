@@ -442,11 +442,13 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const onFormBack = () => {
+  const onFormBack = async () => {
     window.sessionStorage.removeItem(currentActivityKey);
     window.sessionStorage.removeItem(visitIdKey);
     window.sessionStorage.setItem(isViewKey, 'false');
     setShowForm(false);
+
+    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   };
 
   const onView = async (visit: Visit) => {
