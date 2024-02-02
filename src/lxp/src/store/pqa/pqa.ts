@@ -4,7 +4,6 @@ import {
   addCoachVisitInviteForPractitioner,
   addFollowUpVisitForPractitioner,
   addReAccreditationFollowUpVisitForPractitioner,
-  addReAccreditationVisitData,
   addRequestedSupportVisitFormData,
   addSelfAssessmentForPractitioner,
   addSupportVisitFormData,
@@ -197,7 +196,6 @@ const pqaSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addVisitFormData);
-    setThunkActionStatus(builder, addReAccreditationVisitData);
     setThunkActionStatus(builder, getVisitDataForVisitId);
     setThunkActionStatus(builder, addSupportVisitFormData);
     setThunkActionStatus(builder, addFollowUpVisitForPractitioner);
@@ -328,24 +326,15 @@ const pqaSlice = createSlice({
         state.selfAssessmentFormData = state?.selfAssessmentFormData?.filter(
           (item) => item?.formData?.syncId !== input?.syncId
         );
+        state.reAccreditationFormData = state?.reAccreditationFormData?.filter(
+          (item) => item?.formData?.syncId !== input?.syncId
+        );
       } else {
         state.prePqaFormData = [];
         state.pqaFormData = [];
         state.followUpVisitFormData = [];
         state.reAccreditationFollowUpVisitFormData = [];
         state.selfAssessmentFormData = [];
-      }
-
-      setFulfilledThunkActionStatus(state, action);
-    });
-    builder.addCase(addReAccreditationVisitData.fulfilled, (state, action) => {
-      const input = action.meta?.arg;
-
-      if (input) {
-        state.reAccreditationFormData = state?.reAccreditationFormData?.filter(
-          (item) => item?.formData?.syncId !== input?.syncId
-        );
-      } else {
         state.reAccreditationFormData = [];
       }
 

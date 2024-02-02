@@ -163,10 +163,6 @@ export const Form = ({
     'pqa',
     PqaActions.ADD_VISIT_FORM_DATA
   );
-  const { isLoading: isLoadingReAccreditationVisit } = useThunkFetchCall(
-    'pqa',
-    PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA
-  );
   const { isLoading: isLoadingSupportVisit } = useThunkFetchCall(
     'pqa',
     PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
@@ -893,7 +889,6 @@ export const Form = ({
           isLoadingSupportVisit ||
           isLoadingDeactivate ||
           isLoadingPqaFollowUpVisit ||
-          isLoadingReAccreditationVisit ||
           isLoadingReAccreditationFollowUpVisit
         }
         secondaryButton={
