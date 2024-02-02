@@ -28,7 +28,7 @@ namespace ECDLink.Core.Services.Interfaces
         // GG TODO: Team points - development pending
 
         // SS
-        bool CalculateChildrenRegistrationAdd(string userId, DateTime today);
+        bool CalculateChildrenRegistrationAdd(string userId);
         bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
         bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);

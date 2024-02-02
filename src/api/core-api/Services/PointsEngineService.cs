@@ -1299,55 +1299,19 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region SS_Children
 
-        public bool CalculateChildrenRegistrationAdd(string userId, DateTime today)
+        public bool CalculateChildrenRegistrationAdd(string userId)
         {
-            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
-            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1).FirstOrDefault();
+            var pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
+            var activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1).FirstOrDefault();
+            
+            var practitioner = _practitionerRepo.GetByUserId(userId);
 
-            Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
-
-            if (practitioner != null)
-            {
-                var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
-                var childCount = children.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
-
-                if (childCount > 0)
-                {
-                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    int activityPoints = childCount * activity.Points;
-
-                    if (activity_record == null)
-                    {
-                        InsertIndividualUserPoints(
-                            new PointsUser
-                            {
-                                Id = Guid.NewGuid(),
-                                IsActive = true,
-                                InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
-                                Month = today.Month,
-                                Year = today.Year,
-                                Points = activityPoints,
-                                UserId = userId,
-                                PointsLibraryId = activity.Id,
-                                Comment = "Total: " + childCount
-                            }
-                        );
-                    }
-                    else
-                    {
-                        activity_record.Points = activityPoints;
-                        activity_record.UpdatedDate = DateTime.Now;
-                        activity_record.UpdatedBy = _uId;
-                        UpdateIndividualUserPoints(activity_record);
-                    }
-                    UpdateUserSummaryPoints(
-                        userId,
-                        activity,
-                        today,
-                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
-                }
-            }
+            UpdateUserSummaryPoints(
+                userId,
+                activity,
+                DateTime.Now,
+                (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
+                
             return true;
         }
 
@@ -2044,7 +2008,7 @@ namespace EcdLink.Api.CoreApi.Services
                         UpdatedBy = _uId,
                         IsActive = true,
                         ClubPointsLibraryId = caregiverMeetingActivity.Id,
-                        Month = 11,
+                        Month = reportsMonth,
                         Year = DateTime.Now.Year,
                         Points = pointsEarned,
                         PointsYTD = prevScore + pointsEarned
