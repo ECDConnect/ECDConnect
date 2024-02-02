@@ -12,7 +12,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ClubActivities,
   LeagueType,
@@ -44,11 +44,14 @@ import { SupportRoleAlert } from './0-components/support-role-alert';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
 import { notificationTagConfig } from '@/constants/notifications';
 import { PractitionerCommunityRouteState } from '../index.types';
+import { CaregiverMeeting } from '@/pages/community/clubs-tab/club/club-points/activities/0-components/caregiver-meeting';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
   const user = useSelector(userSelectors.getUser);
   const coach = useSelector(coachSelectors.getCoach);
+
+  const [isLogCaregiverMeeting, setIsLogCaregiverMeeting] = useState(true);
 
   const previousClub = usePrevious(club);
 
@@ -422,6 +425,19 @@ export const ClubTab: React.FC = () => {
     onActionClick: () => history.push(item.route),
   }));
 
+  useEffect(() => {
+    if (notifications.length > 0) {
+      const isCompletedProgressReport = notifications?.some(
+        (notification) =>
+          notification?.isNew &&
+          notification?.message?.title?.includes(
+            "Well done, you've created progress reports for all children!"
+          )
+      );
+      setIsLogCaregiverMeeting(isCompletedProgressReport);
+    }
+  }, [notifications]);
+
   const renderLeagueContent = useMemo(() => {
     if (isClubInALeague && isToShowPointsScreen) {
       return (
@@ -614,6 +630,13 @@ export const ClubTab: React.FC = () => {
             />
           </div>
         </div>
+      )}
+
+      {isLogCaregiverMeeting && (
+        <CaregiverMeeting
+          isToShowWellDoneMessage={true}
+          onClose={() => setIsLogCaregiverMeeting(false)}
+        />
       )}
     </div>
   );
