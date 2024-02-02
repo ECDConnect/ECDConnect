@@ -25,8 +25,10 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   sufficIconColor?: Colours;
   visible?: boolean;
   placeholder?: string;
+  name?: string;
   value?: string | number;
   hint?: string;
+  isAdminPortalField?: boolean;
   register?: UseFormRegister<T>;
   maxLength?: number;
   min?: number;
@@ -57,6 +59,7 @@ export const FormInput = <T extends FieldValues>({
   hint,
   maxLength,
   prefixIcon,
+  isAdminPortalField,
   ...restProps
 }: FormFieldProps<T>) => {
   const getInputStyle = () => {
@@ -65,7 +68,14 @@ export const FormInput = <T extends FieldValues>({
     }
 
     if (disabled) {
+      if (isAdminPortalField) {
+        return styles.portalDisabledInputStyle;
+      }
       return styles.disabledInputStyle;
+    }
+
+    if (isAdminPortalField) {
+      return styles.portalDdefaultInputStyle;
     }
 
     return styles.defaultInputStyle;
@@ -86,6 +96,9 @@ export const FormInput = <T extends FieldValues>({
               className={getInputStyle()}
               defaultValue={''}
               onKeyDown={(e: any) => {}}
+              style={{
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
+              }}
               {...restProps}
             />
           );
@@ -99,6 +112,9 @@ export const FormInput = <T extends FieldValues>({
               maxLength={maxLength}
               className={getInputStyle()}
               defaultValue={value ?? ''}
+              style={{
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
+              }}
               {...restProps}
             />
           );
@@ -163,6 +179,7 @@ export const FormInput = <T extends FieldValues>({
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon ? 20 : 16,
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
               }}
               {...restProps}
             />

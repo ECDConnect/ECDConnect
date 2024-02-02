@@ -327,19 +327,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 entity.InsertedDate = dbEntity.InsertedDate;
 
                 ((IUserType)entity).Hierarchy = ((IUserType)dbEntity).Hierarchy;
+
                 //Populate Audit records
                 if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
                 {
-                    if (DoAudit(entity, "Update", dbEntity))
-                    {
-                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
-                        entity.UpdatedDate = DateTime.Now;
-                    }
+                    DoAudit(entity, "Update", dbEntity);
                 }
-                else
-                {
-                    entity.UpdatedDate = DateTime.Now;
-                }
+
+                entity.UpdatedDate = DateTime.Now;
+
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
                 // Do not modify inserted date.
                 entities.Entry(dbEntity).Property(e => e.InsertedDate).IsModified = false;
@@ -347,8 +343,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 entities.Entry(dbEntity).Property(e => e.TenantId).IsModified = false;
 
                 _domainEventService.NotifyUpdate<T>(_userId.ToString(), entity);
-
-
             }
 
             context.SaveChanges();

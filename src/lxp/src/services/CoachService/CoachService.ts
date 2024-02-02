@@ -1,4 +1,8 @@
-import { ClubMeetingModelInput, CoachInput } from '@ecdlink/graphql';
+import {
+  ChildProgressReportsStatus,
+  ClubMeetingModelInput,
+  CoachInput,
+} from '@ecdlink/graphql';
 import {
   ClubDto,
   CoachCirclesDto,
@@ -354,6 +358,8 @@ class CoachService {
           resource
           title
           topicContent
+          startDate
+          endDate
         }
       }
       `,
@@ -395,6 +401,34 @@ class CoachService {
     }
 
     return true;
+  }
+
+  async getChildProgressReportsStatusForUser(
+    userId: string
+  ): Promise<ChildProgressReportsStatus> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { childProgressReportsStatus: ChildProgressReportsStatus };
+      errors?: {};
+    }>(``, {
+      query: `
+      query getChildProgressReportsStatus($userId: String) {
+        childProgressReportsStatus(userId: $userId) {
+          completedReports
+          numberOfChildren
+        }
+       }
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get Coach clubs Failed - Server connection error');
+    }
+
+    return response.data.data.childProgressReportsStatus;
   }
 }
 

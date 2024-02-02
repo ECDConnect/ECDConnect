@@ -12,7 +12,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string PhoneNumber { get; set; }
         public string WhatsAppNumber { get; set; }
         public string ProfileImageUrl { get; set; }
-        public string WelcomeMessage { get; set; }  
+        public string WelcomeMessage { get; set; }
+        public bool ShareContactInfo { get; set; }
 
         public ClubMemberModel(ClubMember clubMember)
         {
@@ -20,10 +21,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             UserId = clubMember.Practitioner.User.Id.ToString();
             FirstName = clubMember.Practitioner.User.FirstName;
             Surname = clubMember.Practitioner.User.Surname;
-            PhoneNumber = clubMember.Practitioner.User.PhoneNumber;
-            WhatsAppNumber = clubMember.Practitioner.User.WhatsAppNumber;
             ProfileImageUrl = clubMember.Practitioner.User.ProfileImageUrl;
             WelcomeMessage = clubMember.WelcomeMessage;
+            ShareContactInfo = clubMember.ShareContactInfo;
+
+            if (clubMember.ShareContactInfo)
+            {
+                PhoneNumber = clubMember.Practitioner.User.PhoneNumber;
+                WhatsAppNumber = clubMember.Practitioner.User.WhatsAppNumber;
+            }
         }
     }
 }

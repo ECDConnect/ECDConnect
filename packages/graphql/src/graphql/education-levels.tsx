@@ -1,10 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GetAllEducation = gql`
-  {
-    GetAllEducation {
+  query GetAllEducation($pagingInput: PagedQueryInput) {
+    GetAllEducation(pagingInput: $pagingInput) {
       id
       description
+      isActive
     }
   }
 `;

@@ -1,30 +1,29 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
 import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
   ContentTypeFieldDto,
   LanguageDto,
-  NOTIFICATION,
   PermissionEnum,
-  useDialog,
-  useNotifications,
-  usePanel,
 } from '@ecdlink/core';
-import { DialogPosition } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
-import LanguageSelector from '../../../../components/language-selector/language-selector';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
+  ActivitiesTitles,
   ContentManagementView,
   FieldType,
 } from '../../content-management-models';
-import ContentCreate from './components/content-create/content-create';
-import { PlusIcon } from '@heroicons/react/solid';
+import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import {
+  ContentManagementTabs,
+  ContentTypes,
+} from '../../../../constants/content-management';
+import { BulkActionStatus } from '../../../../components/ui-table/type';
+import { LanguageId } from '../../../../constants/language';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -33,6 +32,9 @@ export interface ContentListProps {
   languages: LanguageDto[];
   viewContent: (content?: ContentManagementView) => void;
   refreshParent: () => void;
+  onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  searchValue?: string;
+  choosedSectionTitle?: string;
 }
 
 export default function ContentList({
@@ -42,22 +44,28 @@ export default function ContentList({
   optionDefinitions,
   viewContent,
   refreshParent,
+  onSearch,
+  searchValue,
+  choosedSectionTitle,
 }: ContentListProps) {
   const { hasPermission } = useUser();
-
   const [tableData, setTableData] = useState<any[]>([]);
-  const dialog = useDialog();
-  const { setNotification } = useNotifications();
-  const panel = usePanel();
-  const type = contentType.description;
+  const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
+  const [searchText, setSearchText] = useState('Search by title or content...');
+  const [buttonText, setButtonText] = useState(contentType.name);
 
-  const [languageId, setLanguageId] = useState<string>();
+  const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
-  const [displayFields, setDisplayFields] = useState<string[]>();
+  const filterByValue = useCallback((array, value) => {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+    );
+  }, []);
 
   useEffect(() => {
     if (contentType && contentType.fields) {
-      const displayFields: string[] = [];
+      const displayFields: ContentTypeFieldDto[] = [];
 
       const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
 
@@ -66,13 +74,54 @@ export default function ContentList({
       });
 
       orderedList.forEach((x) => {
-        if (x.fieldType.dataType === FieldType.Text)
-          displayFields.push(x.fieldName);
+        if (
+          ((x.fieldType.dataType === FieldType.Text ||
+            x.fieldType.dataType === FieldType.Link ||
+            x.fieldType.dataType === FieldType.DatePicker) &&
+            !!x.displayMainTable) ||
+          x?.displayName === 'CTF45 - Languages' ||
+          x?.displayName === 'Languages'
+        )
+          displayFields.push(x);
       });
+
+      // if (contentType.name === 'CoachingCircleTopics') {
+      //   displayFields.push(
+      //     {
+      //       "__typename": "ContentTypeField",
+      //       "fieldOrder": orderedList.length + 1,
+      //       "fieldName": "dateUpdated",
+      //       "fieldType": {
+      //           "__typename": "FieldType",
+      //           "name": "Text",
+      //           "dataType": "text"
+      //       },
+      //       "dataLinkName": "",
+      //       "displayName": "Date Updated",
+      //       "displayMainTable": true,
+      //       "displayPage": false
+      //   });
+      // }
+
+      if (choosedSectionTitle === 'Small/large group activities') {
+        const smallLargeGroupsDisplayFields = displayFields?.filter(
+          (item) => item?.fieldName !== 'subType'
+        );
+        setDisplayFields(smallLargeGroupsDisplayFields);
+        return;
+      }
+
+      if (choosedSectionTitle === 'Story activities') {
+        const smallLargeGroupsDisplayFields = displayFields?.filter(
+          (item) => item?.fieldName !== 'subCategories'
+        );
+        setDisplayFields(smallLargeGroupsDisplayFields);
+        return;
+      }
 
       setDisplayFields(displayFields);
     }
-  }, [contentType]);
+  }, [choosedSectionTitle, contentType]);
 
   const fields =
     contentType.fields?.map((x) => {
@@ -81,6 +130,24 @@ export default function ContentList({
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
+      else if (x?.fieldName === 'subCategories')
+        return `
+        ${x.fieldName} {
+          id
+          name
+          imageUrl
+        }
+        `;
+      else if (
+        x.fieldType.dataType === FieldType.Link &&
+        x?.displayMainTable === true
+      )
+        return `
+        ${x.fieldName} {
+          id
+          name
+        }
+      `;
       else
         return `
         ${x.fieldName} {
@@ -100,7 +167,11 @@ export default function ContentList({
       }
   `;
 
-  const { data: contentData, refetch: refetchContent } = useQuery(query, {
+  const {
+    data: contentData,
+    refetch: refetchContent,
+    loading: loadingContent,
+  } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: languageId,
@@ -112,30 +183,75 @@ export default function ContentList({
       const moreInforItems = contentData[getAllCall].map((item: any) => ({
         ...item,
       }));
-
       if (selectedTab === 1) {
-        let clientProfileData = moreInforItems.filter(
-          (item: { type: string }) =>
-            item.type === 'client profile' || item.type === 'Info Page'
-        );
-        setTableData(clientProfileData);
+        setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
         );
-        console.log(postNatalData);
-        setTableData(postNatalData);
+        setTableData(
+          postNatalData?.length > 0 ? postNatalData : moreInforItems
+        );
       } else if (selectedTab === 3) {
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
-        setTableData(anteNatalData);
+
+        if (
+          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+        ) {
+          setTableData(
+            moreInforItems?.filter(
+              (item) =>
+                item?.type === 'Small group' || item?.type === 'Large group'
+            )
+          );
+          return;
+        }
+
+        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+          setTableData(
+            moreInforItems?.filter((item) => item?.type === 'Story time')
+          );
+          return;
+        }
+
+        setTableData(
+          anteNatalData?.length > 0 ? anteNatalData : moreInforItems
+        );
+      } else if (selectedTab === 4) {
+        const getFormattedDateString = (mDate: String) => {
+          if (mDate == null || '') return '';
+          const dateItems = mDate.split('T');
+          return dateItems[0];
+        };
+
+        const copyItems = contentData[getAllCall].map((item: any) => ({
+          ...item,
+          startDate:
+            item.startDate !== null
+              ? getFormattedDateString(item.startDate)
+              : '',
+          endDate:
+            item.startDate !== null ? getFormattedDateString(item.endDate) : '',
+        }));
+
+        setTableData(copyItems);
       } else {
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
         }));
 
-        setTableData(copyItems);
+        let clientProfileData = copyItems.filter(
+          (item: { type: string; name: string }) => {
+            return (
+              item.type !== 'TermsAndConditions' &&
+              item.name !== 'Personal Information'
+            );
+          }
+        );
+
+        setTableData(clientProfileData);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -153,6 +269,15 @@ export default function ContentList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
 
+  useEffect(() => {
+    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      setSearchText('Search by topic…');
+      setButtonText('Topic');
+    } else if (contentType?.name === 'StoryBook') {
+      setButtonText('Story');
+    }
+  }, [contentType.name]);
+
   const getContentGroupContentByLanguageId = (languageId: string) => {
     setLanguageId(languageId);
     refetchContent({
@@ -165,85 +290,87 @@ export default function ContentList({
       content: item,
       languageId: languageId,
     };
+
     viewContent(model);
   };
 
-  const displayCreatePanel = () => {
-    panel({
-      noPadding: true,
-      title: `Create ${type}`,
-      render: (onSubmit: any) => (
-        <ContentCreate
-          key={`contentPanelCreate`}
-          selectedLanguageId={languageId}
-          languages={languages}
-          contentType={contentType}
-          optionDefinitions={optionDefinitions}
-          closeDialog={(created: boolean) => {
-            onSubmit();
+  const onBulkActionCallback = (status: BulkActionStatus) => {
+    if (status !== 'success') return;
 
-            if (created) {
-              refetchContent({
-                localeId: languageId.toString(),
-              });
-              refreshParent();
-
-              setNotification({
-                title: 'Successfully Created Content!',
-                variant: NOTIFICATION.SUCCESS,
-              });
-            }
-          }}
-        />
-      ),
+    refetchContent({
+      localeId: languageId.toString(),
     });
+    refreshParent();
   };
 
   if (tableData && displayFields) {
     return (
       <div>
         <div className="flex flex-col">
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <h3 className="text-lg font-medium leading-6 text-white">{type}</h3>
-            <div className="flex flex-row">
-              <div className="flex flex-col">
-                <LanguageSelector
-                  disabled={false}
-                  languages={languages}
-                  currentLanguageId={languageId}
-                  selectLanguage={getContentGroupContentByLanguageId}
-                />
-              </div>
-              <div className="flex flex-col">
-                <div className="mt-1 ml-4">
-                  {hasPermission(PermissionEnum.create_static) && (
-                    <button
-                      onClick={() => displayCreatePanel()}
-                      type="button"
-                      className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                    >
-                      <PlusIcon width="22px" className="pl-1" />
-                      Add {camelCaseToSentanceCase(contentType.name)}
-                    </button>
-                  )}
-                </div>
-              </div>
+          <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
+            <div className="bg-adminPortalBg relative w-full rounded-md lg:w-6/12">
+              <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                <SearchIcon className="text-textMid h-5 w-5" />
+              </span>
+              <input
+                id="search-input"
+                className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
+                placeholder={searchText}
+                onChange={onSearch}
+                // value={searchValue}
+              />
             </div>
+            {hasPermission(PermissionEnum.create_static) &&
+              contentType?.name !== 'Consent' &&
+              contentType?.name !== 'MoreInformation' &&
+              contentType?.name !== 'ProgressTrackingLevel' &&
+              contentType?.name !== 'ProgressTrackingCategory' && (
+                <button
+                  onClick={() => {
+                    hasPermission(PermissionEnum.update_static) &&
+                      viewSelectedRow();
+                  }}
+                  type="button"
+                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+                >
+                  <PlusIcon width="22px" className="pl-1" />
+                  Add {camelCaseToSentanceCase(buttonText)}
+                </button>
+              )}
           </div>
-
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
+                  isLoading={!tableData.length && loadingContent}
                   columns={displayFields.map((item) => {
-                    return { field: item, use: item };
+                    return {
+                      field:
+                        typeof item.fieldName === 'string'
+                          ? item.fieldName
+                          : JSON?.stringify(item.fieldName),
+                      use:
+                        typeof item.displayName === 'string'
+                          ? item.displayName
+                          : JSON?.stringify(item.displayName),
+                    };
                   })}
-                  rows={tableData}
-                  component={'cms'}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
+                  component={
+                    selectedTab === ContentManagementTabs.COMMUNITY.id
+                      ? ContentTypes.COACHING_CIRCLE_TOPICS
+                      : 'cms'
+                  }
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&
                     viewSelectedRow
                   }
+                  onBulkActionCallback={onBulkActionCallback}
+                  languages={languages}
                 />
               </div>
             </div>

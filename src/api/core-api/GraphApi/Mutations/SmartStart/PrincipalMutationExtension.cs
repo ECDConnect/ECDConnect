@@ -29,6 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [Service] ApplicationUserManager userManager,
     [Service] PersonnelService personnelManager,
     IGenericRepositoryFactory repoFactory,
+    [Service] INotificationService notificationService,
     string firstName,
     string lastName,
     string idNumber,
@@ -42,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
-
+ 
             if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
                 if (practitionerUser != null)
@@ -78,7 +79,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     classroomGroupRepo.Update(group);
                                     if (classroom != null) {
                                         classroomIds.Add(classroom.Id);
-                                    }    
+                                    }                                    
                                 }
                             }
                             if (classroomIds != null && classroomIds.Count() > 0)
@@ -93,6 +94,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         user.NickFullName = firstName + " " + lastName;
 
                         userManager.UpdateAsync(user);
+
+                        string programmeName = principalClassRoom != null ? principalClassRoom.Name : "Programme";
+                        //send message of invitation
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
+
                         return practitioner;
                     }
                     else return null;
@@ -125,6 +131,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
+            [Service] INotificationService notificationService,
+            [Service] UserManager<ApplicationUser> userManager,
             string userId, string principalId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -136,6 +144,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;
                 practitionerRepo.Update(practitioner);
+            }
+            //principaluser to send
+            var userToSend = userManager.FindByIdAsync(principalId).Result;
+            if (userToSend != null && practitioner != null && practitioner.User != null)
+            {
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7));
             }
 
             return practitioner;
@@ -177,15 +191,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
-            [Service] ApplicationUserManager userManager,
-             string userId)
+             string userId, bool sendComm = false)
         {
-            Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId);
+            Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId, sendComm);
             return personnelManager.MapPractitionerToPrincipal(practitionerToPromote);
         }
 
         public Practitioner DemotePractitionerAsPrincipal([Service] PersonnelService personnelManager,
-             [Service] ApplicationUserManager userManager,
              string userId)
         {
             Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);
@@ -197,6 +209,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
+            [Service] PersonnelService personnelManager,
         string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -215,13 +228,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (principal.UserId != null && practitioner.UserId != null)
                     {
                         //Reassign all classes and programmes back to principal
-                        reassignmentService.AddReassignmentForPractitioner(uId.ToString(), practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
+                        reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                     }
 
                     status.AcceptedDate = null;
                     int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
+                    bool sendRejectedNotification = true;
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
-                    if (practitioner.DateToBeRemoved != null)
+                    if (practitioner.DateToBeRemoved != null || practitioner.IsRegistered == null)
                     {
                         practitioner.DateToBeRemoved = DateTime.Now;
                         practitioner.DateAccepted = null;
@@ -233,6 +247,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
+
+                        notificationService.ExpireNotificationsTypesForUser(principal.UserId, TemplateTypeConstants.RejectedInvitation);
+                        sendRejectedNotification = false;
                     }
                     else
                     {
@@ -240,7 +257,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (principal.UserId != null && practitioner.UserId != null)
                         {
                             //Reassign all classes and programmes back to principal
-                            reassignmentService.AddReassignmentForPractitioner(uId.ToString(), practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
+                            reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                         }
 
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
@@ -250,13 +267,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;
                     }
-                    //send message of rejection
-                    List<TagsReplacements> replacements = new List<TagsReplacements>
+                    if (sendRejectedNotification)
                     {
-                        new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
-                        new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToString() }
-                    };
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                        //send message of rejection
+                        string programmeName = personnelManager.GetSiteNameForPractitioner(principal.UserId);
+                        List<TagsReplacements> replacements = new List<TagsReplacements>
+                        {
+                            new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
+                            new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName },
+                            new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() }
+                        };
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                    }
                 }
                 else
                 {

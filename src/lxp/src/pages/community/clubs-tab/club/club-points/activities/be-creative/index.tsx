@@ -1,4 +1,10 @@
-import { BannerWrapper, Button, EmptyPage, ScoreCard } from '@ecdlink/ui';
+import {
+  Alert,
+  BannerWrapper,
+  Button,
+  EmptyPage,
+  ScoreCard,
+} from '@ecdlink/ui';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
@@ -14,9 +20,8 @@ import {
 } from '@ecdlink/core';
 import { BeCreativeRouteState } from './index.types';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
 import { useAppDispatch } from '@/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ClubActions,
   getActivityBeCreativeDetails,
@@ -25,8 +30,14 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 import { getAlertType } from '../0-components/alert-card/utils';
 import { ActivityBeCreativeDetail } from '@ecdlink/graphql';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
+import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 
 export const BeCreative: React.FC = () => {
+  const [showAlert, setShowAlert] = useState(false);
+
   const { clubId } = useParams<ClubsRouteState>();
 
   const user = useSelector(userSelectors.getUser);
@@ -35,6 +46,10 @@ export const BeCreative: React.FC = () => {
     clubSelectors.getActivityBeCreativeDetailsSelector(clubId)
   );
 
+  const descendingMonthlyRecords = [
+    ...(details?.monthlyRecords || []),
+  ]?.reverse();
+
   const history = useHistory();
 
   const location = useLocation<BeCreativeRouteState>();
@@ -42,22 +57,64 @@ export const BeCreative: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { showMessage } = useSnackbar();
 
+  const { isOnline } = useOnlineStatus();
+
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentMonthName = currentDate.toLocaleString('default', {
+    month: 'long',
+  });
+
+  const pointsConfig = ClubActivitiesPointsPerLeague.BeCreative.All;
+
+  const hasRecordInCurrentMonth = details?.monthlyRecords?.some(
+    (record) =>
+      record?.monthName?.toLowerCase() === currentMonthName.toLowerCase() &&
+      !!record?.documentName
+  );
+
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
     ClubActions.GET_ACTIVITY_BE_CREATIVE_DETAILS
   );
 
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
   );
+
+  const isLeader = club?.clubLeader?.userId === user?.id;
+  const isSupportRole = club?.clubSupport?.userId === user?.id;
+
+  const isLeagueStarts = currentMonth >= 3;
+  const isClubInALeague = !!club?.league;
   const isFromAddCollageEvent = location?.state?.isFromAddCollageEvent;
+  const isToShowAddImageEventButton =
+    (isFromAddCollageEvent || isLeader || isSupportRole) &&
+    !hasRecordInCurrentMonth;
+
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
+  const isCelebratoryMessage = details?.points === pointsConfig.max;
+  const isInfoMessage =
+    !details?.monthlyRecords?.some(
+      (record) => record?.monthName?.toLocaleLowerCase() === 'november'
+    ) &&
+    isToShowPoints &&
+    !isLeader &&
+    !isCoach;
+  const isToShowInfoCard =
+    isToShowAddImageEventButton &&
+    !details?.monthlyRecords?.some(
+      (record) =>
+        getAlertType(record?.documentStatusColor ?? '') === 'info' ||
+        getAlertType(record?.documentStatusColor ?? '') === 'success'
+    );
 
   const activityId = 'be-creative';
 
   const formatMonthlyRecord = (record: ActivityBeCreativeDetail): Item => ({
     title: record.monthName ?? '',
     description: record.description ?? '',
-    rightChip: `+ ${record.points}`,
+    rightChip: isToShowPoints ? `+ ${record.points}` : '',
     alert: {
       title: record.documentStatus ?? '',
       type: getAlertType(record.documentStatusColor ?? ''),
@@ -65,12 +122,37 @@ export const BeCreative: React.FC = () => {
   });
 
   useEffect(() => {
-    appDispatch(
-      getActivityBeCreativeDetails({
-        clubId,
-      })
-    );
-  }, [appDispatch, clubId]);
+    if (
+      wasLoading &&
+      !isLoading &&
+      isFromAddCollageEvent &&
+      hasRecordInCurrentMonth &&
+      !showAlert
+    ) {
+      setShowAlert(true);
+      showMessage({
+        message: 'You have already added an image this month.',
+        type: 'error',
+      });
+    }
+  }, [
+    isLoading,
+    hasRecordInCurrentMonth,
+    showMessage,
+    isFromAddCollageEvent,
+    showAlert,
+    wasLoading,
+  ]);
+
+  useEffect(() => {
+    if (isOnline) {
+      appDispatch(
+        getActivityBeCreativeDetails({
+          clubId,
+        })
+      );
+    }
+  }, [appDispatch, clubId, isOnline]);
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {
@@ -80,6 +162,7 @@ export const BeCreative: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"
@@ -90,39 +173,92 @@ export const BeCreative: React.FC = () => {
           ? history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT)
           : history.goBack()
       }
-      displayHelp
+      displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
-            ':activityId',
-            activityId
-          )
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.ROOT.replace(
+            ':clubId',
+            clubId
+          ).replace(':activityId', activityId)
         )
       }
     >
       <Header
-        // TODO: change to activity date
         date={new Date()}
         imageUrl={paintPaletteIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      {/* EC-1909 - Suppress ticket */}
-      {/* <ScoreCard
-        className="mt-5"
-        mainText={String(details?.points ?? 0)}
-        hint="points"
-        currentPoints={details?.points || 18}
-        maxPoints={800}
-        barBgColour="uiLight"
-        barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
-        bgColour="uiBg"
-        textColour="black"
-      /> */}
-      {details?.monthlyRecords?.length ? (
+      {isToShowPoints && (
+        <ScoreCard
+          className="mt-5"
+          mainText={String(details?.points ?? 0)}
+          hint="points"
+          currentPoints={details?.points || 18}
+          maxPoints={pointsConfig.max}
+          barBgColour="uiLight"
+          barColour={getScoreBarColor(
+            details?.points ?? 0,
+            pointsConfig.green,
+            pointsConfig.amber
+          )}
+          bgColour="uiBg"
+          textColour="black"
+        />
+      )}
+      {isCelebratoryMessage && !isCoach && (
+        <Alert
+          className="mt-4"
+          type="successLight"
+          title="Wow, great job!"
+          customIcon={<PositiveEmoticon className="w-12" />}
+        />
+      )}
+      {descendingMonthlyRecords?.length ? (
         <div className="mt-5">
-          {details.monthlyRecords.map((item) => (
-            <AlertCard item={formatMonthlyRecord(item!)} />
+          {descendingMonthlyRecords.map((item) => (
+            <AlertCard
+              key={item?.monthName}
+              item={formatMonthlyRecord(item!)}
+            />
           ))}
+          {isToShowInfoCard && (
+            <Alert
+              className="my-5"
+              title="How can you help your club earn points?"
+              list={['Add a “Be creative” image every month.']}
+              type="info"
+            />
+          )}
+          {isInfoMessage && (
+            <Alert
+              className="my-4"
+              type="info"
+              title="How can you help your club earn points?"
+              list={[
+                'Ask your club leader to organise a meeting to work on a creative project.',
+              ]}
+              button={
+                <Button
+                  text="Contact your club leader"
+                  type="filled"
+                  color="primary"
+                  textColor="white"
+                  icon="ChatIcon"
+                  onClick={() =>
+                    history.push(
+                      ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+                        ':clubId',
+                        clubId
+                      ).replace(
+                        ':leaderId',
+                        club?.clubLeader?.practitionerId ?? ''
+                      )
+                    )
+                  }
+                />
+              }
+            />
+          )}
         </div>
       ) : (
         <EmptyPage
@@ -131,14 +267,14 @@ export const BeCreative: React.FC = () => {
           subTitle=""
         />
       )}
-      {isFromAddCollageEvent && (
+      {isToShowAddImageEventButton && (
         <Button
           className="mt-auto mb-4"
           icon="PlusCircleIcon"
           type="filled"
           textColor="white"
           color="primary"
-          text="Add image to {month}"
+          text={`Add image for ${currentMonthName}`}
           onClick={() =>
             history.push(
               ROUTES.PRACTITIONER.COMMUNITY.CLUB.COLLAGE_EVENT.ADD_EVENT
@@ -147,7 +283,9 @@ export const BeCreative: React.FC = () => {
         />
       )}
       <Button
-        className="mt-auto"
+        className={
+          isFromAddCollageEvent || isToShowAddImageEventButton ? '' : 'mt-auto'
+        }
         icon="ArrowCircleLeftIcon"
         type="outlined"
         textColor="primary"
@@ -155,9 +293,9 @@ export const BeCreative: React.FC = () => {
         text="Back to club"
         onClick={() =>
           history.push(
-            isPractitioner
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
           )
         }
       />

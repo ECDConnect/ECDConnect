@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -21,6 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
     {
         [ForeignKey(nameof(CreatedUserId))] 
         public Guid CreatedUserId { get; set; }
+        
         public string Name { get; set; }
 
         public string Reference { get; set; }
@@ -39,6 +41,19 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         public TKey WorkflowStatusId { get; set; }
 
         public string Hierarchy { get; set; }
+
+        public string CreatedUserId { get; set; }
+
+        [NotMapped]
+        public virtual ApplicationUser CreatedUser { get; set; }
+        [NotMapped]
+        public string ClientName { get; set; }
+        [NotMapped]
+        public string CreatedByName { get; set; }
+        [NotMapped]
+        public string ClientStatus { get; set; }
+
+
     }
 
     public interface DocumentJoin<TKey>

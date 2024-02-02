@@ -1,4 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities.Clubs;
+﻿using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
@@ -42,6 +43,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public virtual Coach Coach { get; set; }
         public virtual List<CoachingClub> CoachingClubs { get; set; }
+    }
+
+    public class ClubMeetingCoachInfo
+    {
+        public bool HasMissed3MonthsMeetings { get; set; }
+        public string LastMeetingAttended { get; set; }
     }
 
     public class CoachingClubBase
@@ -88,25 +95,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
-        public virtual List<ClubMeeting> UpcomingMeetings { get; set; }
+        public virtual List<ActivityMeetRegularDetail> UpcomingMeetings { get; set; }
         public virtual List<ActivityMeetRegularDetail> PastMeetings { get; set; }
     }
 
     public class ActivityMeetRegularDetail
     {
+        public Guid Id { get; set; }
         public DateTime MeetingDate { get; set; }
         public double MeetingAttendancePerc { get; set; }
         public string MeetingAttendanceColor { get; set; }
         public string MeetingNotes { get; set; }
-        public List<MeetingParticipant> MeetingParticipants { get; set; }
-        public List<MeetingParticipant> MeetingAbsentees { get; set; }
+        public List<ClubUser> MeetingParticipants { get; set; }
+        public List<ClubUser> MeetingAbsentees { get; set; }
         public int Points { get; set; }
+        public Guid? EventId { get; set; }
+        public string Name { set; get; }
+        public bool ClubLeaderContacted { get; set; }
     }
 
-    public class MeetingParticipant
+    public class ClubUser
     {
+        public string UserId { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
+        public string ProfileImageUrl { get; set; }
     }
 
     public class ActivityBeCreative
@@ -132,16 +145,51 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+        public List<ActivityHostFamilyDaysDetail> Terms { get; set; }
+    }
+
+    public class ActivityHostFamilyDaysDetail
+    {
+        public int TermNr { get; set; }
+        public string TermName { get; set; }
+        public string EventName { get; set; }
+        public string Description { get; set; }
+        public string DocumentStatus { get; set; } = "Not completed";
+        public string DocumentStatusColor { get; set; } = MetricsColorEnum.Error.ToString();
+        public int Points { get; set; } = 0;
+        public List<Guid> MeetingParticipantsPractitionerIds { get; set; }
     }
 
     public class ActivityLeaveNoOneBehind
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+        public double GreenPerc { get; set; } = 0.0;
+        public double RedPerc { get; set; } = 0.0;
+        public double OrangePerc { get; set; } = 0.0;
+        public double BluePerc { get; set; } = 0.0;
+        public string GreenText { get; set; }
+        public string RedText { get; set; }
+        public string OrangeText { get; set; }
+        public string BlueText { get; set; }
+        public List<ClubUser> GreenUsers { get; set; }
+        public List<ClubUser> RedUsers { get; set; }
+        public List<ClubUser> OrangeUsers { get; set; }
+        public List<ClubUser> BlueUsers { get; set; }
     }
 
-    public class ActivityChildAttendance
+
+        public class ActivityChildAttendance
     {
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
+        public virtual List<ActivityChildAttendanceDetail> MonthlyRecords { get; set; }
+    }
+
+    public class ActivityChildAttendanceDetail
+    {
+        public string MonthName { get; set; }
+        public int PercentageMembersSubmittedAllRegisters { get; set; }
         public int Points { get; set; }
         public string PointsColor { get; set; }
     }
@@ -150,6 +198,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+        public virtual List<ActivityChildProgressDetail> MonthlyRecords { get; set; }
+    }
+
+    public class ActivityChildProgressDetail
+    {
+        public string MonthName { get; set; }
+        public int ProgressPoints { get; set; }
+        public int CaregiverPoints { get; set; }
+        public int ProgressPerc { get; set; }
+        public int CaregiverPerc { get; set; }
+        public string ProgressPointsColor { get; set; }
+        public string CaregiverPointsColor { get; set; }
+
     }
 
     public class BeCreativeUpload

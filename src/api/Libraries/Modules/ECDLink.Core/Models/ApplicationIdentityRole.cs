@@ -14,5 +14,7 @@ namespace ECDLink.Core.Models
         {
             Name = roleName;
         }
+
+        public Guid? TenantId { get; set; }
     }
 }

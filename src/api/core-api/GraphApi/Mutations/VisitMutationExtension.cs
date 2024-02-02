@@ -1,9 +1,12 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
+using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -13,6 +16,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -261,15 +265,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return visit;
         }
 
-        // This function is here for adding visits 'manually' via postman for a practitioner, but is also called from GetAllPractitionersForCoach
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool ValidateDefaultVisitsForPractitioner(
-            [Service] VisitManager visitManager,
-            string userId)
-        {
-            return visitManager.ValidateDefaultVisitsForPractitioner(userId);
-        }
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddSelfAssessmentForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
@@ -449,6 +444,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddCoachFranchiseeAgreementForTrainee(
+            [Service] IIntegrationService integrationService,
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
@@ -484,14 +480,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.ChecklistData.VisitId = visit.Id.ToString();
             input.ChecklistData.TraineeId = trainee.Id.ToString();
             input.ChecklistData.CoachId = coach.Id.ToString();
-            visitDataManager.AddCoachData(input.ChecklistData);
 
+            Visit updatedVisit = visitDataManager.AddCoachData(input.ChecklistData);
             return visit;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddCoachVisitInviteForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] INotificationService notificationService,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             VisitModel input)
@@ -526,6 +523,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.LinkedVisitId = input.LinkedVisitId;
             input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             input.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerFirstName",
+                ReplacementValue = practitioner.User.FirstName + " " + practitioner.User.Surname
+            });
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, coach.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+
             return visitManager.AddVisitForCoach(input);
         }
 

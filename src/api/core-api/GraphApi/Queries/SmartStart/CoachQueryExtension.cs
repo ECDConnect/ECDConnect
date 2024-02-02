@@ -46,20 +46,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             foreach (var practitioner in practitioners)
             {
-                var coachPractitioner = new CoachPractitioner
+                // validate default visits for smartSpace license
+                visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId, practitioner.Id);
+
+                coachPractitioners.Add(new CoachPractitioner
                 {
                     Id = practitioner.Id,
                     UserId = practitioner.UserId,
-                    ProgrammeType = practitioner.ProgrammeType
-                };
-
-                // let's make sure that the default visits are added when the smartSpace license is available
-                var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId.ToString());
-                if (isAdded)
-                {
-                    coachPractitioner.timeline = personnelService.GetPractitionerTimeline(practitioner.UserId.ToString());
-                }
-                coachPractitioners.Add(coachPractitioner);
+                    ProgrammeType = practitioner.ProgrammeType,
+                    timeline = personnelService.GetPractitionerTimeline(practitioner.UserId)
+                });
             }
 
             return coachPractitioners;
@@ -253,12 +249,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public List<CoachingClubBase> GetAllClubsForCoachSimple([Service] IClubService clubService, string userId)
         {
             return clubService.GetAllClubsForCoachSimple(userId);
-        }
-
-        // TODO this is used on the coach redux store, but then not anywhere else. Investigate and remove
-        public List<CoachingClubBase> GetAllClubsForCoach([Service] IClubService clubService, string userId)
-        {
-            return clubService.GetAllClubsForCoach(userId);
         }
 
         public List<ClubMember> GetClubsMembers([Service] IClubService clubService, Guid[] clubIds)

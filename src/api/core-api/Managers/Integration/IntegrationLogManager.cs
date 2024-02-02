@@ -1,4 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Repositories.Factories;

@@ -30,8 +30,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public bool? AttendedChildProgress { get; set; }
         public bool? IsOnStipend { get; set; }
         public bool? IsCompletedBusinessWalkThrough { get; set; }
-        public bool? IsClubLeader { get; set; }
-        public bool? IsClubSupport { get; set; }
         public bool? IsNewInClub { get; set; }
         public Guid? ClubId { get; set; }
         public string ClubName { get; set; }
@@ -46,7 +44,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string StipendType { get; set; }
         public int DaysAbsentLastMonth { get; set; } = 0;
         public bool IsOnLeave { get; set; } = false;
-
         public List<AbsenteeDetail> Absentees { get; set; }
     }
 

@@ -15,13 +15,16 @@ import {
   sortVisits,
 } from './utils';
 import { visitTypes } from '../coach-practitioner-journey.types';
-import { CoachCirclesMeeting } from './coach-circles-meetings';
+import { ClubMeetingMeeting } from './club-meetings';
+import { visitIdKey } from '../forms';
 
 export type ScheduleEventType =
   | 'First PQA'
   | 'PQA follow-up'
   | 'Re-accreditation'
-  | 'Re-accreditation follow-up';
+  | 'Re-accreditation follow-up'
+  | 'First site visit'
+  | 'Second site visit';
 
 export interface ScheduleProps {
   visit: Visit;
@@ -91,6 +94,19 @@ export const setStep = (
   return {};
 };
 
+const getIconBgColor = (attendanceColor: string) => {
+  switch (attendanceColor) {
+    case 'Success':
+      return 'successMain';
+    case 'Warning':
+      return 'alertMain';
+    case 'Error':
+      return 'errorMain';
+    default:
+      return '';
+  }
+};
+
 export const timelineSteps = ({
   timeline,
   onView,
@@ -116,8 +132,10 @@ export const timelineSteps = ({
 }): StepItem[] => {
   const onActionButtonClick = (options: ScheduleOrStartProps) => {
     if (!options.visit?.eventId) {
+      window.sessionStorage.setItem(visitIdKey, options.visit?.id);
       onScheduleOrStart(options);
     } else {
+      window.sessionStorage.setItem(visitIdKey, options.visit?.id);
       onStart(options.visit.visitType?.name as string);
     }
   };
@@ -177,8 +195,15 @@ export const timelineSteps = ({
           visit1?.attended ? visit1.actualVisitDate : visit1?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions);
 
+    const currentVisit = visits?.some(
+      (item) =>
+        item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
+    )
+      ? visit2
+      : visit1;
+
     const isLateDate =
-      new Date(date) < new Date() &&
+      new Date(date).getTime() < new Date().getTime() &&
       timeline.prePQASiteVisits.some((item) => !item?.attended);
     const isAllCompleted = timeline.prePQASiteVisits?.every(
       (item) => !!item?.attended
@@ -202,11 +227,14 @@ export const timelineSteps = ({
       },
       accordionContent: (
         <PrePqaVisits
+          currentVisit={currentVisit!}
           isLoading={isLoading}
           isOnline={isOnline}
           onView={onView}
           timeline={timeline}
           visits={visits}
+          onStart={onStart}
+          onScheduleOrStart={onScheduleOrStart}
         />
       ),
     });
@@ -226,19 +254,6 @@ export const timelineSteps = ({
         ? 'completed'
         : 'inProgress';
 
-    const getIconBgColor = (attendanceColor: string) => {
-      switch (attendanceColor) {
-        case 'Success':
-          return 'successMain';
-        case 'Warning':
-          return 'alertMain';
-        case 'Error':
-          return 'errorMain';
-        default:
-          return '';
-      }
-    };
-
     const date = new Date(
       timeline.coachCircles?.attendanceText!
     ).toLocaleDateString('en-ZA', dateOptions);
@@ -256,11 +271,47 @@ export const timelineSteps = ({
       inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
       color: getIconBgColor(attendanceColor),
       accordionContent: (
-        <CoachCirclesMeeting
+        <ClubMeetingMeeting
           isLoading={isLoading}
           isOnline={isOnline}
           onView={onView}
-          timeline={timeline}
+          attendanceRecord={timeline.coachCircles}
+        />
+      ),
+    });
+  }
+
+  if (timeline?.clubMeetings) {
+    const clubMeetingsAttendedMeetings = timeline.clubMeetings.totalPresent;
+    const clubMeetingsTotalMeetings = timeline.clubMeetings.totalMeetings;
+    const lastMeetingAttendanceDate = timeline.clubMeetings.attendanceText
+      ? new Date(timeline?.clubMeetings?.attendanceText)
+      : new Date();
+    const attendanceColor = timeline.clubMeetings.attendanceColor || 'Success';
+    const attendanceColorType =
+      timeline.clubMeetings.attendanceColor === 'Success'
+        ? 'completed'
+        : 'inProgress';
+
+    steps.push({
+      title: `${clubMeetingsAttendedMeetings}/${clubMeetingsTotalMeetings} club meetings attended`,
+      subTitle: `${lastMeetingAttendanceDate.toLocaleDateString(
+        'en-ZA',
+        dateOptions
+      )}`,
+      type: attendanceColorType,
+      extraData: {
+        date: lastMeetingAttendanceDate,
+      },
+      showAccordion: true,
+      inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
+      color: getIconBgColor(attendanceColor),
+      accordionContent: (
+        <ClubMeetingMeeting
+          isLoading={isLoading}
+          isOnline={isOnline}
+          onView={onView}
+          attendanceRecord={timeline.clubMeetings}
         />
       ),
     });

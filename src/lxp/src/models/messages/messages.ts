@@ -24,11 +24,19 @@ export type Message = {
     | 'programme-planning'
     | 'progress-report';
   expiryDate?: string;
+  action?: string;
 };
 
 export type MessageRouteConfig = {
   route: string;
   params?: any;
 };
+
+export interface MessageActionConfig {
+  buttonName: string;
+  buttonIcon?: string;
+  url: string;
+  state?: any;
+}
 
 export type MessageViewType = 'Messages' | 'Hub' | 'Both' | 'None';

@@ -14,6 +14,7 @@ import {
   getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
+import { useAppDispatch } from '@/store';
 
 interface IntroScreenProps {
   mother?: MotherDto;
@@ -33,6 +34,7 @@ export const IntroScreen = ({
   isFromProgressTab,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
+  const appDispatch = useAppDispatch();
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))

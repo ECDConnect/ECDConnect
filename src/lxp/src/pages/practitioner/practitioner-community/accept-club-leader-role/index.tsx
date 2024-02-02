@@ -13,7 +13,7 @@ import { useHistory } from 'react-router';
 import PositiveEmoticon from '@/assets/positive-bonus-emoticon.png';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
-import { clubSelectors } from '@/store/club';
+import { clubSelectors, clubThunkActions } from '@/store/club';
 import { useCallback, useEffect, useState } from 'react';
 import {
   notificationActions,
@@ -28,6 +28,7 @@ import {
 } from '@/store/club/club.actions';
 import { useSnackbar } from '@ecdlink/core';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const AcceptClubLeaderRole: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<string>();
@@ -41,6 +42,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
 
   const { showMessage } = useSnackbar();
 
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubForPractitionerSelector);
   const notification = useSelector(
@@ -51,6 +53,11 @@ export const AcceptClubLeaderRole: React.FC = () => {
     )
   );
 
+  const { isLoading: isLoadingClub } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_CLUB_FOR_USER
+  );
+
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
     ClubActions.ACCEPT_NEW_CLUB_LEADER_ROLE
@@ -58,18 +65,39 @@ export const AcceptClubLeaderRole: React.FC = () => {
 
   const activityId = 'club-leader-agreement';
 
+  const practitionerId = club?.clubMembers?.find(
+    (member) => member.userId === user?.id
+  )?.practitionerId;
+
   const membersOptions: DropDownOption<string>[] =
-    club?.clubMembers.map((member) => ({
-      label: `${member.firstName} ${member.surname}`,
-      value: member.userId,
-    })) || [];
+    club?.clubMembers
+      ?.filter((member) => member.userId !== user?.id)
+      ?.map((member) => ({
+        label: `${member.firstName} ${member.surname}`,
+        value: member.practitionerId,
+      })) || [];
+
+  const onBack = useCallback(() => {
+    history.push(
+      ROUTES.PRACTITIONER.COMMUNITY[
+        practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+      ]
+    );
+  }, [history, practitioner?.isNewInClub]);
 
   const onSubmit = async () => {
+    if (!isOnline) {
+      return showMessage({
+        message: 'You are offline. Please check your internet connection.',
+        type: 'error',
+      });
+    }
+
     await appDispatch(
       acceptNewClubLeaderRole({
         clubId: club?.id ?? '',
         clubSupportPractitionerId: selectedMember ?? '',
-        practitionerId: user?.id ?? '',
+        practitionerId,
       })
     );
   };
@@ -82,6 +110,12 @@ export const AcceptClubLeaderRole: React.FC = () => {
           type: 'error',
         });
       } else {
+        showMessage({
+          message: 'You have accepted the club leader role!',
+        });
+        appDispatch(
+          clubThunkActions.getClubForUser({ userId: user?.id ?? '' })
+        );
         appDispatch(notificationActions.removeNotification(notification!));
         appDispatch(
           disableBackendNotification({
@@ -99,6 +133,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
     isRejected,
     notification,
     showMessage,
+    user?.id,
     wasLoading,
   ]);
 
@@ -106,10 +141,15 @@ export const AcceptClubLeaderRole: React.FC = () => {
     onCallback();
   }, [onCallback]);
 
-  // TODO: Add a rule to redirect to the dashboard if the user has no invitation
+  useEffect(() => {
+    if (!notification) {
+      onBack();
+    }
+  }, [notification, onBack]);
 
   return (
     <BannerWrapper
+      isLoading={isLoadingClub}
       showBackground={false}
       size="medium"
       renderBorder
@@ -117,7 +157,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
       subTitle={club?.name}
       color="primary"
       className="flex flex-col p-4 pt-6"
-      onBack={() => history.push(ROUTES.DASHBOARD)}
+      onBack={onBack}
       displayOffline={!isOnline}
     >
       <Typography type="h2" text="Accept the club leader agreement" />
@@ -152,7 +192,6 @@ export const AcceptClubLeaderRole: React.FC = () => {
             I accept the{' '}
             <button
               className="text-secondary border-secondary border-b"
-              // TODO: add info page
               onClick={() =>
                 history.push(
                   ROUTES.COMMUNITY.HELP.replace(
@@ -180,6 +219,14 @@ export const AcceptClubLeaderRole: React.FC = () => {
             color="primary"
             textColor="white"
             text="Contact coach"
+            onClick={() =>
+              history.push(
+                ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH.replace(
+                  ':clubId',
+                  club?.id ?? ''
+                ).replace(':coachId', club?.clubCoach.userId!)
+              )
+            }
           />
         }
       />
@@ -192,7 +239,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
       )}
       <Button
         isLoading={isLoading}
-        disabled={!isAccepted || isLoading}
+        disabled={!isAccepted || !selectedMember || isLoading}
         className="mt-auto"
         icon="SaveIcon"
         type="filled"

@@ -77,6 +77,7 @@ import { isDateWithinThreeMonths } from './timeline/utils';
 import { getReAccreditationStepData } from './timeline/re-accreditation/step';
 import { getUserPointsSummaryForCoach } from '@/store/points/points.actions';
 import { pointsConstants } from '@/constants/points';
+import ROUTES from '@/routes/routes';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -102,6 +103,28 @@ export const CoachPractitionerJourney = () => {
     'pqa',
     PqaActions.GET_PRACTITIONER_TIMELINE
   );
+  const { isLoading: isAddingSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
+  );
+  const { isLoading: isAddingRequestedSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_REQUESTED_SUPPORT_VISIT_FORM_DATA
+  );
+  const { isLoading: isAddingVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_VISIT_FORM_DATA
+  );
+  const { isLoading: isAddingReAccreditationVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA
+  );
+
+  const isLoadingSyncData =
+    isAddingSupportVisit ||
+    isAddingRequestedSupportVisit ||
+    isAddingVisit ||
+    isAddingReAccreditationVisit;
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -203,7 +226,7 @@ export const CoachPractitionerJourney = () => {
             today.getMonth(),
             today.getDate()
           ).toISOString(),
-          maxDate: new Date(visit.plannedVisitDate).toISOString(),
+          //maxDate: new Date(visit.plannedVisitDate).toISOString(),
           name: '',
           description: '',
           participantUserIds: [practitionerId],
@@ -347,6 +370,16 @@ export const CoachPractitionerJourney = () => {
         scheduleStartText:
           visitTypes.reaccreditation.followUp.scheduleStartText,
       };
+    if (visit.visitType?.name === visitTypes.prePqa.first.name)
+      return {
+        eventType: visitTypes.prePqa.first.eventType,
+        scheduleStartText: visitTypes.prePqa.first.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.prePqa.second.name)
+      return {
+        eventType: visitTypes.prePqa.second.eventType,
+        scheduleStartText: visitTypes.prePqa.second.scheduleStartText,
+      };
   };
 
   const getScheduleOrStartProps = (
@@ -409,11 +442,13 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const onFormBack = () => {
+  const onFormBack = async () => {
     window.sessionStorage.removeItem(currentActivityKey);
     window.sessionStorage.removeItem(visitIdKey);
     window.sessionStorage.setItem(isViewKey, 'false');
     setShowForm(false);
+
+    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   };
 
   const onView = async (visit: Visit) => {
@@ -440,9 +475,22 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const getTimeline = useCallback(() => {
-    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId]);
+  const getTimeline = useCallback(async () => {
+    if (!timeline) {
+      await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+    }
+  }, [practitionerId, timeline]);
+
+  const syncData = useCallback(async () => {
+    if (!isOnline) return;
+
+    await appDispatch(pqaThunkActions.addSupportVisitFormData());
+    await appDispatch(pqaThunkActions.addRequestedSupportVisitFormData());
+    await appDispatch(pqaThunkActions.addVisitFormData());
+    await appDispatch(pqaThunkActions.addReAccreditationVisitData());
+
+    getTimeline();
+  }, [getTimeline, isOnline]);
 
   useLayoutEffect(() => {
     if (selectedForm) {
@@ -450,15 +498,11 @@ export const CoachPractitionerJourney = () => {
     }
   }, [selectedForm]);
 
-  useLayoutEffect(() => {
-    getTimeline();
-  }, [getTimeline]);
-
   useEffect(() => {
     if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
-      getTimeline();
+      syncData();
     }
-  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
+  }, [getTimeline, isOnline, previousShowForm, showForm, syncData, wasOnline]);
 
   useEffect(() => {
     if (lastAttendedReAccreditationFollowUpVisit?.id) {
@@ -469,7 +513,7 @@ export const CoachPractitionerJourney = () => {
         })
       );
     }
-  }, [appDispatch, lastAttendedReAccreditationFollowUpVisit, practitionerId]);
+  }, [lastAttendedReAccreditationFollowUpVisit, practitionerId]);
 
   const renderAlert = () => {
     const isPqaRedRating =
@@ -656,14 +700,18 @@ export const CoachPractitionerJourney = () => {
         endDate: currentDate,
       })
     ).then((userPoints) => {
-      setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      if (Array.isArray(userPoints.payload)) {
+        setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      } else {
+        setUserPointsSummaries([]);
+      }
     });
   }, [appDispatch, practitionerId]);
 
   const userPointsTotalForYear = useMemo(
     () =>
-      userPointsSummaries.reduce(
-        (total, current) => (total += current.pointsYTD),
+      userPointsSummaries?.reduce(
+        (total, current) => (total += current?.pointsYTD),
         0
       ),
     [userPointsSummaries]
@@ -695,14 +743,22 @@ export const CoachPractitionerJourney = () => {
       subTitle={`${practitionerFirstName} ${practitioner?.user?.surname}`}
       onBack={() => history.goBack()}
       className="p-4"
+      renderBorder
+      isLoading={isLoadingTimeline}
     >
-      {isLoadingTimeline ? (
-        <LoadingSpinner
-          size="medium"
-          spinnerColor="primary"
-          backgroundColor="uiLight"
-          className="tex pt-4"
-        />
+      {isLoadingSyncData ? (
+        <>
+          <LoadingSpinner
+            size="medium"
+            spinnerColor="primary"
+            backgroundColor="uiLight"
+          />
+          <Typography
+            className="mt-4 mb-2 text-center"
+            type="body"
+            text="Syncing journey..."
+          />
+        </>
       ) : (
         <>
           {!!currentVisit && (
@@ -712,8 +768,7 @@ export const CoachPractitionerJourney = () => {
               listItems={[currentVisit]}
             />
           )}
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={`${userPointsTotalForYear}`}
             hint={`points earned so far in ${new Date().getFullYear()}`}
@@ -729,7 +784,15 @@ export const CoachPractitionerJourney = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          /> */}
+            onClick={() =>
+              history.push(
+                ROUTES.COACH.PRACTITIONER_POINTS.replace(
+                  ':userId',
+                  practitioner?.userId || ''
+                )
+              )
+            }
+          />
           {renderAlert()}
           <Typography
             className="mt-4 mb-2"
@@ -759,7 +822,7 @@ export const CoachPractitionerJourney = () => {
             textColor="primary"
             icon="LocationMarkerIcon"
             text="Start support visit"
-            onClick={onSupportVisit}
+            onClick={() => onSupportVisit('')}
           />
           {!!timeline && (
             <Steps

@@ -1,11 +1,14 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -59,9 +62,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool AddCoachVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
+        public bool AddCoachVisitData([Service] IIntegrationService integrationService, [Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
-            return visitDataManager.AddCoachData(input);
+            Visit visit = visitDataManager.AddCoachData(input);
+            return true;
         }
             
     }

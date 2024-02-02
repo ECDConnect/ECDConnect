@@ -110,7 +110,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
     <>
       <BannerWrapper
         size={'small'}
-        backgroundColour={'uiBg'}
+        backgroundColour={'white'}
         renderBorder={true}
         title={titleText}
         color={'primary'}
@@ -140,7 +140,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
           />
           <FormInput<CreateNoteFormModel>
             label={'Add some detail'}
-            className={'mt-3'}
+            className={'mt-3 bg-white'}
             textInputType="textarea"
             register={noteFormRegister}
             nameProp={'body'}

@@ -13,8 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string WhatsAppNumber { get; set; }
         public string ProfileImageUrl { get; set; }
         public DateTime? DateAssigned { get; set; }
-
-         public DateTime? DateAccepted { get; set; }
+        public bool IsNewInSupportRole { get; set; }
 
         public ClubSupportModel(ClubSupport clubSupport)
         {
@@ -25,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             PhoneNumber = clubSupport.Practitioner.User.PhoneNumber;
             WhatsAppNumber = clubSupport.Practitioner.User.WhatsAppNumber;
             DateAssigned = clubSupport.DateAssigned;
-            DateAccepted = clubSupport.DateAccepted;
+            IsNewInSupportRole = clubSupport.IsNewInSupportRole;
         }
     }
 }

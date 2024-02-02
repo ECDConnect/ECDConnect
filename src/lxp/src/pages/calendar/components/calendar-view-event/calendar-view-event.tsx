@@ -20,8 +20,6 @@ import { userSelectors } from '@/store/user';
 import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
 import { getEventAction } from '../calendar.utils';
-import { pqaSelectors } from '@/store/pqa';
-import { Visit } from '@ecdlink/graphql';
 
 export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const { isOnline } = useOnlineStatus();
@@ -41,11 +39,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const user = useSelector(userSelectors.getUser);
   const canEdit = !!props.canEdit ? props.canEdit : user?.id === event.userId;
   const canAction = user?.id === event.userId;
-  const visit = useSelector(pqaSelectors.getCalendarEventLinkedVisit(event.id));
-
-  const getVisitForEvent = (eventId: string): Visit | null => {
-    return visit;
-  };
+  const isVisitDone = event?.visit?.attended;
 
   const displayCannotStartVisit = () => {
     dialog({
@@ -75,21 +69,17 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const onEdit = () => {
     props.onClose();
     calendarEditEvent({
+      hideAddParticipantsButton: props.hideAddParticipantsButton,
+      eventTypeDisabled: props.eventTypeDisabled,
       event: { id: event.id },
     });
   };
 
   const onAction = () => {
     props.onClose();
-    if (!!visit) {
-      const now = new Date();
-      if (
-        new Date(visit.plannedVisitDate).getTime() > now.getTime() ||
-        !!visit.actualVisitDate
-      ) {
-        displayCannotStartVisit();
-        return;
-      }
+    if (isVisitDone) {
+      displayCannotStartVisit();
+      return;
     }
     if (!!eventAction) {
       history.push(eventAction.url, eventAction.state);
@@ -266,6 +256,23 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
             </Button>
           </div>
         )}
+        {props.actionButton?.name && (
+          <div className="mx-4 border-t py-4">
+            <Button
+              onClick={() => {
+                props?.actionButton?.onClick();
+                props.onClose();
+              }}
+              className="w-full"
+              size="small"
+              textColor="white"
+              icon={props.actionButton.icon}
+              color="primary"
+              type="filled"
+              text={props.actionButton.name}
+            />
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );
@@ -283,6 +290,9 @@ export const useCalendarViewEvent = (): ((
           <CalendarViewEvent
             canEdit={options.canEdit}
             event={options.event}
+            actionButton={options.actionButton}
+            eventTypeDisabled={options.eventTypeDisabled}
+            hideAddParticipantsButton={options.hideAddParticipantsButton}
             onClose={() => {
               onCancel();
             }}

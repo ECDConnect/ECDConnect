@@ -9,10 +9,16 @@ import {
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
-import { ContentManagementView } from '../../../../content-management-models';
+import {
+  ContentManagementView,
+  ContentName,
+} from '../../../../content-management-models';
 import ContentEdit from '../content-edit/content-edit';
 import ContentView from '../content-view/content-view';
 import { XIcon } from '@heroicons/react/solid';
+import EditCategory from '../edit-category/edit-category';
+import CreateTheme from '../create-theme/create-theme';
+import CreateStory from '../../../content-list/components/create-story/create-story';
 
 export interface ContentCompareProps {
   contentView: ContentManagementView;
@@ -23,6 +29,7 @@ export interface ContentCompareProps {
   defaultLanguageId: string;
   cancelCompare: () => void;
   savedContent: () => void;
+  choosedSectionTitle?: string;
 }
 
 export default function ContentCompare({
@@ -34,6 +41,7 @@ export default function ContentCompare({
   selectedLanguageId,
   cancelCompare,
   savedContent,
+  choosedSectionTitle,
 }: ContentCompareProps) {
   const [selectedFirstLanguageId, setSelectedFirstLanguageId] =
     useState<string>(selectedLanguageId);
@@ -70,6 +78,182 @@ export default function ContentCompare({
     return orderedList;
   };
 
+  const handleNoDynamicForms = (type: string) => {
+    switch (type) {
+      case 'StoryBook':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateStory
+                        key={'firstLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedFirstLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case 'Theme':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateTheme
+                        key={'firstLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedFirstLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case 'ProgressTrackingCategory':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditCategory
+                        key={'firstLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedFirstLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleSecondLanguageNoDynamicForms = (type: string) => {
+    switch (type) {
+      case 'StoryBook':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateStory
+                        key={'secondLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedSecondLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case 'Theme':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateTheme
+                        key={'secondLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedSecondLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case 'ProgressTrackingCategory':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditCategory
+                        key={'secondLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedSecondLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   if (contentView && languages && currentContent) {
     return (
       <div className=" lg:min-w-0 lg:flex-1">
@@ -103,45 +287,67 @@ export default function ContentCompare({
                 <div className=" flwx w-2/12">
                   <LanguageSelector
                     disabled={false}
-                    languages={languages}
+                    languages={languages?.filter(
+                      (item) => item?.isActive === true
+                    )}
                     currentLanguageId={selectedFirstLanguageId}
                     selectLanguage={setSelectedFirstLanguageId}
                   />
                 </div>
 
-                <ContentEdit
-                  optionDefinitions={optionDefinitions}
-                  content={contentView.content}
-                  selectedLanguageId={selectedFirstLanguageId}
-                  contentValues={getOrderedContentValues(
-                    currentContent?.contentValues
-                  )}
-                  contentType={contentType}
-                  savedContent={savedContent}
-                  defaultLanguageId={defaultLanguageId}
-                />
+                {contentType?.name === ContentName.StoryBook ||
+                contentType?.name === ContentName.Theme ||
+                contentType?.name === ContentName.ProgressTrackingCategory ? (
+                  handleNoDynamicForms(contentType?.name)
+                ) : (
+                  <ContentEdit
+                    key={'firstLanguageContent'}
+                    optionDefinitions={optionDefinitions}
+                    content={contentView.content}
+                    selectedLanguageId={selectedFirstLanguageId}
+                    contentValues={getOrderedContentValues(
+                      currentContent?.contentValues
+                    )}
+                    contentType={contentType}
+                    savedContent={savedContent}
+                    defaultLanguageId={defaultLanguageId}
+                    choosedSectionTitle={choosedSectionTitle}
+                    contentView={contentView}
+                  />
+                )}
               </div>
               {/* SECOND LANGUAGE */}
               <div className="ml-4 w-1/2 rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6 ">
                 <div className=" flex w-2/12 ">
                   <LanguageSelector
                     disabled={false}
-                    languages={languages}
+                    languages={languages?.filter(
+                      (item) => item?.isActive === true
+                    )}
                     currentLanguageId={selectedSecondLanguageId}
                     selectLanguage={setSelectedSecondLanguageId}
                   />
                 </div>
-                <ContentEdit
-                  optionDefinitions={optionDefinitions}
-                  content={contentView.content}
-                  selectedLanguageId={selectedSecondLanguageId}
-                  contentValues={getOrderedContentValues(
-                    currentContent?.contentValues
-                  )}
-                  contentType={contentType}
-                  savedContent={savedContent}
-                  defaultLanguageId={defaultLanguageId}
-                />
+                {contentType?.name === ContentName.StoryBook ||
+                contentType?.name === ContentName.Theme ||
+                contentType?.name === ContentName.ProgressTrackingCategory ? (
+                  handleSecondLanguageNoDynamicForms(contentType?.name)
+                ) : (
+                  <ContentEdit
+                    key={'secondLanguageContent'}
+                    optionDefinitions={optionDefinitions}
+                    content={contentView.content}
+                    selectedLanguageId={selectedSecondLanguageId}
+                    contentValues={getOrderedContentValues(
+                      currentContent?.contentValues
+                    )}
+                    contentType={contentType}
+                    savedContent={savedContent}
+                    defaultLanguageId={defaultLanguageId}
+                    choosedSectionTitle={choosedSectionTitle}
+                    contentView={contentView}
+                  />
+                )}
               </div>
             </div>
           </div>

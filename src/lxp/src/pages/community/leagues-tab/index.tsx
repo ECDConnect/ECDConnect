@@ -1,43 +1,56 @@
 import { LeagueType } from '@/constants/club';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { LeagueClubsDto } from '@/models/club/league.dto';
 import ROUTES from '@/routes/routes';
-import { MenuListDataItem, StackedList, StackedListType } from '@ecdlink/ui';
+import { useAppDispatch } from '@/store';
+import { clubSelectors } from '@/store/club';
+import { ClubActions, getLeaguesForCoach } from '@/store/club/club.actions';
+import { userSelectors } from '@/store/user';
+import {
+  LoadingSpinner,
+  MenuListDataItem,
+  StackedList,
+  StackedListType,
+} from '@ecdlink/ui';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-
-export const mockedLeagues = [
-  {
-    id: '1',
-    name: 'League 1',
-    type: LeagueType.Purple,
-  },
-  {
-    id: '2',
-    name: 'League 2',
-    type: LeagueType.NewStars,
-  },
-  {
-    id: '3',
-    name: 'League 3',
-    type: LeagueType.RisingStars,
-  },
-];
 
 export const LeaguesTab = () => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
 
-  const mapLeague = (league: {
-    id: string;
-    name: string;
-    type: string;
-  }): MenuListDataItem => ({
+  const leagues = useSelector(clubSelectors.getLeaguesForCoachSelector);
+  const user = useSelector(userSelectors.getUser);
+
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_LEAGUES_FOR_COACH
+  );
+  // Reload league data
+  useEffect(() => {
+    if (!!user && !!user.id) {
+      appDispatch(getLeaguesForCoach({ coachUserId: user.id }));
+    }
+  }, [user]);
+
+  const mapLeague = (league: LeagueClubsDto): MenuListDataItem => ({
     title: league.name,
-    subTitle: league.type,
-    backgroundColor: league.type === LeagueType.Purple ? 'primary' : 'uiBg',
+    subTitle: league.leagueTypeName,
+    backgroundColor:
+      league.leagueTypeName === LeagueType.Purple ? 'primary' : 'uiBg',
     titleStyle:
-      league.type === LeagueType.Purple ? 'text-white' : 'text-textDark',
+      league.leagueTypeName === LeagueType.Purple
+        ? 'text-white'
+        : 'text-textDark',
     subTitleStyle:
-      league.type === LeagueType.Purple ? 'text-white' : 'text-successDark',
+      league.leagueTypeName === LeagueType.Purple
+        ? 'text-white'
+        : 'text-successDark',
     rightIcon:
-      league.type === LeagueType.Purple ? 'ChevronRightIcon' : undefined,
+      league.leagueTypeName === LeagueType.Purple
+        ? 'ChevronRightIcon'
+        : undefined,
     rightIconClassName: 'text-white w-6 h-6',
     onActionClick: () =>
       history.push(
@@ -45,12 +58,22 @@ export const LeaguesTab = () => {
       ),
   });
 
-  const purpleLeagues = mockedLeagues
-    .filter((league) => league.type === LeagueType.Purple)
+  const purpleLeagues = leagues
+    .filter((league) => league.leagueTypeName === LeagueType.Purple)
     .map(mapLeague);
-  const otherLeagues = mockedLeagues
-    .filter((league) => league.type !== LeagueType.Purple)
+  const otherLeagues = leagues
+    .filter((league) => league.leagueTypeName !== LeagueType.Purple)
     .map(mapLeague);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+      />
+    );
+  }
 
   return (
     <div className="p-4">

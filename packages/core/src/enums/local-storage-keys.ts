@@ -4,7 +4,10 @@ export enum LocalStorageKeys {
   theme = 'ECDTheme',
   practitionerProfilePicture = 'PractitionerProfilePicture',
   practitionerProgrammePicture = 'PractitionerProgrammePicture',
+  hasViewedJulProgressReport = 'HasViewedJulProgressReport',
+  hasViewedDecProgressReport = 'HasViewedDecProgressReport',
   attendanceTutorialComplete = 'AttendanceTutorialComplete',
+  programmeWalkthroughComplete = 'programmeWalkthroughComplete',
   hasClosedAttendanceSmartStartPointsMessage = 'HasClosedAttendanceSmartStartPointsMessage',
   HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
   isSmartStartUser = 'IsSmartStartUser',
@@ -14,4 +17,6 @@ export enum LocalStorageKeys {
   childProfileTutorialComplete = 'childProfileTutorialComplete',
   incomeStatementTutorialComplete = 'IncomeStatementTutorialComplete',
   pointsSubmitStatementsMessageDismissed = 'PointsSubmitStatementsMessageDismissed',
+  askToJoinClubViewed = 'AskToJoinClubViewed',
+  hasVisitedProgrammeDashboard = 'HasVisitedProgrammeDashboard',
 }

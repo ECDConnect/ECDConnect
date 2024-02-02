@@ -1,8 +1,8 @@
 using ECDLink.Core.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.Services;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
 {
@@ -28,20 +28,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.PullPQAData();
         }
-        public async Task<bool> IntegrationStatementsData([Service] IIntegrationService integrationService)//IIntegrationService
+        public async Task<bool> IntegrationStatementsData([Service] IIntegrationService integrationService)
         {
-            return await integrationService.IntegrationStatementsData();
+            await integrationService.IntegrationStatementsData();
+            return true;
         }
-        public async Task<bool> IntegrationAttendanceData([Service] IIntegrationService integrationService)//IIntegrationService
+        public async Task<bool> IntegrationAttendanceByDueData([Service] IIntegrationService integrationService)
         {
-            return await integrationService.IntegrationAttendanceByDueData();
+            await integrationService.IntegrationAttendanceByDueData();
+            return true;
         }
 
-        public async Task<bool> IntegrationAttendanceByDueData([Service] IIntegrationService integrationService)//IIntegrationService
+        public async Task<bool> IntegrationMonthlyAttendancePdf([Service] IIntegrationService integrationService)
         {
-            return await integrationService.IntegrationAttendanceByDueData();
+            await integrationService.PushMonthlyAttendancePdf();
+            return true;
         }
-        
+
         public async Task<bool> IntegrationUpdates([Service] IIntegrationService integrationService)
          {
             return await integrationService.IntegrationUpdates();
@@ -60,6 +63,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
             return await integrationService.IntegrationByNewCoach(remoteCoachId);
         }
 
+        public async Task<bool> IntegrationLeagueData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.IntegrationLeagueData();
+            return true;
+        }
+
+        public async Task<bool> PushSmartSpaceVisitsData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushSmartSpaceVisitsData();
+            return true;
+        }
+
+        public async Task<bool> PushPQAData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushPQAData();
+            return true;
+        }
+
+        public async Task<bool> PushChildProgressReports([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushChildProgressReports();
+            return true;
+        }
+        
+        public async Task<bool> PushReAccreditationData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.PushReAccreditationData();
+            return true;
+        }
         #endregion
     }
 }

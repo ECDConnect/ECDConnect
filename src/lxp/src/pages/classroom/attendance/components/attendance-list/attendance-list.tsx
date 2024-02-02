@@ -112,8 +112,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       const _allLearners = allLearners.filter(
         (x) =>
           !Boolean(x.stoppedAttendance) &&
-          new Date(attendanceDate).getTime() >=
-            new Date(x.startedAttendance).getTime()
+          attendanceDate.getTime() >= new Date(x.startedAttendance).getTime()
       );
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {
@@ -407,7 +406,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                   selectedGroup.id ===
                   primaryClassProgramme[0]?.classroomGroupId;
                 return (
-                  <div id={`attendanceList${selectedGroup.id}`}>
+                  <div
+                    key={`attencance_list_${idx}`}
+                    id={`attendanceList${selectedGroup.id}`}
+                  >
                     <ClassProgrammeAttendanceList
                       key={`class_attencance_list_${idx}`}
                       isPrimaryClass={isPrimaryList}

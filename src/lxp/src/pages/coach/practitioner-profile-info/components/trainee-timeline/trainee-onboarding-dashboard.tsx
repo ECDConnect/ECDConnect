@@ -17,6 +17,7 @@ import { PractitionerDto } from '@ecdlink/core';
 import { OverdueSteps } from './components/overdue-steps/overdue-steps';
 import { OnboardingNotCompleted } from './components/onboarding-not-completed/onboarding-not-completed';
 import { addDays } from 'date-fns';
+import { DateFormats } from '../../../../../constants/Dates';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: (notificationStep: string, options?: any) => void;
@@ -70,7 +71,9 @@ export const OnboardingTraineeDashboard: React.FC<
       !(
         item?.title === 'SmartSpace visit from coach' && !item?.extraData?.date
       ) &&
-      item?.title !== 'SmartSpace Licence'
+      item?.title !== 'SmartSpace Licence' &&
+      item?.title !== 'Sign franchisee agreement' &&
+      item?.title !== 'Sign start-up support agreement'
   );
 
   const checkOverdueDate = (date?: Date | null) => {
@@ -82,16 +85,20 @@ export const OnboardingTraineeDashboard: React.FC<
     (item) => item?.subTitleColor === 'alertMain'
   );
 
-  const completedSteps = steps?.filter((item) => item?.type === 'completed');
+  const completedSteps = steps?.filter(
+    (item) =>
+      item?.type === 'completed' ||
+      item?.title === 'Consolidation meeting attended'
+  );
 
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
   const fourWeeksAgo = addDays(new Date(), -28);
-  const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
-    ? new Date(timeline?.smartSpaceLicenseDate)
+  const starterLicenseDate = timeline?.starterLicenseDate
+    ? new Date(timeline?.starterLicenseDate)
     : new Date();
   const onboardingIncompleted =
-    onboardingNotCompleted && smartSpaceLicenseDate <= twoWeeksAgo;
+    onboardingNotCompleted && starterLicenseDate <= twoWeeksAgo;
 
   const stepperCount = timelineSteps(
     timeline!,
@@ -150,12 +157,16 @@ export const OnboardingTraineeDashboard: React.FC<
         ? 'Has not completed onboarding'
         : `${overdueSteps?.length} onboarding steps overdue`,
       titleStyle: 'text-textDark semibold',
-      subTitle:
-        checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
-          ? `${String(
-              checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date)
-            )} days overdue`
-          : filteredUncompletedSteps?.[0]?.subTitle,
+      subTitle: onboardingIncompleted
+        ? `Due ${addDays(
+            new Date(timeline?.starterLicenseDate),
+            28
+          ).toLocaleString('en-ZA', DateFormats.standardDate)}`
+        : checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
+        ? `${String(
+            checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date)
+          )} days overdue`
+        : filteredUncompletedSteps?.[0]?.subTitle,
       subTitleStyle: 'text-textMid',
       iconBackgroundColor:
         checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
@@ -273,9 +284,9 @@ export const OnboardingTraineeDashboard: React.FC<
       >
         <OnboardingNotCompleted
           practitioner={practitioner}
-          starterLicenseDate={smartSpaceLicenseDate}
+          starterLicenseDate={starterLicenseDate}
           setShowOnboardingNotCompleted={setShowOnboardingNotCompleted}
-          isRemoveTrainee={smartSpaceLicenseDate < fourWeeksAgo}
+          isRemoveTrainee={starterLicenseDate < fourWeeksAgo}
         />
       </Dialog>
     </BannerWrapper>

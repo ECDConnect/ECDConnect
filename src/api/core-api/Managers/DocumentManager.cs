@@ -232,8 +232,14 @@ namespace EcdLink.Api.CoreApi.Managers
                 DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.attendance_pdf_type).FirstOrDefault();
 
                 // First validate if document is already in db
-                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId.ToString() == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
                 
+                if (doc != null)
+                {
+                    // remove previous file on file server
+                    await _fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
+                }
+
                 // Upload the document
                 var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
                 try
@@ -257,9 +263,6 @@ namespace EcdLink.Api.CoreApi.Managers
                     }
                     else
                     {
-                        // remove previous file on file server
-                        await _fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
-
                         doc.Name = input.FileName;
                         doc.UpdatedBy = input.CreatedUserId;
                         doc.Reference = document.Url.TrimEnd('/');
@@ -291,29 +294,30 @@ namespace EcdLink.Api.CoreApi.Managers
 
                 // First validate if document is already in db
                 Document doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId.ToString() == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                if (doc != null)
+                {
+                    return doc;
+                }
 
                 // Upload the document
                 try
                 {
-                    if (doc == null)
+                    var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.ClubActivityUpload);
+                    // Save new document to the database
+                    doc = new Document
                     {
-                        var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.ClubActivityUpload);
-                        // Save new document to the database
-                        doc = new Document
-                        {
-                            Id = Guid.NewGuid(),
-                            CreatedUserId = Guid.Parse(input.CreatedUserId),
-                            Name = input.FileName,
-                            UpdatedBy = input.CreatedUserId,
-                            InsertedDate = DateTime.Now,
-                            Reference = document.Url.TrimEnd('/'),
-                            UserId = new Guid(input.UserId),
-                            DocumentTypeId = docType.Id,
-                            WorkflowStatusId = ws.Id,
-                            TenantId = TenantExecutionContext.Tenant.Id
-                        };
-                        return _documentRepo.Insert(doc);
-                    }
+                        Id = Guid.NewGuid(),
+                        CreatedUserId = Guid.Parse(input.CreatedUserId),
+                        Name = input.FileName,
+                        UpdatedBy = input.CreatedUserId,
+                        InsertedDate = DateTime.Now,
+                        Reference = document.Url.TrimEnd('/'),
+                        UserId = new Guid(input.UserId),
+                        DocumentTypeId = docType.Id,
+                        WorkflowStatusId = ws.Id,
+                        TenantId = TenantExecutionContext.Tenant.Id
+                    };
+                    return _documentRepo.Insert(doc);
                     
                 }
                 catch (Exception e)

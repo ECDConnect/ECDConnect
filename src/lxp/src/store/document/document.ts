@@ -1,8 +1,9 @@
 import { Document } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getDocuments } from './document.actions';
+import { createDocument, getDocuments } from './document.actions';
 import { DocumentState } from './document.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: DocumentState = {
   documents: undefined,
@@ -41,6 +42,10 @@ const documentSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, createDocument);
+    builder.addCase(createDocument.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getDocuments.fulfilled, (state, action) => {
       if (!state.documents) {
         const documents = Object.assign([], action.payload) as Document[];

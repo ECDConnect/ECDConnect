@@ -17,18 +17,15 @@ const logGraphQL = (
   result: any
 ) => {
   if (!!disableGraphqlLogging) return;
-  logFunc(`GRAPHQL: ${statusText}[${status}] `, {
-    query: query,
-    result: result,
-  });
+  // logFunc(`GRAPHQL: ${statusText}[${status}] `, {
+  //   query: query,
+  //   result: result,
+  // });
 };
 
 const alertGraphQL = () => {
-  // temporary alert message - to be replaced with nicer UI.
   if (!!disableGraphqlErrorAlert) return;
-  alert(
-    'Error communicating with the server.\nSee the browser console for more details.'
-  );
+  window.dispatchEvent(new CustomEvent('graphql-error', {})); // AppErrorHandler listens for the event.
 };
 
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
@@ -56,6 +53,16 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
 
   axiosInstance.interceptors.request.use(
     async (config) => {
+      if (!navigator.onLine) {
+        return new Promise((resolve) => {
+          resolve({
+            data: null,
+            status: 'offline',
+            statusText: 'Browser is offline',
+          });
+        });
+      }
+
       if (store && !blacklistCheckup(config.url ?? '', blackList)) {
         const user = store?.getState()?.auth?.userAuth;
 

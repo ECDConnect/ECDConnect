@@ -1,0 +1,2 @@
+update "Club" set "LeagueId" = (select "Id" from "League" where "Name" = 'New Stars Bronze') where "LeagueId" = (select "Id" from "League" where "Name" = 'League B - new stars');
+update "Club" set "LeagueId" = (select "Id" from "League" where "Name" = 'Purple') where "LeagueId" = (select "Id" from "League" where "Name" = 'League A - purple');

@@ -5,6 +5,7 @@ import BannerWrapper from '../banner-wrapper/banner-wrapper';
 import Button from '../button/button';
 import LanguageSelector from '../language-selector/language-selector';
 import { useWindowSize } from '@reach/window-size';
+import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 // This is a copy paste from the text.utils, since this project doesn't have access
 const replaceBraces = (sentenceWithBraces: string, value: string) => {
@@ -12,6 +13,20 @@ const replaceBraces = (sentenceWithBraces: string, value: string) => {
     return value;
   });
 };
+
+export interface MoreInformationPageProps {
+  isLoading?: boolean;
+  isClosable?: boolean;
+  subTitle?: string;
+  name?: string;
+  onClose: () => void;
+  setSelectedLanguage: (locale: string) => void;
+  title?: string;
+  moreInformation: any; // TODO - doesn't ref the graphQL library which is what we are passing in here :/ Could make a DTO
+  languages: { value: string; label: string }[];
+  children?: React.ReactNode;
+  childrenPosition?: 'top' | 'bottom';
+}
 
 export const MoreInformationPage = ({
   name,
@@ -21,15 +36,11 @@ export const MoreInformationPage = ({
   moreInformation,
   languages,
   setSelectedLanguage,
-}: {
-  subTitle?: string;
-  name?: string;
-  onClose: () => void;
-  setSelectedLanguage: (locale: string) => void;
-  title?: string;
-  moreInformation: any; // TODO - doesn't ref the graphQL library which is what we are passing in here :/ Could make a DTO
-  languages: { value: string; label: string }[];
-}) => {
+  isLoading,
+  children,
+  childrenPosition = 'top',
+  isClosable = true,
+}: MoreInformationPageProps) => {
   const { height } = useWindowSize();
 
   const SELECTOR_HEIGHT = 110;
@@ -185,11 +196,12 @@ export const MoreInformationPage = ({
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       size="small"
       onBack={onClose}
       title={title}
       renderOverflow
-      onClose={onClose}
+      {...(isClosable && { onClose })}
     >
       <div className="bg-uiBg border-primary border-t px-4">
         <LanguageSelector
@@ -201,7 +213,9 @@ export const MoreInformationPage = ({
         className="flex flex-col p-4"
         style={{ height: height - SELECTOR_HEIGHT }}
       >
+        {childrenPosition === 'top' && children}
         {renderContent}
+        {childrenPosition === 'bottom' && children}
         <Button
           className="mt-auto mb-4"
           type="filled"

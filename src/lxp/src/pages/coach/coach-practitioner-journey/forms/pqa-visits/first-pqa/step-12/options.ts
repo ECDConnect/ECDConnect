@@ -12,7 +12,7 @@ export const options: Options = {
     'There is open water (where children could fall and drown).',
     'There are no exposed electrical wires or electric sockets that children can reach.',
     'There is no smoking or open fires in the venue.',
-    'There are not heights or steps from which children could fall.',
+    'There are no heights or steps from which children could fall.',
     'No dangerous animals can approach the venue.',
     'If children use an outdoor area, it is clean, with no litter or animal faeces.',
     'The venue is in an area that is known as a safe place in the community.',

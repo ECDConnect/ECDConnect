@@ -25,14 +25,19 @@ export const getButtonStyles = (
   touched: boolean
 ) => {
   const baseStyles =
-    'mt-1 flex flex-row items-center truncate justify-between origin-top-right right-0 rounded-md border-2 pl-4 pr-1 leading-5 py-2 active:bg-secondary';
+    'mt-1 flex flex-row items-center truncate justify-between origin-top-right right-0 rounded-md border-2 pl-4 pr-1 leading-5 py-2 active:bg-primary';
 
   if (!touched && !hasSelectedItems) {
-    return classNames(baseStyles, 'border-uiBg', 'bg-white');
+    return classNames(baseStyles, 'border-adminPortalBg', 'bg-adminPortalBg');
   }
 
   if (open) {
-    return classNames(baseStyles, 'bg-white', `border-${colour}`, 'text-white');
+    return classNames(
+      baseStyles,
+      'bg-adminPortalBg',
+      `border-${colour}`,
+      'text-white'
+    );
   }
 
   if (hasSelectedItems) {

@@ -433,7 +433,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             return result;
         }
-
         public List<PractitionerModel> GetAllPractitioners([Service] PersonnelService personnelService)
         {
             return personnelService.GetAllPractitioners();

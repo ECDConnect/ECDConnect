@@ -75,7 +75,7 @@ namespace ECDLink.AzureStorage.Blob
                 return new DocumentModel
                 {
                     Name = fileName,
-                    Url = fileUrl,
+                    Url = ConvertToDisplay(fileUrl),
                     Reference = fileReference
                 };
             }
@@ -121,7 +121,7 @@ namespace ECDLink.AzureStorage.Blob
                 return new DocumentModel
                 {
                     Name = fileName,
-                    Url = fileUrl,
+                    Url = ConvertToDisplay(fileUrl),
                     Reference = fileReference
                 };
             }
@@ -153,7 +153,7 @@ namespace ECDLink.AzureStorage.Blob
 
                 var fileUrl = blobClient.Uri.AbsoluteUri;
 
-                return fileUrl;
+                return ConvertToDisplay(fileUrl);
             }
             catch (Exception e)
             {
@@ -163,6 +163,7 @@ namespace ECDLink.AzureStorage.Blob
 
         public async Task<byte[]> GetFile(string fileName, FileTypeEnum fileType)
         {
+            fileName = ConvertToActual(fileName);
             var memoryStream = new MemoryStream();
 
             try
@@ -194,6 +195,7 @@ namespace ECDLink.AzureStorage.Blob
         {
             try
             {
+                fileName = ConvertToActual(fileName);
                 var container = EnumHelper.GetDescription(fileType);
                 var blobContainer = BlobClient.GetBlobContainerClient(container);
 
@@ -213,6 +215,24 @@ namespace ECDLink.AzureStorage.Blob
                 // log(e)
                 return false;
             }
+        }
+
+        private string ConvertToActual(string url)
+        {
+            var display = _options.Value.BlobStorageDisplayUrl;
+            var actual = _options.Value.BlobStorageActualUrl;
+            if (string.IsNullOrEmpty(display) || string.IsNullOrEmpty(actual) || string.Compare(display, actual, true) == 0)
+                return url;
+            return url.Replace(display, actual);
+        }
+
+        private string ConvertToDisplay(string url)
+        {
+            var display = _options.Value.BlobStorageDisplayUrl;
+            var actual = _options.Value.BlobStorageActualUrl;
+            if (string.IsNullOrEmpty(display) || string.IsNullOrEmpty(actual) || string.Compare(display, actual, true) == 0)
+                return url;
+            return url.Replace(actual, display);
         }
 
         private void ValidateFileType(MemoryStream fileStream)

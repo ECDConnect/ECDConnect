@@ -14,11 +14,12 @@ import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
-import { StatementsInfoPage } from './components/statements-info-page';
+import { Walkthrough } from './components/statements-walkthrough';
 import { useAppContext } from '@/walkthrougContext';
 import { useSelector } from 'react-redux';
 import { getPractitioner } from '@/store/practitioner/practitioner.selectors';
 import { practitionerThunkActions } from '@/store/practitioner';
+import { InfoPage } from './money/submit-income-statements/components/info-page';
 
 export const Business: React.FC = () => {
   const history = useHistory();
@@ -130,17 +131,19 @@ export const Business: React.FC = () => {
           tabSelected={(_, tabIndex: number) => setTabSelected(tabIndex)}
         />
       </BannerWrapper>
-      <Dialog
-        fullScreen={true}
-        visible={showInfo}
-        position={DialogPosition.Full}
-      >
-        <StatementsInfoPage
-          setShowInfo={setShowInfo}
-          isFromAutomaticallyStart={isFromAutomaticallyStart}
-          setIsFromAutomaticallyStart={setIsFromAutomaticallyStart}
-          updateWalkThroughStatus={updateWalkThroughStatus}
-        />
+      <Dialog fullScreen visible={showInfo} position={DialogPosition.Full}>
+        <InfoPage
+          title="Income statements"
+          section="Business - Money Tab"
+          onClose={() => setShowInfo(false)}
+        >
+          <Walkthrough
+            setShowInfo={setShowInfo}
+            isFromAutomaticallyStart={isFromAutomaticallyStart}
+            setIsFromAutomaticallyStart={setIsFromAutomaticallyStart}
+            updateWalkThroughStatus={updateWalkThroughStatus}
+          />
+        </InfoPage>
       </Dialog>
     </div>
   );

@@ -109,7 +109,7 @@ export const setStep = (
       completedStepIcon: status === 'Community support gained' && 'ThumbUpIcon',
       type:
         status === 'Consolidation meeting attended'
-          ? 'inProgress'
+          ? 'completed'
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
@@ -230,7 +230,10 @@ export const timelineSteps = (
     )
   );
 
-  if (timeline?.smartSpaceLicenseNotAwardedDate) {
+  if (
+    timeline?.smartSpaceLicenseNotAwardedDate &&
+    timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence not received'
+  ) {
     steps.push(
       setStep(
         'SmartSpace Licence not received',
@@ -242,7 +245,11 @@ export const timelineSteps = (
     );
   }
 
-  if (timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received') {
+  if (
+    timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received' &&
+    (!timeline?.smartSpaceLicenseDate ||
+      timeline?.smartSpaceLicenseNotAwardedDate)
+  ) {
     steps.push(
       setStep(
         timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
@@ -254,7 +261,10 @@ export const timelineSteps = (
       )
     );
   }
-  if (timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received') {
+  if (
+    timeline?.smartSpaceLicenseDate &&
+    timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received'
+  ) {
     steps.push(
       setStep(
         timeline?.smartSpaceLicenseStatus || 'SmartSpace Licence received',
@@ -267,6 +277,23 @@ export const timelineSteps = (
       )
     );
   }
+  /*
+  if (
+    timeline?.smartSpaceLicenseDate &&
+    timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received'
+  ) {
+    steps.push(
+      setStep(
+        'SmartSpace Licence received',
+        timeline?.smartSpaceLicenseDate ||
+          timeline?.smartSpaceChecklistDeadlineDate,
+        timeline?.smartSpaceChecklistColor,
+        () => onView('SmartSpace Licence received'),
+        nextStep,
+        timeline?.smartSpaceLicenseStatus
+      )
+    );
+  }*/
   steps.push(
     setStep(
       timeline?.signFranchiseeAgreementStatus || 'Sign franchisee agreement',

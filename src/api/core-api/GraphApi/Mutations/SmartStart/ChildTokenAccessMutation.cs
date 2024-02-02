@@ -1,6 +1,8 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
+using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -9,6 +11,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
@@ -71,6 +74,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var siteRepo = repoFactory.CreateRepository<SiteAddress>(scope, tokenModel.AddedByUserId);
             using var caregiverRepo = repoFactory.CreateRepository<Caregiver>(scope, tokenModel.AddedByUserId);
             using var childRepo = repoFactory.CreateRepository<Child>(scope, tokenModel.AddedByUserId);
+            using var practitionerRepo = repoFactory.CreateRepository<Practitioner>(scope, tokenModel.AddedByUserId);
+            using var pointsRepo = repoFactory.CreateRepository<PointsUserSummary>(scope, tokenModel.AddedByUserId);
+            using var pointsLibraryRepo = repoFactory.CreateRepository<PointsLibrary>(scope, tokenModel.AddedByUserId);
 
             try
             {
@@ -101,6 +107,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     AddConsent(scope, consent, tokenModel);
                 }
 
+                // Add points for registaering a child
+                var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
+                if (practitioner != null)
+                {
+                    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId, practitioner.IsPrincipalOrAdmin());
+                }
+
                 await tokenManager.RetractTokensAsync(appUser);
                 
                 scope.SaveChanges();
@@ -122,6 +135,95 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             return true;
         }
+
+        #region Child registration points
+
+        private void AddRegistrationPoints(
+            IGenericRepository<PointsUserSummary, Guid> pointsUserSummaryRepo,
+            IGenericRepository<PointsLibrary, Guid> pointsLibraryRepo,
+            string userId, bool isPrincipalOrAdmin = false)
+        {
+            var currentDate = DateTime.Now;
+
+            var activity = pointsLibraryRepo.GetAll()
+                .Where(x => x.Activity == Constants.PointsEngineSettings.child_data_collection
+                    && x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1)
+                .Single();
+
+            var pointsScoredThisYear = pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).ToList();
+
+            // Get new totals, sum of current month or year, plus one more score
+            var monthsRecord = pointsScoredThisYear.Where(x => x.Month == currentDate.Month).FirstOrDefault();
+            var monthTotal = activity.Points;
+            var timesScored = 1;
+
+            if (monthsRecord != null)
+            {
+                timesScored += monthsRecord.TimesScored;
+                monthTotal += monthsRecord.PointsTotal;
+            }
+
+            int ytdTotal = pointsScoredThisYear.Select(x => x.PointsTotal).Sum() + activity.Points;
+
+            if (isPrincipalOrAdmin)
+            {
+                if (activity.MaxPointsPrincipalMonthly != 0 && monthTotal > activity.MaxPointsPrincipalMonthly)
+                {
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
+                }
+                if (activity.MaxPointsPrincipalYearly != 0 && ytdTotal > activity.MaxPointsPrincipalYearly)
+                {
+                    ytdTotal = activity.MaxPointsPrincipalYearly;
+                }
+            }
+            else
+            {
+                if (activity.MaxPointsIndividualMonthly != 0 && monthTotal > activity.MaxPointsIndividualMonthly)
+                {
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
+                }
+                if (activity.MaxPointsNonPrincipalYearly != 0 && ytdTotal > activity.MaxPointsNonPrincipalYearly)
+                {
+                    ytdTotal = activity.MaxPointsNonPrincipalYearly;
+                }
+            }
+
+            if (monthTotal > 0 && ytdTotal > 0)
+            {
+                var record = pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == currentDate.Month && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
+                if (record == null)
+                {
+                    pointsUserSummaryRepo.Insert(
+                        new PointsUserSummary
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedBy = userId,
+                            Month = currentDate.Month,
+                            Year = currentDate.Year,
+                            UserId = userId,
+                            PointsLibraryId = activity.Id,
+                            PointsTotal = monthTotal,
+                            PointsYTD = ytdTotal,
+                            TimesScored = timesScored,
+                        }
+                    );
+                }
+                else
+                {
+                    record.PointsTotal = monthTotal;
+                    record.PointsYTD = ytdTotal;
+                    record.UpdatedDate = DateTime.Now;
+                    record.UpdatedBy = userId;
+                    record.TimesScored = timesScored;
+
+                    pointsUserSummaryRepo.Update(record);
+                }
+            }
+        }
+
+        #endregion
 
         public bool CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, string userId)
         {
@@ -302,7 +404,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
-            [Service] IPointsEngineService pointsEngineService,
             string firstname,
             string surname,
             Guid classgroupId)
@@ -347,9 +448,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             };         
 
             await userManager.AddToRoleAsync(appUser, "Child");
-
-            // Manage points for user
-            pointsEngineService.CalculateChildrenRegistrationAdd(addedByUser.Id.ToString(), DateTime.UtcNow);
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
         }

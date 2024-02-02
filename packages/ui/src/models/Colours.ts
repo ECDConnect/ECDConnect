@@ -32,4 +32,7 @@ export type Colours =
   | 'black'
   | 'transparent'
   | 'quatenary'
-  | 'darkBackground';
+  | 'quatenaryMain'
+  | 'darkBackground'
+  | 'adminPortalBg'
+  | 'darkBlue';

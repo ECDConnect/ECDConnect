@@ -35,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             WhatsAppNumber = user.WhatsAppNumber;
             Password = null;
             IsAdmin = null;
+            ResetData = user.ResetData;
         }
 
         public string Id { get; set; }
@@ -60,5 +61,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string NextOfKinContactNumber { get; set; }
         public string WhatsAppNumber { get; set; }
         public bool? IsAdmin { get; set; } = false;
+        public bool? ResetData { get; set; } = false;
     }
 }

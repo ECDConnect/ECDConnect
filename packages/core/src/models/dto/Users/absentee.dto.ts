@@ -9,4 +9,6 @@ export interface AbsenteeDto extends EntityBase {
   reassignedToPerson?: string;
   reassignedToUserId?: string;
   absenteeId?: string;
+  loggedByPerson?: string;
+  loggedByUserId?: string;
 }

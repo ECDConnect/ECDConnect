@@ -33,8 +33,6 @@ type menuItemProps = {
 };
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeMatch = useRouteMatch(item.route);
-  const routeViewUserMatch = useRouteMatch('/view-user/');
-  const routeUploadUserMatch = useRouteMatch('/upload-users/');
 
   return (
     <Link
@@ -340,9 +338,9 @@ export default function Shell() {
           </div>
         </div>
 
-        <main className="focus:outline-none relative flex-1 overflow-y-auto">
+        <main className="focus:outline-none relative flex-1 overflow-y-auto bg-white">
           <div className="h-full py-6">
-            <div className="mx-auto h-full px-4 sm:px-6 md:px-8">
+            <div className="mx-auto h-full bg-white px-4 sm:px-6 md:px-8">
               <AuthRoutes />
             </div>
           </div>

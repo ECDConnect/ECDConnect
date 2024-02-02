@@ -24,6 +24,7 @@ using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
 using System.Threading.Tasks;
 using ECDLink.DataAccessLayer.Managers;
+using DinkToPdf.Contracts;
 
 namespace ECDLink.Core.Services
 {
@@ -48,15 +49,17 @@ namespace ECDLink.Core.Services
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
 
+        private IConverter _pdfConverter;
+
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] DocumentManager documentManager,
             [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
-            ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
             IPointsEngineService pointsEngineService,
-            HierarchyEngine hierarchyEngine
+            HierarchyEngine hierarchyEngine,
+            IConverter pdfConverter
             )
         {
             _contextAccessor = contextAccessor;
@@ -73,6 +76,7 @@ namespace ECDLink.Core.Services
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
 
+            _pdfConverter = pdfConverter;
 
             _userManager = userManager;
             _documentManager = documentManager;
@@ -107,31 +111,6 @@ namespace ECDLink.Core.Services
                     return statements;
             }
             else return new List<StatementsIncomeStatement>();
-        }
-
-        private bool IsSubmitted(string userId, int year, int month)
-        {
-            var statementSubmitted = _statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => 
-                        x.UserId == Guid.Parse(userId) && 
-                        x.Year == year &&
-                        x.Month == month &&
-                        x.Submitted == true && 
-                        x.IsActive == true)
-                    .Any();
-            
-            return statementSubmitted;
-        }
-
-        private DateTime? GetLastSubmittedDate(string userId)
-        {
-            var row = _statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == true)
-                    .OrderByDescending(y => y.SubmittedDate)
-                    .Select(y => y.SubmittedDate)
-                    .FirstOrDefault();
-
-            return row;            
         }
 
         public List<StatementReport> GetStatementLinesToReport(string userId, int year, int month)
@@ -489,6 +468,16 @@ namespace ECDLink.Core.Services
             return allDuePractitioners;
         }
 
+        public StatementsIncomeStatement UpdateUserContactStatusForStatement(Guid statementId)
+        {
+            StatementsIncomeStatement statement = _statementsRepo.GetById(statementId);
+
+            statement.ContactedByCoach = true;
+            statement.UpdatedBy = _applicationUserId;
+            statement.UpdatedDate = DateTime.Now;
+            return _statementsRepo.Update(statement);
+        }
+
         #endregion
 
         #region PDF STUFF
@@ -706,8 +695,7 @@ namespace ECDLink.Core.Services
             // discard result
             Console.WriteLine($"HTML FOR DOCUMENT = {html.Length}");
             var doc = _documentManager.GetPdfSettings(html, filename, "portrait");
-            var pdfConvertor = new SynchronizedConverter(new PdfTools());
-            byte[] pdf = pdfConvertor.Convert(doc);
+            byte[] pdf = _pdfConverter.Convert(doc);
             string Base64Result = Convert.ToBase64String(pdf);
 
             DocumentModel pdfDoc = new DocumentModel();

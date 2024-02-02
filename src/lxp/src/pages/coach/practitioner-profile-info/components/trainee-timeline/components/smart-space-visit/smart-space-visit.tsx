@@ -2,18 +2,13 @@ import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-ev
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
-import {
-  traineeActions,
-  traineeSelectors,
-  traineeThunkActions,
-} from '@/store/trainee';
+import { traineeActions, traineeThunkActions } from '@/store/trainee';
 import { CalendarEventModel, PractitionerDto } from '@ecdlink/core';
 import { UpdateVisitPlannedVisitDateModelInput } from '@ecdlink/graphql';
 import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
 import { addDays, addMinutes } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 
 interface SmartSpaceVisitProps {
@@ -32,13 +27,13 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
   const [visible, setVisible] = useState<boolean>(true);
   const calendarAddEvent = useCalendarAddEvent();
   const practitionerUserId = practitioner?.userId || '';
-  const visitId: string = options.visitId || '';
-  const visitEventId: string = options.visitEventId || '';
-  const plannedVisitDate: string = options.plannedVisitDate || '';
+  const visitId: string = options?.visitId || '';
+  const visitEventId: string = options?.visitEventId || '';
+  const plannedVisitDate: string = options?.plannedVisitDate || '';
 
   useEffect(() => {
     appDispatch(traineeActions?.resetCoachSmartSpaceVisitData());
-  }, []);
+  }, [appDispatch]);
 
   const onSchedule = () => {
     setVisible(false);
@@ -129,7 +124,7 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
     leadingIcon: 'ArrowCircleRightIcon',
   });
 
-  if (!!visitEventId || !!visitId) {
+  if (!!visitEventId) {
     history.push(ROUTES.COACH_SMARTSPACE_CHECK, {
       practitioner: practitioner,
     });
@@ -137,12 +132,7 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
 
   return (
     // <div className="bg-primaryAccent1 flex h-screen items-center justify-center">
-    <Dialog
-      className={'bg-primaryAccent1 px-4'}
-      stretch={true}
-      visible={visible}
-      position={DialogPosition.Middle}
-    >
+    <Dialog stretch={true} visible={visible} position={DialogPosition.Middle}>
       <ActionModal
         icon={'QuestionMarkCircleIcon'}
         iconColor="white"

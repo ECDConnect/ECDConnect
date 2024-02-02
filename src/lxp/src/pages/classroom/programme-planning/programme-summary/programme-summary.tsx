@@ -81,7 +81,7 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
 
   const showOnlineOnly = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit) => {
         return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
       },

@@ -1,9 +1,21 @@
 import { CalendarEventModel } from '@ecdlink/core';
 import * as Yup from 'yup';
+import { ListDataItem } from '../calendar.types';
 
 export type CalendarAddEventInfo = {
   id?: string;
-  eventType?: string;
+  eventTypeDisabled?: boolean;
+  eventType?:
+    | 'SmartSpace'
+    | 'First PQA'
+    | 'PQA follow-up'
+    | 'First site visit'
+    | 'Second site visit'
+    | 'Re-accreditation'
+    | 'General support visit'
+    | 'Coaching circle'
+    | 'Re-accreditation follow-up'
+    | 'Club Monthly Meeting';
   start?: string;
   end?: string;
   minDate?: string;
@@ -28,6 +40,10 @@ export type CalendarEditEventInfo = {
 
 export interface CalendarAddEventProps {
   event?: CalendarAddEventInfo;
+  guests?: ListDataItem[];
+  optionsToHide?: CalendarAddEventInfo['eventType'][];
+  eventTypeDisabled?: boolean;
+  hideAddParticipantsButton?: boolean;
   onUpdated: (isNew: boolean, event: CalendarEventModel) => void;
   onCancel: () => void;
 }
@@ -68,12 +84,16 @@ export const CalendarAddEventFormSchema = Yup.object().shape({
 
 export interface CalendarAddEventOptions {
   event: CalendarAddEventInfo;
+  guests?: ListDataItem[];
+  optionsToHide?: CalendarAddEventInfo['eventType'][];
   onUpdated?: (isNew: boolean, event: CalendarEventModel) => void;
   onCancel?: () => void;
 }
 
 export interface CalendarEditEventOptions {
   event: CalendarEditEventInfo;
+  eventTypeDisabled?: boolean;
+  hideAddParticipantsButton?: boolean;
   onUpdated?: (event: CalendarEventModel) => void;
   onCancel?: () => void;
 }

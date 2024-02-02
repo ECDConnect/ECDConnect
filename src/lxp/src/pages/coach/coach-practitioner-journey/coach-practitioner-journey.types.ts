@@ -18,10 +18,14 @@ export const visitTypes = {
     first: {
       name: 'pre_pqa_visit_1',
       description: 'First site visit',
+      eventType: 'First site visit' as 'First site visit',
+      scheduleStartText: 'first site visit',
     },
     second: {
       name: 'pre_pqa_visit_2',
       description: 'Second site visit',
+      eventType: 'Second site visit' as 'Second site visit',
+      scheduleStartText: 'second site visit',
     },
   },
   pqa: {

@@ -92,6 +92,7 @@ namespace ECDLink.ContentManagement.Repositories
                 // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
+                contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
                     allContentValuePairs.Add(contentFieldValuePairs.ToObject());
@@ -142,6 +143,19 @@ namespace ECDLink.ContentManagement.Repositories
             contentValues.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 
             return contentValues.ToObject();
+        }
+
+        public List<Guid> GetAllLanguagesForContentId(int contentId, int contentTypeId)
+        {
+            var currentTenant = TenantExecutionContext.Tenant.Id;
+            var content = _context.Contents
+                            .Include(i => i.ContentValues)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.ContentTypeId == contentTypeId
+                                    && x.TenantId == currentTenant)
+                            .FirstOrDefault();
+            return content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
         }
 
         public IEnumerable<object> GetByIds(Guid localeId, params int[] contentIds)
@@ -276,22 +290,15 @@ namespace ECDLink.ContentManagement.Repositories
 
                     if (fileIndex != null && fileIndex != -1)
                     {
-
-                        var fileStr = value?.ToString();
-                        var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
-                        var bytes = Convert.FromBase64String(b64Str);
-                        using MemoryStream fileStream = new MemoryStream(bytes);
-
-                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-                        var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
-                        fileStream.Dispose();
-
+                        var fileUrl = uploadFile(value?.ToString(), field.FieldName);
                         contentValues.Add(new ContentValue
                         {
-                            Value = fileUrl.ToString(),
+                            Value = fileUrl,
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = TenantExecutionContext.Tenant.Id
+                            TenantId = TenantExecutionContext.Tenant.Id,
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
                         });
 
                     }
@@ -299,13 +306,14 @@ namespace ECDLink.ContentManagement.Repositories
                     {
                         contentValues.Add(new ContentValue
                         {
-                            Value = value?.ToString(),
+                            Value = field.FieldName != "availableLanguages" ? value?.ToString() : localeId.ToString(),
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = TenantExecutionContext.Tenant.Id
+                            TenantId = TenantExecutionContext.Tenant.Id,
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
                         });
                     }
-
                 }
             }
 
@@ -314,7 +322,9 @@ namespace ECDLink.ContentManagement.Repositories
                 ContentTypeId = contentTypeId,
                 ContentValues = contentValues,
                 IsActive = true,
-                TenantId = TenantExecutionContext.Tenant.Id
+                TenantId = TenantExecutionContext.Tenant.Id,
+                InsertedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
 
             _context.Contents.Add(newContent);
@@ -328,45 +338,66 @@ namespace ECDLink.ContentManagement.Repositories
         {
             var fileExt = "";
 
-            if (fileStr.ToLower().EndsWith("svg"))
+            if (fileStr.ToLower().Contains("svg"))
             {
                 fileExt = ".svg";
             }
-            if (fileStr.ToLower().EndsWith("png"))
+            if (fileStr.ToLower().Contains("png"))
             {
                 fileExt = ".png";
             }
-            if (fileStr.ToLower().EndsWith("jpg") || fileStr.ToLower().EndsWith("jpeg"))
+            if (fileStr.ToLower().Contains("jpg") || fileStr.ToLower().Contains("jpeg"))
             {
                 fileExt = ".jpg";
             }
-            if (fileStr.ToLower().EndsWith("mov"))
+            if (fileStr.ToLower().Contains("mov"))
             {
                 fileExt = ".mov";
             }
-            if (fileStr.ToLower().EndsWith("mkv"))
+            if (fileStr.ToLower().Contains("mkv"))
             {
                 fileExt = ".mkv";
             }
-            if (fileStr.ToLower().EndsWith("mp4"))
+            if (fileStr.ToLower().Contains("m4v"))
+            {
+                fileExt = ".m4v";
+            }
+            if (fileStr.ToLower().Contains("mp4"))
             {
                 fileExt = ".mp4";
             }
-            if (fileStr.ToLower().EndsWith("mpg"))
+            if (fileStr.ToLower().Contains("mpg"))
             {
                 fileExt = ".mpg";
             }
-            if (fileStr.ToLower().EndsWith("webm"))
+            if (fileStr.ToLower().Contains("webm"))
             {
                 fileExt = ".webm";
             }
+            if (fileStr.ToLower().Contains("pdf"))
+            {
+                fileExt = ".pdf";
+            }
             return fileExt;
+        }
+
+        private string uploadFile(string fileStr, string fieldName)
+        {
+            var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
+            var bytes = Convert.FromBase64String(b64Str);
+            using MemoryStream fileStream = new MemoryStream(bytes);
+
+            var fileName = DateTime.Now.Ticks + "_" + fieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
+            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+            fileStream.Dispose();
+
+            return fileUrl.ToString();
         }
 
         public object Update(int contentId, Guid localeId, IDictionary<string, object> input)
         {
             // Can probably inject Id and fields
-            Guid? currentTenant = TenantExecutionContext.Tenant.Id;
+            Guid? currentTenantId = TenantExecutionContext.Tenant.Id;
 
             var content = _context.Contents
                             .Include(i => i.ContentType)
@@ -375,7 +406,7 @@ namespace ECDLink.ContentManagement.Repositories
                                 .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => x.Id == contentId
                                     && x.IsActive
-                                    && x.TenantId == currentTenant)
+                                    && x.TenantId == currentTenantId)
                             .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
@@ -398,65 +429,64 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentId.ToString());
             }
 
-            // Remove existing data for this locale
-            var fieldList = content.ContentValues.Where(x => x.LocaleId == localeId).ToList();
-            _context.ContentValues.RemoveRange(fieldList);
-            _context.SaveChanges();
-
-            var contentValues = new List<ContentValue>();
-
-            // Get the content type fields and populate them to be the new values
+            // loop through the list of fields for the content type
             foreach (var field in content.ContentType.Fields.Where(x => x.IsActive))
             {
-                if (input.TryGetValue(field.FieldName, out var value))
+                // get the current content value record
+                ContentValue currentRecord = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id && x.LocaleId == localeId).FirstOrDefault();
+                // add check to see if field is available in the input
+                if (input.TryGetValue(field.FieldName, out var value) && value != null)
                 {
+                    string fieldAnswer = input[field.FieldName].ToString();
+                    string fileUrl = fieldAnswer.IndexOf("base64") != -1 ? uploadFile(fieldAnswer, field.FieldName) : "";
 
-                    // if we get the string base64 in the value we know it is a file upload 
-                    var fileIndex = value?.ToString()?.IndexOf("base64");
-
-                    if (fileIndex != null && fileIndex != -1)
+                    // if no record is found, add item
+                    if (currentRecord == null) // Add
                     {
-
-                        var fileStr = value?.ToString();
-                        var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
-                        var bytes = Convert.FromBase64String(b64Str);
-                        using MemoryStream fileStream = new MemoryStream(bytes);
-
-                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-                        var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
-                        fileStream.Dispose();
-
-                        contentValues.Add(new ContentValue
+                        content.ContentValues.Add(new ContentValue
                         {
-                            Value = fileUrl.ToString(),
+                            Value = (fileUrl != "" ? fileUrl : fieldAnswer),
+                            ContentId = contentId,
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = currentTenant,
+                            TenantId = currentTenantId,
                             InsertedDate = DateTime.UtcNow,
                             UpdatedDate = DateTime.UtcNow
                         });
+                    }
+                    else // Update
+                    {
+                        currentRecord.Value = (fileUrl != "" ? fileUrl : fieldAnswer);
+                    }
+                }
+                else if (field.FieldName.ToString() == "availableLanguages") //update languages of the item if its a language field and the locale doesnt match or is null
+                {
+                    ContentValue currentLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id).FirstOrDefault();// && x.LocaleId == localeId
 
+                    if (currentLanguages.Value != null)
+                    {
+                        var languages = currentLanguages.Value.ToString().Split(',').ToList();
+                        if (!languages.Contains(localeId.ToString()))
+                        {
+                            languages.Add(localeId.ToString());
+                        }
+                        if (languages.Count > 1)
+                        {
+                            currentLanguages.Value = string.Join(",", languages);
+                        }
+                        else
+                        {
+                            currentLanguages.Value = localeId.ToString();
+                        }
                     }
                     else
                     {
-                        contentValues.Add(new ContentValue
-                        {
-                            Value = value?.ToString(),
-                            ContentTypeFieldId = field.Id,
-                            LocaleId = localeId,
-                            TenantId = currentTenant
-                        });
+                        currentLanguages.Value = localeId.ToString();
                     }
-
                 }
+                content.UpdatedDate = DateTime.UtcNow;
+                _context.SaveChanges();
             }
-
-            // Add existing content to the new content and replace the existing content.
-            contentValues.AddRange(content.ContentValues);
-            content.ContentValues = contentValues;
-            content.UpdatedDate = DateTime.UtcNow;
-
-            _context.SaveChanges();
 
             var objDict = content.ContentValues
                             .Where(x => x.LocaleId == localeId)
@@ -489,6 +519,7 @@ namespace ECDLink.ContentManagement.Repositories
             }
 
             content.IsActive = false;
+            content.UpdatedDate = DateTime.UtcNow;
 
             _context.SaveChanges();
 

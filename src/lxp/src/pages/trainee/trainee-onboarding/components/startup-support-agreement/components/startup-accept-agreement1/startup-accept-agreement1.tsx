@@ -1,14 +1,13 @@
 import { practitionerSelectors } from '@/store/practitioner';
+import { classroomsSelectors } from '@/store/classroom';
 import { Alert, Button, Checkbox, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { coachSelectors } from '@/store/coach';
 import {
   SectionQuestions,
   StartupAgreementSteps,
   visitSection,
 } from '../../startup-accept-agreement.types';
-
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
@@ -21,7 +20,7 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
   startupSupportAgreementSigned,
 }) => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const [questions, setAnswers] = useState([
     {
@@ -117,10 +116,8 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
                   practitioner?.user?.idNumber || '0000000000000'
                 }; Cellphone: ${
                   practitioner?.user?.phoneNumber || '000000000000'
-                }) have set up my own enterprise and am committed to providing early childhood development services to a maximum of 6 children, from 8am - 6pm, Monday to Friday for the the term agreed upon at the site, ${
-                  coach?.siteAddress?.addressLine1
-                }, ${coach?.siteAddress?.addressLine2}, ${
-                  coach?.siteAddress?.addressLine3
+                }) have set up my own enterprise and am committed to providing early childhood development services to a maximum of 6 children, from 8am - 6pm, Monday to Friday for the term agreed upon at the site, ${
+                  classroom?.siteAddress?.addressLine1 || ''
                 }.`}
                 type="body"
                 color="textMid"

@@ -2,11 +2,9 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import { BannerWrapper, Typography, renderIcon } from '@ecdlink/ui';
-import { add, format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { dateOptions } from '../timeline-steps';
 import { staticDataSelectors } from '@/store/static-data';
-import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
 interface StartupSupportDetailsProps {
   practitioner: PractitionerDto | undefined;
@@ -33,13 +31,6 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
   const programme = programData?.find(
     (item) => item?.id === programmeTypeQuestionObject?.questionAnswer
   );
-  const startDate = new Date(
-    traineeTimeline?.signStartUpSupportAgreementDate
-  ).toLocaleDateString('en-ZA', dateOptions);
-  const endDate = add(
-    new Date(traineeTimeline?.signStartUpSupportAgreementDate),
-    { years: 1 }
-  ).toLocaleDateString('en-ZA', dateOptions);
 
   return (
     <BannerWrapper

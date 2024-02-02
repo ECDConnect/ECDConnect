@@ -62,8 +62,6 @@ export class UserLastLoginNotificationValidator
       viewType: 'Both',
     };
 
-    const deadline = addDays(lastSyncDate, 30);
-
     if (daysPassed >= 21)
       return [
         {
@@ -74,9 +72,7 @@ export class UserLastLoginNotificationValidator
             daysPassed > 21 && daysPassed % 2 > 0 ? daysPassed.toString() : '21'
           }`,
           title: 'Go online again to keep using Funda App!',
-          message: `You haven't been online for more than 21 days.  We suggest connecting to a wifi network to complete this process or data in the next ${Math.abs(
-            differenceInCalendarDays(deadline, lastSyncDate)
-          )} days you might lose some of your information!`,
+          message: `You haven't been online for more than 3 weeks. Turn on your wifi or data in the next week or you might lose some of your information!`,
         },
       ];
 

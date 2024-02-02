@@ -1,11 +1,10 @@
 import { BannerWrapper } from '@ecdlink/ui';
 import { Step1 } from './components/step-1';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Step2 } from './components/step-2';
 import { useAppDispatch } from '@/store';
 import { coachThunkActions } from '@/store/coach';
 import { ClubMeetingModelInput } from '@ecdlink/graphql';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { startOfQuarter, lastDayOfQuarter } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
@@ -30,9 +29,7 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
   setShowSuccessCircleMeetingAdded,
 }) => {
   const appDispatch = useAppDispatch();
-  const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
-  const [language, setLanguage] = useState({ locale: 'en-za' });
   const [addCoachingCircleForm, setAddCoachingCircleForm] =
     useState<ClubMeetingModelInput>({
       clubId: '',
@@ -96,20 +93,6 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
     setShowSuccessCircleMeetingAdded,
     user?.id,
   ]);
-
-  const getContent = useCallback(async () => {
-    if (!isOnline) return;
-
-    appDispatch(
-      coachThunkActions.getCoachingCircleTopics({
-        locale: language.locale,
-      })
-    );
-  }, [appDispatch, isOnline, language.locale]);
-
-  useEffect(() => {
-    getContent();
-  }, [getContent]);
 
   return (
     <>

@@ -1,12 +1,16 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -15,6 +19,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
     {
         public ClubQueryExtension()
         {
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public DetailClubModel GetClubForUser(
+            [Service] IClubService clubService,
+            string userId)
+        {
+            var club = clubService.GetClubForUser(userId);
+
+            return club;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<DetailClubModel> GetClubsForCoach(
+            [Service] IClubService clubService,
+            string coachUserId)
+        {
+            var clubs = clubService.GetClubsForCoach(coachUserId);
+
+            return clubs.ToList();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public DetailClubModel GetClubById(
+            [Service] IClubService clubService,
+            Guid clubId)
+        {
+            var club = clubService.GetClubById(clubId);
+
+            return club;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -47,6 +81,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public ActivityChildProgress GetActivityChildProgress([Service] IClubService clubService, Guid clubId)
         {
             return clubService.GetActivityChildProgress(clubId);
+        }
+
+        public List<ClubMeeting> GetClubMeetingsWithMissingRegisters([Service] IClubService clubService, Guid clubId)
+        {
+            return clubService.GetClubMeetingsWithMissingRegisters(clubId);
+
         }
 
     }

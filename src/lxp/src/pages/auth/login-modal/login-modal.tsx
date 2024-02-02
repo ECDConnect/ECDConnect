@@ -109,6 +109,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         .then(async (isAuthenticated: any) => {
           if (
             isAuthenticated &&
+            isAuthenticated?.error === undefined &&
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             loginSuccessful();
@@ -127,6 +128,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           }
         })
         .catch(() => {
+          console.log('catch');
           setDisplayError(true);
           setIsLoading(false);
         });

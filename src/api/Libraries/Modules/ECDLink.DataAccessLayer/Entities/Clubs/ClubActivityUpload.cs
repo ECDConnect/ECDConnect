@@ -25,6 +25,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public int Month { get; set; }
         public int Year { get; set; }
         public string Description { get; set; }
+        public virtual ClubActivityUploadType ClubActivityUploadType { get; set; }
         public Guid ClubActivityUploadTypeId { get; set; }
         public bool ImageApproved { get; set; }
         public double ImageRating { get; set; }

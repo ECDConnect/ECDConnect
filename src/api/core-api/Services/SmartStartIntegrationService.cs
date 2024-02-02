@@ -1,54 +1,60 @@
-﻿using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
+﻿using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Integration;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.Enums;
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
+using ECDLink.Core.Helpers;
+using ECDLink.Core.Models;
+using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories;
-using HotChocolate;
-using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Workflow;
-using Microsoft.EntityFrameworkCore;
 using ECDLink.DataAccessLayer.Entities.Clubs;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.Tenancy.Context;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.Core.Extensions;
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Integration;
-using System.Net.Http;
-using ECDLink.Core.Services;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
-using ECDLink.Core.Helpers;
-using ECDLink.Security;
-using ECDLink.Abstractrions.Constants;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
-using JsonSerializer = System.Text.Json.JsonSerializer;
-using ECDLink.Abstractrions.Services;
-using ECDLink.Core.Models;
-using ECDLink.DataAccessLayer.Entities.Visits;
-using EcdLink.Api.CoreApi.Managers.Visits;
-using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
+using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Reports;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.DataAccessLayer.Repositories;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security;
+using ECDLink.Security.Managers;
 using ECDLink.SmartStart.Services;
-using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Tenancy.Context;
+using HotChocolate;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace EcdLink.Api.CoreApi.Services;
-public class SmartStartIntegrationService : IIntegrationService
+public partial class SmartStartIntegrationService : IIntegrationService
 {
     private readonly IGenericRepositoryFactory _repositoryFactory;
     private readonly ISystemSetting<IntegrationDelayOptions> _integrationDelay;
@@ -87,10 +93,14 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
     private IGenericRepository<Visit, Guid> _visitsRepo;
     private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+    private IGenericRepository<VisitData, Guid> _visitDataRepo;
     private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
     private IGenericRepository<License, Guid> _licenseRepo;
     private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
+    private IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
+    private IGenericRepository<UserHierarchyEntity, Guid> _userHierarchyRepo;
 
+    private IAttendancePdfService _attendancePdfService;
     IHolidayService<Holiday> _holidayService;
     private IntegrationLogManager _logManager;
     private IntegrationAPIManager _apiManager;
@@ -99,6 +109,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private AttendanceService _attendanceService;
     private IntegrationHelperManager _integrationHelperManager;
     private AttendanceTrackingRepository _attendanceTrackingRepository;
+    private Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> _logger;
 
     private MappingMode _apiMode;
     private MappingMaskDataMode _maskMode;
@@ -118,6 +129,10 @@ public class SmartStartIntegrationService : IIntegrationService
     public static string scheduledTask = "SmartLinkIntegrationDataSync";
     private INotificationService _notificationService;
 
+    private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
+    private readonly InvitationNotificationManager _notificationManager;
+    private readonly IHttpContextAccessor _accessor;
+
     public SmartStartIntegrationService(
         IGenericRepositoryFactory repositoryFactory,
         ISystemSetting<IntegrationDelayOptions> integrationDelay,
@@ -134,9 +149,15 @@ public class SmartStartIntegrationService : IIntegrationService
          IHolidayService<Holiday> holidayService,
          [Service] INotificationService notificationService,
          VisitManager visitManager,
-         [Service] AttendanceService attendanceService
+         [Service] AttendanceService attendanceService,
+         [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+         [Service] InvitationNotificationManager notificationManager,
+         [Service] IHttpContextAccessor accessor,
+         Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> logger,
+        IAttendancePdfService attendancePdfService
         )
     {
+        _logger = logger;
         _repositoryFactory = repositoryFactory;
         _integrationDelay = integrationDelay;
         _options = options;
@@ -150,56 +171,71 @@ public class SmartStartIntegrationService : IIntegrationService
         _apiManager = apiManager;
         _holidayService = holidayService;
         _notificationService = notificationService;
+        _notificationManager = notificationManager;
+        _invitationManager = invitationManager;
+        _accessor = accessor;
+        _attendancePdfService = attendancePdfService;
 
-        _uId = _hierarchyEngine.GetIntegrationUserId().Value;
-        Enum.TryParse(_options.Value.Mode, out _apiMode);
-        Enum.TryParse(_options.Value.MaskDataMode, out _maskMode);
+        if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
+        if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-        //Generic static repos
-        _mapperRepo = repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
-        _columnmapperRepo = repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
-        _auditRepo = repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
-        _siteAddressRepo = repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+        if (this.Enabled)
+        {
+            _uId = _hierarchyEngine.GetIntegrationUserId();
 
-        _classroomGenericRepo = repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
-        _classroomGroupGenericRepo = repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
-        _programmeTypeGenericRepo = repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
-        _staticLanguageRepo = repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
-        _staticGenderRepo = repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
-        _staticRaceRepo = repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
-        _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
-        _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
-        _coachGenericRepo = repositoryFactory.CreateRepository<Coach>(userContext: _uId);
-        _franchisorGenericRepo = repositoryFactory.CreateRepository<Franchisor>(userContext: _uId);
-        _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
-        _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
-        _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
-        _childGenericRepo = repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
-        _caregiverRepo = repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
-        _staticRelationRepo = repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
-        _staticEducationRepo = repositoryFactory.CreateGenericRepository<Education>(userContext: _uId); ;
-        _staticGrantRepo = repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
-        _staticWorkflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
-        _docRepo = repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
-        _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
-        _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
-        _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
-        _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
-        _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
+            //Generic static repos
+            _mapperRepo = repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _columnmapperRepo = repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
+            _auditRepo = repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
+            _siteAddressRepo = repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
 
-        _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
-        _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+            _classroomGenericRepo = repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
+            _classroomGroupGenericRepo = repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+            _programmeTypeGenericRepo = repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
+            _staticLanguageRepo = repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
+            _staticGenderRepo = repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
+            _staticRaceRepo = repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
+            _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
+            _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            _coachGenericRepo = repositoryFactory.CreateRepository<Coach>(userContext: _uId);
+            _franchisorGenericRepo = repositoryFactory.CreateRepository<Franchisor>(userContext: _uId);
+            _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
+            _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
+            _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
+            _childGenericRepo = repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+            _caregiverRepo = repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
+            _staticRelationRepo = repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
+            _staticEducationRepo = repositoryFactory.CreateGenericRepository<Education>(userContext: _uId); ;
+            _staticGrantRepo = repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
+            _staticWorkflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _docRepo = repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
+            _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
+            _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
+            _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
+            _visitDataRepo = repositoryFactory.CreateGenericRepository<VisitData>(userContext: _uId);
+            _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
 
-        _attendanceTrackingRepository = attendanceTrackingRepository;
-        _incomeManager = incomeManager;
-        _visitManager = visitManager;
-        _attendanceService = attendanceService;
+            _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
+            _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+            _childProgressReportRepo = repositoryFactory.CreateGenericRepository<ChildProgressReport>(userContext: _uId);
+            _userHierarchyRepo = repositoryFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: _uId);
+
+            _attendanceTrackingRepository = attendanceTrackingRepository;
+            _incomeManager = incomeManager;
+            _visitManager = visitManager;
+            _attendanceService = attendanceService;
+        }
     }
+
+    public bool Enabled { get { return this._apiMode != MappingMode.None; } }
 
     #region Integration Points   
 
     public async Task<bool> IntegrationClubsData()
     {
+        if (!this.Enabled) return true;
+
         //Get only this years data and check if we have the lines in t he tables, insert if not, dont save to entity mapping, we are just gathering dates and using the same GUID that SL has, so we dont  have to create new ones and theirs work fine, would avoid clashes and reusability to avoid extra columns
         _mappedEntities = await this.GetMappedEntities();
         _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
@@ -305,7 +341,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
         return true;
     }
-    
+
     /// <summary>
     /// Pull past PQA data for practitioners, that were created on SmartLink and outside of the Funda app.
     /// 
@@ -316,14 +352,14 @@ public class SmartStartIntegrationService : IIntegrationService
     /// <returns></returns>
     public async Task<bool> PullPQAData(string franchiseeId = null)
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"PullPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PullPQAData > GetPQAByFranchisee");
         int totalVisitsAdded = 0;
         int totalFollowUpVisitsAdded = 0;
 
         var success = true;
         var mappedPractitioners = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner, true);//await GetMappedEntitiesTestUsers(); //
-        var mappedCoaches = await GetMappedEntities(Constants.SSIntegrationSettings.SSCoach);
-        var coaches = _coachGenericRepo.GetAll().Where(x => mappedCoaches.Select(y => y.UserId).Equals(x.UserId)).ToList();
         var pqaVisit1TypeId = _visitTypeRepo.GetAll().First(x => x.Name == Constants.SSSettings.visitType_pqa_visit_1).Id;
 
         int maxScore = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
@@ -341,13 +377,12 @@ public class SmartStartIntegrationService : IIntegrationService
                 // Need to get existing PQA visits and see if we have mapped this one before - DO WE ONLY NEED TO PULL OLD PQAS ONCE PER PRACTITIONER???
                 var pqas = await _apiManager.GetPQAByFranchisee(practitioner.RemoteId);
 
-                if(pqas == null || !pqas.Any())
+                if (pqas == null || !pqas.Any())
                 {
                     continue;
                 }
 
                 var existingVisits = _visitsRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).ToList();
-
 
                 // For any we haven't created, create a new visit
                 var createdVisits = new List<Visit>();
@@ -360,19 +395,20 @@ public class SmartStartIntegrationService : IIntegrationService
                     }
 
                     // Create visit
-                    var mappedCoach = mappedCoaches.FirstOrDefault(x => x.RemoteId == slPQA.Coach.Guid);                    
                     var visit = new Visit()
                     {
                         Id = Guid.Parse(slPQA.Guid),
                         ActualVisitDate = slPQA.DateOfVisit,
-                        CoachId = mappedCoach != null ? coaches.FirstOrDefault(x => x.UserId.Equals(mappedCoach.UserId))?.Id : null, // Coach might not be mapped yet
                         HasAnswerData = false,
                         VisitTypeId = pqaVisit1TypeId,
                         TenantId = _tenantId,
                         Attended = slPQA.StatusOutcome.ToLower() != "not done",
-                        DueDate = slPQA.DateOfVisit, 
+                        DueDate = slPQA.DateOfVisit,
                         PlannedVisitDate = slPQA.DateOfVisit,
                         PractitionerId = practitionerId,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _uId,
                         Risk = Constants.GGSettings.normal_risk, // GG only field, but non nullable in the database
                     };
 
@@ -385,7 +421,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         OverallRatingStars = GetNumberOfStarsForPQA(slPQA.TotalScore, slPQA.StatusOutcome),
                         OverallScore = slPQA.TotalScore,
                         VisitName = Constants.SSSettings.visitType_pqa_visit_1,
-                        TenantId = _tenantId
+                        TenantId = _tenantId,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _uId
                     };
 
                     createdRatings.Add(pqaRating);
@@ -419,175 +458,705 @@ public class SmartStartIntegrationService : IIntegrationService
 
         return success;
     }
-
-    /// <summary>
-    /// Pull past Smart Space Visits for practitioners, that were created on SmartLink and outside of the Funda app.
-    /// 
-    /// NOTE: This will only pull data for trainees
-    /// </summary>
-    /// <returns></returns>
-    public async Task<bool> PullSmartSpaceVisitsData()
+    public async Task<bool> PushPQAData()
     {
-        // We currently don't need to create a smart space visit, and we can import the license data when importing the practitioner
-        throw new NotImplementedException();
+       if (!this.Enabled) return false;
+
+        await _logManager.IntegrationLog($"PushPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushPQAData");
+
+        List<Visit> visits = _visitsRepo
+            .GetAll()
+            .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 && x.Attended == true && !x.IntegrationSubmitDate.HasValue)
+            .Include(x => x.VisitAnswers)
+            .ToList();
+
+        foreach (Visit visit in visits)
+        {
+            StringBuilder jsonPutPostString = new StringBuilder();
+            jsonPutPostString.AppendLine("[{");
+
+            // Mapped Ids
+            var mappedCoachId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.CoachHierarchy.ToString()))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedPractitionerId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.UserId))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPQA) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedSpartSpaceVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+
+            if (mappedPractitionerId != null)
+            {
+                // get smart space visit ID if available
+                if (mappedSpartSpaceVisitId == null)
+                {
+                    mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                                                                                        mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
+                }
+
+                if (mappedVisitId == null)
+                {
+                    // License
+                    var delicensingNotes = "";
+                    var isSmartSpaceStillFine = "true";
+                    var isFranchiseeDelicensed = "false";
+                    var hasCollectedHandbook = "false";
+                    var hasCollectedPlaykit = "false";
+                
+                    License license = _licenseRepo.GetAll().Where(x => x.UserId == visit.Practitioner.UserId && x.LicenseType.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
+                    if (license != null)
+                    {
+                        delicensingNotes = license.DelicensedComment;
+                        isSmartSpaceStillFine = license.DelicensedDate.HasValue ? "true" : "false";
+                        isFranchiseeDelicensed = license.DelicensedDate.HasValue ? "true" : "false";
+                        hasCollectedHandbook = (bool)license.CollectedSSHandbook ? "true" : "false";
+                        hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
+                    }
+
+                    // Consent
+                    var userConsent = _dbContext.UserConsents.Where(x => string.Equals(x.UserId, visit.Practitioner.UserId) && string.Equals(x.ConsentType, Constants.SSSettings.consent_type_franchisee)).FirstOrDefault();
+                    var didAcceptAgreements = userConsent != null ? "true" : "false";
+                    var observationNotes = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    // Scores
+                    // Section 1 total = 12(step 2) StimulatingAndResourcedScore
+                    // Section 2 total = 16(step 3 & 4) UseOfSmartStartRoutineScore
+                    // Section 3 total = 12(step 5) StableAndNurturingScore
+                    // Section 4 total = 10(step 6) PositiveInteractionScore
+                    // Section 5 total = 10(step 7) ChildOpportunitiesScore
+                    // Section 6 total = 8(step 8) InteractiveStoryTellingScore
+                    var stimulatingAndResourcedScore = 0.0;
+                    var stableAndNurturingScore = 0.0;
+                    var positiveInteractionScore = 0.0;
+                    var childOpportunitiesScore = 0.0;
+                    var interactiveStoryTellingScore = 0.0;
+                    var step3 = 0.0;
+                    var step4 = 0.0;
+                    var wasSuccessful = "false";
+                    var statusOutcome = "Red";
+
+                    if (visit.PQARating != null)
+                    {
+                        stimulatingAndResourcedScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step2_section).Select(x => x.SectionScore).FirstOrDefault();
+                        stableAndNurturingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step5_section).Select(x => x.SectionScore).FirstOrDefault();
+                        positiveInteractionScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step6_section).Select(x => x.SectionScore).FirstOrDefault();
+                        childOpportunitiesScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step7_section).Select(x => x.SectionScore).FirstOrDefault();
+                        interactiveStoryTellingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
+                        step3 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step3_section).Select(x => x.SectionScore).FirstOrDefault();
+                        step4 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step4_section).Select(x => x.SectionScore).FirstOrDefault();
+                        wasSuccessful = visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() ? "true" : "false";
+
+                        if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                        {
+                            statusOutcome = "Green";
+                        }
+                        else if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString())
+                        {
+                            statusOutcome = "Orange";
+                        }
+                    }
+                    var useOfSmartStartRoutineScore = step3 + step4;
+                    var totalScore = stableAndNurturingScore + stimulatingAndResourcedScore + useOfSmartStartRoutineScore + interactiveStoryTellingScore + childOpportunitiesScore + positiveInteractionScore;
+
+                    var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var numberOfChildrenNotRegistered = 0;
+                
+                    var isFranchiseeHittingChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isVenueSafe = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    var presentChildrenNotRegistered = "false";
+
+                    jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
+                    jsonPutPostString.AppendLine("\"DelicensingNotes\":\"" + delicensingNotes + "\",");
+                    jsonPutPostString.AppendLine("\"StableAndNurturingScore\":" + stableAndNurturingScore + ",");
+                    jsonPutPostString.AppendLine("\"StimulatingAndResourcedScore\":" + stimulatingAndResourcedScore + ",");
+                    jsonPutPostString.AppendLine("\"UseOfSmartStartRoutineScore\":" + useOfSmartStartRoutineScore + ",");
+                    jsonPutPostString.AppendLine("\"InteractiveStoryTellingScore\":" + interactiveStoryTellingScore + ",");
+                    jsonPutPostString.AppendLine("\"ChildOpportunitiesScore\":" + childOpportunitiesScore + ",");
+                    jsonPutPostString.AppendLine("\"PositiveInteractionScore\":" + positiveInteractionScore + ",");
+                    jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfChildrenPresent\":" + (numberOfChildrenPresent != null ? numberOfChildrenPresent : 0) + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfChildrenNotRegistered\":" + numberOfChildrenNotRegistered + ",");
+                    jsonPutPostString.AppendLine("\"Latitude\": null,");
+                    jsonPutPostString.AppendLine("\"Longitude\": null,");
+                    jsonPutPostString.AppendLine("\"WasSuccessful\":" + wasSuccessful + ",");
+                    jsonPutPostString.AppendLine("\"IsFranchiseeHittingChildren\":" + (isFranchiseeHittingChildren == null ? "false" : isFranchiseeHittingChildren) + ",");
+                    jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + (isSmartSpaceStillFine == null ? "false": isSmartSpaceStillFine) + ",");
+                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe) + ",");
+                    jsonPutPostString.AppendLine("\"IsThereTooManyChildren\":" + (isThereTooManyChildren == null ? "false" : isThereTooManyChildren) + ",");
+                    jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
+                    jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
+                    jsonPutPostString.AppendLine("\"PresentChildrenNotRegistered\":" + presentChildrenNotRegistered + ",");
+                    jsonPutPostString.AppendLine("\"IsFranchiseeDelicensed\":" + isFranchiseeDelicensed + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedHandbook\":" + hasCollectedHandbook + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedPlaykit\":" + hasCollectedPlaykit + ",");
+                    jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+                    jsonPutPostString.AppendLine("\"StatusOutcome\":\"" + statusOutcome + "\",");
+                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
+
+                    _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":{\"Guid\": \"" + mappedCoachId + "\"},");
+                    _ = string.IsNullOrEmpty(mappedSpartSpaceVisitId) ? jsonPutPostString.AppendLine("\"SmartSpaceVisit\": null") : jsonPutPostString.AppendLine("\"SmartSpaceVisit\":\"" + mappedSpartSpaceVisitId + "\"");
+                    
+                    jsonPutPostString.AppendLine("}]");
+
+                    try
+                    {
+                        var createPQAUrl = Constants.SSIntegrationSettings.SLPQA + Constants.SSIntegrationSettings.CreateMultiple;
+                        var createApiResponse = await _apiManager.GetAPIHandlerResponse(createPQAUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                        if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+                        {
+                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                            var remoteRecordId = "";
+                            if (returnObj != null)
+                            {
+                                if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                                {
+                                    remoteRecordId = returnObj[0].Guid.ToString();
+                                }
+                            }
+                            if (remoteRecordId != "")
+                            {
+                                // Update visit
+                                visit.IntegrationSubmitDate = DateTime.Now;
+                                _visitsRepo.Update(visit);
+
+                                IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSPQA;
+                                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLPQA;
+                                cgMapping.LocalId = visit.Id.ToString();
+                                cgMapping.RemoteId = remoteRecordId;
+                                cgMapping.UserId = visit.Practitioner.UserId;
+                                cgMapping.UpdatedBy = _uId;
+                                cgMapping.UpdatedDate = DateTime.Now;
+                                cgMapping.IsComplete = true;
+                                cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                                _mapperRepo.Insert(cgMapping);
+                            }
+
+                            await _logManager.IntegrationLog($"PushPQAData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushPQAData");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushPQAData ");
+                    }
+                }
+            }
+        }
+            
+        await _logManager.IntegrationLog($"PushPQAData Completed at {DateTime.Now}", "", null, LogRelatedType.Log, "PushPQAData");
+        return true;
     }
-    //{
-    //    var success = true;
-    //    var mappedTrainees = await GetMappedEntities(Constants.SSIntegrationSettings.SSTrainee); // TODO Why only trainees
-    //    var smartSpaceVisitTypeId = _visitTypeRepo.GetAll().First(x => x.Name == Constants.SSSettings.smart_space_checklist).Id;
 
-    //    foreach (var practitioner in mappedTrainees)
-    //    {
-    //        try
-    //        {
-    //            var smartSpaceVisits = await _apiManager.GetSmartSpaceVisitsByFranchiseeTrainee(practitioner.RemoteId);
-    //            var existingVisits = _visitsRepo.GetAll().Where(x => string.Equals(x.TraineeId, practitioner.Id) && x.VisitTypeId == smartSpaceVisitTypeId).ToList(); //reload all meetings
-
-    //            var createdVisits = new List<Visit>();
-    //            foreach (var slVisit in smartSpaceVisits)
-    //            {
-    //                if (existingVisits.Any(x => x.Id == Guid.Parse(slVisit.Guid)))
-    //                {
-    //                    continue;
-    //                }
-
-    //                // Create visit
-    //                var visit = new Visit()
-    //                {
-    //                    Id = Guid.Parse(slVisit.Guid),
-    //                    ActualVisitDate = slVisit.DateOfVisit,
-    //                    CoachId = Guid.Parse(slVisit.Coach.Guid),
-    //                    HasAnswerData = false,
-    //                    VisitTypeId = smartSpaceVisitTypeId,
-    //                    TenantId = _tenantId,
-    //                    Attended = true,
-    //                    DueDate = slVisit.DateOfVisit,
-    //                    PlannedVisitDate = slVisit.DateOfVisit,
-    //                    TraineeId = practitioner.Id,                  
-    //                };
-    //                createdVisits.Add(visit);
-
-    //                // Do I need to save license info ???
-    //            }
-    //            _visitsRepo.InsertMany(createdVisits);
-    //        }
-    //        catch (Exception e)
-    //        {
-    //            await _logManager.IntegrationLog("IntegrationPQASmartSpaceVisitsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationPQASmartSpaceVisitsData > GetSmartSpaceVisitsByFranchiseeTrainee");
-    //            success = false;
-    //        }
-    //    }
-
-    //    return success;
-    //}
-
-    public async Task<bool> IntegrationStatementsData()
+    private async Task<string> AddSmartSpaceForPQAAndAccreditation(ICollection<VisitData> visitAnswers, 
+                                                                   DateTime dateOfVisit,
+                                                                   string mappedPractitionerId,
+                                                                   string mappedCoachId,
+                                                                   string visitId,
+                                                                   string userId)
     {
+        await _logManager.IntegrationLog($"SmartSpaceForPQAAndAccreditation Started at {DateTime.Now}", null, null, LogRelatedType.Log, "SmartSpaceForPQAAndAccreditation");
+
+        var smartSpaceId = "";
+        var smartSpaceAnswers = visitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var spaceEmergencyPlanning = visitAnswers.Where(x =>
+                (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
+                x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
+
+        var hasCleanWater = "false";
+        var hasToilet = "false";
+        var hasHandwashing = "false";
+        var hasNoHarmfulSubstances = "false";
+        var hasNoFireHazards = "false";
+        var hasNoSharpObjects = "false";
+        var hasNoBurnRisks = "false";
+        var hasNoDrowningRisks = "false";
+        var hasNoElectrocutionRisks = "false";
+        var hasNoSmokeRisks = "false";
+        var hasNoFallingRisks = "false";
+        var hasNoAnimalRisks = "false";
+        var isInSafePlace = "false";
+        var hasFireExtinguishment = "false";
+        var hasFirstAidKit = "false";
+        var hasEnoughPlaySpace = "false";
+        var isOutdoorsFenced = "false";
+        var isOutdoorsClean = "false";
+        var areEmergencyNumbersVisible = "false";
+        var isEmergencyPlanVisible = "false";
+        var hasNaturalVentilation = "false";
+        var numberOfAssistants = "false";
+        var capacity = "false";
+        var ownsProperty = "false"; // not available on PQA or ReAccreditation
+        var doesNotExceedMaximumCapacity = "false";
+        var hasAcceptedSmartSpaceAgreement = "false";
+        int programmeCount = 0; // not available on PQA and Accreditation
+        int healthCount = 0; // pqa step 12, re-accreditation step 2;
+        int safetyCount = 0; // pqa step 12, re-accreditation step 2;
+        int unrequiredItemsScore = 0;
+
+        if (smartSpaceAnswers != null)
+        {
+            hasCleanWater = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) != -1 ? "true" : "false";
+            hasToilet = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) != -1 ? "true" : "false";
+            hasHandwashing = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) != -1 ? "true" : "false";
+            hasNoHarmfulSubstances = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) != -1 ? "true" : "false";
+            hasNoFireHazards = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) != -1 ? "true" : "false";
+            hasNoSharpObjects = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) != -1 ? "true" : "false";
+            hasNoBurnRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) != -1 ? "true" : "false";
+            hasNoDrowningRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) != -1 ? "true" : "false";
+            hasNoElectrocutionRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) != -1 ? "true" : "false";
+            hasNoSmokeRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) != -1 ? "true" : "false";
+            hasNoFallingRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) != -1 ? "true" : "false";
+            hasNoAnimalRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) != -1 ? "true" : "false";
+            isInSafePlace = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) != -1 ? "true" : "false";
+            hasFireExtinguishment = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) != -1 ? "true" : "false";
+            hasFirstAidKit = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) != -1 ? "true" : "false";
+            hasEnoughPlaySpace = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a1) != -1 ? "true" : "false";
+            isOutdoorsFenced = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a2) != -1 ? "true" : "false";
+            isOutdoorsClean = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) != -1 ? "true" : "false";
+            areEmergencyNumbersVisible = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a3) != -1 ? "true" : "false";
+            isEmergencyPlanVisible = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) != -1 ? "true" : "false";
+            hasNaturalVentilation = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a4) != -1 ? "true" : "false";
+            numberOfAssistants = smartSpaceAnswers.IndexOf(Constants.SSSettings.number_assistants) != -1 ? "true" : "false";
+            capacity = smartSpaceAnswers.IndexOf(Constants.SSSettings.capacity) != -1 ? "true" : "false";
+
+            // Health Count
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) == -1 ? 0 : 1;
+
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15b) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a18) == -1 ? 0 : 1;
+        }
+
+        if (visitAnswers != null)
+        {
+            var maximumCapacity = visitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+            doesNotExceedMaximumCapacity = maximumCapacity == null? "false" : maximumCapacity; 
+        }
+
+        if (spaceEmergencyPlanning != null)
+        {
+            unrequiredItemsScore = spaceEmergencyPlanning.Where(x => x.QuestionAnswer == "true").Count(); // step 13 on pqa
+        }
+        
+        // Scores
+        int requiredItemsScore = programmeCount + healthCount + safetyCount;
+        int totalScore = requiredItemsScore + unrequiredItemsScore;
+
+        StringBuilder jsonPutPostString = new StringBuilder();
+        jsonPutPostString.AppendLine("[{");
+        jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + (numberOfAssistants == null ? 0 : numberOfAssistants) + ",");
+        jsonPutPostString.AppendLine("\"Capacity\":" + (capacity == null ? 0 : capacity) + ",");
+        jsonPutPostString.AppendLine("\"RequiredItemsScore\":" + requiredItemsScore + ",");
+        jsonPutPostString.AppendLine("\"UnrequiredItemsScore\":" + unrequiredItemsScore + ",");
+        jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+        jsonPutPostString.AppendLine("\"Latitude\": null,");
+        jsonPutPostString.AppendLine("\"Longitude\": null,");
+        jsonPutPostString.AppendLine("\"OwnsProperty\":" + (ownsProperty == null ? "false" : ownsProperty) + ",");
+        jsonPutPostString.AppendLine("\"HasAcceptedSmartSpaceAgreement\":" + hasAcceptedSmartSpaceAgreement + ",");
+        // smart_space_checklist
+        jsonPutPostString.AppendLine("\"HasCleanWater\":" + hasCleanWater + ",");
+        jsonPutPostString.AppendLine("\"HasToilet\":" + hasToilet + ",");
+        jsonPutPostString.AppendLine("\"HasHandwashing\":" + hasHandwashing + ",");
+        jsonPutPostString.AppendLine("\"HasNoHarmfulSubstances\":" + hasNoHarmfulSubstances + ",");
+        jsonPutPostString.AppendLine("\"HasNoFireHazards\":" + hasNoFireHazards + ",");
+        jsonPutPostString.AppendLine("\"HasNoSharpObjects\":" + hasNoSharpObjects + ",");
+        jsonPutPostString.AppendLine("\"HasNoBurnRisks\":" + hasNoBurnRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoDrowningRisks\":" + hasNoDrowningRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoElectrocutionRisks\":" + hasNoElectrocutionRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoSmokeRisks\":" + hasNoSmokeRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoFallingRisks\":" + hasNoFallingRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoAnimalRisks\":" + hasNoAnimalRisks + ",");
+        jsonPutPostString.AppendLine("\"IsInSafePlace\":" + isInSafePlace + ",");
+        jsonPutPostString.AppendLine("\"HasFireExtinguishment\":" + hasFireExtinguishment + ",");
+        jsonPutPostString.AppendLine("\"HasFirstAidKit\":" + hasFirstAidKit + ",");
+        jsonPutPostString.AppendLine("\"DoesNotExceedMaximumCapacity\":" + doesNotExceedMaximumCapacity + ",");
+        jsonPutPostString.AppendLine("\"HasEnoughPlaySpace\":" + hasEnoughPlaySpace + ",");
+        jsonPutPostString.AppendLine("\"IsOutdoorsFenced\":" + isOutdoorsFenced + ",");
+        jsonPutPostString.AppendLine("\"IsOutdoorsClean\":" + isOutdoorsClean + ",");
+        jsonPutPostString.AppendLine("\"AreEmergencyNumbersVisible\":" + areEmergencyNumbersVisible + ",");
+        jsonPutPostString.AppendLine("\"IsEmergencyPlanVisible\":" + isEmergencyPlanVisible + ",");
+        jsonPutPostString.AppendLine("\"HasNaturalVentilation\":" + hasNaturalVentilation + ",");
+        jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + dateOfVisit.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+        jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
+        _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":\"" + mappedCoachId + "\"");
+
+        jsonPutPostString.AppendLine("}]");
+
+        try
+        {
+            var createSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.CreateMultiple;
+            var createApiResponse = await _apiManager.GetAPIHandlerResponse(createSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
+            if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+            {
+                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                if (returnObj != null)
+                {
+                    if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                    {
+                        smartSpaceId = returnObj[0].Guid.ToString();
+                    }
+                }
+                if (smartSpaceId != "")
+                {
+                    IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                    cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSSmartSpaceVisit;
+                    cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLSmartSpaceVisit;
+                    cgMapping.LocalId = visitId;
+                    cgMapping.RemoteId = smartSpaceId;
+                    cgMapping.UserId = userId;
+                    cgMapping.UpdatedBy = _uId;
+                    cgMapping.UpdatedDate = DateTime.Now;
+                    cgMapping.IsComplete = true;
+                    cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                    _mapperRepo.Insert(cgMapping);
+                }
+
+                await _logManager.IntegrationLog($"SmartSpaceForPQAAndAccreditation Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "SmartSpaceForPQAAndAccreditation");
+            }
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SmartSpaceForPQAAndAccreditation");
+        }
+
+        await _logManager.IntegrationLog($"SmartSpaceForPQAAndAccreditation Completed at {DateTime.Now}", "", null, LogRelatedType.Log, "SmartSpaceForPQAAndAccreditation");
+
+        return smartSpaceId;
+    }
+
+    public async Task<bool> PushReAccreditationData()
+    {
+        if (!this.Enabled) return false;
+
+        await _logManager.IntegrationLog($"PushReAccreditationData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushReAccreditationData");
+
+        List<Visit> visits = _visitsRepo
+            .GetAll()
+            .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 && x.Attended == true && !x.IntegrationSubmitDate.HasValue)
+            .Include(x => x.VisitAnswers)
+            .ToList();
+
+
+        foreach (Visit visit in visits)
+        {
+            StringBuilder jsonPutPostString = new StringBuilder();
+            jsonPutPostString.AppendLine("[{");
+
+            // Mapped Ids
+            var mappedCoachId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.CoachHierarchy.ToString()))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedPractitionerId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.UserId))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSAnnualAccreditation) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedSpartSpaceVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+
+            if (mappedPractitionerId != null)
+            {
+                // get smart space visit ID if available
+                if (mappedSpartSpaceVisitId == null)
+                {
+                    var smartSpaceCheckAnswers = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    if (smartSpaceCheckAnswers != null)
+                    {
+                        var spaceEmergencyPlanning = visit.VisitAnswers.Where(x =>
+                                (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
+                                x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
+                        mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                                                                                        mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
+
+                    }
+                }
+
+                if (mappedVisitId == null && mappedSpartSpaceVisitId != null)
+                {
+                    // License
+                    var delicensingNotes = "";
+                    var isSmartSpaceStillFine = "true";
+                    var isFranchiseeDelicensed = "false";
+                    var hasCollectedHandbook = "false";
+                    var hasCollectedPlaykit = "false";
+
+                    License license = _licenseRepo.GetAll().Where(x => x.UserId == visit.Practitioner.UserId && x.LicenseType.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
+                    if (license != null)
+                    {
+                        delicensingNotes = license.DelicensedComment;
+                        isSmartSpaceStillFine = license.DelicensedDate.HasValue ? "true" : "false";
+                        isFranchiseeDelicensed = license.DelicensedDate.HasValue ? "true" : "false";
+                        hasCollectedHandbook = (bool)license.CollectedSSHandbook ? "true" : "false";
+                        hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
+                    }
+
+                    var observationNotes = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var discussionSummary = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.summary_discussion_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    // A.The learning environment & use of the SmartStart routine -score LearningEnvironment_Score
+                    var learningEnvironmentScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
+                    // B. Programme implementation - score	ProgrammeImplementation_Score
+                    var programmeImplementationScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step_10_section).Select(x => x.SectionScore).FirstOrDefault();
+                    // C. Records - score	Records_Score
+                    var recordsScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step_11_section).Select(x => x.SectionScore).FirstOrDefault();
+                    // D. Operational standards - score	OperationalStandards_Score
+                    var operationalStandardsScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var totalScore = learningEnvironmentScore + programmeImplementationScore + recordsScore + operationalStandardsScore;
+
+                    var numberOfAssistants = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var wasSuccessful = visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() ? "true" : "false";
+
+                    var isHittingChild = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var wasSmartSpaceChecked = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                    var pqaAgreement = _visitDataRepo.GetAll().Where(x => x.Visit.PractitionerId == visit.PractitionerId &&
+                                                                     x.Visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
+                                                                     x.Question == Constants.SSSettings.franchisee_agreement).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var acceptedItems = 0;
+                    if (pqaAgreement != null)
+                    {
+                        if (pqaAgreement.IndexOf(Constants.SSSettings.franchisee_agreement_q1) != -1)
+                        {
+                            acceptedItems++;
+                        } else if (pqaAgreement.IndexOf(Constants.SSSettings.franchisee_agreement_q2) != -1)
+                        {
+                            acceptedItems++;
+                        } else if (pqaAgreement.IndexOf(Constants.SSSettings.franchisee_agreement_q3) != -1)
+                        {
+                            acceptedItems++;
+                        }
+                    }
+
+                    var didAcceptAgreements = acceptedItems >= 3 ? "true" : "false";
+                    var areThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var statusOutcome = "Red";
+                    if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                    {
+                        statusOutcome = "Green";
+                    }
+                    else if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString())
+                    {
+                        statusOutcome = "Orange";
+                    }
+                    var starRating = visit.PQARating.OverallRatingStars[1];
+                    var siteName = _classroomGenericRepo.GetAll().Where(x => x.UserId == visit.Practitioner.UserId).Select(x => x.Name).FirstOrDefault();
+                    var visitStatus = "Completed";
+
+                    jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
+                    jsonPutPostString.AppendLine("\"SiteName\":\"" + siteName + "\",");
+                    jsonPutPostString.AppendLine("\"DelicensingNotes\":\"" + delicensingNotes + "\",");
+                    jsonPutPostString.AppendLine("\"DiscussionSummary\":\"" + discussionSummary + "\",");
+                    jsonPutPostString.AppendLine("\"OperationalStandardsScore\":" + operationalStandardsScore + ",");
+                    jsonPutPostString.AppendLine("\"LearningEnvironmentScore\":" + learningEnvironmentScore + ",");
+                    jsonPutPostString.AppendLine("\"ProgrammeImplementationScore\":" + programmeImplementationScore + ",");
+                    jsonPutPostString.AppendLine("\"RecordsScore\":" + recordsScore + ",");
+                    jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + numberOfAssistants + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfChildrenPresent\":" + (numberOfChildrenPresent != null ? numberOfChildrenPresent : 0) + ",");
+                    jsonPutPostString.AppendLine("\"Latitude\": null,");
+                    jsonPutPostString.AppendLine("\"Longitude\": null,");
+                    jsonPutPostString.AppendLine("\"IsHittingChild\":" + (isHittingChild == null ? "false" : isHittingChild) + ",");
+                    jsonPutPostString.AppendLine("\"WasSmartSpaceChecked\":" + (wasSmartSpaceChecked == null ? "false" : "true") + ",");
+                    jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
+                    jsonPutPostString.AppendLine("\"AreThereTooManyChildren\":" + (areThereTooManyChildren == null ? "false" : areThereTooManyChildren) + ",");
+                    jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
+                    jsonPutPostString.AppendLine("\"IsFranchiseeDelicensed\":" + isFranchiseeDelicensed + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedHandbook\":" + hasCollectedHandbook + ",");
+                    jsonPutPostString.AppendLine("\"HasCollectedPlaykit\":" + hasCollectedPlaykit + ",");
+                    jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+                    jsonPutPostString.AppendLine("\"StarRating\":" + starRating + ",");
+                    jsonPutPostString.AppendLine("\"StatusOutcome\":\"" + statusOutcome + "\",");
+                    jsonPutPostString.AppendLine("\"VisitStatus\":\"" + visitStatus + "\",");
+
+                    _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":{\"Guid\": \"" + mappedCoachId + "\"},");
+                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
+                    jsonPutPostString.AppendLine("\"SmartSpaceVisit\":{\"Guid\": \"" + mappedSpartSpaceVisitId + "\"},");
+
+                    jsonPutPostString.AppendLine("}]");
+
+                    try
+                    {
+                        var createPQAUrl = Constants.SSIntegrationSettings.SLAnnualAccreditation + Constants.SSIntegrationSettings.CreateMultiple;
+                        var createApiResponse = await _apiManager.GetAPIHandlerResponse(createPQAUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                        if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+                        {
+                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                            var remoteRecordId = "";
+                            if (returnObj != null)
+                            {
+                                if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                                {
+                                    remoteRecordId = returnObj[0].Guid.ToString();
+                                }
+                            }
+
+                            if (remoteRecordId != "")
+                            {
+                                // Update visit
+                                visit.IntegrationSubmitDate = DateTime.Now;
+                                _visitsRepo.Update(visit);
+
+                                IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSAnnualAccreditation;
+                                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLAnnualAccreditation;
+                                cgMapping.LocalId = visit.Id.ToString();
+                                cgMapping.RemoteId = remoteRecordId;
+                                cgMapping.UserId = visit.Practitioner.UserId;
+                                cgMapping.UpdatedBy = _uId;
+                                cgMapping.UpdatedDate = DateTime.Now;
+                                cgMapping.IsComplete = true;
+                                cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                                _mapperRepo.Insert(cgMapping);
+                            }
+                            await _logManager.IntegrationLog($"PushReAccreditationData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushReAccreditationData");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushReAccreditationData ");
+                    }
+                }
+            }
+        }
+        
+        await _logManager.IntegrationLog($"PushReAccreditationData Completed at {DateTime.Now}", "", null, LogRelatedType.Log, "PushReAccreditationData");
+        return true;
+    }
+
+    public async Task IntegrationStatementsData()
+    {
+        if (!this.Enabled) return;
+
         await _logManager.IntegrationLog($"IntegrationStatementsData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationStatementsData");
+
         int statementsSent = 0;
-        bool isComplete = false;
-        StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();//from the 25th of the previous month is open submission time        
+        var submitPeriod = IncomeExpenseService.GetStatementPeriod(); //from the 25th of the previous month is open submission time
+
         if (DateTime.Now.Date > submitPeriod.Start || DateTime.Now.Date < submitPeriod.End)//only run task daily withing submit window
         {
             ////[{"Month": "January","Year": "2023","StartupSupport": 10.0,"Fees": 0.0,"Donations": 10.0,"FundRaising": 10.0,"OtherIncome": 10.0,"Rent": 10.0,"Utilities": 10.0,"Food": 10.0,"Salary": 10.0,"Transport": 10.0,"OtherExpenses": 10.0,"Franchisee": {"Guid": "4778287e-073f-e711-80e0-005056815442"},"Document": {"Guid": "9c029379-3996-ec11-834e-00155dee5a05"}}]
-            string statementsUrl = Constants.SSIntegrationSettings.SLIncomeStatementIncome + Constants.SSIntegrationSettings.CreateMultiple;            
+            var statementsUrl = Constants.SSIntegrationSettings.SLIncomeStatementIncome + Constants.SSIntegrationSettings.CreateMultiple;
             var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
             var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("IncomeStatementPDF")).FirstOrDefault();
-            var _mappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner); //= await GetMappedEntitiesTestUsers();
-            List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
+            var _mappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
 
-            List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start) ).ToList();//&& x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315"
-            foreach (var prac in statementsDueList)
+            var allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
+
+            var practitionersWithDueStatements = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start)).ToList();
+            foreach (var prac in practitionersWithDueStatements)
             {
-                var submittedStatements = _incomeManager.GetAllStatementsIncomeStatement(prac.UserId.ToString(), submitPeriod.Start.Year, submitPeriod.Start.Month);
-                if (submittedStatements.Count > 0)
+                // TODO - This call should never return multiple
+                var submittedStatements = _incomeManager.GetAllStatementsIncomeStatement(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+                if (submittedStatements.Any())
                 {
                     foreach (var statement in submittedStatements)
                     {
-                        int[] validmonths = { statement.Month, statement.Month+1 };
+                        if (!statement.IncomeItems.Any() && !statement.ExpenseItems.Any())
+                        {
+                            // No actual data on the statement, just continue to the next one
+                            continue;
+                        }
+
+                        int[] validmonths = { statement.Month, statement.Month + 1 };
                         Document statementDoc = null;
+
+                        // I'm not sure how this logic works, is it possible for there to be a document if we haven't marked it on the statement already???
                         if (statement.RelatedDocumentId != null)
                         {
                             var docs = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).ToList();
                             if (docs.Any())
                             {
                                 statementDoc = docs.FirstOrDefault();
-                            } else
+                            }
+                            else
                             {
                                 //get the latest one created
                                 statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.UserId == prac.UserId && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
                             }
                         }
-                        else {
-                            statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.UserId == prac.UserId && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
-                        }
-                        string remoteStatementId = "";
-                        List<IntegrationAudit> docaudits = null;
-
-                        string remoteDocId = "";
-                        if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
+                        else
                         {
-                            //if doc is still null here and its a valid statement, generate it and redo this
-                            if (statementDoc == null)
-                            {
-                                statementDoc = _incomeManager.CreateIncomeStatementPDFDocument(statement.UserId.ToString(), statement);
-                            }
-
-                            if (statementDoc != null)
-                            {
-                                //save the doc id back to the balancesheet record for future ref
-                                statement.RelatedDocumentId = statementDoc.Id.ToString();
-                                _statementsRepo.Update(statement);
-
-                                docaudits = allAudits.Where(x => x.Submitted == null && x.RelatedId == statementDoc.Id.ToString()).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
-                                remoteDocId = await PushNewDocument(statementDoc);
-                            }
+                            statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
                         }
-                        List<StatementReport> statementLines = _incomeManager.GetStatementLinesToReport(prac.UserId.ToString(), submitPeriod.Start.Year, submitPeriod.Start.Month);
 
-                        if (statementLines.Count > 0) { 
+                        //if doc is still null here and its a valid statement, generate it and redo this
+                        if (statementDoc == null)
+                        {
+                            statementDoc = _incomeManager.CreateIncomeStatementPDFDocument(statement.UserId, statement);
+                        }
+
+                        // TODO - Update this to use the income and expense items from the statement fetched above
+                        var statementLines = _incomeManager.GetStatementLinesToReport(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+
                         double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
                         double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
+
                         //calculate based on categories
                         foreach (var statementLine in statementLines)
                         {
-                                switch (statementLine.StatementLine)
-                                {
-                                    case "Startup Support":
-                                        dStartupSupport += statementLine.Value;
-                                        break;
-                                    case "Rent":
-                                        dRent += statementLine.Value;
-                                        break;
-                                    case "Food":
-                                        dFood += statementLine.Value;
-                                        break;
-                                    case "Subcontractor Wages":
-                                        dSalary += statementLine.Value;
-                                        break;
-                                    case "Learning Materials":
-                                    case "Maintenance":
+                            switch (statementLine.StatementLine)
+                            {
+                                case "Startup Support":
+                                    dStartupSupport += statementLine.Value;
+                                    break;
+                                case "Rent":
+                                    dRent += statementLine.Value;
+                                    break;
+                                case "Food":
+                                    dFood += statementLine.Value;
+                                    break;
+                                case "Subcontractor Wages":
+                                    dSalary += statementLine.Value;
+                                    break;
+                                case "Learning Materials":
+                                case "Maintenance":
+                                    dOtherExpenses += statementLine.Value;
+                                    break;
+                                case "Utilities":
+                                    dUtilities += statementLine.Value;
+                                    break;
+                                case "Preschool Fee":
+                                    dFees += statementLine.Value;
+                                    break;
+                                case "Donation":
+                                case "DBE Subsidy":
+                                    dDonations += statementLine.Value;
+                                    break;
+                                case "Other":
+                                    if (statementLine.StatementType == "Income")
+                                        dOtherIncome += statementLine.Value;
+                                    else
                                         dOtherExpenses += statementLine.Value;
-                                        break;
-                                    case "Utilities":
-                                        dUtilities += statementLine.Value;
-                                        break;
-                                    case "Preschool Fee":
-                                            dFees += statementLine.Value;
-                                            break;
-                                    case "Donation":
-                                    case "DBE Subsidy":
-                                            dDonations += statementLine.Value;
-                                        break;
-                                    case "Other":
-                                        if (statementLine.StatementType == "Income")
-                                            dOtherIncome += statementLine.Value;
-                                        else
-                                            dOtherExpenses += statementLine.Value;
-                                        break;
-                                    default:
-                                        break;
-                                }                                
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
 
                         StringBuilder jsonStatementString = new StringBuilder();
@@ -605,16 +1174,16 @@ public class SmartStartIntegrationService : IIntegrationService
                         jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
                         jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
                         jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
-                        jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
+                        jsonStatementString.AppendLine("\"OtherExpenses\":" + dOtherExpenses + ",");
                         jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
-                        if (!string.IsNullOrWhiteSpace(remoteDocId))
-                        {
-                            jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
-                        }
                         jsonStatementString.AppendLine("}]");
 
                         try
                         {
+                            string remoteStatementId = "";
+                            string remoteDocId = "";
+
+                            // SEND THE STATEMENT FIRST
                             //now send to API call <entity type>/Multiple
                             var apiResponse = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
                             if (!string.IsNullOrEmpty(apiResponse.ResponseString))
@@ -625,19 +1194,14 @@ public class SmartStartIntegrationService : IIntegrationService
                                     if (returnObj[0].Guid != null)
                                     {
                                         remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                        if (docaudits != null)
-                                        {
-                                            await _logManager.UpdateAuditSubmitted(docaudits);
-                                        }
 
-                                        //no need to insert entity mapping item for statements as long as document saved
-                                        isComplete = true;
                                         //update entity to note its statements has been sent
                                         prac.LastIncomeSubmittedDate = DateTime.Now;
                                         _mapperRepo.Update(prac);
 
                                         statementsSent++;
-                                    } else
+                                    }
+                                    else
                                     {
                                         await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonStatementString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                     }
@@ -647,6 +1211,23 @@ public class SmartStartIntegrationService : IIntegrationService
                                     await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonStatementString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                 }
                             }
+
+                            // SEND THE DOCUMENT SECOND
+                            // So long as the month of the document date matches the statement month, SmartStart will link them automatically
+                            if (statementDoc != null)
+                            {
+                                //save the doc id back to the balancesheet record for future ref
+                                statement.RelatedDocumentId = statementDoc.Id.ToString();
+                                _statementsRepo.Update(statement);
+
+                                var docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
+                                remoteDocId = await PushNewDocument(statementDoc, submitPeriod.Start); // Pass in a fixed date so its in the correct month, otherwise SmartStart will think its for the next month and create a blank statement
+
+                                if (docaudits != null)
+                                {
+                                    await _logManager.UpdateAuditSubmitted(docaudits);
+                                }
+                            }
                         }
                         catch (Exception e)
                         {
@@ -654,305 +1235,22 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
                     }
                 }
-                } //end statementlinses > 0 check
             }
-            /**/
         }
         await _logManager.IntegrationLog($"IntegrationStatementsData Completed at {DateTime.Now}", $"statements sent {statementsSent}", null, LogRelatedType.Log, "IntegrationStatementsData");
-        return isComplete;
     }
-
-    public async Task<bool> IntegrationMonthlyAttendanceData()
-    {
-        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
-        int attendancesSent = 0;
-        bool isComplete = false;
-        DateTime startPeriod = DateTime.Now.GetStartOfMonth();
-        _mappedEntities = await GetMappedEntities();
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= startPeriod)).ToList();
-
-        var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
-        var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("AttendancePDF")).FirstOrDefault();
-
-        //var allRequiredAttendance =
-        //    (
-        //        from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-        //        join entityData in entityRepo.GetAll().Where(p => p.IsActive.Equals(true) && p.LastAttendanceSubmittedDate <= startPeriod && p.LocalEntity.Equals("Practitioner")) on classroomGroupData.UserId.ToString() equals entityData.UserId
-        //        join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= startPeriod && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
-        //        select new { classroomGroupData, entityData }
-        //    ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
-        //foreach (var requiredAttendance in allRequiredAttendance)
-        //{
-        //    var docs = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.DocumentTypeId.Equals(attendancePDF.Id)).ToList();
-        //    //TODO: finish gathering docs and sending to SL
-
-
-        //}
-
-
-        return isComplete;
-    }
-
-    public async Task<bool> IntegrationAttendanceByDueData()
-    {
-        await _logManager.IntegrationLog($"IntegrationAttendanceByDueData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
-        int attendancesSent = 0;
-        bool isComplete = false;
-
-        _mappedEntities = await GetMappedEntities(null, true, true);
-        int trackingDays = 2;
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
-
-        DateTime trackingDate = DateTime.Now;
-
-        DateTime trackingWeekDate = trackingDate.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = trackingDate.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
-
-        string absent = "Absent";
-        string nosession = "No Session";
-        string unknown = "Unknown";
-        string present = "Present";
-        string pholiday = "Public Holiday";
-
-        var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
-        int trackingWeekOfYear = trackingWeekDate.GetWeekOfYear();        
-       
-        foreach (var parent in attendancesDueList)
-        {
-            bool isMeetingDay = false;
-            DateTime nextDay = trackingWeekDate;
-
-            StringBuilder jsonAttendanceString = new StringBuilder();
-            jsonAttendanceString.AppendLine("[");
-            Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
-            List<AttendanceList> attendances = new List<AttendanceList>();
-            List<Learner> allLearners = new List<Learner>();
-
-            var classroomGroups = _attendanceService.GetUserClassroomGroups(parent.UserId.ToString());
-
-            //check if they even have classes, then check if they should be having attendance                    
-            if (classroomGroups.Any())
-            {
-                foreach (var classroomGroup in classroomGroups)
-                {
-                    List<Learner> learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
-                    if (learners.Any())
-                    {
-                        allLearners.AddRange(learners);
-                    } else
-                    {                        
-                        continue;
-                    }
-
-
-                    while (nextDay < followingWeekDate)
-                    {
-                        var programmeDay = _programmeRepo.GetAll().Where(d => d.MeetingDay == (int)nextDay.DayOfWeek && d.ClassroomGroupId == classroomGroup.Id).ToList();
-                        if (programmeDay.Any())
-                        {
-                            isMeetingDay = true;
-                            meetingDays.Add(nextDay.DayOfWeek.ToString(), isMeetingDay);
-                        }
-
-                        nextDay = nextDay.AddDays(1);
-                    }
-                }
-
-                if (allLearners.Count>0)
-                {
-                    Dictionary<string, string> weeklyBaseAttendanceList = new Dictionary<string, string>();
-                    foreach (var meetDay in meetingDays)
-                    {
-                        if (holidays.Count > 0)
-                        {
-                            foreach (var publicholiday in holidays)
-                            {
-                                if (meetDay.Key == publicholiday.Day.ToString("dddd"))
-                                {
-                                    if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
-                                        weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? pholiday : nosession) : pholiday);
-                                    else
-                                        weeklyBaseAttendanceList[meetDay.Key] = pholiday;
-                                }
-                                else
-                                {
-                                    if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
-                                        weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
-                                weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
-                        }
-                    }
-
-                    //start building up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
-                    foreach (var learner in allLearners)
-                    {
-                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                        string learnerRemoteId = "";
-                        var mappedChild = _mappedEntities.Where(x => x.UserId == learner.UserId && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
-                        if (mappedChild != null)
-                        {
-                            learnerRemoteId = mappedChild.RemoteId;
-                        }
-
-                        attendances.Add(new AttendanceList()
-                        {
-                            //ClassroomGroupId = classroomGroup.Id.ToString(),
-                            LearnerRemoteId = learnerRemoteId,
-                            PractitionerUserId = parent.UserId.ToString(),
-                            PractitionerRemoterId = parent.RemoteId,
-                            LearnerUserId = learner.UserId.ToString(),
-                            WeeklyAttendance = weeklyBaseAttendanceList.Copy() //set the basic list back to object                        
-                        });
-                    }
-                }
-            }
-
-            if (allLearners.Count > 0)
-            {
-                //now get the actual attendances available and set that back to objkect aswell
-                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId.ToString(), trackingWeekDate.Year, null, trackingWeekOfYear);
-                if (weeklyAttendance.Any())
-                {
-                    try
-                    {
-                        //get list of children
-                        List<string> children = weeklyAttendance.Select(x => x.UserId.ToString()).Distinct().ToList();
-                        foreach (var child in children)
-                        {
-                            //map the attendance up with the learner list and populate
-                            var learnerAttendance = attendances.Where(a => a.LearnerUserId == child).FirstOrDefault();
-                            if (learnerAttendance == null || string.IsNullOrWhiteSpace(learnerAttendance.LearnerRemoteId)) //if this child is not in list then continue to next
-                                continue;
-
-                            int daysPresent = 0;
-                            int daysAbsent = 0;
-
-                            var childAttendances = weeklyAttendance.Where(x => x.UserId == Guid.Parse(child)).OrderBy(x => x.AttendanceDate).ToList();
-
-                            foreach (var attendance in childAttendances)
-                            {
-                                string attendedKey = attendance.AttendanceDate.ToString("dddd");
-                                if (learnerAttendance.WeeklyAttendance.ContainsKey(attendedKey))
-                                {
-                                    foreach (var d in learnerAttendance.WeeklyAttendance)
-                                    {
-                                        if (d.Key == attendedKey)
-                                        {
-                                            if (attendance.Attended)
-                                            {
-                                                daysPresent++;
-                                                learnerAttendance.WeeklyAttendance[attendedKey] = present;
-                                            }
-                                            else
-                                            {
-                                                daysAbsent++;
-                                                learnerAttendance.WeeklyAttendance[attendedKey] = absent;
-                                            }
-                                            continue;
-                                        }
-                                    }
-                                }
-                            }
-                            learnerAttendance.daysAbsent = daysAbsent;
-                            learnerAttendance.daysPresent = daysPresent;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        await _logManager.IntegrationLog("WeeklyAttendance by Child Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
-                    }
-                }
-
-                //now build up the strings to push
-                try
-                {
-
-                    bool validAttendance = false;
-                    foreach (var attendance in attendances)
-                    {
-                        if (!string.IsNullOrWhiteSpace(attendance.LearnerRemoteId))
-                        {                            
-                            int absentDays = attendance.daysPresent == 0 && attendance.daysAbsent == 0 ? meetingDays.Count : attendance.daysAbsent;
-
-                            jsonAttendanceString.AppendLine("{");
-                            jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + attendance.daysPresent + ",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + absentDays + ",");
-                            foreach (var item in attendance.WeeklyAttendance)
-                            {
-                                jsonAttendanceString.AppendLine("\"" + item.Key + "\":\"" + item.Value + "\",");
-                            }
-                            jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + attendance.PractitionerRemoterId + "\"},");
-                            jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + attendance.LearnerRemoteId + "\"}");
-                            jsonAttendanceString.AppendLine("},");
-
-                            validAttendance = true;
-                        }
-                    }
-
-                    if (validAttendance)
-                    {
-                        jsonAttendanceString.AppendLine("]");
-
-                        try
-                        {
-                            //now send to API call <entity type>/Multiple
-                            var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
-                            {
-                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
-                                if (returnObj != null)
-                                {
-                                    var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                    isComplete = true;
-                                    //mark mapped parent practitioner of last date attendance was sent
-                                    parent.LastAttendanceSubmittedDate = DateTime.Now;
-                                    _mapperRepo.Update(parent);
-
-                                    attendancesSent++;
-                                }
-                                else //error empty response received
-                                {
-                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
-                }
-            }
-        }
-    
-        await _logManager.IntegrationLog("IntegrationAttendanceByDueData", $"Attendances sent {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceByDueData");
-        return isComplete;
-    }
-
-
-    
 
     public async Task<bool> IntegrationUpdates()
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
         int historyDays = 2; //TODO: change this to look for last successfull run and do incremental calls to SL only, the overlap is extra data and gets mostly discarded anyways, plus making the payloads bigger, more room for error
         bool returnOK = false;
         RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays * -1), DateTime.Now);
         _mappedEntities = await GetMappedEntities(null, true, true);
         _mappedColumns = await GetMappedColumns();
-       
+
         if (changedColumns != null)
         {
             //run all inserts
@@ -1018,6 +1316,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task AutoSubmitStatements()
     {
+        if (!this.Enabled) return;
+
         await _logManager.IntegrationLog($"AutoSubmitStatements started at {DateTime.Now}", null, null, LogRelatedType.Log, "AutoSubmitStatements");
 
         try
@@ -1040,8 +1340,10 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByTrainees()
     {
-        _mappedEntities = await GetMappedEntities();
-        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
+        if (!this.Enabled) return true;
+
+        _mappedEntities = await GetMappedEntities(null,true,true);
+        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.IsActive == true).ToList())
         {
             List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
             if (remoteTrainees.Any())
@@ -1060,6 +1362,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByFranchisees()
     {
+        if (!this.Enabled) return true;
+
         List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
         if (ids.Count > 0)
         {
@@ -1072,10 +1376,10 @@ public class SmartStartIntegrationService : IIntegrationService
         return true;
     }
 
-
-
-    public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null, string coachId = null)
+    public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null, string coachId = null, bool incompletOnly = false)
     {
+        if (!this.Enabled) return true;
+
         bool returnOK = false;
         await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
         DateTime startTime = DateTime.Now;
@@ -1100,12 +1404,12 @@ public class SmartStartIntegrationService : IIntegrationService
             * 6) start with income statements and attendance and push only to SL
             */
 
-            //Only allow data pulling when api mode has been set
-            await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
+                    //Only allow data pulling when api mode has been set
+                    await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
 
             if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
             {
-                _mappedEntities = await this.GetMappedEntities(null, true);
+                _mappedEntities = await this.GetMappedEntities(null, true, true);
 
                 _mappedColumns = await this.GetMappedColumns();
 
@@ -1113,8 +1417,8 @@ public class SmartStartIntegrationService : IIntegrationService
                 //-------------------
                 //3. Iterate through all known coaches to get information below hierarchy
                 //-------------------
-                var mappedCoaches = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList();
-                if (coachId!=null)
+                var mappedCoaches = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.IsActive == true && (incompletOnly ? x.IsComplete == false : x.IsActive == true)).ToList();
+                if (coachId != null)
                 {
                     mappedCoaches = mappedCoaches.Where(c => c.UserId == Guid.Parse(coachId)).ToList();
                 }
@@ -1142,7 +1446,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 try
                                 {
-
+                                    bool franchiseeCreated = false;
                                     if (franchisee != null)
                                     {
                                         Practitioner newPractitioner = null;
@@ -1155,6 +1459,8 @@ public class SmartStartIntegrationService : IIntegrationService
                                             //send notification to coach
                                             var userToSend = await _userManager.FindByIdAsync(coach.UserId.ToString());
                                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                                            totalFranchiseesAddedToSS++;
+                                            franchiseeCreated = true;
                                         }
                                         else
                                         {
@@ -1164,12 +1470,11 @@ public class SmartStartIntegrationService : IIntegrationService
 
                                         if (newPractitioner != null)
                                         {
-                                            totalFranchiseesAddedToSS++;
                                             //get all elements underneath and map those too
 
                                             //1. Children
                                             List<MappedChild> remoteChildren = await _apiManager.GetChildren(franchisee.Guid);
-                                            if (remoteChildren != null)
+                                            if (remoteChildren.Any())
                                             {
                                                 //List of allocated children to new practitioner
                                                 List<Child> newChildren = new List<Child>();
@@ -1196,11 +1501,14 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 await AlignChildHierarchy(newPractitioner, newChildren);
                                                 await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                                             }
-                                            //2. Franchisee Documents
-                                            List<MappedDocument> newDocuments = await _apiManager.GetFranchiseeDocuments(franchisee.Guid);
-                                            if (newDocuments.Any())
+                                            if (franchiseeCreated)
                                             {
-                                                List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                                //2. Franchisee Documents only if newly created
+                                                List<MappedDocument> newDocuments = await _apiManager.GetFranchiseeDocuments(franchisee.Guid);
+                                                if (newDocuments.Any())
+                                                {
+                                                    List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                                }
                                             }
                                         }
                                     }
@@ -1213,8 +1521,11 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
 
                             }
-                            //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
-                            await MatchPrincipals();
+                            if (totalFranchiseesAddedToSS > 0)
+                            {
+                                //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet - only run when something has been added and mapped
+                                await MatchPrincipals();
+                            }
                         }
                         catch (Exception e)
                         {
@@ -1224,15 +1535,30 @@ public class SmartStartIntegrationService : IIntegrationService
                     }
 
                     //Pull Trainees
-                    List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
-                    if (remoteTrainees.Any())
+                    try
                     {
-                        foreach (var trainee in remoteTrainees)
+                        List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
+                        if (remoteTrainees.Any())
                         {
-                            trainee.localParentEntityUserId = coach.UserId.ToString();
-                            trainee.localParentEntityId = coach.Id.ToString();
-                            await MapTrainee(trainee);
+                            foreach (var trainee in remoteTrainees)
+                            {
+                                trainee.localParentEntityUserId = coach.UserId;
+                                trainee.localParentEntityId = coach.Id.ToString();
+                                await MapTrainee(trainee);
+                            }
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > Trainees");
+                    }
+
+                    if (coach.IsComplete == false) //mark coach as complete now that all users are pulled in
+                    {
+                        coach.IsComplete = true;
+                        coach.LastCheckedDate = DateTime.Now;
+                        coach.LastUpdatedDate = DateTime.Now;
+                        _mapperRepo.Update(coach);
                     }
                 }
             }
@@ -1241,7 +1567,7 @@ public class SmartStartIntegrationService : IIntegrationService
             //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
             string runResults = "Franchisees Added: " + totalFranchiseesAddedToSS.ToString() + " Children Added: " + totalChildrenAddedToSS.ToString() + " Errors: " + String.Join("|", _errorsList.ToArray());
 
-            await _logManager.IntegrationLog($"IntegrationByMappedCoach completed at {DateTime.Now}", runResults, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");            
+            await _logManager.IntegrationLog($"IntegrationByMappedCoach completed at {DateTime.Now}", runResults, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");
 
         }
         catch (Exception e)
@@ -1252,11 +1578,12 @@ public class SmartStartIntegrationService : IIntegrationService
         return returnOK;
     }
 
-
     public async Task<bool> IntegrationByNewCoach(string remoteCoachId)
     {
+        if (!this.Enabled) return true;
+
         _mappedEntities = await GetMappedEntities();
-        var mappedCoach = _mappedEntities.Where(c => c.RemoteId == remoteCoachId && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).FirstOrDefault();
+        var mappedCoach = _mappedEntities.Where(c => string.Equals(c.RemoteId, remoteCoachId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach && c.IsActive == true).FirstOrDefault();
         if (mappedCoach == null)
         {
             List<MappedCoach> remoteCoaches = await _apiManager.GetCoachesAll(remoteCoachId);
@@ -1264,11 +1591,8 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 foreach (var coach in remoteCoaches)
                 {
-
-                    //check if teh franchisor is mapped already, otehrwise start there first
-                    var franchisor = _mappedEntities.Where(x => x.RemoteId == coach.Franchisor.Guid && x.LocalEntity == Constants.SSIntegrationSettings.SSFranchisor).FirstOrDefault();
-
-
+                    //check if the franchisor is mapped already, otherwise start there first
+                    var franchisor = _mappedEntities.Where(x => x.RemoteId.Equals(coach.Franchisor.Guid) && x.LocalEntity == Constants.SSIntegrationSettings.SSFranchisor).FirstOrDefault();
                     if (franchisor != null)
                     {
                         coach.localParentEntityUserId = franchisor.UserId.ToString();
@@ -1290,20 +1614,233 @@ public class SmartStartIntegrationService : IIntegrationService
                         Coach newCoach = await MapCoach(coach);
                         await IntegrationByMappedCoach(null, newCoach.UserId.ToString());
                     }
-                    else
-                    {
-                        //run all its practitioners and trainees
-                        await IntegrationByMappedCoach(null, mappedCoach.UserId.ToString());
-                    }
                 }
             }
-        } else
-        {
-            await IntegrationByMappedCoach(null, mappedCoach.UserId.ToString());
         }
 
         return true;
     }
+
+    public async Task IntegrationLeagueData()
+    {
+        if (!this.Enabled) return;
+        await _logManager.IntegrationLog($"IntegrationLeagueData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationLeagueData");
+        int leaguesUpdated = 0;
+        try
+        {
+            IGenericRepository<League, Guid> leagueRepo = _repositoryFactory.CreateGenericRepository<League>(userContext: _uId);
+            IGenericRepository<LeagueType, Guid> leagueTypeRepo = _repositoryFactory.CreateGenericRepository<LeagueType>(userContext: _uId);
+
+            var mappedLeagues = await _apiManager.GetLeagues();
+            var existingLeagues = leagueRepo.GetAll().ToList(); //reload all leagues
+            var existingLeagueTypes = leagueTypeRepo.GetAll().ToList(); //reload all leagueTypes
+
+            foreach (var league in mappedLeagues)
+            {
+                if (!existingLeagueTypes.Any(x => x.Name == league.LeagueType))
+                {
+                    //create type if it does not yet exist
+                    var lt = new LeagueType()
+                    {
+                        Id = Guid.NewGuid(), // reusing guids for leagues and leaguetypes
+                        Name = league.LeagueType,
+                        NormalizedName = league.LeagueType,
+                        IsActive = true,
+                        InsertedDate = DateTime.Now
+                    };
+                    leagueTypeRepo.Insert(lt);
+                    existingLeagueTypes.Add(lt);
+                }
+
+                if (existingLeagues.Any(x => x.Id == Guid.Parse(league.Guid)))
+                {
+                    continue;
+                }
+                // Create league
+                var newLeague = new League()
+                {
+                    Id = Guid.Parse(league.Guid),
+                    Name = league.Name,
+                    LeagueTypeId = existingLeagueTypes.Where(x => x.Name == league.LeagueType).Select(x => x.Id).FirstOrDefault()
+                };
+                leagueRepo.Insert(newLeague);
+
+                leaguesUpdated++;
+            }
+
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog("IntegrationLeagueData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SmartStartIntegrationService > IntegrationLeagueData");
+        }
+        finally
+        {
+            await _logManager.IntegrationLog($"IntegrationLeagueData Completed at {DateTime.Now}", $"Leagues updated {leaguesUpdated}", null, LogRelatedType.Log, "IntegrationLeagueData");
+        }
+    }
+
+    public async Task<bool> PushSmartSpaceVisitsData()
+    {
+        if (!this.Enabled) return false;
+
+        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+
+        List<Visit> visitsToUpdate = new List<Visit>();
+
+        List<Visit> visits = _visitsRepo
+            .GetAll()
+            .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_trainee_visit && 
+                        x.VisitType.Type == Constants.SSSettings.client_coach &&
+                        x.Attended == true && x.IsActive == true && !x.IntegrationSubmitDate.HasValue
+                        )
+            .Include(x => x.VisitAnswers)
+            .ToList();
+
+        foreach (Visit visit in visits)
+        {
+            // We do a post for each visit to save the remote ids in the entity table to prevent wrong mappings with the list of Guids returned
+            StringBuilder jsonPutPostString = new StringBuilder();
+            jsonPutPostString.AppendLine("[{");
+
+            var mappedTraineeId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSTrainee) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Trainee.UserId))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedCoachId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Trainee.CoachHierarchy.ToString()))
+                .Select(x => x.RemoteId).FirstOrDefault();
+            var mappedVisitId = _mapperRepo.GetAll()
+                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
+                .Select(x => x.RemoteId).FirstOrDefault();
+
+            if (mappedTraineeId != null && mappedCoachId != null && mappedVisitId == null)
+            {
+                // Answers for questions - smart_space_checklist
+                var hasCleanWater = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasToilet = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasHandwashing = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoHarmfulSubstances = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoFireHazards = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a5).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoSharpObjects = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a6).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoBurnRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a7).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoDrowningRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a8).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoElectrocutionRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a9).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoSmokeRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a10).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoFallingRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a11).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoAnimalRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a12).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isInSafePlace = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a14).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasFireExtinguishment = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a15).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasFirstAidKit = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a16).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var doesNotExceedMaximumCapacity = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasEnoughPlaySpace = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isOutdoorsFenced = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isOutdoorsClean = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a13).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var areEmergencyNumbersVisible = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isEmergencyPlanVisible = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a17).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNaturalVentilation = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var numberOfAssistants = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var capacity = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.capacity).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                // trainee question/answer and not coach
+                var ownsProperty = _visitDataRepo.GetAll().Where(x => x.Visit.TraineeId == visit.TraineeId && x.Question == Constants.SSSettings.own_property).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+                // Scores
+                int programmeCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_programme).Count();
+                int healthCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_health && x.QuestionAnswer == "true").Count();
+                int safetyCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_safety && x.QuestionAnswer == "true").Count();
+                int requiredItemsScore = programmeCount + healthCount + safetyCount;
+                int unrequiredItemsScore = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_space && x.QuestionAnswer == "true").Count();
+                int totalScore = requiredItemsScore + unrequiredItemsScore;
+
+                // Consent
+                var userConsent = visit.VisitAnswers.Where(x => x.Visit.VisitType.Name == Constants.SSSettings.visitType_coach_franchisee_agreement).FirstOrDefault();
+                var hasAcceptedSmartSpaceAgreement = userConsent != null ? "true" : "false";
+
+                jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + (numberOfAssistants == null ? 0 : numberOfAssistants) + ",");
+                jsonPutPostString.AppendLine("\"Capacity\":" + (capacity == null ? 0 : capacity) + ",");
+                jsonPutPostString.AppendLine("\"RequiredItemsScore\":" + requiredItemsScore + ",");
+                jsonPutPostString.AppendLine("\"UnrequiredItemsScore\":" + unrequiredItemsScore + ",");
+                jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+                jsonPutPostString.AppendLine("\"Latitude\": null,");
+                jsonPutPostString.AppendLine("\"Longitude\": null,");
+                jsonPutPostString.AppendLine("\"OwnsProperty\":" + (ownsProperty == null ? "false" : ownsProperty) + ",");
+                jsonPutPostString.AppendLine("\"HasAcceptedSmartSpaceAgreement\":" + hasAcceptedSmartSpaceAgreement + ",");
+                // smart_space_checklist
+                jsonPutPostString.AppendLine("\"HasCleanWater\":" + (hasCleanWater == null ? "false" : hasCleanWater) + ",");
+                jsonPutPostString.AppendLine("\"HasToilet\":" + (hasToilet == null ? "false" : hasToilet) + ",");
+                jsonPutPostString.AppendLine("\"HasHandwashing\":" + (hasHandwashing == null ? "false" : hasHandwashing) + ",");
+                jsonPutPostString.AppendLine("\"HasNoHarmfulSubstances\":" + (hasNoHarmfulSubstances == null ? "false" : hasNoHarmfulSubstances) + ",");
+                jsonPutPostString.AppendLine("\"HasNoFireHazards\":" + (hasNoFireHazards == null ? "false" : hasNoFireHazards) + ",");
+                jsonPutPostString.AppendLine("\"HasNoSharpObjects\":" + (hasNoSharpObjects == null ? "false" : hasNoSharpObjects) + ",");
+                jsonPutPostString.AppendLine("\"HasNoBurnRisks\":" + (hasNoBurnRisks == null ? "false" : hasNoBurnRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoDrowningRisks\":" + (hasNoDrowningRisks == null ? "false" : hasNoDrowningRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoElectrocutionRisks\":" + (hasNoElectrocutionRisks == null ? "false" : hasNoElectrocutionRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoSmokeRisks\":" + (hasNoSmokeRisks == null ? "false" : hasNoSmokeRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoFallingRisks\":" + (hasNoFallingRisks == null ? "false" : hasNoFallingRisks) + ",");
+                jsonPutPostString.AppendLine("\"HasNoAnimalRisks\":" + (hasNoAnimalRisks == null ? "false" : hasNoAnimalRisks) + ",");
+                jsonPutPostString.AppendLine("\"IsInSafePlace\":" + (isInSafePlace == null ? "false" : isInSafePlace) + ",");
+                jsonPutPostString.AppendLine("\"HasFireExtinguishment\":" + (hasFireExtinguishment == null ? "false" : hasFireExtinguishment) + ",");
+                jsonPutPostString.AppendLine("\"HasFirstAidKit\":" + (hasFirstAidKit == null ? "false" : hasFirstAidKit) + ",");
+                jsonPutPostString.AppendLine("\"DoesNotExceedMaximumCapacity\":" + (doesNotExceedMaximumCapacity == null ? "false" : doesNotExceedMaximumCapacity) + ",");
+                jsonPutPostString.AppendLine("\"HasEnoughPlaySpace\":" + (hasEnoughPlaySpace == null ? "false" : hasEnoughPlaySpace) + ",");
+                jsonPutPostString.AppendLine("\"IsOutdoorsFenced\":" + (isOutdoorsFenced == null ? "false" : isOutdoorsFenced) + ",");
+                jsonPutPostString.AppendLine("\"IsOutdoorsClean\":" + (isOutdoorsClean == null ? "false" : isOutdoorsClean) + ",");
+                jsonPutPostString.AppendLine("\"AreEmergencyNumbersVisible\":" + (areEmergencyNumbersVisible == null ? "false" : areEmergencyNumbersVisible) + ",");
+                jsonPutPostString.AppendLine("\"IsEmergencyPlanVisible\":" + (isEmergencyPlanVisible == null ? "false" : isEmergencyPlanVisible) + ",");
+                jsonPutPostString.AppendLine("\"HasNaturalVentilation\":" + (hasNaturalVentilation == null ? "false" : hasNaturalVentilation) + ",");
+                jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
+                jsonPutPostString.AppendLine("\"Trainee\":{\"Guid\": \"" + mappedTraineeId + "\"},");
+                _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":\"" + mappedCoachId + "\"");
+
+                jsonPutPostString.AppendLine("}]");
+
+                // Send data for integration
+                try
+                {
+                    var createSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.CreateMultiple;
+                    var createApiResponse = await _apiManager.GetAPIHandlerResponse(createSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                    if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+                    {
+                        // Update visit
+                        visit.IntegrationSubmitDate = DateTime.Now;
+                        _visitsRepo.Update(visit);
+
+                        var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
+                        var remoteRecordId = "";
+                        if (returnObj != null)
+                        {
+                            if (returnObj.Count() > 0 && returnObj[0].Guid != null)
+                            {
+                                remoteRecordId = returnObj[0].Guid.ToString();
+                            }
+                        }
+
+                        IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                        cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSSmartSpaceVisit;
+                        cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLSmartSpaceVisit;
+                        cgMapping.LocalId = visit.Id.ToString();
+                        cgMapping.RemoteId = remoteRecordId;
+                        cgMapping.UserId = visit.Coach.UserId;
+                        cgMapping.UpdatedBy = _uId;
+                        cgMapping.UpdatedDate = DateTime.Now;
+                        cgMapping.IsComplete = true;
+                        cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                        _mapperRepo.Insert(cgMapping);
+
+                        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushSmartSpaceVisitsData");
+                }
+
+            }
+        }
+
+        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Completed at {DateTime.Now}", $"", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+        return true;
+    }
+
     #endregion
 
     #region Utilities
@@ -1489,17 +2026,24 @@ public class SmartStartIntegrationService : IIntegrationService
 
                     if (childHierarchy != null)
                     {
-                        //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
-                        childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
-                        //update hierarchy not be 0.466. but 0.1.455.459.
-                        childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
-                        childHierarchy.Hierarchy = childNewHierarchy;
-                        childHierarchy.ParentId = newPractitioner.UserId;
-                        staticHierarchyRepo.Update(childHierarchy);
-                        //uppdate child record Hierarchy
-                        Child updatedChild = childRepo.GetByUserId(child.UserId.ToString());
-                        updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy);
-                        childRepo.Update(updatedChild);
+                        if (childHierarchy.NamedTypePath == "System.Child.")
+                        {
+                            //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                            childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                            //update hierarchy not be 0.466. but 0.1.455.459.
+                            childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
+                            childHierarchy.Hierarchy = childNewHierarchy;
+                            childHierarchy.ParentId = newPractitioner.UserId;
+                            staticHierarchyRepo.Update(childHierarchy);
+                            //uppdate child record Hierarchy
+                            Child updatedChild = childRepo.GetByUserId(child.UserId);
+                            updatedChild.Hierarchy = childNewHierarchy; // Why do we store a duplicate of the hierarchy on the child entry?
+                            childRepo.Update(updatedChild);
+                        }
+                        else
+                        {
+                            // TODO: Might need to handle scenario of child moving to a different practitioner
+                        }
                     }
 
                     //also align consent - CreatedByUserId must match the practitioner owning child
@@ -1642,7 +2186,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
                             IsOnStipend = entity.StipendType != null && entity.StipendType != "None" ? true : false,
-                            SetupTraineeInitiated = true                                                    
+                            SetupTraineeInitiated = true
                         };
 
                         var newTrainee = new Trainee
@@ -1693,11 +2237,11 @@ public class SmartStartIntegrationService : IIntegrationService
                         {
                             Id = userId,
                             PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
-                            UserName = validUserName, 
+                            UserName = validUserName,
                             IdNumber = entity.IdNumber,
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
-                            IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
-                            VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
+                            IsSouthAfricanCitizen = entity.IsSouthAfricanCitizen != null ? (bool)entity.IsSouthAfricanCitizen: false,
+                            VerifiedByHomeAffairs = entity.VerifiedByHomeAffairs != null ? (bool)entity.VerifiedByHomeAffairs : false,
                             DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date,
                             FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
                             Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
@@ -1801,6 +2345,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             newPractitioner.IsFundaAppAdmin = true;
                             newPractitioner.IsPrincipal = false;
 
+                            _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisee(1)]", Roles.PRACTITIONER, newUser.Id);
                             await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                         }
                         else if (!(bool)entity.IsPrincipal && entity.Principal != null)
@@ -1827,6 +2372,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             //newPractitioner.DateLinked = DateTime.Now;
                             //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
 
+                            _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisee(2)]", Roles.PRACTITIONER, newUser.Id);
                             await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                         }
                         else if ((bool)entity.IsPrincipal)
@@ -1834,6 +2380,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             newPractitioner.IsPrincipal = true;
                             newPractitioner.IsFundaAppAdmin = false;
 
+                            _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisee(3)]", Roles.PRINCIPAL, newUser.Id);
                             await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
                         }
 
@@ -1856,7 +2403,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             List<License> licenses = new List<License>();
                             var licenseTypes = _licenseTypeRepo.GetAll();
                             licenses.Add(
-                               new License() { LicenseDate = (entity.StarterLicenceDate!=null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }                                 
+                               new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
                             );
                             licenses.Add(
                                new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Practice Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
@@ -1913,30 +2460,12 @@ public class SmartStartIntegrationService : IIntegrationService
                             //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                             _mapperRepo.Insert(mapperLine);
 
+                            //send sms to new practitioner
+                            //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+                            //await invite.SendInviteToApplication(_invitationManager, _notificationManager, _userManager, _accessor, userId);
+
                             return newPractitioner;
                         }
-                    }
-                }
-                else
-                {
-                    var existingPrac = _practitionerGenericRepo.GetByUserId(createdUserCheck.Id);
-                    if (existingPrac != null)
-                    {
-
-                        mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSPractitioner;
-                        mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLPractitioner;
-                        mapperLine.LocalId = existingPrac.Id.ToString();
-                        mapperLine.RemoteId = entity.Guid;
-                        mapperLine.UserId = createdUserCheck.Id;
-                        mapperLine.UpdatedBy = _uId.ToString();
-                        mapperLine.UpdatedDate = DateTime.Now;
-                        mapperLine.IsComplete = true;
-                        mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
-                        mapperLine.IsComplete = true;
-                        //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
-                        _mapperRepo.Insert(mapperLine);
-
-                        return existingPrac;
                     }
                 }
             }
@@ -2561,6 +3090,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 var userCreatedResult = await _userManager.CreateAsync(newUser);
                                 if (userCreatedResult.Succeeded)
                                 {
+                                    _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapTrainee(1)]", Roles.PRACTITIONER, newUser.Id);
                                     await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                                     pracCreated = true;
                                 }
@@ -2583,16 +3113,20 @@ public class SmartStartIntegrationService : IIntegrationService
                                     //map licenses
                                     List<License> licenses = new List<License>();
                                     var licenseTypes = _licenseTypeRepo.GetAll();
-                                    licenses.Add(
-                                       new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
-                                    );
+                                    if (entity.StarterLicenceDate != null)
+                                    {
+                                        licenses.Add(
+                                           new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                                        );
+                                    }
                                     if (entity.SmartSpaceLicenceDate != null)
                                     {
                                         licenses.Add(
                                            new License() { LicenseDate = (entity.SmartSpaceLicenceDate != null ? entity.SmartSpaceLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
                                         );
                                     }
-                                    _licenseRepo.InsertMany(licenses);
+                                    if (licenses.Any())
+                                        _licenseRepo.InsertMany(licenses);
                                 }
 
                                 if (existingPractitioner == null)
@@ -2601,6 +3135,10 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                                 //notify trainee to stary journey
                                 await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, DateTime.Now, newTrainee.User);
+                                if (entity.ConsolidationMeetingDate != null)
+                                {
+                                    await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.TraineeSetupVenue, DateTime.Now, newTrainee.User);
+                                }
 
                                 pracCreated = true;
                             }
@@ -2721,9 +3259,36 @@ public class SmartStartIntegrationService : IIntegrationService
                     var userCreatedResult = await _userManager.CreateAsync(newUser);
                     if (userCreatedResult.Succeeded)
                     {
+                        _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisor(1)]", Roles.FRANCHISOR, newUser.Id);
                         await _userManager.AddToRoleAsync(newUser, Roles.FRANCHISOR);
                     }
-
+                    Guid siteAddressId = Guid.NewGuid();
+                    bool insertedAddress = false;
+                    if (entity.AddressLine1 != null && entity.PostalCode != null)
+                    {
+                        SiteAddress newEntityAddress = new SiteAddress();
+                        newEntityAddress.Municipality = entity.AddressLine3;
+                        newEntityAddress.Area = entity.AddressLine2;
+                        newEntityAddress.AddressLine1 = entity.AddressLine1;
+                        newEntityAddress.AddressLine2 = entity.AddressLine2;
+                        newEntityAddress.AddressLine3 = entity.AddressLine3;
+                        newEntityAddress.PostalCode = entity.PostalCode;
+                        //check province + try map it from very vague data
+                        if (entity.AddressLine3 != null)
+                        {
+                            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                            var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.AddressLine3).FirstOrDefault();
+                            if (prov != null)
+                            {
+                                newEntityAddress.ProvinceId = prov.Id;
+                            }
+                        }
+                        newEntityAddress.Id = siteAddressId;
+                        newEntityAddress.UpdatedBy = _uId;
+                        newEntityAddress.UpdatedDate = DateTime.Now;
+                        _siteAddressRepo.Insert(newEntityAddress);
+                        insertedAddress = true;
+                    }
                     franchisor = new Franchisor
                     {
                         Id = userId,
@@ -2733,6 +3298,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         ContactPerson = entity.ContactPerson,
                         ContactPersonNumber = entity.ContactNumber,
                     };
+                    if (insertedAddress)
+                    {
+                        franchisor.SiteAddressId = siteAddressId;
+                    }
                     _franchisorGenericRepo.Insert(franchisor);
 
                     IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
@@ -2810,10 +3379,52 @@ public class SmartStartIntegrationService : IIntegrationService
                     var userCreatedResult = await _userManager.CreateAsync(newUser);
                     if (userCreatedResult.Succeeded)
                     {
+                        _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapCoach(1)]", Roles.COACH, newUser.Id);
                         await _userManager.AddToRoleAsync(newUser, Roles.COACH);
                     }
 
                     //check address
+                    Guid siteAddressId = Guid.NewGuid();
+                    bool insertedAddress = false;
+                    if (entity.WorkAddressProvince != null && entity.WorkAddressCity != null)
+                    {
+                        SiteAddress newEntityAddress = new SiteAddress();
+                        newEntityAddress.Municipality = entity.WorkAddressProvince;
+                        newEntityAddress.Area = entity.WorkAddressSuburbOrArea;
+                        newEntityAddress.AddressLine1 = entity.WorkAddressStreetAddress;
+                        newEntityAddress.AddressLine2 = entity.WorkAddressCity;
+                        newEntityAddress.AddressLine3 = entity.WorkAddressSuburbOrArea;
+                        //check province
+                        if (entity.WorkAddressProvince != null)
+                        {
+                            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                            var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.WorkAddressProvince).FirstOrDefault();
+                            if (prov != null)
+                            {
+                                newEntityAddress.ProvinceId = prov.Id;
+                            }
+                        }
+                        newEntityAddress.Id = siteAddressId;
+                        newEntityAddress.UpdatedBy = _uId;
+                        newEntityAddress.UpdatedDate = DateTime.Now;
+                        _siteAddressRepo.Insert(newEntityAddress);
+                        insertedAddress = true;
+                    }
+                    else
+                    {
+                        //copy franchisor address to coach
+                        var parentFranchisor = _franchisorGenericRepo.GetByUserId(entity.localParentEntityUserId);
+                        if (parentFranchisor != null)
+                        {
+                            if (parentFranchisor.SiteAddressId != null)
+                            {
+                                SiteAddress coachSiteAddress = parentFranchisor.SiteAddress; //copy franchisorAddress and give new GUID
+                                coachSiteAddress.Id = siteAddressId;
+                                _siteAddressRepo.Insert(coachSiteAddress);
+                                insertedAddress = true;
+                            }
+                        }
+                    }
 
                     coach = new Coach
                     {
@@ -2824,6 +3435,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         UserId = userId,
                         SecondaryAreaOfOperation = entity.SecondaryAreaOfOperation,
                     };
+                    if (insertedAddress)
+                    {
+                        coach.SiteAddressId = siteAddressId;
+                    }
                     _coachGenericRepo.Insert(coach);
 
                     IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
@@ -2834,12 +3449,12 @@ public class SmartStartIntegrationService : IIntegrationService
                     mapperLine.UserId = userId;
                     mapperLine.UpdatedBy = _uId.ToString();
                     mapperLine.UpdatedDate = DateTime.Now;
-                    mapperLine.IsComplete = true;
+                    mapperLine.IsComplete = false;//mark as false so scheduled task can pick it up later to pull franchisees
                     mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
-                    mapperLine.IsComplete = true;
                     //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                     _mapperRepo.Insert(mapperLine);
-                } else
+                }
+                else
                 {
                     coach = _coachGenericRepo.GetById(userId);
                 }
@@ -2853,6 +3468,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
         return coach;
     }
+    
     #endregion
 
     #region Local Updates
@@ -2898,7 +3514,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, new List<MappedChild>() { child }, parentPrac);
                                 }
-                        }
+                            }
                         }
                     }
                     break;
@@ -2936,7 +3552,10 @@ public class SmartStartIntegrationService : IIntegrationService
                     //TODO:
                     MappedTrainee trainee = await _apiManager.GetTraineesById(model.Guid);
                     break;
-
+                case Constants.SSIntegrationSettings.SLPQA:
+                    break;
+                case Constants.SSIntegrationSettings.SLAnnualAccreditation:
+                    break;
             }
 
             //}
@@ -2975,9 +3594,13 @@ public class SmartStartIntegrationService : IIntegrationService
                                     //{
                                     string currentValue = prop.GetValue(entityUser, null) != null ? prop.GetValue(entityUser, null).ToString() : "";
 
-                                    if (localColumnChange.RemapToString) 
-                                        newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                    if (localColumnChange.RemapToString)
+                                    {
+                                        if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                        {
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                        }
+                                    }
                                     if (currentValue != newData)
                                     {
                                         //if the name is changed, remember to update the fullname as well
@@ -3019,8 +3642,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(coach, null) != null ? prop.GetValue(coach, null).ToString() : "";
                                         if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                        {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
                                         prop.SetValue(coach, model.EntityColumn);
                                         if (currentValue != newData)
                                         {
@@ -3052,7 +3679,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(prac, null) != null ? prop.GetValue(prac, null).ToString() : "";
                                         if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+                                        {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(prac, newData);
@@ -3084,8 +3716,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string currentValue = prop.GetValue(child, null) != null ? prop.GetValue(child, null).ToString() : "";
 
                                         if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                        {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(child, newData);
@@ -3127,7 +3763,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string currentValue = prop.GetValue(caregiver, null) != null ? prop.GetValue(caregiver, null).ToString() : "";
 
                                         if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+                                        {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
 
                                         if (currentValue != newData)
                                         {
@@ -3170,8 +3811,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string currentValue = prop.GetValue(address, null) != null ? prop.GetValue(address, null).ToString() : "";
 
                                         if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                        {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(address, model.NewData);
@@ -3203,7 +3848,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string currentValue = prop.GetValue(doc, null) != null ? prop.GetValue(doc, null).ToString() : "";
 
                                         if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+                                        {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
 
                                         if (currentValue != newData)
                                         {
@@ -3476,7 +4126,7 @@ public class SmartStartIntegrationService : IIntegrationService
         List<IntegrationAudit> completedAudits = new List<IntegrationAudit>();
 
         //Child user entities push with caregivers, finish first
-        var childrenInserted = inserts.Where(a => string.Equals(a.Entity,"Child"));
+        var childrenInserted = inserts.Where(a => string.Equals(a.Entity, "Child"));
         foreach (var childAudit in childrenInserted)
         {
             var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
@@ -3614,8 +4264,15 @@ public class SmartStartIntegrationService : IIntegrationService
         return isComplete;
     }
 
-    public async Task<string> PushNewDocument(Document newDoc)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="newDoc"></param>
+    /// <param name="documentDate">Optional specific date to upload with the document. This is so we can send a date with the correct month to SmartStart for statements</param>
+    /// <returns></returns>
+    public async Task<string> PushNewDocument(Document newDoc, DateTime? documentDate = null)
     {
+        // TODO - this is pulling every mapped entity from the DB every time we send a document, and stores it in a private field on the class
         _mappedEntities = await GetMappedEntities();
         var mappedDocEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSDocument);
         string docRemoteId = "";
@@ -3645,7 +4302,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         {{RouteStart}}Document/Multiple - [{"DocumentDate": "2023-06-06T07:10:46.441Z","Franchisee": {"Guid": "3cfe0328-17ef-ed11-8354-00155dee5a05"},"DocumentType": {"Guid": "7f1c1f22-a925-ec11-834e-00155dee5a05"},"ValidationStatus": "Creating"}]
                         */
                         jsonDocString.AppendLine("[{");
-                        jsonDocString.AppendLine("\"DocumentDate\":\"" + newDoc.InsertedDate.ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                        jsonDocString.AppendLine("\"DocumentDate\":\"" + (documentDate ?? newDoc.InsertedDate).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
 
                         if (mappedUser.LocalEntity == "Child" || mappedUser.LocalEntity == "Caregiver")
                         {
@@ -3849,8 +4506,18 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 case "datetime":
                                                     jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
+                                                case "date":
+                                                    jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                    break;
                                                 default:
-                                                    jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    if (valueToSend.Length <= (int)changeLine.ColumnValidationLimit)
+                                                    {
+                                                        jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    }
+                                                    else
+                                                    {
+                                                        jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)changeLine.ColumnValidationLimit) + "\",");
+                                                    }
                                                     break;
                                             }
                                         }
@@ -4268,16 +4935,18 @@ public class SmartStartIntegrationService : IIntegrationService
                         await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > Update Child > GetAPIHandlerResponse");
                     }
 
-                } else
+                }
+                else
                 {
                     //child doesnt exist yet or didnt map properly, and needs remapping
                     await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver no mapping exist" + cgChild.UserId.ToString(), cgChild.UserId.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver > Missing Child mapping in mappings");
                     await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver");
                 }
-            } else
+            }
+            else
             {
                 //end child check, if no child exists for this caregiver then dont need to send to SL, but a caregiver shouldnt exist without a child, so a different issue
-                await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString() , null, LogRelatedType.Error, "PushInserts > Create Caregiver");
+                await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver");
             }
         }
         return cgRemoteId;
@@ -4297,7 +4966,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
     #region Decommisioned Code
 
-    public async Task<bool> IntegrationAttendanceDataDecommissioned()
+    private async Task<bool> IntegrationAttendanceDataDecommissioned()
     {
         await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
         int attendancesSent = 0;
@@ -4612,11 +5281,21 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 case "datetime":
                                                     jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
+                                                case "date":
+                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                    break;
                                                 default:
-                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
+                                                    {
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    }
+                                                    else
+                                                    {
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                    }
                                                     break;
                                             }
-                                            //jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            //jsonString .AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                         }
                                     }
                                     //remove entry from audits list as we have processed it here and sending

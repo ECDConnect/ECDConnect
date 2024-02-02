@@ -12,6 +12,27 @@ export enum FieldType {
   Link = 'link',
   StaticLink = 'staticLink',
   ColorPicker = 'color-picker',
+  DatePicker = 'date-picker',
+}
+
+export enum ContentName {
+  StoryBook = 'StoryBook',
+  Theme = 'Theme',
+  ProgressTrackingCategory = 'ProgressTrackingCategory',
+  ProgressTrackingSkill = 'ProgressTrackingSkill',
+}
+
+export enum StoryActivitiesTypes {
+  Storybook = 'Story book',
+  ReadAloud = 'Read aloud',
+  Other = 'other',
+}
+
+export enum ActivitiesTitles {
+  StorybookParts = 'StorybookParts',
+  StoryActivities = 'Story activities',
+  Storybooks = 'Storybooks',
+  SmallLargeGroupActivities = 'Small/large group activities',
 }
 
 export interface DynamicFormTemplate {
@@ -30,6 +51,9 @@ export interface FormTemplateField {
   optionDefinition?: ContentDefinitionModelDto;
   selectedLanguageId?: string;
   dataLinkName?: string;
+  isRequired?: boolean;
+  subHeading?: string;
+  fieldAlert?: string;
 }
 
 export interface FormTemplateFieldRequired {

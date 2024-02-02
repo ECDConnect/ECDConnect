@@ -182,6 +182,17 @@ export const MoreInformation = ({
               className="mb-4"
             />
           )}
+          {!!moreInformation?.showDividerC && (
+            <Divider dividerType="dashed" className="my-2" />
+          )}
+          {/* ------- C ------- */}
+          {!!moreInformation.headerD && (
+            <Typography
+              type="h4"
+              text={replaceBraces(moreInformation.headerD, client || '')}
+              className="mb-4"
+            />
+          )}
           {/* ------- D ------- */}
           {!!moreInformation.descriptionD && (
             <div className="my-4 flex gap-2">

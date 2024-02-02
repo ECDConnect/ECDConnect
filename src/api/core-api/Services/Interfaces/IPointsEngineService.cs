@@ -10,7 +10,7 @@ namespace ECDLink.Core.Services.Interfaces
     {
 
         // Points library
-        List<PointsLibrary> GetPointsLibraryForActivity(string activity);
+        List<PointsLibrary> GetPointsLibraryForActivity(string activity, string subActivity = null);
         List<PointsLibrary> GetPointsLibraryForTenant();
         List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year);
         List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null);
@@ -28,7 +28,7 @@ namespace ECDLink.Core.Services.Interfaces
         // GG TODO: Team points - development pending
 
         // SS
-        bool CalculateChildrenRegistrationAdd(string userId, DateTime today);
+        bool CalculateChildrenRegistrationAdd(string userId);
         bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
         bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
@@ -44,12 +44,12 @@ namespace ECDLink.Core.Services.Interfaces
         /// <returns></returns>
         UserClubStandingModel GetUserClubStanding(string userId);
         // Clubs
-        bool CalculateLeaveNoOneBehind(Guid clubId, string userId, DateTime today);
         bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
-        bool CalculateCompleteChildProgressReports(Guid clubId, string userId, DateTime today);
-        bool CalculateCaptureChildAttendance(Guid clubId, string userId, DateTime today);
-        bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
+        bool CalculateMeetRegularly(Guid clubId, Guid clubMeetingId);
         bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
 
+        List<KeyValuePair<string, int>> GetClubMemberPointsTotals(Guid clubId, int year, int? month = null);
+
+        List<KeyValuePair<string, int>> GetUserPointsTotals(List<string> userIds, int year, int? month = null);
     }
 }

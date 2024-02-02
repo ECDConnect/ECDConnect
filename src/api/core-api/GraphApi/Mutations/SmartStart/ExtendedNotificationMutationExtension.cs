@@ -39,7 +39,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
   [Service] INotificationService notificationService, string userId, string programmeName)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, "added-to-programme", DateTime.Now, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName } });
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName } });
         }
         public async Task<bool> SendDemotedAsPrincipalFAAProgrammeNotification(
 [Service] ApplicationUserManager userManager,
@@ -160,6 +160,21 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeOverdueTasks, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendProgressreportsNotCreatedNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, DateTime dueDate)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "DueDate",
+                ReplacementValue = dueDate.ToString()
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressreportsNotCreated, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendTraineeSetupVenueNotification(
@@ -498,24 +513,24 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
         }
 
-        public async Task<bool> SendStartupSupportEndingIn2MonthsNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, DateTime startupsupportEndDate)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "EndMonth",
-                ReplacementValue = startupsupportEndDate.Month.ToString("ddd")
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "EndYear",
-                ReplacementValue = startupsupportEndDate.Year.ToString()
-            });
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.StartupSupportEndingIn2Months, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(60));
-        }
+//        public async Task<bool> SendStartupSupportEndingIn2MonthsNotification(
+//[Service] ApplicationUserManager userManager,
+//[Service] INotificationService notificationService, string userId, DateTime startupsupportEndDate)
+//        {
+//            List<TagsReplacements> replacements = new List<TagsReplacements>();
+//            replacements.Add(new TagsReplacements()
+//            {
+//                FindValue = "EndMonth",
+//                ReplacementValue = startupsupportEndDate.Month.ToString("ddd")
+//            });
+//            replacements.Add(new TagsReplacements()
+//            {
+//                FindValue = "EndYear",
+//                ReplacementValue = startupsupportEndDate.Year.ToString()
+//            });
+//            var userToSend = await userManager.FindByIdAsync(userId);
+//            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.StartupSupportEndingIn2Months, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(60));
+//        }
 
         public async Task<bool> SendAllProgressReportsCompletedForClassNotification(
 [Service] ApplicationUserManager userManager,

@@ -189,7 +189,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         // TODO: add logic to comply with, Admins can see admins, but other users can't see admins
         private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(
             ApplicationUserManager userManager,
-            PagedQueryInput pagingInput,
+            ECDLink.Abstractrions.GraphQL.Attributes.PagedQueryInput pagingInput,
             IQueryable<ApplicationUser> usersQuery)
         {
             // Just get the last "Administrator" filter element, more than one doesn't make sense.
@@ -357,6 +357,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // create session for moodle user
             // return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
         }
+
+
+        
 
     }
 }

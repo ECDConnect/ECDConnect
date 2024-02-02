@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -40,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var docsQuery = docRepo.GetAll();
 
             if (!string.IsNullOrWhiteSpace(userId))
-                docsQuery = docsQuery.Where(x => x.UserId.ToString() == userId);
+                docsQuery = docsQuery.Where(x => x.UserId.ToString() == userId).Include(x => x.User);
                 
             if (showOnlyTypes is not null && showOnlyTypes.Length > 0)
                 docsQuery = docsQuery
@@ -54,7 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                docsQuery = docsQuery.Where(x => EF.Functions.ILike(x.User.FirstName, search) || EF.Functions.ILike(x.User.Surname, search)
+                docsQuery = docsQuery.Where(x => EF.Functions.ILike(x.User.FirstName, $"%{search}%") || EF.Functions.ILike(x.User.Surname, $"%{search}%")
                  || EF.Functions.ILike(x.Name, search));
             }
 

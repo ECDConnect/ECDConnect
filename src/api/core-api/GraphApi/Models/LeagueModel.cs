@@ -9,13 +9,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Name { get; set; }
         public Guid LeagueTypeId { get; set; }
         public string LeagueTypeName { get; set; }
+        public int NumberOfClubsInLeague { get; set; }
 
-        public LeagueModel(League league)
+        public LeagueModel(League league, int numberOfClubsInLeague)
         {
             Id = league.Id;
             Name = league.Name;
             LeagueTypeId = league.LeagueTypeId;
             LeagueTypeName = league.LeagueType != null ? league.LeagueType.Name : null;
+            NumberOfClubsInLeague = numberOfClubsInLeague;
         }
 
         public LeagueModel() { }

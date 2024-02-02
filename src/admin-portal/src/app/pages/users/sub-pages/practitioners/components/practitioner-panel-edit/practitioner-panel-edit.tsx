@@ -16,11 +16,13 @@ import {
   UpdateSiteAddress,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import PractitionerForm from '../../../../components/practitioner-form/practitioner-form';
 import SiteAddressForm from '../../../../components/site-address-form/site-address-form';
 import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
+import { XIcon } from '@heroicons/react/solid';
+import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
 
 export interface PractitionerPanelProps {
   practitioner: PractitionerDto;
@@ -40,6 +42,7 @@ export default function PractitionerPanelEdit({
   const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [updatePractitioner] = useMutation(UpdatePractitioner);
   const [updateSiteAddress] = useMutation(UpdateSiteAddress);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
 
   const {
     register: practitionerRegister,
@@ -51,8 +54,11 @@ export default function PractitionerPanelEdit({
     defaultValues: { ...initialPractitionerValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const { errors: practitionerFormErrors, isValid: isPractitionerValid } =
-    practitionerFormState;
+  const {
+    errors: practitionerFormErrors,
+    isValid: isPractitionerValid,
+    isDirty,
+  } = practitionerFormState;
 
   // SITE ADDRESS FORMS
   const {
@@ -64,7 +70,8 @@ export default function PractitionerPanelEdit({
     defaultValues: { ...initialSiteAddressValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const { errors: siteAddressFormErrors } = practitionerFormState;
+  const { errors: siteAddressFormErrors, isDirty: userDetailsIsDirty } =
+    practitionerFormState;
 
   useEffect(() => {
     if (practitioner) {
@@ -278,6 +285,17 @@ export default function PractitionerPanelEdit({
   const getComponent = () => {
     return (
       <>
+        {(isDirty || userDetailsIsDirty) && (
+          <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+            <button
+              className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+              onClick={() => setDisplayFormIsDirty(true)}
+            >
+              <span className="sr-only">Close panel</span>
+              <XIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+        )}
         <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
@@ -305,6 +323,40 @@ export default function PractitionerPanelEdit({
             errors={siteAddressFormErrors}
           />
         </div>
+        <Dialog
+          className={'mb-16 px-4'}
+          stretch
+          visible={displayFormIsDirty}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Discard unsaved changes?`}
+            detailText={'If you leave now, you will lose all of your changes.'}
+            actionButtons={[
+              {
+                text: 'Keep editing',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setDisplayFormIsDirty(false),
+                leadingIcon: 'PencilIcon',
+              },
+              {
+                text: 'Discard changes',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  emitCloseDialog(false);
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </>
     );
   };

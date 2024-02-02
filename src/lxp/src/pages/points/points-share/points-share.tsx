@@ -103,7 +103,7 @@ export const PointsShare: React.FC<PointsShareProps> = ({
               <PointsDetailsCard
                 pointsEarned={pointsLibraryScore.pointsTotal}
                 activityCount={pointsLibraryScore.timesScored}
-                title={pointsLibraryScore.subActivity || 'Unknown'}
+                title={pointsLibraryScore.description || 'Unknown'}
                 isShare
                 size="large"
                 badgeImage={

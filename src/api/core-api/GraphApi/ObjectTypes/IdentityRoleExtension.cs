@@ -12,8 +12,8 @@ using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
-    [ExtendObjectType(typeof(ApplicationIdentityRole))]
-    public class IdentityRoleExtension
+    [ExtendObjectType(typeof(ApplicationApplicationIdentityRole))]
+    public class ApplicationIdentityRoleExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
         public IEnumerable<Permission> Permissions(

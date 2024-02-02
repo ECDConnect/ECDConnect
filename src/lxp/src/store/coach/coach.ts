@@ -38,6 +38,12 @@ const coachSlice = createSlice({
     setThunkActionStatus(builder, updateCoachClubClicked);
     setThunkActionStatus(builder, getCoachByCoachId);
     builder.addCase(updateCoachClubClicked.fulfilled, (state, action) => {
+      if (state.coach) {
+        state.coach = {
+          ...state.coach,
+          clickedClubTab: true,
+        };
+      }
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getCoachByCoachId.fulfilled, (state, action) => {

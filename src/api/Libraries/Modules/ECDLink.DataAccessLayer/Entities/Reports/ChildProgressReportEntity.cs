@@ -6,7 +6,6 @@ using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Reports
@@ -38,6 +37,8 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
 
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
+        public DateTime? DateCompleted { get; set; }
+        public DateTime? IntegrationSubmitDate { get; set; }
     }
 
     public interface ChildProgressReportJoin<TKey>

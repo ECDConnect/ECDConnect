@@ -4,9 +4,13 @@ import {
   ContentValueDto,
   camelCaseToSentanceCase,
 } from '@ecdlink/core';
-import { Typography } from '@ecdlink/ui';
+import { CheckboxGroup, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { FieldType } from '../../pages/content-management/content-management-models';
+import {
+  ActivitiesTitles,
+  FieldType,
+  StoryActivitiesTypes,
+} from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
 
 export interface DynamicSelectorProps {
@@ -16,7 +20,24 @@ export interface DynamicSelectorProps {
   optionDefinition?: ContentDefinitionModelDto;
   isReview: boolean;
   setSelectedItems?: (value: string) => void;
+  isSkillType?: boolean;
+  choosedSectionTitle?: string;
 }
+
+const storyActivitiesTypes = [
+  {
+    name: StoryActivitiesTypes?.Storybook,
+    id: StoryActivitiesTypes?.Storybook,
+  },
+  {
+    name: StoryActivitiesTypes?.ReadAloud,
+    id: StoryActivitiesTypes?.ReadAloud,
+  },
+  {
+    name: StoryActivitiesTypes?.Other,
+    id: StoryActivitiesTypes?.Other,
+  },
+];
 
 const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   contentValue,
@@ -25,6 +46,8 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   optionDefinition,
   isReview,
   setSelectedItems,
+  isSkillType,
+  choosedSectionTitle,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -59,6 +82,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     variables: {
       localeId: languageId?.toString(),
     },
+    skip: choosedSectionTitle === ActivitiesTitles.StoryActivities,
   });
 
   const [displayFields, setDisplayFields] = useState<string[]>();
@@ -84,7 +108,17 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   }, [contentValue]);
 
   useEffect(() => {
+    if (choosedSectionTitle) {
+      setTempData(storyActivitiesTypes);
+    }
+  }, []);
+
+  useEffect(() => {
     if (contentData && contentData[getAllCall]) {
+      if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+        setTempData(storyActivitiesTypes);
+        return;
+      }
       if (isReview) {
         const data = contentData[getAllCall].filter((x) =>
           currentIds?.some((z) => z === x.id.toString())
@@ -117,7 +151,71 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }
   };
 
-  if (tempData && displayFields)
+  if (
+    choosedSectionTitle === ActivitiesTitles.StoryActivities
+      ? tempData
+      : tempData && displayFields
+  ) {
+    if (isSkillType) {
+      return (
+        <div>
+          <Typography
+            type={'body'}
+            weight={'bold'}
+            color={'textMid'}
+            text={
+              title ??
+              camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
+            }
+          />
+          {choosedSectionTitle !== ActivitiesTitles.StoryActivities && (
+            <Typography
+              type={'body'}
+              color={'textMid'}
+              text={
+                'You must choose exactly 2 skills from the list below. To change your selection, deselect the skills and choose a new pair.'
+              }
+            />
+          )}
+
+          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+            {tableData &&
+              tableData.map((item: any) => {
+                const maximumItemsChecked = tableData.filter((x) =>
+                  currentIds?.includes(x.id?.toString())
+                );
+                const itemChecked = currentIds?.some(
+                  (x) => x === item?.id?.toString()
+                );
+                return (
+                  <CheckboxGroup
+                    checkboxColor="primary"
+                    id={item?.title}
+                    key={item?.title}
+                    image={item?.imageUrl}
+                    title={item?.name}
+                    checked={itemChecked}
+                    value={item?.title}
+                    onChange={() => selectItem(item?.id)}
+                    className="bg-secondary mb-1 w-full"
+                    disabled={
+                      choosedSectionTitle === ActivitiesTitles.StoryActivities
+                        ? null
+                        : maximumItemsChecked?.length === 2 && !itemChecked
+                    }
+                  />
+                );
+              })}
+
+            <Pagination
+              recordsPerPage={8}
+              items={tempData}
+              responseData={setTableData || setTempData}
+            />
+          </div>
+        </div>
+      );
+    }
     return (
       <div>
         <Typography
@@ -129,6 +227,15 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
           }
         />
+        {(title === 'C T F35 - theme Days' || title === 'theme Days') && (
+          <Typography
+            type={'body'}
+            color={'textMid'}
+            text={
+              'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
+            }
+          />
+        )}
 
         <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
@@ -136,13 +243,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                  className=" w-full px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                 >
                   Name
-                </th>
-
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Edit</span>
                 </th>
               </tr>
             </thead>
@@ -182,12 +285,12 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           <Pagination
             recordsPerPage={8}
             items={tempData}
-            responseData={setTableData}
+            responseData={setTableData || setTempData}
           />
         </div>
       </div>
     );
-  else {
+  } else {
     return <div>...loading</div>;
   }
 };

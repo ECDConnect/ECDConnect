@@ -144,16 +144,19 @@ export const CoachSmartSpaceChecklist: React.FC<
     await new TraineeService(userAuth?.auth_token!).addCoachVisitData(
       visitDateInput
     );
-    appDispatch(traineeActions.resetCoachSmartSpaceVisitData());
 
     return;
   };
 
   const handleBackButton = () => {
     if (activeStep === 1) {
-      history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-        practitionerId: practitioner?.userId,
-      });
+      if (history.location.pathname === ROUTES.TRAINEE.TRAINEE_ONBOARDING) {
+        setNotificationStep('');
+      } else {
+        history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+          practitionerId: practitioner?.userId,
+        });
+      }
     }
     setActiveStep(activeStep - 1);
   };
@@ -290,6 +293,7 @@ export const CoachSmartSpaceChecklist: React.FC<
               type: 'filled',
               onClick: () => {
                 onSubmit();
+                traineeActions?.resetCoachSmartSpaceVisitData();
                 onClose();
               },
               leadingIcon: 'ArrowLeftIcon',

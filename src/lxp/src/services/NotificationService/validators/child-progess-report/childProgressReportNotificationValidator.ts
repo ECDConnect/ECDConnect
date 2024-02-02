@@ -149,6 +149,7 @@ export class ChildProgressReportNotificationValidator
     const currentUser = userState.user;
 
     const reference = `${currentUser?.id}-${reportingPeriod.period}-${reportingPeriod.year}-AllComplete`;
+
     if (this.notificationAlreadyDone(reference)) return [];
 
     const practitioner = practitionerState.practitioner;
@@ -156,9 +157,12 @@ export class ChildProgressReportNotificationValidator
       reportingPeriod,
       practitioner?.userId || ''
     );
-    if (childrenReports.length === 0) return [];
 
-    const expectedReportCount = childrenReports.length;
+    if (childrenReports.length === 0) return [];
+    const activeChildrenReports = childrenReports?.filter(
+      (item) => item?.child?.isActive === true
+    );
+    const expectedReportCount = activeChildrenReports?.length;
     const completedReportCount = childrenReports.filter(
       (cr) => cr.report !== undefined
     ).length;

@@ -4,7 +4,7 @@ import {
   PhotographIcon,
   UploadIcon,
 } from '@heroicons/react/solid';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { classNames } from '../../pages/users/components/users';
 import { Alert, LoadingSpinner } from '@ecdlink/ui';
@@ -25,6 +25,10 @@ export interface FormFileInputProps {
   isImage?: boolean;
   byPassCompression?: boolean;
   setValue: UseFormSetValue<any>;
+  isSubcategoryInput?: boolean;
+  allowedFileSize?: number;
+  isIconInput?: boolean;
+  onChange?: (item: any) => void;
 }
 
 const containerBaseStyle =
@@ -49,19 +53,42 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   isImage = true,
   byPassCompression = false,
   setValue,
+  isSubcategoryInput,
+  allowedFileSize,
+  isIconInput,
+  onChange,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
+  const [uploadTypes, setUploadedTypes] = useState('');
   const accepetedFormatsWithoutLastItem = acceptedFormats?.slice(0, -1);
   const accepetedFormatsFormatted = accepetedFormatsWithoutLastItem?.map(
     (item) => {
       return item + ' ';
     }
   );
-  const lastAcceptedFormat = acceptedFormats[acceptedFormats?.length - 1];
+  const lastAcceptedFormat = acceptedFormats?.[acceptedFormats?.length - 1];
+
+  const isPdfExtension = acceptedFormats?.some((format) =>
+    format.toLowerCase().includes('pdf')
+  );
+
+  useEffect(() => {
+    if (acceptedFormats?.length > 0 && uploadTypes === '') {
+      let extenstions = '';
+      acceptedFormats?.forEach(function (extension) {
+        extenstions += '.' + extension + ', ';
+      });
+      setUploadedTypes(extenstions);
+    }
+
+    if (contentUrl && contentUrl !== '') {
+      setFileName(contentUrl);
+    }
+  }, [acceptedFormats, contentUrl, uploadTypes]);
 
   const handleChange = (event: any) => {
     if (event && event.target && event.target.files) {
@@ -103,17 +130,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
     const compressedFile =
       isImage &&
+      !isPdfExtension &&
       !isVideoExtension &&
       !byPassCompression &&
-      acceptedFormats.filter((x) => x === fileExtension).length > 0
+      acceptedFormats?.filter((x) => x === fileExtension).length > 0
         ? await getCompressedImage(file)
         : file;
 
     if (fileExtension) {
-      if (acceptedFormats.length > 0) {
+      if (acceptedFormats?.length > 0) {
         if (
-          acceptedFormats.filter((x) => x === fileExtension).length > 0 &&
-          compressedFile?.size < 350000
+          acceptedFormats?.filter((x) => x === fileExtension).length > 0 &&
+          compressedFile?.size < allowedFileSize
         ) {
           setError('');
 
@@ -136,14 +164,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             setLoading(false);
           };
         } else {
-          if (acceptedFormats.filter((x) => x === fileExtension).length === 0) {
+          if (
+            acceptedFormats?.filter((x) => x === fileExtension).length === 0
+          ) {
             setError('Invalid File type');
             setLoading(false);
             return;
           }
-
-          if (compressedFile?.size > 350000) {
-            setError('The file is too big');
+          if (compressedFile?.size > allowedFileSize) {
+            const mbSize = Math.round(allowedFileSize / 1024 / 1024);
+            setError(
+              'The file is too big, upload a file no more than ' + mbSize + 'MB'
+            );
             setLoading(false);
             return;
           }
@@ -168,6 +200,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                   fileName: file?.name,
                 }
           );
+          onChange(splitString);
           setFile(reader.result?.toString() ?? '');
           setLoading(false);
         };
@@ -212,15 +245,51 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
   return (
     <>
-      <label
-        htmlFor={nameProp}
-        className="font-lg block pb-1 text-sm text-gray-900"
-      >
-        {label}
-        {acceptedFormats && (
-          <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
-        )}
-      </label>
+      {isSubcategoryInput ? (
+        <>
+          <label htmlFor={nameProp} className="font-h4 block pb-1 font-bold">
+            {label}
+          </label>
+          {isIconInput ? (
+            <label
+              htmlFor={nameProp}
+              className="font-md block pb-1 text-sm text-gray-900"
+            >
+              Size limit:{' '}
+              <span className="text-errorMain font-semibold">1MB</span>. To
+              improve the image position & size, edit the image to fit 64px by
+              64px before uploading.
+            </label>
+          ) : (
+            <label
+              htmlFor={nameProp}
+              className="font-md block pb-1 text-sm text-gray-900"
+            >
+              Size limit:{' '}
+              <span className="text-errorMain font-semibold">1MB</span>. To
+              improve the image position & size, edit the image to fit 32px by
+              32px before uploading.
+            </label>
+          )}
+        </>
+      ) : (
+        <label
+          htmlFor={nameProp}
+          className="font-lg block pb-1 text-sm text-gray-900"
+        >
+          {label}
+          {acceptedFormats && (
+            <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
+          )}
+        </label>
+      )}
+
+      {isPdfExtension && acceptedFormats?.length === 1 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit: <span className="text-errorMain font-semibold">5</span>{' '}
+          MB. Convert the file(s) to a single pdf before uploading.
+        </p>
+      )}
       <label
         className={
           contentUrl && !fileName
@@ -238,8 +307,8 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         }}
       >
         {contentUrl && !fileName ? (
-          <div className="bg-uiBg relative">
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
+          <div className="bg-adminPortalBg relative">
+            <div className="bg-adminPortalBg absolute inset-0 z-10 flex flex-col items-center justify-center bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
               <UploadIcon className={classNames(iconBaseStyle, 'text-black')} />
             </div>
             <div className="relative">
@@ -265,7 +334,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         ) : (
           <div
-            className="flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
+            className="bg-adminPortalBg flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
             style={
               file
                 ? {
@@ -307,18 +376,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         )}
       </label>
       {error ? (
-        <p className="text-errorMain pb-4">{`${error}. ${
-          error === 'The file is too big'
-            ? 'Upload a file less than 13MB'
-            : `You can only upload a ${accepetedFormatsFormatted.join(
+        <p className="text-errorMain pb-4">{`${
+          error.toLowerCase().includes('too big')
+            ? error
+            : `${error}. You can only upload ${accepetedFormatsFormatted.join(
                 ', '
-              )} or ${lastAcceptedFormat} file`
+              )} ${lastAcceptedFormat} files`
         }`}</p>
       ) : (
         fileName && <p className="pb-4">{fileName}</p>
       )}
 
-      {contentUrl && !fileName && (
+      {contentUrl && !fileName && !isSubcategoryInput && (
         <Alert
           className="mt-5 mb-3"
           message="Wrong file type. Please try again."
@@ -327,7 +396,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
       )}
 
       <input
-        accept={acceptedFormats.toString()}
+        accept={uploadTypes}
         id={nameProp}
         disabled={disabled}
         type="file"

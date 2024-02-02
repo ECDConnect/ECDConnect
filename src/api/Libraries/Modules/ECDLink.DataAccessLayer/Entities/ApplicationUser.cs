@@ -57,6 +57,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public string NextOfKinSurname { get; set; }
         public string NextOfKinContactNumber { get; set; }
         public bool? IsImported { get; set; }
+        public bool? ResetData { get; set; }
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
 

@@ -1,14 +1,19 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Constants;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ECDLink.DataAccessLayer.Entities;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
@@ -18,20 +23,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         private IGenericRepositoryFactory _repoFactory;
         private Guid _applicationUserId;
         private HierarchyEngine _hierarchyEngine;
+        private readonly INotificationService _notificationService;
 
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
-
+        private UserManager<ApplicationUser> _userManager;
 
         public UserLicenseManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            [Service] INotificationService notificationService,
+            UserManager<ApplicationUser> userManager,
             HierarchyEngine hierarchyEngine
             )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
+            _notificationService = notificationService;
+            _userManager = userManager;
 
             _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
 
@@ -89,8 +99,37 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 };
 
                 return _licenseRepo.Insert(input);
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "DueDate",
+                    ReplacementValue = DateTime.Now.AddDays(21).ToShortDateString(),
+                });
+
+                var userToSend =  _userManager.FindByIdAsync(userId).Result;
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+
             }
-            
+
+            return null;
+        }
+
+        public License UpdateSmartSpaceLicense(string userId, DateTime dateAwarded)
+        {
+            License userLicense = GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            if (userLicense != null)
+            {
+                //license might have previously been declined but is now awarded
+                if (userLicense.DeclinedDate != null && userLicense.DeclinedDate < dateAwarded)
+                {
+                    userLicense.DeclinedDate = null;
+                    userLicense.DeclinedCommentsSteps = null;
+                    userLicense.LicenseDate = dateAwarded;
+                    userLicense.UpdatedDate = DateTime.UtcNow;
+                    return _licenseRepo.Update(userLicense);
+                }
+            }
+
             return null;
         }
 

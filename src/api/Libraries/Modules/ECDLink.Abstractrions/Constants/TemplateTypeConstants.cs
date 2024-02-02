@@ -19,7 +19,7 @@ namespace ECDLink.Abstractrions.Constants
 
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";
-        public const string AddedToProgramme = "added-to-programme";
+        public const string ProgrammeInvitation = "ProgrammeInvitation";
         public const string DemotedFromPrincipalOrFAA = "demoted-from-principal-faa";
         public const string PromotedToPrincipalOrFAA = "promoted-to-prinicpal-or-faa";
         public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
@@ -77,6 +77,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string CoachAddresUpdatedScheduleVisit = "coach-address-updated-schedule-visit";
         public const string CoachNewPractitionersLinked = "coach-new-practitioners-linked";
         public const string CoachTraineeReadySmartspaceCheck = "coach-trainee-ready-smartspace-check";
+        public const string CoachSelfAssessmentFormReminder = "coach-fillin-self-asessment-form";
 
         //GG notifications
         public const string GGWalkthroughNotification = "gg-walkthrough-notification";

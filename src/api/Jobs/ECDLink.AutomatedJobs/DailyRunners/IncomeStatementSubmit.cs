@@ -1,6 +1,9 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
+using ECDLink.AutomatedJobs.Services;
+using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
@@ -12,10 +15,9 @@ public class IncomeStatementSubmit : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private string _jobId = "IntegrationStatementsData";
-    public IncomeStatementSubmit(IServiceScopeFactory scopeFactory, 
-        IScheduleConfig<IncomeStatementSubmit> config//,  [Service] SchedulerService scheduler
-        )
-        : base(config)
+    public IncomeStatementSubmit(IServiceScopeFactory scopeFactory,
+        CronJobConfig<IncomeStatementSubmit> config, ILogger<IncomeStatementSubmit> logger)
+            : base(config, logger)
     {
         _scopeFactory = scopeFactory;
     }
@@ -26,8 +28,10 @@ public class IncomeStatementSubmit : CronJobService
         {
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
-
-            await service.IntegrationStatementsData();
+            if (service != null && service.Enabled)
+            {
+                await service.IntegrationStatementsData();
+            }
         }
     }
 }

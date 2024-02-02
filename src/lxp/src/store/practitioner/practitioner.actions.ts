@@ -1,9 +1,4 @@
-import {
-  BalanceSheetDto,
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-  PractitionerDto,
-} from '@ecdlink/core';
+import { PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
@@ -12,10 +7,12 @@ import {
   PractitionerInput,
   MutationUpdatePractitionerProgressArgs,
   MutationUpdatePractitionerUsePhotoInReportArgs,
+  MutationUpdatePractitionerShareInfoArgs,
   LicenseModelInput,
   NotificationDisplay,
+  PractitionerRemovalHistory,
+  PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
@@ -30,6 +27,8 @@ export const PractitionerActions = {
   GET_ALL_INCOME_FOR_PRACTITIONER: 'getAllIncomeForPractitioner',
   UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH:
     'updatePractitionerBusinessWalkThrough',
+  UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
+  UPDATE_PRINCIPAL_INVITATION: 'updatePrincipalInvitation',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -319,6 +318,29 @@ export const updatePractitionerProgress = createAsyncThunk<
   }
 );
 
+export const updatePractitionerShareInfo = createAsyncThunk<
+  any,
+  MutationUpdatePractitionerShareInfoArgs,
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_SHARE_INFO,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    const id = input.practitionerId;
+    try {
+      if (userAuth?.auth_token && id) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerShareInfo(id);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const deActivatePractitioner = createAsyncThunk<
   boolean | undefined,
   {
@@ -420,6 +442,39 @@ export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
           userAuth.auth_token
         ).UpdatePractitionerBusinessWalkthrough(userId);
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePrincipalInvitation = createAsyncThunk<
+  PrincipalInvitationStatus | undefined,
+  {
+    userId: string;
+    principalHierarchy: string;
+    accepted: boolean;
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRINCIPAL_INVITATION,
+  async (
+    { userId, principalHierarchy, accepted },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let result: PrincipalInvitationStatus | undefined;
+
+      if (userAuth?.auth_token) {
+        result = await new PractitionerService(
+          userAuth?.auth_token || ''
+        ).UpdatePrincipalInvitation(userId, principalHierarchy, accepted);
+      }
+      return result;
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -1,5 +1,7 @@
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
-import { PractitionerDto, useDialog } from '@ecdlink/core';
+import { PractitionerDto, useDialog, CalendarEventModel } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -14,13 +16,19 @@ import {
 } from '@ecdlink/ui';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { traineeActions, traineeSelectors } from '@/store/trainee';
+import {
+  traineeActions,
+  traineeSelectors,
+  traineeThunkActions,
+} from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import { coachSelectors, coachThunkActions } from '@/store/coach';
 import { authSelectors } from '@/store/auth';
+import { addDays, addMinutes } from 'date-fns';
+import { UpdateVisitPlannedVisitDateModelInput } from '@ecdlink/graphql';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -63,6 +71,14 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   const user = useSelector(authSelectors.getAuthUser);
   const isCoach = coach?.user?.id === user?.id;
   const [enableButton, setEnableButton] = useState(false);
+  const practitionerUserId = practitioner?.userId || '';
+
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const visitId: string = timeline?.sSCoachVisitId || '';
+  const visitEventId: string = timeline?.sSCoachVisitEventId || '';
+  const plannedVisitDate: string = timeline?.sSCoachVisitDate || '';
+  const calendarAddEvent = useCalendarAddEvent();
+
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const visitData1Completed = useSelector(
     traineeSelectors.getCoachSmartSpaceSection1VisitDataCount
@@ -72,7 +88,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   const coachSmartSpaceVisit1DataNotAttendedStandards = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandards
+    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandardsForStep3
   );
   const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
     coachSmartSpaceVisit1DataNotAttendedStandards?.length! > 0
@@ -189,6 +205,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   const declineSmartSpaceLicence = useCallback(async () => {
+    await onSubmit();
     await dispatch(
       coachThunkActions.declineSmartSpaceLicenseForTrainee({
         userId: practitioner?.userId!,
@@ -196,9 +213,71 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         nextStepsComments: questions[0].answer,
       })
     );
-    await onSubmit();
     await dispatch(traineeActions.resetCoachSmartSpaceVisitData());
   }, [dispatch, onSubmit, practitioner?.userId, questions]);
+
+  const onSchedule = () => {
+    const today = addDays(new Date(), 1);
+    const start = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      today.getHours(),
+      0,
+      0,
+      0
+    );
+    const event: CalendarAddEventInfo = !!visitEventId
+      ? {
+          id: visitEventId,
+        }
+      : {
+          id: '',
+          eventType: 'SmartSpace',
+          allDay: false,
+          start: start.toISOString(),
+          end: addMinutes(start, 30).toISOString(),
+          minDate: new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          ).toISOString(),
+          maxDate: new Date(plannedVisitDate).toISOString(),
+          name: '',
+          description: '',
+          participantUserIds: [practitionerUserId],
+          action: {
+            buttonName: 'Start visit',
+            buttonIcon: 'ArrowCircleRightIcon',
+            url: ROUTES.COACH_SMARTSPACE_CHECK,
+            state: {
+              practitionerUserId: practitioner?.userId || '',
+            },
+          },
+        };
+
+    calendarAddEvent({
+      event,
+      onUpdated: (isNew: boolean, event: CalendarEventModel) => {
+        const payload: UpdateVisitPlannedVisitDateModelInput = {
+          visitId: visitId,
+          plannedVisitDate: event.start,
+          eventId: event.id,
+        };
+        dispatch(
+          traineeActions.updateTraineeOnboardTimelineSSVisitEvent(payload)
+        );
+        dispatch(
+          traineeThunkActions.updateTraineeOnboardTimelineSSVisitEvent(payload)
+        );
+        declineSmartSpaceLicence();
+        history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+          practitionerId: practitioner?.userId,
+        });
+      },
+      onCancel: () => {},
+    });
+  };
 
   const exitCoachSmartSpaceVisit = useCallback(() => {
     dialog({
@@ -217,9 +296,9 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                onSubmit();
+                onSchedule();
               },
-              disabled: true,
+              disabled: !visitId,
               leadingIcon: 'CalendarIcon',
             },
             {
@@ -240,7 +319,14 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         />
       ),
     });
-  }, [dialog, history]);
+  }, [
+    declineSmartSpaceLicence,
+    dialog,
+    history,
+    practitioner?.user?.firstName,
+    practitioner?.userId,
+    visitId,
+  ]);
 
   const renderButton = useMemo(() => {
     if (Number(visitData1Completed) === 17) {

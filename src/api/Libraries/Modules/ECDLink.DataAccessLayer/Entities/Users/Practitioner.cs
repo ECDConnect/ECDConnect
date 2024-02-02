@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
@@ -77,6 +78,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? AttendedFirstAidCourse { get; set; }
         public bool? SetupTraineeInitiated { get; set; }
         public bool? IsCompletedBusinessWalkThrough { get; set; }
+
+        public bool IsPrincipalOrAdmin()
+        {
+            return (IsPrincipal.HasValue && IsPrincipal.Value) || (IsFundaAppAdmin.HasValue && IsFundaAppAdmin.Value);
+        }
     }
 
     public interface PractitionerJoin<TKey>

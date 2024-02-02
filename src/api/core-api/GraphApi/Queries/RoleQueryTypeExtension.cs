@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +26,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IEnumerable<ApplicationIdentityRole> GetRoles([Service] ApplicationRoleManager roleManager)
         {
-            return roleManager.Roles.ToList();
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var roles = roleManager.Roles.ToList().Where(x => x.TenantId == null || x.TenantId == tenantId).ToList();
+            return roles;
         }
 
         public async Task<string> GetRoleForUser(

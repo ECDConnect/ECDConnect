@@ -1,4 +1,4 @@
-import { RoundIcon, Typography } from '@ecdlink/ui';
+import { RoundIcon, Typography, classNames } from '@ecdlink/ui';
 import { format } from 'date-fns';
 
 interface HeaderProps {
@@ -6,12 +6,24 @@ interface HeaderProps {
   date: Date;
   imageUrl?: string;
   icon?: string;
+  className?: string;
 }
 
-export const Header = ({ date, imageUrl, icon, title }: HeaderProps) => (
-  <div className="flex gap-4">
+export const Header = ({
+  date,
+  imageUrl,
+  icon,
+  title,
+  className,
+}: HeaderProps) => (
+  <div className={classNames('flex gap-4', className)}>
     {(icon || imageUrl) && (
-      <RoundIcon icon={icon} imageUrl={imageUrl} backgroundColor="tertiary" />
+      <RoundIcon
+        icon={icon}
+        imageUrl={imageUrl}
+        backgroundColor="tertiary"
+        iconColor="white"
+      />
     )}
     <div>
       <Typography type="h2" text={title} />

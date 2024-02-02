@@ -107,7 +107,7 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
 
   return (
     <>
-      <div className={'bg-uiBg flex h-full flex-1 overflow-scroll'}>
+      <div className={'flex h-full flex-1 overflow-scroll bg-white'}>
         {variation === 'practitioner' && (
           <PractitionerForm
             registrationFormPhotoUrl={registrationFormPhotoUrl}
@@ -358,7 +358,7 @@ const PractitionerForm: React.FC<any> = ({
           color={'primary'}
         />
       </div>
-      <div className={'flex flex-row items-center justify-between py-4'}>
+      <div className={'flex flex-row items-center justify-between pt-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}

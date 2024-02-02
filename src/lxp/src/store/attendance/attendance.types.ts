@@ -1,8 +1,12 @@
-import { AttendanceDto } from '@ecdlink/core';
+import { AttendanceDto, MonthlyAttendanceRecord } from '@ecdlink/core';
 
 export type AttendanceState = {
   attendance: AttendanceDto[] | undefined;
   attendanceTracked: TrackAttendanceModelInput[] | undefined;
+
+  monthlyAttendanceRecordsByUser: {
+    [userId: string]: MonthlyAttendanceRecord[];
+  };
 };
 
 export type AttendanceQueryParams = {
@@ -18,6 +22,7 @@ export type ChildAttendanceReportQueryParams = {
 };
 
 export type MonthlyAttendanceReportQueryParams = {
+  userId: string;
   classroomId: string;
   startDate: Date;
   endDate: Date;

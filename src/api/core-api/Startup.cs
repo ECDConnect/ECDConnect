@@ -45,6 +45,10 @@ using System;
 using System.Diagnostics;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.SmartStart.Services.Interfaces;
+using Castle.Core.Logging;
+using DinkToPdf.Contracts;
+using DinkToPdf;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -150,7 +154,6 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<IPersonnelService, PersonnelService>();
-            services.AddTransient<ChildManager>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
@@ -162,20 +165,30 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
             services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
+            services.AddTransient<IPointsService, PointsEngineService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IClubService, ClubService>();
+            services.AddTransient<IChildService, ChildService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
             services.AddTransient<IntegrationHelperManager>();
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
-            ConfigureJobs(services);
+
+            services.AddSingleton<IConverter, SynchronizedConverter>(serviceProvider =>
+            {
+                return new SynchronizedConverter(new PdfTools());
+            });
+
+            services.AddTransient<IAttendancePdfService, AttendancePdfService>();
             services.AddControllers();
+
+            ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {

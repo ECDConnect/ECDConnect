@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -39,6 +40,21 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string ReassignedChildrenUserIds { get; set; }
         public string ReassignedClassProgrammes { get; set; }
         public string ReassignedLearners { get; set; }
+
+
+        public DateTime AssignedToDate { get; set; }
+
+        [GraphQLIgnore]
+        public Guid? AbsenteeId { get; set; }
+
+        [GraphQLIgnore, ForeignKey(nameof(AbsenteeId))]
+        public virtual Absentees Absentee { get; set; }
+
+        public DateTime? AssignedRoleDate { get; set; }
+        public DateTime? ReassignedRoleBackDate { get; set; }
+        public string AssignedRole { get; set; }
+        public string ReassignedRoleBack { get; set; }
+        public string RoleAssignedToUser { get; set; }
 
     }
 

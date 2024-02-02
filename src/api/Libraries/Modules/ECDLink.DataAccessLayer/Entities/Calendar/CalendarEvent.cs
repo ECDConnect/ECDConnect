@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections;
 using System.Collections.Generic;
+using ECDLink.DataAccessLayer.Entities.Visits;
 
 namespace ECDLink.DataAccessLayer.Entities.Calendar
 {
@@ -28,6 +29,7 @@ namespace ECDLink.DataAccessLayer.Entities.Calendar
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
+        public virtual Visit Visit { get; set; }
 	}
 
     public interface CalendarEventJoin<TKey>

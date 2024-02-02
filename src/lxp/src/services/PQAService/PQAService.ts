@@ -303,6 +303,7 @@ class PQAService {
             pQASiteVisits {
               id
               hasAnswerData
+              delicenseQuestionAnswered
               plannedVisitDate
               attended
               comment
@@ -321,6 +322,7 @@ class PQAService {
             reAccreditationVisits {
               id
               hasAnswerData
+              delicenseQuestionAnswered
               plannedVisitDate
               attended
               comment
@@ -407,20 +409,34 @@ class PQAService {
               }
               eventId
             }
-            coachCircles{
+            coachCircles {
               totalMeetings
               totalPresent
               percAttended
               attendanceText
               attendanceColor
               meetingRegister {
-                  attended
-                  clubMeeting {
-                      meetingDate
-                      meetingNotes
-                  }
+                attended
+                 clubMeeting {
+                  meetingDate
+                  meetingNotes
+                }
               }
-          }
+            }
+            clubMeetings {
+              totalMeetings
+              totalPresent
+              percAttended
+              attendanceText
+              attendanceColor
+              meetingRegister {
+                attended
+                 clubMeeting {
+                  meetingDate
+                  meetingNotes
+                }
+              }
+            }
           }
         }
           `,
@@ -434,7 +450,6 @@ class PQAService {
         'Get Practitioner Timeline Failed - Server connection error'
       );
     }
-
     return response.data.data.practitionerTimeline;
   }
 

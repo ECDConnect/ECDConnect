@@ -3,8 +3,10 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -20,10 +22,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              string name,
              string normalizedName)
         {
-            var newRole = new ApplicationIdentityRole
+            var tenantId = TenantExecutionContext.Tenant.Id;
+
+            var newRole = new ApplicationApplicationIdentityRole
             {
                 Name = name,
-                NormalizedName = normalizedName
+                NormalizedName = normalizedName,
+                TenantId = tenantId
             };
 
             var isSuccessful = roleManager.CreateAsync(newRole).Result;
