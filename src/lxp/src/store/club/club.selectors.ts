@@ -47,7 +47,7 @@ export const getClubMeetingsWithMissingRegistersSelector = (clubId: string) =>
       );
 
       if (isCoach) {
-        return state.clubs.clubsForCoach[clubId].points?.meetRegularly
+        return state.clubs.clubsForCoach?.[clubId]?.points?.meetRegularly
           ?.missingMeetings;
       } else {
         return state.clubs.clubForPractitioner?.points?.meetRegularly
