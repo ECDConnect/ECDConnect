@@ -2,11 +2,13 @@ import React from 'react';
 import { ActionModal } from '@ecdlink/ui';
 
 export type OfflineSyncSuccessProps = {
+  isLoading: boolean;
   onSubmit: () => void;
 };
 
 const OfflineSyncSuccess: React.FC<OfflineSyncSuccessProps> = ({
   onSubmit,
+  isLoading,
 }) => {
   return (
     <ActionModal
@@ -23,6 +25,8 @@ const OfflineSyncSuccess: React.FC<OfflineSyncSuccessProps> = ({
           type: 'filled',
           onClick: () => onSubmit && onSubmit(),
           leadingIcon: 'CheckCircleIcon',
+          isLoading,
+          disabled: isLoading,
         },
       ]}
     />
