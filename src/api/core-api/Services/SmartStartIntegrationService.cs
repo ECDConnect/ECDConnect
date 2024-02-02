@@ -1341,8 +1341,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
     {
         if (!this.Enabled) return true;
 
-        _mappedEntities = await GetMappedEntities();
-        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
+        _mappedEntities = await GetMappedEntities(null,true,true);
+        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.IsActive == true).ToList())
         {
             List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
             if (remoteTrainees.Any())
@@ -3128,16 +3128,20 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     //map licenses
                                     List<License> licenses = new List<License>();
                                     var licenseTypes = _licenseTypeRepo.GetAll();
-                                    licenses.Add(
-                                       new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
-                                    );
+                                    if (entity.StarterLicenceDate != null)
+                                    {
+                                        licenses.Add(
+                                           new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                                        );
+                                    }
                                     if (entity.SmartSpaceLicenceDate != null)
                                     {
                                         licenses.Add(
                                            new License() { LicenseDate = (entity.SmartSpaceLicenceDate != null ? entity.SmartSpaceLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
                                         );
                                     }
-                                    _licenseRepo.InsertMany(licenses);
+                                    if (licenses.Any())
+                                        _licenseRepo.InsertMany(licenses);
                                 }
 
                                 if (existingPractitioner == null)
