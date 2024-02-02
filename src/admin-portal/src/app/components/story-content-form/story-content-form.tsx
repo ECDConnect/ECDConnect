@@ -10,7 +10,7 @@ import { CheckboxGroup, FormInput, Typography } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
-import { StoryBookTypes } from '../../pages/content-management/sub-pages/content-list/components/create-story/components/create-story-form';
+import { StoryBookTypes } from '../../pages/content-management/sub-pages/content-list/components/create-story/create-story';
 
 export interface StoryContentFormProps {
   contentValue?: ContentValueDto;
@@ -486,7 +486,19 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                         onChange={(e) => onChange(e, idx)}
                         textInputType="textarea"
                         placeholder={'Add a response...'}
+                        error={
+                          idx === 0 && !item?.partText
+                            ? 'This field is required'
+                            : ('' as any)
+                        }
                       />
+                      {idx === 0 && !item?.partText && (
+                        <Typography
+                          type="help"
+                          color="errorMain"
+                          text={'This field is required'}
+                        />
+                      )}
                     </div>
                     <Typography
                       type={'h4'}

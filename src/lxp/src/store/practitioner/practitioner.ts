@@ -11,6 +11,7 @@ import {
   updatePractitionerBusinessWalkThrough,
   getPractitionerByUserId,
   updatePractitionerShareInfo,
+  updatePrincipalInvitation,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -88,6 +89,12 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
       state.practitioner = { ...state.practitioner, progress: action.payload };
+    });
+    builder.addCase(updatePrincipalInvitation.fulfilled, (state, action) => {
+      state.practitioner = {
+        ...state.practitioner,
+        dateAccepted: action.payload?.acceptedDate,
+      };
     });
     builder.addCase(deActivatePractitioner.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);

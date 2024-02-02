@@ -20,6 +20,7 @@ import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
 import walktroughImage from '../../../../assets/walktroughImage.png';
+import { classroomsSelectors } from '@store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   programmeThemeSelectors,
@@ -59,7 +60,6 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   );
   const holiday = useHolidays();
   const isHoliday = holiday?.isHoliday(selectedDate);
-
   // Progress Summary Report
   const progressSummary = useSelector(
     progressTrackingSelectors?.getPractitionerProgressReportSummary
@@ -296,7 +296,6 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   //     },
   //   });
   // };
-
   return (
     <>
       <DailyRoutine

@@ -28,7 +28,7 @@ namespace ECDLink.Core.Services.Interfaces
         // GG TODO: Team points - development pending
 
         // SS
-        bool CalculateChildrenRegistrationAdd(string userId, DateTime today);
+        bool CalculateChildrenRegistrationAdd(string userId);
         bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
         bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
@@ -47,5 +47,9 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
         bool CalculateMeetRegularly(Guid clubId, Guid clubMeetingId);
         bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
+
+        List<KeyValuePair<string, int>> GetClubMemberPointsTotals(Guid clubId, int year, int? month = null);
+
+        List<KeyValuePair<string, int>> GetUserPointsTotals(List<string> userIds, int year, int? month = null);
     }
 }

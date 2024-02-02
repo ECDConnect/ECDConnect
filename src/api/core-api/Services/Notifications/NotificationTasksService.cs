@@ -20,14 +20,13 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.SmartStart.Services.Interfaces;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 using EcdLink.Api.CoreApi;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 
-namespace ECDLink.Core.Services
+namespace EcdLink.Api.CoreApi.Services
 {
-    public class NotificationTasksService : INotificationTasksService
+    public partial class NotificationTasksService : INotificationTasksService
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly HierarchyEngine _hierarchyEngine;
@@ -35,6 +34,7 @@ namespace ECDLink.Core.Services
         private readonly INotificationService _notificationService;
         private readonly IIncomeExpenseService _incomeService;
         private readonly IPersonnelService _personnelService;
+        private readonly IPointsEngineService _pointsService;
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
         IHolidayService<Holiday> _holidayService;
 
@@ -46,7 +46,8 @@ namespace ECDLink.Core.Services
             HierarchyEngine hierarchyEngine, 
             [Service] AttendanceTrackingRepository attendanceTrackingRepository, 
             IHolidayService<Holiday> holidayService,
-            IPersonnelService personnelService)
+            IPersonnelService personnelService,
+            IPointsEngineService pointsService)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
@@ -56,6 +57,7 @@ namespace ECDLink.Core.Services
             _holidayService = holidayService;
             _incomeService = incomeService;
             _personnelService = personnelService;
+            _pointsService = pointsService;
         }
 
         public async Task DailyUnassignedClassesNotification()
@@ -309,11 +311,12 @@ namespace ECDLink.Core.Services
             ).ToList();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var item in assessmentsDue)
-            {                            
+            {
+                DateTime dueDate = (item.visitData.DueDate.HasValue ? (DateTime)item.visitData.DueDate : DateTime.Now.AddDays(21));
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "DueDate",
-                    ReplacementValue = item.visitData.DueDate.ToString()
+                    ReplacementValue = dueDate.ToString("dddd, dd MMMM yyyy")
                 });
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, item.pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90));
             }
@@ -465,6 +468,7 @@ namespace ECDLink.Core.Services
             var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
             var coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: adminId);
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            int traineeOnboardingCount = 9;
 
             ////find all trainees thats new in last 7 days
             await this.WeeklyCoachTraineesCheckReminderAsync();
@@ -523,6 +527,29 @@ namespace ECDLink.Core.Services
                             //switch off starter notifications for this trainee if there was any
                             await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
                         }
+                        //count how many onboarding steps has been completed and fire off notifications if only 2 more is left etc
+                        int traineeCount = 0;
+                        if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received)
+                            traineeCount ++;
+                        if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
+                            traineeCount++;
+                        if (traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting) 
+                            traineeCount++;
+                        if (traineeTimeline.SmartSpaceChecklistStatus == "SmartSpace Checklist done")
+                            traineeCount++;
+                        if (traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support)
+                            traineeCount++;
+                        if (traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered)
+                            traineeCount++;
+                        if (traineeTimeline.SignFranchiseeAgreementStatus == Constants.SSSettings.franchisee_signed)
+                            traineeCount++;
+
+                        if (traineeOnboardingCount - traineeCount == 2)
+                        {
+                            if (trainee.User!=null)
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                        }
+
                     }
                 }
                 var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.IsTrainee == false && (x.CoachHierarchy.HasValue && x.CoachHierarchy.ToString() == coach.UserId)).ToList();

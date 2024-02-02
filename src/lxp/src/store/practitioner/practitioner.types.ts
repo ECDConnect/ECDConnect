@@ -1,9 +1,4 @@
-import {
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-  PractitionerDto,
-  UserDto,
-} from '@ecdlink/core';
+import { PractitionerDto, UserDto } from '@ecdlink/core';
 
 export type PrincipalPractitioners = Partial<
   Pick<UserDto, 'firstName' | 'surname' | 'idNumber' | 'id'> & {

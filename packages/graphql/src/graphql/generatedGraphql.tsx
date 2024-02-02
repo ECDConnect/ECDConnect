@@ -1250,6 +1250,7 @@ export type ChildProgressReport = {
   dateCompleted?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
+  integrationSubmitDate?: Maybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
   reportContent?: Maybe<Scalars['String']>;
   reportDate: Scalars['DateTime'];
@@ -1289,6 +1290,7 @@ export type ChildProgressReportFilterInput = {
   dateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  integrationSubmitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<ChildProgressReportFilterInput>>;
   reportContent?: InputMaybe<StringOperationFilterInput>;
@@ -1305,6 +1307,7 @@ export type ChildProgressReportInput = {
   ClassroomGroupId?: InputMaybe<Scalars['UUID']>;
   DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
+  IntegrationSubmitDate?: InputMaybe<Scalars['DateTime']>;
   IsActive: Scalars['Boolean'];
   ReportContent?: InputMaybe<Scalars['String']>;
   ReportDate: Scalars['DateTime'];
@@ -1320,6 +1323,7 @@ export type ChildProgressReportSortInput = {
   dateCompleted?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
+  integrationSubmitDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   reportContent?: InputMaybe<SortEnumType>;
   reportDate?: InputMaybe<SortEnumType>;
@@ -5587,6 +5591,7 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addBeCreativeActivity: Scalars['Boolean'];
   addCaregiverReportBackMeeting: Scalars['Boolean'];
+  addChildRegistrationPoints: Scalars['Boolean'];
   addClinic?: Maybe<Clinic>;
   addClubMeeting?: Maybe<ClubMeeting>;
   addCoachCircleMeeting?: Maybe<ClubMeeting>;
@@ -5919,6 +5924,7 @@ export type Mutation = {
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
+  pushChildProgressReports: Scalars['Boolean'];
   pushPQAData: Scalars['Boolean'];
   pushReAccreditationData: Scalars['Boolean'];
   pushSmartSpaceVisitsData: Scalars['Boolean'];
@@ -6006,6 +6012,7 @@ export type Mutation = {
   sendPrincipalChangedNotification: Scalars['Boolean'];
   sendPrincipalMovedToProgrammeNotification: Scalars['Boolean'];
   sendPrincipalReportDeadlinePassedNotification: Scalars['Boolean'];
+  sendProgressreportsNotCreatedNotification: Scalars['Boolean'];
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
   sendRecordCaregiverMeetingNotification: Scalars['Boolean'];
   sendRegisterThreeChildrenNotification: Scalars['Boolean'];
@@ -6224,6 +6231,10 @@ export type MutationAddBeCreativeActivityArgs = {
 
 export type MutationAddCaregiverReportBackMeetingArgs = {
   clubId: Scalars['UUID'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddChildRegistrationPointsArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -8070,6 +8081,11 @@ export type MutationSendPrincipalMovedToProgrammeNotificationArgs = {
 
 export type MutationSendPrincipalReportDeadlinePassedNotificationArgs = {
   practitionerFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendProgressreportsNotCreatedNotificationArgs = {
+  dueDate: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -10558,7 +10574,7 @@ export type ProgrammeInput = {
 };
 
 export type ProgrammeModelInput = {
-  classroomGroupId: Scalars['UUID'];
+  classroomGroupId?: InputMaybe<Scalars['UUID']>;
   classroomId: Scalars['UUID'];
   dailyProgrammes?: InputMaybe<Array<InputMaybe<DailyProgrammeModelInput>>>;
   endDate: Scalars['DateTime'];

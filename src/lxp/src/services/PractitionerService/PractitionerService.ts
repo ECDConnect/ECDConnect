@@ -14,6 +14,7 @@ import {
   NotificationDisplay,
   PractitionerInput,
   PractitionerRemovalHistory,
+  PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 
 interface ReportDetailsForPractitionerData {
@@ -906,7 +907,7 @@ class PractitionerService {
     practitionerId: string,
     principalId: string,
     accepted: boolean = true
-  ): Promise<boolean> {
+  ): Promise<PrincipalInvitationStatus> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -939,8 +940,7 @@ class PractitionerService {
         'Get Practitioner by ID number Failed - Server connection error'
       );
     }
-
-    return response.data.data.updatePractitionerRegistered;
+    return response.data.data.updatePrincipalInvitation;
   }
 
   async RemovePractitioner(
