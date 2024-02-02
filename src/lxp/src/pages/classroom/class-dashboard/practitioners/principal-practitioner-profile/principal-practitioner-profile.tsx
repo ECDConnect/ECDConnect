@@ -93,7 +93,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     (item) => item?.absentDate === orderedDates?.[0]
   ) as AbsenteeDto;
   const allAbsenteeClasses = practitionerAbsentees?.filter(
-    (item) => item?.absentDate === currentAbsentee?.absentDate
+    (item) =>
+      item?.absentDate === currentAbsentee?.absentDate &&
+      item?.reason !== 'Practitioner removed from programme'
   );
 
   const classesWithAbsence =
