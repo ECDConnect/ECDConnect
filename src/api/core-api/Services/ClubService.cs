@@ -5,7 +5,6 @@ using EcdLink.Api.CoreApi.Managers;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
@@ -2011,10 +2010,36 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<ClubMeeting> GetClubMeetingsWithMissingRegisters(Guid clubId)
         {
-            return _clubMeetingRepo.GetAll().Where(x => x.ClubId == clubId && 
-                                                   x.ClubMeetingRegister == null && 
-                                                   x.MeetingDate.Value.Year == DateTime.Now.Year &&
-                                                   x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting).ToList();
+            var startMonth = 1;
+            var endMonth = DateTime.Now.Month;
+            List<ClubMeeting> missingMeetings = new List<ClubMeeting>();
+            List<ClubMeeting> yearMeetings = _clubMeetingRepo.GetAll().Where(x => x.ClubId == clubId &&
+                                                                           x.MeetingDate.Value.Year == DateTime.Now.Year &&
+                                                                           x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting).ToList();
+            for (startMonth = 1; startMonth < endMonth; startMonth++ )
+            {
+                ClubMeeting clubMeeting = yearMeetings.Where(x => x.ClubId == clubId &&
+                                                             x.MeetingDate.Value.Month == startMonth && 
+                                                             x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting).FirstOrDefault();
+                if (clubMeeting == null) // add when no club meeting
+                {
+                    missingMeetings.Add(new ClubMeeting
+                    {
+                        MeetingDate = new DateTime(DateTime.Now.Year, startMonth, 1)
+                    });
+                } 
+                else // add when club meeting is available but no register
+                {
+                    if (clubMeeting.ClubMeetingRegister == null)
+                    {
+                        missingMeetings.Add(new ClubMeeting
+                        {
+                            MeetingDate = new DateTime(DateTime.Now.Year, startMonth, 1)
+                        });
+                    }
+                }
+            }
+            return missingMeetings;
         }
 
         public ClubMeeting SetContactClubLeaderStatusForMeeting(Guid clubMeetingId)
