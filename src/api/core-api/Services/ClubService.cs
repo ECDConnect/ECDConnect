@@ -1868,29 +1868,19 @@ namespace EcdLink.Api.CoreApi.Services
         private List<ClubActivity> GetClubActivities(Club club, int year)
         {
             var clubActivities = new List<ClubActivity>();
-
             if (club.League != null) { 
                 
                 var activities = _clubPointsLibraryRepo.GetAll().OrderBy(x => x.Activity).ToList();
-                var clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == year).ToList();
-            
-                if (club.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+                var clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == year).Include(x => x.ClubPointsLibrary).ToList();
+
+                var activityNames = club.League.LeagueType.Name == Constants.ClubSettings.name_purple
+                    ? activities.Where(x => x.Type == Constants.ClubSettings.name_purple).Select(x => x.Activity).Distinct().OrderBy(x => x).ToList()
+                    : activities.Where(x => x.Type != Constants.ClubSettings.name_purple).Select(x => x.Activity).Distinct().OrderBy(x => x).ToList();
+
+                foreach (var activity in activityNames)
                 {
-                    activities = activities.Where(x => x.Type == Constants.ClubSettings.name_purple).OrderBy(x => x.Activity).ToList();
-                    foreach (ClubPointsLibrary pl in activities)
-                    {
-                        var points = clubPoints.Where(x => x.ClubPointsLibraryId == pl.Id).Select(x => x.Points).Sum();
-                        clubActivities.Add(new ClubActivity() { Name = pl.Activity, Points = points });
-                    }
-                }
-                else
-                {
-                    activities = activities.Where(x => x.Type != Constants.ClubSettings.name_purple).OrderBy(x => x.Activity).ToList();
-                    foreach (ClubPointsLibrary pl in activities)
-                    {
-                        var points = clubPoints.Where(x => x.ClubPointsLibraryId == pl.Id).Select(x => x.Points).Sum();
-                        clubActivities.Add(new ClubActivity() { Name = pl.Activity, Points = points });
-                    }
+                    var points = clubPoints.Where(x => x.ClubPointsLibrary.Activity == activity).Select(x => x.Points).Sum();
+                    clubActivities.Add(new ClubActivity() { Name = activity, Points = points });
                 }
             }
 
