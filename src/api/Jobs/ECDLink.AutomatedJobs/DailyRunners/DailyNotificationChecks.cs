@@ -33,11 +33,10 @@ public class DailyNotificationChecks : CronJobService
             await service.DailyChildrenRegistrationsIncompleteNotification();
             await service.DailyChildrenNotAssignedToClassNotification();
             await service.DailyUnassignedProgrammesNotification();
-            await service.SelfAssessmentReminderAsync();
+            await service.SelfAssessmentReminderAsync();          
             await service.DailyCoachChecksNotification();
 
             //await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
-            //await service.Daily3WeekLogonCheck(); //deprecated
 
             //specific day checks in year/month
             if (DateTime.Now.Day == 15 && DateTime.Now.Month == 1) //15 Jan each year only

@@ -8,7 +8,6 @@ namespace ECDLink.Core.Services.Interfaces
         //daily
         public Task DailyUnassignedClassesNotification();
         Task DailyChildrenRegistrationsIncompleteNotification();
-        Task Daily3WeekLogonCheck();
         Task DailyChildrenNotAssignedToClassNotification();
         Task DailyUnassignedProgrammesNotification();
         Task DailyAttendanceNotTrackedNotification();
