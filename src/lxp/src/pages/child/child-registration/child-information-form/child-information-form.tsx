@@ -154,10 +154,11 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
     defaultValues: childInformation,
   });
 
-  const { childIdField, dobDay, dobMonth, dobYear, reason } = useWatch({
-    control: childInformationFormControl,
-    defaultValue: childInformation,
-  });
+  const { childIdField, dobDay, dobMonth, dobYear, reason, otherReason } =
+    useWatch({
+      control: childInformationFormControl,
+      defaultValue: childInformation,
+    });
 
   const { isValid, errors } = useFormState({
     control: childInformationFormControl,
@@ -416,7 +417,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
               {'Reason for child registration'}
             </label>
             <Dropdown<ProgrammeAttendanceReasonDto>
-              placeholder={'Select reason'}
+              placeholder={!!reason ? reason?.reason : 'Select reason'}
               fullWidth
               fillType="clear"
               list={
@@ -464,7 +465,12 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         </div>
         <Button
           onClick={handleFormSubmit}
-          disabled={!isValid}
+          disabled={
+            !isValid ||
+            (provideReason &&
+              (!reason ||
+                (!!reason && reason?.reason === 'Other' && !otherReason)))
+          }
           className="w-full"
           size="small"
           color="primary"

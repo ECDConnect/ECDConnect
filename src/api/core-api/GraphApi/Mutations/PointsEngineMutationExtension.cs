@@ -1,7 +1,6 @@
 ﻿using ECDLink.Core.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -10,7 +9,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class PointsEngineMutationExtension
     {
         public bool TestPointEngine(
-             [Service] IHttpContextAccessor contextAccessor,
              [Service] IPointsEngineService pointsEngineService,
              string userId,
              DateTime today,
@@ -35,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              }
              else if (type == "CalculateChildrenRegistrationAdd")
              {
-                 return pointsEngineService.CalculateChildrenRegistrationAdd(userId, today);
+                 return pointsEngineService.CalculateChildrenRegistrationAdd(userId);
              }
              else if (type == "CalculateChildrenRegistrationRemoval")
              {
@@ -47,6 +45,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              }
 
              return false;
+        }
+
+        public bool AddChildRegistrationPoints([Service] IPointsEngineService pointsEngineService, string userId)
+        {
+            return pointsEngineService.CalculateChildrenRegistrationAdd(userId);
         }
 
         public bool CalculateLeaveNoOneBehind([Service] IPointsService pointsEngineService)

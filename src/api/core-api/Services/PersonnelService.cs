@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
@@ -408,23 +409,40 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerToDemote.DateAccepted = DateTime.Now;
                 _practiGenericRepo.Update(practitionerToDemote);
 
+                //Classrooms swap
+                string classroomName = "";
+                var classroom = _classRepo.GetByUserId(practitionerToDemote.UserId);
+                if (classroom != null)
+                {
+                    classroomName = classroom.Name;
+                    classroom.UserId = practitionerToPromote.UserId;
+                    _classRepo.Update(classroom);
+                }
+
                 //now list through all practitioners and remove the principalhierarchies and assign new
                 List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy.Equals(Guid.Parse(oldPrincipalUserId))).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
+                    //send notifications about change of FAA/Principal
+                    List<TagsReplacements> replacements = new List<TagsReplacements>();
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "ProgrammeName",
+                        ReplacementValue = classroomName
+                    });
+
                     foreach (var practi in allPrincipalPractitioners)
                     {
                         practi.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                         _practiGenericRepo.Update(practi);
-                    }
-                }
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "principalOrFAA",
+                            ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
+                        });
 
-                //Classrooms swap
-                var classroom = _classRepo.GetByUserId(practitionerToDemote.UserId);
-                if (classroom!=null)
-                {
-                    classroom.UserId = practitionerToPromote.UserId;
-                    _classRepo.Update(classroom);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now, practi.User, "", MessageStatusConstants.Amber, replacements);
+                    }
                 }
 
                 //Swap the unsure class if there is one
@@ -453,6 +471,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
                 
                 _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRACTITIONER, userToDemote.Id, _applicationUserId);
+
+                //send notification to new Principal/FAA
+                List<TagsReplacements> principalreplacements = new List<TagsReplacements>();
+                principalreplacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PrincipalOrFAA",
+                    ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
+                });
+                principalreplacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = classroomName
+                });
+
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7));
+
+
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
@@ -896,6 +931,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             _traineeRepo.Update(trainee);
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "SupportDate",
+                ReplacementValue = trainee.InsertedDate.AddDays(21).ToShortDateString(),
+            });
+
+            var userToSend = _userManager.FindByIdAsync(userId).Result;
+            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+
 
             return trainee;
         }

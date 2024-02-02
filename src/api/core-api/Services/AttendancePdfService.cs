@@ -65,6 +65,13 @@ namespace EcdLink.Api.CoreApi.Services
             DateTime startDate,
             DateTime endDate)
         {
+            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
+
+            if (!classroomGroups.Any())
+            {
+                return null;
+            }
+
             var siteAddress = _personnelService.GetUserSiteAddress(userId);
             var signingSignature = _personnelService.GetUserSignature(userId);
             var signDateRow = _documentManager.GetSignatureRow(signingSignature);
@@ -74,7 +81,7 @@ namespace EcdLink.Api.CoreApi.Services
             var htmlStringBuilder = new StringBuilder($"<html><head>{css}</head><body>");
 
             var attedanceOverview = _childAttendanceReport.GetClassroomAttendanceOverView(classroomId, userId, startDate.Date, endDate.GetEndOfDay());
-            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
+            
 
             var counter = 1;
             foreach (var classroomGroup in classroomGroups)

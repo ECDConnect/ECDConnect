@@ -1,6 +1,7 @@
 ﻿using ECDLink.AutomatedJobs.Anonymise;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -43,7 +44,11 @@ public class DailyNotificationChecks : CronJobService
             {
                 await service.YearlyPreschoolFeeReminderAsync();
             }
-            
+
+            if (DateTime.Now.Day == (DateTime.Now.GetEndOfMonth().Day - 10))
+            {
+                await service.MonthlyEarnMorePointsNotification();
+            }
         }
     }
 }

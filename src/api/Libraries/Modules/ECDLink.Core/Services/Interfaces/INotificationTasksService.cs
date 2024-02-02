@@ -23,5 +23,8 @@ namespace ECDLink.Core.Services.Interfaces
         Task MonthlyPlanningReminderAsync();
         Task MonthlyAttendanceSLSyncAsync();
         Task SelfAssessmentReminderAsync();
+        Task MonthlyTopPointsEarnerNotification();
+        Task MonthlyEarnMorePointsNotification();
+        Task YearlyPointsSummaryNotification();
     }
 }

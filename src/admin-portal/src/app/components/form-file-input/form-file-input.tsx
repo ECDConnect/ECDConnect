@@ -28,6 +28,7 @@ export interface FormFileInputProps {
   isSubcategoryInput?: boolean;
   allowedFileSize?: number;
   isIconInput?: boolean;
+  onChange?: (item: any) => void;
 }
 
 const containerBaseStyle =
@@ -55,6 +56,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   isSubcategoryInput,
   allowedFileSize,
   isIconInput,
+  onChange,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -68,16 +70,16 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
       return item + ' ';
     }
   );
-  const lastAcceptedFormat = acceptedFormats[acceptedFormats?.length - 1];
+  const lastAcceptedFormat = acceptedFormats?.[acceptedFormats?.length - 1];
 
-  const isPdfExtension = acceptedFormats.some((format) =>
+  const isPdfExtension = acceptedFormats?.some((format) =>
     format.toLowerCase().includes('pdf')
   );
 
   useEffect(() => {
-    if (acceptedFormats.length > 0 && uploadTypes === '') {
+    if (acceptedFormats?.length > 0 && uploadTypes === '') {
       let extenstions = '';
-      acceptedFormats.forEach(function (extension) {
+      acceptedFormats?.forEach(function (extension) {
         extenstions += '.' + extension + ', ';
       });
       setUploadedTypes(extenstions);
@@ -131,14 +133,14 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
       !isPdfExtension &&
       !isVideoExtension &&
       !byPassCompression &&
-      acceptedFormats.filter((x) => x === fileExtension).length > 0
+      acceptedFormats?.filter((x) => x === fileExtension).length > 0
         ? await getCompressedImage(file)
         : file;
 
     if (fileExtension) {
-      if (acceptedFormats.length > 0) {
+      if (acceptedFormats?.length > 0) {
         if (
-          acceptedFormats.filter((x) => x === fileExtension).length > 0 &&
+          acceptedFormats?.filter((x) => x === fileExtension).length > 0 &&
           compressedFile?.size < allowedFileSize
         ) {
           setError('');
@@ -162,7 +164,9 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             setLoading(false);
           };
         } else {
-          if (acceptedFormats.filter((x) => x === fileExtension).length === 0) {
+          if (
+            acceptedFormats?.filter((x) => x === fileExtension).length === 0
+          ) {
             setError('Invalid File type');
             setLoading(false);
             return;
@@ -196,6 +200,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                   fileName: file?.name,
                 }
           );
+          onChange(splitString);
           setFile(reader.result?.toString() ?? '');
           setLoading(false);
         };

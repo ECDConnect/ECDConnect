@@ -14,7 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public string PreferredLanguage { get; set; }
 
-        public Guid ClassroomGroupId { get; set; } 
+        public Guid? ClassroomGroupId { get; set; } 
 
         public Guid ClassroomId { get; set; } 
 

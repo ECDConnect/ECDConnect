@@ -180,7 +180,7 @@ export const updateProgrammes = createAsyncThunk<
             id: programme.id,
             classroomId: programme.classroomId || classroom?.id,
             classroomGroupId:
-              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id,
+              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id ?? null,
             name: programme.name,
             startDate: programme.startDate,
             endDate: programme.endDate,
