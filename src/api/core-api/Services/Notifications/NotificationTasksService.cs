@@ -20,9 +20,10 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.SmartStart.Services.Interfaces;
-using EcdLink.Api.CoreApi;
+using Microsoft.Extensions.Logging;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using EcdLink.Api.CoreApi.GraphApi.Mutations;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -37,6 +38,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IPointsEngineService _pointsService;
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
         IHolidayService<Holiday> _holidayService;
+        private ILogger<NotificationTasksService> _logger;
 
         public NotificationTasksService(
             IGenericRepositoryFactory repositoryFactory,
@@ -47,7 +49,8 @@ namespace EcdLink.Api.CoreApi.Services
             [Service] AttendanceTrackingRepository attendanceTrackingRepository, 
             IHolidayService<Holiday> holidayService,
             IPersonnelService personnelService,
-            IPointsEngineService pointsService)
+            IPointsEngineService pointsService,
+            [Service] ILogger<NotificationTasksService> logger)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
@@ -58,6 +61,7 @@ namespace EcdLink.Api.CoreApi.Services
             _incomeService = incomeService;
             _personnelService = personnelService;
             _pointsService = pointsService;
+            _logger = logger;
         }
 
         public async Task DailyUnassignedClassesNotification()
@@ -469,133 +473,146 @@ namespace EcdLink.Api.CoreApi.Services
 
                 foreach (var trainee in newTrainee)
                 {
-                    bool cancelStarter = false;
-                    //switch off any StartTraineeJourney items if any of the timeline items have been done at this point
-                    var traineeTimeline = _personnelService.GetOnBoardTraineeTimeline(trainee.UserId);
-                    if (traineeTimeline != null)
+                    try
                     {
-                        //await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
-                        //1) check trainees ready for smartspace visits - SendCoachTraineeReadySmartspaceCheckNotification
-                        /*
-                        1 Starter Licence received d
-                        2 Consolidation meeting attended d
-                        3 SmartSpace checklist complete d
-                        4 3 children registered
-                        5 Community support checked
-                        */
-                        replacements.Add(new TagsReplacements()
+                        bool cancelStarter = false;
+                        //switch off any StartTraineeJourney items if any of the timeline items have been done at this point
+                        var traineeTimeline = _personnelService.GetOnBoardTraineeTimeline(trainee.UserId);
+                        if (traineeTimeline != null)
                         {
-                            FindValue = "TraineeFirstName",
-                            ReplacementValue = trainee.User.FirstName
-                        });
-                        if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received && traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting && traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done && traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered && traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support)
-                        {
-                            cancelStarter = true;
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
-                        }
 
-                        if (traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received || 
-                            traineeTimeline.ConsolidationMeetingStatus != Constants.SSSettings.consolidation_meeting || 
-                            traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done || 
-                            traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
-                            traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||
-                            traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed ||
-                            traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit ||
-                            traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
-                        {
-                            cancelStarter = false;
-
-                            if (trainee.StarterLicenceDate.HasValue && trainee.StarterLicenceDate <= DateTime.Now.AddDays(-28))
+                            //await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
+                            //1) check trainees ready for smartspace visits - SendCoachTraineeReadySmartspaceCheckNotification
+                            /*
+                            1 Starter Licence received d
+                            2 Consolidation meeting attended d
+                            3 SmartSpace checklist complete d
+                            4 3 children registered
+                            5 Community support checked
+                            */
+                            replacements.Add(new TagsReplacements()
                             {
-                                //3) Trainees not completed onboarding - 4 weeks - remove
-                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), true);
-                            }
-                            else if (trainee.StarterLicenceDate.HasValue && trainee.StarterLicenceDate <= DateTime.Now.AddDays(-14))
+                                FindValue = "TraineeFirstName",
+                                ReplacementValue = trainee.User.FirstName
+                            });
+                            if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received && traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting && traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done && traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered && traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support)
                             {
-                                //2) Trainees not completed onboarding - 2 weeks
-                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
+                                cancelStarter = true;
+                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
+                            }
+
+                            if (traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received || 
+                                traineeTimeline.ConsolidationMeetingStatus != Constants.SSSettings.consolidation_meeting || 
+                                traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done || 
+                                traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
+                                traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||
+                                traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed ||
+                                traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit ||
+                                traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
+                            {
+                                cancelStarter = false;
+
+                                if (trainee.StarterLicenceDate.HasValue && trainee.StarterLicenceDate <= DateTime.Now.AddDays(-28))
+                                {
+                                    //3) Trainees not completed onboarding - 4 weeks - remove
+                                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), true);
+                                }
+                                else if (trainee.StarterLicenceDate.HasValue && trainee.StarterLicenceDate <= DateTime.Now.AddDays(-14))
+                                {
+                                    //2) Trainees not completed onboarding - 2 weeks
+                                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
+                                }
+                            }
+                            if (cancelStarter)
+                            {
+                                //switch off starter notifications for this trainee if there was any
+                                await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
+                            }
+                            //count how many onboarding steps has been completed and fire off notifications if only 2 more is left etc
+                            int traineeCount = 0;
+                            if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received)
+                                traineeCount ++;
+                            if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
+                                traineeCount++;
+                            if (traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting) 
+                                traineeCount++;
+                            if (traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done)
+                                traineeCount++;
+                            if (traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support)
+                                traineeCount++;
+                            if (traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered)
+                                traineeCount++;
+                            if (traineeTimeline.SignFranchiseeAgreementStatus == Constants.SSSettings.franchisee_signed)
+                                traineeCount++;
+                            if (traineeTimeline.SSCoachVisitStatus == Constants.SSSettings.coach_visit)
+                                traineeCount++;
+                            if (traineeTimeline.SignStartUpSupportAgreementStatus == Constants.SSSettings.support_agreement_signed)
+                                traineeCount++;
+
+                            if (traineeOnboardingCount - traineeCount == 2)
+                            {
+                                if (trainee.User!=null)
+                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
                             }
                         }
-                        if (cancelStarter)
-                        {
-                            //switch off starter notifications for this trainee if there was any
-                            await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
-                        }
-                        //count how many onboarding steps has been completed and fire off notifications if only 2 more is left etc
-                        int traineeCount = 0;
-                        if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received)
-                            traineeCount ++;
-                        if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
-                            traineeCount++;
-                        if (traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting) 
-                            traineeCount++;
-                        if (traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done)
-                            traineeCount++;
-                        if (traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support)
-                            traineeCount++;
-                        if (traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered)
-                            traineeCount++;
-                        if (traineeTimeline.SignFranchiseeAgreementStatus == Constants.SSSettings.franchisee_signed)
-                            traineeCount++;
-                        if (traineeTimeline.SSCoachVisitStatus == Constants.SSSettings.coach_visit)
-                            traineeCount++;
-                        if (traineeTimeline.SignStartUpSupportAgreementStatus == Constants.SSSettings.support_agreement_signed)
-                            traineeCount++;
-
-                        if (traineeOnboardingCount - traineeCount == 2)
-                        {
-                            if (trainee.User!=null)
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
-                        }
-
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Issue with trainee timeline in DailyCoachChecksNotification", ex.Message);
                     }
                 }
                 var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.IsTrainee == false && (x.CoachHierarchy.HasValue && x.CoachHierarchy.ToString() == coach.UserId)).ToList();
                 foreach (var prac in practitioners)
                 {
-                    //4) Practitioner not completed self assessment form - find any practitioners not completed self assessment forms yet
-                    PractitionerTimeline practTimeline = _personnelService.GetPractitionerTimeline(prac.UserId);
-                    if ( practTimeline.SelfAssessmentStatus != null && practTimeline.SelfAssessmentStatus != Constants.SSSettings.self_assessment)
-                    {
-                        string visitType = "";
-                        if (practTimeline.PrePQAVisitDate1 <= DateTime.Now.AddDays(14))
-                            visitType = "First PQA";
-
-                        if (practTimeline.ReAccreditationVisits != null)
+                    try { 
+                        //4) Practitioner not completed self assessment form - find any practitioners not completed self assessment forms yet
+                        PractitionerTimeline practTimeline = _personnelService.GetPractitionerTimeline(prac.UserId);
+                        if ( practTimeline.SelfAssessmentStatus != null && practTimeline.SelfAssessmentStatus != Constants.SSSettings.self_assessment)
                         {
-                            foreach (var visit in practTimeline.ReAccreditationVisits)
+                            string visitType = "";
+                            if (practTimeline.PrePQAVisitDate1 <= DateTime.Now.AddDays(14))
+                                visitType = "First PQA";
+
+                            if (practTimeline.ReAccreditationVisits != null)
                             {
-                                if (visit.DueDate <= DateTime.Now.AddDays(14))
+                                foreach (var visit in practTimeline.ReAccreditationVisits)
                                 {
-                                    visitType = "First Re-accreditation";
+                                    if (visit.DueDate <= DateTime.Now.AddDays(14))
+                                    {
+                                        visitType = "First Re-accreditation";
+                                    }
+                                }
+                            }
+                            replacements.Add(new TagsReplacements()
+                            {
+                                FindValue = "VisitType",
+                                ReplacementValue = visitType //First PQA / Re-accreditation = show First PQA if that is the upcoming visit for which the self-assessment form is required; else show Re-accreditation if that is the upcoming visit for which the self-assessment is required.
+                            });
+                            replacements.Add(new TagsReplacements()
+                            {
+                                FindValue = "PractitionerFirstName",
+                                ReplacementValue = prac.User.FirstName
+                            });
+                            await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.CoachSelfAssessmentFormReminder, prac.User.FirstName + " " + prac.User.Surname);
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), true);                        
+                        }
+
+
+                        ////5) Overdue visits - find any trainees/practitioners that are overdue any visits                    
+                        if (practTimeline.RequestedCoachVisits.Any())
+                        {
+                            foreach (var item in practTimeline.RequestedCoachVisits)
+                            {
+                                if (item.DueDate < DateTime.Now)
+                                {
+                                    overdueVisists = true;
                                 }
                             }
                         }
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "VisitType",
-                            ReplacementValue = visitType //First PQA / Re-accreditation = show First PQA if that is the upcoming visit for which the self-assessment form is required; else show Re-accreditation if that is the upcoming visit for which the self-assessment is required.
-                        });
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "PractitionerFirstName",
-                            ReplacementValue = prac.User.FirstName
-                        });
-                        await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.CoachSelfAssessmentFormReminder, prac.User.FirstName + " " + prac.User.Surname);
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), true);                        
                     }
-
-
-                    ////5) Overdue visits - find any trainees/practitioners that are overdue any visits                    
-                    if (practTimeline.RequestedCoachVisits.Any())
+                    catch (Exception ex)
                     {
-                        foreach (var item in practTimeline.RequestedCoachVisits)
-                        {
-                            if (item.DueDate < DateTime.Now)
-                            {
-                                overdueVisists = true;
-                            }
-                        }
+                        _logger.LogError(ex, "Issue with practitioner timeline in DailyCoachChecksNotification", ex.Message);
                     }
                 }
 

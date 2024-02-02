@@ -1070,12 +1070,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (trainee != null)
             {
                 // ThreeChildrenRegistered
-                var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
-                if (allChildren.Count >= 3)
-                {
-                    timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
-                    timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
-                    timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
+                if (trainee.Practitioner != null) { 
+                    var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
+                    if (allChildren.Count >= 3)
+                    {
+                        timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
+                        timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
+                        timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
+                    }
                 }
 
                 // SSCoachVisit - normally this visit is linked to a coach id and a trainee id
