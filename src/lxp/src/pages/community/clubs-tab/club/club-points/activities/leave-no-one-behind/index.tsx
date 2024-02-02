@@ -281,15 +281,12 @@ export const LeaveNoOneBehind: React.FC = () => {
       displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP[
-            isPurpleLeague ? 'LEAGUE_TYPE' : 'ROOT'
-          ]
-            .replace(':clubId', clubId)
-            .replace(':activityId', activityId)
-            .replace(
-              ':leagueType',
-              isPurpleLeague ? club?.league?.leagueTypeName?.toLowerCase() : ''
-            )
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
+            ':helpSection',
+            isPurpleLeague
+              ? 'Leave No One Behind - Purple'
+              : 'Leave No One Behind'
+          )
         )
       }
     >

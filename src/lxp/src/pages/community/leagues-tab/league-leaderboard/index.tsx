@@ -45,8 +45,8 @@ export const LeagueLeaderBoard: React.FC = () => {
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.LEAGUE.HELP.replace(':leagueId', leagueId).replace(
-            ':activityId',
-            'leagues'
+            ':helpSection',
+            'Coach'
           )
         )
       }
