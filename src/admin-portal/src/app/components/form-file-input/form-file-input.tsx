@@ -7,8 +7,25 @@ import {
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { classNames } from '../../pages/users/components/users';
-import { Alert, LoadingSpinner } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogPosition,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { videoExtensions } from '../../utils/constants';
+
+import womanEmoji from '../../../assets/emojis/womanEmoji.png';
+import manEmoji from '../../../assets/emojis/manEmoji.png';
+import duckEmoji from '../../../assets/emojis/avatar_duck.png';
+import catEmoji from '../../../assets/emojis/avatar_cat.png';
+import leopardEmoji from '../../../assets/emojis/avatar_leopard.png';
+import dogEmoji from '../../../assets/emojis/avatar_dog.png';
+import penguinEmoji from '../../../assets/emojis/penguinEmoji.png';
+import monkeyEmoji from '../../../assets/emojis/avatar_monkey.png';
+import themesIcons from './components/themeIcons/themeIcons';
 
 export interface FileModel {
   fileName: string;
@@ -29,6 +46,7 @@ export interface FormFileInputProps {
   allowedFileSize?: number;
   isIconInput?: boolean;
   onChange?: (item: any) => void;
+  isThemeFormFile?: boolean;
 }
 
 const containerBaseStyle =
@@ -57,6 +75,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   allowedFileSize,
   isIconInput,
   onChange,
+  isThemeFormFile,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -64,6 +83,9 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   const [isLoading, setLoading] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
   const [uploadTypes, setUploadedTypes] = useState('');
+  const [themeIconValue, setThemeIconValue] = useState<any>('');
+  const [iconSelected, setIconSelected] = useState(false);
+  const [iconIndex, setIconIndex] = useState<number>();
   const accepetedFormatsWithoutLastItem = acceptedFormats?.slice(0, -1);
   const accepetedFormatsFormatted = accepetedFormatsWithoutLastItem?.map(
     (item) => {
@@ -71,6 +93,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     }
   );
   const lastAcceptedFormat = acceptedFormats?.[acceptedFormats?.length - 1];
+  const [emojisSection, setEmojisSection] = useState(false);
 
   const isPdfExtension = acceptedFormats?.some((format) =>
     format.toLowerCase().includes('pdf')
@@ -90,7 +113,22 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     }
   }, [acceptedFormats, contentUrl, uploadTypes]);
 
-  const handleChange = (event: any) => {
+  const handleChange = async (event: any) => {
+    if (isThemeFormFile) {
+      const fileName = event?.target.src;
+      const response = await fetch(event?.target?.src);
+      const blob = await response.blob();
+      const iconFile = new File([blob], fileName, {
+        type: blob.type,
+      });
+
+      setLoading(true);
+      handleFile(iconFile);
+      setFileName(iconFile?.name);
+
+      return;
+    }
+
     if (event && event.target && event.target.files) {
       const firstFile = event.target.files[0];
       if (!firstFile) return;
@@ -297,7 +335,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             : classNames(getContainerStyle(), containerBaseStyle)
         }
         onClick={() => {
-          handleClick();
+          isThemeFormFile ? setEmojisSection(true) : handleClick();
         }}
         onDrop={(e) => {
           handleDrop(e);
@@ -405,6 +443,80 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           handleChange(e);
         }}
       />
+      <div className="flex items-center justify-center">
+        <Dialog
+          visible={emojisSection}
+          position={DialogPosition.Top}
+          className="h-9/12 absolute left-auto right-auto w-6/12"
+        >
+          <Typography
+            type={'h2'}
+            weight="bold"
+            color={'textMid'}
+            className="ml-6 mt-6"
+            text={'Search for an icon'}
+          />
+
+          <div className="w-dvw">
+            <div className="flex h-80 flex-wrap justify-center overflow-y-auto">
+              <div className="mt-8 grid w-9/12 grid-cols-6 justify-center gap-x-3 gap-y-3">
+                {!!themesIcons?.length &&
+                  themesIcons.map((item, index) => {
+                    return (
+                      <div
+                        onClick={(e) => setIconIndex(index)}
+                        key={`${item}-${index}`}
+                        className={`flex items-center justify-center ${
+                          iconSelected && index === iconIndex
+                            ? 'rounded-full border-2 border-black'
+                            : ''
+                        }`}
+                      >
+                        <img
+                          src={item}
+                          alt="emojis"
+                          id={String(index)}
+                          onClick={(e) => {
+                            setThemeIconValue(e);
+                            setIconSelected(true);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+            <div className="mt-14 flex w-full flex-col justify-center">
+              <div className="flex w-full justify-center ">
+                <Button
+                  type={'filled'}
+                  text={'Select icon'}
+                  color={'secondary'}
+                  textColor={'white'}
+                  className={'mb-2 w-11/12 rounded-2xl'}
+                  iconPosition={'start'}
+                  onClick={() => {
+                    handleChange(themeIconValue);
+                    setEmojisSection(false);
+                    setIconSelected(false);
+                  }}
+                />
+              </div>
+              <div className="flex w-full justify-center ">
+                <Button
+                  type={'outlined'}
+                  text={'Close'}
+                  color={'secondary'}
+                  textColor={'secondary'}
+                  className={'mb-8 w-11/12 rounded-2xl'}
+                  iconPosition={'start'}
+                  onClick={() => setEmojisSection(false)}
+                />
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      </div>
     </>
   );
 };
