@@ -3,10 +3,20 @@ import {
   ContentDefinitionModelDto,
   ContentValueDto,
   camelCaseToSentanceCase,
+  useDialog,
 } from '@ecdlink/core';
-import { CheckboxGroup, FormInput, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  CheckboxGroup,
+  DialogPosition,
+  FormInput,
+  Typography,
+} from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldType } from '../../../../../../../content-management/content-management-models';
+import {
+  DynamicFormTemplate,
+  FieldType,
+} from '../../../../../../../content-management/content-management-models';
 import Pagination from '../../../../../../../../components/pagination/pagination';
 
 export interface DynamicSelectorProps {
@@ -20,6 +30,9 @@ export interface DynamicSelectorProps {
   contentId?: number;
   setChangedCategory?: (item: any[]) => void;
   changedCategory?: any[];
+  template?: DynamicFormTemplate;
+  setSelectedLanguageId?: (item: string) => void;
+  cancelEdit?: () => void;
 }
 
 const DynamicSelector: React.FC<DynamicSelectorProps> = ({
@@ -32,7 +45,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   isSkillType,
   contentId,
   setChangedCategory,
-  changedCategory,
+  template,
+  setSelectedLanguageId,
+  cancelEdit,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -103,6 +118,26 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }
   `;
 
+  const subcategoriesQuery = gql`
+    query GetAllProgressTrackingSubCategory($localeId: String) {
+      GetAllProgressTrackingSubCategory(localeId: $localeId) {
+        id
+        skills {
+          id
+          __typename
+          name
+          level {
+            id
+          }
+        }
+        imageUrl
+        description
+        name
+        __typename
+      }
+    }
+  `;
+
   const { data: contentData } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
@@ -110,51 +145,62 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     },
   });
 
-  const {
-    data: levelsContentData,
-    refetch: refetchLevelsContent,
-    loading: loadingLevelsContent,
-  } = useQuery(levelsQuery, {
+  const { data: levelsContentData } = useQuery(levelsQuery, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: languageId,
     },
   });
 
-  const {
-    data: categoriesContentData,
-    refetch: refetchCategoriesContent,
-    loading: loadingCategoriesContent,
-  } = useQuery(categoriesQuery, {
+  const { data: categoriesContentData } = useQuery(categoriesQuery, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: languageId,
     },
   });
 
+  const { data: subcategoriesContentData } = useQuery(subcategoriesQuery, {
+    fetchPolicy: 'network-only',
+    variables: {
+      localeId: template?.fields?.[0]?.selectedLanguageId,
+    },
+  });
+
+  const dialog = useDialog();
   const categories = categoriesContentData?.GetAllProgressTrackingCategory;
   const currentCategory = categories?.find((cat) => cat?.id === contentId);
 
-  const subCategories = currentCategory?.subCategories;
+  const selectedLanguageSubCat =
+    subcategoriesContentData?.GetAllProgressTrackingSubCategory?.filter(
+      (el) => {
+        return currentCategory?.subCategories.some((f) => {
+          return f.id === el.id;
+        });
+      }
+    );
+
+  const subCategories = selectedLanguageSubCat;
+
   const levels = levelsContentData?.GetAllProgressTrackingLevel;
   const movingOnSubCategories = subCategories?.map((sub) => {
     return {
       ...sub,
-      skills: sub.skills.filter((skill) => skill?.level?.[0]?.id === 657),
+      skills: sub?.skills?.filter((skill) => skill?.level?.[0]?.id === 657),
     };
   });
   const advancingFurtherSubCategories = subCategories?.map((sub) => {
     return {
       ...sub,
-      skills: sub.skills.filter((skill) => skill?.level?.[0]?.id === 658),
+      skills: sub?.skills?.filter((skill) => skill?.level?.[0]?.id === 658),
     };
   });
   const towardsGradeRSubCategories = subCategories?.map((sub) => {
     return {
       ...sub,
-      skills: sub.skills.filter((skill) => skill?.level?.[0]?.id === 659),
+      skills: sub?.skills?.filter((skill) => skill?.level?.[0]?.id === 659),
     };
   });
+
   const [handleInitialValue, setHandleInitialValue] = useState(true);
 
   const handleNumberOfInputs = (sub) => {
@@ -391,6 +437,68 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       setChangedCategory(changedArr);
     }
   }, [changedArr, setChangedCategory]);
+
+  const displayEmptySkills = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, close) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="You need to add translations for the category & sub-categories first."
+            icon={'ExclamationIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
+            actionButtons={[
+              {
+                text: 'Add category translation”',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  cancelEdit();
+                  close();
+                },
+                leadingIcon: 'PencilIcon',
+              },
+              {
+                text: 'Cancel',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  close && close();
+                  setSelectedLanguageId(languageId);
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [dialog]);
+
+  useEffect(() => {
+    if (
+      subcategoriesContentData?.GetAllProgressTrackingSubCategory?.length > 0 &&
+      movingOnState &&
+      movingOnState?.subCategories?.[0]?.name === null &&
+      advancingFurtherState &&
+      advancingFurtherState?.subCategories?.[0]?.name === null &&
+      towardsGradeRState &&
+      towardsGradeRState?.subCategories?.[0]?.name === null &&
+      !handleInitialValue
+    ) {
+      displayEmptySkills();
+    }
+  }, [
+    advancingFurtherState,
+    movingOnState,
+    subcategoriesContentData?.GetAllProgressTrackingSubCategory,
+    towardsGradeRState,
+    handleInitialValue,
+  ]);
 
   if (tempData && displayFields) {
     return (

@@ -9,7 +9,7 @@ import {
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
@@ -313,7 +313,7 @@ export default function EditCategory({
 
     cancelEdit();
   };
-
+  console.log({ content, contentType, contentValues });
   if (
     contentType &&
     contentValues &&
@@ -386,6 +386,7 @@ export default function EditCategory({
               defaultLanguageId={defaultLanguageId}
               setFilteredSubcategories={setFilteredSubcategories}
               allowedFileSize={allowedFileSize}
+              content={content}
             />
           </div>
 

@@ -33,6 +33,7 @@ export interface CategoryFormProps {
   acceptedFileFormats?: string[];
   setFilteredSubcategories?: (item: any[]) => void;
   allowedFileSize?: number;
+  content?: any;
 }
 
 const contentWrapper = '';
@@ -45,6 +46,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   acceptedFileFormats,
   setFilteredSubcategories,
   allowedFileSize,
+  content,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -53,7 +55,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   };
 
   const [fields, setFields] = useState<any>();
-
+  console.log(template.fields);
   useEffect(() => {
     if (template) {
       const fields = renderFields(template.fields);
@@ -132,6 +134,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                     setSelectedItems={(value) => onStateChange(propName, value)}
                     acceptedFileFormats={acceptedFileFormats}
                     setFilteredSubcategories={setFilteredSubcategories}
+                    content={content}
                   />
                 </div>
               </div>

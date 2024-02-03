@@ -37,6 +37,7 @@ export interface ContentViewProps {
   savedContent: () => void;
   cancelEdit?: () => void;
   cancelCompare?: () => void;
+  setSelectedLanguageId?: (item: string) => void;
 }
 
 export default function EditSkills({
@@ -49,6 +50,7 @@ export default function EditSkills({
   cancelEdit,
   savedContent,
   cancelCompare,
+  setSelectedLanguageId,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const { setNotification } = useNotifications();
@@ -507,6 +509,8 @@ export default function EditSkills({
               contentId={content?.id}
               setChangedCategory={setChangedCategory}
               changedCategory={changedCategory}
+              setSelectedLanguageId={setSelectedLanguageId}
+              cancelEdit={cancelEdit}
             />
           </div>
 
