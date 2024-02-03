@@ -79,9 +79,8 @@ export const UpdatePreschoolFee: React.FC = () => {
           notificationId: notification?.message?.reference ?? '',
         })
       );
-      history.push(ROUTES.DASHBOARD);
     }
-    history.goBack();
+    history.push(ROUTES.DASHBOARD);
   };
 
   return (
