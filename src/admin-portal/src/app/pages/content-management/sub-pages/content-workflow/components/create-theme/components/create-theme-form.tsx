@@ -109,6 +109,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                   returnFullUrl={true}
                   setValue={setValue}
                   allowedFileSize={allowedFileSize}
+                  isThemeFormFile={true}
                 />
               </div>
             </div>
