@@ -313,7 +313,7 @@ export default function EditCategory({
 
     cancelEdit();
   };
-  console.log({ content, contentType, contentValues });
+
   if (
     contentType &&
     contentValues &&

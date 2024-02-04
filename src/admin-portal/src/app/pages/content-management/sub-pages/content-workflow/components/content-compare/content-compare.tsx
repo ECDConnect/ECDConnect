@@ -14,7 +14,6 @@ import {
   ContentName,
 } from '../../../../content-management-models';
 import ContentEdit from '../content-edit/content-edit';
-import ContentView from '../content-view/content-view';
 import { XIcon } from '@heroicons/react/solid';
 import EditCategory from '../edit-category/edit-category';
 import CreateTheme from '../create-theme/create-theme';
@@ -80,8 +79,6 @@ export default function ContentCompare({
   };
 
   const handleNoDynamicForms = (type: string) => {
-    console.log({ type });
-    console.log({ type });
     switch (type) {
       case 'StoryBook':
         return (
@@ -224,7 +221,6 @@ export default function ContentCompare({
   };
 
   const handleSecondLanguageNoDynamicForms = (type: string) => {
-    console.log({ type });
     switch (type) {
       case 'StoryBook':
         return (
@@ -338,17 +334,7 @@ export default function ContentCompare({
         return null;
     }
   };
-  console.log(getOrderedContentValues(currentContent?.contentValues));
-  console.log({ contentView });
-  console.log({ currentContent });
-  console.log(contentView && languages && currentContent);
-  console.log(contentType?.name);
-  console.log(
-    contentType?.name === ContentName.StoryBook ||
-      contentType?.name === ContentName.Theme ||
-      contentType?.name === ContentName.ProgressTrackingCategory ||
-      contentType?.name === ContentName.ProgressTrackingSkill
-  );
+
   if (
     (contentView && languages && currentContent) ||
     (contentType?.name === ContentName.ProgressTrackingSkill &&

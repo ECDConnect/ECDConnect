@@ -61,9 +61,7 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
         }
       }
   `;
-  console.log({ subcategoriesFilt });
-  console.log({ currentIds });
-  console.log(contentValue);
+
   const { data: contentData } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
@@ -76,7 +74,6 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
   const contentSubcategories = content?.subCategories?.map((item) =>
     String(item?.id)
   );
-  console.log({ contentSubcategories });
 
   useEffect(() => {
     if (contentSubcategories) {
@@ -117,11 +114,9 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentData, isReview, currentIds]);
-  console.log({ defaultIds });
+
   useEffect(() => {
     if (tableData) {
-      console.log({ tableData });
-      console.log({ currentIds });
       if (currentIds) {
         setsubcategoriesFilt(
           tableData?.filter((item) =>

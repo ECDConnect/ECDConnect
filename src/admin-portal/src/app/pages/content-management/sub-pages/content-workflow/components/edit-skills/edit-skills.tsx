@@ -449,7 +449,7 @@ export default function EditSkills({
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+              {/* {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -458,7 +458,7 @@ export default function EditSkills({
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
                 </button>
-              )}
+              )} */}
 
               {!!cancelEdit && (
                 <button
@@ -492,14 +492,6 @@ export default function EditSkills({
                 type="warning"
               />
             )}
-
-            {/* <DynamicForm
-              template={template}
-              handleform={handleform}
-              setValue={setValue}
-              defaultLanguageId={defaultLanguageId}
-              acceptedFileFormats={acceptedFileFormats}
-            /> */}
             <EditSkillsForm
               template={template}
               handleform={handleform}

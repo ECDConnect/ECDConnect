@@ -7,7 +7,6 @@ import {
 } from '@ecdlink/core';
 import {
   ActionModal,
-  CheckboxGroup,
   DialogPosition,
   FormInput,
   Typography,
@@ -17,7 +16,6 @@ import {
   DynamicFormTemplate,
   FieldType,
 } from '../../../../../../../content-management/content-management-models';
-import Pagination from '../../../../../../../../components/pagination/pagination';
 
 export interface DynamicSelectorProps {
   contentValue?: ContentValueDto;

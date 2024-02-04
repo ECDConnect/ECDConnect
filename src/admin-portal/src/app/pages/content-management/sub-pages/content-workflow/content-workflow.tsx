@@ -115,8 +115,6 @@ export default function ContentWorkflow({
     return orderedList;
   };
 
-  console.log(getOrderedContentValues(currentContent?.contentValues));
-
   const handleNoDynamicForms = (type: string) => {
     switch (type) {
       case 'StoryBook':
