@@ -1350,8 +1350,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (traineeTimeline.StarterLicenseColor == null || traineeTimeline.StarterLicenseColor == warningString) warningCount++;
                         if (traineeTimeline.ThreeChildrenRegisteredColor == null || traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
 
-                        if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28) ||
-                            traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-28))
+                        if (traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-28)) 
                         {
                             if (warningCount > 0)
                             {
@@ -1365,7 +1364,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 continue;
                             }
                         }
-                        else if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-14))
+                        else if (traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-14))
                         {
                             if (warningCount > 0)
                             {
@@ -1385,12 +1384,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) overdueCount++;
+                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) 
+                            && practitioner.IsOnStipend.HasValue && practitioner.IsOnStipend.Value) overdueCount++;
                             if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
 
-                            if (overdueCount > 2)
+                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now &&
+                                traineeTimeline.SSCoachVisitDone == false) {
+                                notification.Subject = "SmartSpace visit overdue";
+                                notification.Icon = MetricsIconEnum.Error.ToString();
+                                notification.Color = MetricsColorEnum.Error.ToString();
+                                notification.Message = "";
+                                notification.Notes = "";
+                                notification.GroupingName = "SmartSpace visit overdue";
+                                yield return notification;
+                                continue;
+                            }
+                             if (traineeTimeline.SSCoachVisitDate > DateTime.Now &&
+                                traineeTimeline.SSCoachVisitDone == false) {
+                                notification.Subject = $"{((DateTime)traineeTimeline.SSCoachVisitDate).ToString("MMMM dd", CultureInfo.InvariantCulture)}, SmartSpace visit due";
+                                notification.Icon = MetricsIconEnum.Error.ToString();
+                                notification.Color = MetricsColorEnum.Error.ToString();
+                                notification.Message = "";
+                                notification.Notes = "";
+                                notification.GroupingName = "SmartSpace visit overdue";
+                                yield return notification;
+                                continue;
+                            }
+
+                            if (overdueCount > 0)
                             {
                                 notification.Subject = $"{overdueCount} trainee onboarding tasks overdue";
                                 notification.Icon = MetricsIconEnum.Error.ToString();
