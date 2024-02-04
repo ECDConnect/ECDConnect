@@ -23,8 +23,6 @@ using ECDLink.SmartStart.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using EcdLink.Api.CoreApi.GraphApi.Mutations;
-using OpenMcdf;
 
 namespace EcdLink.Api.CoreApi.Services
 {
