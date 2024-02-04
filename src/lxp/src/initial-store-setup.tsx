@@ -63,6 +63,7 @@ import { calendarThunkActions } from './store/calendar';
 import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
+import { statementsThunkActions } from '@store/statements';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -334,6 +335,23 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             childrenForPractitionerThunkActions?.getChildrenForPractitioner({
               id: userData?.id!,
             })
+          ).unwrap())();
+        const startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        (async () =>
+          await appDispatch(
+            statementsThunkActions.getIncomeStatements({
+              startDate: startDate,
+              endDate: undefined,
+            })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            statementsThunkActions.getUnsubmittedIncomeItems({})
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            statementsThunkActions.getUnsubmittedExpenseItems({})
           ).unwrap())();
       }
     }
