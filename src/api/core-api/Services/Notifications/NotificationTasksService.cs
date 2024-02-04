@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
+using OpenMcdf;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -285,7 +286,8 @@ namespace EcdLink.Api.CoreApi.Services
             });
             foreach (var item in principals)
             {
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UpdatePreschoolFee, DateTime.Now, item.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), true);
+                if (item.IsActive == true && (item.IsPrincipal == true || item.IsFundaAppAdmin == true))
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UpdatePreschoolFee, DateTime.Now, item.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), true);
             }
         }
 
