@@ -37,6 +37,7 @@ export interface ContentViewProps {
   savedContent: () => void;
   cancelEdit?: () => void;
   cancelCompare?: () => void;
+  setSelectedLanguageId?: (item: string) => void;
 }
 
 export default function EditSkills({
@@ -49,6 +50,7 @@ export default function EditSkills({
   cancelEdit,
   savedContent,
   cancelCompare,
+  setSelectedLanguageId,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const { setNotification } = useNotifications();
@@ -447,7 +449,7 @@ export default function EditSkills({
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+              {/* {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -456,7 +458,7 @@ export default function EditSkills({
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
                 </button>
-              )}
+              )} */}
 
               {!!cancelEdit && (
                 <button
@@ -490,14 +492,6 @@ export default function EditSkills({
                 type="warning"
               />
             )}
-
-            {/* <DynamicForm
-              template={template}
-              handleform={handleform}
-              setValue={setValue}
-              defaultLanguageId={defaultLanguageId}
-              acceptedFileFormats={acceptedFileFormats}
-            /> */}
             <EditSkillsForm
               template={template}
               handleform={handleform}
@@ -507,6 +501,8 @@ export default function EditSkills({
               contentId={content?.id}
               setChangedCategory={setChangedCategory}
               changedCategory={changedCategory}
+              setSelectedLanguageId={setSelectedLanguageId}
+              cancelEdit={cancelEdit}
             />
           </div>
 

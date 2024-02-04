@@ -16,6 +16,8 @@ export interface EditSkillsFormProps {
   contentId?: number;
   setChangedCategory?: (item: any[]) => void;
   changedCategory?: any[];
+  setSelectedLanguageId?: (item: string) => void;
+  cancelEdit?: () => void;
 }
 
 const contentWrapper = '';
@@ -29,6 +31,8 @@ const EditSkillsForm: React.FC<EditSkillsFormProps> = ({
   contentId,
   setChangedCategory,
   changedCategory,
+  setSelectedLanguageId,
+  cancelEdit,
 }) => {
   const { register } = handleform;
 
@@ -84,6 +88,9 @@ const EditSkillsForm: React.FC<EditSkillsFormProps> = ({
                   contentId={contentId}
                   setChangedCategory={setChangedCategory}
                   changedCategory={changedCategory}
+                  template={template}
+                  setSelectedLanguageId={setSelectedLanguageId}
+                  cancelEdit={cancelEdit}
                 />
               </div>
             </div>
