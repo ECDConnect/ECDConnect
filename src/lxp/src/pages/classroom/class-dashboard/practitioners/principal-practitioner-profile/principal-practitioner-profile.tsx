@@ -77,9 +77,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const validAbsentee = practitionerAbsentees?.filter(
     (item) =>
-      !isPast(new Date(item?.absentDateEnd as string)) ||
-      (isToday(new Date(item?.absentDate as string)) &&
-        item?.reason !== 'Practitioner removed from programme')
+      (!isPast(new Date(item?.absentDateEnd as string)) ||
+        isToday(new Date(item?.absentDate as string))) &&
+      item?.reason !== 'Practitioner removed from programme'
   );
 
   const currentDates = validAbsentee?.map((item) => {
