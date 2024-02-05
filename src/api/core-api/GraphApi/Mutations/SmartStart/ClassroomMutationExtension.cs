@@ -20,7 +20,6 @@ using ECDLink.Abstractrions.Constants;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using Microsoft.AspNetCore.Identity;
-using NPOI.POIFS.Properties;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
