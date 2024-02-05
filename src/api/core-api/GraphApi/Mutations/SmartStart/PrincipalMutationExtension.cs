@@ -3,11 +3,13 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
+using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
@@ -18,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HotChocolate.Execution;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -107,19 +110,54 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return null;
         }
 
+        private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
+        {
+            return string.IsNullOrWhiteSpace(@new) ? original : @new;
+        }
+
         public ApplicationUser UpdatePractitionerContactInfo([Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] UserManager<ApplicationUser> userManager,
+            [Service] IHttpContextAccessor httpContextAccessor,
             string practitionerId, string firstName, string lastName, string phoneNumber, string email)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            //update users nicknames
+
             var user = userManager.FindByIdAsync(practitionerId).Result;
-            user.NickFirstName = firstName;
-            user.NickSurname = lastName;
-            user.NickFullName = firstName + " " + lastName;
-            user.PhoneNumber = phoneNumber;
-            user.Email = email;
+            var currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+
+            if (user is null || currentUserId is null)
+                throw new QueryException("User not found.");
+
+            //audit user changes
+            List<AuditChanges> auditFields = new List<AuditChanges>();
+
+            if (phoneNumber != user.PhoneNumber && !string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = phoneNumber });
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, phoneNumber));
+                user.PendingPhoneNumber = null;
+            }
+
+            if (user.Email != email && !string.IsNullOrWhiteSpace(email) && user.Id == currentUserId)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = email });
+                user.Email = email;
+                user.EmailConfirmed = false;
+            }
+
+            if (user.NickFirstName != firstName && !string.IsNullOrWhiteSpace(firstName))
+            {
+                user.NickFirstName = firstName;
+            }
+
+            if (user.NickSurname != lastName && !string.IsNullOrWhiteSpace(lastName))
+            {
+                user.NickSurname = lastName;
+            }
+
+            user.NickFullName = user.NickFirstName + " " + user.NickSurname;
+            user.UpdatedDate = DateTime.UtcNow;
 
             userManager.UpdateAsync(user);
 
