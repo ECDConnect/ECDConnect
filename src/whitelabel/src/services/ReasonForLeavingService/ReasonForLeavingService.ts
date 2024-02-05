@@ -12,12 +12,12 @@ class ReasonForLeavingService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query {
-          GetAllReasonForLeaving {
-            id
-            description      
-          }
+      query GetAllReasonForLeaving($isActive: Boolean = true){
+        GetAllReasonForLeaving(where: { isActive: { eq: $isActive } }) {
+          id
+          description      
         }
+      }
           `,
     });
 

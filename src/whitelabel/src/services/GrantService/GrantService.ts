@@ -12,8 +12,8 @@ class GrantService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query {
-          GetAllGrant {
+        query GetAllGrant($isActive: Boolean = true) {
+          GetAllGrant(where: { isActive: { eq: $isActive } }) {
             id
             description
           }
