@@ -200,6 +200,7 @@ export const PractitionerProfile: React.FC = () => {
         onActionClick: () => {
           dialog({
             position: DialogPosition.Bottom,
+            blocking: true,
             render: (onSubmit, onCancel) => {
               return (
                 <OfflineSyncModal

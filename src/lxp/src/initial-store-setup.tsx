@@ -68,7 +68,7 @@ import { statementsThunkActions } from '@store/statements';
 type IntialStoreSetupContextValues = {
   initloading: boolean;
   initStoreSetup: () => Promise<void>;
-  resetAppStore: (showLoading?: boolean) => Promise<void>;
+  resetAppStore: (showLoading?: boolean, isSync?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
@@ -110,12 +110,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(authActions.resetAuthState());
   };
 
-  const resetAppStore = async (showLoading = true) => {
+  const resetAppStore = async (showLoading = true, isSync = false) => {
     if (showLoading) {
       setInitLoading(true);
     }
     await resetStaticStoreSetup();
-    await resetAdditionalStoreSetup();
+    await resetAdditionalStoreSetup(isSync);
     if (showLoading) {
       setInitLoading(false);
     }
@@ -135,10 +135,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(programmeActions.resetProgrammeState());
   };
 
-  const resetAdditionalStoreSetup = async () => {
+  const resetAdditionalStoreSetup = async (isSync?: boolean) => {
+    if (!isSync) {
+      appDispatch(userActions.resetUserState());
+    }
     appDispatch(notesActions.resetNotesState());
     appDispatch(classroomsActions.resetClassroomState());
-    appDispatch(userActions.resetUserState());
     appDispatch(coachActions.resetCoachState());
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
