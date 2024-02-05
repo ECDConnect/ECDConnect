@@ -585,7 +585,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"WasSuccessful\":" + wasSuccessful + ",");
                     jsonPutPostString.AppendLine("\"IsFranchiseeHittingChildren\":" + (isFranchiseeHittingChildren == null ? "false" : isFranchiseeHittingChildren) + ",");
                     jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + (isSmartSpaceStillFine == null ? "false": isSmartSpaceStillFine) + ",");
-                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe) + ",");
+                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe == "false" ? "true" : "false" ) + ",");
                     jsonPutPostString.AppendLine("\"IsThereTooManyChildren\":" + (isThereTooManyChildren == null ? "false" : isThereTooManyChildren) + ",");
                     jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
                     jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
