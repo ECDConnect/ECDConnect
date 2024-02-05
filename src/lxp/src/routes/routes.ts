@@ -95,6 +95,7 @@ const ROUTES = {
     PRACTITIONER_REMOVE_FROM_PROGRAMME: '/remove-practitioner-from-programme',
     SWAP_PRINCIPAL: '/swap-principal',
     NOTES: '/notes',
+    CONTACT_PRACTITIONER: '/contact-practitioner',
   }),
   PRACTITIONER: addPrefix('/practitioner', {
     ABOUT: addPrefix('/about', {

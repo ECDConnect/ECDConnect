@@ -66,6 +66,7 @@ import { Logout } from '@/pages/auth/logout/logout';
 import ReassignClass from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class';
 import { AddPractitioner } from '@/pages/principal/components/add-practitioner/add-practitioner';
 import ConfirmPractitioner from '@/pages/principal/components/add-practitioner/confirm-practitioner';
+import { ContactPractitioner } from '@/pages/principal/components/contact-practitioner/contact-practitioner';
 import { PractitionerSignature } from '@/pages/practitioner/practitioner-about/components/practitioner-signature/practitioner-signature';
 import { CoachContactPractitioner } from '@/pages/coach/practitioner-profile-info/coach-contact-practitioner/coach-contact-practitioner';
 import Business from '@/pages/business/business';
@@ -477,6 +478,11 @@ const AuthRoutes: React.FC = () => {
         component={PrincipalPractitionerChildList}
       />
       <Route exact path={ROUTES.PRINCIPAL.NOTES} component={PrincipalNotes} />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.CONTACT_PRACTITIONER}
+        component={ContactPractitioner}
+      />
       <Route
         exact
         path={ROUTES.TRAINEE.SETUP_TRAINEE}
