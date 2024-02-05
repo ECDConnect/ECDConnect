@@ -209,6 +209,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         item?.absentDate !== item?.absentDateEnd)
   );
 
+  const classroomGroupsForUser = useSelector(
+    classroomsSelectors.getClassroomGroupsForUser(practitionerId || '')
+  );
+
   const currentDates = validAbsenteesDates?.map((item) => {
     return item?.absentDate as string;
   });
@@ -365,14 +369,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     }
   }, []);
 
-  // TODO - This should be saved to the store
-  // Actually might be in the store, why are we fetching it, to bascially just check if they have a class
   const classroomsDetailsForPractitioner = async () => {
-    const classroomDetails = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
-    setPractitionerClassroomDetails(classroomDetails);
-    return classroomDetails;
+    setPractitionerClassroomDetails(classroomGroupsForUser);
+
+    return classroomGroupsForUser;
   };
 
   useEffect(() => {
@@ -392,6 +392,42 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         );
       },
     });
+  };
+
+  const navigateClassroom = () => {
+    if (isOnline) {
+      history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
+        practitionerId,
+      });
+    } else {
+      showOnlineOnly();
+    }
+  };
+
+  const navigateBusiness = () => {
+    if (isOnline) {
+      history.push(
+        ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
+          ':userId',
+          practitionerId
+        )
+      );
+    } else {
+      showOnlineOnly();
+    }
+  };
+
+  const navigateJourney = () => {
+    if (isOnline) {
+      history.push(
+        ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+          ':practitionerId',
+          practitionerId
+        )
+      );
+    } else {
+      showOnlineOnly();
+    }
   };
 
   const listItems = [
@@ -416,12 +452,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       onActionClick: () =>
         onboardingNotCompleted && isTrainee
           ? setShowTraineeDashboard(true)
-          : history.push(
-              ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
-                ':practitionerId',
-                practitionerId
-              )
-            ),
+          : navigateJourney(),
       classNames: 'bg-uiBg',
     },
     {
@@ -442,10 +473,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         },
       },
       text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
-          practitionerId,
-        }),
+      onActionClick: () => navigateClassroom(),
       classNames: 'bg-uiBg',
     },
   ];
@@ -543,13 +571,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         },
       },
       text: '1',
-      onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
-            ':userId',
-            practitionerId
-          )
-        ),
+      onActionClick: () => navigateBusiness(),
       classNames: 'bg-uiBg',
     });
   }
