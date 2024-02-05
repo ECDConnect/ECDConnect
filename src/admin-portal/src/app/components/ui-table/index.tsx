@@ -31,6 +31,7 @@ import {
 import { ContentTypes } from '../../constants/content-management';
 import { UiTableProps } from './type';
 import AlertModal from '../dialog-alert/dialog-alert';
+import { StoryActivitiesTypes } from '../../pages/content-management/content-management-models';
 
 export default function UiTable({
   columns = [],
@@ -351,101 +352,48 @@ export default function UiTable({
           </div>
         </div>
       );
-    } else if (display_value === 'Story book') {
-      const splitValues = display_value?.split(', ');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
-            return (
-              <div
-                key={item}
-                className={`${
-                  item === 'Story book'
-                    ? 'bg-secondary'
-                    : item === 'Read aloud'
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else if (display_value === 'Read aloud') {
-      const splitValues = display_value?.split(', ');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
-            return (
-              <div
-                className={`${
-                  item === 'Story book'
-                    ? 'bg-secondary'
-                    : item === 'Read aloud'
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else if (display_value === 'Other') {
-      const splitValues = display_value?.split(', ');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
-            return (
-              <div
-                className={`${
-                  item === 'Story book'
-                    ? 'bg-secondary'
-                    : item === 'Read aloud'
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
     } else if (
-      display_value === 'Story book, Read aloud, other' ||
-      display_value === 'Story book,Read aloud,other'
+      column.field === 'subType' &&
+      (display_value
+        .toString()
+        .toLowerCase()
+        .indexOf(StoryActivitiesTypes.Storybook.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.ReadAloud.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.Other.toLowerCase()) !== -1)
     ) {
-      const splitValues =
-        display_value === 'Story book,Read aloud,other'
-          ? display_value?.split(',')
-          : display_value?.split(', ');
+      // remove duplicates and trim
+      var arr = display_value.split(',');
+      display_value = arr
+        .filter(function (value, index, self) {
+          return self.indexOf(value.trim()) === index;
+        })
+        .join(',');
 
+      const splitValues = display_value?.split(',');
       rowValue = (
         <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
+          {splitValues?.map((item, index) => {
             return (
               <div
-                key={item}
+                key={'sb_' + index}
                 className={`${
-                  item === 'Story book'
+                  item.toString().toLowerCase() ===
+                  StoryActivitiesTypes.Storybook.toLowerCase()
                     ? 'bg-secondary'
-                    : item === 'Read aloud'
+                    : item.toString().toLowerCase() ===
+                      StoryActivitiesTypes.ReadAloud.toLowerCase()
                     ? 'bg-darkBlue'
                     : 'bg-successMain'
                 } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
               >
                 <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                  {item.toString().charAt(0).toUpperCase() + item.slice(1)}
                 </span>
               </div>
             );
