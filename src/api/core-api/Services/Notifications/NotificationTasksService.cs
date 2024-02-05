@@ -23,7 +23,6 @@ using ECDLink.SmartStart.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using EcdLink.Api.CoreApi.GraphApi.Mutations;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -276,7 +275,7 @@ namespace EcdLink.Api.CoreApi.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
             //get all principals and FAAs
-            List<Practitioner> principals = practitionerRepo.GetAll().Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).ToList();
+            List<Practitioner> principals = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsRegistered == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).ToList();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
@@ -285,7 +284,8 @@ namespace EcdLink.Api.CoreApi.Services
             });
             foreach (var item in principals)
             {
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UpdatePreschoolFee, DateTime.Now, item.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), true);
+                if (item.IsActive == true && (item.IsPrincipal == true || item.IsFundaAppAdmin == true))
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UpdatePreschoolFee, DateTime.Now, item.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), true);
             }
         }
 
