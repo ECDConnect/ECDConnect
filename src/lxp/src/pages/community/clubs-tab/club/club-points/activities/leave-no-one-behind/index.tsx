@@ -160,7 +160,7 @@ export const LeaveNoOneBehind: React.FC = () => {
           image={AlienImage}
           title={`No SmartStarters in this club have a ${
             isCoach ? 'First PQA/re-accreditation' : 're-accreditation'
-          }  visit deadline this year`}
+          } visit deadline this year`}
           subTitle=""
         />
       );
@@ -185,8 +185,8 @@ export const LeaveNoOneBehind: React.FC = () => {
                     'PQAs/re-accreditations coming up later this year'
                   ) : (
                     <>
-                      <span className={`text-${color}`}>{item}</span> PQA
-                      re-accreditation
+                      <span className={`text-${color}`}>{item}</span>{' '}
+                      PQA/re-accreditation
                     </>
                   )}
                   :
