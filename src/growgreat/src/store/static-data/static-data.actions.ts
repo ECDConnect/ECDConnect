@@ -136,14 +136,18 @@ export const getLanguages = createAsyncThunk<
   ThunkApiType<RootState>
 >('getLanguages', async (_, { getState, rejectWithValue }) => {
   const {
+    auth: { userAuth },
     staticData: { languages: languagesCache },
   } = getState();
 
   if (!languagesCache) {
     try {
       let languages: LanguageDto[] | undefined;
-
-      languages = await new LanguageService().getLanguages();
+      if (userAuth?.auth_token) {
+        languages = await new LanguageService(
+          userAuth?.auth_token
+        ).getLanguages();
+      }
 
       if (!languages) {
         return rejectWithValue('Error Languages');
