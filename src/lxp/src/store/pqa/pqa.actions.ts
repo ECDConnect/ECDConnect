@@ -16,7 +16,6 @@ export const PqaActions = {
   GET_PRACTITIONER_TIMELINE: 'getPractitionerTimeline',
   GET_VISIT_DATA_FOR_VISIT_ID: 'getVisitDataForVisitId',
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
-  ADD_RE_ACCREDITATION_VISIT_FORM_DATA: 'addReAccreditationVisitData',
   ADD_SUPPORT_VISIT_FORM_DATA: 'addSupportVisitFormData',
   ADD_REQUESTED_SUPPORT_VISIT_FORM_DATA: 'addRequestedSupportVisitFormData',
   ADD_FOLLOW_UP_VISIT_FORM_DATA: 'addFollowUpVisitFormData',
@@ -41,6 +40,7 @@ export const addVisitFormData = createAsyncThunk<
         pqaFormData,
         followUpVisitFormData,
         reAccreditationFollowUpVisitFormData,
+        reAccreditationFormData,
         selfAssessmentFormData,
       },
     } = getState();
@@ -122,49 +122,21 @@ export const addVisitFormData = createAsyncThunk<
           promises = [...promises, ...selfAssessmentPromises];
         }
 
-        return promises?.length && Promise.all(promises);
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const addReAccreditationVisitData = createAsyncThunk<
-  any,
-  MergedCmsVisitDataInputModelInput | undefined,
-  ThunkApiType<RootState>
->(
-  PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA,
-  async (input, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      pqa: { reAccreditationFormData },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        if (input && !!Object.keys(input).length) {
-          const { syncId, ...payload } = input;
-
-          const response = await new PQAService(
-            userAuth?.auth_token
-          ).addReAccreditationVisitData(payload);
-
-          return response;
-        }
-
         if (!!reAccreditationFormData?.length) {
-          const promises = reAccreditationFormData?.map(async (item) => {
-            const { syncId, ...payload } = item.formData;
+          const reAccreditationPromises = reAccreditationFormData?.map(
+            async (item) => {
+              const { syncId, ...payload } = item.formData;
 
-            await new PQAService(
-              userAuth?.auth_token
-            ).addReAccreditationVisitData(payload);
-          });
+              return await new PQAService(userAuth?.auth_token).addVisitData(
+                payload
+              );
+            }
+          );
 
-          return promises?.length && Promise.all(promises);
+          promises = [...promises, ...reAccreditationPromises];
         }
+
+        return promises?.length && Promise.all(promises);
       }
     } catch (err) {
       return rejectWithValue(err);

@@ -115,16 +115,9 @@ export const CoachPractitionerJourney = () => {
     'pqa',
     PqaActions.ADD_VISIT_FORM_DATA
   );
-  const { isLoading: isAddingReAccreditationVisit } = useThunkFetchCall(
-    'pqa',
-    PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA
-  );
 
   const isLoadingSyncData =
-    isAddingSupportVisit ||
-    isAddingRequestedSupportVisit ||
-    isAddingVisit ||
-    isAddingReAccreditationVisit;
+    isAddingSupportVisit || isAddingRequestedSupportVisit || isAddingVisit;
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -476,10 +469,8 @@ export const CoachPractitionerJourney = () => {
   };
 
   const getTimeline = useCallback(async () => {
-    if (!timeline) {
-      await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-    }
-  }, [practitionerId, timeline]);
+    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  }, [appDispatch, practitionerId]);
 
   const syncData = useCallback(async () => {
     if (!isOnline) return;
@@ -487,10 +478,9 @@ export const CoachPractitionerJourney = () => {
     await appDispatch(pqaThunkActions.addSupportVisitFormData());
     await appDispatch(pqaThunkActions.addRequestedSupportVisitFormData());
     await appDispatch(pqaThunkActions.addVisitFormData());
-    await appDispatch(pqaThunkActions.addReAccreditationVisitData());
 
     getTimeline();
-  }, [getTimeline, isOnline]);
+  }, [appDispatch, getTimeline, isOnline]);
 
   useLayoutEffect(() => {
     if (selectedForm) {
