@@ -75,13 +75,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const practitionerAbsentees = practitioner?.absentees;
 
-  const validAbsenteesDates = practitionerAbsentees?.filter(
+  const validAbsentee = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDateEnd as string)) ||
-      isToday(new Date(item?.absentDate as string))
+      (isToday(new Date(item?.absentDate as string)) &&
+        item?.reason !== 'Practitioner removed from programme')
   );
 
-  const currentDates = validAbsenteesDates?.map((item) => {
+  const currentDates = validAbsentee?.map((item) => {
     return item?.absentDate as string;
   });
 
@@ -89,7 +90,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     return Date.parse(a) - Date.parse(b);
   });
 
-  const currentAbsentee = validAbsenteesDates?.find(
+  const currentAbsentee = validAbsentee?.find(
     (item) => item?.absentDate === orderedDates?.[0]
   ) as AbsenteeDto;
   const allAbsenteeClasses = practitionerAbsentees?.filter(
@@ -99,9 +100,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   );
 
   const classesWithAbsence =
-    validAbsenteesDates &&
+    validAbsentee &&
     Object.values(
-      validAbsenteesDates?.reduce(
+      validAbsentee?.reduce(
         (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
         {}
       )
@@ -193,7 +194,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const handleAbsenceModal = useCallback(
     (item: AbsenteeDto) => {
-      const absenceClasses = validAbsenteesDates?.filter(
+      const absenceClasses = validAbsentee?.filter(
         (absence) => absence?.absenteeId === item?.absenteeId
       );
 
@@ -233,7 +234,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         ),
       });
     },
-    [dialog, handleReassignClass, practitionerUserId, validAbsenteesDates]
+    [dialog, handleReassignClass, practitionerUserId, validAbsentee]
   );
 
   useEffect(() => {
