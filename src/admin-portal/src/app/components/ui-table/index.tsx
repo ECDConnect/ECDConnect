@@ -31,6 +31,7 @@ import {
 import { ContentTypes } from '../../constants/content-management';
 import { UiTableProps } from './type';
 import AlertModal from '../dialog-alert/dialog-alert';
+import { StoryActivitiesTypes } from '../../pages/content-management/content-management-models';
 
 export default function UiTable({
   columns = [],
@@ -353,9 +354,18 @@ export default function UiTable({
       );
     } else if (
       column.field === 'subType' &&
-      (display_value.toString().toLowerCase().indexOf('story book') !== -1 ||
-        display_value.toString().toLowerCase().indexOf('read aload') !== -1 ||
-        display_value.toString().toLowerCase().indexOf('other') !== -1)
+      (display_value
+        .toString()
+        .toLowerCase()
+        .indexOf(StoryActivitiesTypes.Storybook.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.ReadAloud.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.Other.toLowerCase()) !== -1)
     ) {
       // remove duplicates and trim
       var arr = display_value.split(',');
@@ -373,9 +383,11 @@ export default function UiTable({
               <div
                 key={'sb_' + index}
                 className={`${
-                  item === 'Story book'
+                  item.toString().toLowerCase() ===
+                  StoryActivitiesTypes.Storybook.toLowerCase()
                     ? 'bg-secondary'
-                    : item === 'Read aloud'
+                    : item.toString().toLowerCase() ===
+                      StoryActivitiesTypes.ReadAloud.toLowerCase()
                     ? 'bg-darkBlue'
                     : 'bg-successMain'
                 } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
