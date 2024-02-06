@@ -43,5 +43,14 @@ update "MessageLog" set "Action" = '{"url":"/practitioner/profile/edit"}' where 
 
 INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NULL,'hub','principal-changed',' Accept the consent agreement to continue.','258a15e6-3736-45ea-875c-48d9377de4c8','[[ProgrammeName]] has a new [[PrincipalOrFAA]]','[[AcceptAgreement]]','Accept agreement',NULL,NULL,12,NULL);
-	INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NULL,'push','principal-changed',' Accept the consent agreement to continue.','258a15e6-3736-45ea-875c-48d9377de4c8','[[ProgrammeName]] has a new [[PrincipalOrFAA]]','[[AcceptAgreement]]','Accept agreement',NULL,NULL,12,NULL);
+
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NULL,'push','submit-daily-attendance','You have not submitted your attendance register for today. Submit attendance registers daily to [[IsStipendReceiverText]] get SmartStart points.','258a15e6-3736-45ea-875c-48d9377de4c8','Attendance register incomplete for today','[[SeeRegister]]','See register',NULL,NULL,26,NULL);
+
+	 	update "MessageTemplate" set "Action" = '{"url":"/practitioner/capture-child-attendance"}' where "TemplateType"  = 'submit-daily-attendance'; 
+	update "MessageLog" set "Action" = '{"url":"/practitioner/capture-child-attendance"}' where "MessageTemplateType" = 'submit-daily-attendance';	
+
+		update "MessageTemplate" set "Action" = '{"url":"/practitioner/profile/edit"}' where "TemplateType"  = 'coach-visit-requested'; 
+	update "MessageLog" set "Action" = '{"url":"/practitioner/profile/edit"}' where "MessageTemplateType" = 'coach-visit-requested';	

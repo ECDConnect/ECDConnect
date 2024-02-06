@@ -289,9 +289,9 @@ namespace EcdLink.Api.CoreApi.Services
             //setup some basics on all messages
             string subject = template.Subject;
             string message = template.Message;
-            string ctaText = template.CTAText;
-            string cta = template.CTA;
-            string action = template.Action;//for replacing state guids
+            string ctaText = (template.CTAText != null ? template.CTAText : "");
+            string cta = (template.CTA != null ? template.CTA : "");
+            string action = (template.Action != null ? template.Action : "") ;//for replacing state guids
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
@@ -314,10 +314,13 @@ namespace EcdLink.Api.CoreApi.Services
             {
                subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
-               ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
-               cta = cta.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                if (ctaText != "")
+                    ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                if (cta != "")
+                    cta = cta.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                 //replace action and state items
-               action = action.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+               if (action!="")
+                    action = action.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
             }
 
             return new MessageTemplateText() { Message = message, Subject = subject, CTAText = ctaText, CTA = cta, Action = action };
