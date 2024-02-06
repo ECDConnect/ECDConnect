@@ -1827,7 +1827,7 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public async void CalculateCompleteChildProgressReports()
+        public void CalculateCompleteChildProgressReports()
         {
             var childProgressActivity = _clubPointsLibraryRepo.GetAll()
                 .Where(x => x.Activity == Constants.ClubSettings.child_progress_reports 
@@ -1885,7 +1885,7 @@ namespace EcdLink.Api.CoreApi.Services
                             FindValue = "MeetingDate",
                             ReplacementValue = startDate.ToShortDateString()
                         });
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), true);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), true);
                     }
                 }
 
