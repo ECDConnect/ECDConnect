@@ -526,6 +526,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             input.VisitType = visitType;
+            input.EventId = input.EventId;
             input.Attended = false;
             input.CoachId = coach.Id;
             input.PractitionerId = practitioner.Id;

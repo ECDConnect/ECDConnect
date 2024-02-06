@@ -151,8 +151,8 @@ export const Form = ({ onBack }: FormProps) => {
       setTitle('Pre-PQA site visits summary');
       return prePqaSteps;
     }
-    if (activityName === coachVisitTypes.supportVisit) {
-      setTitle(coachVisitTypes.supportVisit);
+    if (activityName === coachVisitTypes.supportVisit.description) {
+      setTitle(coachVisitTypes.supportVisit.description);
       return supportVisitSteps;
     }
 
