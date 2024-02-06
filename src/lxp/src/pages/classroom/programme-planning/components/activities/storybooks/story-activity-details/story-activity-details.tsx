@@ -58,7 +58,7 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
       title={title}
       subTitle={subTitle}
       color={'primary'}
-      backgroundColour="uiBg"
+      backgroundColour="white"
       onBack={onBack}
       displayOffline={!isOnline}
     >
@@ -545,6 +545,9 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
     }
   };
 
+  const regex = /(<([^>]+)>)/gi;
+  const secondRegEx = /((&nbsp;))*/gim;
+
   return (
     <div className={'flex flex-col'}>
       <div className={'flex flex-col pb-24'}>
@@ -561,10 +564,16 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
         )}
         <Divider />
         <Typography
-          className="px-4"
+          className="mt-2 px-4"
           text={activity.name}
           type={'h1'}
           color={'primary'}
+        />
+        <Typography
+          className="mt-2 px-4"
+          type="markdown"
+          fontSize="14"
+          text={activity.materials}
         />
         {!disabled &&
           (isSelected ? (
@@ -583,7 +592,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           ) : (
             <Button
               type={'filled'}
-              className={'mt-4'}
+              className={'mx-4 mt-4'}
               color={'primary'}
               textColor={'white'}
               text={'Choose this activity'}
@@ -592,24 +601,32 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
               onClick={onActivitySelected}
             />
           ))}
+        <Divider dividerType="dashed" className={'mx-4 mt-4'} />
         {!disabled && linkedStory && (
-          <div className={'bg-uiBg flex flex-col'}>
-            <Typography type={'body'} text={'Linked story'} />
+          <div className={'flex flex-col bg-white'}>
+            <div className="mt-4 px-4">
+              <Typography
+                text={`Story chosen:`}
+                type={'h2'}
+                color={'textDark'}
+              />
+            </div>
             <StoryCard
               title={linkedStory.name}
               storyBookId={linkedStory.id}
               type={linkedStory.type}
               languages={linkedStory.availableLanguages}
-              selected={true}
+              selected={false}
               hideDetails={true}
               buttonIcon={'SwitchVerticalIcon'}
               buttonText={'Change story'}
-              onSelected={() => onStorySwitched && onStorySwitched()}
-              onCleared={() => onStorySwitched && onStorySwitched()}
+              onSelected={() => {}}
+              onCleared={() => {}}
+              radioEnabled={false}
+              className={'mx-4'}
             />
           </div>
         )}
-
         <div className="mt-4 px-4">
           <Typography
             type="markdown"
@@ -622,6 +639,11 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
             className="mt-2 p-4"
             type="markdown"
             text={activity.notes}
+          />
+          <Alert
+            className={'mt-4'}
+            type={'info'}
+            title={activity.notes.replace(regex, '').replace(secondRegEx, '')}
           />
         </div>
       </div>

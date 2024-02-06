@@ -23,10 +23,17 @@ const StoryCard: React.FC<StoryCardProps> = ({
   onCleared,
   onActivityCleared,
   className,
+  radioEnabled,
 }) => {
   const [displayDetails, setDisplayDetails] = useState(false);
   const handleDetailsClick = () => {
     setDisplayDetails(true);
+  };
+  const languageList = languages?.map((x) => x.description)?.join(', ');
+
+  const isRadioEnabled = () => {
+    if (radioEnabled === false) return false;
+    return true;
   };
 
   return (
@@ -34,11 +41,11 @@ const StoryCard: React.FC<StoryCardProps> = ({
       <Card
         className={classNames(
           className,
-          `relative mt-4 flex w-full flex-col ${
+          `relative mt-4 flex flex-col ${
             selected ? 'border-secondary border-2' : ''
           }`
         )}
-        shadowSize={'lg'}
+        shadowSize={!isRadioEnabled() ? 'none' : 'lg'}
         borderRaduis="lg"
       >
         <div
@@ -61,15 +68,21 @@ const StoryCard: React.FC<StoryCardProps> = ({
               <>
                 <div className={selected ? 'bg-secondaryAccent2' : 'bg-uiBg'}>
                   <div className="flex max-h-20 items-center justify-between gap-2">
-                    <Radio
-                      isActivity={true}
-                      description={languages
-                        ?.map((x) => x.description)
-                        ?.join(', ')}
-                      checked={selected}
-                      onChange={() => onSelected()}
-                      className={'max-h-20 truncate'}
-                    />
+                    {radioEnabled || radioEnabled !== false ? (
+                      <Radio
+                        isActivity={true}
+                        description={languageList}
+                        checked={selected}
+                        onChange={() => onSelected()}
+                        className={'max-h-20 truncate'}
+                      />
+                    ) : (
+                      <Typography
+                        type={'small'}
+                        text={languageList}
+                        className={'px-4'}
+                      />
+                    )}
                     <div onClick={handleDetailsClick} className={'mb-2'}>
                       {renderIcon(
                         'InformationCircleIcon',
