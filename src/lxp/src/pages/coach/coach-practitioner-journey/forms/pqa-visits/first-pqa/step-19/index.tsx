@@ -33,6 +33,8 @@ import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+import { practitionerSelectors } from '@/store/practitioner';
+import { userSelectors } from '@/store/user';
 
 export const step19Question2Pqa =
   'Does {client} need to register any children on Funda App?';
@@ -79,6 +81,8 @@ export const Step19 = ({
 
   const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
 
+  const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const previousData = useSelector(
     getSectionsQuestionsByStep(
       visitIdFromPractitionerJourney ?? '',
@@ -89,6 +93,8 @@ export const Step19 = ({
   const previousStatePreviousData = usePrevious(previousData) as
     | SectionQuestions
     | undefined;
+
+  const isPractitionerUser = user?.id === practitioner?.userId;
 
   const { isOnline } = useOnlineStatus();
 
@@ -237,12 +243,12 @@ export const Step19 = ({
     const classroomDetails = (await new PractitionerService(
       userAuth?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(
-      smartStarter?.userId!
+      isPractitionerUser ? user?.id! : smartStarter?.userId!
     )) as unknown;
 
     setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
     return classroomDetails;
-  }, [smartStarter?.userId, userAuth?.auth_token]);
+  }, [isPractitionerUser, smartStarter, user?.id, userAuth?.auth_token]);
 
   const renderTitle = useMemo(() => {
     if (!hasChildren) {
