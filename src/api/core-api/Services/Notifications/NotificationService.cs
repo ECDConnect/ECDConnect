@@ -107,7 +107,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Status = status,
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
-                            Action = item.Action
+                            Action = templateItem.Action
                         };
                         if (messageEndDate != null)
                         {
@@ -199,7 +199,8 @@ namespace EcdLink.Api.CoreApi.Services
                         SentByUserId = notification.FromUserId,
                         CTA = notification.CTA,
                         CTAText = notification.CTAText,
-                        ToGroups = notification.ToGroups
+                        ToGroups = notification.ToGroups,
+                        Action = notification.Action                        
                     });
                 } else return null;
            } catch (Exception ex)
@@ -290,6 +291,7 @@ namespace EcdLink.Api.CoreApi.Services
             string message = template.Message;
             string ctaText = template.CTAText;
             string cta = template.CTA;
+            string action = template.Action;//for replacing state guids
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
@@ -314,9 +316,11 @@ namespace EcdLink.Api.CoreApi.Services
                message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                cta = cta.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                //replace action and state items
+               action = action.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
             }
 
-            return new MessageTemplateText() { Message = message, Subject = subject, CTAText = ctaText, CTA = cta };
+            return new MessageTemplateText() { Message = message, Subject = subject, CTAText = ctaText, CTA = cta, Action = action };
         }
 
         public MessageLogModel RetrieveToGroupItems(string toGroups)

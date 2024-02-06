@@ -39,6 +39,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string Subject { get; set; }
         public string CTAText { get; set; }
         public string CTA { get; set; }
+        public string Action { get; set; }
     }
     public class MessageTemplateAction
     {

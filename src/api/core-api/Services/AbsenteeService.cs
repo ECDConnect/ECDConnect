@@ -137,6 +137,11 @@ namespace ECDLink.Api.CoreApi.Services
                     FindValue = "AbsentEndDate",
                     ReplacementValue = (absentDateEnd.HasValue ? absentDateEnd.Value.ToLongDateString() : absentDate.AddDays(1).ToLongDateString()),
                 });
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PractitionerUserId",
+                    ReplacementValue = parentUser.Id
+                });
                 _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate.AddDays(1)));
             }
 
