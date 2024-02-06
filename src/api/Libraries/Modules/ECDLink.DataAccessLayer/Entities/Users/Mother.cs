@@ -29,7 +29,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         public DateTime? ExpectedDateOfDelivery { get; set; }
 

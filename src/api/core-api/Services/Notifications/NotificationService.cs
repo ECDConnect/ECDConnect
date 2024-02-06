@@ -7,6 +7,7 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -30,8 +31,8 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<MessageLog, Guid> _messageRepo;
         private IGenericRepository<MessageTemplate, Guid> _templateRepo;
         private IHttpContextAccessor _contextAccessor;
-        private string _uId;
-        private UserManager<ApplicationUser> _userManager;
+        private Guid _uId;
+        private ApplicationUserManager _userManager;
 
         /*
          1 - function is invoked and called with a template type, the template type defines the protocol, singular or multiple
@@ -44,15 +45,14 @@ namespace EcdLink.Api.CoreApi.Services
             IHttpContextAccessor contextAccessor, 
             IGenericRepositoryFactory repositoryFactory, 
             HierarchyEngine hierarchyEngine, 
-            
-            [Service] UserManager<ApplicationUser> userManager)
+            [Service] ApplicationUserManager userManager)
         {
             _contextAccessor = contextAccessor;
             _notificationProviderFactory = notificationProviderFactory;
             _options = optionAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
-            _uId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId();
+            _uId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _templateRepo = _repositoryFactory.CreateGenericRepository<MessageTemplate>(userContext: _uId);
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _uId);
             _userManager = userManager;
@@ -87,7 +87,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         //expire older messages of the same type when new ones are sent
                         if (expireOldMessagesOfType && user != null) {
-                            await this.ExpireNotificationsTypesForUser(user.Id, item.TemplateType);
+                            await this.ExpireNotificationsTypesForUser(user.Id.ToString(), item.TemplateType);
                         }
 
                         //remap all field
@@ -100,10 +100,10 @@ namespace EcdLink.Api.CoreApi.Services
                             Message = !string.IsNullOrWhiteSpace(message) ? message : templateItem.Message,
                             Subject = templateItem.Subject,
                             MessageDate = messageDate,
-                            FromUserId = Guid.Parse(_uId),
+                            FromUserId = _uId,
                             MessageTemplateType = item.TemplateType,
                             MessageTemplate = item,
-                            To = (user != null ? user.Id : userType),
+                            To = (user != null ? user.Id.ToString() : userType),
                             Status = status,
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
@@ -219,7 +219,7 @@ namespace EcdLink.Api.CoreApi.Services
                 Subject = subject,
                 MessageDate = sendDate,
                 MessageEndDate = messageEndDate,
-                FromUserId = Guid.Parse(_uId),
+                FromUserId = _uId,
                 MessageTemplate = template,
                 MessageProtocol = template.Protocol,
                 Status = MessageStatusConstants.Blue

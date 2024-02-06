@@ -6,13 +6,11 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Identity;
-using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
-    [ExtendObjectType(typeof(ApplicationApplicationIdentityRole))]
+    [ExtendObjectType(typeof(ApplicationIdentityRole))]
     public class ApplicationIdentityRoleExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]

@@ -111,7 +111,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
                 if (practitioner != null)
                 {
-                    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId, practitioner.IsPrincipalOrAdmin());
+                    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);
@@ -150,7 +150,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     && x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1)
                 .Single();
 
-            var pointsScoredThisYear = pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).ToList();
+            var pointsScoredThisYear = pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).ToList();
 
             // Get new totals, sum of current month or year, plus one more score
             var monthsRecord = pointsScoredThisYear.Where(x => x.Month == currentDate.Month).FirstOrDefault();
@@ -190,7 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             if (monthTotal > 0 && ytdTotal > 0)
             {
-                var record = pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == currentDate.Month && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
+                var record = pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Month == currentDate.Month && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
                 if (record == null)
                 {
                     pointsUserSummaryRepo.Insert(
@@ -202,7 +202,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             UpdatedBy = userId,
                             Month = currentDate.Month,
                             Year = currentDate.Year,
-                            UserId = userId,
+                            UserId = Guid.Parse(userId),
                             PointsLibraryId = activity.Id,
                             PointsTotal = monthTotal,
                             PointsYTD = ytdTotal,

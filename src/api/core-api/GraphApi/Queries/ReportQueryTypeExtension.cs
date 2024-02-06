@@ -1042,7 +1042,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
             var practitioner = practRepo.GetByUserId(userId);
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(userId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(userId));
 
             var classroomGroups = classroomGroupRepo.GetAll()
                 .Where(c => c.UserId.HasValue && c.UserId.Value == Guid.Parse(userId)).ToList();
@@ -1244,7 +1244,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             foreach (var practitioner in practitioners)
             {
-                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
                 var classroom = practitionerClassrooms.FirstOrDefault();
                 var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId).ToList(); 
 
@@ -1287,7 +1287,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion        
 
                 #region REMOVED FROM PROGRAMME
-                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
+                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId.Value)
                     .Where(x => x.IsActive)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
@@ -1314,7 +1314,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     var missedReports = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(
                     practitioner.Hierarchy,
-                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList());
+                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == practitioner.UserId).Select(x => x.Id).ToList());
 
                     if (missedReports.reportsMissingOrIncomplete > 0)
                     {
@@ -1675,7 +1675,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
                 {
 
-                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId, previousMonthStart, previousMonthEnd).FirstOrDefault();
+                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).FirstOrDefault();
                     #region MISSING INCOME STATEMENT
                     if (lastMonthStatement == null || lastMonthStatement.AutoSubmitted)
                     {
@@ -1692,7 +1692,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     #region PROGRAMME LOST R300 IN LAST 2 MONTHS
                     var secondLastMonth = previousMonthStart.AddMonths(-1);
-                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId, secondLastMonth, secondLastMonth).FirstOrDefault();
+                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), secondLastMonth, secondLastMonth).FirstOrDefault();
                     if (lastMonthStatement != null && secondLastMonthStatement != null)
                     {
                         var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
@@ -1774,7 +1774,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {
                     #region 50% CHILD ATTENDANCE
-                    var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId, previousMonthStart, previousMonthEnd);
+                    var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd);
                     if (attendancePercentage < 60)
                     {
                         notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";

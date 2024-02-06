@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
@@ -27,13 +28,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
-        private UserManager<ApplicationUser> _userManager;
+        private ApplicationUserManager _userManager;
 
         public UserLicenseManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] INotificationService notificationService,
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             HierarchyEngine hierarchyEngine
             )
         {
@@ -106,7 +107,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     ReplacementValue = DateTime.Now.AddDays(21).ToShortDateString(),
                 });
 
-                var userToSend =  _userManager.FindByIdAsync(userId).Result;
+                var userToSend =  _userManager.FindByIdAsync(userId.ToString()).Result;
                 _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
 
             }
@@ -114,7 +115,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             return null;
         }
 
-        public License UpdateSmartSpaceLicense(string userId, DateTime dateAwarded)
+        public License UpdateSmartSpaceLicense(Guid userId, DateTime dateAwarded)
         {
             License userLicense = GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
             if (userLicense != null)

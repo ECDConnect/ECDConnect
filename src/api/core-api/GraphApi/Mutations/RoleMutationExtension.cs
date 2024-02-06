@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var tenantId = TenantExecutionContext.Tenant.Id;
 
-            var newRole = new ApplicationApplicationIdentityRole
+            var newRole = new ApplicationIdentityRole
             {
                 Name = name,
                 NormalizedName = normalizedName,

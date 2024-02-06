@@ -21,7 +21,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         [NotMapped]
         public virtual Practitioner Practitioner { get; set; }
         public DateTime? StartDate { get; set; }

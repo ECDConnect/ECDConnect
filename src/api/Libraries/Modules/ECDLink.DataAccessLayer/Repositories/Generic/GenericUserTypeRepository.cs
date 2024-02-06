@@ -281,7 +281,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var typedEntity = entity as IUserType;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId.Value, typedEntity.UserId);
+            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId.Value, typedEntity.UserId.Value);
 
             typedEntity.Hierarchy = HierarchyHelper.AppendHierarchy(Hierarchy, hierarchyEntity.Key.ToString());
 

@@ -473,7 +473,7 @@ namespace ECDLink.Core.Services
             StatementsIncomeStatement statement = _statementsRepo.GetById(statementId);
 
             statement.ContactedByCoach = true;
-            statement.UpdatedBy = _applicationUserId;
+            statement.UpdatedBy = _applicationUserId.ToString();
             statement.UpdatedDate = DateTime.Now;
             return _statementsRepo.Update(statement);
         }

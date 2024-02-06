@@ -47,29 +47,36 @@ JOIN information_schema.key_column_usage AS kcu
     AND tc.table_schema = kcu.table_schema
 JOIN information_schema.constraint_column_usage AS ccu
     ON ccu.constraint_name = tc.constraint_name
-WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema='public' and ccu.table_name = 'AspNetUsers';
+WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema='public' and ccu.table_name = 'AspNetUsers'
+order by 1;
 
 -- results from previous query - START
-alter table "PointsUserSummary" drop constraint "FK_PointsUserSummary_AspNetUsers2_UserId";
-alter table "ClubPoints" drop constraint "FK_ClubPoints_AspNetUsers_UserId";
-alter table "PointsUser" drop constraint "FK_PointsUser_AspNetUsers_UserId";
-alter table "TeamLead" drop constraint "FK_TeamLead_AspNetUsers_UserId";
-alter table "ClassReassignmentHistory" drop constraint "FK_ClassReassignmentHistory_AspNetUsers_UserId";
-alter table "Absentees" drop constraint "FK_Absentees_AspNetUsers_UserId";
-alter table "Infant" drop constraint "FK_Infant_AspNetUsers_UserId";
-alter table "ClassroomGroup" drop constraint "FK_ClassroomGroup_AspNetUsers_UserId";
-alter table "HealthCareWorker" drop constraint "FK_HealthCareWorker_AspNetUsers_UserId";
-alter table "UserGrants" drop constraint "FK_UserGrants_AspNetUsers_UserId";
-alter table "UserConsent" drop constraint "FK_UserConsent_AspNetUsers_UserId";
-alter table "IntegrationAudit" drop constraint "FK_IntegrationAudit_AspNetUsers_UserId";
-alter table "IntegrationEntityMapping" drop constraint "FK_IntegrationEntityMapping_AspNetUsers_UserId";
-alter table "StatementsStartupSupport" drop constraint "FK_StatementsStartupSupport_AspNetUsers_UserId";
-alter table "StatementsExpenses" drop constraint "FK_StatementsExpenses_AspNetUsers_UserId";
-alter table "StatementsIncome" drop constraint "FK_StatementsIncome_AspNetUsers_UserId";
-alter table "StatementsIncome" drop constraint "FK_StatementsIncome_AspNetUsers_ChildUserId";
-alter table "StatementsIncomeStatement" drop constraint "FK_StatementsIncomeStatement_AspNetUsers_UserId";
-alter table "IntegrationLog" drop constraint "FK_IntegrationLog_AspNetUsers_UserId";
-alter table "ChildProgressReport" drop constraint "FK_ChildProgressReport_AspNetUsers_UserId";
+alter table "Attendance" drop constraint "FK_Attendance_AspNetUsers_UserId";
+alter table "AuditLog" drop constraint "FK_AuditLog_AspNetUsers_UserId";
+alter table "CalendarEvent" drop constraint "FK_CalendarEvent_AspNetUsers_UserId";
+alter table "CalendarEventParticipant" drop constraint "FK_CalendarEventParticipant_AspNetUsers_UserId";
+alter table "CalendarEventParticipant" drop constraint "FK_CalendarEventParticipant_Participant_AspNetUsers_UserId";
+alter table "Child" drop constraint "FK_Child_AspNetUsers_UserId";
+alter table "Classroom" drop constraint "FK_Classroom_AspNetUsers_UserId";
+alter table "Club" drop constraint "FK_Club_AspNetUsers_UserId";
+alter table "ClubPoints" drop constraint "PK_ClubPoints_UserId";
+alter table "Coach" drop constraint "FK_Coach_AspNetUsers_UserId";
+alter table "Document" drop constraint "FK_Document_AspNetUsers_UserId";
+alter table "Franchisor" drop constraint "FK_Franchisor_AspNetUsers_UserId";
+alter table "JobNotification" drop constraint "FK_JobNotification_AspNetUsers_UserId";
+alter table "Learner" drop constraint "FK_Learner_AspNetUsers_UserId";
+alter table "License" drop constraint "FK_License_AspNetUsers_UserId";
+alter table "Note" drop constraint "FK_Note_AspNetUsers_UserId";
+alter table "PointsUser" drop constraint "PK_PointsUser_UserId";
+alter table "PointsUserSummary" drop constraint "PK_PointsUserSummary_UserId";
+alter table "PQA" drop constraint "FK_PQA_AspNetUsersId";
+alter table "Practitioner" drop constraint "FK_Practitioner_AspNetUsers_UserId";
+alter table "PractitionerRemovalHistory" drop constraint "FK_PractitionerRemovalHistory_RemovedByUserId";
+alter table "PractitionerRemovalHistory" drop constraint "FK_PractitionerRemovalHistory_UserId";
+alter table "SmartSpaceVisit" drop constraint "FK_SmartSpaceVisit_AspNetUsersId";
+alter table "TeamLead" drop constraint "TeamLead_User_FK";
+alter table "Trainee" drop constraint "FK_Trainee_AspNetUsers_UserId";
+alter table "UserHierarchy" drop constraint "FK_UserHierarchy_AspNetUsers_UserId";
 -- results from previous query - END
 
 ALTER TABLE "AspNetRoles" drop constraint "PK_AspNetRoles";
@@ -102,7 +109,12 @@ alter table "RolePermission"   add constraint "FK_RolePermission_AspNetRoles_Rol
 
 -- change to uuid and rebuild FK
 update "ClassroomGroup" set "UserId" = null where "UserId" not in (select "Id" from "AspNetUsers");
-alter table "Trainee" drop column "PractitionerId";
+--alter table "Trainee" drop column "PractitionerId";
+
+
+-- fix up data issues for next script section
+update "Document" set "CreatedUserId" = null where "CreatedUserId" = '';
+delete from "Visit" where "InfantId" in (select "Id" from "Infant" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"));
 
 -- run script for next section
 select --c.table_name, c.column_name, c.data_type, 
@@ -158,10 +170,6 @@ alter table "ClassReassignmentHistory" add constraint "FK_ClassReassignmentHisto
 alter table "Classroom" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
 delete from "Classroom" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
 alter table "Classroom" add constraint "FK_Classroom_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
-
-alter table "ClassroomGroup" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
-delete from "ClassroomGroup" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
-alter table "ClassroomGroup" add constraint "FK_ClassroomGroup_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
 
 alter table "Club" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
 delete from "Club" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
@@ -223,14 +231,6 @@ alter table "License" alter column "UserId" type uuid using "UserId"::uuid::uuid
 delete from "License" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
 alter table "License" add constraint "FK_License_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
 
-alter table "MessageLog" alter column "FromUserId" type uuid using "FromUserId"::uuid::uuid; 
-delete from "MessageLog" where "FromUserId" is not null and "FromUserId" not in (select "Id" from "AspNetUsers"); 
-alter table "MessageLog" add constraint "FK_MessageLog_AspNetUsers_FromUserId" foreign key ("FromUserId") references "AspNetUsers"("Id") on delete cascade; 
-
-alter table "MessageLog" alter column "SentByUserId" type uuid using "SentByUserId"::uuid::uuid; 
-delete from "MessageLog" where "SentByUserId" is not null and "SentByUserId" not in (select "Id" from "AspNetUsers"); 
-alter table "MessageLog" add constraint "FK_MessageLog_AspNetUsers_SentByUserId" foreign key ("SentByUserId") references "AspNetUsers"("Id") on delete cascade; 
-
 alter table "Mother" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
 delete from "Mother" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
 alter table "Mother" add constraint "FK_Mother_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
@@ -251,6 +251,10 @@ alter table "PointsUserSummary" alter column "UserId" type uuid using "UserId"::
 delete from "PointsUserSummary" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
 alter table "PointsUserSummary" add constraint "FK_PointsUserSummary_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
 
+alter table "PQA" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
+delete from "PQA" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
+alter table "PQA" add constraint "FK_PQA_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
+
 alter table "Practitioner" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
 delete from "Practitioner" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
 alter table "Practitioner" add constraint "FK_Practitioner_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
@@ -266,6 +270,10 @@ alter table "PractitionerRemovalHistory" add constraint "FK_PractitionerRemovalH
 alter table "ShortUrl" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
 delete from "ShortUrl" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
 alter table "ShortUrl" add constraint "FK_ShortUrl_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
+
+alter table "SmartSpaceVisit" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
+delete from "SmartSpaceVisit" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
+alter table "SmartSpaceVisit" add constraint "FK_SmartSpaceVisit_AspNetUsers_UserId" foreign key ("UserId") references "AspNetUsers"("Id") on delete cascade; 
 
 alter table "StatementsExpenses" alter column "UserId" type uuid using "UserId"::uuid::uuid; 
 delete from "StatementsExpenses" where "UserId" is not null and "UserId" not in (select "Id" from "AspNetUsers"); 
@@ -326,6 +334,7 @@ alter table "ClassReassignmentHistory" alter column "ReassignedToUser" type uuid
 delete from "ClassReassignmentHistory" where "ReassignedToUser" is not null and "ReassignedToUser" not in (select "Id" from "AspNetUsers"); 
 alter table "ClassReassignmentHistory" add constraint "FK_ClassReassignmentHistory_AspNetUsers_ReassignedToUser" foreign key ("ReassignedToUser") references "AspNetUsers"("Id") on delete cascade; 
 
+delete from "UserHierarchy" where "ParentId" = '';
 alter table "UserHierarchy" alter column "ParentId" type uuid using "ParentId"::uuid::uuid; 
 delete from "UserHierarchy" where "ParentId" is not null and "ParentId" not in (select "Id" from "AspNetUsers"); 
 alter table "UserHierarchy" add constraint "FK_UserHierarchy_AspNetUsers_ParentId" foreign key ("ParentId") references "AspNetUsers"("Id") on delete cascade; 
@@ -343,25 +352,31 @@ delete from "Practitioner" where "Id" = 'd56414b6-75aa-400f-b6a9-8d2c272a1a23';
 select "UserId", count("UserId")  from "Trainee" p group by "UserId"  having count("UserId") > 1; 
 
 
+alter table "Visit" drop constraint "FK_Visit_PractionerID";
 alter table "Visit" drop constraint "FK_Visit_PractitionerId";
 alter table "ClubMember" drop constraint "FK_ClubMember_PractitionerId";
 alter table "ClubMeetingRegister" drop constraint "FK_ClubMeetingRegister_PractitionerId";
 alter table "ClubLeader" drop constraint "FK_ClubLeader_PractitionerId";
+alter table "ClubSupport" drop constraint "FK_ClubSupport_PractitionerId";
 update "Visit" v set "PractitionerId" = (select "UserId" from "Practitioner" p where p."Id" = v."PractitionerId");
 update "ClubMember" v set "PractitionerId" = (select "UserId" from "Practitioner" p where p."Id" = v."PractitionerId");
 update "ClubMeetingRegister" v set "PractitionerId" = (select "UserId" from "Practitioner" p where p."Id" = v."PractitionerId");
 update "ClubLeader" v set "PractitionerId" = (select "UserId" from "Practitioner" p where p."Id" = v."PractitionerId");
+update "ClubSupport" v set "PractitionerId" = (select "UserId" from "Practitioner" p where p."Id" = v."PractitionerId");
 update "Practitioner" set "Id" = "UserId";
 alter table "Visit" ADD CONSTRAINT "FK_Visit_Practitioner_PractitionerId" FOREIGN KEY ("PractitionerId") REFERENCES public."Practitioner"("Id");   
 alter table "ClubMember" ADD CONSTRAINT "FK_ClubMember_Practitioner_PractitionerId" FOREIGN KEY ("PractitionerId") REFERENCES public."Practitioner"("Id");   
 alter table "ClubMeetingRegister" ADD CONSTRAINT "FK_ClubMeetingRegister_Practitioner_PractitionerId" FOREIGN KEY ("PractitionerId") REFERENCES public."Practitioner"("Id");   
 alter table "ClubLeader" ADD CONSTRAINT "FK_ClubLeader_Practitioner_PractitionerId" FOREIGN KEY ("PractitionerId") REFERENCES public."Practitioner"("Id");   
+alter table "ClubSupport" ADD CONSTRAINT "FK_ClubSupport_Practitioner_PractitionerId" FOREIGN KEY ("PractitionerId") REFERENCES public."Practitioner"("Id");
 
 
 ALTER TABLE "Visit" DROP CONSTRAINT "FK_Visit_TraineeId";
 UPDATE "Visit" v set "TraineeId" = (select t."UserId" from "Trainee" t where t."Id" = v."TraineeId");
 update "Trainee" set "Id" = "UserId";
 ALTER TABLE public."Visit" ADD CONSTRAINT "FK_Visit_Trainee_TraineeId" FOREIGN KEY ("TraineeId") REFERENCES public."Trainee"("Id");   
+
+update "Trainee" set "PractitionerId" = "UserId";
 
 -- create indices
 SELECT

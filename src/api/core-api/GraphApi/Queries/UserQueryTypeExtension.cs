@@ -274,11 +274,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             //TODO: Add Teamlead object / indicator
 
             //Child
-            if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
-            {
-                var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
-                user.childObjectData = childRepo.GetByUserId(user.Id);
-            }
+            //if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
+            //{
+            //    var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
+            //    user.childObjectData = childRepo.GetByUserId(user.Id);
+            //}
 
             return user;
         }

@@ -317,13 +317,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 // when the smart space checklist is completed, we activate the smartspace license
                 Trainee trainee = _traineeRepo.GetByUserId(input.TraineeId);
-                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId, Constants.SSSettings.ss_smart_space_licence);
+                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId.Value, Constants.SSSettings.ss_smart_space_licence);
                 if (smartSpaceLicense == null)
                 {
-                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId, DateTime.Now);
+                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId.Value, DateTime.Now);
                 } else
                 {
-                    _userLicenseManager.UpdateSmartSpaceLicense(trainee.UserId, DateTime.Now);
+                    _userLicenseManager.UpdateSmartSpaceLicense(trainee.UserId.Value, DateTime.Now);
                 }
 
                 // update the visit record to show attended/completed 

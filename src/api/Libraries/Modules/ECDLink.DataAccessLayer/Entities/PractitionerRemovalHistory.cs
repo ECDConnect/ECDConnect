@@ -21,7 +21,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         public Guid ClassroomId { get; set; }
         public DateTime DateOfRemoval { get; set; }
         public Guid RemovedByUserId { get; set; }

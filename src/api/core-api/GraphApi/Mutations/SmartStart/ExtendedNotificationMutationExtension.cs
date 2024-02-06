@@ -163,7 +163,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendProgressreportsNotCreatedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, DateTime dueDate)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();

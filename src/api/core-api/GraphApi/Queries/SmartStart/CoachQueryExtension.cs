@@ -47,14 +47,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             foreach (var practitioner in practitioners)
             {
                 // validate default visits for smartSpace license
-                visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId, practitioner.Id);
+                visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId.ToString(), practitioner.Id);
 
                 coachPractitioners.Add(new CoachPractitioner
                 {
                     Id = practitioner.Id,
-                    UserId = practitioner.UserId,
+                    UserId = practitioner.UserId.Value,
                     ProgrammeType = practitioner.ProgrammeType,
-                    timeline = personnelService.GetPractitionerTimeline(practitioner.UserId)
+                    timeline = personnelService.GetPractitionerTimeline(practitioner.UserId.ToString())
                 });
             }
 
@@ -174,7 +174,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy == userIdGuid).ToList();
             foreach (var practioner in practitioners)
             {
-                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId == practioner.UserId).ToList();
+                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Value == practioner.UserId.Value).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;

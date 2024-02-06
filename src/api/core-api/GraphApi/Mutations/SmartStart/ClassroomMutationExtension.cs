@@ -20,6 +20,7 @@ using ECDLink.Abstractrions.Constants;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using Microsoft.AspNetCore.Identity;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -134,7 +135,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] INotificationService notificationService,
             Guid id,
             Classroom input)
@@ -206,7 +207,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 
                 var parentId = engine.GetUserParentUserId(principal.Id);
                 if (parentId != null) {
-                   var coachToSend = userManager.FindByIdAsync(parentId).Result;
+                   var coachToSend = userManager.FindByIdAsync(parentId.ToString()).Result;
                     if (coachToSend != null)
                     {
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
@@ -376,9 +377,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             classroomRepo.Update(classroom);
 
             pointsEngineService.CalculatePreSchoolFees(uId.ToString(), DateTime.Now);
-            if (classroom.UserId != null)
+            //if (classroom.UserId != null)
             {
-                    notificationService.ExpireNotificationsTypesForUser(classroom.UserId, TemplateTypeConstants.UpdatePreschoolFee);
+                notificationService.ExpireNotificationsTypesForUser(classroom.UserId.ToString(), TemplateTypeConstants.UpdatePreschoolFee);
             }
 
             return true;

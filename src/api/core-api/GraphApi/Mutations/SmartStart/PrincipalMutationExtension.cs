@@ -132,7 +132,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             string userId, string principalId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -225,10 +225,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (accepted == false)
                 {
                     //reset the classroomgroups away from this practitioner and back to teh principal
-                    if (principal.UserId != null && practitioner.UserId != null)
+                    //if (principal.UserId != null && practitioner.UserId != null)
                     {
                         //Reassign all classes and programmes back to principal
-                        reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
                     }
 
                     status.AcceptedDate = null;
@@ -248,16 +248,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
 
-                        notificationService.ExpireNotificationsTypesForUser(principal.UserId, TemplateTypeConstants.RejectedInvitation);
+                        notificationService.ExpireNotificationsTypesForUser(principal.UserId.ToString(), TemplateTypeConstants.RejectedInvitation);
                         sendRejectedNotification = false;
                     }
                     else
                     {
                         //reset the classroomgroups away from this practitioner and back to the principal
-                        if (principal.UserId != null && practitioner.UserId != null)
+                        //if (principal.UserId != null && practitioner.UserId != null)
                         {
                             //Reassign all classes and programmes back to principal
-                            reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                            reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
                         }
 
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
@@ -270,7 +270,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (sendRejectedNotification)
                     {
                         //send message of rejection
-                        string programmeName = personnelManager.GetSiteNameForPractitioner(principal.UserId);
+                        string programmeName = personnelManager.GetSiteNameForPractitioner(principal.UserId.ToString());
                         List<TagsReplacements> replacements = new List<TagsReplacements>
                         {
                             new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },

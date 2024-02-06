@@ -176,7 +176,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             MessageLogModel input)
         {
@@ -194,10 +194,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            List<string> userIds = new List<string>();
+            List<Guid> userIds = new List<Guid>();
             List<Practitioner> practitioners = new List<Practitioner>();
             List<Coach> coaches = new List<Coach>();
-            List<string> messageUserIds = new List<string>();
+            List<Guid> messageUserIds = new List<Guid>();
 
             var isTrainee = input.RoleIds.FindIndex(x => x == "trainees") != -1;
             var isPrincipal = input.RoleIds.FindIndex(x => x == "practitioners_principals") != -1;
@@ -214,29 +214,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // SS roles
             if (isTrainee)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsTrainee == true).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsTrainee == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isCoach)
             {
                 coaches = coachRepo.GetAll().Where(x => x.IsActive == true).ToList();
-                userIds.AddRange(coaches.Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(coaches.Select(x => x.UserId.Value).Distinct().ToList());
             }
             // GG roles
             if (isCHW)
             {
-                userIds.AddRange(hcwRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(hcwRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isTeamLead)
             {
-                userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
 
             // Finding users for criteria
@@ -248,22 +248,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (input.ProvinceId != "" && input.WardName == "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                 }
@@ -272,22 +272,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (input.ProvinceId != "" && input.WardName == "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                 }
@@ -317,8 +317,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 DateTime messageDate = new DateTime(input.MessageDate.Year, input.MessageDate.Month, input.MessageDate.Day).Add(timeSpan);
                 foreach (var userId in messageUserIds)
                 {
-                    var userToSend = await userManager.FindByIdAsync(userId);
-                    await notificationService.SendGenericMessage(userId, input.ToGroups, input.Message, input.Subject, messageDate, template, null);
+                    var userToSend = await userManager.FindByIdAsync(userId.ToString());
+                    await notificationService.SendGenericMessage(userId.ToString(), input.ToGroups, input.Message, input.Subject, messageDate, template, null);
                 }
             }
             return true;

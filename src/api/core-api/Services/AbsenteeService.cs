@@ -63,7 +63,7 @@ namespace ECDLink.Api.CoreApi.Services
             reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
             var absentee = new Absentees
             {
-                UserId = practitionerId,
+                UserId = Guid.Parse(practitionerId),
                 Reason = reason,
                 AbsentDate = absentDate,
                 AbsentDateEnd = absentDateEnd,
@@ -197,7 +197,7 @@ namespace ECDLink.Api.CoreApi.Services
                             absentee.Reason = reason;
                     }
                     _absenteeRepo.Update(absentee);
-                    _reassignmentService.EditReassignment(absentee.UserId, reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
+                    _reassignmentService.EditReassignment(absentee.UserId.ToString(), reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
                     return absentee;
                 }
             }

@@ -26,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public double ExpenseTotal { get; set; }
         public double Balance { get; set; }
         public DateTime SubmittedDate { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         public bool AutoSubmitted { get; set; }
         public DateTime? AnnualSubmittedDate { get; set; }
         public string RelatedDocumentId { get; set; }

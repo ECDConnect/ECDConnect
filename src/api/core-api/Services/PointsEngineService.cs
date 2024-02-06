@@ -87,7 +87,7 @@ namespace EcdLink.Api.CoreApi.Services
             _hierarchyEngine = hierarchyEngine;
             _monthlyAttendanceReportService = monthlyAttendanceReportService;
             _childService = childService;
-            _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
+            _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().GetValueOrDefault());
 
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
             _pointsUserRepo = _repositoryFactory.CreateGenericRepository<PointsUser>(userContext: _uId);
@@ -1219,7 +1219,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false, int? timeScored = null)
         {
-            var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+            var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
 
             // Get new totals, sum of current month or year, plus one more score
             int monthTotal = pointsScoredThisYear.Where(x => x.Month == today.Month).Select(x => x.PointsTotal).Sum() + activity.Points;
@@ -1236,7 +1236,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin, int monthTotal, int ytdTotal, int timesScored)
         {
-            var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+            var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
                         
             if (isPrincipalOrAdmin)
             {
@@ -1287,7 +1287,7 @@ namespace EcdLink.Api.CoreApi.Services
                     record.PointsTotal = monthTotal;
                     record.PointsYTD = ytdTotal;
                     record.UpdatedDate = DateTime.Now;
-                    record.UpdatedBy = _uId;
+                    record.UpdatedBy = _uId.ToString();
                     record.TimesScored = timesScored;
 
                     UpdateIndividualSummaryUserPoints(record);
@@ -1325,7 +1325,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                            x.Property == "IsActive" &&
                                                                            x.ValueBefore == "True" &&
                                                                            x.ValueAfter == "False" &&
-                                                                           x.UserId == userId &&
+                                                                           x.UserId.ToString() == userId &&
                                                                            x.UpdatedDate.Year == today.Year &&
                                                                            x.UpdatedDate.Month == today.Month)
                                                                 .OrderBy(x => x.InsertedDate)
@@ -1408,7 +1408,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var practitioner = _practitionerRepo.GetByUserId(userId);
 
-                var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+                var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
 
                 // Get new totals, sum of current month or year, plus one more score
                 int monthTotal = (int)perc;
@@ -1462,7 +1462,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (children.Any())
                 {
                     // Check preschool fees exist for all children
-                    var allChildrenHaveFees = children.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.UserId));
+                    var allChildrenHaveFees = children.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.UserId.ToString()));
 
                     if (allChildrenHaveFees)
                     {
@@ -1499,7 +1499,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 // Check previous two months statements were also submitted
                 var previousTwoStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
-                    .Where(x => x.UserId == userId && !x.AutoSubmitted)
+                    .Where(x => x.UserId.ToString() == userId && !x.AutoSubmitted)
                     .Where(x => (x.Year == lastMonth.Year && x.Month == lastMonth.Month) || (x.Year == previousMonth.Year && x.Month == previousMonth.Month))
                     .Count() == 2;
 
@@ -1551,20 +1551,20 @@ namespace EcdLink.Api.CoreApi.Services
             var clubUserIds = _clubMemberRepo.GetAll()
                 .Include(x => x.Practitioner)
                 .Where(x => x.ClubId == clubId && x.IsActive)
-                .Select(x => x.Practitioner.UserId)
+                .Select(x => x.Practitioner.UserId.Value)
                 .ToList();
 
            return GetUserPointsTotals(clubUserIds, year, month);
         }
 
-        public List<KeyValuePair<string, int>> GetUserPointsTotals(List<string> userIds, int year, int? month = null)
+        public List<KeyValuePair<string, int>> GetUserPointsTotals(List<Guid> userIds, int year, int? month = null)
         {
             var usersPoints = _pointsUserSummaryRepo.GetAll()
-               .Where(x => userIds.Contains(x.UserId)
+               .Where(x => userIds.Contains(x.UserId.Value)
                     && x.Year == year
                     && (month == null || x.Month == month.Value))
                .GroupBy(x => x.UserId)
-               .Select(x => new KeyValuePair<string, int>(x.First().UserId, x.Sum(y => y.PointsTotal)))
+               .Select(x => new KeyValuePair<string, int>(x.First().UserId.ToString(), x.Sum(y => y.PointsTotal)))
                .ToList();
 
             return usersPoints;
@@ -1610,26 +1610,26 @@ namespace EcdLink.Api.CoreApi.Services
 
             var totalMembers = clubUserIds.Count();
 
-            var userMonthPoints = usersByMonth.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
-            var userYearPoints = usersByYear.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
+            var userMonthPoints = usersByMonth.FirstOrDefault(x => x.UserId.ToString() == userId)?.PointsTotal ?? 0;
+            var userYearPoints = usersByYear.FirstOrDefault(x => x.UserId.ToString() == userId)?.PointsTotal ?? 0;
 
-            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints && userId != x.UserId).Count();
-            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints && userId != x.UserId).Count();
+            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints && userId != x.UserId.ToString()).Count();
+            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints && userId != x.UserId.ToString()).Count();
 
             var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / (totalMembers - 1) * 100;
             var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / (totalMembers - 1) * 100;
 
-            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId).Count();
-            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId).Count();
+            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId.ToString()).Count();
+            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId.ToString()).Count();
 
             if (userMonthPoints > 0)
             {
-                userWithFewerPointsThisMonth += clubUserIds.Where(x => x != userId && !usersByMonth.Any(y => y.UserId == x)).Count();
+                userWithFewerPointsThisMonth += clubUserIds.Where(x => x.ToString() != userId && !usersByMonth.Any(y => y.UserId == x)).Count();
             }
 
             if (userYearPoints > 0)
             {
-                userWithFewerPointsThisYear += clubUserIds.Where(x => x != userId && !usersByYear.Any(y => y.UserId == x)).Count();
+                userWithFewerPointsThisYear += clubUserIds.Where(x => x.ToString() != userId && !usersByYear.Any(y => y.UserId == x)).Count();
             }
 
             var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / (totalMembers - 1) * 100;
@@ -1679,19 +1679,19 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var isClubPurple = club.League.LeagueType.Name == Constants.ClubSettings.name_purple;
 
-                var practitioners = new List<string>();
+                var practitioners = new List<Guid>();
 
                 if (club.ClubMembers != null)
                 {
-                    practitioners.AddRange(club.ClubMembers.Select(x => x.Practitioner.UserId).Distinct().ToList());
+                    practitioners.AddRange(club.ClubMembers.Select(x => x.Practitioner.UserId.Value).Distinct().ToList());
                 }
                 if (club.ClubLeaders != null)
                 {
-                    practitioners.AddRange(club.ClubLeaders.Select(x => x.Practitioner.UserId).Distinct().ToList());
+                    practitioners.AddRange(club.ClubLeaders.Select(x => x.Practitioner.UserId.Value).Distinct().ToList());
                 }
                 if (club.ClubSupport != null)
                 {
-                    practitioners.AddRange(club.ClubSupport.Select(x => x.Practitioner.UserId).Distinct().ToList());
+                    practitioners.AddRange(club.ClubSupport.Select(x => x.Practitioner.UserId.Value).Distinct().ToList());
                 }
 
                 // ensure we don't have any duplicate user Ids
@@ -1708,7 +1708,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     foreach (var practitionerUserId in practitioners)
                     {
-                        var latestVisit = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId)
+                        var latestVisit = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId.ToString())
                             .Where(x => x.ActualVisitDate.HasValue && x.ActualVisitDate > startDate)
                             .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
 
@@ -1724,7 +1724,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     foreach (var practitionerUserId in practitioners)
                     {
-                        var latestVisit = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId)
+                        var latestVisit = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId.ToString())
                             .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
 
                         if (latestVisit != null 
@@ -1750,7 +1750,7 @@ namespace EcdLink.Api.CoreApi.Services
                     clubPoints.Points = finalRating;
                     clubPoints.PointsYTD = finalRating;
                     clubPoints.UpdatedDate = DateTime.Now;
-                    clubPoints.UpdatedBy = _uId;
+                    clubPoints.UpdatedBy = _uId.ToString();
 
                     _clubPointsRepo.Update(clubPoints);
                 } 
@@ -1763,7 +1763,7 @@ namespace EcdLink.Api.CoreApi.Services
                         UserId = _uId,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
-                        UpdatedBy = _uId,
+                        UpdatedBy = _uId.ToString(),
                         IsActive = true,
                         ClubPointsLibraryId = activityId,
                         Month = 11,
@@ -1806,10 +1806,10 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 Id = Guid.NewGuid(),
                 ClubId = clubId,
-                UserId = userId,
+                UserId = Guid.Parse(userId),
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _uId,
+                UpdatedBy = _uId.ToString(),
                 IsActive = true,
                 ClubPointsLibraryId = clubPointsLibrary.Id,
                 Month = today.Month,
@@ -1900,7 +1900,7 @@ namespace EcdLink.Api.CoreApi.Services
                     currentPoints.Points = (int)pointsScored;
                     currentPoints.PointsYTD = prevScore + (int)pointsScored;
                     currentPoints.UpdatedDate = DateTime.Now;
-                    currentPoints.UpdatedBy = _uId;
+                    currentPoints.UpdatedBy = _uId.ToString();
 
                     _clubPointsRepo.Update(currentPoints);
                 }
@@ -1913,7 +1913,7 @@ namespace EcdLink.Api.CoreApi.Services
                         UserId = _uId,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
-                        UpdatedBy = _uId,
+                        UpdatedBy = _uId.ToString(),
                         IsActive = true,
                         ClubPointsLibraryId = childProgressActivity.Id,
                         Month = scoringMonth,
@@ -1992,7 +1992,7 @@ namespace EcdLink.Api.CoreApi.Services
                     clubPoints.Points = pointsEarned;
                     clubPoints.PointsYTD = prevScore + pointsEarned;
                     clubPoints.UpdatedDate = DateTime.Now;
-                    clubPoints.UpdatedBy = _uId;
+                    clubPoints.UpdatedBy = _uId.ToString();
 
                     _clubPointsRepo.Update(clubPoints);
                 }
@@ -2005,7 +2005,7 @@ namespace EcdLink.Api.CoreApi.Services
                         UserId = _uId,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
-                        UpdatedBy = _uId,
+                        UpdatedBy = _uId.ToString(),
                         IsActive = true,
                         ClubPointsLibraryId = caregiverMeetingActivity.Id,
                         Month = reportsMonth,
@@ -2205,7 +2205,7 @@ namespace EcdLink.Api.CoreApi.Services
                     UserId = _uId,
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
-                    UpdatedBy = _uId,
+                    UpdatedBy = _uId.ToString(),
                     IsActive = true,
                     ClubPointsLibraryId = clubAttendanceActivity.Id,
                     Month = startDate.Month,

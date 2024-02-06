@@ -199,7 +199,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userId);
             List<Guid> franchisorCoachIds = coachRepo.GetAll()
                 .Where(c => c.FranchisorId == userId)
-                .Select(f => f.UserId)
+                .Select(f => f.UserId.Value)
                 .ToList();
 
             List<Guid> userIdsToFetch = new List<Guid>();
@@ -214,7 +214,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             if (franchisorsPractitioners?.Count > 0)
             {
-                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId));
+                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId.Value));
             }
 
             return userIdsToFetch;
@@ -224,7 +224,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         {
             var coachPractitioners = practRepo.GetAll()
                 .Where(c => c.CoachHierarchy.HasValue == true && c.CoachHierarchy == userIdGuid)?
-                .Select(p => p.UserId)?
+                .Select(p => p.UserId.Value)
                 .ToList();
 
             return coachPractitioners ?? new List<Guid>();
@@ -235,7 +235,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             // some practitioners can be principal as owner with only themselves as owner
             var principalPractitioners = practitionerRepo.GetAll()
                 .Where(c => (c.PrincipalHierarchy.HasValue && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid))
-                .Select(p => p.UserId)
+                .Select(p => p.UserId.Value)
                 .ToList();
 
             List<Guid> ids = new List<Guid>();
@@ -322,7 +322,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             var entites = userHierarchyRepo.GetAll()
-                .Where(x => userIds.Contains(x.UserId))
+                .Where(x => userIds.Contains(x.UserId.Value))
                 .Select(e => e.Hierarchy);
 
             return entites;

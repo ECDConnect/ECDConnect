@@ -23,7 +23,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public double Amount { get; set; }
         public Guid? ProgrammeId { get; set; }
         public Guid? ChildUserId { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
     }
 
     public interface StatementsStartupSupportJoin<TKey>

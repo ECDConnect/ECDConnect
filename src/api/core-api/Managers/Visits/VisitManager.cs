@@ -974,7 +974,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public List<Visit> GetPQAVisitsForPractitioner(string userId)
         {
             return _visitRepo.GetAll().Where(x => 
-                x.Practitioner.UserId == userId 
+                x.Practitioner.UserId == Guid.Parse(userId)
                 && x.VisitType.Type == Constants.SSSettings.client_practitioner 
                 && x.Attended == true 
                 && (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
@@ -986,7 +986,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public List<Visit> GetReAccreditationVisitsForPractitioner(string userId)
         {
             return _visitRepo.GetAll().Where(x => 
-                x.Practitioner.UserId == userId 
+                x.Practitioner.UserId == Guid.Parse(userId) 
                 && x.VisitType.Type == Constants.SSSettings.client_practitioner 
                 && x.Attended == true 
                 && (x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 ||

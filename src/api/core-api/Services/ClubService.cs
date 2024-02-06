@@ -832,12 +832,12 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 List<ClubUser> meetingParticipants = item.ClubMeetingRegister
                     .Where(x => x.Attended == true)
-                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl})
+                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId.ToString(), FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl})
                     .OrderBy(x => x.FirstName).ToList();
 
                 List<ClubUser> meetingAbsentees = item.ClubMeetingRegister
                     .Where(x => x.Attended == false)
-                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
+                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId.ToString(), FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
                     .OrderBy(x => x.FirstName).ToList();
                 
                 pastMeetings.Add(new ActivityMeetRegularDetail()
@@ -856,9 +856,9 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // get user ids to fetch calendar events
-            List<string> userIds = new List<string>();
-            userIds.AddRange(club.ClubLeaders.Select(x => x.Practitioner.UserId).Distinct());
-            userIds.AddRange(club.ClubSupport.Select(x => x.Practitioner.UserId).Distinct());
+            List<Guid> userIds = new List<Guid>();
+            userIds.AddRange(club.ClubLeaders.Select(x => x.Practitioner.UserId.Value).Distinct());
+            userIds.AddRange(club.ClubSupport.Select(x => x.Practitioner.UserId.Value).Distinct());
             userIds = userIds.Distinct().ToList();
 
             // get linked event ids to exclude from upcoming meetings in calendar table
@@ -872,10 +872,10 @@ namespace EcdLink.Api.CoreApi.Services
             return activityMeetRegular;
         }
 
-        private List<ActivityMeetRegularDetail> GetUpcomingCalendarEventsForClub(List<string> userIds, List<Guid> excludeEventIds)
+        private List<ActivityMeetRegularDetail> GetUpcomingCalendarEventsForClub(List<Guid> userIds, List<Guid> excludeEventIds)
         {
             List<ActivityMeetRegularDetail> upcomingMeetings = new List<ActivityMeetRegularDetail>();
-            List<CalendarEvent> calendarEvents = _calendarEventRepo.GetAll().Where(x => userIds.Contains(x.UserId) && !excludeEventIds.Contains(x.Id) &&
+            List<CalendarEvent> calendarEvents = _calendarEventRepo.GetAll().Where(x => userIds.Contains(x.UserId.Value) && !excludeEventIds.Contains(x.Id) &&
                                                                 x.EventType == Constants.ClubSettings.calendar_club_monthly_meeting &&
                                                                 x.Start >= DateTime.Now &&
                                                                 x.IsActive == true)
@@ -887,7 +887,7 @@ namespace EcdLink.Api.CoreApi.Services
                 foreach (var participant in calendarEvent.Participants)
                 {
                     meetingParticipants.Add(
-                        new ClubUser { UserId = participant.ParticipantUserId, 
+                        new ClubUser { UserId = participant.ParticipantUserId.ToString(), 
                                        FirstName = participant.ParticipantUser.FirstName, 
                                        Surname = participant.ParticipantUser.Surname, 
                                        ProfileImageUrl = participant.ParticipantUser.ProfileImageUrl });
@@ -1234,7 +1234,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var clubUser = new ClubUser
                     {
-                        UserId = attendedVisit.Practitioner.UserId,
+                        UserId = attendedVisit.Practitioner.UserId.ToString(),
                         FirstName = attendedVisit.Practitioner.User.FirstName,
                         Surname = attendedVisit.Practitioner.User.Surname,
                         ProfileImageUrl = attendedVisit.Practitioner.User.ProfileImageUrl
@@ -1257,7 +1257,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var clubUser = new ClubUser
                     {
-                        UserId = pendingVisit.Practitioner.UserId,
+                        UserId = pendingVisit.Practitioner.UserId.ToString(),
                         FirstName = pendingVisit.Practitioner.User.FirstName,
                         Surname = pendingVisit.Practitioner.User.Surname,
                         ProfileImageUrl = pendingVisit.Practitioner.User.ProfileImageUrl
@@ -1553,7 +1553,7 @@ namespace EcdLink.Api.CoreApi.Services
         public IEnumerable<LeagueClubsModel> GetLeaguesForCoach(string coachUserId)
         {
             var leaguesForCoach = _clubRepo.GetAll()
-                .Where(x => x.UserId == coachUserId && x.LeagueId != null)
+                .Where(x => x.UserId.ToString() == coachUserId && x.LeagueId != null)
                 .Select(x => x.LeagueId.Value)
                 .Distinct()
                 .ToList();
@@ -1684,14 +1684,14 @@ namespace EcdLink.Api.CoreApi.Services
             int missedCoachMeetings = clubMeetings.Where(x => x.MeetingDate.Value.Date >= past3Months.Date && x.MeetingDate.Value.Date <= DateTime.Now.Date && x.CoachAttended == false).Count();
 
             // Get list of user ids for club to fetch club calendar events
-            List<string> userIds = new List<string>();
-            userIds.AddRange(club.ClubSupport.Where(x => x.IsActive).Select(x => x?.Practitioner.UserId).ToList());
-            userIds.AddRange(club.ClubLeaders.Where(x => x.IsActive).Select(x => x?.Practitioner.UserId).ToList());
+            List<Guid> userIds = new List<Guid>();
+            userIds.AddRange(club.ClubSupport.Where(x => x.IsActive).Select(x => x.Practitioner.UserId.Value).ToList());
+            userIds.AddRange(club.ClubLeaders.Where(x => x.IsActive).Select(x => x.Practitioner.UserId.Value).ToList());
             userIds = userIds.Distinct().ToList();
 
             List<CalendarEvent> clubCalendarEvents = _calendarEventRepo.GetAll().Where(x => x.EventType == Constants.ClubSettings.calendar_club_monthly_meeting &&
                                                                                       x.Start.Year == DateTime.Now.Year &&
-                                                                                      userIds.Contains(x.UserId) &&
+                                                                                      userIds.Contains(x.UserId.Value) &&
                                                                                       x.IsActive).OrderBy(x => x.Start).ToList();
 
             // Priority 16 - Club not in league->show this if the club is not currently assigned to a league(acc.to SmartLink);
@@ -1938,7 +1938,7 @@ namespace EcdLink.Api.CoreApi.Services
                         {
                             ChangeType = "Insert",
                             Entity = "ClubActivityUpload",
-                            UserId = _applicationUserId,
+                            UserId = Guid.Parse(_applicationUserId),
                             RelatedId = uploadedRecord.Id.ToString(),
                             TenantId = TenantExecutionContext.Tenant.Id
                         });

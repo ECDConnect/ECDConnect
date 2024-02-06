@@ -34,8 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string toRole = null,
             string roleAssignedToUser = null)
         {
-          var uId = contextAccessor.HttpContext.GetUser().Id;
-          return absenteeService.AddAbsenteeForPractitioner(uId.ToString(), practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole,roleAssignedToUser, null);
+          return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole,roleAssignedToUser, null);
         }
 
         public Absentees EditAbsentee(
@@ -55,8 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId.ToString(), userId);
+            return reassignmentService.ReassignClassroomsFromHistory(userId);
         }
 
     }

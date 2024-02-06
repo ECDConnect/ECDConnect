@@ -17,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Licenses
         [ForeignKey(nameof(LicenseTypeId))]
         public virtual LicenseType LicenseType { get; set; }
 
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public DateTime? LicenseDate { get; set; }

@@ -69,8 +69,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public virtual Practitioner principalObjectData { get; set; }
         [NotMapped] 
         public virtual Practitioner practitionerObjectData { get; set; }
-        [NotMapped] 
-        public virtual Child childObjectData { get; set; }
+        //[NotMapped] 
+        //public virtual Child childObjectData { get; set; }
         [NotMapped] 
         public virtual Trainee traineeObjectData { get; set; }
 
@@ -131,6 +131,6 @@ namespace ECDLink.DataAccessLayer.Entities
     {
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
     }
 }

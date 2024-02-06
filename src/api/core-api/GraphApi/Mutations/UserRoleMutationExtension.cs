@@ -67,6 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> RemoveUserFromRolesAsync(
           [Service] ApplicationUserManager userManager,
+          [Service] ILogger<UserMutationExtension> _logger,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] HierarchyEngine engine,
           string userId,

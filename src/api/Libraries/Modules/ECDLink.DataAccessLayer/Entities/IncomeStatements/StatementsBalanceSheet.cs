@@ -7,7 +7,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
     {
         public int? Month { get; set; }
         public int Year { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         public double IncomeTotal { get; set; }
         public double ExpenseTotal { get; set; }
         public double Balance { get; set; }

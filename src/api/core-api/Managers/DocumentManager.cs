@@ -232,7 +232,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.attendance_pdf_type).FirstOrDefault();
 
                 // First validate if document is already in db
-                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId.ToString() == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
                 
                 if (doc != null)
                 {

@@ -25,10 +25,10 @@ namespace ECDLink.DataAccessLayer.Entities.Calendar
         public virtual CalendarEvent CalendarEvent { get; set; }
         [ForeignKey(nameof(ParticipantUserId))]
         public virtual ApplicationUser ParticipantUser { get; set; }
-        public Guid ParticipantUserId { get; set; }
+        public Guid? ParticipantUserId { get; set; }
         [ForeignKey(nameof(UserId))] 
         public virtual ApplicationUser User { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
     }
 
     public interface CalendarEventParticipantJoin<TKey>

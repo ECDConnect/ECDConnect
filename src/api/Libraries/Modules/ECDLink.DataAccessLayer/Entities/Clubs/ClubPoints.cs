@@ -15,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
     public class ClubPoints<TKey> : EntityBase<TKey>
         where TKey : IEquatable<TKey>
     {
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public TKey ClubPointsLibraryId { get; set; }

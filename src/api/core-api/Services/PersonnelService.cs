@@ -169,7 +169,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             PractitionerModel practitionerRecord = new PractitionerModel();
 
             practitionerRecord.Id = practitioner.Id;
-            practitionerRecord.UserId = practitioner.UserId;
+            practitionerRecord.UserId = practitioner.UserId.Value;
             practitionerRecord.User = practitioner.User;
             practitionerRecord.SiteAddress = practitioner.SiteAddress;
             practitionerRecord.IsPrincipal = practitioner.IsPrincipal;
@@ -412,7 +412,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //Classrooms swap
                 string classroomName = "";
-                var classroom = _classRepo.GetByUserId(practitionerToDemote.UserId);
+                var classroom = _classRepo.GetByUserId(practitionerToDemote.UserId.Value);
                 if (classroom != null)
                 {
                     classroomName = classroom.Name;
@@ -450,7 +450,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId.ToString()).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(practitionerToDemote.UserId.ToString(), practitionerToPromote.UserId.ToString(), "New principal/administrator", DateTime.Now, _applicationUserId.ToString(), unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
@@ -519,7 +519,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         ReplacementValue = "Principal"
                     });
                     //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
-                    var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
+                    var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId.Value);
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "ProgrammeName",
@@ -1070,6 +1070,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Visit coachVisit = null;
             if (trainee != null)
             {
+                trainee.Practitioner = _practiRepo.GetByUserId(userId);
                 // ThreeChildrenRegistered
                 var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
                 if (allChildren.Count >= 3)

@@ -112,7 +112,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach (var user in practitionerUsers)
             {
-                var points = userPoints.FirstOrDefault(x => x.Key == user.Id).Value;
+                var points = userPoints.FirstOrDefault(x => x.Key == user.Id.ToString()).Value;
 
                 var replacements = new List<TagsReplacements>
                 {
