@@ -551,12 +551,14 @@ export const useChildProgressObservation = (
 
     const subCategorySkillsIds = subCategorySkills?.map((x) => x.id);
 
-    const totalLevelSkillCount = allSkills.filter(
+    const totalLevelSkillCount = allSkills?.filter(
       (skill) =>
+        skill.level &&
+        skill.level.length > 0 &&
         skill.level[0]?.id === levelId &&
-        subCategorySkillsIds.includes(skill.id)
+        subCategorySkillsIds?.includes(skill.id)
     ).length;
-    const selectedSkillCount = activeCategory.tasks.filter(
+    const selectedSkillCount = activeCategory?.tasks?.filter(
       (x) => x.levelId === levelId && x.value === ProgressSkillValues.Yes
     ).length;
 
