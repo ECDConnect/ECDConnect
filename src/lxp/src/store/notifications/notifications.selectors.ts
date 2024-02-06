@@ -13,13 +13,16 @@ export const getAllNotifications = createSelector(
       dateCreated.setHours(0, 0, 0, 0);
 
       if (!notification?.message?.expiryDate) {
-        return dateCreated <= currentDate;
+        return dateCreated.getTime() <= currentDate.getTime();
       }
 
       const expiryDate = new Date(notification?.message?.expiryDate);
       expiryDate.setHours(0, 0, 0, 0);
 
-      return expiryDate >= currentDate && dateCreated <= currentDate;
+      return (
+        expiryDate.getTime() >= currentDate.getTime() &&
+        dateCreated.getTime() <= currentDate.getTime()
+      );
     });
   }
 );
