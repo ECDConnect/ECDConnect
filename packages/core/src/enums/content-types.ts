@@ -7,9 +7,9 @@ export enum ContentConsentTypeEnum {
   IndemnityAgreement = 'Indemnity Agreement',
   PhotoPermissions = 'Photo Permissions',
   LearningThroughPlay = 'Learning Through Play',
-  PermissionToShare = 'Permission To Share',
+  PermissionToShare = 'Permission to Share Information',
   FranchiseeAgreement = 'Franchisee Agreement',
-  ChildProtection = 'Child Protection',
+  ChildProtection = 'SmartStarter Information Sheet on Child Protection',
 }
 
 export enum ContentTypeEnum {
