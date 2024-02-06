@@ -22,12 +22,7 @@ import {
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
-import {
-  LanguageDto,
-  NOTIFICATION,
-  useDialog,
-  useNotifications,
-} from '@ecdlink/core';
+import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { ContentTypes } from '../../constants/content-management';
 import { UiTableProps } from './type';
 import AlertModal from '../dialog-alert/dialog-alert';
@@ -409,9 +404,18 @@ export default function UiTable({
           {display_value?.map((item: any, index: number) => (
             <div className="ml-1 flex cursor-pointer">
               <div
-                className={`bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+                className={`${
+                  item?.imageHexColor ? '' : 'bg-tertiary'
+                } flex h-9 w-9 items-center justify-center rounded-full`}
+                style={{
+                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
+                }}
               >
-                <img alt="skill" src={item?.imageUrl} className="h-6 w-6" />
+                <img
+                  alt="skill"
+                  src={item?.imageUrl}
+                  className="h-6 w-6 object-contain"
+                />
               </div>
             </div>
           ))}
