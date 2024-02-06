@@ -23,3 +23,6 @@ update "MessageLog" set "Action" = '{"url":"/practitioner/profile/playgroups"}' 
 update "MessageLog" set "Action" = '{"url":"/coach/practitioners"}' where "MessageTemplateType" = 'coach-visits-overdue';
 update "MessageLog" set "Action" = '{"url":"/practitioner/programme-information"}' where "MessageTemplateType" = 'promoted-to-prinicpal-or-faa';
 
+update "MessageTemplate" set "Action" = '{"url":"/community/club"}' where "TemplateType" = 'new-clubleader';
+update "MessageLog" set "Action" = '{"url":"/community/club"}' where "MessageTemplateType" = 'new-clubleader';
+
