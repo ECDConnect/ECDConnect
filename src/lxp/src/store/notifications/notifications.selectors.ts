@@ -9,14 +9,17 @@ export const getAllNotifications = createSelector(
     currentDate.setHours(0, 0, 0, 0);
 
     return [...notifications]?.filter((notification) => {
+      const dateCreated = new Date(notification?.message?.dateCreated);
+      dateCreated.setHours(0, 0, 0, 0);
+
       if (!notification?.message?.expiryDate) {
-        return true;
+        return dateCreated <= currentDate;
       }
 
       const expiryDate = new Date(notification?.message?.expiryDate);
       expiryDate.setHours(0, 0, 0, 0);
 
-      return expiryDate >= currentDate;
+      return expiryDate >= currentDate && dateCreated <= currentDate;
     });
   }
 );
