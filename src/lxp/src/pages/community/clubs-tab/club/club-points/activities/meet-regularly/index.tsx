@@ -142,13 +142,16 @@ export const MeetRegularly: React.FC = () => {
     if (isOnline) {
       appDispatch(
         getActivityMeetRegularDetails({
-          clubId,
-          month: 0,
-          year: currentYear,
+          forceReload: false,
+          args: {
+            clubId,
+            month: 0,
+            year: currentYear,
+          },
         })
       );
     }
-  }, [appDispatch, clubId, currentMonth, currentYear, isOnline]);
+  }, [clubId, currentYear, isOnline]);
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {

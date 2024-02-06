@@ -196,22 +196,17 @@ export const ClubTab: React.FC = () => {
     if (isOnline && (isLeader || isSupportRole)) {
       appDispatch(
         clubThunkActions.getActivityMeetRegularDetails({
-          clubId,
-          month: currentMonth + 1,
-          year: currentYear,
+          forceReload: false,
+          args: {
+            clubId,
+            month: 0,
+            year: currentYear,
+          },
         })
       );
       appDispatch(clubThunkActions.getActivityHostFamilyDetails({ clubId }));
     }
-  }, [
-    appDispatch,
-    clubId,
-    currentMonth,
-    currentYear,
-    isLeader,
-    isOnline,
-    isSupportRole,
-  ]);
+  }, [clubId, currentYear, isLeader, isOnline, isSupportRole]);
 
   const coachItem: UserAlertListDataItem = {
     title: `${coach?.user?.firstName} ${coach?.user?.surname}`,

@@ -361,9 +361,12 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
       appDispatch(
         getActivityMeetRegularDetails({
-          clubId: practitioner.clubId,
-          month: 0, // Fetch the whole year. TODO: figure out how to handle the actual points page overwriting this with just the current month :(
-          year: new Date().getFullYear(),
+          forceReload: true,
+          args: {
+            clubId: practitioner.clubId,
+            month: 0,
+            year: new Date().getFullYear(),
+          },
         })
       );
     }
