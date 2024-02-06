@@ -441,7 +441,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                             ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
                         });
 
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now, practi.User, "", MessageStatusConstants.Amber, replacements);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now, practi.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
                     }
                 }
 
@@ -485,7 +485,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = classroomName
                 });
 
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7));
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7), true);
 
 
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
