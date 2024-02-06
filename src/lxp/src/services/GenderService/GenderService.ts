@@ -12,8 +12,8 @@ class GenderService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query {
-          GetAllGender {
+        query GetAllGender($isActive: Boolean = true){
+          GetAllGender (where: { isActive: { eq: $isActive } }){
             id
             description    
             isActive  
