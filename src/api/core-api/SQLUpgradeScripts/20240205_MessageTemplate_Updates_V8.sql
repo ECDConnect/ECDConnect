@@ -26,3 +26,4 @@ update "MessageLog" set "Action" = '{"url":"/practitioner/programme-information"
 update "MessageTemplate" set "Action" = '{"url":"/community/club"}' where "TemplateType" = 'new-clubleader';
 update "MessageLog" set "Action" = '{"url":"/community/club"}' where "MessageTemplateType" = 'new-clubleader';
 
+update "MessageLog" set "Action" = 'coach-visit-requested' where "MessageTemplateType" = 'coach-visit-requested';

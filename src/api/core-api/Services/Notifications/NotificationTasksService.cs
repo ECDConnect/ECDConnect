@@ -502,6 +502,11 @@ namespace EcdLink.Api.CoreApi.Services
                                     FindValue = "TraineeFirstName",
                                     ReplacementValue = trainee.User.FirstName
                                 });
+                                replacements.Add(new TagsReplacements()
+                                {
+                                    FindValue = "TraineeName",
+                                    ReplacementValue = trainee.User.FirstName
+                                });
                                 if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received && traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting && traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done && traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered && traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support)
                                 {
                                     cancelStarter = true;
