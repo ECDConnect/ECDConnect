@@ -83,3 +83,31 @@ export const setFulfilledThunkActionStatus = (state: any, action: any) => {
   state.status = status;
   state.error = undefined;
 };
+
+export const setRejectedThunkActionStatus = (state: any, action: any) => {
+  const actionType = getActionName(action.type);
+
+  const previousStatus = typeof state.status === 'object' ? state.status : [];
+
+  const newStatus = previousStatus.filter(
+    (currentStatus: Status) => currentStatus.actionName !== actionType
+  );
+
+  const status = !!newStatus
+    ? [
+        ...newStatus,
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Rejected,
+        },
+      ]
+    : [
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Rejected,
+        },
+      ];
+
+  state.status = status;
+  state.error = action?.payload?.message;
+};

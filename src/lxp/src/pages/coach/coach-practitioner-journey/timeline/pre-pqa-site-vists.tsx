@@ -65,8 +65,9 @@ export const PrePqaVisits = ({
             (index === 1 && timeline.prePQAVisitDate2Color);
 
           const attendedRule =
-            (visit?.visitType?.order === 1 && !visit.attended) ||
-            (!!previousVisit?.attended && !visit?.attended);
+            !!visit &&
+            ((!previousVisit && !visit.attended) ||
+              (!!previousVisit?.attended && !visit?.attended));
 
           return (
             <div className="my-4" key={visit?.id}>

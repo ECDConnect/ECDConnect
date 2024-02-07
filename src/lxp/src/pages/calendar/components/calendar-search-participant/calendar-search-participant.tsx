@@ -135,7 +135,7 @@ export const CalendarSearchParticipant: React.FC<
   }, [customList, selectedData, onDone]);
 
   useEffect(() => {
-    if (customList) return;
+    if (customList?.length) return;
 
     if (
       !!practitioners &&
