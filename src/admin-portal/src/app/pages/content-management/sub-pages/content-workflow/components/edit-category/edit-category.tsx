@@ -26,6 +26,10 @@ import {
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CategoryForm from './category-form/category-form';
+import {
+  bulkUpdateProgressTrackingCategoryImages,
+  bulkUpdateProgressTrackingSubCategoryImages,
+} from '@ecdlink/graphql';
 
 export interface ContentViewProps {
   content: any;
@@ -60,8 +64,14 @@ export default function EditCategory({
   };
   const allowedFileSize = 2631488;
 
-  const mutationName = `update${contentType?.name}`;
+  const [saveCategoryImages] = useMutation(
+    bulkUpdateProgressTrackingCategoryImages
+  );
+  const [saveSubCategoryImages] = useMutation(
+    bulkUpdateProgressTrackingSubCategoryImages
+  );
 
+  const mutationName = `update${contentType?.name}`;
   const creationMutationName = `create${contentType?.name}`;
 
   const updateMutation = gql` 
@@ -255,6 +265,19 @@ export default function EditCategory({
       }).catch(() => {
         setLoading(false);
       });
+      // call back-end to update all other language images
+      if ('imageUrl' in model) {
+        await saveCategoryImages({
+          variables: {
+            contentId: +content.id,
+            contentTypeId: +contentType.id,
+            localeId: selectedLanguageId.toString(),
+            imageUrl: model['imageUrl'],
+          },
+        }).catch((error) => {
+          console.log(error);
+        });
+      }
     }
 
     setNotification({
@@ -292,6 +315,20 @@ export default function EditCategory({
               localeId: selectedLanguageId.toString(),
             },
           });
+          // call back-end function to copy images to other languages
+          if ('imageUrl' in item) {
+            await saveSubCategoryImages({
+              variables: {
+                contentId: +content.id,
+                contentTypeId: +contentType.id,
+                localeId: selectedLanguageId.toString(),
+                imageUrl: item?.imageUrl,
+              },
+            }).catch((error) => {
+              console.log(error);
+            });
+          }
+
           if (updateThemeDayResponse) {
             setNotification({
               title: `Changes saved!`,

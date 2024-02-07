@@ -5633,6 +5633,8 @@ export type Mutation = {
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   bulkUpdateCoachingCircleTopicDates: Scalars['Boolean'];
+  bulkUpdateProgressTrackingCategoryImages: Scalars['Boolean'];
+  bulkUpdateProgressTrackingSubCategoryImages: Scalars['Boolean'];
   calculateCaregiverReportBack: Scalars['Boolean'];
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   calculateClubChildAttendance: Scalars['Boolean'];
@@ -6419,6 +6421,20 @@ export type MutationBulkUpdateCoachingCircleTopicDatesArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   localeId: Scalars['UUID'];
   startDate: Scalars['DateTime'];
+};
+
+export type MutationBulkUpdateProgressTrackingCategoryImagesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  imageUrl?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
+};
+
+export type MutationBulkUpdateProgressTrackingSubCategoryImagesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  imageUrl?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
 };
 
 export type MutationCalculateChildrenRegistrationRemovalArgs = {
