@@ -583,6 +583,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                     <ProgrammePlanningRoutineListItemUpdated
                       key={`id_${routineItem.id}`}
                       routineItem={routineItem}
+                      storyBookId={currentDailyProgramme?.storyBookId}
                       day={currentDailyProgramme}
                       selectedDate={selectedDate}
                       onClick={() => onProgrammeClick(routineItem)}

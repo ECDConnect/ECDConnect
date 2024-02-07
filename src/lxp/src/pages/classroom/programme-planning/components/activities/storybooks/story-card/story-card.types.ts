@@ -11,6 +11,7 @@ export interface StoryCardProps extends ComponentBaseProps {
   buttonText?: string;
   buttonIcon?: string;
   hideDetails?: boolean;
+  radioEnabled?: boolean;
   onSelected: () => void;
   onCleared: () => void;
   onActivityCleared?: () => void;

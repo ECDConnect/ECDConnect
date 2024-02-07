@@ -12,6 +12,7 @@ import {
   getPractitionerByUserId,
   updatePractitionerShareInfo,
   updatePrincipalInvitation,
+  getPractitionerDisplayMetrics,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -72,6 +73,15 @@ const practitionerSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
+    setThunkActionStatus(builder, getPractitionerDisplayMetrics);
+    builder.addCase(
+      getPractitionerDisplayMetrics.fulfilled,
+      (state, action) => {
+        state.practitionersMetrics = action.payload;
+
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
     });

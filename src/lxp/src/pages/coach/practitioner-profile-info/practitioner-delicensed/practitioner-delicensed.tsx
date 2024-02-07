@@ -65,6 +65,7 @@ export const PractitionerDelicensed: React.FC<PractitionerDelicensedProps> = ({
           collectedSSPlaykit: playkitReturned,
         })
       );
+      history.push(ROUTES.COACH.PRACTITIONERS);
     }
   };
 

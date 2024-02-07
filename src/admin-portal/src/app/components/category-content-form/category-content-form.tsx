@@ -190,7 +190,7 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
               .map((item: any, idx: number) => {
                 return (
                   <>
-                    <div className="mt-8">
+                    <div className="mt-8" key={`subCats_` + idx}>
                       <Typography
                         type={'h4'}
                         color={'textDark'}
@@ -249,7 +249,7 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
               .map((item: any, idx: number) => {
                 return (
                   <>
-                    <div className="mt-8">
+                    <div className="mt-8" key={`subCat_` + idx}>
                       <Typography
                         type={'h4'}
                         color={'textDark'}

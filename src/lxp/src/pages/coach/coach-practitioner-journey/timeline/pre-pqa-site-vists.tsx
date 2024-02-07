@@ -96,6 +96,7 @@ export const PrePqaVisits = ({
                     onClick={() =>
                       onClick({
                         visit,
+                        visitTypeName: currentVisit?.visitType?.name || '',
                         visitEventId: currentVisit?.eventId,
                         eventType:
                           visit?.visitType?.name ===

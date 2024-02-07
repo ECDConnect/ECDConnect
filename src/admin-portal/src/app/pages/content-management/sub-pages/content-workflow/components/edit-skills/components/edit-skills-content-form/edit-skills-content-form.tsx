@@ -60,10 +60,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }) ?? [];
 
   const getAllCall = `GetAll${optionDefinition?.contentName}`;
-
   const [tempData, setTempData] = useState<any[]>([]);
-  const [tableData, setTableData] = useState<any[]>([]);
-
   const [currentIds, setCurrentIds] = useState<string[]>();
 
   const query = gql` 
@@ -129,6 +126,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           }
         }
         imageUrl
+        imageHexColor
         description
         name
         __typename
@@ -202,6 +200,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   const [handleInitialValue, setHandleInitialValue] = useState(true);
 
   const handleNumberOfInputs = (sub) => {
+    // eslint-disable-next-line array-callback-return
     sub?.map((item) => {
       while (item?.skills?.length < 5) {
         item?.skills?.push({
@@ -325,25 +324,25 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentData, isReview, currentIds]);
 
-  const selectItem = (id: string) => {
-    id = id.toString();
-    const copy = Object.assign([], currentIds);
+  // const selectItem = (id: string) => {
+  //   id = id.toString();
+  //   const copy = Object.assign([], currentIds);
 
-    const currentIndex = currentIds?.findIndex((x) => x === id) ?? -1;
-    if (currentIndex > -1) {
-      copy.splice(currentIndex, 1);
-    } else {
-      copy.push(id);
-    }
+  //   const currentIndex = currentIds?.findIndex((x) => x === id) ?? -1;
+  //   if (currentIndex > -1) {
+  //     copy.splice(currentIndex, 1);
+  //   } else {
+  //     copy.push(id);
+  //   }
 
-    setCurrentIds(copy);
+  //   setCurrentIds(copy);
 
-    if (copy && setSelectedItems) {
-      const returnString = copy.join(',') ?? '';
+  //   if (copy && setSelectedItems) {
+  //     const returnString = copy.join(',') ?? '';
 
-      setSelectedItems(returnString);
-    }
-  };
+  //     setSelectedItems(returnString);
+  //   }
+  // };
 
   const [changedArr, setChangedArr] = useState([]);
 
@@ -403,10 +402,12 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       }
     },
     [
-      advancingFurtherLevelObj,
+      advancingFurtherLevelObj?.subCategories,
+      advancingFurtherState,
       changedArr,
-      movingOnLevelObj,
-      towardsGradeRLevelObj,
+      movingOnState,
+      towardsGradeRLevelObj?.subCategories,
+      towardsGradeRState,
     ]
   );
 
@@ -475,7 +476,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
         );
       },
     });
-  }, [dialog]);
+  }, [cancelEdit, dialog, languageId, setSelectedLanguageId]);
 
   useEffect(() => {
     if (
@@ -496,6 +497,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     subcategoriesContentData?.GetAllProgressTrackingSubCategory,
     towardsGradeRState,
     handleInitialValue,
+    displayEmptySkills,
   ]);
 
   if (tempData && displayFields) {
@@ -520,7 +522,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           {movingOnState?.subCategories &&
             movingOnState?.subCategories?.map((item, itemIdx) => {
               return (
-                <div key={item + itemIdx}>
+                <div key={`movingOnStateSubCat_` + itemIdx}>
                   <div className="mt-4 flex items-center gap-4">
                     <div className="bg-tertiary flex h-8 w-8 items-center justify-center rounded-full">
                       <img
@@ -544,6 +546,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     return (
                       <>
                         <Typography
+                          key={`movingOnStateSkill_` + idx}
                           type={'h4'}
                           color={'textDark'}
                           text={idx === 0 ? `Skill text *` : `Skill text`}
@@ -577,7 +580,10 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             advancingFurtherState?.subCategories?.map((item, itemIdx) => {
               return (
                 <>
-                  <div className="mt-4 flex items-center gap-4">
+                  <div
+                    className="mt-4 flex items-center gap-4"
+                    key={`advancingFurtherSubcat_` + itemIdx}
+                  >
                     <div className="bg-tertiary flex h-8 w-8 items-center justify-center rounded-full">
                       <img
                         src={item?.imageUrl}
@@ -600,6 +606,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     return (
                       <>
                         <Typography
+                          key={`advancingFurtherSkill_` + idx}
                           type={'h4'}
                           color={'textDark'}
                           text={idx === 0 ? `Skill text *` : `Skill text`}
@@ -633,7 +640,10 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             towardsGradeRState?.subCategories?.map((item, itemIdx) => {
               return (
                 <>
-                  <div className="mt-4 flex items-center gap-4">
+                  <div
+                    className="mt-4 flex items-center gap-4"
+                    key={`rstateSubCat_` + itemIdx}
+                  >
                     <div className="bg-tertiary flex h-8 w-8 items-center justify-center rounded-full">
                       <img
                         src={item?.imageUrl}
@@ -656,6 +666,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     return (
                       <>
                         <Typography
+                          key={`rstateskill_` + idx}
                           type={'h4'}
                           color={'textDark'}
                           text={idx === 0 ? `Skill text *` : `Skill text`}

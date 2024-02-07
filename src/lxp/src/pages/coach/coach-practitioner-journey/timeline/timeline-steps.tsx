@@ -24,10 +24,12 @@ export type ScheduleEventType =
   | 'Re-accreditation'
   | 'Re-accreditation follow-up'
   | 'First site visit'
-  | 'Second site visit';
+  | 'Second site visit'
+  | 'General support visit';
 
 export interface ScheduleProps {
-  visit: Visit;
+  visitTypeName: string;
+  visit?: Visit;
   visitEventId?: string;
   eventType: ScheduleEventType;
 }
@@ -433,6 +435,7 @@ export const timelineSteps = ({
         actionButtonOnClick: () =>
           onActionButtonClick({
             visit: currentVisit!,
+            visitTypeName: currentVisit?.visitType?.name || '',
             visitEventId: currentVisit?.eventId,
             eventType: visitTypes.pqa.firstPQA.eventType,
             scheduleStartText: visitTypes.pqa.firstPQA.scheduleStartText,
@@ -549,6 +552,7 @@ export const timelineSteps = ({
         actionButtonOnClick: () =>
           onActionButtonClick({
             visit: currentVisit!,
+            visitTypeName: currentVisit?.visitType?.name || '',
             visitEventId: currentVisit?.eventId,
             eventType: visitTypes.reaccreditation.first.eventType,
             scheduleStartText:

@@ -90,6 +90,7 @@ export const StoryActivitySelectView: React.FC<
               onStoryCleared={() => onClearStory()}
               selected={selectedActivityId === activity.id}
               title={activity.name}
+              storyBookId={story.id}
             />
           );
         })}

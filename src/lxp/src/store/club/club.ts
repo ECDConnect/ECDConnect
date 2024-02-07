@@ -365,7 +365,7 @@ const clubSlice = createSlice({
       (state, action) => {
         setFulfilledThunkActionStatus(state, action);
 
-        const clubId = action.meta.arg.clubId;
+        const clubId = action.meta.arg.args.clubId;
 
         const isCoach = !!state.clubsForCoach[clubId]?.club;
 

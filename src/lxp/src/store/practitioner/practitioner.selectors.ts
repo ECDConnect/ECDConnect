@@ -38,3 +38,6 @@ export const getPractitionersByUserIds = (ids: string[]) =>
       );
     }
   );
+
+export const getPractitionersMetrics = (state: RootState) =>
+  state.practitioner.practitionersMetrics;

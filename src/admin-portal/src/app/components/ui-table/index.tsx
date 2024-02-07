@@ -22,12 +22,7 @@ import {
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
-import {
-  LanguageDto,
-  NOTIFICATION,
-  useDialog,
-  useNotifications,
-} from '@ecdlink/core';
+import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { ContentTypes } from '../../constants/content-management';
 import { UiTableProps } from './type';
 import AlertModal from '../dialog-alert/dialog-alert';
@@ -210,7 +205,9 @@ export default function UiTable({
   useEffect(() => {
     setSearchRows(getSearchResults());
     setLastUpdate(Date.now());
-    setSearchValue(searchInput);
+    if (searchInput) {
+      setSearchValue(searchInput);
+    }
   }, [getSearchResults, searchInput]);
 
   const makeColumns = (cols: any[] = []) => {
@@ -407,11 +404,20 @@ export default function UiTable({
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
-            <div className="ml-1 flex cursor-pointer">
+            <div key={`cat_` + index} className="ml-1 flex cursor-pointer">
               <div
-                className={`bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+                className={`${
+                  item?.imageHexColor ? '' : 'bg-tertiary'
+                } flex h-9 w-9 items-center justify-center rounded-full`}
+                style={{
+                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
+                }}
               >
-                <img alt="skill" src={item?.imageUrl} className="h-6 w-6" />
+                <img
+                  alt="skill"
+                  src={item?.imageUrl}
+                  className="h-6 w-6 object-contain"
+                />
               </div>
             </div>
           ))}
@@ -422,7 +428,7 @@ export default function UiTable({
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
             <div
-              key={item?.id}
+              key={`subCategories_` + item?.id}
               className={' text-textMid m-1 rounded-full py-1 text-xs'}
             >
               {index === display_value?.length - 1
@@ -441,7 +447,7 @@ export default function UiTable({
             );
             return (
               <div
-                key={item?.id}
+                key={`language_` + item?.id}
                 className={' text-textMid m-1 rounded-full py-1 text-xs'}
               >
                 {index === display_value?.length - 1
@@ -457,7 +463,7 @@ export default function UiTable({
         <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
           {display_value?.map((item: any) => (
             <div
-              key={item?.id}
+              key={`role_` + item?.id}
               className={
                 `${
                   item[column.displayProperty] === 'Administrator'

@@ -10,7 +10,6 @@ import {
   MutationUpdatePractitionerShareInfoArgs,
   LicenseModelInput,
   NotificationDisplay,
-  PractitionerRemovalHistory,
   PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 
@@ -29,6 +28,7 @@ export const PractitionerActions = {
     'updatePractitionerBusinessWalkThrough',
   UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
   UPDATE_PRINCIPAL_INVITATION: 'updatePrincipalInvitation',
+  GET_PRACTITIONERS_DISPLAY_METRICS: 'getPractitionersDisplayMetrics',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -179,12 +179,11 @@ export const getAllPractitioners = createAsyncThunk<
 
 export const getPractitionerDisplayMetrics = createAsyncThunk<
   NotificationDisplay[],
-  {},
+  { userType?: 'principal' | 'practitioner' | 'coach' },
   ThunkApiType<RootState>
 >(
-  'getPractitionersDisplayMetrics',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  PractitionerActions.GET_PRACTITIONERS_DISPLAY_METRICS,
+  async ({ userType = 'principal' }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -195,7 +194,7 @@ export const getPractitionerDisplayMetrics = createAsyncThunk<
       if (userAuth?.auth_token) {
         practitionersMessageData = await new PractitionerService(
           userAuth?.auth_token!
-        ).displayMetrics('principal');
+        ).displayMetrics(userType);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

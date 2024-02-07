@@ -34,6 +34,7 @@ import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
   PqaActions,
+  addCoachVisitInviteForPractitioner,
   getPractitionerTimeline,
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
@@ -68,6 +69,7 @@ import {
   PointsUserSummary,
   UpdateVisitPlannedVisitDateModelInput,
   Visit,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ExclamationIcon } from '@heroicons/react/solid';
@@ -78,6 +80,7 @@ import { getReAccreditationStepData } from './timeline/re-accreditation/step';
 import { getUserPointsSummaryForCoach } from '@/store/points/points.actions';
 import { pointsConstants } from '@/constants/points';
 import ROUTES from '@/routes/routes';
+import { coachSelectors } from '@/store/coach';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -121,6 +124,7 @@ export const CoachPractitionerJourney = () => {
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
+  const coach = useSelector(coachSelectors.getCoach);
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
@@ -186,7 +190,16 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const onSchedule = ({ eventType, visit, visitEventId }: ScheduleProps) => {
+  const getTimeline = useCallback(async () => {
+    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  }, [practitionerId]);
+
+  const onSchedule = ({
+    eventType,
+    visit,
+    visitEventId,
+    visitTypeName,
+  }: ScheduleProps) => {
     const today = new Date();
     const event: CalendarAddEventInfo = !!visitEventId
       ? {
@@ -230,7 +243,7 @@ export const CoachPractitionerJourney = () => {
             state: {
               action: 'onStart',
               actionParams: {
-                visitName: visit.visitType?.name || '',
+                visitName: visitTypeName,
               },
             },
           },
@@ -239,13 +252,29 @@ export const CoachPractitionerJourney = () => {
     calendarAddEvent({
       event,
       onUpdated: (isNew: boolean, event: CalendarEventModel) => {
-        const payload: UpdateVisitPlannedVisitDateModelInput = {
-          visitId: visit.id,
-          plannedVisitDate: event.start,
-          eventId: event.id,
-        };
-        appDispatch(pqaActions.updateVisitPlannedVisitDate(payload));
-        appDispatch(pqaThunkActions.updateVisitPlannedVisitDate(payload));
+        if (!!visit) {
+          const payload: UpdateVisitPlannedVisitDateModelInput = {
+            visitId: visit.id,
+            plannedVisitDate: event.start,
+            eventId: event.id,
+          };
+          appDispatch(pqaActions.updateVisitPlannedVisitDate(payload));
+          appDispatch(pqaThunkActions.updateVisitPlannedVisitDate(payload));
+        } else {
+          if (visitTypeName === visitTypes.requestedVisit.description) {
+            const payload: VisitModelInput = {
+              practitionerId: practitionerId,
+              coachId: coach?.id,
+              attended: false,
+              eventId: event.id,
+              actualVisitDate: event.start,
+              plannedVisitDate: event.start,
+            };
+
+            appDispatch(addCoachVisitInviteForPractitioner(payload));
+            getTimeline();
+          }
+        }
       },
       onCancel: () => {},
     });
@@ -256,6 +285,7 @@ export const CoachPractitionerJourney = () => {
     eventType,
     visit,
     visitEventId,
+    visitTypeName,
   }: ScheduleOrStartProps) => {
     dialog({
       position: DialogPosition.Middle,
@@ -275,7 +305,7 @@ export const CoachPractitionerJourney = () => {
               type: 'filled',
               onClick: () => {
                 onSubmit();
-                onSchedule({ visit, visitEventId, eventType });
+                onSchedule({ visit, visitEventId, eventType, visitTypeName });
               },
               leadingIcon: 'CalendarIcon',
             },
@@ -286,7 +316,7 @@ export const CoachPractitionerJourney = () => {
               type: 'outlined',
               onClick: () => {
                 onSubmit();
-                onStart(visit.visitType?.name || '');
+                onStart(visitTypeName);
               },
               leadingIcon: 'ArrowCircleRightIcon',
             },
@@ -304,6 +334,7 @@ export const CoachPractitionerJourney = () => {
   const filteredPqaVisits = timeline?.pQASiteVisits?.filter(
     (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
   );
+
   const uncompletedPqaVisits = filteredPqaVisits?.length
     ? filteredPqaVisits
     : [];
@@ -312,6 +343,7 @@ export const CoachPractitionerJourney = () => {
     (visit) =>
       !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
   );
+
   const uncompletedReAccreditationVisits =
     filteredReAccreditationVisits?.length &&
     isDateWithinThreeMonths(
@@ -320,7 +352,13 @@ export const CoachPractitionerJourney = () => {
       ? filteredReAccreditationVisits
       : [];
 
+  const incompleteCoachVisits =
+    !!timeline && !!timeline.requestedCoachVisits
+      ? timeline.requestedCoachVisits.filter((visit) => !visit?.attended)
+      : [];
+
   const uncompletedVisits = [
+    ...incompleteCoachVisits,
     ...uncompletedPrePqaVisits,
     ...(isUserEnableToStartPqaVisit
       ? [...uncompletedPqaVisits, ...uncompletedReAccreditationVisits]
@@ -383,6 +421,7 @@ export const CoachPractitionerJourney = () => {
     return {
       visit: visit,
       visitEventId: visit.eventId,
+      visitTypeName: visit.visitType?.name || '',
       ...values,
     };
   };
@@ -424,15 +463,25 @@ export const CoachPractitionerJourney = () => {
     })
     .shift();
 
-  const onSupportVisit = (visitId?: string) => {
-    window.sessionStorage.setItem(
-      currentActivityKey,
-      visitId ? visitTypes.requestedVisit : visitTypes.supportVisit
-    );
-    if (visitId) {
+  const onStartRequestedSupportVisit = (visitId: string) => {
+    if (!!visitId) {
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visitTypes.requestedVisit.description
+      );
       window.sessionStorage.setItem(visitIdKey, visitId);
+      setShowForm(true);
     }
-    setShowForm(true);
+  };
+
+  const onSupportVisit = () => {
+    const options: ScheduleOrStartProps = {
+      visitTypeName: visitTypes.requestedVisit.description,
+      eventType: visitTypes.supportVisit.eventType,
+      scheduleStartText: visitTypes.supportVisit.scheduleStartText,
+    };
+
+    onScheduleOrStart(options);
   };
 
   const onFormBack = async () => {
@@ -457,7 +506,7 @@ export const CoachPractitionerJourney = () => {
     ) {
       window.sessionStorage.setItem(
         currentActivityKey,
-        visitTypes.supportVisit
+        visitTypes.supportVisit.description
       );
       window.sessionStorage.setItem(visitIdKey, visit.id);
     } else {
@@ -468,10 +517,6 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const getTimeline = useCallback(async () => {
-    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId]);
-
   const syncData = useCallback(async () => {
     if (!isOnline) return;
 
@@ -480,7 +525,7 @@ export const CoachPractitionerJourney = () => {
     await appDispatch(pqaThunkActions.addVisitFormData());
 
     getTimeline();
-  }, [appDispatch, getTimeline, isOnline]);
+  }, [getTimeline, isOnline]);
 
   useLayoutEffect(() => {
     if (selectedForm) {
@@ -812,7 +857,7 @@ export const CoachPractitionerJourney = () => {
             textColor="primary"
             icon="LocationMarkerIcon"
             text="Start support visit"
-            onClick={() => onSupportVisit('')}
+            onClick={() => onSupportVisit()}
           />
           {!!timeline && (
             <Steps
@@ -823,7 +868,7 @@ export const CoachPractitionerJourney = () => {
                 onStart,
                 onScheduleOrStart,
                 onStartRequestedSupportVisit(visitId) {
-                  onSupportVisit(visitId);
+                  onStartRequestedSupportVisit(visitId);
                 },
                 isLoading,
                 isOnline,

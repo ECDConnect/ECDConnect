@@ -361,9 +361,12 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
       appDispatch(
         getActivityMeetRegularDetails({
-          clubId: practitioner.clubId,
-          month: 0, // Fetch the whole year. TODO: figure out how to handle the actual points page overwriting this with just the current month :(
-          year: new Date().getFullYear(),
+          forceReload: true,
+          args: {
+            clubId: practitioner.clubId,
+            month: 0,
+            year: new Date().getFullYear(),
+          },
         })
       );
     }
@@ -1394,21 +1397,20 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               <Button
                 type="filled"
                 color="primary"
+                textColor="white"
                 className={`mt-6 w-11/12 ${
                   !practitioner?.isPrincipal &&
                   !practitioner?.isFundaAppAdmin &&
                   'mb-6'
                 }`}
-                onClick={() => setRemovePractionerReasonsVisible(true)}
-              >
-                {renderIcon('TrashIcon', 'w-5 h-5 color-white text-white mr-2')}
-                <Typography
-                  type="body"
-                  className="mr-4"
-                  color="white"
-                  text={`Remove ${practitioner?.user?.firstName}`}
-                ></Typography>
-              </Button>
+                onClick={() =>
+                  isOnline
+                    ? setRemovePractionerReasonsVisible(true)
+                    : showOnlineOnly()
+                }
+                icon="TrashIcon"
+                text={`Remove ${practitioner?.user?.firstName}`}
+              />
             </div>
             {(practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) && (
               <div className="flex w-full justify-center">

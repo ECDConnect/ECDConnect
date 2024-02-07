@@ -18,10 +18,11 @@ import BaseListItemUpdated from '../base-list-item-updated/base-list-item-update
 import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { storyBookSelectors } from '@/store/content/story-book';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
-> = ({ routineItem, onClick, day, selectedDate }) => {
+> = ({ routineItem, onClick, day, selectedDate, storyBookId }) => {
   const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
@@ -38,6 +39,9 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
     activitySelectors.getActivityById(
       getActivityIdForRoutineItem(routineItem.name, day)
     )
+  );
+  const storyBook = useSelector(
+    storyBookSelectors.getStoryBookById(storyBookId)
   );
 
   const isPastDay = () => {
@@ -181,12 +185,21 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       return (
         <Card className="bg-secondary w-full rounded-xl py-4 px-2">
           <div className={'flex w-full flex-row items-center justify-between'}>
-            <Typography
-              type={'help'}
-              // className={'text-white'}
-              text={activity ? activity.name : ''}
-              color={'white'}
-            />
+            {routineItem.name === 'Story book' ? (
+              <Typography
+                type={'help'}
+                // className={'text-white'}
+                text={storyBook ? storyBook.name : ''}
+                color={'white'}
+              />
+            ) : (
+              <Typography
+                type={'help'}
+                // className={'text-white'}
+                text={activity ? activity.name : ''}
+                color={'white'}
+              />
+            )}
             <StatusChip
               className={'mr-2'}
               padding={'px-2 py-1'}
