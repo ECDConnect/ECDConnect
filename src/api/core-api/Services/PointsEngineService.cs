@@ -1885,7 +1885,7 @@ namespace EcdLink.Api.CoreApi.Services
                             FindValue = "MeetingDate",
                             ReplacementValue = startDate.ToShortDateString()
                         });
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), true);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
                     }
                 }
 

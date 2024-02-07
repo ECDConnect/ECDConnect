@@ -308,7 +308,7 @@ namespace EcdLink.Api.CoreApi.Services
                     FindValue = "DueDate",
                     ReplacementValue = dueDate.ToString("dddd, dd MMMM yyyy")
                 });
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, item.pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90), true);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, item.pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90), false, true);
             }
         }
 
