@@ -1,0 +1,3 @@
+INSERT INTO public."ContentTypeField"
+("Id", "FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'imageHexColor', 1, true, '', 5, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', '', '258a15e6-3736-45ea-875c-48d9377de4c8', 'Image Hex Color', false, true, true);

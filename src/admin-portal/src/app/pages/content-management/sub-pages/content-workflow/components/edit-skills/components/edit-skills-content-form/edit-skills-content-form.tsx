@@ -126,6 +126,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           }
         }
         imageUrl
+        imageHexColor
         description
         name
         __typename

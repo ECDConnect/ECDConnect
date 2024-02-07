@@ -59,6 +59,7 @@ class ProgressTrackingService {
           name
           description
           imageUrl
+          imageHexColor
           skills {
             id
           } 
