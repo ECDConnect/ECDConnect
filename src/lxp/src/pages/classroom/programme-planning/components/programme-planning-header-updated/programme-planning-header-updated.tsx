@@ -211,12 +211,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             {showChips && (
               <Card className={`flex w-full items-center rounded-xl p-2`}>
                 <div
-                  className={`flex w-full items-center rounded-xl p-2 ${
-                    !chosedTheme ? 'bg-uiBg' : ''
-                  }`}
-                  style={{
-                    backgroundColor: chosedTheme?.color || 'bg-uiBg',
-                  }}
+                  className={`flex w-full items-center rounded-xl p-2 ${'bg-uiBg'}`}
+                  // Theme colours no longer editable and always null. If this changes, use this.
+                  // style={{
+                  //   backgroundColor: chosedTheme?.color || 'bg-uiBg',
+                  // }}
                 >
                   {chosedTheme && (
                     <img
@@ -228,7 +227,8 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
                   {dailyProgramme && theme?.dailyProgrammes?.length ? (
                     <Typography
                       type="small"
-                      color={chosedTheme ? 'white' : 'textDark'}
+                      color="textDark"
+                      // color={chosedTheme ? 'white' : 'textDark'}
                       text={
                         themeName
                           ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
