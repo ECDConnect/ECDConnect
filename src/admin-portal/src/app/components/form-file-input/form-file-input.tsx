@@ -26,6 +26,7 @@ import dogEmoji from '../../../assets/emojis/avatar_dog.png';
 import penguinEmoji from '../../../assets/emojis/penguinEmoji.png';
 import monkeyEmoji from '../../../assets/emojis/avatar_monkey.png';
 import themesIcons from './components/themeIcons/themeIcons';
+import { SearchCircleIcon } from '@heroicons/react/outline';
 
 export interface FileModel {
   fileName: string;
@@ -59,6 +60,7 @@ const errorContainerStyle = 'border-errorMain';
 const iconBaseStyle = 'mx-auto h-12 w-12';
 const iconStyle = 'text-tertiary';
 const fileIconStyle = 'text-successMain';
+const themeIconStyle = 'mx-auto h-12 w-12 text-pink-700';
 const errorIconStyle = 'text-errorMain';
 
 const FormFileInput: React.FC<FormFileInputProps> = ({
@@ -316,7 +318,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           className="font-lg block pb-1 text-sm text-gray-900"
         >
           {label}
-          {acceptedFormats && (
+          {acceptedFormats && !isThemeFormFile && (
             <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
           )}
         </label>
@@ -397,16 +399,32 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
               />
             ) : (
               <div>
-                <PhotographIcon
-                  className={classNames(getIconStyle(), iconBaseStyle, '')}
-                />
-                <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
-                  <DesktopComputerIcon className="mr-4 h-5 w-5">
-                    {' '}
-                  </DesktopComputerIcon>
-                  Browse my computer
-                </div>
-                <p className="text-md py-2 text-gray-700">or drag file here</p>
+                {!isThemeFormFile ? (
+                  <>
+                    <PhotographIcon
+                      className={classNames(getIconStyle(), iconBaseStyle, '')}
+                    />
+                    <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                      <DesktopComputerIcon className="mr-4 h-5 w-5">
+                        {' '}
+                      </DesktopComputerIcon>
+                      Browse my computer
+                    </div>
+                    <p className="text-md py-2 text-gray-700">
+                      or drag file here
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <PhotographIcon className={themeIconStyle} />
+                    <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                      <SearchCircleIcon className="mr-4 h-5 w-5">
+                        {' '}
+                      </SearchCircleIcon>
+                      Search for a theme icon
+                    </div>
+                  </>
+                )}
               </div>
             )}
             {/* <span className={labelStyle}>{getLabel()}</span> */}

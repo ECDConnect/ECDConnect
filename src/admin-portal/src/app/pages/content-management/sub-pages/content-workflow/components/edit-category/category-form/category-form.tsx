@@ -11,7 +11,6 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../../../../content-management-models';
-import { Alert } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import CategoryContentForm from '../../../../../../../components/category-content-form/category-content-form';
 
@@ -55,7 +54,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   };
 
   const [fields, setFields] = useState<any>();
-  console.log(template.fields);
   useEffect(() => {
     if (template) {
       const fields = renderFields(template.fields);

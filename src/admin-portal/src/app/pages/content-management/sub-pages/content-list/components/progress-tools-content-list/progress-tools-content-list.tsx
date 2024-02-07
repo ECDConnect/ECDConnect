@@ -84,24 +84,6 @@ export default function ProgressToolsContentList({
           displayFields.push(x);
       });
 
-      // if (contentType.name === 'CoachingCircleTopics') {
-      //   displayFields.push(
-      //     {
-      //       "__typename": "ContentTypeField",
-      //       "fieldOrder": orderedList.length + 1,
-      //       "fieldName": "dateUpdated",
-      //       "fieldType": {
-      //           "__typename": "FieldType",
-      //           "name": "Text",
-      //           "dataType": "text"
-      //       },
-      //       "dataLinkName": "",
-      //       "displayName": "Date Updated",
-      //       "displayMainTable": true,
-      //       "displayPage": false
-      //   });
-      // }
-
       if (choosedSectionTitle === 'Small/large group activities') {
         const smallLargeGroupsDisplayFields = displayFields?.filter(
           (item) => item?.fieldName !== 'subType'
@@ -276,14 +258,14 @@ export default function ProgressToolsContentList({
         // );
         setTableData(moreInforItems);
       } else if (selectedTab === 2) {
-        let postNatalData = moreInforItems.filter(
+        const postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
         );
         setTableData(
           postNatalData?.length > 0 ? postNatalData : moreInforItems
         );
       } else if (selectedTab === 3) {
-        let anteNatalData = moreInforItems.filter(
+        const anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
 
@@ -421,7 +403,8 @@ export default function ProgressToolsContentList({
     return (
       <div>
         <div className="flex flex-col">
-          <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
+          {/* EC-1701 - remove search bar  */}
+          {/* <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
             <div className="bg-adminPortalBg relative w-full rounded-md lg:w-6/12">
               <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                 <SearchIcon className="text-textMid h-5 w-5" />
@@ -432,7 +415,7 @@ export default function ProgressToolsContentList({
                 onChange={onSearch}
               />
             </div>
-          </div>
+          </div> */}
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
