@@ -114,6 +114,11 @@ namespace EcdLink.Api.CoreApi.Services
                         FindValue = "RemovalDate",
                         ReplacementValue = DateTime.Now.AddDays(10).ToLongDateString()
                     });
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "ChildUserId",
+                        ReplacementValue = child.UserId
+                    });
                     string parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
                     var userToSend = await _userManager.FindByIdAsync(parentUserId);
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, null, true);

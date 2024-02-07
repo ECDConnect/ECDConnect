@@ -54,3 +54,9 @@ INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","Upd
 
 		update "MessageTemplate" set "Action" = '{"url":"/practitioner/profile/edit"}' where "TemplateType"  = 'coach-visit-requested'; 
 	update "MessageLog" set "Action" = '{"url":"/practitioner/profile/edit"}' where "MessageTemplateType" = 'coach-visit-requested';	
+
+
+UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/child-profile","state":{"childId":"{{ChildUserId}}"}}'
+	WHERE "TemplateType"  = 'child-reg-incomplete';
+update "MessageLog" set "Action"='{"url":"/child-profile","state":{"childId":"{{ChildUserId}}"}}' where "MessageTemplateType" = 'child-reg-incomplete';	
