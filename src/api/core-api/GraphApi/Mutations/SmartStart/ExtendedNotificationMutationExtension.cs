@@ -651,7 +651,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = dueDate
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3), false, true);
         }
 
         public async Task<bool> SendTraineeJourneyStartSelfNotification(
