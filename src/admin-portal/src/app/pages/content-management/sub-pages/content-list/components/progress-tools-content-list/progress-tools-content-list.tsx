@@ -180,6 +180,7 @@ export default function ProgressToolsContentList({
           __typename
         }
         imageUrl
+        imageHexColor
         description
         name
         __typename

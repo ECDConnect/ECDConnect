@@ -122,6 +122,7 @@ export default function EditSkills({
           __typename
         }
         imageUrl
+        imageHexColor
         description
         name
         __typename
