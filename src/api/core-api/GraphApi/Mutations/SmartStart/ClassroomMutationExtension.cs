@@ -50,6 +50,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
+            [Service] INotificationService notificationService,
+            [Service] UserManager<ApplicationUser> userManager,
             Guid id,
             ClassroomGroup input)
         {
@@ -123,6 +125,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 var learnersReassigned = UpdateLearners(repoFactory, uId, id, hierarchy);
                 UpdateChildren(repoFactory, uId, hierarchy, learnersReassigned, input.UserId.ToString());              
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
+
+                if (classRoomGroup.ClassroomId != null)
+                {
+                    var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+                    Classroom classRoom = classroomRepo.GetAll().Where(x => x.Id.Equals(classRoomGroup.ClassroomId)).FirstOrDefault();
+                    if (classRoom != null)
+                    {
+                        var principalToSend = userManager.FindByIdAsync(classRoom.UserId).Result;
+                        List<TagsReplacements> replacements = new List<TagsReplacements>();
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "ClassName",
+                            ReplacementValue = classRoom.Name
+                        });
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, principalToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
+                    }
+                }
 
                 return classRoomGroup;
             }
