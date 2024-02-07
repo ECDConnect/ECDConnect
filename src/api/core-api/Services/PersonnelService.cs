@@ -437,7 +437,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         _practiGenericRepo.Update(practi);
                         replacements.Add(new TagsReplacements()
                         {
-                            FindValue = "principalOrFAA",
+                            FindValue = "PrincipalOrFAA",
                             ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
                         });
 
