@@ -139,7 +139,6 @@ export type Activity = {
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
-  imageHexColor?: Maybe<Scalars['String']>;
   materials?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -224,7 +223,6 @@ export type ActivityInput = {
   availableLanguages?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
-  imageHexColor?: InputMaybe<Scalars['String']>;
   materials?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   notes?: InputMaybe<Scalars['String']>;
@@ -10785,6 +10783,7 @@ export type ProgressTrackingSubCategory = {
   __typename?: 'ProgressTrackingSubCategory';
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  imageHexColor?: Maybe<Scalars['String']>;
   imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   skills?: Maybe<Array<Maybe<ProgressTrackingSkill>>>;
@@ -10792,6 +10791,7 @@ export type ProgressTrackingSubCategory = {
 
 export type ProgressTrackingSubCategoryInput = {
   description?: InputMaybe<Scalars['String']>;
+  imageHexColor?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   skills?: InputMaybe<Scalars['String']>;
