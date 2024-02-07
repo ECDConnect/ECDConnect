@@ -214,7 +214,7 @@ export const formatDailyProgrammes = (
       messageBoardText: daily.messageBoardText,
       smallGroupActivityId: daily.smallGroupActivityId ?? 0,
       largeGroupActivityId: daily.largeGroupActivityId ?? 0,
-      storyBookId: daily.storyActivityId ?? 0,
+      storyBookId: daily.storyBookId ?? 0,
       storyActivityId: daily.storyActivityId ?? 0,
       isActive: isBefore(new Date(), new Date(programme.endDate)),
     };
