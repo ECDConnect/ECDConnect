@@ -110,6 +110,9 @@ export const EditPractitionerProfile: React.FC = () => {
           ).UpdatePractitionerProgress(user.id, 2.0);
         }
         appDispatch(notificationActions.resetFrontendNotificationState());
+        appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({ userId: user.id })
+        );
         appDispatch(practitionerThunkActions.getAllPractitioners({}));
         stopService();
         history.push(ROUTES.ROOT);
