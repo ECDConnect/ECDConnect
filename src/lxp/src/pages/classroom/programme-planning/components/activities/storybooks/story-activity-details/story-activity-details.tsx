@@ -635,17 +635,39 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           />
         </div>
         <div className="mt-2 p-4">
-          <Typography
-            className="mt-2 p-4"
-            type="markdown"
-            text={activity.notes}
-          />
           <Alert
+            title={'Tips'}
             className={'mt-4'}
             type={'info'}
-            title={activity.notes.replace(regex, '').replace(secondRegEx, '')}
+            message={activity.notes.replace(regex, '').replace(secondRegEx, '')}
           />
         </div>
+        {!disabled &&
+          (isSelected ? (
+            <div className="pl-4 pr-4">
+              <Button
+                type={'filled'}
+                className={'mt-4 w-full'}
+                color={'primary'}
+                textColor={'white'}
+                text={'Change activity'}
+                icon={'SwitchVerticalIcon'}
+                iconPosition={'start'}
+                onClick={handleActivitySwitched}
+              />
+            </div>
+          ) : (
+            <Button
+              type={'filled'}
+              className={'mx-4 mt-4'}
+              color={'primary'}
+              textColor={'white'}
+              text={'Choose this activity'}
+              icon={'CheckCircleIcon'}
+              iconPosition={'start'}
+              onClick={onActivitySelected}
+            />
+          ))}
       </div>
     </div>
   );
