@@ -57,6 +57,8 @@ export const SupportVisits = ({
                         ? 'visit'
                         : 'call'
                     }`
+                  : !!item?.eventId
+                  ? `Scheduled ${item?.visitType?.description || ''}`
                   : item?.visitType?.description || ''
               }
             />

@@ -330,6 +330,7 @@ class PQAService {
               plannedVisitDate
               insertedDate
               attended
+              eventId
               visitType {
                 description
                 id
