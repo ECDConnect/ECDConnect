@@ -33,6 +33,9 @@ export interface CategoryFormProps {
   setFilteredSubcategories?: (item: any[]) => void;
   allowedFileSize?: number;
   content?: any;
+  getValues?: any;
+  useWatch?: any;
+  formType?: string;
 }
 
 const contentWrapper = '';
@@ -46,6 +49,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   setFilteredSubcategories,
   allowedFileSize,
   content,
+  getValues,
+  useWatch,
+  formType,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -53,14 +59,18 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     setValue(name, state);
   };
 
+  const initialValues = getValues();
+
   const [fields, setFields] = useState<any>();
+  const watchFields = useWatch({ control });
+
   useEffect(() => {
-    if (template) {
-      const fields = renderFields(template.fields);
+    if (template && watchFields) {
+      const fields = renderFields(template?.fields);
       setFields(fields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template]);
+  }, [template, watchFields]);
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields.map((field) => {
@@ -74,7 +84,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormField
-                  label={title}
+                  label={title + ` *`}
                   nameProp={propName}
                   register={register}
                   error={errors[propName]?.message}
