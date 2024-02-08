@@ -1557,7 +1557,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                     #endregion
                     #region PQA REACCREDITATION DUE
-                    if (firstAccreditationPqaVisit != null && !firstAccreditationPqaVisit.Attended && firstAccreditationPqaVisit.PlannedVisitDate > DateTime.Now)
+                    if (firstAccreditationPqaVisit != null && !firstAccreditationPqaVisit.Attended && (firstAccreditationPqaVisit.PlannedVisitDate > DateTime.Now && firstAccreditationPqaVisit.PlannedVisitDate < DateTime.Now.AddMonths(3)))
                     {
                         notification.Subject = $"{firstAccreditationPqaVisit.PlannedVisitDate.ToShortDateString()}, PQA reaccreditation due";
                         notification.Icon = MetricsIconEnum.None.ToString(); //TODO
@@ -1659,6 +1659,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 #region ON LEAVE
                 if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date == DateTime.Now.Date))
+                {
+                    notification.Subject = "On leave";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region ON EXTENDED LEAVE
+                if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date >= DateTime.Now.Date || (x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date <= DateTime.Now.Date)))
                 {
                     notification.Subject = "On leave";
                     notification.Icon = MetricsIconEnum.Error.ToString();
