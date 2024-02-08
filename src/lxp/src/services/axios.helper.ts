@@ -124,10 +124,11 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           );
         }
         if (response.status >= 400) {
-          if (response.status === 408) {
+          if (response.status === 408 || response.status === 504) {
             alertTimeout();
+          } else {
+            alertGraphQL();
           }
-          alertGraphQL();
         }
       }
       return response;
