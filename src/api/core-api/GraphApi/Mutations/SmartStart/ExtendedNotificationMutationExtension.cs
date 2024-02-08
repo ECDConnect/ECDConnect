@@ -67,7 +67,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
-                FindValue = "principalOrFAA",
+                FindValue = "PrincipalOrFAA",
                 ReplacementValue = principalOrFAA
             });
             replacements.Add(new TagsReplacements()
@@ -87,7 +87,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
-                FindValue = "principalOrFAA",
+                FindValue = "PrincipalOrFAA",
                 ReplacementValue = principalOrFAA
             });
             replacements.Add(new TagsReplacements()
