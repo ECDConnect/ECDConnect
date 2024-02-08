@@ -6,7 +6,6 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
