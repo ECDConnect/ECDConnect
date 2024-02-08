@@ -71,6 +71,8 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
                     string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
                     string.Equals(x.To, notification.To) &&
+                    string.Equals(x.IsActive, true) &&
+                    string.Equals(x.Action, notification.Action) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
                     x.MessageDate.Value.Date == notification.MessageDate.Value.Date && x.IsActive == true
                 ).Any();
@@ -80,6 +82,8 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
                     string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
                     string.Equals(x.To, notification.To) &&
+                    string.Equals(x.IsActive, true) &&
+                    string.Equals(x.Action, notification.Action) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) && x.IsActive == true
                 ).Any();
             }
