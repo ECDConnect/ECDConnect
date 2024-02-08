@@ -218,6 +218,10 @@ export const AddProgrammeForm: React.FC<{
     } else {
       if (classroom?.id) {
         updateClassroom(e, classroom.id);
+      } else {
+        //an imported user could have rejected the invite which would have cleared the classroom
+        const classroomId = newGuid();
+        createClassroom(e, classroomId);
       }
       onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
     }
