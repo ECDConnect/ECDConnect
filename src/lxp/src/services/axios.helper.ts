@@ -142,7 +142,11 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           error.config.data,
           error.response?.data
         );
-        alertGraphQL();
+        if (error.message === 'Network Error') {
+          alertTimeout();
+        } else {
+          alertGraphQL();
+        }
       }
       return Promise.reject(error);
     }
