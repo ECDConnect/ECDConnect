@@ -153,7 +153,6 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
 
       item.idx = idx;
       tempArray[idx] = item;
-
       setsubcategoriesFilt(tempArray);
     },
     [subcategoriesFilt]
@@ -202,7 +201,7 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
                         className="bg-adminPortalBg my-4 rounded-lg p-1"
                         isAdminPortalField={true}
                         id={item?.id}
-                        value={subcategoriesFilt?.[idx]?.name || item?.name}
+                        value={subcategoriesFilt?.[idx]?.name}
                         onChange={(e) => onChange(e, idx, 'name')}
                         textInputType="input"
                         placeholder={'Add a response...'}
