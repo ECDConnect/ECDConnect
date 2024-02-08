@@ -28,6 +28,11 @@ const alertGraphQL = () => {
   window.dispatchEvent(new CustomEvent('graphql-error', {})); // AppErrorHandler listens for the event.
 };
 
+const alertTimeout = () => {
+  if (!!disableGraphqlErrorAlert) return;
+  window.dispatchEvent(new CustomEvent('timeout-error', {})); // AppErrorHandler listens for the event.
+};
+
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
   const blackList = [
     APIs.authLogin,
@@ -119,6 +124,9 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           );
         }
         if (response.status >= 400) {
+          if (response.status === 408) {
+            alertTimeout();
+          }
           alertGraphQL();
         }
       }
