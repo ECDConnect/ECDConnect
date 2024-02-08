@@ -13,17 +13,14 @@ import {
   ActionModal,
 } from '@ecdlink/ui';
 import {
-  add,
   addDays,
   format,
   isBefore,
   isFriday,
-  isPast,
-  isToday,
   isWeekend,
   nextMonday,
 } from 'date-fns';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
@@ -43,8 +40,8 @@ import ROUTES from '@/routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
-import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { coachSelectors } from '@/store/coach';
+import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -153,31 +150,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
   }, [coach?.user?.phoneNumber]);
 
-  const practitionerAbsentees = practitioner?.absentees;
-
-  const validAbsenteesDates = practitionerAbsentees?.filter(
-    (item) =>
-      !isPast(new Date(item?.absentDateEnd as string)) ||
-      isToday(new Date(item?.absentDate as string))
+  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+    practitioner!
   );
 
-  const currentDates = validAbsenteesDates?.map((item) => {
-    return item?.absentDate as string;
-  });
-  const orderedDates = currentDates?.sort(function (a, b) {
-    return Date.parse(a) - Date.parse(b);
-  });
-  const currentAbsentee = validAbsenteesDates?.find(
-    (item) => item?.absentDate === orderedDates?.[0]
-  ) as AbsenteeDto;
-  const practitionerIsOnLeave = useMemo(
-    () =>
-      isPast(new Date(currentAbsentee?.absentDate as string)) &&
-      !isPast(
-        add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
-      ),
-    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
-  );
   const handleComebackDay = useCallback((date: Date) => {
     if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
       return nextMonday(new Date(date));
@@ -516,7 +492,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const handleIsOnleaveModal = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
-      render: (onSubmit, onClose) => {
+      blocking: true,
+      render: (onClose) => {
         return (
           <ActionModal
             icon="ExclamationCircleIcon"
@@ -525,9 +502,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             importantText={`You are on leave and cannot use this section`}
             paragraphs={[
               `You are on leave from ${format(
-                new Date(
-                  (currentAbsentee?.absentDateEnd as Date) || new Date()
-                ),
+                new Date((currentAbsentee?.absentDate as Date) || new Date()),
                 'd MMM yyyy'
               )} to ${format(
                 new Date(
@@ -548,7 +523,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
                 type: 'filled',
                 onClick: () => {
                   call();
-                  onSubmit();
+                  onClose();
                 },
                 leadingIcon: 'PhoneIcon',
               },
