@@ -405,7 +405,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = traineeFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7)),false, true;
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
         }
 
         public async Task<bool> SendCoachVisitRequestedNotification(
@@ -418,8 +418,13 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 FindValue = "PractitionerFirstName",
                 ReplacementValue = practitionerFirstName
             });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerUserId",
+                ReplacementValue = userId
+            });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
         }
 
         public async Task<bool> SendNewClubleaderNotification(
@@ -457,12 +462,17 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
         public async Task<bool> SendRecordCaregiverMeetingNotification(
 [Service] UserManager<ApplicationUser> userManager,
-[Service] INotificationService notificationService, string userId, string meetingDate)
+[Service] INotificationService notificationService, string userId, string meetingDate, string clubId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "MeetingDate",
+                ReplacementValue = meetingDate
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "ClubId",
                 ReplacementValue = meetingDate
             });
             var userToSend = await userManager.FindByIdAsync(userId);
