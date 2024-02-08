@@ -9,21 +9,15 @@ import {
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
-import { MouseEvent, useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { MouseEvent, useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
-import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
 import { Alert, DialogPosition } from '@ecdlink/ui';
-import {
-  BookOpenIcon,
-  SaveIcon,
-  TrashIcon,
-  XIcon,
-} from '@heroicons/react/solid';
+import { BookOpenIcon, SaveIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CategoryForm from './category-form/category-form';
 import {
@@ -55,13 +49,15 @@ export default function EditCategory({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
     control: control,
   };
+  const { type: formType } = useWatch({ control });
   const allowedFileSize = 2631488;
 
   const [saveCategoryImages] = useMutation(
@@ -226,8 +222,8 @@ export default function EditCategory({
       type: field?.fieldType.dataType ?? '',
       title: camelCaseToSentanceCase(field?.displayName ?? ''),
       required: {
-        value: false,
-        message: '',
+        value: field.isRequired,
+        message: field.isRequired ? 'Required field' : '',
       },
       contentValue: item,
       optionDefinition: optionDefinition,
@@ -317,10 +313,13 @@ export default function EditCategory({
           });
           // call back-end function to copy images to other languages
           if ('imageUrl' in item) {
+            const subCatContentTypeId = optionDefinitions.find(
+              (x) => x.contentName === 'ProgressTrackingSubCategory'
+            ).identifier;
             await saveSubCategoryImages({
               variables: {
-                contentId: +content.id,
-                contentTypeId: +contentType.id,
+                contentId: +item?.id,
+                contentTypeId: +subCatContentTypeId,
                 localeId: selectedLanguageId.toString(),
                 imageUrl: item?.imageUrl,
               },
@@ -345,11 +344,21 @@ export default function EditCategory({
     }
 
     savedContent();
-
     setLoading(false);
-
     cancelEdit();
   };
+
+  const initialValues = getValues();
+  const disableButton = template?.fields?.filter(
+    (item) =>
+      item?.required.value &&
+      initialValues?.hasOwnProperty(item?.propName) &&
+      !initialValues[item?.propName]
+  );
+
+  const disbleButtonStyles = `bg-secondary ${
+    disableButton?.length > 0 ? 'opacity-25' : ''
+  } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
     contentType &&
@@ -423,18 +432,30 @@ export default function EditCategory({
               defaultLanguageId={defaultLanguageId}
               setFilteredSubcategories={setFilteredSubcategories}
               allowedFileSize={allowedFileSize}
+              formType={formType}
               content={content}
+              getValues={getValues}
+              useWatch={useWatch}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className={disbleButtonStyles}
+              disabled={disableButton?.length > 0}
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
+
+            {/* <button
+              type="submit"
+              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+            >
+              <SaveIcon width="22px" className="mr-2" />
+              Save & publish
+            </button> */}
             {/* Let code commented, to allow delete categories if needed. */}
             {/* {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
               <button

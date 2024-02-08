@@ -398,7 +398,6 @@ export function ViewUser(props: any) {
         if (userData?.phoneNumber) refetch();
 
         if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
-          console.log('refetchCHW');
           refetchCHW();
         }
 
