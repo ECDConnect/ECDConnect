@@ -253,6 +253,20 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
       );
     }
 
+    if (
+      selectedLanguageFilterOptions &&
+      selectedLanguageFilterOptions.length > 0 &&
+      selectedLanguageFilterOptions[0].value !== 'en-za'
+    ) {
+      activitiesCopy = activitiesCopy.filter(
+        (activity) =>
+          activity.availableLanguages &&
+          activity.availableLanguages.some(
+            (x) => x.id === selectedLanguageFilterOptions[0].id
+          )
+      );
+    }
+
     setFilteredActivities(activitiesCopy);
   };
 

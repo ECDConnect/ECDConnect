@@ -11,6 +11,7 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
   labelText?: string;
   labelClassName?: string;
   selectLanguage: (value: LanguageDto) => void;
+  availableLanguages?: LanguageDto[];
 }
 
 export const LanguageSelector = ({
@@ -19,15 +20,20 @@ export const LanguageSelector = ({
   labelText,
   labelClassName,
   selectLanguage,
+  availableLanguages,
 }: LanguageSelectorProps) => {
-  const languages = useSelector(staticDataSelectors.getLanguages);
+  const allLanguages = useSelector(staticDataSelectors.getLanguages);
+  const languages: LanguageDto[] = availableLanguages
+    ? allLanguages.filter((langauge: LanguageDto) =>
+        availableLanguages.some((item) => item.id === langauge.id)
+      )
+    : allLanguages;
 
   const [locale, setLocale] = useState<string>('en-za'); // SET DEFAULT LOCALE
-
   const setLanguage = (locale: string) => {
     setLocale(locale);
 
-    const language = languages?.find((x) => x.locale === locale);
+    const language = languages?.find((x: LanguageDto) => x.locale === locale);
 
     if (language) selectLanguage(language);
   };

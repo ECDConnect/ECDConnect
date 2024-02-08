@@ -1,5 +1,5 @@
 import { Button, Typography } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../../../constants/ActivitySearch';
 import { activitySelectors } from '@store/content/activity';
@@ -18,10 +18,13 @@ export const StoryActivitySelectView: React.FC<
   onActivityCleared,
   onClearStory,
   setSelectedStory,
+  filteredActivities,
 }) => {
-  const storyActivities = useSelector(
+  const allStoryActivities = useSelector(
     activitySelectors.getStoryActivitiesByType(story.type)
   );
+
+  const storyActivities = filteredActivities || allStoryActivities;
 
   const programme = useSelector(
     programmeSelectors.getProgrammeById(programmeId)

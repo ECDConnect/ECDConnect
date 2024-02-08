@@ -55,8 +55,6 @@ import { CustomSuccessCard } from '@/components/custom-success-card/custom-succe
 import { userSelectors } from '@/store/user';
 import format from 'date-fns/format';
 import { ReactComponent as NoProgressEmoticon } from '@/assets/ECD_Connect_emoji4.svg';
-import { activityActions } from '@/store/content/activity';
-import { getActivities } from '@/store/content/activity/activity.actions';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
