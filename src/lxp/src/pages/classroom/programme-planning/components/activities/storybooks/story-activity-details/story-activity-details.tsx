@@ -1,4 +1,10 @@
-import { ActivityDto, getAvatarColor, StoryBookDto } from '@ecdlink/core/';
+import {
+  ActivityDto,
+  getAvatarColor,
+  StoryBookDto,
+  LanguageDto,
+  useDialog,
+} from '@ecdlink/core/';
 import {
   Alert,
   BannerWrapper,
@@ -22,6 +28,10 @@ import StoryActivityCard from '../story-activity-card/story-activity-card';
 import StoryCard from '../story-card/story-card';
 import { StoryActivityDetailsProps } from './story-activity-details.types';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { staticDataSelectors } from '@/store/static-data';
+import { ContentStoryBookService } from '@/services/ContentStoryBookService';
+import { authSelectors } from '@store/auth';
+import { ContentActivityService } from '@/services/ContentActivityService';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
@@ -107,10 +117,17 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   linkedActivity,
 }) => {
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
+  const [currentStoryBook, setCurrentStoryBook] = useState(storyBook);
+  const [currentStoryBookParts, setCurrentStoryBookParts] = useState(
+    [...(storyBook?.storyBookParts || [])].sort((a, b) =>
+      +a.part >= +b.part ? 1 : -1
+    )
+  );
   const { isOnline } = useOnlineStatus();
-
-  const storyBookParts = [...(storyBook?.storyBookParts || [])].sort((a, b) =>
-    +a.part >= +b.part ? 1 : -1
+  const authUser = useSelector(authSelectors.getAuthUser);
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  const defaultLanguage = languages?.find(
+    (item: LanguageDto) => item?.locale === 'en-za'
   );
 
   const onBookLocationClicked = (bookLocation: string) => {
@@ -120,10 +137,42 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
     }
   };
 
+  const getDataByLanguage = async (language: LanguageDto) => {
+    const hasTranslations = storyBook?.availableLanguages?.some(
+      (item) => item.id === language.id
+    );
+
+    if (hasTranslations && language.locale !== 'en-za') {
+      let storyBooks: StoryBookDto[] | undefined;
+
+      storyBooks = await new ContentStoryBookService(
+        authUser?.auth_token || ''
+      ).getStoryBooks(language.locale);
+
+      const translatedBook = storyBooks?.find(
+        (item) => item.id === currentStoryBook.id
+      );
+      setCurrentStoryBook(translatedBook || storyBook);
+      if (translatedBook?.storyBookParts) {
+        setCurrentStoryBookParts(
+          [...(translatedBook?.storyBookParts || [])].sort((a, b) =>
+            +a.part >= +b.part ? 1 : -1
+          )
+        );
+      }
+    }
+  };
+
   return (
     <div className={'flex flex-col bg-white'}>
       <div className={'flex flex-col items-start justify-start'}>
-        <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
+        <LanguageSelector
+          currentLocale={'en-za'}
+          availableLanguages={
+            storyBook?.availableLanguages || [defaultLanguage]
+          }
+          selectLanguage={getDataByLanguage}
+        />
         {isOnlineOnlyAlert && (
           <div className="absolute  z-10 flex h-full items-center ">
             <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
@@ -136,7 +185,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
         )}
         <div className={'items-stetch flex w-full flex-col justify-start p-4'}>
           <Typography
-            text={storyBook.name}
+            text={currentStoryBook.name}
             type={'h1'}
             color={'textDark'}
             className={'mt-2'}
@@ -147,7 +196,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             }
           >
             <Typography
-              text={`Author: ${storyBook.author}`}
+              text={`Author: ${currentStoryBook.author}`}
               type={'h4'}
               color={'textDark'}
               className={'mt-2'}
@@ -157,7 +206,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               borderColour={'primaryAccent2'}
               textColour={'primary'}
               textType={'help'}
-              text={storyBook.type}
+              text={currentStoryBook.type}
             />
           </div>
           {!disabled &&
@@ -207,9 +256,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           )}
         </div>
 
-        {storyBook?.type !== StoryBookTypes.other && (
+        {currentStoryBook?.type !== StoryBookTypes.other && (
           <div className={'bg-white p-4'}>
-            {storyBook?.type === StoryBookTypes.storyBook && (
+            {currentStoryBook?.type === StoryBookTypes.storyBook && (
               <>
                 <Typography
                   text={'Where can you find a copy of this story book'}
@@ -219,16 +268,16 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 <ul className={'ml-4 mt-4 list-disc'}>
                   <li>
                     <Typography
-                      text={storyBook.bookLocation}
+                      text={currentStoryBook.bookLocation}
                       type={'unspecified'}
                       underline
                       color={
-                        stripPTag(storyBook.bookLocation).match(URL)
+                        stripPTag(currentStoryBook.bookLocation).match(URL)
                           ? 'infoBb'
                           : 'black'
                       }
                       onClick={() => {
-                        onBookLocationClicked(storyBook.bookLocation);
+                        onBookLocationClicked(currentStoryBook.bookLocation);
                       }}
                       fontSize={'14'}
                     />
@@ -240,7 +289,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   className={'bold mt-4'}
                 />
                 <div className={'flex flex-row flex-wrap'}>
-                  {storyBook.keywords.split(',')?.map((keyword) => (
+                  {currentStoryBook.keywords.split(',')?.map((keyword) => (
                     <StatusChip
                       key={keyword}
                       text={keyword}
@@ -254,7 +303,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               </>
             )}
 
-            {storyBook?.type === StoryBookTypes.readAloud && (
+            {currentStoryBook?.type === StoryBookTypes.readAloud && (
               <>
                 <Typography
                   text={
@@ -265,17 +314,17 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 <ul className={'ml-4 mt-4 list-disc'}>
                   <li>
                     <Typography
-                      text={storyBook.bookLocation}
+                      text={currentStoryBook.bookLocation}
                       type={'unspecified'}
                       underline
                       hasMarkup
                       color={
-                        stripPTag(storyBook.bookLocation).match(URL)
+                        stripPTag(currentStoryBook.bookLocation).match(URL)
                           ? 'primary'
                           : 'black'
                       }
                       onClick={() => {
-                        onBookLocationClicked(storyBook.bookLocation);
+                        onBookLocationClicked(currentStoryBook.bookLocation);
                       }}
                       fontSize={'14'}
                     />
@@ -287,7 +336,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
         )}
 
         <div className={'bg-uiBg flex w-full flex-col px-4'}>
-          {storyBook?.type === StoryBookTypes.other && (
+          {currentStoryBook?.type === StoryBookTypes.other && (
             <div className={'flex flex-col items-start justify-start'}>
               <Typography
                 text={'Ideas for finding story books for this week’s theme:'}
@@ -419,10 +468,10 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             </div>
           )}
 
-          {storyBook &&
-            storyBook.type !== StoryBookTypes.other &&
-            storyBookParts &&
-            storyBookParts?.map((bookPart) => (
+          {currentStoryBook &&
+            currentStoryBook.type !== StoryBookTypes.other &&
+            currentStoryBookParts &&
+            currentStoryBookParts?.map((bookPart) => (
               <div
                 key={bookPart.id}
                 className={
@@ -534,6 +583,12 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   onStorySwitched,
 }) => {
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
+  const [currentActivity, setCurrentActivity] = useState(activity);
+  const authUser = useSelector(authSelectors.getAuthUser);
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  const defaultLanguage = languages?.find(
+    (item: LanguageDto) => item?.locale === 'en-za'
+  );
 
   const { isOnline } = useOnlineStatus();
 
@@ -548,10 +603,33 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   const regex = /(<([^>]+)>)/gi;
   const secondRegEx = /((&nbsp;))*/gim;
 
+  const getDataByLanguage = async (language: LanguageDto) => {
+    const hasTranslations = activity?.availableLanguages?.some(
+      (item) => item.id === language.id
+    );
+
+    if (hasTranslations && language.locale !== 'en-za') {
+      let activities: ActivityDto[] | undefined;
+
+      activities = await new ContentActivityService(
+        authUser?.auth_token || ''
+      ).getActivities(language.locale);
+
+      const translatedActivity = activities?.find(
+        (item) => item.id === currentActivity.id
+      );
+      setCurrentActivity(translatedActivity || activity);
+    }
+  };
+
   return (
     <div className={'flex flex-col'}>
       <div className={'flex flex-col pb-24'}>
-        <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
+        <LanguageSelector
+          currentLocale={'en-za'}
+          availableLanguages={activity?.availableLanguages || [defaultLanguage]}
+          selectLanguage={getDataByLanguage}
+        />
         {isOnlineOnlyAlert && (
           <div className="absolute  z-10 flex h-full items-center ">
             <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
@@ -565,7 +643,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
         <Divider />
         <Typography
           className="mt-2 px-4"
-          text={activity.name}
+          text={currentActivity.name}
           type={'h1'}
           color={'primary'}
         />
@@ -573,7 +651,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           className="mt-2 px-4"
           type="markdown"
           fontSize="14"
-          text={activity.materials}
+          text={currentActivity.materials}
         />
         {!disabled &&
           (isSelected ? (
@@ -631,17 +709,21 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           <Typography
             type="markdown"
             fontSize="14"
-            text={activity.description}
+            text={currentActivity.description}
           />
         </div>
-        <div className="mt-2 p-4">
-          <Alert
-            title={'Tips'}
-            className={'mt-4'}
-            type={'info'}
-            message={activity.notes.replace(regex, '').replace(secondRegEx, '')}
-          />
-        </div>
+        {currentActivity.notes && (
+          <div className="mt-2 p-4">
+            <Alert
+              title={'Tips'}
+              className={'mt-4'}
+              type={'info'}
+              message={currentActivity.notes
+                .replace(regex, '')
+                .replace(secondRegEx, '')}
+            />
+          </div>
+        )}
         {!disabled &&
           (isSelected ? (
             <div className="pl-4 pr-4">
