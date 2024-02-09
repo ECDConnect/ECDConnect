@@ -44,10 +44,7 @@ export const Article = ({
   }, [consent, visible, isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
-      // DEFAULT SETTING
-      getOpenContent('en-za');
-    }
+    getOpenContent('en-za');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, consentEnumType]);
 
@@ -63,8 +60,8 @@ export const Article = ({
       })
     ).unwrap();
 
-    if (content && content.length > 0) {
-      const consentFilter = content.find((x) => x.type === consentEnumType);
+    if (!!content && content.length > 0) {
+      const consentFilter = content.find((x) => x.name === consentEnumType);
       setArticleText(consentFilter?.description ?? '');
     } else {
       setArticleText('');
@@ -73,7 +70,7 @@ export const Article = ({
   };
 
   const getContent = async (consentList: ConsentDto[] | undefined) => {
-    const consentFilter = consentList?.find((x) => x.type === consentEnumType);
+    const consentFilter = consentList?.find((x) => x.name === consentEnumType);
 
     if (!consentFilter || consentFilter.description?.length === 0) {
       presentUnavailableAlert();

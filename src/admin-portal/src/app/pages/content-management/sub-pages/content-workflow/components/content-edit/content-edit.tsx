@@ -483,9 +483,9 @@ export default function ContentEdit({
               Save & publish
             </button>
             {content?.id &&
-              content?.__typename !== 'ProgressTrackingLevel' &&
-              content?.__typename !== 'MoreInformation' &&
-              content?.__typename !== 'Consent' && (
+              content?.__typename !== ContentTypes.PROGRESS_TRACKING_SKILL &&
+              content?.__typename !== ContentTypes.MORE_INFORMATION &&
+              content?.__typename !== ContentTypes.CONSENT && (
                 <button
                   onClick={deleteAndRefresh}
                   className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"

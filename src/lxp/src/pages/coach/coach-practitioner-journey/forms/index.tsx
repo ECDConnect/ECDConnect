@@ -163,10 +163,6 @@ export const Form = ({
     'pqa',
     PqaActions.ADD_VISIT_FORM_DATA
   );
-  const { isLoading: isLoadingReAccreditationVisit } = useThunkFetchCall(
-    'pqa',
-    PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA
-  );
   const { isLoading: isLoadingSupportVisit } = useThunkFetchCall(
     'pqa',
     PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
@@ -612,7 +608,7 @@ export const Form = ({
 
     const payload: CmsVisitDataInputModelInput = {
       visitId: visitId || window.sessionStorage.getItem(visitIdKey),
-      ...(activityName === visitTypes.requestedVisit
+      ...(activityName === visitTypes.requestedVisit.description
         ? {}
         : {
             practitionerId,
@@ -623,7 +619,7 @@ export const Form = ({
       },
     };
 
-    if (activityName === visitTypes.requestedVisit) {
+    if (activityName === visitTypes.requestedVisit.description) {
       return handleSubmitExtraVisit({
         payload,
         sections,
@@ -631,7 +627,7 @@ export const Form = ({
       });
     }
 
-    if (activityName === visitTypes.supportVisit) {
+    if (activityName === visitTypes.supportVisit.description) {
       return handleSubmitExtraVisit({
         payload,
         sections,
@@ -738,16 +734,16 @@ export const Form = ({
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
     if (
-      visitName === visitTypes.requestedVisit ||
-      visitName === visitTypes.supportVisit ||
+      visitName === visitTypes.requestedVisit.description ||
+      visitName === visitTypes.supportVisit.description ||
       visitName.includes(visitTypes.pqa.followUp.name) ||
       visitName.includes(visitTypes.reaccreditation.followUp.name)
     ) {
       if (
-        activityName === visitTypes.supportVisit ||
-        activityName === visitTypes.requestedVisit
+        activityName === visitTypes.supportVisit.description ||
+        activityName === visitTypes.requestedVisit.description
       ) {
-        setTitle(visitTypes.supportVisit);
+        setTitle(visitTypes.supportVisit.description);
       } else if (activityName === visitTypes.reaccreditation.followUp.name) {
         setTitle(visitTypes.reaccreditation.followUp.description);
       } else {
@@ -897,7 +893,6 @@ export const Form = ({
           isLoadingSupportVisit ||
           isLoadingDeactivate ||
           isLoadingPqaFollowUpVisit ||
-          isLoadingReAccreditationVisit ||
           isLoadingReAccreditationFollowUpVisit
         }
         secondaryButton={

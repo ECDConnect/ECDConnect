@@ -36,7 +36,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             return clubService.ChangeClubSupportRole(clubId, practitionerId);
         }
-
-
     }
 }

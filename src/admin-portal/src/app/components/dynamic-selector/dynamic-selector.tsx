@@ -189,7 +189,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                 );
                 return (
                   <CheckboxGroup
-                    checkboxColor="primary"
+                    checkboxColor="secondary"
                     id={item?.title}
                     key={item?.title}
                     image={item?.imageUrl}
@@ -197,7 +197,10 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     checked={itemChecked}
                     value={item?.title}
                     onChange={() => selectItem(item?.id)}
-                    className="bg-secondary mb-1 w-full"
+                    imageHexColor={item?.imageHexColor}
+                    className={`${
+                      itemChecked ? 'bg-quaternary' : ''
+                    } mb-1 w-full`}
                     disabled={
                       choosedSectionTitle === ActivitiesTitles.StoryActivities
                         ? null

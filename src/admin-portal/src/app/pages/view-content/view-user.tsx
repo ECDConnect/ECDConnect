@@ -240,7 +240,7 @@ export function ViewUser(props: any) {
   };
 
   let isAdminUser = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Administrator'
+    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
   );
 
   const sendInvite = async () => {

@@ -393,10 +393,16 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={smallGroupOptions}
                         fillType="filled"
-                        fillColor="adminPortalBg"
-                        textColor="textDark"
+                        fillColor={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'smallGroupActivity' in themeDaysArr?.[idx]
+                            ? 'uiLight'
+                            : 'adminPortalBg'
+                        }
+                        textColor="textLight"
                         fullWidth
-                        className="text-textDark h-full w-48"
+                        className="textDark h-full w-48"
                         selectedValue={
                           smallGroupOptions?.filter(
                             (option) =>
@@ -442,7 +448,13 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={largeGroupOptions}
                         fillType="filled"
-                        fillColor="adminPortalBg"
+                        fillColor={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'largeGroupActivity' in themeDaysArr?.[idx]
+                            ? 'uiLight'
+                            : 'adminPortalBg'
+                        }
                         textColor="textDark"
                         fullWidth
                         className="text-textDark h-full w-48"
@@ -491,7 +503,13 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={storyBookOptions}
                         fillType="filled"
-                        fillColor="adminPortalBg"
+                        fillColor={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'storyBook' in themeDaysArr?.[idx]
+                            ? 'uiLight'
+                            : 'adminPortalBg'
+                        }
                         textColor="textDark"
                         fullWidth
                         className="text-textDark h-full w-48"
@@ -538,7 +556,13 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         placeholder={'Type to search...'}
                         list={storyTimeOptions}
                         fillType="filled"
-                        fillColor="adminPortalBg"
+                        fillColor={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'storyActivity' in themeDaysArr?.[idx]
+                            ? 'uiLight'
+                            : 'adminPortalBg'
+                        }
                         textColor="textDark"
                         fullWidth
                         className="text-textDark h-full w-48"

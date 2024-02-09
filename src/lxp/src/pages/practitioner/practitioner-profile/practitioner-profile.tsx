@@ -200,6 +200,7 @@ export const PractitionerProfile: React.FC = () => {
         onActionClick: () => {
           dialog({
             position: DialogPosition.Bottom,
+            blocking: true,
             render: (onSubmit, onCancel) => {
               return (
                 <OfflineSyncModal
@@ -284,27 +285,46 @@ export const PractitionerProfile: React.FC = () => {
     return stackedMenuList;
   };
 
-  const tabItem: TabItem[] = [
-    {
-      title: 'Profile',
-      initActive: true,
-      child: (
-        <div>
-          {practitioner?.progress !== 0 ? null : <CompleteProfile />}
-          <StackedList
-            listItems={getStackedMenuList()}
-            type={'MenuList'}
-            className={'flex flex-col gap-1 px-4 pt-1'}
-          ></StackedList>
-        </div>
-      ),
-    },
-    {
-      title: 'Journey',
-      initActive: false,
-      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
-    },
-  ];
+  const tabItem: TabItem[] = isTrainee
+    ? [
+        {
+          title: 'Profile',
+          initActive: true,
+          child: (
+            <div>
+              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
+              <StackedList
+                listItems={getStackedMenuList()}
+                type={'MenuList'}
+                className={'flex flex-col gap-1 px-4 pt-1'}
+              ></StackedList>
+            </div>
+          ),
+        },
+      ]
+    : [
+        {
+          title: 'Profile',
+          initActive: true,
+          child: (
+            <div>
+              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
+              <StackedList
+                listItems={getStackedMenuList()}
+                type={'MenuList'}
+                className={'flex flex-col gap-1 px-4 pt-1'}
+              ></StackedList>
+            </div>
+          ),
+        },
+        {
+          title: 'Journey',
+          initActive: false,
+          child: (
+            <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />
+          ),
+        },
+      ];
 
   if (isJourneyFormOpen) {
     return <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />;

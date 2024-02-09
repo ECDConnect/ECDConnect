@@ -160,7 +160,7 @@ export const LeaveNoOneBehind: React.FC = () => {
           image={AlienImage}
           title={`No SmartStarters in this club have a ${
             isCoach ? 'First PQA/re-accreditation' : 're-accreditation'
-          }  visit deadline this year`}
+          } visit deadline this year`}
           subTitle=""
         />
       );
@@ -185,8 +185,8 @@ export const LeaveNoOneBehind: React.FC = () => {
                     'PQAs/re-accreditations coming up later this year'
                   ) : (
                     <>
-                      <span className={`text-${color}`}>{item}</span> PQA
-                      re-accreditation
+                      <span className={`text-${color}`}>{item}</span>{' '}
+                      PQA/re-accreditation
                     </>
                   )}
                   :
@@ -281,15 +281,12 @@ export const LeaveNoOneBehind: React.FC = () => {
       displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP[
-            isPurpleLeague ? 'LEAGUE_TYPE' : 'ROOT'
-          ]
-            .replace(':clubId', clubId)
-            .replace(':activityId', activityId)
-            .replace(
-              ':leagueType',
-              isPurpleLeague ? club?.league?.leagueTypeName?.toLowerCase() : ''
-            )
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
+            ':helpSection',
+            isPurpleLeague
+              ? 'Leave No One Behind - Purple'
+              : 'Leave No One Behind'
+          )
         )
       }
     >

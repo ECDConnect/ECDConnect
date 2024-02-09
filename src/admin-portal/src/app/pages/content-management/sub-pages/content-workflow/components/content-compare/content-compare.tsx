@@ -14,11 +14,11 @@ import {
   ContentName,
 } from '../../../../content-management-models';
 import ContentEdit from '../content-edit/content-edit';
-import ContentView from '../content-view/content-view';
 import { XIcon } from '@heroicons/react/solid';
 import EditCategory from '../edit-category/edit-category';
 import CreateTheme from '../create-theme/create-theme';
 import CreateStory from '../../../content-list/components/create-story/create-story';
+import EditSkills from '../edit-skills/edit-skills';
 
 export interface ContentCompareProps {
   contentView: ContentManagementView;
@@ -161,6 +161,60 @@ export default function ContentCompare({
             </div>
           </>
         );
+      case 'ProgressTrackingCategorys':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditCategory
+                        key={'firstLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedFirstLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case 'ProgressTrackingSkill':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditSkills
+                        key={'firstLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
       default:
         return null;
     }
@@ -249,12 +303,44 @@ export default function ContentCompare({
             </div>
           </>
         );
+      case ContentName.ProgressTrackingSkill:
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditSkills
+                        key={'secondLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedSecondLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
       default:
         return null;
     }
   };
 
-  if (contentView && languages && currentContent) {
+  if (
+    (contentView && languages && currentContent) ||
+    (contentType?.name === ContentName.ProgressTrackingSkill &&
+      contentView &&
+      languages)
+  ) {
     return (
       <div className=" lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
@@ -297,7 +383,8 @@ export default function ContentCompare({
 
                 {contentType?.name === ContentName.StoryBook ||
                 contentType?.name === ContentName.Theme ||
-                contentType?.name === ContentName.ProgressTrackingCategory ? (
+                contentType?.name === ContentName.ProgressTrackingCategory ||
+                contentType?.name === ContentName.ProgressTrackingSkill ? (
                   handleNoDynamicForms(contentType?.name)
                 ) : (
                   <ContentEdit
@@ -330,7 +417,8 @@ export default function ContentCompare({
                 </div>
                 {contentType?.name === ContentName.StoryBook ||
                 contentType?.name === ContentName.Theme ||
-                contentType?.name === ContentName.ProgressTrackingCategory ? (
+                contentType?.name === ContentName.ProgressTrackingCategory ||
+                contentType?.name === ContentName.ProgressTrackingSkill ? (
                   handleSecondLanguageNoDynamicForms(contentType?.name)
                 ) : (
                   <ContentEdit

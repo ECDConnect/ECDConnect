@@ -26,7 +26,7 @@ public class DailyNotificationChecks : CronJobService
         {
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
-            
+
             //await service.DailyAttendanceNotTrackedNotification(); //moved to FE function
 
             await service.DailyUnassignedClassesNotification();
@@ -37,7 +37,6 @@ public class DailyNotificationChecks : CronJobService
             await service.DailyCoachChecksNotification();
 
             //await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
-            //await service.Daily3WeekLogonCheck(); //deprecated
 
             //specific day checks in year/month
             if (DateTime.Now.Day == 15 && DateTime.Now.Month == 1) //15 Jan each year only

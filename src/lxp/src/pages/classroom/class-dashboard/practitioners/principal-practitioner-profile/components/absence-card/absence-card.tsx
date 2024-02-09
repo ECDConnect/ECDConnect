@@ -1,7 +1,7 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { Button, Card, Typography, renderIcon } from '@ecdlink/ui';
-import { add, format, isPast, isSameDay } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 
 interface AbsenceCardProps {
   absenceIsToday: boolean;
@@ -35,10 +35,6 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
   classesWithAbsence,
   practitionerAbsentees,
 }) => {
-  const call = () => {
-    window.open(`tel:${practitioner?.user?.phoneNumber}`);
-  };
-
   return (
     <>
       {classesWithAbsence && classesWithAbsence?.length > 0 ? (

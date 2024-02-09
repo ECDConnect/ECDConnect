@@ -499,7 +499,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
             VisitType visitType;
-            if (input.isSupportCall == true)
+            if (input.EventId.HasValue)
+            {
+                visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            }
+            else if (input.isSupportCall == true)
             {
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_practitioner_call).OrderBy(x => x.NormalizedName).FirstOrDefault();
             }

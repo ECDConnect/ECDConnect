@@ -300,7 +300,7 @@ export const updateCoachAboutInfo = createAsyncThunk<
 
 export const getActivityMeetRegularDetails = createAsyncThunk<
   ActivityMeetRegular,
-  QueryActivityMeetRegularDetailsArgs,
+  { args: QueryActivityMeetRegularDetailsArgs; forceReload: boolean },
   ThunkApiType<RootState>
 >(
   ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS,
@@ -311,34 +311,39 @@ export const getActivityMeetRegularDetails = createAsyncThunk<
     } = getState();
 
     try {
-      if (!!clubForPractitioner?.points?.meetRegularly?.data) {
-        const daysSinceLoad = differenceInDays(
-          new Date(),
-          new Date(clubForPractitioner?.points?.meetRegularly?.dataLoaded!)
-        );
+      if (!input.forceReload) {
+        if (!!clubForPractitioner?.points?.meetRegularly?.data) {
+          const daysSinceLoad = differenceInDays(
+            new Date(),
+            new Date(clubForPractitioner?.points?.meetRegularly?.dataLoaded!)
+          );
 
-        if (daysSinceLoad < 1) {
-          return clubForPractitioner?.points?.meetRegularly?.data!;
+          if (daysSinceLoad < 1) {
+            return clubForPractitioner?.points?.meetRegularly?.data!;
+          }
         }
-      }
 
-      if (!!clubsForCoach[input.clubId]?.points?.meetRegularly?.data) {
-        const daysSinceLoad = differenceInDays(
-          new Date(),
-          new Date(
-            clubsForCoach[input.clubId]?.points?.meetRegularly?.dataLoaded!
-          )
-        );
+        if (!!clubsForCoach[input.args.clubId]?.points?.meetRegularly?.data) {
+          const daysSinceLoad = differenceInDays(
+            new Date(),
+            new Date(
+              clubsForCoach[
+                input.args.clubId
+              ]?.points?.meetRegularly?.dataLoaded!
+            )
+          );
 
-        if (daysSinceLoad < 1) {
-          return clubsForCoach[input.clubId]?.points?.meetRegularly?.data!;
+          if (daysSinceLoad < 1) {
+            return clubsForCoach[input.args.clubId]?.points?.meetRegularly
+              ?.data!;
+          }
         }
       }
 
       if (userAuth?.auth_token) {
         return await new ClubService(
           userAuth?.auth_token
-        ).getActivityMeetRegularDetails(input);
+        ).getActivityMeetRegularDetails(input.args);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

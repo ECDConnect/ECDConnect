@@ -47,7 +47,7 @@ export const CaregiverMeeting = ({
   const { isOnline } = useOnlineStatus();
 
   const onSubmitCaregiverReportBack = useCallback(() => {
-    const input = { clubId: clubId, userId: user?.id! };
+    const input = { clubId: club?.id!, userId: user?.id! };
 
     appDispatch(clubActions.addCaregiverReportBackMeeting(input));
 
@@ -59,7 +59,7 @@ export const CaregiverMeeting = ({
         type: 'success',
       });
     }
-  }, [clubId, user?.id, appDispatch, isOnline, showMessage]);
+  }, [club?.id, user?.id, appDispatch, isOnline, showMessage]);
 
   useEffect(() => {
     if (wasLoading && !isLoading) {

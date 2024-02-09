@@ -5633,6 +5633,8 @@ export type Mutation = {
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   bulkUpdateCoachingCircleTopicDates: Scalars['Boolean'];
+  bulkUpdateProgressTrackingCategoryImages: Scalars['Boolean'];
+  bulkUpdateProgressTrackingSubCategoryImages: Scalars['Boolean'];
   calculateCaregiverReportBack: Scalars['Boolean'];
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   calculateClubChildAttendance: Scalars['Boolean'];
@@ -6419,6 +6421,20 @@ export type MutationBulkUpdateCoachingCircleTopicDatesArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   localeId: Scalars['UUID'];
   startDate: Scalars['DateTime'];
+};
+
+export type MutationBulkUpdateProgressTrackingCategoryImagesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  imageUrl?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
+};
+
+export type MutationBulkUpdateProgressTrackingSubCategoryImagesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  imageUrl?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
 };
 
 export type MutationCalculateChildrenRegistrationRemovalArgs = {
@@ -9811,6 +9827,7 @@ export type Practitioner = {
   isLeaving?: Maybe<Scalars['Boolean']>;
   isOnStipend?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
+  isPrincipalOrAdmin: Scalars['Boolean'];
   isRegistered?: Maybe<Scalars['Boolean']>;
   isTrainee?: Maybe<Scalars['Boolean']>;
   languageUsedInGroups?: Maybe<Scalars['String']>;
@@ -10285,6 +10302,7 @@ export type Principal = {
   isLeaving?: Maybe<Scalars['Boolean']>;
   isOnStipend?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
+  isPrincipalOrAdmin: Scalars['Boolean'];
   isRegistered?: Maybe<Scalars['Boolean']>;
   isTrainee?: Maybe<Scalars['Boolean']>;
   languageUsedInGroups?: Maybe<Scalars['String']>;
@@ -10781,6 +10799,7 @@ export type ProgressTrackingSubCategory = {
   __typename?: 'ProgressTrackingSubCategory';
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  imageHexColor?: Maybe<Scalars['String']>;
   imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   skills?: Maybe<Array<Maybe<ProgressTrackingSkill>>>;
@@ -10788,6 +10807,7 @@ export type ProgressTrackingSubCategory = {
 
 export type ProgressTrackingSubCategoryInput = {
   description?: InputMaybe<Scalars['String']>;
+  imageHexColor?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   skills?: InputMaybe<Scalars['String']>;

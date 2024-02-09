@@ -115,7 +115,7 @@ export class IncompletePractitionerInformationNotificationValidator
                 'd MMM yyyy'
               )}. If you do not complete these tasks, your coach will be asked to remove you from the programme.`,
               dateCreated: new Date().toISOString(),
-              priority: NotificationPriority.lower,
+              priority: NotificationPriority.highest,
               viewOnDashboard: true,
               area: 'practitioner',
               icon: 'SwitchVerticalIcon',
@@ -140,7 +140,7 @@ export class IncompletePractitionerInformationNotificationValidator
               message:
                 'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',
               dateCreated: new Date().toISOString(),
-              priority: NotificationPriority.lower,
+              priority: NotificationPriority.highest,
               viewOnDashboard: true,
               area: 'practitioner',
               icon: 'SwitchVerticalIcon',
@@ -163,7 +163,7 @@ export class IncompletePractitionerInformationNotificationValidator
             message:
               'Share more information about your programme to make Funda App useful for you.',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
+            priority: NotificationPriority.highest,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',

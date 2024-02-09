@@ -86,7 +86,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     !isPrincipal;
 
   const hasAccepted =
-    (practitioner?.isRegistered === null &&
+    ((practitioner?.isRegistered === null || practitioner?.isRegistered) &&
       practitioner?.principalHierarchy &&
       !isPrincipal) ||
     (practitioner?.dateAccepted !== null && !practitioner?.isLeaving);
@@ -375,7 +375,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           />
         </div>
 
-        {!hasAccepted && !missingProgramme && (
+        {!isPrincipal && !hasAccepted && !missingProgramme && (
           <div className="flex justify-center">
             <Alert
               type="info"
@@ -398,7 +398,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           </div>
         )}
 
-        {missingProgramme && (
+        {!isPrincipal && missingProgramme && (
           <div className="flex justify-center">
             <Alert
               type="error"

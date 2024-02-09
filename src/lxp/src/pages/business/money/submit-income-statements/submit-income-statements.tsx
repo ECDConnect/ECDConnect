@@ -127,10 +127,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       return <></>;
     }
 
-    const lastTwoStatementsBalance =
-      lastMonthStatement.balance + previousMonthStatement.balance;
-
-    if (lastTwoStatementsBalance < 0) {
+    if (lastMonthStatement.balance < 0 && previousMonthStatement.balance < 0) {
       return (
         <Alert
           type="warning"
@@ -153,7 +150,9 @@ export const SubmitIncomeStatements: React.FC = () => {
         />
       );
     }
-    if (lastTwoStatementsBalance > 0) {
+    if (lastMonthStatement.balance > 0 && previousMonthStatement.balance > 0) {
+      const lastTwoStatementsBalance =
+        lastMonthStatement.balance + previousMonthStatement.balance;
       return (
         <Alert
           type="success"

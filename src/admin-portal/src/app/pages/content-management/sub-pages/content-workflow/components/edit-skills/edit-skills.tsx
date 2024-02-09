@@ -37,6 +37,7 @@ export interface ContentViewProps {
   savedContent: () => void;
   cancelEdit?: () => void;
   cancelCompare?: () => void;
+  setSelectedLanguageId?: (item: string) => void;
 }
 
 export default function EditSkills({
@@ -49,8 +50,10 @@ export default function EditSkills({
   cancelEdit,
   savedContent,
   cancelCompare,
+  setSelectedLanguageId,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
+  const [showDeleteButton, setShowDeleteButton] = useState<boolean>(true);
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
@@ -119,6 +122,7 @@ export default function EditSkills({
           __typename
         }
         imageUrl
+        imageHexColor
         description
         name
         __typename
@@ -195,8 +199,8 @@ export default function EditSkills({
 
   const {
     data: subcategoriesContentData,
-    refetch: refetchSubcategoriesContent,
-    loading: loadingSubCategoriesContent,
+    // refetch: refetchSubcategoriesContent,
+    // loading: loadingSubCategoriesContent,
   } = useQuery(subcategoriesQuery, {
     fetchPolicy: 'cache-and-network',
     variables: {
@@ -209,7 +213,35 @@ export default function EditSkills({
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [disableButton, setDisableButton] = useState<boolean>(false);
   const [changedCategory, setChangedCategory] = useState([]);
+
+  useEffect(() => {
+    if (changedCategory) {
+      setDisableButton(false);
+      if (changedCategory?.length > 0) {
+        for (let cat of changedCategory) {
+          if (cat?.subCategories?.length > 0) {
+            for (let subCat of cat?.subCategories) {
+              if (subCat?.skills.length > 0) {
+                // find all empty skills and compare to total skills for sub cat
+                const emptySkills = subCat?.skills.filter(
+                  (x) => x.id === '' && x.name === ''
+                );
+                if (emptySkills.length === subCat?.skills.length) {
+                  setDisableButton(true);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, [changedCategory]);
+
+  const disbleButtonStyles = `bg-secondary ${
+    disableButton ? 'opacity-25' : ''
+  } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -244,6 +276,8 @@ export default function EditSkills({
     if (contentType) {
       if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
         setAcceptedFileFormats(['pdf']);
+      } else if (contentType.name === ContentTypes.PROGRESS_TRACKING_SKILL) {
+        setShowDeleteButton(false);
       }
     }
   }, [contentType]);
@@ -422,9 +456,7 @@ export default function EditSkills({
     });
 
     savedContent();
-
     setLoading(false);
-
     cancelEdit();
   };
 
@@ -447,7 +479,7 @@ export default function EditSkills({
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+              {/* {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -456,7 +488,7 @@ export default function EditSkills({
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
                 </button>
-              )}
+              )} */}
 
               {!!cancelEdit && (
                 <button
@@ -490,14 +522,6 @@ export default function EditSkills({
                 type="warning"
               />
             )}
-
-            {/* <DynamicForm
-              template={template}
-              handleform={handleform}
-              setValue={setValue}
-              defaultLanguageId={defaultLanguageId}
-              acceptedFileFormats={acceptedFileFormats}
-            /> */}
             <EditSkillsForm
               template={template}
               handleform={handleform}
@@ -507,18 +531,21 @@ export default function EditSkills({
               contentId={content?.id}
               setChangedCategory={setChangedCategory}
               changedCategory={changedCategory}
+              setSelectedLanguageId={setSelectedLanguageId}
+              cancelEdit={cancelEdit}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className={disbleButtonStyles}
+              disabled={disableButton}
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
-            {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
+            {content?.id && showDeleteButton && (
               <button
                 onClick={deleteAndRefresh}
                 className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"

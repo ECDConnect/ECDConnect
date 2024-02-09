@@ -29,6 +29,7 @@ export const Step11 = ({
       step11VisitSection
     )
   );
+
   const previousStatePreviousData = usePrevious(previousData) as
     | SectionQuestions
     | undefined;

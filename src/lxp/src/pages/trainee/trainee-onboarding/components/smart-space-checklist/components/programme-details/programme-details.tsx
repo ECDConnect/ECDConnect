@@ -45,6 +45,7 @@ import {
   classroomsSelectors,
   classroomsThunkActions,
 } from '@/store/classroom';
+import { cloneDeep } from 'lodash';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
@@ -221,26 +222,28 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   };
 
   const changeSmartSpaceCheckAddress = async () => {
-    const classroomCopy = { ...classroom };
-    const siteAddressId = classroomCopy.siteAddressId || newGuid();
+    const classroomCopy = cloneDeep(classroom);
+    if (classroomCopy) {
+      const siteAddressId = classroomCopy.siteAddressId || newGuid();
 
-    const siteAddress: SiteAddressDto = {
-      id: siteAddressId,
-      addressLine1: editedAddress || '',
-    };
-    classroomCopy.siteAddress = siteAddress;
-    classroomCopy.siteAddressId = siteAddressId;
+      const siteAddress: SiteAddressDto = {
+        id: siteAddressId,
+        addressLine1: editedAddress || '',
+      };
+      classroomCopy.siteAddress = siteAddress;
+      classroomCopy.siteAddressId = siteAddressId;
 
-    if (classroomCopy.siteAddress) {
-      appDispatch(
-        classroomsActions.updateClassroomSiteAddress(
-          classroomCopy as ClassroomDto
-        )
-      );
-      if (isOnline) {
-        await appDispatch(
-          classroomsThunkActions.upsertClassroomSiteAddress({})
+      if (classroomCopy.siteAddress) {
+        appDispatch(
+          classroomsActions.updateClassroomSiteAddress(
+            classroomCopy as ClassroomDto
+          )
         );
+        if (isOnline) {
+          await appDispatch(
+            classroomsThunkActions.upsertClassroomSiteAddress({})
+          );
+        }
       }
     }
   };
@@ -840,6 +843,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 }
                 onClick={() => {
                   // setSectionQuestions(questions)
+                  changeSmartSpaceCheckAddress();
                   setVisitSection(visitSection);
                   onSubmitAndContinue();
                 }}
@@ -870,7 +874,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           onSubmit={(address) => {
             setProgrammeFormValue('programmeAddress', address);
             setEditedAddress(address);
-            changeSmartSpaceCheckAddress();
             onOptionSelected(address, 3);
           }}
         />
