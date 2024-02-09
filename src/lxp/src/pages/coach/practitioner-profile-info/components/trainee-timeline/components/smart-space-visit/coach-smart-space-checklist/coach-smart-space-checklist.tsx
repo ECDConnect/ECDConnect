@@ -320,7 +320,14 @@ export const CoachSmartSpaceChecklist: React.FC<
       className={'h-full'}
       title={`SmartSpace visit`}
       subTitle={`${activeStep} of 10`}
-      onClose={() => exitPrompt()}
+      onClose={() => {
+        // If trainee, just exit, otherwise prompt
+        if (history.location.pathname === ROUTES.TRAINEE.TRAINEE_ONBOARDING) {
+          setNotificationStep('');
+        } else {
+          exitPrompt();
+        }
+      }}
     >
       <div>{renderStep(activeStep)}</div>
     </BannerWrapper>

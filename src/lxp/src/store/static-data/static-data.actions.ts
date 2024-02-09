@@ -244,6 +244,7 @@ export const getLanguages = createAsyncThunk<
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
+      auth: { userAuth },
       staticData: { languages: languagesCache },
     } = getState();
 
@@ -251,7 +252,11 @@ export const getLanguages = createAsyncThunk<
       try {
         let languages: LanguageDto[] | undefined;
 
-        languages = await new LanguageService().getLanguages();
+        if (userAuth?.auth_token) {
+          languages = await new LanguageService(
+            userAuth?.auth_token
+          ).getLanguages();
+        }
 
         if (!languages) {
           return rejectWithValue('Error Languages');

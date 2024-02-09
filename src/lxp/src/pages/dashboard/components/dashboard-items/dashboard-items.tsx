@@ -14,6 +14,9 @@ import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { notificationTagConfig } from '@/constants/notifications';
 import { markAsReadNotification } from '@/store/notifications/notifications.actions';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationActions } from '@/store/notifications';
+
 interface DashboardItemsProps extends ComponentBaseProps {
   listItems: StackedListItemType[];
   notification?: Notification;
@@ -54,6 +57,22 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
           notificationId: notification?.message?.reference ?? '',
         })
       );
+
+      if (
+        notification.message?.cta?.includes(
+          notificationTagConfig?.StartJourney?.cta ?? ''
+        ) ||
+        notification.message?.cta?.includes(
+          notificationTagConfig?.GetStartedTrainee?.cta ?? ''
+        )
+      ) {
+        appDispatch(notificationActions.removeNotification(notification!));
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification?.message?.reference ?? '',
+          })
+        );
+      }
     }
 
     if (notification.message.routeConfig) {
@@ -67,7 +86,7 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       const action = JSON.parse(
         notification.message.action
       ) as MessageActionConfig;
-      action?.url && history.push(action.url);
+      action?.url && history.push(action.url, action.state);
     }
 
     for (const [key, value] of Object.entries(notificationTagConfig)) {

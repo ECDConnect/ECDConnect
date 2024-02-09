@@ -19,6 +19,7 @@ import { usePrevious, useSessionStorage } from '@ecdlink/core';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 import { userSelectors } from '@/store/user';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const step12VisitSection = 'Step 12';
 
@@ -43,6 +44,7 @@ export const Step12 = ({
 
   const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
 
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const previousData = useSelector(
     getSectionsQuestionsByStep(
       visitIdFromPractitionerJourney ?? '',
@@ -58,6 +60,8 @@ export const Step12 = ({
   const userAuth = useSelector(authSelectors.getAuthUser);
   // INFO: from practitioner
   const user = useSelector(userSelectors.getUser);
+
+  const isPractitionerUser = user?.id === practitioner?.userId;
 
   const name = smartStarter?.user
     ? `${smartStarter?.user?.firstName} ${smartStarter?.user?.surname || ''}`
@@ -113,12 +117,17 @@ export const Step12 = ({
     const classroomDetails = (await new PractitionerService(
       userAuth?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(
-      smartStarter?.userId!
+      isPractitionerUser ? user?.id! : smartStarter?.userId!
     )) as unknown;
 
     setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
     return classroomDetails;
-  }, [smartStarter?.userId, userAuth?.auth_token]);
+  }, [
+    isPractitionerUser,
+    smartStarter?.userId,
+    user?.id,
+    userAuth?.auth_token,
+  ]);
 
   const handleViewMode = useCallback(() => {
     if (

@@ -20,6 +20,7 @@ using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NJsonSchema.CodeGeneration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,6 +91,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     item.Message = templateItem.Message;
                     item.Subject = templateItem.Subject;
                     item.CTAText = templateItem.CTAText;
+                    item.CTA = templateItem.CTA;
+                    item.Action = templateItem.Action;
 
                     logs.Add(item);
                 }

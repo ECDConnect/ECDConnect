@@ -365,9 +365,12 @@ export const IssuesAndTasks = ({
     ) {
       appDispatch(
         getActivityMeetRegularDetails({
-          clubId,
-          month: currentMonth + 1,
-          year: currentYear,
+          forceReload: false,
+          args: {
+            clubId,
+            month: 0,
+            year: currentYear,
+          },
         })
       );
     }

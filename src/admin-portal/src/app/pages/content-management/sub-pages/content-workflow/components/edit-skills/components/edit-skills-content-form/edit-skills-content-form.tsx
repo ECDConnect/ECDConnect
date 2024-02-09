@@ -3,11 +3,19 @@ import {
   ContentDefinitionModelDto,
   ContentValueDto,
   camelCaseToSentanceCase,
+  useDialog,
 } from '@ecdlink/core';
-import { CheckboxGroup, FormInput, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  DialogPosition,
+  FormInput,
+  Typography,
+} from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldType } from '../../../../../../../content-management/content-management-models';
-import Pagination from '../../../../../../../../components/pagination/pagination';
+import {
+  DynamicFormTemplate,
+  FieldType,
+} from '../../../../../../../content-management/content-management-models';
 
 export interface DynamicSelectorProps {
   contentValue?: ContentValueDto;
@@ -20,6 +28,9 @@ export interface DynamicSelectorProps {
   contentId?: number;
   setChangedCategory?: (item: any[]) => void;
   changedCategory?: any[];
+  template?: DynamicFormTemplate;
+  setSelectedLanguageId?: (item: string) => void;
+  cancelEdit?: () => void;
 }
 
 const DynamicSelector: React.FC<DynamicSelectorProps> = ({
@@ -32,7 +43,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   isSkillType,
   contentId,
   setChangedCategory,
-  changedCategory,
+  template,
+  setSelectedLanguageId,
+  cancelEdit,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -47,10 +60,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }) ?? [];
 
   const getAllCall = `GetAll${optionDefinition?.contentName}`;
-
   const [tempData, setTempData] = useState<any[]>([]);
-  const [tableData, setTableData] = useState<any[]>([]);
-
   const [currentIds, setCurrentIds] = useState<string[]>();
 
   const query = gql` 
@@ -103,6 +113,27 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }
   `;
 
+  const subcategoriesQuery = gql`
+    query GetAllProgressTrackingSubCategory($localeId: String) {
+      GetAllProgressTrackingSubCategory(localeId: $localeId) {
+        id
+        skills {
+          id
+          __typename
+          name
+          level {
+            id
+          }
+        }
+        imageUrl
+        imageHexColor
+        description
+        name
+        __typename
+      }
+    }
+  `;
+
   const { data: contentData } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
@@ -110,54 +141,66 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     },
   });
 
-  const {
-    data: levelsContentData,
-    refetch: refetchLevelsContent,
-    loading: loadingLevelsContent,
-  } = useQuery(levelsQuery, {
+  const { data: levelsContentData } = useQuery(levelsQuery, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: languageId,
     },
   });
 
-  const {
-    data: categoriesContentData,
-    refetch: refetchCategoriesContent,
-    loading: loadingCategoriesContent,
-  } = useQuery(categoriesQuery, {
+  const { data: categoriesContentData } = useQuery(categoriesQuery, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: languageId,
     },
   });
 
+  const { data: subcategoriesContentData } = useQuery(subcategoriesQuery, {
+    fetchPolicy: 'network-only',
+    variables: {
+      localeId: template?.fields?.[0]?.selectedLanguageId,
+    },
+  });
+
+  const dialog = useDialog();
   const categories = categoriesContentData?.GetAllProgressTrackingCategory;
   const currentCategory = categories?.find((cat) => cat?.id === contentId);
 
-  const subCategories = currentCategory?.subCategories;
+  const selectedLanguageSubCat =
+    subcategoriesContentData?.GetAllProgressTrackingSubCategory?.filter(
+      (el) => {
+        return currentCategory?.subCategories.some((f) => {
+          return f.id === el.id;
+        });
+      }
+    );
+
+  const subCategories = selectedLanguageSubCat;
+
   const levels = levelsContentData?.GetAllProgressTrackingLevel;
   const movingOnSubCategories = subCategories?.map((sub) => {
     return {
       ...sub,
-      skills: sub.skills.filter((skill) => skill?.level?.[0]?.id === 657),
+      skills: sub?.skills?.filter((skill) => skill?.level?.[0]?.id === 657),
     };
   });
   const advancingFurtherSubCategories = subCategories?.map((sub) => {
     return {
       ...sub,
-      skills: sub.skills.filter((skill) => skill?.level?.[0]?.id === 658),
+      skills: sub?.skills?.filter((skill) => skill?.level?.[0]?.id === 658),
     };
   });
   const towardsGradeRSubCategories = subCategories?.map((sub) => {
     return {
       ...sub,
-      skills: sub.skills.filter((skill) => skill?.level?.[0]?.id === 659),
+      skills: sub?.skills?.filter((skill) => skill?.level?.[0]?.id === 659),
     };
   });
+
   const [handleInitialValue, setHandleInitialValue] = useState(true);
 
   const handleNumberOfInputs = (sub) => {
+    // eslint-disable-next-line array-callback-return
     sub?.map((item) => {
       while (item?.skills?.length < 5) {
         item?.skills?.push({
@@ -281,25 +324,25 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentData, isReview, currentIds]);
 
-  const selectItem = (id: string) => {
-    id = id.toString();
-    const copy = Object.assign([], currentIds);
+  // const selectItem = (id: string) => {
+  //   id = id.toString();
+  //   const copy = Object.assign([], currentIds);
 
-    const currentIndex = currentIds?.findIndex((x) => x === id) ?? -1;
-    if (currentIndex > -1) {
-      copy.splice(currentIndex, 1);
-    } else {
-      copy.push(id);
-    }
+  //   const currentIndex = currentIds?.findIndex((x) => x === id) ?? -1;
+  //   if (currentIndex > -1) {
+  //     copy.splice(currentIndex, 1);
+  //   } else {
+  //     copy.push(id);
+  //   }
 
-    setCurrentIds(copy);
+  //   setCurrentIds(copy);
 
-    if (copy && setSelectedItems) {
-      const returnString = copy.join(',') ?? '';
+  //   if (copy && setSelectedItems) {
+  //     const returnString = copy.join(',') ?? '';
 
-      setSelectedItems(returnString);
-    }
-  };
+  //     setSelectedItems(returnString);
+  //   }
+  // };
 
   const [changedArr, setChangedArr] = useState([]);
 
@@ -359,10 +402,12 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       }
     },
     [
-      advancingFurtherLevelObj,
+      advancingFurtherLevelObj?.subCategories,
+      advancingFurtherState,
       changedArr,
-      movingOnLevelObj,
-      towardsGradeRLevelObj,
+      movingOnState,
+      towardsGradeRLevelObj?.subCategories,
+      towardsGradeRState,
     ]
   );
 
@@ -392,6 +437,69 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }
   }, [changedArr, setChangedCategory]);
 
+  const displayEmptySkills = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, close) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="You need to add translations for the category & sub-categories first."
+            icon={'ExclamationIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
+            actionButtons={[
+              {
+                text: 'Add category translation”',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  cancelEdit();
+                  close();
+                },
+                leadingIcon: 'PencilIcon',
+              },
+              {
+                text: 'Cancel',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  close && close();
+                  setSelectedLanguageId(languageId);
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [cancelEdit, dialog, languageId, setSelectedLanguageId]);
+
+  useEffect(() => {
+    if (
+      subcategoriesContentData?.GetAllProgressTrackingSubCategory?.length > 0 &&
+      movingOnState &&
+      movingOnState?.subCategories?.[0]?.name === null &&
+      advancingFurtherState &&
+      advancingFurtherState?.subCategories?.[0]?.name === null &&
+      towardsGradeRState &&
+      towardsGradeRState?.subCategories?.[0]?.name === null &&
+      !handleInitialValue
+    ) {
+      displayEmptySkills();
+    }
+  }, [
+    advancingFurtherState,
+    movingOnState,
+    subcategoriesContentData?.GetAllProgressTrackingSubCategory,
+    towardsGradeRState,
+    handleInitialValue,
+    displayEmptySkills,
+  ]);
+
   if (tempData && displayFields) {
     return (
       <div>
@@ -414,7 +522,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           {movingOnState?.subCategories &&
             movingOnState?.subCategories?.map((item, itemIdx) => {
               return (
-                <div key={item + itemIdx}>
+                <div key={`movingOnStateSubCat_` + itemIdx}>
                   <div className="mt-4 flex items-center gap-4">
                     <div className="bg-tertiary flex h-8 w-8 items-center justify-center rounded-full">
                       <img
@@ -438,6 +546,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     return (
                       <>
                         <Typography
+                          key={`movingOnStateSkill_` + idx}
                           type={'h4'}
                           color={'textDark'}
                           text={idx === 0 ? `Skill text *` : `Skill text`}
@@ -471,7 +580,10 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             advancingFurtherState?.subCategories?.map((item, itemIdx) => {
               return (
                 <>
-                  <div className="mt-4 flex items-center gap-4">
+                  <div
+                    className="mt-4 flex items-center gap-4"
+                    key={`advancingFurtherSubcat_` + itemIdx}
+                  >
                     <div className="bg-tertiary flex h-8 w-8 items-center justify-center rounded-full">
                       <img
                         src={item?.imageUrl}
@@ -494,6 +606,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     return (
                       <>
                         <Typography
+                          key={`advancingFurtherSkill_` + idx}
                           type={'h4'}
                           color={'textDark'}
                           text={idx === 0 ? `Skill text *` : `Skill text`}
@@ -527,7 +640,10 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             towardsGradeRState?.subCategories?.map((item, itemIdx) => {
               return (
                 <>
-                  <div className="mt-4 flex items-center gap-4">
+                  <div
+                    className="mt-4 flex items-center gap-4"
+                    key={`rstateSubCat_` + itemIdx}
+                  >
                     <div className="bg-tertiary flex h-8 w-8 items-center justify-center rounded-full">
                       <img
                         src={item?.imageUrl}
@@ -550,6 +666,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     return (
                       <>
                         <Typography
+                          key={`rstateskill_` + idx}
                           type={'h4'}
                           color={'textDark'}
                           text={idx === 0 ? `Skill text *` : `Skill text`}

@@ -248,7 +248,7 @@ export function ViewUser(props: any) {
   };
 
   let isAdminUser = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Administrator'
+    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
   );
 
   const sendInvite = async () => {
@@ -398,7 +398,6 @@ export function ViewUser(props: any) {
         if (userData?.phoneNumber) refetch();
 
         if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
-          console.log('refetchCHW');
           refetchCHW();
         }
 

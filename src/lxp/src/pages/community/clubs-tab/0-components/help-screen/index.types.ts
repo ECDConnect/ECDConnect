@@ -1,4 +1,5 @@
+import { HelpSection } from '.';
+
 export interface ActivityHelpRouteState {
-  activityId: string;
-  leagueType?: string;
+  helpSection: HelpSection;
 }

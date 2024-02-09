@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -15,7 +15,6 @@ import {
   Card,
   ActionModal,
 } from '@ecdlink/ui';
-import { PractitionerService } from '@/services/PractitionerService';
 import { NoteTypeEnum } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './practitioner-profile-info.types';
@@ -32,7 +31,6 @@ import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { authSelectors } from '@store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
@@ -63,7 +61,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const userAuth = useSelector(authSelectors.getAuthUser);
+
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const classroom = useSelector(classroomsSelectors?.getClassroom);
@@ -209,6 +207,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         item?.absentDate !== item?.absentDateEnd)
   );
 
+  const classroomGroupsForUser = useSelector(
+    classroomsSelectors.getClassroomGroupsForUser(practitionerId || '')
+  );
+
   const currentDates = validAbsenteesDates?.map((item) => {
     return item?.absentDate as string;
   });
@@ -239,8 +241,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     new Date(currentAbsentee?.absentDate || '')
   );
 
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
+  );
+
   const isOnLeave =
-    isPast(new Date(currentAbsentee?.absentDate as string)) &&
+    isLeave &&
+    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
+      isToday(new Date(currentAbsentee?.absentDate as string))) &&
     !isPast(new Date(currentAbsentee?.absentDateEnd as string));
 
   const handleReassignClass = useCallback(
@@ -357,22 +366,21 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
       appDispatch(
         getActivityMeetRegularDetails({
-          clubId: practitioner.clubId,
-          month: 0, // Fetch the whole year. TODO: figure out how to handle the actual points page overwriting this with just the current month :(
-          year: new Date().getFullYear(),
+          forceReload: true,
+          args: {
+            clubId: practitioner.clubId,
+            month: 0,
+            year: new Date().getFullYear(),
+          },
         })
       );
     }
   }, []);
 
-  // TODO - This should be saved to the store
-  // Actually might be in the store, why are we fetching it, to bascially just check if they have a class
   const classroomsDetailsForPractitioner = async () => {
-    const classroomDetails = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
-    setPractitionerClassroomDetails(classroomDetails);
-    return classroomDetails;
+    setPractitionerClassroomDetails(classroomGroupsForUser);
+
+    return classroomGroupsForUser;
   };
 
   useEffect(() => {
@@ -392,6 +400,42 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         );
       },
     });
+  };
+
+  const navigateClassroom = () => {
+    if (isOnline) {
+      history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
+        practitionerId,
+      });
+    } else {
+      showOnlineOnly();
+    }
+  };
+
+  const navigateBusiness = () => {
+    if (isOnline) {
+      history.push(
+        ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
+          ':userId',
+          practitionerId
+        )
+      );
+    } else {
+      showOnlineOnly();
+    }
+  };
+
+  const navigateJourney = () => {
+    if (isOnline) {
+      history.push(
+        ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+          ':practitionerId',
+          practitionerId
+        )
+      );
+    } else {
+      showOnlineOnly();
+    }
   };
 
   const listItems = [
@@ -416,12 +460,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       onActionClick: () =>
         onboardingNotCompleted && isTrainee
           ? setShowTraineeDashboard(true)
-          : history.push(
-              ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
-                ':practitionerId',
-                practitionerId
-              )
-            ),
+          : navigateJourney(),
       classNames: 'bg-uiBg',
     },
     {
@@ -442,10 +481,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         },
       },
       text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
-          practitionerId,
-        }),
+      onActionClick: () => navigateClassroom(),
       classNames: 'bg-uiBg',
     },
   ];
@@ -543,13 +579,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         },
       },
       text: '1',
-      onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
-            ':userId',
-            practitionerId
-          )
-        ),
+      onActionClick: () => navigateBusiness(),
       classNames: 'bg-uiBg',
     });
   }
@@ -1372,21 +1402,20 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               <Button
                 type="filled"
                 color="primary"
+                textColor="white"
                 className={`mt-6 w-11/12 ${
                   !practitioner?.isPrincipal &&
                   !practitioner?.isFundaAppAdmin &&
                   'mb-6'
                 }`}
-                onClick={() => setRemovePractionerReasonsVisible(true)}
-              >
-                {renderIcon('TrashIcon', 'w-5 h-5 color-white text-white mr-2')}
-                <Typography
-                  type="body"
-                  className="mr-4"
-                  color="white"
-                  text={`Remove ${practitioner?.user?.firstName}`}
-                ></Typography>
-              </Button>
+                onClick={() =>
+                  isOnline
+                    ? setRemovePractionerReasonsVisible(true)
+                    : showOnlineOnly()
+                }
+                icon="TrashIcon"
+                text={`Remove ${practitioner?.user?.firstName}`}
+              />
             </div>
             {(practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) && (
               <div className="flex w-full justify-center">

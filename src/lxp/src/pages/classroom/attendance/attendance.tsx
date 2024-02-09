@@ -13,20 +13,17 @@ import {
   ActionModal,
 } from '@ecdlink/ui';
 import {
-  add,
   addDays,
   format,
   getDayOfYear,
   isFriday,
-  isPast,
   isSameDay,
-  isToday,
   isWeekend,
   nextMonday,
   startOfWeek,
 } from 'date-fns';
 import getDay from 'date-fns/getDay';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
 import { attendanceSelectors } from '@store/attendance';
@@ -54,6 +51,7 @@ import { coachSelectors } from '@/store/coach';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
+import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -116,29 +114,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
   };
 
-  const practitionerAbsentees = practitioner?.absentees;
-  const validAbsenteesDates = practitionerAbsentees?.filter(
-    (item) =>
-      !isPast(new Date(item?.absentDateEnd as string)) ||
-      isToday(new Date(item?.absentDate as string))
-  );
-  const currentDates = validAbsenteesDates?.map((item) => {
-    return item?.absentDate as string;
-  });
-  const orderedDates = currentDates?.sort(function (a, b) {
-    return Date.parse(a) - Date.parse(b);
-  });
-  const currentAbsentee = validAbsenteesDates?.find(
-    (item) => item?.absentDate === orderedDates?.[0]
-  ) as AbsenteeDto;
-
-  const practitionerIsOnLeave = useMemo(
-    () =>
-      isPast(new Date(currentAbsentee?.absentDate as string)) &&
-      !isPast(
-        add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
-      ),
-    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
+  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+    practitioner!
   );
 
   const handleComebackDay = useCallback((date: Date) => {
@@ -151,8 +128,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   const handleIsOnleaveModal = () => {
     dialog({
+      blocking: true,
       position: DialogPosition.Middle,
-      render: (onSubmit, onClose) => {
+      render: (onClose) => {
         return (
           <ActionModal
             icon="ExclamationCircleIcon"
@@ -161,9 +139,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
             importantText={`You are on leave and cannot use this section`}
             paragraphs={[
               `You are on leave from ${format(
-                new Date(
-                  (currentAbsentee?.absentDateEnd as Date) || new Date()
-                ),
+                new Date((currentAbsentee?.absentDate as Date) || new Date()),
                 'd MMM yyyy'
               )} to ${format(
                 new Date(
@@ -184,7 +160,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
                 type: 'filled',
                 onClick: () => {
                   call();
-                  onSubmit();
+                  history.push(ROUTES.DASHBOARD);
+                  onClose();
                 },
                 leadingIcon: 'PhoneIcon',
               },

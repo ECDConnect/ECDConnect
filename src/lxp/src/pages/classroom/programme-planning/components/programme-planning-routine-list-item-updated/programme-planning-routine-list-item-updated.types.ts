@@ -6,5 +6,6 @@ export interface ProgrammePlanningRoutineListItemProps
   day?: DailyProgrammeDto;
   routineItem: ProgrammeRoutineItemDto;
   selectedDate?: Date;
+  storyBookId?: number;
   onClick: () => void;
 }

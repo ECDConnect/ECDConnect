@@ -176,10 +176,10 @@ export const BeCreative: React.FC = () => {
       displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP.ROOT.replace(
-            ':clubId',
-            clubId
-          ).replace(':activityId', activityId)
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
+            ':helpSection',
+            'Be Creative'
+          )
         )
       }
     >

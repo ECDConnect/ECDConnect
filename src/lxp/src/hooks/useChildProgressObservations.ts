@@ -494,24 +494,26 @@ export const useChildProgressObservation = (
       (x) => x.id === currentCategory.categoryId
     );
     const currentCategorySubCategoryIds =
-      category?.subCategories.map((x) => x.id) ?? [];
-    const subCategories = allSubCategories.filter((x) =>
+      category?.subCategories?.map((x) => x.id) ?? [];
+    const subCategories = allSubCategories?.filter((x) =>
       currentCategorySubCategoryIds.includes(x.id)
     );
 
     const subCategorySkills: ProgressTrackingSkillDto[] = allSkills.filter(
       (skill) =>
-        subCategories.some((subCategory) =>
-          subCategory.skills.some((subCatSkill) => subCatSkill.id === skill.id)
+        subCategories?.some((subCategory) =>
+          subCategory?.skills?.some(
+            (subCatSkill) => subCatSkill.id === skill.id
+          )
         )
     );
-    const selectedLevelSkillsForCategory = currentCategory.tasks.filter(
+    const selectedLevelSkillsForCategory = currentCategory?.tasks?.filter(
       (task) => task.levelId === levelId
     );
 
     const selectedSkills: ProgressTrackingSkillDto[] = [];
-    selectedLevelSkillsForCategory.forEach((selectedLevelSkill) => {
-      const subCategorySkill = subCategorySkills.find(
+    selectedLevelSkillsForCategory?.forEach((selectedLevelSkill) => {
+      const subCategorySkill = subCategorySkills?.find(
         (subCategorySkill) => subCategorySkill.id === selectedLevelSkill.skillId
       );
       if (subCategorySkill) {
@@ -549,12 +551,14 @@ export const useChildProgressObservation = (
 
     const subCategorySkillsIds = subCategorySkills?.map((x) => x.id);
 
-    const totalLevelSkillCount = allSkills.filter(
+    const totalLevelSkillCount = allSkills?.filter(
       (skill) =>
+        skill.level &&
+        skill.level.length > 0 &&
         skill.level[0]?.id === levelId &&
-        subCategorySkillsIds.includes(skill.id)
+        subCategorySkillsIds?.includes(skill.id)
     ).length;
-    const selectedSkillCount = activeCategory.tasks.filter(
+    const selectedSkillCount = activeCategory?.tasks?.filter(
       (x) => x.levelId === levelId && x.value === ProgressSkillValues.Yes
     ).length;
 

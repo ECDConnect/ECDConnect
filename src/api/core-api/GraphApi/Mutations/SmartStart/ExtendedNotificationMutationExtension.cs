@@ -67,7 +67,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
-                FindValue = "principalOrFAA",
+                FindValue = "PrincipalOrFAA",
                 ReplacementValue = principalOrFAA
             });
             replacements.Add(new TagsReplacements()
@@ -87,7 +87,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
-                FindValue = "principalOrFAA",
+                FindValue = "PrincipalOrFAA",
                 ReplacementValue = principalOrFAA
             });
             replacements.Add(new TagsReplacements()
@@ -471,7 +471,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
         public async Task<bool> SendSetAbsenteeNotification(
 [Service] UserManager<ApplicationUser> userManager,
-[Service] INotificationService notificationService, string userId, string absentStartDate, string parentPrincipalFAACoachName)
+[Service] INotificationService notificationService, string userId, string absentStartDate, string parentPrincipalFAACoachName, string parentPrincipalFAACoachUserId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -481,8 +481,13 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             });
             replacements.Add(new TagsReplacements()
             {
-                FindValue = "ParentPrincipalFAACoachName",
+                FindValue = "PrincipalName",
                 ReplacementValue = parentPrincipalFAACoachName
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerUserId",
+                ReplacementValue = parentPrincipalFAACoachUserId
             });
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
@@ -646,7 +651,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = dueDate
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3), false, true);
         }
 
         public async Task<bool> SendTraineeJourneyStartSelfNotification(

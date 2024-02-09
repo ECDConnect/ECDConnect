@@ -7,8 +7,26 @@ import {
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { classNames } from '../../pages/users/components/users';
-import { Alert, LoadingSpinner } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogPosition,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { videoExtensions } from '../../utils/constants';
+
+import womanEmoji from '../../../assets/emojis/womanEmoji.png';
+import manEmoji from '../../../assets/emojis/manEmoji.png';
+import duckEmoji from '../../../assets/emojis/avatar_duck.png';
+import catEmoji from '../../../assets/emojis/avatar_cat.png';
+import leopardEmoji from '../../../assets/emojis/avatar_leopard.png';
+import dogEmoji from '../../../assets/emojis/avatar_dog.png';
+import penguinEmoji from '../../../assets/emojis/penguinEmoji.png';
+import monkeyEmoji from '../../../assets/emojis/avatar_monkey.png';
+import themesIcons from './components/themeIcons/themeIcons';
+import { SearchCircleIcon } from '@heroicons/react/outline';
 
 export interface FileModel {
   fileName: string;
@@ -29,6 +47,7 @@ export interface FormFileInputProps {
   allowedFileSize?: number;
   isIconInput?: boolean;
   onChange?: (item: any) => void;
+  isThemeFormFile?: boolean;
 }
 
 const containerBaseStyle =
@@ -41,6 +60,7 @@ const errorContainerStyle = 'border-errorMain';
 const iconBaseStyle = 'mx-auto h-12 w-12';
 const iconStyle = 'text-tertiary';
 const fileIconStyle = 'text-successMain';
+const themeIconStyle = 'mx-auto h-12 w-12 text-pink-700';
 const errorIconStyle = 'text-errorMain';
 
 const FormFileInput: React.FC<FormFileInputProps> = ({
@@ -57,6 +77,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   allowedFileSize,
   isIconInput,
   onChange,
+  isThemeFormFile,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -64,6 +85,9 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   const [isLoading, setLoading] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
   const [uploadTypes, setUploadedTypes] = useState('');
+  const [themeIconValue, setThemeIconValue] = useState<any>('');
+  const [iconSelected, setIconSelected] = useState(false);
+  const [iconIndex, setIconIndex] = useState<number>();
   const accepetedFormatsWithoutLastItem = acceptedFormats?.slice(0, -1);
   const accepetedFormatsFormatted = accepetedFormatsWithoutLastItem?.map(
     (item) => {
@@ -71,6 +95,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     }
   );
   const lastAcceptedFormat = acceptedFormats?.[acceptedFormats?.length - 1];
+  const [emojisSection, setEmojisSection] = useState(false);
 
   const isPdfExtension = acceptedFormats?.some((format) =>
     format.toLowerCase().includes('pdf')
@@ -90,7 +115,22 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     }
   }, [acceptedFormats, contentUrl, uploadTypes]);
 
-  const handleChange = (event: any) => {
+  const handleChange = async (event: any) => {
+    if (isThemeFormFile) {
+      const fileName = event?.target.src;
+      const response = await fetch(event?.target?.src);
+      const blob = await response.blob();
+      const iconFile = new File([blob], fileName, {
+        type: blob.type,
+      });
+
+      setLoading(true);
+      handleFile(iconFile);
+      setFileName(iconFile?.name);
+
+      return;
+    }
+
     if (event && event.target && event.target.files) {
       const firstFile = event.target.files[0];
       if (!firstFile) return;
@@ -278,7 +318,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           className="font-lg block pb-1 text-sm text-gray-900"
         >
           {label}
-          {acceptedFormats && (
+          {acceptedFormats && !isThemeFormFile && (
             <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
           )}
         </label>
@@ -297,7 +337,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             : classNames(getContainerStyle(), containerBaseStyle)
         }
         onClick={() => {
-          handleClick();
+          isThemeFormFile ? setEmojisSection(true) : handleClick();
         }}
         onDrop={(e) => {
           handleDrop(e);
@@ -359,16 +399,32 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
               />
             ) : (
               <div>
-                <PhotographIcon
-                  className={classNames(getIconStyle(), iconBaseStyle, '')}
-                />
-                <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
-                  <DesktopComputerIcon className="mr-4 h-5 w-5">
-                    {' '}
-                  </DesktopComputerIcon>
-                  Browse my computer
-                </div>
-                <p className="text-md py-2 text-gray-700">or drag file here</p>
+                {!isThemeFormFile ? (
+                  <>
+                    <PhotographIcon
+                      className={classNames(getIconStyle(), iconBaseStyle, '')}
+                    />
+                    <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                      <DesktopComputerIcon className="mr-4 h-5 w-5">
+                        {' '}
+                      </DesktopComputerIcon>
+                      Browse my computer
+                    </div>
+                    <p className="text-md py-2 text-gray-700">
+                      or drag file here
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <PhotographIcon className={themeIconStyle} />
+                    <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                      <SearchCircleIcon className="mr-4 h-5 w-5">
+                        {' '}
+                      </SearchCircleIcon>
+                      Search for a theme icon
+                    </div>
+                  </>
+                )}
               </div>
             )}
             {/* <span className={labelStyle}>{getLabel()}</span> */}
@@ -405,6 +461,80 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           handleChange(e);
         }}
       />
+      <div className="flex items-center justify-center">
+        <Dialog
+          visible={emojisSection}
+          position={DialogPosition.Top}
+          className="h-9/12 absolute left-auto right-auto w-6/12"
+        >
+          <Typography
+            type={'h2'}
+            weight="bold"
+            color={'textMid'}
+            className="ml-6 mt-6"
+            text={'Search for an icon'}
+          />
+
+          <div className="w-dvw">
+            <div className="flex h-80 flex-wrap justify-center overflow-y-auto">
+              <div className="mt-8 grid w-9/12 grid-cols-6 justify-center gap-x-3 gap-y-3">
+                {!!themesIcons?.length &&
+                  themesIcons.map((item, index) => {
+                    return (
+                      <div
+                        onClick={(e) => setIconIndex(index)}
+                        key={`${item}-${index}`}
+                        className={`flex items-center justify-center ${
+                          iconSelected && index === iconIndex
+                            ? 'rounded-full border-2 border-black'
+                            : ''
+                        }`}
+                      >
+                        <img
+                          src={item}
+                          alt="emojis"
+                          id={String(index)}
+                          onClick={(e) => {
+                            setThemeIconValue(e);
+                            setIconSelected(true);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+            <div className="mt-14 flex w-full flex-col justify-center">
+              <div className="flex w-full justify-center ">
+                <Button
+                  type={'filled'}
+                  text={'Select icon'}
+                  color={'secondary'}
+                  textColor={'white'}
+                  className={'mb-2 w-11/12 rounded-2xl'}
+                  iconPosition={'start'}
+                  onClick={() => {
+                    handleChange(themeIconValue);
+                    setEmojisSection(false);
+                    setIconSelected(false);
+                  }}
+                />
+              </div>
+              <div className="flex w-full justify-center ">
+                <Button
+                  type={'outlined'}
+                  text={'Close'}
+                  color={'secondary'}
+                  textColor={'secondary'}
+                  className={'mb-8 w-11/12 rounded-2xl'}
+                  iconPosition={'start'}
+                  onClick={() => setEmojisSection(false)}
+                />
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      </div>
     </>
   );
 };

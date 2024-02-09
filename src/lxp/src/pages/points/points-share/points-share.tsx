@@ -81,18 +81,20 @@ export const PointsShare: React.FC<PointsShareProps> = ({
                 className="pt-2"
               />
               <table>
-                <tr className="mb-2">
-                  <td>
-                    {renderIcon('StarIcon', `h-6 w-6 text-uiBg mr-1.5 mt-1`)}
-                  </td>
-                  <td>
-                    <Typography
-                      type={'h3'}
-                      text={`${pointsTotal} points`}
-                      color={'uiBg'}
-                    />
-                  </td>
-                </tr>
+                <tbody>
+                  <tr className="mb-2">
+                    <td>
+                      {renderIcon('StarIcon', `h-6 w-6 text-uiBg mr-1.5 mt-1`)}
+                    </td>
+                    <td>
+                      <Typography
+                        type={'h3'}
+                        text={`${pointsTotal} points`}
+                        color={'uiBg'}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
               </table>
             </div>
           </div>

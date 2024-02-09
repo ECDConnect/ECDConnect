@@ -22,15 +22,11 @@ import {
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
-import {
-  LanguageDto,
-  NOTIFICATION,
-  useDialog,
-  useNotifications,
-} from '@ecdlink/core';
+import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { ContentTypes } from '../../constants/content-management';
 import { UiTableProps } from './type';
 import AlertModal from '../dialog-alert/dialog-alert';
+import { StoryActivitiesTypes } from '../../pages/content-management/content-management-models';
 
 export default function UiTable({
   columns = [],
@@ -209,7 +205,9 @@ export default function UiTable({
   useEffect(() => {
     setSearchRows(getSearchResults());
     setLastUpdate(Date.now());
-    setSearchValue(searchInput);
+    if (searchInput) {
+      setSearchValue(searchInput);
+    }
   }, [getSearchResults, searchInput]);
 
   const makeColumns = (cols: any[] = []) => {
@@ -351,101 +349,48 @@ export default function UiTable({
           </div>
         </div>
       );
-    } else if (display_value === 'Story book') {
-      const splitValues = display_value?.split(', ');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
-            return (
-              <div
-                key={item}
-                className={`${
-                  item === 'Story book'
-                    ? 'bg-secondary'
-                    : item === 'Read aloud'
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else if (display_value === 'Read aloud') {
-      const splitValues = display_value?.split(', ');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
-            return (
-              <div
-                className={`${
-                  item === 'Story book'
-                    ? 'bg-secondary'
-                    : item === 'Read aloud'
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else if (display_value === 'Other') {
-      const splitValues = display_value?.split(', ');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
-            return (
-              <div
-                className={`${
-                  item === 'Story book'
-                    ? 'bg-secondary'
-                    : item === 'Read aloud'
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
     } else if (
-      display_value === 'Story book, Read aloud, other' ||
-      display_value === 'Story book,Read aloud,other'
+      column.field === 'subType' &&
+      (display_value
+        .toString()
+        .toLowerCase()
+        .indexOf(StoryActivitiesTypes.Storybook.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.ReadAloud.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.Other.toLowerCase()) !== -1)
     ) {
-      const splitValues =
-        display_value === 'Story book,Read aloud,other'
-          ? display_value?.split(',')
-          : display_value?.split(', ');
+      // remove duplicates and trim
+      var arr = display_value.split(',');
+      display_value = arr
+        .filter(function (value, index, self) {
+          return self.indexOf(value.trim()) === index;
+        })
+        .join(',');
 
+      const splitValues = display_value?.split(',');
       rowValue = (
         <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item) => {
+          {splitValues?.map((item, index) => {
             return (
               <div
-                key={item}
+                key={'sb_' + index}
                 className={`${
-                  item === 'Story book'
+                  item.toString().toLowerCase() ===
+                  StoryActivitiesTypes.Storybook.toLowerCase()
                     ? 'bg-secondary'
-                    : item === 'Read aloud'
+                    : item.toString().toLowerCase() ===
+                      StoryActivitiesTypes.ReadAloud.toLowerCase()
                     ? 'bg-darkBlue'
                     : 'bg-successMain'
                 } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
               >
                 <span className="text-xs">
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                  {item.toString().charAt(0).toUpperCase() + item.slice(1)}
                 </span>
               </div>
             );
@@ -459,11 +404,20 @@ export default function UiTable({
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
-            <div className="ml-1 flex cursor-pointer">
+            <div key={`cat_` + index} className="ml-1 flex cursor-pointer">
               <div
-                className={`bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+                className={`${
+                  item?.imageHexColor ? '' : 'bg-tertiary'
+                } flex h-9 w-9 items-center justify-center rounded-full`}
+                style={{
+                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
+                }}
               >
-                <img alt="skill" src={item?.imageUrl} className="h-6 w-6" />
+                <img
+                  alt="skill"
+                  src={item?.imageUrl}
+                  className="h-6 w-6 object-contain"
+                />
               </div>
             </div>
           ))}
@@ -474,7 +428,7 @@ export default function UiTable({
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
             <div
-              key={item?.id}
+              key={`subCategories_` + item?.id}
               className={' text-textMid m-1 rounded-full py-1 text-xs'}
             >
               {index === display_value?.length - 1
@@ -493,7 +447,7 @@ export default function UiTable({
             );
             return (
               <div
-                key={item?.id}
+                key={`language_` + item?.id}
                 className={' text-textMid m-1 rounded-full py-1 text-xs'}
               >
                 {index === display_value?.length - 1
@@ -509,7 +463,7 @@ export default function UiTable({
         <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
           {display_value?.map((item: any) => (
             <div
-              key={item?.id}
+              key={`role_` + item?.id}
               className={
                 `${
                   item[column.displayProperty] === 'Administrator'

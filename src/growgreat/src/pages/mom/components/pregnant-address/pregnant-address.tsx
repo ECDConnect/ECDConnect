@@ -54,7 +54,6 @@ const PregnantAddressView: React.FC<PregnantAddressProps> = ({
 
   const saveAddress = () => {
     // TODO: add integration
-    console.log('saveAddress', formattedAddress);
     setPregnantAddressFormValue('address', formattedAddress);
     onToggleMapView();
   };

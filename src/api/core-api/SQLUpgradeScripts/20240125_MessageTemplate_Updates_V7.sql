@@ -55,3 +55,10 @@ INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","Upd
 
 INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(), NOW(),NULL,'push','promoted-to-prinicpal-or-faa','Go to your profile to manage practitioners & classes.','258a15e6-3736-45ea-875c-48d9377de4c8','You have been given the [[PrincipalOrFAA]] role for [[ProgrammeName]]','[[ViewProgramme]]','View programme',NULL,NULL,11,'{"url":"/practitioner/programme-information"}');
+
+UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/practitioner/profile/edit"}'
+	WHERE "TemplateType"='fillin-self-asessment-form';
+	UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/practitioner/profile/edit"}'
+	WHERE "TemplateType"='coach-fillin-self-asessment-form';

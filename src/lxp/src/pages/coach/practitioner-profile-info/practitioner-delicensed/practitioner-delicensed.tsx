@@ -35,7 +35,6 @@ export const PractitionerDelicensed: React.FC<PractitionerDelicensedProps> = ({
   practitioner,
   delicenseDate,
 }) => {
-  console.log('delicenseDate', delicenseDate);
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -65,6 +64,7 @@ export const PractitionerDelicensed: React.FC<PractitionerDelicensedProps> = ({
           collectedSSPlaykit: playkitReturned,
         })
       );
+      history.push(ROUTES.COACH.PRACTITIONERS);
     }
   };
 

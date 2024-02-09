@@ -217,23 +217,17 @@ const clubSlice = createSlice({
 
         const isCoach = !!state.clubsForCoach[clubId]?.club;
 
-        const updatedPoints = {
-          meetRegularly: {
-            ...state.clubsForCoach[clubId]?.points?.meetRegularly,
-            missingMeetings: action.payload,
-          },
-        };
-
         if (isCoach) {
-          // TODO -> Fix type
-          // @ts-ignore
           state.clubsForCoach = {
             ...state.clubsForCoach,
             [clubId]: {
               ...state.clubsForCoach[clubId],
               points: {
                 ...state.clubsForCoach[clubId]?.points,
-                meetRegularly: updatedPoints,
+                meetRegularly: {
+                  ...state.clubsForCoach[clubId]?.points?.meetRegularly,
+                  missingMeetings: action.payload,
+                },
               },
             },
           };
@@ -242,8 +236,10 @@ const clubSlice = createSlice({
             ...state.clubForPractitioner,
             points: {
               ...state.clubForPractitioner?.points,
-              // @ts-ignore
-              meetRegularly: updatedPoints,
+              meetRegularly: {
+                ...state.clubForPractitioner?.points?.meetRegularly,
+                missingMeetings: action.payload,
+              },
             },
           };
         }
@@ -369,7 +365,7 @@ const clubSlice = createSlice({
       (state, action) => {
         setFulfilledThunkActionStatus(state, action);
 
-        const clubId = action.meta.arg.clubId;
+        const clubId = action.meta.arg.args.clubId;
 
         const isCoach = !!state.clubsForCoach[clubId]?.club;
 

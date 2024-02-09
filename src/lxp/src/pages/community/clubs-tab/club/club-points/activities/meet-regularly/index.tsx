@@ -142,13 +142,16 @@ export const MeetRegularly: React.FC = () => {
     if (isOnline) {
       appDispatch(
         getActivityMeetRegularDetails({
-          clubId,
-          month: 0,
-          year: currentYear,
+          forceReload: false,
+          args: {
+            clubId,
+            month: 0,
+            year: currentYear,
+          },
         })
       );
     }
-  }, [appDispatch, clubId, currentMonth, currentYear, isOnline]);
+  }, [clubId, currentYear, isOnline]);
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {
@@ -328,10 +331,10 @@ export const MeetRegularly: React.FC = () => {
       displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP.ROOT.replace(
-            ':clubId',
-            clubId
-          ).replace(':activityId', activityId)
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
+            ':helpSection',
+            'Meet Regularly'
+          )
         )
       }
       renderBorder

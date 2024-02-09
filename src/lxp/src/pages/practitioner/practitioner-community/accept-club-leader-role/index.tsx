@@ -63,8 +63,6 @@ export const AcceptClubLeaderRole: React.FC = () => {
     ClubActions.ACCEPT_NEW_CLUB_LEADER_ROLE
   );
 
-  const activityId = 'club-leader-agreement';
-
   const practitionerId = club?.clubMembers?.find(
     (member) => member.userId === user?.id
   )?.practitionerId;
@@ -197,7 +195,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
                   ROUTES.COMMUNITY.HELP.replace(
                     ':clubId',
                     club?.id ?? ''
-                  ).replace(':activityId', activityId)
+                  ).replace(':helpSection', 'Club Leader Agreement')
                 )
               }
             >

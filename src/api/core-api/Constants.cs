@@ -298,7 +298,7 @@ namespace EcdLink.Api.CoreApi
             public const string step13_q1_a4 = "The venue has good natural ventilation (windows or doors that can open).";
             public const string step13_q1_a5 = "The programme does not exceed the maximum child number per programme type.";
 
-            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}�s venue?";
+            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}’s venue?";
             public const string step14_success = "{client} venue meets all the basic SmartSpace standards as well as the additional standards.";
             public const string step14_not_reissue = "You cannot reissue {client}'s SmartSpace Licence.";
             public const string step14_not_meet = "{client}'s venue does not meet the basic SmartSpace standards.";

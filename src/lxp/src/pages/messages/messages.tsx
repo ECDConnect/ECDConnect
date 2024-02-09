@@ -91,7 +91,7 @@ export const Messages: React.FC = () => {
       const action = JSON.parse(
         notification.message.action
       ) as MessageActionConfig;
-      action?.url && history.push(action.url);
+      action?.url && history.push(action.url, action.state);
     }
 
     for (const [key, value] of Object.entries(notificationTagConfig)) {
