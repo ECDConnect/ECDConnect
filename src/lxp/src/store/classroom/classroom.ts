@@ -101,7 +101,8 @@ const classroomsSlice = createSlice({
             state.classroomGroupLearners[i].userId === action.payload.userId &&
             state.classroomGroupLearners[i].classroomGroupId ===
               action.payload.classroomGroupId &&
-            state.classroomGroupLearners[i].id === action.payload.id
+            state.classroomGroupLearners[i].id === action.payload.id &&
+            state.classroomGroupLearners[i].isActive === true
           )
             state.classroomGroupLearners[i] = payloadUpdated;
         }
@@ -195,7 +196,8 @@ const classroomsSlice = createSlice({
       const learnerIndex = state.classroomGroupLearners.findIndex(
         (learner) =>
           learner.userId === action.payload.userId &&
-          learner.id === action.payload.id
+          learner.id === action.payload.id &&
+          learner.isActive === true
       );
 
       if (learnerIndex < 0) return;
@@ -214,7 +216,11 @@ const classroomsSlice = createSlice({
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroups = action.payload;
+        state.classroomGroups = action.payload.filter(
+          (x: ClassroomGroupDto) => {
+            return x.isActive === true;
+          }
+        );
       }
     });
     builder.addCase(getClassroomProgrammes.fulfilled, (state, action) => {
@@ -224,7 +230,11 @@ const classroomsSlice = createSlice({
     });
     builder.addCase(getClassroomGroupLearners.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroupLearners = action.payload;
+        state.classroomGroupLearners = action.payload.filter(
+          (x: LearnerDto) => {
+            return x.isActive === true;
+          }
+        );
       }
     });
     builder.addCase(

@@ -391,7 +391,7 @@ export const upsertClassroomGroups = createAsyncThunk<
 
     try {
       let promises: Promise<boolean>[] = [];
-
+      //  if (classroomGroups?.some((item) => item?.isOnline === false)) {
       if (userAuth?.auth_token && classroomGroups) {
         promises = classroomGroups.map(async (x) => {
           const input: ClassroomGroupInput = {
@@ -409,6 +409,8 @@ export const upsertClassroomGroups = createAsyncThunk<
         });
       }
       return Promise.all(promises);
+      //  }
+      // return [true];
     } catch (err) {
       return rejectWithValue(err);
     }
