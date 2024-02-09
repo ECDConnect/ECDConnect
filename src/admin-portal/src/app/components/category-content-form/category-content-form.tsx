@@ -235,7 +235,6 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
               return (
                 <>
                   <div className="mt-8" key={`subCats_` + idx}>
-                    aaaa
                     <Typography
                       type={'h4'}
                       color={'textDark'}
@@ -297,7 +296,6 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
               return (
                 <>
                   <div className="mt-8" key={`subCat_` + idx}>
-                    bbbbb
                     <Typography
                       type={'h4'}
                       color={'textDark'}
