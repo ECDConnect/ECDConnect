@@ -112,18 +112,22 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     return a?.absentDate?.localeCompare(b?.absentDate);
   });
 
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
+  );
+
   const isOnLeave =
-    isPast(new Date(currentAbsentee?.absentDate as string)) &&
+    isLeave &&
+    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
+      isToday(new Date(currentAbsentee?.absentDate as string))) &&
     !isPast(new Date(currentAbsentee?.absentDateEnd as string));
 
   const absenceIsToday = isSameDay(
     new Date(),
     new Date(currentAbsentee?.absentDate || '')
   );
-  const isLeave = useMemo(
-    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
-    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
-  );
+
   const lastMonth = sub(new Date(), {
     months: 1,
   });

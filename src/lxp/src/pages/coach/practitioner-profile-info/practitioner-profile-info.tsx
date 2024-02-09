@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -15,7 +15,6 @@ import {
   Card,
   ActionModal,
 } from '@ecdlink/ui';
-import { PractitionerService } from '@/services/PractitionerService';
 import { NoteTypeEnum } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './practitioner-profile-info.types';
@@ -32,7 +31,6 @@ import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { authSelectors } from '@store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
@@ -63,7 +61,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const userAuth = useSelector(authSelectors.getAuthUser);
+
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const classroom = useSelector(classroomsSelectors?.getClassroom);
@@ -243,8 +241,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     new Date(currentAbsentee?.absentDate || '')
   );
 
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
+  );
+
   const isOnLeave =
-    isPast(new Date(currentAbsentee?.absentDate as string)) &&
+    isLeave &&
+    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
+      isToday(new Date(currentAbsentee?.absentDate as string))) &&
     !isPast(new Date(currentAbsentee?.absentDateEnd as string));
 
   const handleReassignClass = useCallback(

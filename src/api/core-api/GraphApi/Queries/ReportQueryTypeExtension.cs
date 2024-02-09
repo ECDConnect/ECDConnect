@@ -214,8 +214,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var group in classroomGroups)
                 {
                     var learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
-                    var children = attendanceService.GetChildrenForUser(userId);
-
 
                     int childCount = learners.Count;
                     int month = fromDate.Month;
@@ -1071,6 +1069,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
             [Service] ChildProgressReportService childProgressReportService,
+            [Service] AttendanceService attendanceService,
             IGenericRepositoryFactory repoFactory,
             string type)
         {
@@ -1090,6 +1089,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         holidayService,
                         personnelService,
                         childProgressReportService,
+                        attendanceService,
                         repoFactory,
                         uId,
                         type).ToList();
@@ -1181,6 +1181,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
             [Service] ChildProgressReportService childProgressReportService,
+            [Service] AttendanceService attendanceService,
             IGenericRepositoryFactory repoFactory,
             string uId,
             string mode)
@@ -1229,7 +1230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId) && x.AbsentDate >= previousMonthStart).ToList();
             var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId)).ToList();
             var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId)).ToList();
-            var classroomGroups = classroomGroupRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
             var clubMemberDictionary = clubMemberRepo.GetAll().Where(x => x.IsActive).Select(x => new { x.PractitionerId, x.ClubId }).ToList();
                         
             var lastMonthClubMeetings = clubMeetingRepo.GetAll()
@@ -1245,6 +1246,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             foreach (var practitioner in practitioners)
             {
                 var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var practitionerClassroomGroupIds = classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList();
                 var classroom = practitionerClassrooms.FirstOrDefault();
                 var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId).ToList(); 
 
@@ -1314,7 +1316,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     var missedReports = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(
                     practitioner.Hierarchy,
-                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList());
+                    practitionerClassroomGroupIds);
 
                     if (missedReports.reportsMissingOrIncomplete > 0)
                     {
@@ -1350,7 +1352,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (traineeTimeline.StarterLicenseColor == null || traineeTimeline.StarterLicenseColor == warningString) warningCount++;
                         if (traineeTimeline.ThreeChildrenRegisteredColor == null || traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
 
-                        if (traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-28)) 
+                        if (traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-28))
                         {
                             if (warningCount > 0)
                             {
@@ -1384,14 +1386,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) 
+                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now)
                             && practitioner.IsOnStipend.HasValue && practitioner.IsOnStipend.Value) overdueCount++;
                             if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
                             if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
 
                             if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now &&
-                                traineeTimeline.SSCoachVisitDone == false) {
+                                traineeTimeline.SSCoachVisitDone == false)
+                            {
                                 notification.Subject = "SmartSpace visit overdue";
                                 notification.Icon = MetricsIconEnum.Error.ToString();
                                 notification.Color = MetricsColorEnum.Error.ToString();
@@ -1401,8 +1404,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 yield return notification;
                                 continue;
                             }
-                             if (traineeTimeline.SSCoachVisitDate > DateTime.Now &&
-                                traineeTimeline.SSCoachVisitDone == false) {
+                            if (traineeTimeline.SSCoachVisitDate > DateTime.Now &&
+                               traineeTimeline.SSCoachVisitDone == false)
+                            {
                                 notification.Subject = $"{((DateTime)traineeTimeline.SSCoachVisitDate).ToString("MMMM dd", CultureInfo.InvariantCulture)}, SmartSpace visit due";
                                 notification.Icon = MetricsIconEnum.Error.ToString();
                                 notification.Color = MetricsColorEnum.Error.ToString();
@@ -1904,13 +1908,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region INCOMPLETE CHILD REGISTRATIONS
-                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
-                                        //.Include(c => c.User)
-                                        .ToListAsync().Result;
-                var childUserIds = children.Select(c => c.UserId);
-                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true).ToList();
+                var learners = new List<Learner>();
+                foreach (var group in practitionerClassroomGroupIds)
+                {
+                    learners.AddRange(attendanceService.GetAllLearnerGroupInstances(group));
+                }
+                var childUserIds = learners.Select(c => c.UserId).Distinct().ToList();
+                var children = childRepo.GetAll().Where(x => childUserIds.Contains(x.UserId)).ToList();
                 var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
-                && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
+                    && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
 
                 var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
                 if (incompleteRegistrations > 0)
