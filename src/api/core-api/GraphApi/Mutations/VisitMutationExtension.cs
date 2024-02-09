@@ -542,7 +542,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 FindValue = "PractitionerFirstName",
                 ReplacementValue = practitioner.User.FirstName + " " + practitioner.User.Surname
             });
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, coach.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerUserId",
+                ReplacementValue = practitioner.Id.ToString()
+            });
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, coach.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
 
             return visitManager.AddVisitForCoach(input);
         }
