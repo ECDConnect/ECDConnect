@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -8,6 +9,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -20,6 +22,7 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -70,6 +73,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private VisitManager _visitManager;
         private HierarchyEngine _hierarchyEngine;
+        private INotificationService _notificationService;
 
         private readonly Guid _uId;
 
@@ -80,7 +84,8 @@ namespace EcdLink.Api.CoreApi.Services
             VisitManager visitManager,
             HierarchyEngine hierarchyEngine,
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
-            [Service] IChildService childService)
+            [Service] IChildService childService,
+            [Service] INotificationService notificationService)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
@@ -126,6 +131,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             _childAttendanceReport = childAttendanceReport;
             _visitManager = visitManager;
+            _notificationService = notificationService;
         }
 
         #region PointsLibrary
@@ -1872,6 +1878,19 @@ namespace EcdLink.Api.CoreApi.Services
                     if (totalChildren != 0 && totalChildren == totalReports)
                     {
                         totalComplete++;
+                        //send notification
+                        List<TagsReplacements> replacements = new List<TagsReplacements>();
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "MeetingDate",
+                            ReplacementValue = startDate.ToShortDateString()
+                        });
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "ClubId",
+                            ReplacementValue = club.Id.ToString()
+                        });
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
                     }
                 }
 

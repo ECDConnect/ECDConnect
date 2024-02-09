@@ -1,4 +1,4 @@
-import { coachSelectors } from '@/store/coach';
+import { coachSelectors, coachThunkActions } from '@/store/coach';
 import {
   BannerWrapper,
   Button,
@@ -11,11 +11,10 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { getYear } from 'date-fns';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { TopicDescription } from './components/topic-description';
 import { CoachingCircleTopicDto } from '@ecdlink/core';
-import { coachThunkActions } from '@/store/coach';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
@@ -32,9 +31,9 @@ export const CircleTopics: React.FC<CircleTopicsProps> = ({
   const circleTopics = useSelector(coachSelectors.getCircleTopics);
   const [showDescription, setShowDescription] = useState(false);
   const [circleTopic, setCircleTopic] = useState<CoachingCircleTopicDto>();
+  const [language, setLanguage] = useState({ locale: 'en-za' });
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const [language, setLanguage] = useState({ locale: 'en-za' });
 
   const handleTopicDescription = (topic: CoachingCircleTopicDto) => {
     setCircleTopic(topic);
@@ -57,13 +56,14 @@ export const CircleTopics: React.FC<CircleTopicsProps> = ({
 
   const getContent = useCallback(async () => {
     if (!isOnline) return;
-
-    appDispatch(
-      coachThunkActions.getCoachingCircleTopics({
-        locale: language.locale,
-      })
-    );
-  }, [appDispatch, isOnline, language.locale]);
+    if (circleTopics && circleTopics?.length === 0) {
+      appDispatch(
+        coachThunkActions.getCoachingCircleTopics({
+          locale: language.locale,
+        })
+      );
+    }
+  }, [appDispatch, circleTopics, isOnline, language.locale]);
 
   useEffect(() => {
     getContent();

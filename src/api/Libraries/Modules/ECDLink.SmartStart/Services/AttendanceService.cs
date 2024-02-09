@@ -81,13 +81,16 @@ namespace ECDLink.SmartStart.Services
 
         public List<Learner> GetAllLearnerGroupInstances(Guid classgroupId)
         {
-            var learners = _dbContext.Learners
-                            .Include(x => x.User)
-                            .Include(x => x.ClassroomGroup)
-                            .ThenInclude(x => x.ClassProgrammes.Where(x => x.IsActive))
-                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
+            var learners = from learner in _dbContext.Learners
+                           join child in _dbContext.Children on learner.UserId equals child.UserId
+                           where learner.IsActive && child.IsActive && learner.ClassroomGroupId == classgroupId
+                           select learner;
 
-            return learners.ToList();
+            return learners
+                .Include(x => x.User)
+                .Include(x => x.ClassroomGroup)
+                .ThenInclude(x => x.ClassProgrammes.Where(x => x.IsActive))
+                .ToList();
         }
 
         public List<Learner> GetLearnersActiveDuringTimePeriod(Guid classgroupId, DateTime startDate, DateTime endTime)

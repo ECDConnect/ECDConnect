@@ -28,6 +28,11 @@ const alertGraphQL = () => {
   window.dispatchEvent(new CustomEvent('graphql-error', {})); // AppErrorHandler listens for the event.
 };
 
+const alertTimeout = () => {
+  if (!!disableGraphqlErrorAlert) return;
+  window.dispatchEvent(new CustomEvent('timeout-error', {})); // AppErrorHandler listens for the event.
+};
+
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
   const blackList = [
     APIs.authLogin,
@@ -119,7 +124,11 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           );
         }
         if (response.status >= 400) {
-          alertGraphQL();
+          if (response.status === 408 || response.status === 504) {
+            alertTimeout();
+          } else {
+            alertGraphQL();
+          }
         }
       }
       return response;
@@ -133,7 +142,11 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           error.config.data,
           error.response?.data
         );
-        alertGraphQL();
+        if (error.message === 'Network Error') {
+          alertTimeout();
+        } else {
+          alertGraphQL();
+        }
       }
       return Promise.reject(error);
     }

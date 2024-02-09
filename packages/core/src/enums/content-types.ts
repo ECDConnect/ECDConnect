@@ -1,15 +1,15 @@
 export enum ContentConsentTypeEnum {
-  TermsAndConditions = 'TermsAndConditions',
-  DataPermissionsAgreement = 'DataPermissionsAgreement',
-  PersonalInformationAgreement = 'PersonalInformationAgreement',
-  ConsentAgreement = 'ConsentAgreement',
-  CommitmentAgreement = 'CommitmentAgreement',
-  IndemnityAgreement = 'IndemnityAgreement',
-  PhotoPermissions = 'PhotoPermissions',
-  LearningThroughPlay = 'LearningThroughPlay',
-  PermissionToShare = 'PermissionToShare',
-  FranchiseeAgreement = 'FranchiseeAgreement',
-  ChildProtection = 'ChildProtection',
+  TermsAndConditions = 'Terms And Conditions',
+  DataPermissionsAgreement = 'Data Permissions Agreement',
+  PersonalInformationAgreement = 'Personal Information',
+  ConsentAgreement = 'Consent Agreement',
+  CommitmentAgreement = 'Commitment Agreement',
+  IndemnityAgreement = 'Indemnity Agreement',
+  PhotoPermissions = 'Photo Permissions',
+  LearningThroughPlay = 'Learning Through Play',
+  PermissionToShare = 'Permission to Share Information',
+  FranchiseeAgreement = 'Franchisee Agreement',
+  ChildProtection = 'SmartStarter Information Sheet on Child Protection',
 }
 
 export enum ContentTypeEnum {

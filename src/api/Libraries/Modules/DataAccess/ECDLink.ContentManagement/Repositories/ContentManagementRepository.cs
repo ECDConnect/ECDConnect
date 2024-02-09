@@ -89,10 +89,24 @@ namespace ECDLink.ContentManagement.Repositories
                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                     .ToList();
 
+
                 // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
                 contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
+                {
+                    var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                    if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
+                    {
+                        //add list if non existent
+                        contentFieldValuePairs.Add("availableLanguages", string.Join(",", langsList));
+                    } else
+                    {
+                        //update with fulllist
+                        contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
+                    }
+                }
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
                     allContentValuePairs.Add(contentFieldValuePairs.ToObject());

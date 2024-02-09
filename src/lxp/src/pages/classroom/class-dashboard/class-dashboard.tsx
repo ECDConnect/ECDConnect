@@ -40,6 +40,8 @@ import {
   programmeThemeSelectors,
   programmeThemeThunkActions,
 } from '@/store/content/programme-theme';
+import { isPast, isToday } from 'date-fns';
+import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -83,6 +85,9 @@ export const ClassDashboard: React.FC = () => {
     () => getReportingPeriodDateInReportDate(new Date()),
     []
   );
+
+  const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
+
   const hasCreatedReportForCurrentPeriod = useSelector(
     contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
       reportingPeriod?.reportingDate
@@ -296,6 +301,8 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const handleAttendanceTutorial = () => {
+    if (practitionerIsOnLeave) return;
+
     dialog({
       position: DialogPosition.Middle,
       render: (submit, cancel) => (

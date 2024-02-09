@@ -91,7 +91,10 @@ export default function Shell() {
       const navigationList: NavigationDto[] = navigationData.GetAllNavigation;
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
-      if (user.roles.some((x) => x.name === 'Administrator')) {
+      if (
+        user.roles.some((x) => x.name === 'Administrator') ||
+        user.roles.some((x) => x.name === 'Super Admin')
+      ) {
         const sorted = navigationList
           .slice()
           .sort((a, b) => a.sequence - b.sequence);

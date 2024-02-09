@@ -11,7 +11,6 @@ import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
-import { practitionerThunkActions } from '../practitioner';
 
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 import { pqaThunkActions } from '../pqa';
@@ -31,10 +30,6 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'User',
       action: userThunkActions.updateUser,
-    },
-    {
-      title: 'Practitioner',
-      action: practitionerThunkActions.updatePractitionerById,
     },
     // {
     //   title: 'Coach',
@@ -168,10 +163,6 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         title: 'User',
         action: userThunkActions.updateUser,
       },
-      {
-        title: 'Practitioner',
-        action: practitionerThunkActions.updatePractitionerById,
-      },
       // {
       //   title: 'Coach',
       //   action: coachThunkActions.updateCoach,
@@ -251,10 +242,6 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'PQAs Follow up Visits',
         action: pqaThunkActions.addFollowUpVisitForPractitioner,
-      },
-      {
-        title: 'ReAccreditation Visits',
-        action: pqaThunkActions.addReAccreditationVisitData,
       },
       {
         title: 'ReAccreditation Follow up Visits',

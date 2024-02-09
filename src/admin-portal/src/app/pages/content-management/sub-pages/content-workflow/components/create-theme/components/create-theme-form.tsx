@@ -5,7 +5,6 @@ import FormColorField from '../../../../../../../components/form-color-field/for
 import FormField from '../../../../../../../components/form-field/form-field';
 import FormFileInput from '../../../../../../../components/form-file-input/form-file-input';
 import Editor from '../../../../../../../components/form-markdown-editor/form-markdown-editor';
-import { videoExtensions } from '../../../../../../../utils/constants';
 import {
   DynamicFormTemplate,
   FieldType,
@@ -25,6 +24,7 @@ export interface CreateThemeFormProps {
   acceptedFileFormats?: string[];
   setFilteredThemeDays?: (item: any[]) => void;
   allowedFileSize?: number;
+  formType?: string;
 }
 
 const contentWrapper = '';
@@ -37,6 +37,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   acceptedFileFormats,
   setFilteredThemeDays,
   allowedFileSize,
+  formType,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -109,6 +110,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                   returnFullUrl={true}
                   setValue={setValue}
                   allowedFileSize={allowedFileSize}
+                  isThemeFormFile={true}
                 />
               </div>
             </div>

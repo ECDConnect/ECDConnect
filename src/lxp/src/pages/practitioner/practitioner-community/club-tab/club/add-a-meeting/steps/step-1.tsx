@@ -177,10 +177,14 @@ export const Step1 = ({
   }, [setIsEnabledButton, date]);
 
   useEffect(() => {
-    if (hasMeetingHappened !== undefined) {
+    if (date && hasMeetingHappened !== undefined) {
+      // Format the date into UTC, so it doesn't get shifted back two hours to the previous day when saving
+      const formattedDate = `${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}T00:00:00Z`;
       setStep1?.({
         hasMeetingHappened,
-        date: date?.toISOString().split('T')[0] ?? '',
+        date: formattedDate ?? '',
       });
     }
   }, [date, hasMeetingHappened, setStep1]);
@@ -189,21 +193,16 @@ export const Step1 = ({
     if (!isFulfilled && !allMeetings?.length && isOnline) {
       appDispatch(
         getActivityMeetRegularDetails({
-          clubId: club?.id ?? '',
-          month: currentMonth + 1,
-          year: currentYear,
+          forceReload: true,
+          args: {
+            clubId: club?.id ?? '',
+            month: 0,
+            year: currentYear,
+          },
         })
       );
     }
-  }, [
-    allMeetings,
-    appDispatch,
-    club,
-    currentMonth,
-    currentYear,
-    isOnline,
-    isFulfilled,
-  ]);
+  }, [allMeetings, club, currentMonth, currentYear, isOnline, isFulfilled]);
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {

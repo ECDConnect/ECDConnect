@@ -1681,7 +1681,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                       .OrderBy(x => x.MeetingDate).ToList();
 
             DateTime lastCoachMeetingDate = clubMeetings.Where(x => x.CoachAttended == true).Select(x => (DateTime)x.MeetingDate).LastOrDefault();
-            int missedCoachMeetings = clubMeetings.Where(x => x.MeetingDate.Value.Date >= past3Months.Date && x.MeetingDate.Value.Date <= DateTime.Now.Date && x.CoachAttended == false).Count();
+            
 
             // Get list of user ids for club to fetch club calendar events
             List<Guid> userIds = new List<Guid>();
@@ -1689,10 +1689,12 @@ namespace EcdLink.Api.CoreApi.Services
             userIds.AddRange(club.ClubLeaders.Where(x => x.IsActive).Select(x => x.Practitioner.UserId.Value).ToList());
             userIds = userIds.Distinct().ToList();
 
-            List<CalendarEvent> clubCalendarEvents = _calendarEventRepo.GetAll().Where(x => x.EventType == Constants.ClubSettings.calendar_club_monthly_meeting &&
+            var clubCalendarEvents = _calendarEventRepo.GetAll().Where(x => x.EventType == Constants.ClubSettings.calendar_club_monthly_meeting &&
                                                                                       x.Start.Year == DateTime.Now.Year &&
                                                                                       userIds.Contains(x.UserId.Value) &&
                                                                                       x.IsActive).OrderBy(x => x.Start).ToList();
+
+            var nextMeeting = clubCalendarEvents.Where(x => x.Start > DateTime.Now).OrderBy(x => x.Start).FirstOrDefault();
 
             // Priority 16 - Club not in league->show this if the club is not currently assigned to a league(acc.to SmartLink);
             if (club.LeagueId != null)
@@ -1754,9 +1756,9 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Priority 8 - 2 Jan, Attend club meeting->show if the coach has not attended a club meeting for the club in 3 months
-            if (clubMeetings.Count > 2 && missedCoachMeetings == 3)
+            if (clubMeetings.Count > 0 && clubMeetings.All(x => !x.CoachAttended) && nextMeeting != null)
             {
-                secondaryText = $"{lastCoachMeetingDate}{Constants.ClubSettings.coach_meeting_attended}";
+                secondaryText = $"{nextMeeting.Start.ToString("d MMM")}{Constants.ClubSettings.coach_meeting_attended}";
                 secondaryTextColor = MetricsColorEnum.Warning.ToString();
             }
 
@@ -1764,29 +1766,15 @@ namespace EcdLink.Api.CoreApi.Services
             //30 Jan, Attend first club meeting -> show if there is an upcoming first club meeting is scheduled in Funda App for sometime within the next 30 day;
             //show if there has never previously been a club meeting hosted by this club; 30 Jan = the date the first meeting is scheduled for (is this possible ? we can restrict this only to clubs that were created within Funda App;
             //if the club was created and a meeting was scheduled for a future date; then this secondary text becomes relevant)
-            if ((clubMeetings.Count > 0) || (clubCalendarEvents.Count > 0))
+            if (clubCalendarEvents.Count == 1 && nextMeeting != null)
             {
-                var firstScheduledMeeting = clubCalendarEvents.Count != 0 ? clubCalendarEvents.First() : null;
-                var next30Days = DateTime.Now.AddDays(30);
-
-                // show if there is an upcoming first club meeting is scheduled in Funda App for sometime within the next 30 day;  
-                if (firstScheduledMeeting?.Start.Date <= next30Days)
+                // show if there is an upcoming first club meeting is scheduled in Funda App for sometime within the next 30 day and coach has not already marked themselves as a participant;  
+                if (
+                    nextMeeting.Start.Date <= DateTime.Now.AddDays(30) 
+                    && nextMeeting.Start.Date >= DateTime.Now
+                    && !nextMeeting.Participants.Any(x => x.UserId == club.UserId))
                 {
-                    secondaryText = $"{firstScheduledMeeting.Start.ToString("d MMM")}{Constants.ClubSettings.coach_attend_first_meeting}";
-                    secondaryTextColor = MetricsColorEnum.None.ToString();
-                }
-
-                //show if there has never previously been a club meeting hosted by this club
-                if (clubMeetings.Count == 0 && firstScheduledMeeting != null)
-                {
-                    secondaryText = $"{firstScheduledMeeting.Start.ToString("d MMM")}{Constants.ClubSettings.coach_attend_first_meeting}";
-                    secondaryTextColor = MetricsColorEnum.None.ToString();
-                }
-
-                //if the club was created and a meeting was scheduled for a future date; then this secondary text becomes relevant)
-                if (clubMeetings.Count == 0 && clubCalendarEvents.Count != 0 && firstScheduledMeeting.Start > DateTime.Now)
-                {
-                    secondaryText = $"{firstScheduledMeeting.Start.ToString("d MMM")}{Constants.ClubSettings.coach_attend_first_meeting}";
+                    secondaryText = $"{nextMeeting.Start.ToString("d MMM")}{Constants.ClubSettings.coach_attend_first_meeting}";
                     secondaryTextColor = MetricsColorEnum.None.ToString();
                 }
             }
@@ -1869,29 +1857,19 @@ namespace EcdLink.Api.CoreApi.Services
         private List<ClubActivity> GetClubActivities(Club club, int year)
         {
             var clubActivities = new List<ClubActivity>();
-
             if (club.League != null) { 
                 
                 var activities = _clubPointsLibraryRepo.GetAll().OrderBy(x => x.Activity).ToList();
-                var clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == year).ToList();
-            
-                if (club.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+                var clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == year).Include(x => x.ClubPointsLibrary).ToList();
+
+                var activityNames = club.League.LeagueType.Name == Constants.ClubSettings.name_purple
+                    ? activities.Where(x => x.Type == Constants.ClubSettings.name_purple).Select(x => x.Activity).Distinct().OrderBy(x => x).ToList()
+                    : activities.Where(x => x.Type != Constants.ClubSettings.name_purple).Select(x => x.Activity).Distinct().OrderBy(x => x).ToList();
+
+                foreach (var activity in activityNames)
                 {
-                    activities = activities.Where(x => x.Type == Constants.ClubSettings.name_purple).OrderBy(x => x.Activity).ToList();
-                    foreach (ClubPointsLibrary pl in activities)
-                    {
-                        var points = clubPoints.Where(x => x.ClubPointsLibraryId == pl.Id).Select(x => x.Points).Sum();
-                        clubActivities.Add(new ClubActivity() { Name = pl.Activity, Points = points });
-                    }
-                }
-                else
-                {
-                    activities = activities.Where(x => x.Type != Constants.ClubSettings.name_purple).OrderBy(x => x.Activity).ToList();
-                    foreach (ClubPointsLibrary pl in activities)
-                    {
-                        var points = clubPoints.Where(x => x.ClubPointsLibraryId == pl.Id).Select(x => x.Points).Sum();
-                        clubActivities.Add(new ClubActivity() { Name = pl.Activity, Points = points });
-                    }
+                    var points = clubPoints.Where(x => x.ClubPointsLibrary.Activity == activity).Select(x => x.Points).Sum();
+                    clubActivities.Add(new ClubActivity() { Name = activity, Points = points });
                 }
             }
 

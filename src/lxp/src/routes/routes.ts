@@ -37,7 +37,7 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
-    HELP: '/help/:activityId',
+    HELP: '/help/:helpSection',
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
@@ -69,13 +69,11 @@ const ROUTES = {
         LEAVE_NO_ONE_BEHIND: '/leave-no-one-behind',
         CAPTURE_CHILD_ATTENDANCE: '/capture-child-attendance',
         COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
-        HELP: addPrefix('/help/:activityId', {
-          LEAGUE_TYPE: '/:leagueType',
-        }),
+        HELP: '/help/:helpSection',
       }),
     }),
     LEAGUE: addPrefix('/league/:leagueId', {
-      HELP: '/help/:activityId',
+      HELP: '/help/:helpSection',
     }),
   }),
   CHILD: addPrefix('/child', {
@@ -97,6 +95,7 @@ const ROUTES = {
     PRACTITIONER_REMOVE_FROM_PROGRAMME: '/remove-practitioner-from-programme',
     SWAP_PRINCIPAL: '/swap-principal',
     NOTES: '/notes',
+    CONTACT_PRACTITIONER: '/contact-practitioner',
   }),
   PRACTITIONER: addPrefix('/practitioner', {
     ABOUT: addPrefix('/about', {

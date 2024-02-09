@@ -149,7 +149,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 UpdatedBy = _applicationUserId.ToString(),
                 LinkedVisitId = input.LinkedVisitId,
                 ActualVisitDate = input.ActualVisitDate,
-                PlannedVisitDate = input.PlannedVisitDate
+                PlannedVisitDate = input.PlannedVisitDate,
+                EventId = input.EventId,
             };
         }
 

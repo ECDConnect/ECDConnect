@@ -499,7 +499,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
             VisitType visitType;
-            if (input.isSupportCall == true)
+            if (input.EventId.HasValue)
+            {
+                visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            }
+            else if (input.isSupportCall == true)
             {
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_practitioner_call).OrderBy(x => x.NormalizedName).FirstOrDefault();
             }
@@ -529,7 +533,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 FindValue = "PractitionerFirstName",
                 ReplacementValue = practitioner.User.FirstName + " " + practitioner.User.Surname
             });
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, coach.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerUserId",
+                ReplacementValue = practitioner.Id.ToString()
+            });
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, coach.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
 
             return visitManager.AddVisitForCoach(input);
         }

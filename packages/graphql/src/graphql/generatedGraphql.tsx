@@ -366,7 +366,6 @@ export type ApplicationIdentityRole = {
 
 export type ApplicationUser = {
   __typename?: 'ApplicationUser';
-  childObjectData?: Maybe<Child>;
   coachObjectData?: Maybe<Coach>;
   contactPreference?: Maybe<Scalars['String']>;
   dateOfBirth: Scalars['DateTime'];
@@ -427,7 +426,6 @@ export type ApplicationUser = {
 
 export type ApplicationUserFilterInput = {
   and?: InputMaybe<Array<ApplicationUserFilterInput>>;
-  childObjectData?: InputMaybe<ChildFilterInput>;
   coachObjectData?: InputMaybe<CoachFilterInput>;
   contactPreference?: InputMaybe<StringOperationFilterInput>;
   dateOfBirth?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -487,7 +485,6 @@ export type ApplicationUserFilterInput = {
 };
 
 export type ApplicationUserInput = {
-  childObjectData?: InputMaybe<ChildInput>;
   coachObjectData?: InputMaybe<CoachInput>;
   contactPreference?: InputMaybe<Scalars['String']>;
   dateOfBirth: Scalars['DateTime'];
@@ -546,7 +543,6 @@ export type ApplicationUserInput = {
 };
 
 export type ApplicationUserSortInput = {
-  childObjectData?: InputMaybe<ChildSortInput>;
   coachObjectData?: InputMaybe<CoachSortInput>;
   contactPreference?: InputMaybe<SortEnumType>;
   dateOfBirth?: InputMaybe<SortEnumType>;
@@ -5685,6 +5681,8 @@ export type Mutation = {
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   bulkUpdateCoachingCircleTopicDates: Scalars['Boolean'];
+  bulkUpdateProgressTrackingCategoryImages: Scalars['Boolean'];
+  bulkUpdateProgressTrackingSubCategoryImages: Scalars['Boolean'];
   calculateCaregiverReportBack: Scalars['Boolean'];
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   calculateClubChildAttendance: Scalars['Boolean'];
@@ -6479,6 +6477,20 @@ export type MutationBulkUpdateCoachingCircleTopicDatesArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   localeId: Scalars['UUID'];
   startDate: Scalars['DateTime'];
+};
+
+export type MutationBulkUpdateProgressTrackingCategoryImagesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  imageUrl?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
+};
+
+export type MutationBulkUpdateProgressTrackingSubCategoryImagesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  imageUrl?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
 };
 
 export type MutationCalculateChildrenRegistrationRemovalArgs = {
@@ -8196,6 +8208,7 @@ export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
 };
 
 export type MutationSendRecordCaregiverMeetingNotificationArgs = {
+  clubId?: InputMaybe<Scalars['String']>;
   meetingDate?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -8219,6 +8232,7 @@ export type MutationSendReportDeadlinePassedNotificationArgs = {
 export type MutationSendSetAbsenteeNotificationArgs = {
   absentStartDate?: InputMaybe<Scalars['String']>;
   parentPrincipalFAACoachName?: InputMaybe<Scalars['String']>;
+  parentPrincipalFAACoachUserId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 

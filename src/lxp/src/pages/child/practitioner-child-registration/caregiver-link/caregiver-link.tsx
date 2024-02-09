@@ -58,15 +58,18 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const user = useSelector(getUser);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
-  const isPrincipal = user?.principalObjectData?.isPrincipal;
+  const isPrincipal = practitioner?.isPrincipal;
   const isCoachView = user?.roles?.some(
     (role) => role.name === UserTypeEnum.Coach
   );
   const isPractitionerView =
     user?.roles?.some((role) => role.name === UserTypeEnum.Practitioner) ||
     isPrincipal;
-  const hasAttendanceRoute = isPrincipal && practitioners?.length! > 0;
+  const hasAttendanceRoute =
+    (isPrincipal && practitioners?.length! > 0) ||
+    (practitioner && !practitioner?.isTrainee);
 
   const practitionerId = location?.state?.practitionerId;
 
@@ -111,7 +114,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   const onExit = () => {
-    if (isPractitionerView || isPrincipal) {
+    if (isPractitionerView) {
       if (isPrincipal) {
         history.push(ROUTES.CLASSROOM.ROOT, {
           activeTabIndex: TabsItemForPrincipal.CHILDREN,

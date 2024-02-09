@@ -304,7 +304,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 foreach (CMSQuestion question in section.Questions)
                 {
                     VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
-                    if (ValidateInsertRecord(visitData))
+                    VisitData existingRecord = ValidateInsertRecordWithoutAnswer(visitData);
+                    if (existingRecord != null)
+                    {
+                        var entityToUpdate = _visitDataRepo.GetById(existingRecord.Id);
+                        entityToUpdate.QuestionAnswer = visitData.QuestionAnswer;
+                        _visitDataRepo.Update(entityToUpdate);
+                    } else
                     {
                         _visitDataRepo.Insert(visitData);
                     }

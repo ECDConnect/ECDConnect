@@ -19,7 +19,7 @@ import {
 export type Points = {
   meetRegularly?: {
     dataLoaded?: string;
-    data: ActivityMeetRegular;
+    data?: ActivityMeetRegular;
     missingMeetings?: ClubMeeting[];
   };
   beCreative?: ActivityBeCreative;

@@ -502,7 +502,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 {
                     // License
                     var delicensingNotes = "";
-                    var isSmartSpaceStillFine = "true";
                     var isFranchiseeDelicensed = "false";
                     var hasCollectedHandbook = "false";
                     var hasCollectedPlaykit = "false";
@@ -511,7 +510,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     if (license != null)
                     {
                         delicensingNotes = license.DelicensedComment;
-                        isSmartSpaceStillFine = license.DelicensedDate.HasValue ? "true" : "false";
                         isFranchiseeDelicensed = license.DelicensedDate.HasValue ? "true" : "false";
                         hasCollectedHandbook = (bool)license.CollectedSSHandbook ? "true" : "false";
                         hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
@@ -569,7 +567,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var isVenueSafe = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
-
+                    var isSmartSpaceStillFine = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault(); ;
                     var presentChildrenNotRegistered = "false";
 
                     jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
@@ -588,7 +586,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"WasSuccessful\":" + wasSuccessful + ",");
                     jsonPutPostString.AppendLine("\"IsFranchiseeHittingChildren\":" + (isFranchiseeHittingChildren == null ? "false" : isFranchiseeHittingChildren) + ",");
                     jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + (isSmartSpaceStillFine == null ? "false": isSmartSpaceStillFine) + ",");
-                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe) + ",");
+                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe == "false" ? "true" : "false" ) + ",");
                     jsonPutPostString.AppendLine("\"IsThereTooManyChildren\":" + (isThereTooManyChildren == null ? "false" : isThereTooManyChildren) + ",");
                     jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
                     jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
@@ -899,7 +897,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 {
                     // License
                     var delicensingNotes = "";
-                    var isSmartSpaceStillFine = "true";
                     var isFranchiseeDelicensed = "false";
                     var hasCollectedHandbook = "false";
                     var hasCollectedPlaykit = "false";
@@ -908,7 +905,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     if (license != null)
                     {
                         delicensingNotes = license.DelicensedComment;
-                        isSmartSpaceStillFine = license.DelicensedDate.HasValue ? "true" : "false";
                         isFranchiseeDelicensed = license.DelicensedDate.HasValue ? "true" : "false";
                         hasCollectedHandbook = (bool)license.CollectedSSHandbook ? "true" : "false";
                         hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
@@ -937,6 +933,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var pqaAgreement = _visitDataRepo.GetAll().Where(x => x.Visit.PractitionerId == visit.PractitionerId &&
                                                                      x.Visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
                                                                      x.Question == Constants.SSSettings.franchisee_agreement).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isSmartSpaceStillFine = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault(); ;
                     var acceptedItems = 0;
                     if (pqaAgreement != null)
                     {

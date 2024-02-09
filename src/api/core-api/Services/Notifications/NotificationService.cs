@@ -63,19 +63,34 @@ namespace EcdLink.Api.CoreApi.Services
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).OrderBy(x => x.Protocol).ToList();
         }
 
-        public async Task<bool> NotificationExists(Notification notification)
+        public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false)
         {
-            return _messageRepo.GetAll().Where(x => 
-                string.Equals(x.MessageProtocol, notification.MessageProtocol) && 
-                string.Equals(x.MessageTemplateType, notification.MessageTemplateType) && 
-                string.Equals(x.To, notification.To) && 
-                string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
-                x.MessageDate.Value.Date == notification.MessageDate.Value.Date && x.IsActive == true
-            ).Any();
+            if (!excludeDates)
+            {
+                return _messageRepo.GetAll().Where(x =>
+                    string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
+                    string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
+                    string.Equals(x.To, notification.To) &&
+                    string.Equals(x.IsActive, true) &&
+                    string.Equals(x.Action, notification.Action) &&
+                    string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
+                    x.MessageDate.Value.Date == notification.MessageDate.Value.Date && x.IsActive == true
+                ).Any();
+            } else
+            {
+                return _messageRepo.GetAll().Where(x =>
+                    string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
+                    string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
+                    string.Equals(x.To, notification.To) &&
+                    string.Equals(x.IsActive, true) &&
+                    string.Equals(x.Action, notification.Action) &&
+                    string.Equals(x.MessageProtocol, notification.MessageProtocol) && x.IsActive == true
+                ).Any();
+            }
             //check if any exact templates for exact person for exact same date and protocol exists
         }
 
-        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false)
+        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false)
         {
             try
             {                
@@ -107,14 +122,14 @@ namespace EcdLink.Api.CoreApi.Services
                             Status = status,
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
-                            Action = item.Action
+                            Action = templateItem.Action
                         };
                         if (messageEndDate != null)
                         {
                             notification.MessageEndDate = messageEndDate;
                         }
                         //skip if the enotification exists already for same date and person and template and protocol
-                        if (!await NotificationExists(notification))
+                        if (!await NotificationExists(notification, dontSendIfExists))
                         {
                             switch (item.Protocol)
                             {
@@ -199,7 +214,8 @@ namespace EcdLink.Api.CoreApi.Services
                         SentByUserId = notification.FromUserId,
                         CTA = notification.CTA,
                         CTAText = notification.CTAText,
-                        ToGroups = notification.ToGroups
+                        ToGroups = notification.ToGroups,
+                        Action = notification.Action                        
                     });
                 } else return null;
            } catch (Exception ex)
@@ -288,8 +304,9 @@ namespace EcdLink.Api.CoreApi.Services
             //setup some basics on all messages
             string subject = template.Subject;
             string message = template.Message;
-            string ctaText = template.CTAText;
-            string cta = template.CTA;
+            string ctaText = (template.CTAText != null ? template.CTAText : "");
+            string cta = (template.CTA != null ? template.CTA : "");
+            string action = (template.Action != null ? template.Action : "") ;//for replacing state guids
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
@@ -312,11 +329,16 @@ namespace EcdLink.Api.CoreApi.Services
             {
                subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
-               ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
-               cta = cta.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                if (ctaText != "")
+                    ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                if (cta != "")
+                    cta = cta.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                //replace action and state items
+               if (action!="")
+                    action = action.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
             }
 
-            return new MessageTemplateText() { Message = message, Subject = subject, CTAText = ctaText, CTA = cta };
+            return new MessageTemplateText() { Message = message, Subject = subject, CTAText = ctaText, CTA = cta, Action = action };
         }
 
         public MessageLogModel RetrieveToGroupItems(string toGroups)

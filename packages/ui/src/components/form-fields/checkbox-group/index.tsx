@@ -22,6 +22,7 @@ export interface CheckboxGroupProps<T extends FieldValues = {}>
   name?: string;
   checkboxColor?: Colours;
   image?: string;
+  imageHexColor?: string;
 }
 
 export const CheckboxGroup = <T extends FieldValues = {}>({
@@ -45,6 +46,7 @@ export const CheckboxGroup = <T extends FieldValues = {}>({
   testId,
   checkboxColor,
   className,
+  imageHexColor,
   ...rest
 }: CheckboxGroupProps<T>) => {
   const checkboxChange = (e: any) => {
@@ -59,11 +61,7 @@ export const CheckboxGroup = <T extends FieldValues = {}>({
     <label
       htmlFor={id}
       className={`${className} text-textDark relative flex items-center overflow-hidden rounded-lg p-4 ${
-        checked
-          ? 'bg-secondaryAccent2 border-secondary border-2'
-          : image
-          ? 'bg-adminPortalBg'
-          : 'bg-uiBg'
+        checked ? 'bg-secondaryAccent2 border-secondary border-2' : 'bg-uiBg'
       }`}
     >
       {nameProp && register && (
@@ -109,10 +107,15 @@ export const CheckboxGroup = <T extends FieldValues = {}>({
           {image && (
             <div
               className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                checked ? 'bg-secondary' : 'bg-tertiary'
+                imageHexColor ? '' : checked ? 'bg-secondary' : 'bg-tertiary'
               }`}
+              style={{ background: `#${imageHexColor?.split('#')?.[1]}` }}
             >
-              <img src={image} alt="checkbox item" className="h-6 w-6" />
+              <img
+                src={image}
+                alt="checkbox item"
+                className="h-6 w-6 object-contain"
+              />
             </div>
           )}
           <article

@@ -148,14 +148,15 @@ export const AddMeeting: React.FC = () => {
   };
 
   const onSuccess = useCallback(() => {
-    appDispatch(clubActions.forceMeetRegularlyDataReload());
-
     if (eventId && clubId && isOnline) {
       appDispatch(
         clubThunkActions.getActivityMeetRegularDetails({
-          clubId,
-          month: 0,
-          year: new Date().getFullYear(),
+          forceReload: true,
+          args: {
+            clubId,
+            month: 0,
+            year: new Date().getFullYear(),
+          },
         })
       );
     }
@@ -186,6 +187,16 @@ export const AddMeeting: React.FC = () => {
 
     if (isOnline) {
       await appDispatch(clubThunkActions.addClubMeeting(payload));
+      appDispatch(
+        clubThunkActions.getActivityMeetRegularDetails({
+          forceReload: true,
+          args: {
+            clubId: club?.id ?? '',
+            month: 0,
+            year: new Date().getFullYear(),
+          },
+        })
+      );
       onAddCollage();
     }
 
@@ -271,8 +282,6 @@ export const AddMeeting: React.FC = () => {
       }
     }
   }, [
-    appDispatch,
-    club?.id,
     error,
     history,
     isLoading,

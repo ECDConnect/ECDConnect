@@ -438,11 +438,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         _practiGenericRepo.Update(practi);
                         replacements.Add(new TagsReplacements()
                         {
-                            FindValue = "principalOrFAA",
+                            FindValue = "PrincipalOrFAA",
                             ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
                         });
 
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now, practi.User, "", MessageStatusConstants.Amber, replacements);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now, practi.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
                     }
                 }
 
@@ -486,7 +486,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = classroomName
                 });
 
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7));
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7), true);
 
 
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
@@ -1072,12 +1072,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 trainee.Practitioner = _practiRepo.GetByUserId(userId);
                 // ThreeChildrenRegistered
-                var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
-                if (allChildren.Count >= 3)
-                {
-                    timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
-                    timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
-                    timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
+                if (trainee.Practitioner != null) { 
+                    var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
+                    if (allChildren.Count >= 3)
+                    {
+                        timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
+                        timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
+                        timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
+                    }
                 }
 
                 // SSCoachVisit - normally this visit is linked to a coach id and a trainee id

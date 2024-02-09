@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   StackedList,
   BannerWrapper,
@@ -16,16 +16,18 @@ import * as styles from './practitioners.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
-import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
 import { userSelectors } from '@store/user';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { NotificationDisplay } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { getClubsForCoach } from '@/store/club/club.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
@@ -67,7 +69,6 @@ const sortOptions: SearchSortOptions = {
 
 export const Practitioners: React.FC = () => {
   const appDispatch = useAppDispatch();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
@@ -78,10 +79,10 @@ export const Practitioners: React.FC = () => {
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
+  const practitionersMetrics = useSelector(
+    practitionerSelectors.getPractitionersMetrics
+  );
 
-  const [practitionersMessages, setPractitionersMessages] =
-    useState<NotificationDisplay[]>();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerUserListData, setPractitionerUserListData] =
     useState<ListDataItem[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -107,7 +108,10 @@ export const Practitioners: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
 
-  const [loading, setLoading] = useState(false);
+  const { isLoading } = useThunkFetchCall(
+    'practitioner',
+    PractitionerActions.GET_PRACTITIONERS_DISPLAY_METRICS
+  );
 
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
@@ -132,7 +136,7 @@ export const Practitioners: React.FC = () => {
     if (
       (isOnline &&
         !!practitionersList?.length &&
-        !!practitionersMessages?.length) ||
+        !!practitionersMetrics?.length) ||
       (!isOnline && !!practitionersList?.length)
     ) {
       const practitionerListItem: ListDataItem[] = [];
@@ -147,31 +151,21 @@ export const Practitioners: React.FC = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersList?.length, practitionersMessages]);
+  }, [practitionersList?.length, practitionersMetrics]);
 
-  const practionersDetailsFor = async (target = 'practitioner') => {
-    setLoading(true);
-
-    const practitionersMessageData = await new PractitionerService(
-      userAuth?.auth_token!
-    ).displayMetrics(target ?? 'practitioner');
-
-    setPractitionersMessages(practitionersMessageData);
-    setLoading(false);
-    return practitionersMessageData;
-  };
+  const practitionersDetailsFor = useCallback(async () => {
+    if (isOnline) {
+      await appDispatch(
+        practitionerThunkActions.getPractitionerDisplayMetrics({
+          userType: isCoach ? 'coach' : 'practitioner',
+        })
+      );
+    }
+  }, [appDispatch, isCoach, isOnline]);
 
   useEffect(() => {
-    if (isOnline) {
-      if (isCoach) {
-        practionersDetailsFor('coach');
-      }
-      if (!isCoach) {
-        practionersDetailsFor('practitioner');
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    practitionersDetailsFor();
+  }, [practitionersDetailsFor]);
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -196,7 +190,7 @@ export const Practitioners: React.FC = () => {
       (x) => x.userId === practitionerRecord.userId
     );
 
-    const currentPractitionerMessage = practitionersMessages?.find((item) => {
+    const currentPractitionerMessage = practitionersMetrics?.find((item) => {
       return item?.userId === practitionerRecord?.userId;
     });
 
@@ -207,16 +201,14 @@ export const Practitioners: React.FC = () => {
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
-      ...(isOnline
-        ? { subTitle: `${currentPractitionerMessage?.subject}` }
-        : {}),
-      alertSeverity: !isOnline
-        ? 'none'
-        : currentPractitionerMessage?.color === 'Success'
-        ? 'success'
-        : currentPractitionerMessage?.color === 'Warning'
-        ? 'warning'
-        : 'error',
+      subTitle: `${currentPractitionerMessage?.subject}`,
+      hideAlertSeverity: !currentPractitionerMessage?.subject,
+      alertSeverity:
+        currentPractitionerMessage?.color === 'Success'
+          ? 'success'
+          : currentPractitionerMessage?.color === 'Warning'
+          ? 'warning'
+          : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
       extraData: {
@@ -407,7 +399,7 @@ export const Practitioners: React.FC = () => {
         </SearchHeader>
         {practitionersList !== undefined && practitionersList?.length > 0 ? (
           <div className="flex justify-center">
-            {loading && isOnline ? (
+            {isLoading && isOnline ? (
               <LoadingSpinner
                 className="mt-6"
                 size={'medium'}

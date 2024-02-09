@@ -113,7 +113,7 @@ export const Form = ({ onBack }: FormProps) => {
   const isStep2AllCompleted =
     String(step2PreviousData?.questions?.[0]?.answer)?.split('.,')?.length ===
     options.length;
-  const previousData = useSelector(
+  const previousDataPqaStep11 = useSelector(
     getSectionsQuestionsByStep(
       visitId ?? '',
       'pqaPreviousFormData',
@@ -122,7 +122,7 @@ export const Form = ({ onBack }: FormProps) => {
   );
 
   const pqaStep11Answer =
-    String(previousData?.questions?.[0]?.answer) ?? undefined;
+    String(previousDataPqaStep11?.questions?.[0]?.answer) ?? undefined;
 
   const { isOnline } = useOnlineStatus();
 
@@ -151,8 +151,8 @@ export const Form = ({ onBack }: FormProps) => {
       setTitle('Pre-PQA site visits summary');
       return prePqaSteps;
     }
-    if (activityName === coachVisitTypes.supportVisit) {
-      setTitle(coachVisitTypes.supportVisit);
+    if (activityName === coachVisitTypes.supportVisit.description) {
+      setTitle(coachVisitTypes.supportVisit.description);
       return supportVisitSteps;
     }
 
@@ -164,7 +164,7 @@ export const Form = ({ onBack }: FormProps) => {
     if (isPQA && isViewDetails) {
       return getFirstPqaSteps({
         isToShowStep1: false,
-        isStep11AnswerTrue: !!pqaStep11Answer,
+        isStep11AnswerTrue: pqaStep11Answer === 'true',
         isToRemoveSmartStarter: false,
         isToShowStep17: false,
       });

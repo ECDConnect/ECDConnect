@@ -36,7 +36,8 @@ export const SupportVisitStep1 = ({
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
-  const isSupportVisit = activityName === coachVisitTypes.supportVisit;
+  const isSupportVisit =
+    activityName === coachVisitTypes.supportVisit.description;
   const isPqaVisit = activityName === coachVisitTypes.pqa.followUp.name;
   const isReAccreditationVisit =
     activityName === coachVisitTypes.reaccreditation.followUp.name;
