@@ -628,12 +628,12 @@ export default function CreateStory({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              <h3 className="text-xl font-semibold leading-6 text-gray-900">
+              {/* <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 Story
-              </h3>
+              </h3> */}
               <div className="mt-1 flex items-center gap-1">
-                <Typography type={'h3'} text={'Type:'} color={'textDark'} />
-                <div>{content?.type}</div>
+                {/* <Typography type={'h3'} text={'Add'} color={'textDark'} />
+                <div>{content?.type}</div> */}
               </div>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
