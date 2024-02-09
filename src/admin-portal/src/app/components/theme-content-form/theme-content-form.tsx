@@ -315,7 +315,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
 
           <div className="mt-4 overflow-scroll border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&
-              tableData.map((item: any) => {
+              tableData.map((item: any, idx: number) => {
                 const maximumItemsChecked = tableData.filter((x) =>
                   currentIds?.includes(x.id?.toString())
                 );
@@ -326,7 +326,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                   <CheckboxGroup
                     checkboxColor="primary"
                     id={item?.title}
-                    key={item?.title}
+                    key={item?.title + '_' + idx}
                     image={item?.imageUrl}
                     title={item?.name}
                     description={item?.description}
@@ -370,7 +370,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
           {tableData &&
             tableData.map((item: any, idx: number) => (
               <>
-                <div className="flex items-center justify-center">
+                <div
+                  className="flex items-center justify-center"
+                  key={'theme_' + idx}
+                >
                   <Typography
                     type={'body'}
                     text={`Day ${idx + 1}`}

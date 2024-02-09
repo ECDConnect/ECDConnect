@@ -338,7 +338,6 @@ export default function EditCategory({
       }
 
       savedContent();
-
       setLoading(false);
       cancelEdit();
     }
@@ -356,8 +355,14 @@ export default function EditCategory({
       !initialValues[item?.propName]
   );
 
+  const disableButtonSubCats = filteredSubcategories?.filter(
+    (item) => item?.name === ''
+  );
+
   const disbleButtonStyles = `bg-secondary ${
-    disableButton?.length > 0 ? 'opacity-25' : ''
+    disableButton?.length > 0 || disableButtonSubCats.length > 0
+      ? 'opacity-25'
+      : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
@@ -378,7 +383,7 @@ export default function EditCategory({
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+              {/* {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -387,7 +392,7 @@ export default function EditCategory({
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
                 </button>
-              )}
+              )} */}
 
               {!!cancelEdit && (
                 <button
@@ -429,7 +434,7 @@ export default function EditCategory({
               template={template}
               handleform={handleform}
               setValue={setValue}
-              defaultLanguageId={defaultLanguageId}
+              defaultLanguageId={selectedLanguageId}
               setFilteredSubcategories={setFilteredSubcategories}
               allowedFileSize={allowedFileSize}
               formType={formType}
@@ -443,19 +448,14 @@ export default function EditCategory({
             <button
               type="submit"
               className={disbleButtonStyles}
-              disabled={disableButton?.length > 0}
+              disabled={
+                disableButton?.length > 0 || disableButtonSubCats?.length > 0
+              }
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
 
-            {/* <button
-              type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-            >
-              <SaveIcon width="22px" className="mr-2" />
-              Save & publish
-            </button> */}
             {/* Let code commented, to allow delete categories if needed. */}
             {/* {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
               <button

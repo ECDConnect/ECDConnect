@@ -52,6 +52,7 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
 
   const [currentIds, setCurrentIds] = useState<string[]>();
   const [subcategoriesFilt, setsubcategoriesFilt] = useState([]);
+  const [subcategoriesFiltB, setsubcategoriesFiltB] = useState([]);
   const [defaultIds, setDefaultIds] = useState<string[]>();
   const query = gql` 
     query ${getAllCall} ($localeId: String) {
@@ -123,8 +124,18 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
             currentIds?.some((x) => x === item.id.toString())
           )
         );
+        setsubcategoriesFiltB(
+          tableData?.filter((item) =>
+            currentIds?.some((x) => x === item.id.toString())
+          )
+        );
       } else {
         setsubcategoriesFilt(
+          tableData?.filter((item) =>
+            defaultIds?.some((x) => x === item.id.toString())
+          )
+        );
+        setsubcategoriesFiltB(
           tableData?.filter((item) =>
             defaultIds?.some((x) => x === item.id.toString())
           )
@@ -153,17 +164,49 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
 
       item.idx = idx;
       tempArray[idx] = item;
-
       setsubcategoriesFilt(tempArray);
     },
     [subcategoriesFilt]
   );
 
+  const onSecondColumnChange = useCallback(
+    (e, idx, propName) => {
+      let tempArray = [...subcategoriesFiltB];
+
+      let item = { ...tempArray[idx] };
+
+      if (propName === 'name') {
+        item.name = e?.target?.value;
+      }
+
+      if (propName === 'icon') {
+        item.imageUrl = e;
+      }
+
+      if (propName === 'description') {
+        item.description = e?.target?.value;
+      }
+
+      item.idx = idx;
+      tempArray[idx] = item;
+      setsubcategoriesFiltB(tempArray);
+    },
+    [subcategoriesFiltB]
+  );
+
   useEffect(() => {
-    if (subcategoriesFilt) {
+    if (tableData && currentIds && subcategoriesFilt) {
       setFilteredSubcategories(subcategoriesFilt);
+    } else {
+      setFilteredSubcategories(subcategoriesFiltB);
     }
-  }, [setFilteredSubcategories, subcategoriesFilt]);
+  }, [
+    currentIds,
+    setFilteredSubcategories,
+    subcategoriesFilt,
+    subcategoriesFiltB,
+    tableData,
+  ]);
 
   if (tempData && displayFields) {
     return (
@@ -182,125 +225,134 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
           color={'textMid'}
           text={'You must add at least one subcategory.'}
         />
-        {tableData && currentIds
-          ? tableData
-              ?.filter((item) =>
-                currentIds?.some((x) => x === item.id.toString())
-              )
-              .map((item: any, idx: number) => {
-                return (
-                  <>
-                    <div className="mt-8" key={`subCats_` + idx}>
-                      <Typography
-                        type={'h4'}
-                        color={'textDark'}
-                        text={`Subcategory ${idx + 1} name *`}
-                        weight="bold"
-                      />
-                      <FormInput
-                        key={idx}
-                        className="bg-adminPortalBg my-4 rounded-lg p-1"
-                        isAdminPortalField={true}
-                        id={item?.id}
-                        value={subcategoriesFilt?.[idx]?.name || item?.name}
-                        onChange={(e) => onChange(e, idx, 'name')}
-                        textInputType="input"
-                        placeholder={'Add a response...'}
-                      />
 
-                      <div className="w-full rounded-lg" onClick={(e) => {}}>
-                        <FormFileInput
-                          acceptedFormats={acceptedFileFormats}
-                          label={`Subcategory ${idx + 1} icon *`}
-                          nameProp={String(idx)}
-                          contentUrl={
-                            item?.imageUrl ? item?.imageUrl : undefined
-                          }
-                          returnFullUrl={true}
-                          setValue={() => {}}
-                          isSubcategoryInput={true}
-                          onChange={(e) => onChange(e, idx, 'icon')}
-                        />
-                      </div>
-                      <Typography
-                        type={'body'}
-                        color={'textDark'}
-                        text={`Tips for programme planning info page *`}
-                        className="mt-4"
-                        weight="bold"
-                      />
-                      <FormInput
-                        className="bg-adminPortalBg my-2 rounded-lg p-1"
-                        isAdminPortalField={true}
-                        id={item?.id}
-                        value={item?.description}
-                        onChange={(e) => onChange(e, idx, 'description')}
-                        textInputType="textarea"
-                        placeholder={'Add a response...'}
+        {tableData && currentIds ? (
+          tableData
+            ?.filter((item) =>
+              currentIds?.some((x) => x === item.id.toString())
+            )
+            .map((item: any, idx: number) => {
+              return (
+                <>
+                  <div className="mt-8" key={`subCats_` + idx}>
+                    <Typography
+                      type={'h4'}
+                      color={'textDark'}
+                      text={`Subcategory ${idx + 1} name *`}
+                      weight="bold"
+                    />
+                    <FormInput
+                      key={idx}
+                      className="bg-adminPortalBg my-4 rounded-lg p-1"
+                      isAdminPortalField={true}
+                      id={subcategoriesFilt?.[idx]?.id}
+                      value={subcategoriesFilt?.[idx]?.name}
+                      onChange={(e) => onChange(e, idx, 'name')}
+                      textInputType="input"
+                      placeholder={'Add a response...'}
+                    />
+                    <div className="w-full rounded-lg" onClick={(e) => {}}>
+                      <FormFileInput
+                        acceptedFormats={acceptedFileFormats}
+                        label={`Subcategory ${idx + 1} icon *`}
+                        nameProp={String(idx)}
+                        contentUrl={
+                          subcategoriesFilt?.[idx]?.imageUrl
+                            ? subcategoriesFilt?.[idx]?.imageUrl
+                            : undefined
+                        }
+                        returnFullUrl={true}
+                        setValue={() => {}}
+                        isSubcategoryInput={true}
+                        onChange={(e) => onChange(e, idx, 'icon')}
                       />
                     </div>
-                  </>
-                );
-              })
-          : tableData
-              ?.filter((item) =>
-                defaultIds?.some((x) => x === item.id.toString())
-              )
-              .map((item: any, idx: number) => {
-                return (
-                  <>
-                    <div className="mt-8" key={`subCat_` + idx}>
-                      <Typography
-                        type={'h4'}
-                        color={'textDark'}
-                        text={`Subcategory ${idx + 1} name *`}
-                        weight="bold"
-                      />
-                      <FormInput
-                        key={idx}
-                        className="bg-adminPortalBg my-4 rounded-lg p-1"
-                        isAdminPortalField={true}
-                        id={item?.id}
-                        value={subcategoriesFilt?.[idx]?.name || item?.name}
-                        onChange={(e) => onChange(e, idx, 'name')}
-                        textInputType="input"
-                        placeholder={'Add a response...'}
-                      />
-
-                      <div className="w-full rounded-lg" onClick={(e) => {}}>
-                        <FormFileInput
-                          acceptedFormats={acceptedFileFormats}
-                          label={`Subcategory ${idx + 1} icon *`}
-                          nameProp={String(idx)}
-                          contentUrl={
-                            item?.imageUrl ? item?.imageUrl : undefined
-                          }
-                          returnFullUrl={true}
-                          setValue={() => {}}
-                          isSubcategoryInput={true}
-                          onChange={(e) => onChange(e, idx, 'icon')}
-                        />
-                      </div>
-                      <Typography
-                        type={'body'}
-                        color={'textDark'}
-                        text={`Tips for programme planning info page *`}
-                        className="mt-4"
-                        weight="bold"
-                      />
-                      <FormInput
-                        className="bg-adminPortalBg my-2 rounded-lg p-1"
-                        isAdminPortalField={true}
-                        id={item?.id}
-                        value={item?.description}
-                        onChange={(e) => onChange(e, idx, 'description')}
-                        textInputType="textarea"
-                        placeholder={'Add a response...'}
+                    <Typography
+                      type={'body'}
+                      color={'textDark'}
+                      text={`Tips for programme planning info page *`}
+                      className="mt-4"
+                      weight="bold"
+                    />
+                    <FormInput
+                      className="bg-adminPortalBg my-2 rounded-lg p-1"
+                      isAdminPortalField={true}
+                      id={subcategoriesFilt?.[idx]?.id}
+                      value={subcategoriesFilt?.[idx]?.description}
+                      onChange={(e) => onChange(e, idx, 'description')}
+                      textInputType="textarea"
+                      placeholder={'Add a response...'}
+                    />
+                  </div>
+                </>
+              );
+            })
+        ) : tableData && defaultIds ? (
+          tableData
+            ?.filter((item) =>
+              defaultIds?.some((x) => x === item.id.toString())
+            )
+            .map((item: any, idx: number) => {
+              return (
+                <>
+                  <div className="mt-8" key={`subCat_` + idx}>
+                    <Typography
+                      type={'h4'}
+                      color={'textDark'}
+                      text={`Subcategory ${idx + 1} name *`}
+                      weight="bold"
+                    />
+                    <FormInput
+                      key={idx}
+                      className="bg-adminPortalBg my-4 rounded-lg p-1"
+                      isAdminPortalField={true}
+                      id={subcategoriesFiltB?.[idx]?.id}
+                      value={subcategoriesFiltB?.[idx]?.name}
+                      onChange={(e) => onSecondColumnChange(e, idx, 'name')}
+                      textInputType="input"
+                      placeholder={'Add a response...'}
+                    />
+                    <div className="w-full rounded-lg" onClick={(e) => {}}>
+                      <FormFileInput
+                        acceptedFormats={acceptedFileFormats}
+                        label={`Subcategory ${idx + 1} icon *`}
+                        nameProp={String(idx)}
+                        contentUrl={
+                          subcategoriesFiltB?.[idx]?.imageUrl
+                            ? subcategoriesFiltB?.[idx]?.imageUrl
+                            : undefined
+                        }
+                        returnFullUrl={true}
+                        setValue={() => {}}
+                        isSubcategoryInput={true}
+                        onChange={(e) => onSecondColumnChange(e, idx, 'icon')}
                       />
                     </div>
-                  </>
-                );
-              })}
+                    <Typography
+                      type={'body'}
+                      color={'textDark'}
+                      text={`Tips for programme planning info page *`}
+                      className="mt-4"
+                      weight="bold"
+                    />
+                    <FormInput
+                      className="bg-adminPortalBg my-2 rounded-lg p-1"
+                      isAdminPortalField={true}
+                      id={subcategoriesFiltB?.[idx]?.id}
+                      value={subcategoriesFiltB?.[idx]?.description}
+                      onChange={(e) =>
+                        onSecondColumnChange(e, idx, 'description')
+                      }
+                      textInputType="textarea"
+                      placeholder={'Add a response...'}
+                    />
+                  </div>
+                </>
+              );
+            })
+        ) : (
+          <div></div>
+        )}
 
         <Pagination
           recordsPerPage={8}
