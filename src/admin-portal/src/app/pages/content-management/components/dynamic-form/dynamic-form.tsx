@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import DynamicSelector from '../../../../components/dynamic-selector/dynamic-selector';
 import DynamicStaticSelector from '../../../../components/dynamic-static-selector/dynamic-static-selector';
 import FormColorField from '../../../../components/form-color-field/form-color-field';
 import FormField from '../../../../components/form-field/form-field';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
-import { videoExtensions } from '../../../../utils/constants';
 import {
   ActivitiesTitles,
   ContentManagementView,

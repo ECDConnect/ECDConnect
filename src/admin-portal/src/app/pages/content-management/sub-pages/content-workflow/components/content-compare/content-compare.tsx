@@ -15,10 +15,11 @@ import {
 } from '../../../../content-management-models';
 import ContentEdit from '../content-edit/content-edit';
 import { XIcon } from '@heroicons/react/solid';
-import EditCategory from '../edit-category/edit-category';
+
 import CreateTheme from '../create-theme/create-theme';
 import CreateStory from '../../../content-list/components/create-story/create-story';
 import EditSkills from '../edit-skills/edit-skills';
+import EditCategory from '../edit-category/edit-category';
 
 export interface ContentCompareProps {
   contentView: ContentManagementView;
@@ -142,33 +143,7 @@ export default function ContentCompare({
                 <div className="relative h-full" style={{ minHeight: '36rem' }}>
                   <div className="rounded-lg border-b py-5">
                     <div key={selectedLanguageId}>
-                      <EditCategory
-                        key={'firstLanguageContent'}
-                        optionDefinitions={optionDefinitions}
-                        content={contentView.content}
-                        selectedLanguageId={selectedFirstLanguageId}
-                        contentValues={getOrderedContentValues(
-                          currentContent?.contentValues
-                        )}
-                        contentType={contentType}
-                        savedContent={savedContent}
-                        defaultLanguageId={defaultLanguageId}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        );
-      case 'ProgressTrackingCategorys':
-        return (
-          <>
-            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
-              <div className="h-full py-6">
-                <div className="relative h-full" style={{ minHeight: '36rem' }}>
-                  <div className="rounded-lg border-b py-5">
-                    <div key={selectedLanguageId}>
+                      firstLanguageContent{selectedFirstLanguageId}
                       <EditCategory
                         key={'firstLanguageContent'}
                         optionDefinitions={optionDefinitions}
@@ -284,6 +259,7 @@ export default function ContentCompare({
                 <div className="relative h-full" style={{ minHeight: '36rem' }}>
                   <div className="rounded-lg border-b py-5">
                     <div key={selectedLanguageId}>
+                      secondLanguageContent {selectedSecondLanguageId}
                       <EditCategory
                         key={'secondLanguageContent'}
                         optionDefinitions={optionDefinitions}
