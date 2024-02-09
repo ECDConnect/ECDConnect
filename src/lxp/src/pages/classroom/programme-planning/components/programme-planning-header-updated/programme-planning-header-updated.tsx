@@ -50,12 +50,17 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const [month, setMonth] = useState<string | undefined>();
 
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
-  const chosedTheme = themes?.find((item) => item?.name === theme?.name);
+  const chosenTheme = themes?.find((item) => item?.name === theme?.name);
   const isCurrentDay = isSameDay(selectedDate!, new Date());
 
   // Business rule to only go back 3 months and forward 6 months
   const threeMonthsBack: Date = addMonths(selectedDate!, -3);
   const sixMonthsForward: Date = addMonths(selectedDate!, 6);
+
+  const themeColour = () => {
+    if (chosenTheme?.color) return chosenTheme.color;
+    return 'bg-uiBg';
+  };
 
   const addDay = useCallback(() => {
     var selectDate = new Date(selectedDate!);
@@ -211,15 +216,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             {showChips && (
               <Card className={`flex w-full items-center rounded-xl p-2`}>
                 <div
-                  className={`flex w-full items-center rounded-xl p-2 ${'bg-uiBg'}`}
-                  // Theme colours no longer editable and always null. If this changes, use this.
-                  // style={{
-                  //   backgroundColor: chosedTheme?.color || 'bg-uiBg',
-                  // }}
+                  className={`flex w-full items-center rounded-xl p-2 ${themeColour()}`}
                 >
-                  {chosedTheme && (
+                  {chosenTheme && (
                     <img
-                      src={chosedTheme?.imageUrl}
+                      src={chosenTheme?.imageUrl}
                       alt="theme"
                       className="h-8 w-8"
                     />
@@ -227,8 +228,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
                   {dailyProgramme && theme?.dailyProgrammes?.length ? (
                     <Typography
                       type="small"
-                      color="textDark"
-                      // color={chosedTheme ? 'white' : 'textDark'}
+                      color={chosenTheme?.color ? 'white' : 'textDark'}
                       text={
                         themeName
                           ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
@@ -240,7 +240,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
                   ) : (
                     <Typography
                       type="small"
-                      color={chosedTheme ? 'white' : 'textDark'}
+                      color={chosenTheme?.color ? 'white' : 'textDark'}
                       text={`${themeName}`}
                       className={'p-4'}
                       weight={`bold`}
