@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, Fragment } from 'react';
 import {
   ComponentBaseProps,
   BannerWrapper,
@@ -15,7 +15,7 @@ import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
 import { ReassignClassPageState, yesNoOptions } from './reassign-class.types';
 import ROUTES from '@routes/routes';
-import { format } from 'date-fns';
+import { addDays, format } from 'date-fns';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import {
   ReassignClassModel,
@@ -195,7 +195,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       classroomGroups?.filter(
         (item) => item?.userId === practitioner && item?.name !== 'Unsure'
       ),
-    []
+    [classroomGroups, practitioner]
   );
 
   const disableButton =
@@ -689,7 +689,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                     setEndDate(date);
                   }}
                   dateFormat="EEE, dd MMM yyyy"
-                  minDate={new Date(selectedDate as string)}
+                  minDate={addDays(new Date(selectedDate as string), 1)}
                 />
               </>
             )}
@@ -784,8 +784,16 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 practitionersTeachList?.length > 0 &&
                 practitionerClassroomGroups?.map((item, index) => {
                   const classroomId = item?.id!;
+
+                  const practitionerId = [...reassignedClassroomGroups]?.[index]
+                    ?.practitioner;
+                  const selectedPractitioner = practitionersTeachList?.find(
+                    (currentPractitioner) =>
+                      currentPractitioner.value === practitionerId
+                  );
+
                   return (
-                    <>
+                    <Fragment key={index}>
                       <Dropdown
                         key={index}
                         placeholder={'Select practitioner'}
@@ -805,13 +813,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           );
                         }}
                       />
-                      {practitionerPresentName?.user?.fullName && (
+                      {selectedPractitioner && (
                         <Alert
                           className={'mt-5 mb-3'}
                           title={`You are reassigning ${
                             practitionerAbsentName?.user?.fullName || ''
                           }'s class ${item?.name} to ${
-                            practitionerPresentName?.user?.fullName || ''
+                            selectedPractitioner?.label || ''
                           } for ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
@@ -819,7 +827,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           type={'info'}
                         />
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
             {practitionerClassroomGroups?.length === 0 && (
