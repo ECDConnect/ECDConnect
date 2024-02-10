@@ -230,6 +230,10 @@ export const Form = ({
     });
   }, [dialog, onBack]);
 
+  const onSuccess = useCallback(() => {
+    showMessage({ message: `${activityName} complete!` });
+  }, [activityName, showMessage]);
+
   const setRatingStep = useCallback(() => {
     const stepsLength = getFirstPqaSteps({
       isToShowStep1: true,

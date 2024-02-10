@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using Microsoft.AspNetCore.Identity;
@@ -8,7 +9,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
 {
     public class SecurityCodeTokenManager : ITokenManager<ApplicationUser, SecurityCodeTokenManager>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
         private string AuthTokenProvider
         {
@@ -18,7 +19,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             }
         }
 
-        public SecurityCodeTokenManager(UserManager<ApplicationUser> userManager)
+        public SecurityCodeTokenManager(ApplicationUserManager userManager)
         {
             _userManager = userManager;
         }
@@ -55,9 +56,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             return user;
         }
 
-        public async Task<string> RefreshJwtTokenAsync(string userId, string token)
+        public async Task<string> RefreshJwtTokenAsync(string userName, string token)
         {
-            var user = await _userManager.FindByNameAsync(userId);
+            var user = await _userManager.FindByNameAsync(userName);
 
             if (user == null)
             {

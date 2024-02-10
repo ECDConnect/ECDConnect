@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -12,6 +13,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class RoleQueryTypeExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public IEnumerable<ApplicationIdentityRole> GetRoles([Service] RoleManager<ApplicationIdentityRole> roleManager)
+        public IEnumerable<ApplicationIdentityRole> GetRoles([Service] ApplicationRoleManager roleManager)
         {
             var tenantId = TenantExecutionContext.Tenant.Id;
             var roles = roleManager.Roles.ToList().Where(x => x.TenantId == null || x.TenantId == tenantId).ToList();
@@ -31,15 +33,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         public async Task<string> GetRoleForUser(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
-            [Service] RoleManager<ApplicationIdentityRole> roleManager,
+            [Service] ApplicationRoleManager roleManager,
             [Service] PersonnelService personnelService,
             string userId = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             if (userId == null)
-                userId = uId;
+                userId = uId.ToString();
             var user = userManager.FindByIdAsync(userId).Result;
             if (user != null)
             {

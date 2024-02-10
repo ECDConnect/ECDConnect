@@ -15,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Jobs
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         public DateTime UserLastSeen { get; set; }
 

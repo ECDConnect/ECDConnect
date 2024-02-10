@@ -1,14 +1,16 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
 {
     public class InvitationTokenManager : ITokenManager<ApplicationUser, InvitationTokenManager>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
         private string EmailTokenProvider
         {
@@ -26,7 +28,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             }
         }
 
-        public InvitationTokenManager(UserManager<ApplicationUser> userManager)
+        public InvitationTokenManager(ApplicationUserManager userManager)
         {
             _userManager = userManager;
         }
@@ -43,9 +45,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             return token;
         }
 
-        public async Task<ApplicationUser> GetValidUserWithTokenAsync(string userId, string token)
+        public async Task<ApplicationUser> GetValidUserWithTokenAsync(string userName, string token)
         {
-            var user = await _userManager.FindByNameAsync(userId);
+            var user = await _userManager.FindByNameAsync(userName);
 
             if (user == null)
             {
@@ -62,9 +64,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             return user;
         }
 
-        public async Task<string> RefreshJwtTokenAsync(string userId, string token)
+        public async Task<string> RefreshJwtTokenAsync(string userName, string token)
         {
-            var user = await _userManager.FindByNameAsync(userId);
+            var user = await _userManager.FindByNameAsync(userName);
 
             if (user == null)
             {

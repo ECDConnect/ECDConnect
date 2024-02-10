@@ -126,9 +126,9 @@ namespace ECDLink.UrlShortner.Managers
             return $"{_options.Value.RedirectUrl}/{chunk}";
         }
 
-        public void RemoveShortUrl(string userId, string messageType)
+        public void RemoveShortUrl(Guid userId, string messageType)
         {
-            var messages = _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType));
+            var messages = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType));
 
             if (messages.Any())
             {
@@ -142,25 +142,25 @@ namespace ECDLink.UrlShortner.Managers
             }
         }
 
-        public int GetMessageCountForUser(string userId, string messageType)
+        public int GetMessageCountForUser(Guid userId, string messageType)
         {
             return _entities
-                .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
+                .Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
                 .Count();
         }
 
-        public string GetLastMessageDateForUser(string userId, string messageType)
+        public string GetLastMessageDateForUser(Guid userId, string messageType)
         {
             var selectedEntities = _entities
-                .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
+                .Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
                 .OrderBy(x => x.InsertedDate);
             return selectedEntities?.LastOrDefault()?.InsertedDate.ToString();
         }
 
-        public List<DateTime> GetAllMessageInvitesForUser(string userId, string messageType)
+        public List<DateTime> GetAllMessageInvitesForUser(Guid userId, string messageType)
         {
             return _entities
-                .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
+                .Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
                 .OrderBy(x => x.InsertedDate)
                 .Select(x => x.InsertedDate)
                 .ToList();

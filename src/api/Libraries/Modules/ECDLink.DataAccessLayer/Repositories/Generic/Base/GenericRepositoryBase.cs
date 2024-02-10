@@ -26,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         protected DbSet<T> entities;
 
-        protected string _userId;
+        protected Guid? _userId;
         protected string errorMessage = string.Empty;
         private Guid _tenantId;
 
@@ -40,12 +40,17 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual void SetUserContext(string user)
         {
+            _userId = string.IsNullOrEmpty(user) ? null : Guid.Parse(user);
+        }
+
+        public virtual void SetUserContext(Guid? user)
+        {
             _userId = user;
         }
 
         public virtual IQueryable<T> GetAll(PagedQueryInput pagingInput = null)
         {
-            var queryable = entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+            var queryable = entities.Where(e => e.TenantId == null || e.TenantId == _tenantId).AsQueryable();
 
             if (pagingInput is not null)
             {
@@ -60,7 +65,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual int Count(PagedQueryInput pagingInput = null)
         {
-            var queryable = entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+            var queryable = entities.Where(e => e.TenantId == null || e.TenantId == _tenantId).AsQueryable();
 
             if (pagingInput is not null)
             {
@@ -72,12 +77,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual T GetById(Guid id)
         {
-            return entities.Where(e => e.TenantId.Equals(_tenantId)).SingleOrDefault(s => s.Id == id);
+            return entities.Where(e => e.TenantId == _tenantId).SingleOrDefault(s => s.Id == id);
         }
 
         public async virtual Task<T> GetByIdAsync(Guid id)
         {
-            return await entities.Where(e => e.TenantId.Equals(_tenantId)).SingleOrDefaultAsync(s => s.Id == id);
+            return await entities.Where(e => e.TenantId == _tenantId).SingleOrDefaultAsync(s => s.Id == id);
         }
 
         public virtual T GetByUserId(string id)
@@ -91,7 +96,29 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             else return default;
         }
 
+        public virtual T GetByUserId(Guid id)
+        {
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + _tenantId + "'").FirstOrDefault();
+                return qq;
+            }
+            else return default;
+        }
+
         public virtual List<T> GetListByUserId(string id)
+        {
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + _tenantId + "'").ToList();////.OrderByDescending(y => y.InsertedDate);
+                return qq;
+            }
+            else return default;
+        }
+
+        public virtual List<T> GetListByUserId(Guid id)
         {
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
@@ -117,7 +144,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             entities.Add(entity);
             context.SaveChanges();
 
-            _domainEventService.NotifyCreate<T>(_userId, entity);
+            _domainEventService.NotifyCreate<T>(_userId?.ToString(), entity);
 
             //Populate Audit records
             if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
@@ -149,7 +176,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             entities.AddRange(entityList);
             context.SaveChanges();
 
-            _domainEventService.NotifyCreate(_userId, entityList);
+            _domainEventService.NotifyCreate(_userId?.ToString(), entityList);
 
             return entityList;
         }
@@ -161,7 +188,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
             if (Exists(entity.Id))
             {
-                entity.UpdatedBy = _userId;
+                entity.UpdatedBy = _userId?.ToString();
 
                 // Notify update would get input values without this:
                 entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
@@ -182,7 +209,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 entities.Entry(entity).Property(e => e.TenantId).IsModified = false;
 
                 // Publish notification with correct data.
-                _domainEventService.NotifyUpdate<T>(_userId, entity);
+                _domainEventService.NotifyUpdate<T>(_userId?.ToString(), entity);
             }
             else
             {
@@ -201,10 +228,10 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             entity.IsActive = false;
             // TODO: Global change to Utc.
             entity.UpdatedDate = DateTime.Now;
-            entity.UpdatedBy = _userId;
+            entity.UpdatedBy = _userId?.ToString();
             entities.Update(entity);
             context.SaveChanges(true);
-            _domainEventService.NotifyUpdate<T>(_userId, entity);
+            _domainEventService.NotifyUpdate<T>(_userId?.ToString(), entity);
 
             //Populate Audit records
             if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
@@ -226,7 +253,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         Property = "IsActive",
                         ValueAfter = "false",
                         ValueBefore = "true",
-                        UserId = _userId,
+                        UserId = _userId.GetValueOrDefault(),
                         RelatedId = entity.Id.ToString(),
                         TenantId = _tenantId
                     });
@@ -236,7 +263,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                     {
                         ChangeType = changeType,
                         Entity = tA.Name,
-                        UserId = _userId,
+                        UserId = _userId.GetValueOrDefault(),
                         RelatedId = entity.Id.ToString(),
                         TenantId = _tenantId
                     });
@@ -281,7 +308,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                                     Property = prop.Name,
                                     ValueBefore = beforeValue,
                                     ValueAfter = afterValue,
-                                    UserId = _userId,
+                                    UserId = _userId.Value,
                                     RelatedId = entity.Id.ToString(),
                                     TenantId = _tenantId
                                 });
@@ -320,7 +347,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             Property = "IsActive",
                             ValueAfter = "false",
                             ValueBefore = "true",
-                            UserId = _userId,
+                            UserId = _userId.Value,
                             RelatedId = e.Id.ToString()
                         }).ToList());
                     return;
@@ -330,7 +357,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         {
                             ChangeType = changeType,
                             Entity = tA.Name,
-                            UserId = _userId,
+                            UserId = _userId.Value,
                             RelatedId = e.Id.ToString()
                         }).ToList());
                     return;
@@ -373,7 +400,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                                             Property = prop.Name,
                                             ValueBefore = beforeValue,
                                             ValueAfter = afterValue,
-                                            UserId = _userId,
+                                            UserId = _userId.Value,
                                             RelatedId = entity.Id.ToString()
                                         });
                                         isValidChange = true;

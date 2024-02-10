@@ -40,10 +40,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
             var docsQuery = docRepo.GetAll();
 
-            if (!string.IsNullOrWhiteSpace(userId)) {
-                docsQuery = docsQuery.Where(x => x.UserId == userId).Include(x => x.User);
-            }
-
+            if (!string.IsNullOrWhiteSpace(userId))
+                docsQuery = docsQuery.Where(x => x.UserId.ToString() == userId).Include(x => x.User);
+                
             if (showOnlyTypes is not null && showOnlyTypes.Length > 0)
                 docsQuery = docsQuery
                     .Include(d => d.DocumentType)

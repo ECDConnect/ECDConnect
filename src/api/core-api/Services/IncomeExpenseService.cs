@@ -23,6 +23,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
 using System.Threading.Tasks;
+using ECDLink.DataAccessLayer.Managers;
 using DinkToPdf.Contracts;
 
 namespace ECDLink.Core.Services
@@ -31,7 +32,7 @@ namespace ECDLink.Core.Services
     {
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
-        private string _applicationUserId;
+        private Guid _applicationUserId;
         private IGenericRepository<StatementsExpenseType, Guid> _statementsExpenseTypeRepo;
         private IGenericRepository<StatementsExpenses, Guid> _statementsExpensesRepo;
         private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
@@ -43,7 +44,7 @@ namespace ECDLink.Core.Services
 
         private IPointsEngineService _pointsEngineService;
 
-        private UserManager<ApplicationUser> _userManager;
+        private ApplicationUserManager _userManager;
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
@@ -54,7 +55,7 @@ namespace ECDLink.Core.Services
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] DocumentManager documentManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
             IPointsEngineService pointsEngineService,
             HierarchyEngine hierarchyEngine,
@@ -64,7 +65,7 @@ namespace ECDLink.Core.Services
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());       
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);       
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
@@ -98,7 +99,7 @@ namespace ECDLink.Core.Services
             var statements = statementRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId.Equals(userId) && x.Year.Equals(year))
+                .Where(x => x.UserId == Guid.Parse(userId) && x.Year.Equals(year))
                 .ToList();
 
             if (statements.Any())
@@ -134,7 +135,7 @@ namespace ECDLink.Core.Services
             // Only return types linked to expenses for params
             var report =
             (
-                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
+                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => y.UserId == Guid.Parse(userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
                 join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
                 select new { statementExpenseType.Description, statementsExpenses.Amount }
             ).ToList();           
@@ -152,7 +153,7 @@ namespace ECDLink.Core.Services
             // Only return types linked to income for params
             var report =
             (
-                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
+                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => y.UserId == Guid.Parse(userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
                 join StatementsIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on StatementsIncome.IncomeTypeId equals StatementsIncomeType.Id.ToString()
                 select new { StatementsIncomeType.Description, StatementsIncome.Amount }
             ).ToList();
@@ -176,7 +177,7 @@ namespace ECDLink.Core.Services
             var statementsQuery = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId == userId && 
+                .Where(x => x.UserId == Guid.Parse(userId) && 
                     (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
 
             if (endDate.HasValue)
@@ -195,7 +196,7 @@ namespace ECDLink.Core.Services
         public List<StatementsIncome> GetUnsubmittedIncomeItems(string userId)
         {
             var incomeQuery = _statementsIncomeRepo.GetAll()
-                .Where(x => x.UserId == userId && x.StatementsIncomeStatementId == null);
+                .Where(x => x.UserId == Guid.Parse(userId) && x.StatementsIncomeStatementId == null);
 
             return incomeQuery.ToList();
         }
@@ -208,7 +209,7 @@ namespace ECDLink.Core.Services
         public List<StatementsExpenses> GetUnsubmittedExpenseItems(string userId)
         {
             var expenseQuery = _statementsExpensesRepo.GetAll()
-                .Where(x => x.UserId == userId && x.StatementsIncomeStatementId == null);
+                .Where(x => x.UserId == Guid.Parse(userId) && x.StatementsIncomeStatementId == null);
 
             return expenseQuery.ToList();
         }
@@ -248,7 +249,7 @@ namespace ECDLink.Core.Services
                     existingIncomeItem.ChildCoverAmount = model.ChildCoverAmount;
                     existingIncomeItem.PhotoProof = model.PhotoProof;
                     existingIncomeItem.UpdatedDate = DateTime.Now;
-                    existingIncomeItem.UpdatedBy = _applicationUserId;
+                    existingIncomeItem.UpdatedBy = _applicationUserId.ToString();
                     existingIncomeItem.ChildUserId = model.ChildUserId;
                     existingIncomeItem.ContributionTypeId = model.ContributionTypeId;
                     existingIncomeItem.Description = model.Description;
@@ -332,8 +333,8 @@ namespace ECDLink.Core.Services
 
         public bool AutoSubmitStatement(string userId, int year, int month)
         {
-            var incomeItems = _statementsIncomeRepo.GetAll().Where(x => x.UserId == userId && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
-            var expenseItems = _statementsExpensesRepo.GetAll().Where(x => x.UserId == userId && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
+            var incomeItems = _statementsIncomeRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
+            var expenseItems = _statementsExpensesRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
 
             var statement = SubmitMonthlyStatement(month, year, userId, incomeItems, expenseItems, true);
 
@@ -382,8 +383,8 @@ namespace ECDLink.Core.Services
                 Period = "Monthly",
                 Submitted = true,
                 SubmittedDate = DateTime.Now,
-                UserId = userId,
-                UpdatedBy = _applicationUserId,
+                UserId = Guid.Parse(userId),
+                UpdatedBy = _applicationUserId.ToString(),
                 UpdatedDate = DateTime.Now,
                 InsertedDate = DateTime.Now,
                 IncomeItems = incomeItems.ToList(),
@@ -432,7 +433,7 @@ namespace ECDLink.Core.Services
         public void SubmitAnnualStatement(string userId, int year, bool autoSubmitted = false)
         {
             //annually needs to look at the entire years statements and sumbit all these for only that year.
-            var annualRows = _statementsRepo.GetAll().Where(x => x.UserId == userId && x.AnnualSubmittedDate == null && x.SubmittedDate.Year.Equals(year)).ToList();
+            var annualRows = _statementsRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.AnnualSubmittedDate == null && x.SubmittedDate.Year.Equals(year)).ToList();
             foreach (var row in annualRows)
             {
                 //lock all entries
@@ -452,8 +453,8 @@ namespace ECDLink.Core.Services
             var submitPeriod = GetStatementPeriod();
             var statementMonth = submitPeriod.Start.Month;
 
-            var eligablePractitioners = _practitionerRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId).ToList();
-            var usersWithSubmittedStatement = _statementsRepo.GetAll().Where(x => x.Month == statementMonth).Select(x => x.UserId).ToList();
+            var eligablePractitioners = _practitionerRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId.ToString()).ToList();
+            var usersWithSubmittedStatement = _statementsRepo.GetAll().Where(x => x.Month == statementMonth).Select(x => x.UserId.ToString()).ToList();
 
             var allDuePractitioners = new Dictionary<string, DateTime>();
             foreach (var userId in eligablePractitioners)
@@ -472,7 +473,7 @@ namespace ECDLink.Core.Services
             StatementsIncomeStatement statement = _statementsRepo.GetById(statementId);
 
             statement.ContactedByCoach = true;
-            statement.UpdatedBy = _applicationUserId;
+            statement.UpdatedBy = _applicationUserId.ToString();
             statement.UpdatedDate = DateTime.Now;
             return _statementsRepo.Update(statement);
         }
@@ -701,7 +702,7 @@ namespace ECDLink.Core.Services
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = _applicationUserId;
+            pdfDoc.CreatedUserId = _applicationUserId.ToString();
 
             return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }
@@ -726,9 +727,9 @@ namespace ECDLink.Core.Services
             var contributionTypes = _statementsContributionTypeRepo.GetAll().ToList();
             var childUserIds = statement.IncomeItems.Where(x => !string.IsNullOrWhiteSpace(x.ChildUserId)).Select(x => x.ChildUserId).Distinct().ToList();
             var childNamesById = _childRepo.GetAll()
-                .Where(x => childUserIds.Contains(x.UserId))
+                .Where(x => childUserIds.Contains(x.UserId.ToString()))
                 .Select(x => new { x.UserId, Name = $"{x.User.FirstName} {x.User.Surname}" })
-                .ToDictionary(x => x.UserId, x => x.Name);
+                .ToDictionary(x => x.UserId.ToString(), x => x.Name);
 
             //
             //  EXPENSES

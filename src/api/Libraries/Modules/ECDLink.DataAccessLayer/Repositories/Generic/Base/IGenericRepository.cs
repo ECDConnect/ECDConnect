@@ -12,12 +12,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         where TKey : IEquatable<TKey>
     {
         void SetUserContext(string userId);
+        void SetUserContext(Guid? userId);
         IQueryable<T> GetAll(PagedQueryInput pagingInput = null);
         int Count(PagedQueryInput pagingInput = null);
         T GetById(TKey id);
         Task<T> GetByIdAsync(TKey id);
         T GetByUserId(string id);
+        T GetByUserId(TKey id);
         List<T> GetListByUserId(string id);
+        List<T> GetListByUserId(TKey id);
         T Insert(T entity);
         IEnumerable<T> InsertMany(IEnumerable<T> entity);
         T Update(T entity);

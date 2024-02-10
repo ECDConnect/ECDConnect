@@ -13,6 +13,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -109,7 +110,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if ((bool)input.IsTrainee)
                         {
                             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
-                            var trainee = traineeRepo.GetByUserId(practitioner.UserId);
+                            var trainee = traineeRepo.GetByUserId(practitioner.UserId.Value);
                             if (trainee == null)
                             {
                                 //create Trainee record
@@ -232,7 +233,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
     IGenericRepositoryFactory repoFactory,
-    [Service] UserManager<ApplicationUser> userManager,
+    [Service] ApplicationUserManager userManager,
     string userId, string firstname, string surname, string contactno)
 
         {
@@ -248,12 +249,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> SendPractitionerInviteToApplication(
          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
          [Service] InvitationNotificationManager notificationManager,
-         [Service] UserManager<ApplicationUser> userManager,
+         [Service] ApplicationUserManager userManager,
          [Service] ShortUrlManager shortUrlManager,
          [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
-            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
+            var inviteCount = shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
@@ -271,7 +272,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] PersonnelService personnelService,
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             string practitionerUserId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -288,7 +289,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 if (reassignment.ClassroomGroupId != null || reassignment.PractitionerId != null)
                 {
-                    reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
+                    reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId.ToString(), reassignment.ClassroomGroupId, true);
                 }               
             }
 
@@ -311,7 +312,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] IAbsenteeService absenteeService,
             [Service] INotificationService notificationService,
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             string practitionerUserId, string classroomId, string reasonForPractitionerLeavingProgrammeId, string reasonDetails, DateTime dateOfRemoval, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -319,7 +320,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             // Save the removal history
             var history = new PractitionerRemovalHistory
             {
-                UserId = practitionerUserId,
+                UserId = Guid.Parse(practitionerUserId),
                 ClassroomId = Guid.Parse(classroomId),
                 RemovedByUserId = uId,
                 ReasonForPractitionerLeavingProgrammeId = Guid.Parse(reasonForPractitionerLeavingProgrammeId),
@@ -337,14 +338,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     return false;
                 }
-                absenteeService.AddAbsenteeForPractitioner(practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, false, null, null, null, removalHistory.Id);
+                absenteeService.AddAbsenteeForPractitioner(practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false, null, null, null, removalHistory.Id);
             }
             var userToSend = userManager.FindByIdAsync(practitionerUserId).Result;
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var classRoom = classroomRepo.GetById(Guid.Parse(classroomId));
             if (classRoom != null) {
-                var principalUser = userManager.FindByIdAsync(classRoom.UserId).Result;
+                var principalUser = userManager.FindByIdAsync(classRoom.UserId.ToString()).Result;
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",
@@ -396,7 +397,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 if(reassignment.Id == null)
                 {
-                    absenteeService.AddAbsenteeForPractitioner(removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, false,null,null,null, removal.Id);
+                    absenteeService.AddAbsenteeForPractitioner(removal.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false,null,null,null, removal.Id);
                 }
                 else
                 {

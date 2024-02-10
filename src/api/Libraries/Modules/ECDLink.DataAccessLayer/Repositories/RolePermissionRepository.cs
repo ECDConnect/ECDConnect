@@ -17,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Repositories
             _dbFactory = dbFactory;
         }
 
-        public async Task AddPermissionsToRole(string roleId, IEnumerable<Guid> permissions)
+        public async Task AddPermissionsToRole(Guid roleId, IEnumerable<Guid> permissions)
         {
             var rolePermissionList = new List<RolePermission>();
 
@@ -46,18 +46,18 @@ namespace ECDLink.DataAccessLayer.Repositories
 
         }
 
-        public async Task RemovePemissionsFromRole(string roleId, List<Guid> permissions)
+        public async Task RemovePemissionsFromRole(Guid roleId, List<Guid> permissions)
         {
             using var context = _dbFactory.CreateDbContext();
 
-            var rolePermissionList = context.RolePermissions.Where(entity => string.Equals(entity.RoleId, roleId) && permissions.Contains(entity.PermissionId));
+            var rolePermissionList = context.RolePermissions.Where(entity => entity.RoleId == roleId && permissions.Contains(entity.PermissionId));
 
             context.RolePermissions.RemoveRange(rolePermissionList);
 
             await context.SaveChangesAsync();
         }
 
-        public List<Permission> GetPermissionsForRole(string[] roleIds)
+        public List<Permission> GetPermissionsForRole(Guid[] roleIds)
         {
             using var context = _dbFactory.CreateDbContext();
 

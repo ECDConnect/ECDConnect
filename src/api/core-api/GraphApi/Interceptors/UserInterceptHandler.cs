@@ -12,7 +12,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Interceptors
     {
         public void OnUserIntercept(HttpContext context, ApplicationIdentityUser user)
         {
-            var userManager = context.RequestServices.GetService<UserManager<ApplicationUser>>();
+            /*
+            var userManager = context.RequestServices.GetService<ApplicationUserManager>();
 
             var applicationUser = user as ApplicationUser;
 
@@ -20,8 +21,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Interceptors
             {
                 throw new NotImplementedException();
             }
-
-            if (applicationUser == default)
+            */
+            if (user == default)
             {
                 throw new UnauthorizedAccessException("User no defined");
             }

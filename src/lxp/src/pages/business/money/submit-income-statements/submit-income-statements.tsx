@@ -437,7 +437,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           )} statement${
             submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
           }!`}
-          scoreMessage={`${monthTotal} points earned`}
+          //scoreMessage={`${monthTotal} points earned`}
           scoreIcon="GiftIcon"
           primaryTextColour="successMain"
           backgroundColour="successBg"
@@ -459,7 +459,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             ? consecutiveBonusMessage
             : ''
         }`}
-        scoreMessage={`${monthTotal} points earned`}
+        // scoreMessage={`${monthTotal} points earned`}
         scoreIcon="GiftIcon"
         primaryTextColour="successMain"
         backgroundColour="successBg"

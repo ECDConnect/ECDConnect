@@ -152,6 +152,10 @@ class Referral {
               id
               comment
             }
+            backReferral {
+              id
+              comment
+            }
           }
         }
           `,

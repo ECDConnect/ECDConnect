@@ -19,6 +19,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -185,7 +186,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
+                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
                     metrics.AddRange(metric);
@@ -227,7 +228,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId);
+                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
                             if (attendanceData.Any())
                             {
                                 var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
@@ -332,7 +333,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var classroomGroups = classroomGroupRepo.GetAll()
                 .Where(c => c.UserId == Guid.Parse(practitionerId)).ToList();
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var practitioner = practRepo.GetByUserId(practitionerId);
 
@@ -530,7 +531,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             var classReassignmentHistoryCount = classReassignmentHistoryRepo.GetAll().Count(ch => ch.IsActive
-                && ch.ReassignedToUser == practitionerId
+                && ch.ReassignedToUser == Guid.Parse(practitionerId)
                 && ch.ReassignedToDate >= previousMonthStart
                 && ch.ReassignedToDate <= previousMonthEnd);
 
@@ -613,7 +614,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
-            var uIdGuid = Guid.Parse(uId);
             var practitionerIdGuid = Guid.Parse(practitionerId);
 
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
@@ -623,7 +623,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomGroups = await classroomGroupRepo
                 .GetAll()
                 .Where(c => c.UserId == practitionerIdGuid
-                    || c.Classroom.UserId == practitionerId)
+                    || c.Classroom.UserId.ToString() == practitionerId)
                 .ToListAsync();
 
             // TODO: use this to apply:
@@ -703,7 +703,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var children = await childRepo.GetAll().Where(c => c.IsActive == true
                     && c.Hierarchy.StartsWith(practitionerHieracry))
@@ -760,7 +760,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user.Id;
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var children = childRepo.GetAll().Where(c => c.IsActive == true
@@ -835,7 +835,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<ClassReassignmentDisplay>> GetActionItemClassReassignmentHistory(
             IGenericRepositoryFactory repoFactory,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             string practitionerId)
         {
             DateTime currentDate = DateTime.Now;
@@ -849,7 +849,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
             var classReassignmentHistoryList = await classReassignmentHistoryRepo.GetAll()
                 .Where(ch => ch.IsActive
-                    && ch.ReassignedToUser == practitionerId
+                    && ch.ReassignedToUser == Guid.Parse(practitionerId)
                     && ch.ReassignedToDate >= previousMonthStart
                     && ch.ReassignedToDate <= previousMonthEnd)
                 .ToListAsync();
@@ -894,8 +894,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         .Where(c => reassignment.ReassignedClassroomGroups?.Contains(c.Id.ToString()) ?? false)
                         .FirstOrDefault();
 
-                        var pract1 = await userManager.FindByIdAsync(reassignment.ReassignedToUser);
-                        var pract2 = await userManager.FindByIdAsync(reassignment.ReassignedBackToUserId);
+                        var pract1 = await userManager.FindByIdAsync(reassignment.ReassignedToUser.ToString());
+                        var pract2 = await userManager.FindByIdAsync(reassignment.ReassignedBackToUserId.ToString());
 
                         reassignedClassList.Add(new ClassReassignmentDisplay()
                         {
@@ -963,13 +963,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get attendance reports submitted for period
             if (practitioner?.IsPrincipal == true)
             {
-                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId.ToString()).Select(cg => cg.Id).ToListAsync();
+                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId).Select(cg => cg.Id).ToListAsync();
 
             }
             else
             {
                 classroomGroupIds = await classroomGroupRepo.GetAll()
-                    .Where(cg => cg.UserId.ToString() == practitioner.UserId)
+                    .Where(cg => cg.UserId == practitioner.UserId)
                     .Select(cg => cg.Id)
                     .ToListAsync();
             }
@@ -994,7 +994,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (practitioner.IsPrincipal == true)
                 {
                     allAttendanceForPeriod = await attendanceRepo.GetAllByDateRange(reportingPeriodStart, reportingPeriodEnd)
-                        .Where(c => c.ParentRecordId == practitioner.UserId)
+                        .Where(c => c.ParentRecordId == practitioner.UserId.ToString())
                         .ToListAsync();
                 }
                 else
@@ -1040,7 +1040,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
             var practitioner = practRepo.GetByUserId(userId);
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(userId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(userId));
 
             var classroomGroups = classroomGroupRepo.GetAll()
                 .Where(c => c.UserId.HasValue && c.UserId.Value == Guid.Parse(userId)).ToList();
@@ -1091,7 +1091,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         childProgressReportService,
                         attendanceService,
                         repoFactory,
-                        uId,
+                        uId.ToString(),
                         type).ToList();
                     return practitionerResults;
                 default:
@@ -1167,7 +1167,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     Color = MetricsColorEnum.Error.ToString(),
                     Message = "",
                     Notes = "",
-                    UserId = Guid.Parse(user.UserId),
+                    UserId = user.UserId,
                     UserType = "child"
                 };
 
@@ -1221,15 +1221,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     practitioners = practRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(uId)).ToList();
                     break;
                 default:
-                    practitioners = practRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
+                    practitioners = practRepo.GetAll().Where(x => x.UserId == Guid.Parse(uId)).ToList();
                     break;
             }
 
-            var pracitionerUserIds = practitioners.Select(y => y.UserId);
+            var pracitionerUserIds = practitioners.Select(y => y.UserId.ToString());
             var classrooms = classroomRepo.GetAll().ToList();
-            var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId) && x.AbsentDate >= previousMonthStart).ToList();
-            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId)).ToList();
-            var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId)).ToList();
+            var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString()) && x.AbsentDate >= previousMonthStart).ToList();
+            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId.ToString())).ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
             var clubMemberDictionary = clubMemberRepo.GetAll().Where(x => x.IsActive).Select(x => new { x.PractitionerId, x.ClubId }).ToList();
                         
@@ -1245,14 +1245,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             foreach (var practitioner in practitioners)
             {
-                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
-                var practitionerClassroomGroupIds = classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList();
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var practitionerClassroomGroupIds = classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == practitioner.UserId.Value).Select(x => x.Id).ToList();
                 var classroom = practitionerClassrooms.FirstOrDefault();
                 var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId).ToList(); 
 
                 var notification = new NotificationDisplay()
                 {
-                    UserId = Guid.Parse(practitioner.UserId),
+                    UserId = practitioner.UserId,
                     UserType = "practitioner"
                 };
 
@@ -1289,7 +1289,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion        
 
                 #region REMOVED FROM PROGRAMME
-                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
+                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId.Value)
                     .Where(x => x.IsActive)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
@@ -1337,7 +1337,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
                     if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
                     {
-                        var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
+                        var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId.ToString());
 
                         var warningCount = 0;
                         var warningString = MetricsColorEnum.Warning.ToString();
@@ -1716,7 +1716,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
                 {
 
-                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId, previousMonthStart, previousMonthEnd).FirstOrDefault();
+                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).FirstOrDefault();
                     #region MISSING INCOME STATEMENT
                     if (lastMonthStatement == null || lastMonthStatement.AutoSubmitted)
                     {
@@ -1733,7 +1733,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     #region PROGRAMME LOST R300 IN LAST 2 MONTHS
                     var secondLastMonth = previousMonthStart.AddMonths(-1);
-                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId, secondLastMonth, secondLastMonth).FirstOrDefault();
+                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), secondLastMonth, secondLastMonth).FirstOrDefault();
                     if (lastMonthStatement != null && secondLastMonthStatement != null)
                     {
                         var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
@@ -1815,7 +1815,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {
                     #region 50% CHILD ATTENDANCE
-                    var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId, previousMonthStart, previousMonthEnd);
+                    var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd);
                     if (attendancePercentage < 60)
                     {
                         notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";

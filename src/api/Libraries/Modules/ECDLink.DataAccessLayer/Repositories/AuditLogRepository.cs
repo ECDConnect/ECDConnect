@@ -14,7 +14,7 @@ namespace ECDLink.DataAccessLayer.Repositories
             _dbFactory = dbFactory;
         }
 
-        public void AddAuditLog(Guid auditLogTypeId, string description, string userId)
+        public void AddAuditLog(Guid auditLogTypeId, string description, Guid? userId)
         {
             using var context = _dbFactory.CreateDbContext();
 

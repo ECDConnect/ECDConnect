@@ -17,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public ClubSupportModel(ClubSupport clubSupport)
         {
-            UserId = clubSupport.Practitioner.User.Id;
+            UserId = clubSupport.Practitioner.User.Id.ToString();
             PractitionerId = clubSupport.PractitionerId;
             FirstName = clubSupport.Practitioner.User.FirstName;
             Surname = clubSupport.Practitioner.User.Surname;

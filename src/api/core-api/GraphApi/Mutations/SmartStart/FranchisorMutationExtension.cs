@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -22,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Franchisor UpdateFranchisor([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          IGenericRepositoryFactory repoFactory,
-         [Service] UserManager<ApplicationUser> userManager,
+         [Service] ApplicationUserManager userManager,
          string id,
          Franchisor input)
         {

@@ -6,6 +6,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -39,10 +40,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           string file)
         {
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
 
             if (file is null || currentUserId is null)
             {
@@ -113,8 +114,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     continue;
                 }
                 var insertedDate = DateTime.UtcNow;
+                var userId = Guid.NewGuid();
                 var user = new ApplicationUser()
                 {
+                    Id = userId,
                     IdNumber = id,
                     UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     FirstName = firstName,
@@ -127,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = insertedDate,
-                    IsActive = true
+                    IsActive = true,
                 };
                 userImportList.Add(user);
 
@@ -324,10 +327,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           IGenericRepositoryFactory repoFactory,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           string file)
         {
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
 
             if (file is null || currentUserId is null)
@@ -398,8 +401,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     
                     var insertedDate = DateTime.UtcNow;
 
+                    var userId = Guid.NewGuid();
                     var user = new ApplicationUser()
                     {
+                        Id = userId,
                         IdNumber = id,
                         UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                         FirstName = firstName,
@@ -413,7 +418,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ContactPreference = MessageTypeConstants.SMS,
                         TenantId = tenantId,
                         InsertedDate = insertedDate,
-                        IsActive = true
+                        IsActive = true,
                     };
                     userImportList.Add(user);
 

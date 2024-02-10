@@ -18,9 +18,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         ClinicJoin<Guid?>
         where TKey : IEquatable<TKey>
     {
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         [ForeignKey(nameof(ClinicId))]
         public virtual Clinic Clinic { get; set; }

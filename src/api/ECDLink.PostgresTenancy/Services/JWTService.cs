@@ -1,4 +1,5 @@
-﻿using ECDLink.PostgresTenancy.Entities;
+﻿using System;
+using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
 
 namespace ECDLink.PostgresTenancy.Services
@@ -37,7 +38,7 @@ namespace ECDLink.PostgresTenancy.Services
             return entity;
         }
 
-        public JWTUserTokensEntity GetById(string id)
+        public JWTUserTokensEntity GetById(Guid id)
         {
             var entity = _repository.GetByUserId(id);
 
@@ -62,7 +63,7 @@ namespace ECDLink.PostgresTenancy.Services
             return tokenEntity;
         }
 
-        public bool InvalidateExistingTokens(string id)
+        public bool InvalidateExistingTokens(Guid id)
         {
             return _repository.DeleteAllTokensById(id);
         }
