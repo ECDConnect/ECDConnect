@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private Guid _applicationUserId;
+        private Guid? _applicationUserId;
         private IGenericRepository<Practitioner, Guid> _practiGenericRepo;
         private IGenericRepository<Practitioner, Guid> _practiRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classGroupRepo;
@@ -95,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -450,7 +450,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId.ToString()).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(practitionerToDemote.UserId.ToString(), practitionerToPromote.UserId.ToString(), "New principal/administrator", DateTime.Now, _applicationUserId.ToString(), unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(practitionerToDemote.UserId.ToString(), practitionerToPromote.UserId.ToString(), "New principal/administrator", DateTime.Now, _applicationUserId.ToStringOrNull(), unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
@@ -865,7 +865,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitioner.DateToBeRemoved = DateTime.Now;
                 practitioner.IsLeaving = true;
                 practitioner.IsActive = false;
-                practitioner.UpdatedBy = _applicationUserId.ToString();
+                practitioner.UpdatedBy = _applicationUserId.ToStringOrNull();
                 practitioner.UpdatedDate = DateTime.Now;
                 practitioner.LeavingComment = leavingComment;
                 practitioner.ReasonForPractitionerLeavingId = Guid.Parse(reasonForPractitionerLeavingId);
@@ -897,7 +897,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
             practitioner.IsCompletedBusinessWalkThrough = true;
-            practitioner.UpdatedBy = _applicationUserId.ToString();
+            practitioner.UpdatedBy = _applicationUserId.ToStringOrNull();
             practitioner.UpdatedDate = DateTime.Now;
             _practiGenericRepo.Update(practitioner);
             return true;
