@@ -21,7 +21,7 @@ export const AcceptLeaderDetails: React.FC<AcceptLeaderDetailsProps> = ({
       <Typography
         type="h1"
         className="mt-6"
-        text={`${firstName} has not accpeted the club leader agreement`}
+        text={`${firstName} has not accepted the club leader agreement`}
       />
       <Typography
         type="h3"
@@ -48,7 +48,7 @@ export const AcceptLeaderDetails: React.FC<AcceptLeaderDetailsProps> = ({
           <Typography
             type={'help'}
             hasMarkup
-            text={`Discuss wthe role with ${firstName} and make sure they have agreed to be club leader.`}
+            text={`Discuss the role with ${firstName} and make sure they have agreed to be club leader.`}
             className={'text-sm font-normal'}
           />
         </li>
