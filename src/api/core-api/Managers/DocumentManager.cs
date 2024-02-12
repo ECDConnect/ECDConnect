@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -14,7 +15,6 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Globalization;
@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.Managers
         private readonly IHttpContextAccessor _contextAccessor;
         private IntegrationLogManager _logManager;
         private IFileService _fileService;
-        private Guid _uId;
+        private Guid? _uId;
 
         private readonly IGenericRepositoryFactory _repoFactory;
         private readonly IGenericRepository<Document, Guid> _documentRepo;
@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.Managers
             _logManager = logManager;
             _fileService = fileService;
 
-            _uId = _contextAccessor.HttpContext.GetUser().Id;
+            _uId = _contextAccessor.HttpContext.GetUser()?.Id;
 
             _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _uId);
             _documentTypeRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: _uId);

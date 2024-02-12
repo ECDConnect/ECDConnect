@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private Guid _applicationUserId;
+        private Guid? _applicationUserId;
         private IGenericRepository<Caregiver, Guid> _caregiverRepo;
 
         public CaregiverManager( 
@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
         }
 

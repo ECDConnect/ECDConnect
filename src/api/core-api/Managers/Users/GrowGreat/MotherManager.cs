@@ -1,6 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
@@ -28,7 +29,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitDataStatusManager _visitDataStatusManager;
         private IPointsEngineService _pointsEngineService;
 
-        private Guid _applicationUserId;
+        private Guid? _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
         private IGenericRepository<Infant, Guid> _infantRepo;
         private IGenericRepository<Document, Guid> _documentRepo;
@@ -51,7 +52,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _visitDataStatusManager = visitDataStatusManager;
             _pointsEngineService = pointsEngineService;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
             _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _applicationUserId);
@@ -80,7 +81,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             // Call points engine for hcw
-            _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToString(), DateTime.UtcNow);
+            _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
             return createdMom;
         }
 
@@ -90,12 +91,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             {
                 var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId == id).FirstOrDefault();
                 entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId.ToString();
+                entityToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
                 entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
                 AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
 
                 // Call points engine for hcw
-                _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToString(), DateTime.UtcNow);
+                _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
                 
                 return _motherRepo.Update(entityToUpdate);
             }
@@ -108,7 +109,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId.ToString();
+            entityToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
 
             if (input.UserId != null)
             {
@@ -168,7 +169,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     if (total == 0)
                     {
                         mother.IsActive = false;
-                        mother.UpdatedBy = _applicationUserId.ToString();
+                        mother.UpdatedBy = _applicationUserId.ToStringOrNull();
                         _motherRepo.Update(mother);
                     }
                 }
@@ -184,7 +185,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             user.Id = Guid.Parse(input.UserId);
             user.PhoneNumber = input.PhoneNumber;
 
-            entityToUpdate.UpdatedBy = _applicationUserId.ToString();
+            entityToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
             entityToUpdate.UserId = user.Id;
@@ -197,7 +198,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var entityToUpdate = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId.ToString();
+            entityToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
             entityToUpdate.SiteAddress = input.SiteAddress;
             return _motherRepo.Update(entityToUpdate);
         }
@@ -213,7 +214,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                             + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
 
 
-            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId.ToString());
+            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId.ToStringOrNull());
             var motherUser = GetUserFromInputModel(input);
 
             // Populate province id with N/A option when site address is null
@@ -230,7 +231,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId.ToString(),
+                UpdatedBy = _applicationUserId.ToStringOrNull(),
                 UserId = new Guid(input.UserId),
                 User = motherUser,
                 Age = input.Age,

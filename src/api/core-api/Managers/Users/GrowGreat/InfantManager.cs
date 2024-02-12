@@ -1,6 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
@@ -29,7 +30,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitDataStatusManager _visitDataStatusManager;
         private IPointsEngineService _pointsEngineService;
 
-        private Guid _applicationUserId;
+        private Guid? _applicationUserId;
         private IGenericRepository<Infant, Guid> _infantRepo;
         private IGenericRepository<SiteAddress, Guid> _addressRepo;
         private IGenericRepository<Province, Guid> _provinceRepo;
@@ -54,7 +55,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _visitDataManager = visitDataManager;
             _pointsEngineService = pointsEngineService;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
             _caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
@@ -94,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     IsActive = true,
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
-                    UpdatedBy = _applicationUserId.ToString(),
+                    UpdatedBy = _applicationUserId.ToStringOrNull(),
                     UserId = new Guid(input.UserId),
                     User = infantUser,
                     CaregiverId = caregiver.Id,
@@ -119,7 +120,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
-                        UpdatedBy = _applicationUserId.ToString(),
+                        UpdatedBy = _applicationUserId.ToStringOrNull(),
                         UserId = new Guid(input.UserId),
                         User = infantUser,
                         MotherCaregiverId = mother.Id,
@@ -142,7 +143,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
-                        UpdatedBy = _applicationUserId.ToString(),
+                        UpdatedBy = _applicationUserId.ToStringOrNull(),
                         UserId = new Guid(input.UserId),
                         User = infantUser,
                         CaregiverId = caregiver.Id,
@@ -167,7 +168,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             // Call points engine for hcw
-            _pointsEngineService.CalculateInfantClientRegistration(_applicationUserId.ToString(), DateTime.UtcNow);
+            _pointsEngineService.CalculateInfantClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
 
             return createdInfant;
         }
@@ -179,7 +180,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantUser.DateOfBirth = (DateTime)input.DateOfBirth;
 
             infantToUpdate.UpdatedDate = DateTime.Now;
-            infantToUpdate.UpdatedBy = _applicationUserId.ToString();
+            infantToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
             infantToUpdate.UserId = infantUser.Id;
             infantToUpdate.User = infantUser;
             infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits == null ? false : input.Completed24MonthVisits;
@@ -202,7 +203,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             var entityToUpdate = _caregiverRepo.GetAll().Where(x => x.Id == input.CaregiverId).FirstOrDefault();
 
-            entityToUpdate.UpdatedBy = _applicationUserId.ToString();
+            entityToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.WhatsAppNumber = input.Caregiver.WhatsAppNumber;
             entityToUpdate.PhoneNumber = input.Caregiver.PhoneNumber;
@@ -219,7 +220,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.MotherCaregiverId = motherId;
             infantToUpdate.CaregiverId = null;
             infantToUpdate.UpdatedDate = DateTime.Now;
-            infantToUpdate.UpdatedBy = _applicationUserId.ToString();
+            infantToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
             _infantRepo.Update(infantToUpdate);
             return true;
         }
@@ -229,7 +230,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var entityToUpdate = _addressRepo.GetAll().Where(x => x.Id == input.Caregiver.SiteAddress.Id).FirstOrDefault();
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId.ToString();
+            entityToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
             entityToUpdate.AddressLine1 = input.Caregiver.SiteAddress.AddressLine1;
             _addressRepo.Update(entityToUpdate);
 
@@ -244,7 +245,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
             infantToUpdate.UpdatedDate = DateTime.Now;
-            infantToUpdate.UpdatedBy = _applicationUserId.ToString();
+            infantToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
 
             if (mother == null && caregiver == null)
             {
@@ -307,7 +308,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId.ToString());
+            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId.ToStringOrNull());
             if (healthCareWorkerId != null)
             {
                 caregiverInput.HealthCareWorkerId = healthCareWorkerId;
@@ -335,7 +336,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId.ToString()   ,
+                UpdatedBy = _applicationUserId.ToStringOrNull(),
                 JoinReferencePanel = false,
                 Contribution = false,
                 FirstName = caregiverInput.FirstName,
