@@ -1468,7 +1468,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (children.Any())
                 {
                     // Check preschool fees exist for all children
-                    var allChildrenHaveFees = children.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.UserId.ToString()));
+                    var allChildrenHaveFees = children.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.UserId));
 
                     if (allChildrenHaveFees)
                     {
