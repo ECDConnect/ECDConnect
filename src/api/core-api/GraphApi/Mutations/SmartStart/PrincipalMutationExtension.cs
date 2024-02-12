@@ -287,7 +287,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         status.Leaving = true;
 
                         notificationService.ExpireNotificationsTypesForUser(principal.UserId.ToString(), TemplateTypeConstants.RejectedInvitation);
-                        sendRejectedNotification = false;
+                        //sendRejectedNotification = false;
                     }
                     else
                     {

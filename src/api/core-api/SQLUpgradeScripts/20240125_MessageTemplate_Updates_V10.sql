@@ -1,0 +1,1 @@
+update "MessageTemplate" set "Action"='{"url":"/child-profile","state":{"childId":"[[ChildId]]"}}' where "TemplateType" = 'child-reg-incomplete';

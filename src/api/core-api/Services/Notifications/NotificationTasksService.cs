@@ -117,12 +117,12 @@ namespace EcdLink.Api.CoreApi.Services
                     });
                     replacements.Add(new TagsReplacements()
                     {
-                        FindValue = "ChildUserId",
-                        ReplacementValue = child.UserId.Value.ToString()
+                        FindValue = "ChildId",
+                        ReplacementValue = child.Id.ToString()
                     });
                     var parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
                     var userToSend = await _userManager.FindByIdAsync(parentUserId.ToString());
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, null, true);
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true);
                 }
             }
         }
