@@ -1,4 +1,4 @@
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { Login } from '@auth-p/login/login';
 import { NewPassword } from '@auth-p/new-password/new-password';
 import PasswordReset from '@auth-p/password-reset/password-reset';
@@ -129,6 +129,9 @@ import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-
 import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
 import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
 import { MissingMeetingRegisters } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { usePrevious } from '@ecdlink/core';
+import * as H from 'history';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -166,8 +169,19 @@ const PublicRoutes: React.FC = () => {
 };
 
 const AuthRoutes: React.FC = () => {
+  const { isOnline } = useOnlineStatus();
+  const location = useLocation();
+  const previousLocation = usePrevious(location) as
+    | H.Location<unknown>
+    | undefined;
+
   return (
     <Switch>
+      {(!isOnline ||
+        (location.pathname === ROUTES.LOGIN &&
+          previousLocation?.pathname === ROUTES.LOGIN)) && (
+        <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+      )}
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
