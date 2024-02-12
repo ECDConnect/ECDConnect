@@ -50,6 +50,6 @@ namespace ECDLink.Core.Services.Interfaces
 
         List<KeyValuePair<string, int>> GetClubMemberPointsTotals(Guid clubId, int year, int? month = null);
 
-        List<KeyValuePair<string, int>> GetUserPointsTotals(List<string> userIds, int year, int? month = null);
+        List<KeyValuePair<string, int>> GetUserPointsTotals(List<Guid> userIds, int year, int? month = null);
     }
 }

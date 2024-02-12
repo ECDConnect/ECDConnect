@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.Documents
             var repo = _repositoryFactory.CreateRepository<Document>(userContext: accessUserId);
 
             var documents = repo.GetAll()
-                                .Where(x => string.Equals(x.UserId, userId)
+                                .Where(x => x.UserId == Guid.Parse(userId)
                                 && x.DocumentType.EnumId == fileType)
                                 .ToList();
 
@@ -79,7 +79,7 @@ namespace EcdLink.Api.CoreApi.Documents
             var wfPending = workflowRepo.GetAll().Where(w => w.Description.Equals("Pending Verification")).FirstOrDefault();
 
             var doc = repo.GetAll().
-                            Where(x => x.Name == fileName && x.UserId == userId
+                            Where(x => x.Name == fileName && x.UserId.ToString() == userId
                             && x.DocumentTypeId == docType.Id)
                             .FirstOrDefault();
 
@@ -97,12 +97,12 @@ namespace EcdLink.Api.CoreApi.Documents
                     doc = new Document
                     {
                         Id = Guid.NewGuid(),
-                        CreatedUserId = addedByUserId,
+                        CreatedUserId = Guid.Parse(addedByUserId),
                         Name = fileName,
                         UpdatedBy = addedByUserId,
                         InsertedDate = DateTime.Now,
                         Reference = document.Url.TrimEnd('/'),
-                        UserId = userId,
+                        UserId = Guid.Parse(userId),
                         DocumentTypeId = docType.Id,
                         WorkflowStatusId = wfPending.Id,
                     };
@@ -113,7 +113,7 @@ namespace EcdLink.Api.CoreApi.Documents
                     doc.Name = fileName;
                     doc.UpdatedBy = addedByUserId;
                     doc.Reference = document.Url.TrimEnd('/');
-                    doc.UserId = userId;
+                    doc.UserId = Guid.Parse(userId);
                     doc.UpdatedDate = DateTime.Now;
                     repo.Update(doc);
                 }

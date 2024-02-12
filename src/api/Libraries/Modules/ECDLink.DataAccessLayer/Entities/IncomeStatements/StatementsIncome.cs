@@ -29,12 +29,12 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string Description { get; set; }
         public string PhotoProof { get; set; }
         public bool Submitted { get; set; }
-        public string ChildUserId { get; set; }
+        public Guid? ChildUserId { get; set; }
         [GraphQLIgnore]
         [ForeignKey(nameof(StatementsIncomeStatementId))]
         public virtual StatementsIncomeStatement StatementsIncomeStatement { get; set; }
         public Guid? StatementsIncomeStatementId { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
         public DateTime DateReceived { get; set; }
         public string? FeeTypeId { get; set; }
     }

@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = applicationUserId.ToString(),
                 Name = input.Name,
                 PhoneNumber = input.PhoneNumber,
                 SiteAddressId = input.SiteAddressId,

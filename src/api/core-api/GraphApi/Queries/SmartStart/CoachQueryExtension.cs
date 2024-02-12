@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -45,20 +46,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             foreach (var practitioner in practitioners)
             {
-                var coachPractitioner = new CoachPractitioner
+                // validate default visits for smartSpace license
+                visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId.ToString(), practitioner.Id);
+
+                coachPractitioners.Add(new CoachPractitioner
                 {
                     Id = practitioner.Id,
-                    UserId = practitioner.UserId,
-                    ProgrammeType = practitioner.ProgrammeType
-                };
-
-                // let's make sure that the default visits are added when the smartSpace license is available
-                var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId);
-                if (isAdded)
-                {
-                    coachPractitioner.timeline = personnelService.GetPractitionerTimeline(practitioner.UserId);
-                }
-                coachPractitioners.Add(coachPractitioner);
+                    UserId = practitioner.UserId.Value,
+                    ProgrammeType = practitioner.ProgrammeType,
+                    timeline = personnelService.GetPractitionerTimeline(practitioner.UserId.ToString())
+                });
             }
 
             return coachPractitioners;
@@ -94,7 +91,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public string GetCoachNameByUserId([Service] UserManager<ApplicationUser> userManager,
+        public string GetCoachNameByUserId([Service] ApplicationUserManager userManager,
         string userId)
         {
             var user = userManager.FindByIdAsync(userId).Result;
@@ -132,7 +129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Child> children = new List<Child>();
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            practitioners.Where(x => x.CoachHierarchy == Guid.Parse(userId)).ToList();
             foreach (var practioner in practitioners)
             {
                 List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
@@ -153,10 +150,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Classroom> classrooms = new List<Classroom>();
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            practitioners.Where(x => x.CoachHierarchy == Guid.Parse(userId)).ToList();
             foreach (var practioner in practitioners)
             {
-                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Contains(practioner.UserId)).ToList();
+                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.ToString().Contains(practioner.UserId.ToString())).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;
@@ -174,11 +171,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             List<ClassroomGroup> classrooms = new List<ClassroomGroup>();
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userIdGuid)).ToList();
+            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy == userIdGuid).ToList();
             foreach (var practioner in practitioners)
             {
-                var practinionerUserIdGuid = new Guid(practioner.UserId);
-                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Equals(practinionerUserIdGuid)).ToList();
+                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Value == practioner.UserId.Value).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;
@@ -195,7 +191,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var clubRepo = repoFactory.CreateRepository<Club>(userContext: uId);
             var clubMeetingRepo = repoFactory.CreateRepository<ClubMeeting>(userContext: uId);
 
-            List<Club> allClubs = clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> allClubs = clubRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.IsActive == true).OrderBy(x => x.Name).ToList();
             List<CircleClub> noMeetings = new List<CircleClub>();
             List<CircleClub> haveMeetings = new List<CircleClub>();
             CircleClub circleClub = new CircleClub();

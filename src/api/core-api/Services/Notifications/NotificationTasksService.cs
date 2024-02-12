@@ -23,6 +23,7 @@ using ECDLink.SmartStart.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcdLink.Api.CoreApi.Services
@@ -31,7 +32,7 @@ namespace EcdLink.Api.CoreApi.Services
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly HierarchyEngine _hierarchyEngine;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
         private readonly INotificationService _notificationService;
         private readonly IIncomeExpenseService _incomeService;
         private readonly IPersonnelService _personnelService;
@@ -43,7 +44,7 @@ namespace EcdLink.Api.CoreApi.Services
         public NotificationTasksService(
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IIncomeExpenseService incomeService,
             HierarchyEngine hierarchyEngine, 
             [Service] AttendanceTrackingRepository attendanceTrackingRepository, 
@@ -117,10 +118,10 @@ namespace EcdLink.Api.CoreApi.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "ChildUserId",
-                        ReplacementValue = child.UserId
+                        ReplacementValue = child.UserId.Value.ToString()
                     });
-                    string parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
-                    var userToSend = await _userManager.FindByIdAsync(parentUserId);
+                    var parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
+                    var userToSend = await _userManager.FindByIdAsync(parentUserId.ToString());
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, null, true);
                 }
             }
@@ -334,7 +335,7 @@ namespace EcdLink.Api.CoreApi.Services
             var allRequiredAttendance =
             (
                 from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-                join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId.ToString() equals practitionerData.UserId
+                join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId equals practitionerData.UserId
                 join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= inDate && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
                 select new { classroomGroupData, practitionerData }
             ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
@@ -374,7 +375,7 @@ namespace EcdLink.Api.CoreApi.Services
             var allRequiredAttendance =
                 (
                     from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-                    join entityData in entityRepo.GetAll().Where(p => p.IsActive.Equals(true) && p.LastAttendanceSubmittedDate <= startPeriod && p.LocalEntity.Equals("Practitioner")) on classroomGroupData.UserId.ToString() equals entityData.UserId
+                    join entityData in entityRepo.GetAll().Where(p => p.IsActive.Equals(true) && p.LastAttendanceSubmittedDate <= startPeriod && p.LocalEntity.Equals("Practitioner")) on classroomGroupData.UserId equals entityData.UserId
                     join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= startPeriod && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
                     select new { classroomGroupData, entityData }
                 ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
@@ -407,7 +408,7 @@ namespace EcdLink.Api.CoreApi.Services
                 var allRequiredAttendance =
                 (
                     from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-                    join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId.ToString() equals practitionerData.UserId
+                    join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId equals practitionerData.UserId
                     join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= inDate && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
                     select new { classroomGroupData, practitionerData }
                 ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
@@ -449,9 +450,8 @@ namespace EcdLink.Api.CoreApi.Services
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var trainee in newTrainee)
             {
-                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
-                var userToSend = await _userManager.FindByIdAsync(parentUserId);
-
+                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
+                var userToSend = await _userManager.FindByIdAsync(parentUserId.Value.ToString());
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2),true);
             }
         }
@@ -475,7 +475,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 bool overdueVisists = false;
                 var newTrainee = traineeRepo.GetAll()
-                    .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy.ToString() == coach.UserId))        
+                    .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId))        
                     .Include(x => x.Practitioner).Where(x => x.Practitioner.IsTrainee == true)//x.Practitioner.IsRegistered == false &&
                     .ToList(); //ignore already converted trainees
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -493,7 +493,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                             bool cancelStarter = false;
                             //switch off any StartTraineeJourney items if any of the timeline items have been done at this point
-                            var traineeTimeline = _personnelService.GetOnBoardTraineeTimeline(trainee.UserId);
+                            var traineeTimeline = _personnelService.GetOnBoardTraineeTimeline(trainee.UserId.ToString());
                             if (traineeTimeline != null)
                             {
 
@@ -551,7 +551,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 if (cancelStarter)
                                 {
                                     //switch off starter notifications for this trainee if there was any
-                                    await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
+                                    await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id.ToString(), TemplateTypeConstants.StartTraineeJourney, trainee.User.FirstName + " " + trainee.User.Surname);
                                 }
                                 //count how many onboarding steps has been completed and fire off notifications if only 2 more is left etc
                                 int traineeCount = 0;
@@ -586,12 +586,12 @@ namespace EcdLink.Api.CoreApi.Services
                         _logger.LogError(ex, "Issue with trainee timeline in DailyCoachChecksNotification", ex.Message);
                     }
                 }
-                var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.IsTrainee == false && x.IsRegistered == true && (x.CoachHierarchy.HasValue && x.CoachHierarchy.ToString() == coach.UserId)).ToList();
+                var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.IsTrainee == false && x.IsRegistered == true && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId)).ToList();
                 foreach (var prac in practitioners)
                 {
                     try { 
                         //4) Practitioner not completed self assessment form - find any practitioners not completed self assessment forms yet
-                        PractitionerTimeline practTimeline = _personnelService.GetPractitionerTimeline(prac.UserId);
+                        PractitionerTimeline practTimeline = _personnelService.GetPractitionerTimeline(prac.UserId.ToString());
                         if (practTimeline != null)
                         {
                             if (practTimeline.SelfAssessmentStatus != null && practTimeline.SelfAssessmentStatus != Constants.SSSettings.self_assessment)
@@ -620,7 +620,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     FindValue = "PractitionerFirstName",
                                     ReplacementValue = prac.User.FirstName
                                 });
-                                await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.CoachSelfAssessmentFormReminder, prac.User.FirstName + " " + prac.User.Surname);
+                                await _notificationService.ExpireNotificationsTypesForUser(userToSend.Id.ToString(), TemplateTypeConstants.CoachSelfAssessmentFormReminder, prac.User.FirstName + " " + prac.User.Surname);
                                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), true);
                             }
 

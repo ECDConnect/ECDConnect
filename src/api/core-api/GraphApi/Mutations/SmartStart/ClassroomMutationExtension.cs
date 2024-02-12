@@ -20,6 +20,7 @@ using ECDLink.Abstractrions.Constants;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using Microsoft.AspNetCore.Identity;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -34,9 +35,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string classroomId,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
             var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id.Equals(classroomId));
+            ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id == Guid.Parse(classroomId));
             if (classRoom != null)
             {
 
@@ -57,11 +58,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id == id).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             Guid? programmeType = input.ProgrammeTypeId;
 
-            var hierarchy = engine.GetUserHierarchy(input.UserId != null ? input.UserId.ToString() : uId);
+            var hierarchy = engine.GetUserHierarchy(input.UserId.HasValue ? input.UserId : uId);
             if (classRoomGroup == null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
@@ -102,8 +103,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         newReassignment.Reason = "Principal assigned class to practitioner";
                         newReassignment.ReassignedClassroomGroups = id.ToString() + ";";
                         newReassignment.ReassignedToDate = DateTime.Now;
-                        newReassignment.ReassignedToUser = input.UserId.ToString();
-                        newReassignment.UserId = input.UserId.ToString();
+                        newReassignment.ReassignedToUser = input.UserId;
+                        newReassignment.UserId = (Guid)input.UserId;
                         newReassignment.ReassignedBackToUserId = uId;
                         newReassignment.ReassignedBackToDate = DateTime.Now;
                        
@@ -118,21 +119,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 classRoomGroup.Name = input.Name;
                 classRoomGroup.IsActive = input.IsActive;
                 classRoomGroup.ProgrammeTypeId = programmeType;
-                classRoomGroup.UpdatedBy = uId; 
+                classRoomGroup.UpdatedBy = uId.ToString();
                 classRepo.Update(classRoomGroup);
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
-                var learnersReassigned = UpdateLearners(repoFactory, uId, id, hierarchy);
-                UpdateChildren(repoFactory, uId, hierarchy, learnersReassigned, input.UserId.ToString());              
+                var learnersReassigned = UpdateLearners(repoFactory, uId.ToString(), id, hierarchy);
+                UpdateChildren(repoFactory, uId.ToString(), hierarchy, learnersReassigned, input.UserId.ToString());              
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
-                if (classRoomGroup.ClassroomId != null)
+                //if (classRoomGroup.ClassroomId != null)
                 {
                     var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
                     Classroom classRoom = classroomRepo.GetAll().Where(x => x.Id.Equals(classRoomGroup.ClassroomId)).FirstOrDefault();
                     if (classRoom != null)
                     {
-                        var principalToSend = userManager.FindByIdAsync(classRoom.UserId).Result;
+                        var principalToSend = userManager.FindByIdAsync(classRoom.UserId.Value.ToString()).Result;
                         List<TagsReplacements> replacements = new List<TagsReplacements>();
                         replacements.Add(new TagsReplacements()
                         {
@@ -153,12 +154,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] INotificationService notificationService,
             Guid id,
             Classroom input)
         {
-            string uId = contextAccessor.HttpContext.GetUser().Id;
+            var uId = contextAccessor.HttpContext.GetUser().Id;
             IGenericRepository<SiteAddress, Guid> addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
             IGenericRepository<Classroom, Guid> dbRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
 
@@ -225,7 +226,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 
                 var parentId = engine.GetUserParentUserId(principal.Id);
                 if (parentId != null) {
-                   var coachToSend = userManager.FindByIdAsync(parentId).Result;
+                   var coachToSend = userManager.FindByIdAsync(parentId.ToString()).Result;
                     if (coachToSend != null)
                     {
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
@@ -243,10 +244,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Guid id,
             ClassProgramme input)
         {
-            string uId = contextAccessor.HttpContext.GetUser().Id;
+            var uId = contextAccessor.HttpContext.GetUser().Id;
             IGenericRepository<ClassroomGroup, Guid> classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classroomGroup = classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-            string hierarchy = engine.GetUserHierarchy(classroomGroup.UserId != null ? classroomGroup.UserId.ToString() : uId);
+            ClassroomGroup classroomGroup = classRepo.GetAll().Where(x => x.Id == input.ClassroomGroupId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            string hierarchy = engine.GetUserHierarchy(classroomGroup.UserId.GetValueOrDefault(uId));
 
             if (classroomGroup != null)
             {
@@ -301,7 +302,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-            ClassProgramme classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            ClassProgramme classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId == classroomId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy) && classProgramme.Hierarchy != newHierarchy)
             {
                 classProgramme.Hierarchy = newHierarchy;
@@ -318,7 +319,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             List<string> learnersReassigned = new List<string>();
 
             var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
-            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId) && x.IsActive == true).ToList();
+            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId == classroomGroupId && x.IsActive == true).ToList();
             if (learners != null && learners.Count > 0 && !string.IsNullOrWhiteSpace(newHierarchy))
             {
                 foreach (var learner in learners)
@@ -327,7 +328,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         learner.Hierarchy = newHierarchy;
                         learnerRepo.Update(learner);
-                        learnersReassigned.Add(learner.UserId);
+                        learnersReassigned.Add(learner.UserId.ToString());
                     }
                 }   
             }
@@ -353,7 +354,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (children != null )
                     {
                        string childNewHierarchy = "";
-                       UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(children.UserId)).FirstOrDefault();
+                       UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId == children.UserId).FirstOrDefault();
 
                         if (childHierarchy != null)
                         {
@@ -362,10 +363,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             //update hierarchy not be 0.466. but 0.1.455.459.
                             childNewHierarchy = HierarchyHelper.AppendHierarchy(newHierarchy, childHierarchy.Key.ToString());
                             childHierarchy.Hierarchy = childNewHierarchy;
-                            childHierarchy.ParentId = newUserId;
+                            childHierarchy.ParentId = Guid.Parse(newUserId);
                             staticHierarchyRepo.Update(childHierarchy);
                             //uppdate child record Hierarchy
-                            Child updatedChild = childRepo.GetByUserId(children.UserId);
+                            Child updatedChild = childRepo.GetByUserId(children.UserId.ToString());
                             updatedChild.Hierarchy = childNewHierarchy;
                             childRepo.Update(updatedChild);
                         }
@@ -394,10 +395,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             classroomRepo.Update(classroom);
 
-            pointsEngineService.CalculatePreSchoolFees(uId, DateTime.Now);
-            if (classroom.UserId != null)
+            pointsEngineService.CalculatePreSchoolFees(uId.ToString(), DateTime.Now);
+            //if (classroom.UserId != null)
             {
-                    notificationService.ExpireNotificationsTypesForUser(classroom.UserId, TemplateTypeConstants.UpdatePreschoolFee);
+                notificationService.ExpireNotificationsTypesForUser(classroom.UserId.ToString(), TemplateTypeConstants.UpdatePreschoolFee);
             }
 
             return true;

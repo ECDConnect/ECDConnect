@@ -242,6 +242,10 @@ export const DynamicForm = ({
         history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${mother?.user?.id}`);
       }
     }
+
+    if (name === activitiesTypes.followUp) {
+      history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${mother?.user?.id}`);
+    }
   }, [
     sectionQuestions,
     visitId,

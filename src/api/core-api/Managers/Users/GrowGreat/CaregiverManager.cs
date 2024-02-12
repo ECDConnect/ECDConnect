@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private string _applicationUserId;
+        private Guid? _applicationUserId;
         private IGenericRepository<Caregiver, Guid> _caregiverRepo;
 
         public CaregiverManager( 
@@ -22,11 +22,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
         }
 
-        public List<Caregiver> GetAllCaregiversForHCW(string userId, int recordsPerPage, int pageNumber)
+        public List<Caregiver> GetAllCaregiversForHCW(Guid userId, int recordsPerPage, int pageNumber)
         {
             return _caregiverRepo.GetAll().Where(x => x.HealthCareWorker.User.Id == userId).OrderBy(x => x.Id).ToList()
                 .Skip((pageNumber - 1) * recordsPerPage) //Skip Logic

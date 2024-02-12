@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     trainee = dbRepo.Insert(input);
                     //get practitioner details
                     var pracRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-                    Practitioner traineePrac = pracRepo.GetByUserId(input.UserId);
+                    Practitioner traineePrac = pracRepo.GetByUserId(input.UserId.ToString());
                     if (traineePrac != null)
                     {
                         //create unsure classes and N/A classroom
@@ -84,7 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         ClassroomGroup pracUnsureClass = new ClassroomGroup()
                         {
                             Id = Guid.NewGuid(),
-                            UserId = Guid.Parse(traineePrac.UserId),
+                            UserId = traineePrac.UserId,
                             IsActive = true,
                             Name = "Unsure",
                             TenantId = traineePrac.TenantId,
@@ -147,7 +147,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string userId,
             DateTime dateAwarded)
         {
-            return licenseManager.AddSmartSpaceLicense(userId, dateAwarded);
+            return licenseManager.AddSmartSpaceLicense(Guid.Parse(userId), dateAwarded);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
@@ -156,7 +156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     string userId,
     DateTime dateDeclined, string nextStepsComments)
         {
-            return licenseManager.DeclineSmartSpaceLicense(userId, dateDeclined, nextStepsComments);
+            return licenseManager.DeclineSmartSpaceLicense(Guid.Parse(userId), dateDeclined, nextStepsComments);
         }
 
     }

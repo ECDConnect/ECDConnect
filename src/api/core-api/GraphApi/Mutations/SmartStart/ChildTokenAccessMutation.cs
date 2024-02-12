@@ -15,6 +15,7 @@ using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
@@ -46,7 +47,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IDocumentManagementService documentManagementService,
             string token,
@@ -87,7 +88,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
-                appUser.UserName = appUser.Id;
+                appUser.UserName = appUser.Id.ToString();
                 appUser.GenderId = child.GenderId;
                 appUser.IsActive = true;
                 appUser.DateOfBirth = child.DateOfBirth;
@@ -110,7 +111,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
                 if (practitioner != null)
                 {
-                    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId, practitioner.IsPrincipalOrAdmin());
+                    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);
@@ -149,7 +150,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     && x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1)
                 .Single();
 
-            var pointsScoredThisYear = pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).ToList();
+            var pointsScoredThisYear = pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).ToList();
 
             // Get new totals, sum of current month or year, plus one more score
             var monthsRecord = pointsScoredThisYear.Where(x => x.Month == currentDate.Month).FirstOrDefault();
@@ -189,7 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             if (monthTotal > 0 && ytdTotal > 0)
             {
-                var record = pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == currentDate.Month && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
+                var record = pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Month == currentDate.Month && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
                 if (record == null)
                 {
                     pointsUserSummaryRepo.Insert(
@@ -201,7 +202,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             UpdatedBy = userId,
                             Month = currentDate.Month,
                             Year = currentDate.Year,
-                            UserId = userId,
+                            UserId = Guid.Parse(userId),
                             PointsLibraryId = activity.Id,
                             PointsTotal = monthTotal,
                             PointsYTD = ytdTotal,
@@ -238,8 +239,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 175,
                     ConsentType = "PhotoPermissions",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -254,8 +255,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 173,
                     ConsentType = "CommitmentAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -270,8 +271,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 172,
                     ConsentType = "ConsentAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -286,8 +287,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 174,
                     ConsentType = "IndemnityAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -302,8 +303,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 171,
                     ConsentType = "PersonalInformationAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -340,7 +341,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 ClassroomGroupId = tokenModel.ClassroomGroupId,
                 ProgrammeAttendanceReasonId = learner.attendanceReasonId,
                 OtherAttendanceReason = learner.otherAttendanceReason,
-                UserId = tokenModel.ChildUserId,
+                UserId = new Guid(tokenModel.ChildUserId),
                 StartedAttendance = DateTime.Now,
                 Hierarchy = child.Hierarchy
             });
@@ -382,7 +383,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var childEntity = new Child
             {
                 Id = tokenModel.ChildId,
-                UserId = tokenModel.ChildUserId,
+                UserId = new Guid(tokenModel.ChildUserId),
                 Allergies = child.Allergies,
                 Disabilities = child.Disabilities,
                 LanguageId = child.LanguageId,
@@ -400,7 +401,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<string> GenerateCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
             string firstname,
@@ -408,8 +409,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Guid classgroupId)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var userId = Guid.NewGuid();
             var appUser = new ApplicationUser
             {
+                Id = userId,
                 FirstName = firstname,
                 Surname = surname,
                 UserName = $"External_Edit_{Guid.NewGuid()}",
@@ -437,11 +440,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = addedByUser.Id,
+                AddedByUserId = addedByUser.Id.ToString(),
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = newChild.Id,
-                ChildUserId = appUser.Id
+                ChildUserId = appUser.Id.ToString()
             };         
 
             await userManager.AddToRoleAsync(appUser, "Child");
@@ -452,7 +455,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<string> RefreshCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
             Guid childId,
@@ -476,7 +479,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 return string.Empty;
             }
 
-            var appUser = await userManager.FindByIdAsync(child.UserId);
+            var appUser = await userManager.FindByIdAsync(child.UserId.ToString());
 
             if (appUser == default)
             {
@@ -487,11 +490,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = httpContext.HttpContext.GetUser().Id,
+                AddedByUserId = httpContext.HttpContext.GetUser().Id.ToString(),
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = child.Id,
-                ChildUserId = appUser.Id
+                ChildUserId = appUser.Id.ToString()
             };
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
@@ -505,21 +508,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (childUserId != null && grantIds != null)
             {
                 //retrieve careGiverId from child
-                var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
+                var childObj = context.Children.Where(x => x.UserId.ToString() == childUserId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
                 if (childObj != null)
                 {
-                    Guid? caregiverId = childObj.CaregiverId;
+                    Guid caregiverId = (Guid)childObj.CaregiverId;
                     if (caregiverId != null)
                     {
                         var grantsToAdd = grantIds.Select(x => new UserGrant
                         {
                             GrantId = x,
-                            UserId = caregiverId.ToString(),
+                            UserId = caregiverId,
                             TenantId = _tenantId
                         });
 
                         var existingGrants = context.UserGrants
-                          .Where(x => x.UserId == caregiverId.ToString());
+                          .Where(x => x.UserId == caregiverId);
 
                         try
                         {

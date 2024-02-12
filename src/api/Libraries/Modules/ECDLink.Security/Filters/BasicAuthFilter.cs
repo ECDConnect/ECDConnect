@@ -49,7 +49,7 @@ namespace ECDLink.Security.Filters
             var userService = context.HttpContext.RequestServices.GetService<IAdminUserService>();
             var adminUser = userService.GetValidAdminUser(username, password);
 
-            if (adminUser == default(IdentityUser))
+            if (adminUser == default(IdentityUser<Guid>))
             {
                 return false;
             }

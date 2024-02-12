@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Managers;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
@@ -16,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     {
         
         public async Task<bool> SendAnyNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService,
 string templateType, string userId = null)
         {
@@ -25,7 +26,7 @@ string templateType, string userId = null)
         }
 
         public async Task<bool> SendAnyNotificationWithReplacements(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService,
 string templateType, string userId = null, List<TagsReplacements> replacements = null)
         {
@@ -34,14 +35,14 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendPractitionerAddedToProgrammeNotification(
-  [Service] UserManager<ApplicationUser> userManager,
+  [Service] ApplicationUserManager userManager,
   [Service] INotificationService notificationService, string userId, string programmeName)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName } });
         }
         public async Task<bool> SendDemotedAsPrincipalFAAProgrammeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -61,7 +62,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendPrincipalChangedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -81,7 +82,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendPromotedToPrincipalFAAProgrammeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -103,7 +104,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
 
         public async Task<bool> SendUserAssignedToClassFromOldClassNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string className, string oldClassName, string principalName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -127,7 +128,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClassFromOld, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
         public async Task<bool> SendUserAssignedToClassNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string className, string oldClassName, string principalName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -147,7 +148,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendOverdueTraineeTasksNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, DateTime dueDate)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -162,7 +163,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendProgressreportsNotCreatedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, DateTime dueDate)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -177,7 +178,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendTraineeSetupVenueNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -188,7 +189,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
 
         public async Task<bool> SendOnly2MoreTraineeTaskLeftsNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -197,7 +198,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendRegisterThreeChildrenNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -206,7 +207,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendTraineeSignAgreementNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, DateTime dueDate)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -221,7 +222,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendTraineeSignStartupSupportAgreementNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, DateTime dueDate)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -236,7 +237,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendRemovedFromProgrammeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -256,7 +257,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendPractitionerRemovedFromProgrammeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string practitionerName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -271,7 +272,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendUpdateFeeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -286,7 +287,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendPractitionerNotAssignedToProgrammeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -296,7 +297,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendClubleaderRoleAssignedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string clubName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -310,7 +311,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
         }
         public async Task<bool> SendGainedCommunitySupportNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string supportDate)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -328,7 +329,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
         //Coaches Endpoints
         public async Task<bool> SendCoachVisitsOverdueNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -338,7 +339,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendCoachRemoveTraineeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string traineeName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -352,7 +353,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendTrainee2WeekOnboardingWarningNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string traineeFirstName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -366,7 +367,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendCoachNewTraineesNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string traineeFirstName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -376,7 +377,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendCoachAddresUpdatedScheduleVisitNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string principalOrFAAName, string programmeName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -395,7 +396,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendCoachTraineeReadySmartspaceCheckNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string traineeFirstName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -409,7 +410,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendCoachVisitRequestedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string practitionerFirstName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -428,7 +429,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendNewClubleaderNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string clubLeaderName, string clubName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -447,7 +448,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendUserAddedToClubNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string clubName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -461,7 +462,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendRecordCaregiverMeetingNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string meetingDate, string clubId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -480,7 +481,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendSetAbsenteeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string absentStartDate, string parentPrincipalFAACoachName, string parentPrincipalFAACoachUserId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -504,7 +505,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendSetLeaveNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string absentStartDate, string absentEndDate, string parentPrincipalFAACoachName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -528,7 +529,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
 //        public async Task<bool> SendStartupSupportEndingIn2MonthsNotification(
-//[Service] UserManager<ApplicationUser> userManager,
+//[Service] ApplicationUserManager userManager,
 //[Service] INotificationService notificationService, string userId, DateTime startupsupportEndDate)
 //        {
 //            List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -547,7 +548,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 //        }
 
         public async Task<bool> SendAllProgressReportsCompletedForClassNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -556,7 +557,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendTopSmartStarterPointsNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string previousMonth)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -570,7 +571,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendEndofyearPointEarnedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string pointsEarned)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -585,7 +586,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
 
         public async Task<bool> SendPrincipalReportDeadlinePassedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string practitionerFirstName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -599,7 +600,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendPrincipalAllReportsDoneNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string practitionerFirstName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -613,7 +614,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendReportDeadlinePassedNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string trackingMonth, string noOfChildren)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -632,7 +633,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendPrincipalMovedToProgrammeNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string trackingMonth, string noOfChildren)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -651,7 +652,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendFillInSelfAsessmentFormNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string dueDate)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -665,7 +666,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         }
 
         public async Task<bool> SendTraineeJourneyStartSelfNotification(
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();

@@ -1,7 +1,9 @@
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security;
 using ECDLink.Security.Managers;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -11,9 +13,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 {
     public class ClaimsManager : IClaimsManager
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
-        public ClaimsManager(UserManager<ApplicationUser> userManager)
+        public ClaimsManager(ApplicationUserManager userManager)
         {
             _userManager = userManager;
         }
@@ -36,7 +38,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
 
         public T GetClaimUser<T>(ClaimsPrincipal principal)
-            where T : IdentityUser
+            where T : IdentityUser<Guid>
         {
             if (!IsValidPrincipal(principal))
             {

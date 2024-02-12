@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
@@ -44,7 +45,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             _repoFactory = repoFactory;
         }
 
-        public UserHierarchyEntity AddHierarchyEntity<TChild>(string parentId, string childId)
+        public UserHierarchyEntity AddHierarchyEntity<TChild>(Guid parentId, Guid childId)
         {
             var childType = typeof(TChild).FullName;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -73,7 +74,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             if (hierarchyType.ParentId != default)
             {
                 parentEntity = userHierarchyRepo.GetAll()
-                                    .Where(x => string.Equals(x.UserId, parentId))
+                                    .Where(x => x.UserId == parentId)
                                     .Where(x => string.Equals(x.UserType, parentHierarchyType.Type))
                                     .OrderBy(x => x.Id)
                                     .FirstOrDefault();
@@ -100,19 +101,12 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
         // Case on type, and depending on type, iterate through different levels of collecting a list of hierarchies to use
         public List<string> GetHierarchyByParentList<T>(
-        UserManager<ApplicationUser> _userManager,
-        string userId)
+            ApplicationUserManager _userManager,
+            Guid userId)
         {
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new Exception("No user specified");
-            }
-
             var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
 
-            var userIdGuid = Guid.Parse(userId);
-
-            var user = _userManager.FindByIdAsync(userId).Result;
+            var user = _userManager.FindByIdAsync(userId.ToString()).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
 
             var isFranchisor = roles.Contains(Roles.FRANCHISOR);
@@ -121,22 +115,22 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var isPractitioner = roles.Contains(Roles.PRACTITIONER);
 
             // Add userId to list of hierarchies to fetch
-            var userIdsToFetch = new List<string>() { userId };
+            var userIdsToFetch = new List<Guid>() { userId };
 
             if (isFranchisor)
             {
                 userIdsToFetch.AddRange(
-                    GetFranchisorIds(practRepo, userIdGuid));
+                    GetFranchisorIds(practRepo, userId));
             }
             else if (isCoach)
             {
                 userIdsToFetch.AddRange(
-                    GetCoachIds(practRepo, userIdGuid));
+                    GetCoachIds(practRepo, userId));
             }
             else if (isPrincipal || isPractitioner)
             {
                 userIdsToFetch.AddRange(
-                    GetPrincipalPractitionerIds(practRepo, userIdGuid));
+                    GetPrincipalPractitionerIds(practRepo, userId));
             }
             // Fetch all user hierarchies before they are used
             var userHierarchies = GetManyUserHierarchy(userIdsToFetch);
@@ -200,19 +194,18 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return hierarchyList.Distinct().ToList();
         }
 
-        private List<string> GetFranchisorIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
+        private List<Guid> GetFranchisorIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userId)
         {
-            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userIdGuid.ToString());
+            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userId);
             List<Guid> franchisorCoachIds = coachRepo.GetAll()
-                .Where(c => c.FranchisorId == userIdGuid)
-                .Select(f => Guid.Parse(f.UserId))
+                .Where(c => c.FranchisorId == userId)
+                .Select(f => f.UserId.Value)
                 .ToList();
 
-            List<string> userIdsToFetch = new List<string>();
+            List<Guid> userIdsToFetch = new List<Guid>();
             if (franchisorCoachIds?.Count > 0)
             {
-                var coachIdsToFetch = franchisorCoachIds.Where(f => f != null).Select(f => f.ToString());
-                userIdsToFetch.AddRange(coachIdsToFetch);
+                userIdsToFetch.AddRange(franchisorCoachIds);
             }
 
             List<Practitioner> franchisorsPractitioners = practRepo.GetAll()
@@ -221,42 +214,40 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             if (franchisorsPractitioners?.Count > 0)
             {
-                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId));
+                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId.Value));
             }
 
             return userIdsToFetch;
         }
 
-        private static List<string> GetCoachIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
+        private static List<Guid> GetCoachIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
         {
             var coachPractitioners = practRepo.GetAll()
                 .Where(c => c.CoachHierarchy.HasValue == true && c.CoachHierarchy == userIdGuid)?
-                .Select(p => p.UserId)?
+                .Select(p => p.UserId.Value)
                 .ToList();
 
-            return coachPractitioners ?? new List<string>();
+            return coachPractitioners ?? new List<Guid>();
         }
 
-        private static List<string> GetPrincipalPractitionerIds(IGenericRepository<Practitioner, Guid> practitionerRepo, Guid userIdGuid)
+        private static List<Guid> GetPrincipalPractitionerIds(IGenericRepository<Practitioner, Guid> practitionerRepo, Guid userIdGuid)
         {
             // some practitioners can be principal as owner with only themselves as owner
             var principalPractitioners = practitionerRepo.GetAll()
-                .Where(c => (c.PrincipalHierarchy.HasValue && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
-                .Select(p => p.UserId.ToString())
+                .Where(c => (c.PrincipalHierarchy.HasValue && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid))
+                .Select(p => p.UserId.Value)
                 .ToList();
 
-            List<string> ids = new List<string>();
-
+            List<Guid> ids = new List<Guid>();
             if (principalPractitioners.Count > 0)
             {
-                ids = principalPractitioners.Where(u => u != null)
-                    .ToList();
+                ids = principalPractitioners;
             }
 
             return ids;
         }
 
-        public string GetHierarchy<TChild>(string parentId, string childId)
+        public string GetHierarchy<TChild>(Guid parentId, Guid childId)
             where TChild : IUserType
         {
             var childType = typeof(TChild).FullName;
@@ -274,8 +265,8 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             var entity = userHierarchyRepo.GetAll()
-                               .Where(x => string.Equals(x.UserId, childId))
-                               .Where(x => string.Equals(x.ParentId, parentId))
+                               .Where(x => x.UserId == childId)
+                               .Where(x => x.ParentId == parentId)
                                .Where(x => string.Equals(x.UserType, hierarchyType.Type))
                                .OrderBy(x => x.Id)
                                .FirstOrDefault();
@@ -283,9 +274,9 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return entity.Hierarchy;
         }
 
-        public string GetUserHierarchy(string userId)
+        public string GetUserHierarchy(Guid? userId)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (!userId.HasValue)
             {
                 throw new Exception("No user specified");
             }
@@ -293,16 +284,16 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             var entity = userHierarchyRepo.GetAll()
-                               .Where(x => string.Equals(x.UserId, userId))
+                               .Where(x => x.UserId == userId.Value)
                                .OrderBy(x => x.Id)
                                .FirstOrDefault();
 
             return entity?.Hierarchy;
         }
 
-        public string GetUserParentUserId(string userId)
+        public Guid? GetUserParentUserId(Guid? userId)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (!userId.HasValue)
             {
                 throw new Exception("No user specified");
             }
@@ -310,7 +301,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             var entity = userHierarchyRepo.GetAll()
-                               .Where(x => string.Equals(x.UserId, userId))
+                               .Where(x => x.UserId == userId.Value)
                                .OrderBy(x => x.Id)
                                .FirstOrDefault();
 
@@ -318,6 +309,10 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         }
 
         public IQueryable<string> GetManyUserHierarchy(IEnumerable<string> userIds)
+        {
+            return GetManyUserHierarchy(userIds.Select(x => Guid.Parse(x)));
+        }
+        public IQueryable<string> GetManyUserHierarchy(IEnumerable<Guid> userIds)
         {
             if (!(userIds?.Any() ?? false))
             {
@@ -327,7 +322,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             var entites = userHierarchyRepo.GetAll()
-                .Where(x => userIds.Contains(x.UserId))
+                .Where(x => userIds.Contains(x.UserId.Value))
                 .Select(e => e.Hierarchy);
 
             return entites;
@@ -354,7 +349,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         }
 
 
-        public string GetAdminUserId()
+        public Guid? GetAdminUserId()
         {
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();            
             var entity = userHierarchyRepo.GetAll()
@@ -365,7 +360,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return entity?.UserId;
         }
 
-        public string GetIntegrationUserId()
+        public Guid? GetIntegrationUserId()
         {
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
             var entity = userHierarchyRepo.GetAll()
@@ -376,7 +371,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return entity?.UserId;
         }
 
-        public string GetSuperAdminUserId()
+        public Guid? GetSuperAdminUserId()
         {
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -388,9 +383,9 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return entity?.UserId;
         }
 
-        public bool RemoveHierarchy(string userId)
+        public bool RemoveHierarchy(Guid? userId)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (!userId.HasValue)
             {
                 return false;
             }
@@ -398,7 +393,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             var entity = userHierarchyRepo.GetAll()
-                               .Where(x => string.Equals(x.UserId, userId))
+                               .Where(x => x.UserId == userId.Value)
                                .OrderBy(x => x.Id)
                                .FirstOrDefault();
             entity.IsActive = false;
@@ -409,9 +404,9 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return true;
         }
 
-        public bool DeleteHierarchy(string userId)
+        public bool DeleteHierarchy(Guid? userId)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (!userId.HasValue)
             {
                 return false;
             }
@@ -419,7 +414,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             var entity = userHierarchyRepo.GetAll()
-                               .Where(x => string.Equals(x.UserId, userId))
+                               .Where(x => x.UserId == userId.Value)
                                .OrderBy(x => x.Id)
                                .FirstOrDefault();
 

@@ -26,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Services
             }
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return _context.SystemSettings.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).ToList();
+            return _context.SystemSettings.Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();
         }
     }
 }

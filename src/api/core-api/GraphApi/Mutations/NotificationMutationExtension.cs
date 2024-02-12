@@ -10,6 +10,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -32,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<bool> SendNotificationToUser(
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] INotificationService notificationService,
           string userType,
           string templateType, string userId = null, DateTime? startDate = null, DateTime? endDate = null)
@@ -73,18 +74,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<BulkInvitationResult> SendNotificationToUser(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)
         {
             // Create result
             var result = new BulkInvitationResult() { Failed = userIds.ToList(), Success = new List<string>() };
-
             // Get current and other admins
             var currentUserId = accessor.HttpContext.GetUser().Id;
             var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
             var admins = adminUsers?.Select(u => u.Id);
-            var invitedAdmins = adminUsers.Where(a => userIds.Contains(a.Id));
+            var guidUserIds = userIds.Select(x => Guid.Parse(x)).ToList();
+            var invitedAdmins = adminUsers.Where(a => guidUserIds.Contains(a.Id));
             var currentUser = adminUsers.FirstOrDefault(u => u.Id == currentUserId);
             var currentUserIsAdmin = currentUser is not null;
 
@@ -94,7 +95,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return result;
 
             // Add reqested users that aren't admins to failedInvitations
-            result.Failed = userIds.Except(invitedAdmins.Select(a => a.Id)).ToList();
+            result.Failed = userIds.Except(invitedAdmins.Select(a => a.Id.ToString())).ToList();
 
             foreach (var invitedAdmin in invitedAdmins)
             {
@@ -104,15 +105,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     if (string.IsNullOrWhiteSpace(token))
                     {
-                        result.Failed.Add(invitedAdmin.Id);
+                        result.Failed.Add(invitedAdmin.Id.ToString());
                         continue;
                     }
                     await notificationManager.SendAdminInvitationAsync(invitedAdmin, token);
-                    result.Success.Add(invitedAdmin.Id);
+                    result.Success.Add(invitedAdmin.Id.ToString());
                 }
                 catch
                 {
-                    result.Failed.Add(invitedAdmin.Id);
+                    result.Failed.Add(invitedAdmin.Id.ToString());
                 }
             }
 
@@ -123,7 +124,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<BulkInvitationResult> SendBulkInviteToApp(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
+          [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
           [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)
         {
@@ -132,17 +134,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // Get current and other admins
             var currentUserId = accessor.HttpContext.GetUser()?.Id;
-            var currentUser = await userManager.FindByIdAsync(currentUserId);
+            var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
-            var inviteUsers = await userManager.Users.Where(u => userIds.Contains(u.Id) && u.TenantId == TenantExecutionContext.Tenant.Id).ToListAsync();
+            var guidUserIds = userIds.Select(x => Guid.Parse(x)).ToList();
+            var inviteUsers = await userManager.Users.Where(u => guidUserIds.Contains(u.Id) && u.TenantId == TenantExecutionContext.Tenant.Id).ToListAsync();
 
             // Only admins can send invitations to admins
             if (!currentUserIsAdmin)
                 return result;
 
             // Add reqested users that aren't in the list to failedInvitations
-            result.Failed = userIds.Except(inviteUsers.Select(u => u.Id)).ToList();
+            result.Failed = userIds.Except(inviteUsers.Select(u => u.Id.ToString())).ToList();
 
             foreach (var invitedUser in inviteUsers)
             {
@@ -152,15 +155,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     if (string.IsNullOrWhiteSpace(token))
                     {
-                        result.Failed.Add(invitedUser.Id);
+                        result.Failed.Add(invitedUser.Id.ToString());
                         continue;
                     }
                     await notificationManager.SendInvitationAsync(invitedUser, token);
-                    result.Success.Add(invitedUser.Id);
+                    result.Success.Add(invitedUser.Id.ToString());
                 }
                 catch
                 {
-                    result.Failed.Add(invitedUser.Id);
+                    result.Failed.Add(invitedUser.Id.ToString());
                 }
             }
 
@@ -173,7 +176,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             MessageLogModel input)
         {
@@ -191,10 +194,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            List<string> userIds = new List<string>();
+            List<Guid> userIds = new List<Guid>();
             List<Practitioner> practitioners = new List<Practitioner>();
             List<Coach> coaches = new List<Coach>();
-            List<string> messageUserIds = new List<string>();
+            List<Guid> messageUserIds = new List<Guid>();
 
             var isTrainee = input.RoleIds.FindIndex(x => x == "trainees") != -1;
             var isPrincipal = input.RoleIds.FindIndex(x => x == "practitioners_principals") != -1;
@@ -211,29 +214,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // SS roles
             if (isTrainee)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsTrainee == true).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsTrainee == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isCoach)
             {
                 coaches = coachRepo.GetAll().Where(x => x.IsActive == true).ToList();
-                userIds.AddRange(coaches.Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(coaches.Select(x => x.UserId.Value).Distinct().ToList());
             }
             // GG roles
             if (isCHW)
             {
-                userIds.AddRange(hcwRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(hcwRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isTeamLead)
             {
-                userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
 
             // Finding users for criteria
@@ -245,22 +248,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (input.ProvinceId != "" && input.WardName == "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                 }
@@ -269,22 +272,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (input.ProvinceId != "" && input.WardName == "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
-                            .Select(x => x.UserId)
+                            .Where(x => userIds.Contains(x.UserId.Value) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
+                            .Select(x => x.UserId.Value)
                             .Distinct().ToList());
                     }
                 }
@@ -314,8 +317,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 DateTime messageDate = new DateTime(input.MessageDate.Year, input.MessageDate.Month, input.MessageDate.Day).Add(timeSpan);
                 foreach (var userId in messageUserIds)
                 {
-                    var userToSend = await userManager.FindByIdAsync(userId);
-                    await notificationService.SendGenericMessage(userId, input.ToGroups, input.Message, input.Subject, messageDate, template, null);
+                    var userToSend = await userManager.FindByIdAsync(userId.ToString());
+                    await notificationService.SendGenericMessage(userId.ToString(), input.ToGroups, input.Message, input.Subject, messageDate, template, null);
                 }
             }
             return true;

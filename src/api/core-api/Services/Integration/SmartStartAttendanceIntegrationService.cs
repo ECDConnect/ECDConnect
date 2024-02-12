@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+﻿using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using System.Collections.Generic;
@@ -10,6 +10,8 @@ using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Core.Models;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
+using System.Security.Cryptography;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -41,14 +43,14 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     // Create the pdf
                     // Just pass in the default Guid, it then ends up fetching the class based on the userId or their principal. TODO: Make it a nullable parameter
-                    var document = await _attendancePdfService.GetClassroomAttendanceReportPDFFile(mappedPractitioner.UserId, new Guid(), startDate, endDate);
+                    var document = await _attendancePdfService.GetClassroomAttendanceReportPDFFile(mappedPractitioner.UserId.ToString(), new Guid(), startDate, endDate);
 
                     if (document == null) 
                     {
                         await _logManager.IntegrationLog(
                             $"Log: No attendance data/document for user",
                             null,
-                            mappedPractitioner.UserId,
+                            mappedPractitioner.UserId.ToString(),
                             LogRelatedType.Log,
                             "PushMonthlyAttendancePdf");
 
@@ -69,7 +71,7 @@ namespace EcdLink.Api.CoreApi.Services
                             foreach (var auditLog in auditLogs)
                             {
                                 auditLog.UpdatedDate = DateTime.Now;
-                                auditLog.UpdatedBy = _uId;
+                                auditLog.UpdatedBy = _uId.ToString();
                                 auditLog.Submitted = DateTime.Now;
 
                                 _auditRepo.Update(auditLog);
@@ -78,7 +80,7 @@ namespace EcdLink.Api.CoreApi.Services
                             await _logManager.IntegrationLog(
                                 $"Log: Attendance document sent for user",
                                 null,
-                                mappedPractitioner.UserId,
+                                mappedPractitioner.UserId.ToString(),
                                 LogRelatedType.Log,
                                 "PushMonthlyAttendancePdf");
                         }
@@ -89,7 +91,7 @@ namespace EcdLink.Api.CoreApi.Services
                     await _logManager.IntegrationLog(
                         $"Error: {e.Message}", 
                         e.InnerException != null ? e.InnerException.ToString() : null, 
-                        mappedPractitioner.UserId,
+                        mappedPractitioner.UserId.ToString(),
                         LogRelatedType.Error, 
                         "PushMonthlyAttendancePdf");
                 }                
@@ -106,41 +108,54 @@ namespace EcdLink.Api.CoreApi.Services
         {
             // Skip if integration is not currently enabled
             if (!this.Enabled) return;
+
             await _logManager.IntegrationLog($"IntegrationAttendanceByDueData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
             var attendancesSent = 0;
+
             // Need to fix this at some point, just fetching basically all mapped entities from the DB
             _mappedEntities = await GetMappedEntities(null, true, true);
+
             var attendanceUrl = $"{Constants.SSIntegrationSettings.SLChildAttendanceRegister}{Constants.SSIntegrationSettings.Upsert}{Constants.SSIntegrationSettings.CreateMultiple}";
+
             var trackingDays = 2;
             var trackingDate = DateTime.Now;
             var trackingWeekDate = trackingDate.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
             var followingWeekDate = trackingDate.AddDays((-trackingDays) + 7).StartOfWeek(DayOfWeek.Monday);
             var trackingWeekOfYear = trackingWeekDate.GetWeekOfYear();
+
             var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();
                        
+
             // Get holidays to determine which days are falling on holidays
             var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();
+
             foreach (var mappedPractitioner in attendancesDueList)
             {
                 var allClassDataSent = true;
+
                 // TODO - This should not be calling a query extension, logic needs to move to a service
-                var weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, mappedPractitioner.UserId, trackingWeekDate.Year, null, trackingWeekOfYear);
-                foreach (var classroomGroup in _attendanceService.GetUserClassroomGroups(mappedPractitioner.UserId))
+                var weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, mappedPractitioner.UserId.ToString(), trackingWeekDate.Year, null, trackingWeekOfYear);
+
+                foreach (var classroomGroup in _attendanceService.GetUserClassroomGroups(mappedPractitioner.UserId.ToString()))
                 {
                     var attendanceData = new List<AttendanceList>();
                     var learnersForClassroomGroup = _attendanceService.GetLearnersActiveDuringTimePeriod(classroomGroup.Id, trackingWeekDate, followingWeekDate);
                     var programmeIds = classroomGroup.ClassProgrammes.Select(x => x.Id).ToList();
+
                     // Setup default class schedule
                     var classroomGroupAttendanceData = GetClassroomGroupAttendanceData(classroomGroup, trackingWeekDate, followingWeekDate, holidays);
+
                     // Loop through unique children for this class, since they can potentially have multiple learner records for the same day/week and we don't want duplicate records
                     foreach (var childUserId in learnersForClassroomGroup.Select(x => x.UserId).Distinct())
                     {
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, childUserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault(); 
+                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId.ToString(), childUserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault(); 
                         
                         var childLearnerRecordsForClassroomGroup = learnersForClassroomGroup.Where(learner => learner.UserId == childUserId);
+
                         // If child isn't mapped just continue
                         if (mappedChild == null)
                             continue;
+
                         var attendanceDataForLearner = new AttendanceList()
                         {
                             DaysAbsent = 0,
@@ -149,13 +164,16 @@ namespace EcdLink.Api.CoreApi.Services
                             PractitionerRemoterId = mappedPractitioner.RemoteId,
                             WeeklyAttendance = new Dictionary<string, string>(),
                         };
+
                         // Update basic data with actual attendance for each day
                         var weeklyAttendanceForLearner = weeklyAttendance.Where(x => x.UserId == childUserId).ToList();
                         foreach (var day in classroomGroupAttendanceData)
                         {
                             var key = day.Key.DayOfWeek.ToString();
+
                             // Check if we have any attendance data for this day (irrelevant of class but for this practitioner)
                             var attendanceRecord = weeklyAttendanceForLearner.FirstOrDefault(x => x.AttendanceDate.Date == day.Key.Date);
+
                             if (attendanceRecord != null)
                             {
                                 // Present
@@ -176,10 +194,12 @@ namespace EcdLink.Api.CoreApi.Services
                                 // If learner wasn't in this class this day skip. i.e they must have at least one learner record that was active on this day
                                 var activeLearnerRecordsForThisDay = childLearnerRecordsForClassroomGroup
                                     .Where(learner => learner.StartedAttendance.Date <= day.Key.Date && (!learner.StoppedAttendance.HasValue || learner.StoppedAttendance.Value.Date >= day.Key.Date));
+
                                 if (!activeLearnerRecordsForThisDay.Any())
                                 {
                                     continue;
                                 }
+
                                 // Public holiday or no session
                                 if (day.Value != _unknown)
                                 {
@@ -193,18 +213,23 @@ namespace EcdLink.Api.CoreApi.Services
                                 }
                             }
                         }
+
                         attendanceData.Add(attendanceDataForLearner);
                     }
+
                     // If no attendance for the classroom group, just continue
                     if (!attendanceData.Any())
                         continue;
+
                     // Send data for classroom group, so if child is in multiple classes this week, we send in different calls                
                     var jsonAttendanceString = MapDataToJsonRequest(attendanceData, trackingWeekDate);                        
+
                     if (!SyncAttendanceData(attendanceUrl, jsonAttendanceString).Result)
                     {
                         allClassDataSent = false;
                     }
                 }
+
                 if (allClassDataSent)
                 {
                     //mark mapped parent practitioner of last date attendance was sent
@@ -212,8 +237,10 @@ namespace EcdLink.Api.CoreApi.Services
                     _mapperRepo.Update(mappedPractitioner);
                 }
             }
+
             await _logManager.IntegrationLog("IntegrationAttendanceByDueData", $"Attendance upsert calls made {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceByDueData");
         }       
+
         private Dictionary<DateTime, string> GetClassroomGroupAttendanceData(ClassroomGroup classroomGroup, DateTime startDate, DateTime endDate, List<Holiday> holidays)
         {
             // Set up defaults for class group
@@ -235,21 +262,26 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     classroomGroupAttendanceData.Add(date, _unknown);
                 }
+
                 date = date.AddDays(1);
             } while (date < endDate && date.DayOfWeek < DayOfWeek.Saturday); // Stop at end of the range or when we get to Saturday
+
             return classroomGroupAttendanceData;
         }
+
         private string MapDataToJsonRequest(List<AttendanceList> attendanceData, DateTime startOfWeekDate)
         {
             // TODO - Break the mapping to output json into a separate method
             var jsonAttendanceString = new StringBuilder();
             jsonAttendanceString.AppendLine("[");
+
             // Shift date to match SmartStart expected date
             // Smart start create default attendance records, saved with a UTC time of Sunday 22:00 (Midnight SA time), so we have to match that
             var outputDate = startOfWeekDate
                 .StartOfWeek(DayOfWeek.Monday)      // Make sure we are at the start of the week
                 .AddDays(-1)                        // Go back to Sunday
                 .ToString("yyyy-MM-ddT22:00:00Z");  // Output with 22:00 as the time
+
             foreach (var attendance in attendanceData)
             {
                 if (!string.IsNullOrWhiteSpace(attendance.LearnerRemoteId))
@@ -268,8 +300,10 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
             jsonAttendanceString.AppendLine("]");
+
             return jsonAttendanceString.ToString();
         }
+
         private async Task<bool> SyncAttendanceData(string attendanceUrl, string jsonAttendanceString)
         {
             // TODO - Add no send logic for testing ? 
@@ -291,6 +325,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
                 // TODO: if response is empty, should we log an error?
+
                 return true;
             }
             catch (Exception e)

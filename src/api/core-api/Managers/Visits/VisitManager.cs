@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private UserLicenseManager _userLicenseManager;
         private HierarchyEngine _hierarchyEngine;
 
-        private string _applicationUserId;
+        private Guid _applicationUserId;
 
         public VisitManager(
             IHttpContextAccessor contextAccessor,
@@ -41,7 +41,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
@@ -76,7 +76,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 PractitionerId = input.PractitionerId,
                 Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 LinkedVisitId = input.LinkedVisitId != null ? input.LinkedVisitId : null
             };
         }
@@ -113,7 +113,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 PractitionerId = input.PractitionerId,
                 Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 LinkedVisitId = input.LinkedVisitId,
                 ActualVisitDate = input.ActualVisitDate,
                 PlannedVisitDate = input.PlannedVisitDate,
@@ -146,7 +146,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 CoachId = input.CoachId,
                 Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 LinkedVisitId = input.LinkedVisitId,
                 ActualVisitDate = input.ActualVisitDate,
                 PlannedVisitDate = input.PlannedVisitDate,
@@ -177,7 +177,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 VisitTypeId = input.VisitType.Id,
                 TraineeId = input.TraineeId,
                 Risk = input.Risk ?? Constants.GGSettings.normal_risk,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 LinkedVisitId = input.LinkedVisitId,
                 ActualVisitDate = input.ActualVisitDate,
                 PlannedVisitDate = input.PlannedVisitDate
@@ -204,7 +204,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 PractitionerId = input.PractitionerId,
                 Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 LinkedVisitId = input.LinkedVisitId,
                 ActualVisitDate = input.ActualVisitDate,
                 PlannedVisitDate = input.PlannedVisitDate
@@ -220,15 +220,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                missedVisit = _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                missedVisit = _visitRepo.GetAll().Where(x => x.MotherId == Id && !x.Attended && x.PlannedVisitDate.Date <= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
             else if (type == Constants.GGSettings.client_child)
             {
-                missedVisit = _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                missedVisit = _visitRepo.GetAll().Where(x => x.InfantId == Id && !x.Attended && x.PlannedVisitDate.Date <= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
-                missedVisit = _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                missedVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == Id && !x.Attended && x.PlannedVisitDate.Date <= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
 
             if (missedVisit != null)
@@ -252,15 +252,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 if (type == Constants.GGSettings.client_mother)
                 {
-                    nextVisit = _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
+                    nextVisit = _visitRepo.GetAll().Where(x => x.MotherId == Id && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
                 }
                 else if (type == Constants.GGSettings.client_child)
                 {
-                    nextVisit = _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
+                    nextVisit = _visitRepo.GetAll().Where(x => x.InfantId == Id && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
                 }
                 else if (type == Constants.SSSettings.client_practitioner)
                 {
-                    nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
+                    nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == Id && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
                 }
             }
             else
@@ -269,15 +269,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 if (type == Constants.GGSettings.client_mother)
                 {
-                    nextVisit = _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date < next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
+                    nextVisit = _visitRepo.GetAll().Where(x => x.MotherId == Id && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date < next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
                 }
                 else if (type == Constants.GGSettings.client_child)
                 {
-                    nextVisit = _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date < next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
+                    nextVisit = _visitRepo.GetAll().Where(x => x.InfantId == Id && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date < next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
                 }
                 else if (type == Constants.SSSettings.client_practitioner)
                 {
-                    nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date < next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
+                    nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == Id && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date < next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).LastOrDefault();
                 }
             }
 
@@ -306,15 +306,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date >= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.MotherId == Id && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date >= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
             else if (type == Constants.GGSettings.client_child)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date >= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.InfantId == Id && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date >= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date >= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == Id && !x.Attended && x.PlannedVisitDate.Date > today && x.PlannedVisitDate.Date >= next7Days.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
 
             if (nextVisit != null)
@@ -339,11 +339,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && x.Mother.IsActive && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Mother.IsActive && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
             }
             else
             {
-                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && x.Infant.IsActive && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Infant.IsActive && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
             }
 
             return visitCount;
@@ -358,11 +358,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && x.Mother.IsActive && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date && x.VisitType.Type == type).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Mother.IsActive && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date && x.VisitType.Type == type).Count();
             }
             else
             {
-                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && x.Infant.IsActive && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date && x.VisitType.Type == type).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Infant.IsActive && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date && x.VisitType.Type == type).Count();
             }
 
             return visitCount;
@@ -375,16 +375,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.MotherId == Id && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
 
             }
             else if (type == Constants.GGSettings.client_child)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.InfantId == Id && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == Id && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
 
             if (nextVisit != null)
@@ -401,15 +401,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.MotherId == Id && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
             else if (type == Constants.GGSettings.client_child)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.InfantId == Id && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
-                nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                nextVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == Id && !x.Attended && x.PlannedVisitDate.Date >= today.Date && x.VisitType.Type == type).OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
             }
 
             if (nextVisit != null)
@@ -425,22 +425,22 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             List<Visit> allVisits = new List<Visit>();
             if (type == Constants.GGSettings.client_mother)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.VisitType.Type == Constants.GGSettings.client_mother).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id && x.VisitType.Type == Constants.GGSettings.client_mother).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.GGSettings.client_child)
             {
                 // returning visits only applicable after infant was registered
-                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                       x.VisitType.Type == Constants.GGSettings.client_child &&
                                                       x.VisitType.Name != Constants.GGSettings.additional_visits &&
                                                      (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                                                      OrderBy(y => y.PlannedVisitDate).ToList();
-                var other_visits_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                var other_visits_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                                  x.VisitType.Type == Constants.GGSettings.client_child &&
                                                                  x.VisitType.Name == Constants.GGSettings.additional_visits &&
                                                                 (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                                                                 OrderBy(y => y.PlannedVisitDate).ToList();
-                var other_visits_no_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                var other_visits_no_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                                  x.VisitType.Type == Constants.GGSettings.client_child &&
                                                                  x.VisitType.Name == Constants.GGSettings.additional_visits && x.DueDate.HasValue == false &&
                                                                 (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date)).
@@ -452,15 +452,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Practitioner.UserId == id && x.VisitType.Type == Constants.SSSettings.client_practitioner).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == id && x.VisitType.Type == Constants.SSSettings.client_practitioner).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_trainee)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId.ToString() == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_coach)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Coach.UserId == id && x.VisitType.Type == Constants.SSSettings.client_coach).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Coach.UserId.ToString() == id && x.VisitType.Type == Constants.SSSettings.client_coach).OrderBy(y => y.PlannedVisitDate).ToList();
             }
 
             foreach (var _visit in allVisits)
@@ -525,11 +525,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                totalVisits = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == id && x.Mother.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
+                totalVisits = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.ToString() == id && x.Mother.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
             }
             else
             {
-                totalVisits = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == id && x.Infant.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
+                totalVisits = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == id && x.Infant.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
             }
             return totalVisits;
         }
@@ -549,19 +549,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 totalPlannedVisits = totalPlannedVisits.Where(x => x.Mother.IsActive
                     // TODO: Performance impact of multiple joins:     
-                    && x.Mother.HealthCareWorker.UserId == heathCareWorkerId);
+                    && x.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else if (clientType == Constants.GGSettings.client_child)
             {
                 totalPlannedVisits = totalPlannedVisits.Where(i => i.Infant.IsActive
                     // TODO: Performance impact of multiple joins:
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else
             {
                 totalPlannedVisits = totalPlannedVisits.Where(i => i.IsActive
                     // TODO: Performance impact of multiple joins:
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
 
             return totalPlannedVisits.Count(); ;
@@ -588,9 +588,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             totalVisitsCompleted = totalVisitsCompleted.Where(x =>
                 (x.Mother.IsActive
-                    && x.Mother.HealthCareWorker.UserId == heathCareWorkerId)
+                    && x.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId)
                 || (x.Infant.IsActive
-                    && x.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId));
+                    && x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId));
 
             return totalVisitsCompleted.Count();
         }
@@ -616,7 +616,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && m.IsActive == true
                     && m.Mother.IsActive == true
                     // TODO: Performance impact of multiple joins:     
-                    && m.Mother.HealthCareWorker.UserId == heathCareWorkerId);
+                    && m.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else if (type == Constants.GGSettings.client_child)
             {
@@ -625,7 +625,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && i.IsActive == true
                     && i.Infant.IsActive == true
                     // TODO: Performance impact of multiple joins:     
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else
             {
@@ -633,7 +633,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     i.VisitType.Type == type
                     && i.IsActive == true
                     // TODO: Performance impact of multiple joins:     
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             return totalVisitsMissed.Count();
         }
@@ -655,7 +655,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     m.VisitType.Type == type
                     && m.IsActive == true
                     && m.Mother.IsActive == true
-                    && m.Mother.HealthCareWorker.UserId == heathCareWorkerId);
+                    && m.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else if (type == Constants.GGSettings.client_child)
             {
@@ -663,15 +663,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     i.VisitType.Type == type
                     && i.IsActive == true
                     && i.Infant.IsActive == true
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else
             {
                 totalVisitsOverdue = totalVisitsOverdue.Where(v =>
                     v.VisitType.Type == type
                     && v.IsActive == true
-                    && ((v.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId)
-                        || (v.Mother.HealthCareWorker.UserId == heathCareWorkerId))
+                    && ((v.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId)
+                        || (v.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId))
                     );
             }
 
@@ -689,7 +689,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.Color == MetricsColorEnum.Error.ToString()
                     && vsd.IsActive
@@ -720,7 +720,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.Color == MetricsColorEnum.Error.ToString()
                     && vsd.IsActive
@@ -745,7 +745,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
                     && !allUrgentMotherIds.Contains(vsd.VisitData.Visit.MotherId ?? Guid.Empty)
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.Color == MetricsColorEnum.Warning.ToString()
                     && vsd.IsActive
@@ -775,7 +775,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.IsActive
                     && vsd.VisitData.IsActive
@@ -815,7 +815,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
                     && vsd.Color == MetricsColorEnum.Error.ToString()
@@ -849,7 +849,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
                     && vsd.Color == MetricsColorEnum.Error.ToString()
@@ -872,7 +872,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && !urgentInfantIds.Contains(vsd.VisitData.Visit.InfantId)
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
@@ -904,7 +904,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
                     && vsd.InsertedDate >= startDate
@@ -975,7 +975,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public List<Visit> GetPQAVisitsForPractitioner(string userId)
         {
             return _visitRepo.GetAll().Where(x => 
-                x.Practitioner.UserId == userId 
+                x.Practitioner.UserId == Guid.Parse(userId)
                 && x.VisitType.Type == Constants.SSSettings.client_practitioner 
                 && x.Attended == true 
                 && (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
@@ -987,7 +987,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public List<Visit> GetReAccreditationVisitsForPractitioner(string userId)
         {
             return _visitRepo.GetAll().Where(x => 
-                x.Practitioner.UserId == userId 
+                x.Practitioner.UserId == Guid.Parse(userId) 
                 && x.VisitType.Type == Constants.SSSettings.client_practitioner 
                 && x.Attended == true 
                 && (x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 ||
@@ -1518,67 +1518,71 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return newVisit;
         }
 
-        public bool ValidateDefaultVisitsForPractitioner(string userId)
+        public bool ValidateDefaultVisitsForPractitioner(string userId, Guid practitionerId)
         {
-            var smartSpaceLic = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            var smartSpaceLic = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_smart_space_licence);
 
-            if (smartSpaceLic != null)
+            if (smartSpaceLic == null)
             {
-                Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
-                List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner)).OrderBy(x => x.Order).ToList();
+                return false;
+            } 
 
-                var input = new VisitModel();
-                foreach (VisitType visitType in visitTypes)
+            List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) &&
+                                                                        (x.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 ||
+                                                                        x.Name == Constants.SSSettings.visitType_pre_pqa_visit_2 ||
+                                                                        x.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                                                                        ).OrderBy(x => x.Order).ToList();
+            List<Visit> visits = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true).ToList();
+
+
+            DateTime dt = smartSpaceLic.LicenseDate.Value.Date;
+            var input = new VisitModel();
+            foreach (VisitType visitType in visitTypes)
+            {
+                input = new VisitModel
                 {
-                    input = new VisitModel
-                    {
-                        VisitType = visitType,
-                        Attended = false,
-                        MotherId = null,
-                        InfantId = null,
-                        LinkedVisitId = null,
-                        PractitionerId = practitioner.Id
-                    };
+                    VisitType = visitType,
+                    Attended = false,
+                    MotherId = null,
+                    InfantId = null,
+                    LinkedVisitId = null,
+                    PractitionerId = practitionerId
+                };
 
-                    // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
-                    if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
+                // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
+                if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
+                {
+                    DateTime newDate = dt.AddMonths(1);
+                    input.PlannedVisitDate = newDate;
+                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
+                    if (visit == null)
                     {
-                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
-                        DateTime newDate = dt.AddMonths(1);
-                        input.PlannedVisitDate = newDate;
-                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
-                        if (visit == null)
-                        {
-                            AddVisit(input);
-                        }
+                        AddVisit(input);
                     }
-                    // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
-                    if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
+                }
+                // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
+                if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
+                {
+                    DateTime newDate = dt.AddMonths(2);
+                    input.PlannedVisitDate = newDate;
+                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
+                    if (visit == null)
                     {
-                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
-                        DateTime newDate = dt.AddMonths(2);
-                        input.PlannedVisitDate = newDate;
-                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
-                        if (visit == null)
-                        {
-                            AddVisit(input);
-                        }
+                        AddVisit(input);
                     }
-                    // SmartSpace licence received date + 3 months
-                    if (visitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                }
+                // SmartSpace licence received date + 3 months
+                if (visitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                {
+                    DateTime newDate = dt.AddMonths(3);
+                    input.PlannedVisitDate = newDate;
+                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
+                    if (visit == null)
                     {
-                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
-                        DateTime newDate = dt.AddMonths(3);
-                        input.PlannedVisitDate = newDate;
-                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
-                        if (visit == null)
-                        {
-                            visit = AddVisit(input);
-
-                        }
-                        // EC-548 -- add self assessment
-                        AddSelfAssessmentVisit(visit);
+                        visit = AddVisit(input);
                     }
+                    // EC-548 -- add self assessment
+                    AddSelfAssessmentVisit(visit);
                 }
             }
             return true;

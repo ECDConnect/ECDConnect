@@ -15,6 +15,7 @@ using ECDLink.Security.Extensions;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace ECDLink.Api.CoreApi.Services
 {
@@ -23,7 +24,7 @@ namespace ECDLink.Api.CoreApi.Services
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly IReassignmentService _reassignmentService;
         private readonly INotificationService _notificationService;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
         private readonly HierarchyEngine _hierarchyEngine;
         private string _applicationUserId;
         private IGenericRepository<Absentees, Guid> _absenteeRepo;
@@ -33,7 +34,7 @@ namespace ECDLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             HierarchyEngine hierarchyEngine)
         {
             _repositoryFactory = repositoryFactory;
@@ -41,7 +42,7 @@ namespace ECDLink.Api.CoreApi.Services
             _notificationService = notificationService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
+            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id.ToString();
             _absenteeRepo = repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
         }
 
@@ -62,7 +63,7 @@ namespace ECDLink.Api.CoreApi.Services
             reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
             var absentee = new Absentees
             {
-                UserId = practitionerId,
+                UserId = Guid.Parse(practitionerId),
                 Reason = reason,
                 AbsentDate = absentDate,
                 AbsentDateEnd = absentDateEnd,
@@ -140,7 +141,7 @@ namespace ECDLink.Api.CoreApi.Services
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "PractitionerUserId",
-                    ReplacementValue = parentUser.Id
+                    ReplacementValue = parentUser.Id.ToString()
                 });
                 _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate.AddDays(1)));
             }
@@ -201,7 +202,7 @@ namespace ECDLink.Api.CoreApi.Services
                             absentee.Reason = reason;
                     }
                     _absenteeRepo.Update(absentee);
-                    _reassignmentService.EditReassignment(absentee.UserId, reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
+                    _reassignmentService.EditReassignment(absentee.UserId.ToString(), reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
                     return absentee;
                 }
             }
@@ -281,7 +282,7 @@ namespace ECDLink.Api.CoreApi.Services
             var startCount = DateTime.Now.GetStartOfPreviousMonth();
             var endCount = DateTime.Now.GetStartOfMonth();
             var absentees = _absenteeRepo.GetAll()
-                .Where(a => a.UserId.Equals(userId))
+                .Where(a => a.UserId == Guid.Parse(userId))
                 .Where(a => a.AbsentDate < endCount && a.AbsentDate >= startCount)
                 .Where(a => a.AbsentDateEnd.HasValue == false || (a.AbsentDateEnd.HasValue && (a.AbsentDate.Date == a.AbsentDateEnd.Value.Date)))
                 .ToList();

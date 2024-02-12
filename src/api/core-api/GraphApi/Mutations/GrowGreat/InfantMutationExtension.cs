@@ -7,6 +7,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -25,25 +26,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             string id,
             InfantModel input)
         {
-            return infantManager.UpdateInfant(id, input);
+            return infantManager.UpdateInfant(Guid.Parse(id), input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Infant UpdateInfantCaregiverContactDetails([Service] InfantManager infantManager, string id, InfantModel input)
         {
-            return infantManager.UpdateInfantCaregiverContactDetails(id, input);
+            return infantManager.UpdateInfantCaregiverContactDetails(Guid.Parse(id), input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Infant UpdateInfantCaregiverAddress([Service] InfantManager infantManager, string id, InfantModel input)
         {
-            return infantManager.UpdateInfantCaregiverAddress(id, input);
+            return infantManager.UpdateInfantCaregiverAddress(Guid.Parse(id), input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Infant UpdateInfantCaregiver([Service] InfantManager infantManager, string infantId, InfantModel input)
         {
-            return infantManager.UpdateInfantCaregiver(infantId, input);
+            return infantManager.UpdateInfantCaregiver(Guid.Parse(infantId), input);
         }
         
     }

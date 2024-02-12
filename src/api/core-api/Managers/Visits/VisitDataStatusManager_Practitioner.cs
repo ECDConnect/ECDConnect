@@ -17,7 +17,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
 
-        private string _applicationUserId;
+        private Guid _applicationUserId;
         private List<string> _clientVisitDataIds;
         private HierarchyEngine _hierarchyEngine;
 
@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
 
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -63,7 +63,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             Visit visitRecord = _visitRepo.GetById(new Guid(visitId));
             List<VisitData> allVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId).ToList();
 
-            Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.User.Id == id).OrderBy(x => x.Id).FirstOrDefault();
+            Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.User.Id == Guid.Parse(id)).OrderBy(x => x.Id).FirstOrDefault();
             _clientVisitDataIds = (
                 from visit in _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id)
                 join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
@@ -460,7 +460,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 VisitDataId = input.Id,
                 Comment = "",
                 Color = "",

@@ -63,14 +63,14 @@ namespace ECDLink.AutomatedJobs.Notifications
                 {
                     var classrooms = dbContext.Classrooms
                                                 .Where(x => x.IsActive)
-                                                .Where(x => string.Equals(x.UserId, practitioner.UserId))
+                                                .Where(x => x.UserId == practitioner.UserId)
                                                 .ToList();
 
                     var reports = new List<MonthlyAttendanceReportModel>();
 
                     foreach (var classroom in classrooms)
                     {
-                        var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId, classroom.Id, startOfWeek, DateTime.UtcNow).FirstOrDefault();
+                        var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), classroom.Id, startOfWeek, DateTime.UtcNow).FirstOrDefault();
 
                         if (report != default)
                         {

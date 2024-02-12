@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public Guid? GetHealthCareWorkerIdByUserId(string userId)
         {
             var healthCareWorkerRepo = _repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: userId);
-            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId == userId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
+            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.ToString() == userId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
             if (healthCareWorker != null)
             {
                 return healthCareWorker.Id;

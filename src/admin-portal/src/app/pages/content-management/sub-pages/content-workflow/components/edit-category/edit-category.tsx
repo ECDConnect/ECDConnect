@@ -356,7 +356,7 @@ export default function EditCategory({
   );
 
   const disableButtonSubCats = filteredSubcategories?.filter(
-    (item) => item?.name === ''
+    (item) => item?.name === '' || item?.description === ''
   );
 
   const disbleButtonStyles = `bg-secondary ${

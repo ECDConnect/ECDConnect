@@ -4,12 +4,15 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Users;
 using HotChocolate;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
+    [PrimaryKey(nameof(Id))]
     public class ApplicationUser : ApplicationIdentityUser, IMultiUserType, ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
     {
         [ForeignKey(nameof(RaceId))]
@@ -29,7 +32,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public virtual ICollection<Documents.Document> Documents { get; set; }
 
         [GraphIgnoreInput]
-        public override string Id { get => base.Id; set => base.Id = value; }
+        public override Guid Id { get => base.Id; set => base.Id = value; }
         public override string UserName { get => base.UserName; set => base.UserName = value; }
         public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }
         public override string Email { get => base.Email; set => base.Email = value; }
@@ -58,12 +61,17 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
 
+        [NotMapped]
         public virtual Franchisor franchisorObjectData { get; set; }
+        [NotMapped] 
         public virtual Coach coachObjectData { get; set; }
         [NotMapped]
         public virtual Practitioner principalObjectData { get; set; }
+        [NotMapped] 
         public virtual Practitioner practitionerObjectData { get; set; }
-        public virtual Child childObjectData { get; set; }
+        //[NotMapped] 
+        //public virtual Child childObjectData { get; set; }
+        [NotMapped] 
         public virtual Trainee traineeObjectData { get; set; }
 
         public override DateTimeOffset? LockoutEnd { get => base.LockoutEnd; set => base.LockoutEnd = value; }
@@ -123,6 +131,6 @@ namespace ECDLink.DataAccessLayer.Entities
     {
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
     }
 }

@@ -40,7 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
                         ParentRecordId = attendanceElement.ProgrammeOwnerId,
-                        UserId = attendanceElement.ProgrammeOwnerId,
+                        UserId = Guid.Parse(attendanceElement.ProgrammeOwnerId),
                         WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
                         MonthOfYear = attendanceElement.AttendanceDate.Month,
                         Year = attendanceElement.AttendanceDate.Year,
@@ -55,7 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         {
                             ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
                             ParentRecordId = attendanceElement.ProgrammeOwnerId,
-                            UserId = attendee.UserId,
+                            UserId = Guid.Parse(attendee.UserId),
                             WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
                             MonthOfYear = attendanceElement.AttendanceDate.Month,
                             Year = attendanceElement.AttendanceDate.Year,
@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (result == true)
                 {
                     var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-                    pointsEngineService.CalculateAttendanceSubmitted(applicationUserId, DateTime.UtcNow);
+                    pointsEngineService.CalculateAttendanceSubmitted(applicationUserId.ToString(), DateTime.UtcNow);
                 }
                 return result;
             }

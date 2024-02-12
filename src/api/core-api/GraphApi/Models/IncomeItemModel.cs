@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.Core.Extensions;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
@@ -25,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             IncomeTypeId = income.IncomeTypeId;
             Amount = income.Amount;
             DateReceived = income.DateReceived;
-            ChildUserId = income.ChildUserId;
+            ChildUserId = income.ChildUserId.ToStringOrNull();
             Notes = income.Notes;
             Description = income.Description;
             AmountExpected = income.AmountExpected;

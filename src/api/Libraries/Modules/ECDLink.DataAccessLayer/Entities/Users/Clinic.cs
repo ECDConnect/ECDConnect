@@ -4,7 +4,7 @@ using ECDLink.Security.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.Users
+namespace ECDLink.DataAccessLayer.Entities
 {
     [Table(nameof(Clinic))]
     [EntityPermission(PermissionGroups.USER)]

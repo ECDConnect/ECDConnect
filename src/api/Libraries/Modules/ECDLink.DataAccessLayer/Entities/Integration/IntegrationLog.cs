@@ -16,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
         public string LogResult { get; set; }
         public string LogNotes { get; set; }
         public LogRelatedType RelatedType { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
         public string RelatedId { get; set; }
 
     }

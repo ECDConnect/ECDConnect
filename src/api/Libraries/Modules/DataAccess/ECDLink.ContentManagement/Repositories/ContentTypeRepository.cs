@@ -25,7 +25,7 @@ namespace ECDLink.ContentManagement.Repositories
         {
             // Can probably inject Id and fields
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return _context.ContentTypes.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId))
+            return _context.ContentTypes.Where(e => e.TenantId == null || e.TenantId == tenantId)
               .Include(x => x.Content)
                 .ThenInclude(x => x.ContentValues)
                   .ThenInclude(x => x.ContentTypeField)
@@ -45,7 +45,7 @@ namespace ECDLink.ContentManagement.Repositories
             var languagesLookup = _context.ContentValues
                 .Include(x => x.Content)
                 .Where(e => contentTypes.Contains(e.Content.ContentTypeId)
-                && e.TenantId == null || e.TenantId.Equals(tenantId))
+                && e.TenantId == null || e.TenantId == tenantId)
                 .Select(x => new { x.Content.ContentTypeId, x.LocaleId })
                 .Distinct()
                 .GroupBy(x => x.ContentTypeId)

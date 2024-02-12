@@ -9,11 +9,11 @@ namespace ECDLink.DataAccessLayer.Hierarchy.Entities
     [Table("UserHierarchy")]
     public class UserHierarchyEntity : EntityBase<Guid>
     {
-        public string ParentId { get; set; }
+        public Guid ParentId { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         public string UserType { get; set; }
 
