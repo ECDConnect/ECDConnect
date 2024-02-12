@@ -10,7 +10,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { MouseEvent, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import {
   DynamicFormTemplate,
@@ -55,13 +55,16 @@ export default function EditSkills({
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [showDeleteButton, setShowDeleteButton] = useState<boolean>(true);
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
     control: control,
   };
+
+  const { type: formType } = useWatch({ control });
 
   const deleteMutationName = `delete${contentType?.name}`;
   const deleteMutation = gql` 
@@ -213,13 +216,13 @@ export default function EditSkills({
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [disableButton, setDisableButton] = useState<boolean>(false);
+  const [disableButton, setDisableButton] = useState<boolean>(true);
   const [changedCategory, setChangedCategory] = useState([]);
 
   useEffect(() => {
     if (changedCategory) {
-      setDisableButton(false);
       if (changedCategory?.length > 0) {
+        setDisableButton(false);
         for (let cat of changedCategory) {
           if (cat?.subCategories?.length > 0) {
             for (let subCat of cat?.subCategories) {
@@ -532,6 +535,7 @@ export default function EditSkills({
               setChangedCategory={setChangedCategory}
               changedCategory={changedCategory}
               setSelectedLanguageId={setSelectedLanguageId}
+              formType={formType}
               cancelEdit={cancelEdit}
             />
           </div>
