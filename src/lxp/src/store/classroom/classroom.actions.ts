@@ -391,7 +391,6 @@ export const upsertClassroomGroups = createAsyncThunk<
 
     try {
       let promises: Promise<boolean>[] = [];
-
       if (userAuth?.auth_token && classroomGroups) {
         promises = classroomGroups.map(async (x) => {
           const input: ClassroomGroupInput = {
