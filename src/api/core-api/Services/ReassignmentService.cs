@@ -1,4 +1,5 @@
 ﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -29,7 +30,7 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private readonly AttendanceTrackingRepository _attendanceRepo;
         private readonly ApplicationUserManager _userManager;
-        private readonly Guid _applicationUserId;
+        private readonly Guid? _applicationUserId;
         private readonly IGenericRepository<Absentees, Guid> _absenteeRepo;
         private readonly IGenericRepository<ClassReassignmentHistory, Guid> _reassignmentsRepo;
         private IPersonnelService __personnelService;
@@ -51,7 +52,7 @@ namespace ECDLink.Core.Services
             _attendanceRepo = attendanceRepo;
             _userManager = userManager;
             _services = services;
-            _applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
 
             _absenteeRepo = _repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
             _reassignmentsRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: _applicationUserId);
@@ -90,7 +91,7 @@ namespace ECDLink.Core.Services
 
                         item.AssignedDate = DateTime.Now; //mark that the assignment process has started and is excluded from reruns which reset the dates
                         item.UpdatedDate = DateTime.Now;
-                        item.UpdatedBy = _applicationUserId.ToString();
+                        item.UpdatedBy = _applicationUserId.ToStringOrNull();
                         _absenteeRepo.Update(item);
                     }
                 }
@@ -117,7 +118,7 @@ namespace ECDLink.Core.Services
                         
                         item.CompletedDate = DateTime.Now;
                         item.UpdatedDate = DateTime.Now;
-                        item.UpdatedBy = _applicationUserId.ToString();
+                        item.UpdatedBy = _applicationUserId.ToStringOrNull();
                         _absenteeRepo.Update(item);
                     }
                 }
@@ -145,8 +146,8 @@ namespace ECDLink.Core.Services
                             prac.UserId.ToString(), 
                             prac.PrincipalHierarchy.ToString(), 
                             "Removing link between Principal and Practitioner", 
-                            DateTime.Now, 
-                            _applicationUserId.ToString(), 
+                            DateTime.Now,
+                            _applicationUserId.ToStringOrNull(), 
                             null, 
                             true);
 
