@@ -202,6 +202,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   const handleNumberOfInputs = (sub) => {
     // eslint-disable-next-line array-callback-return
     sub?.map((item) => {
+      if (item.skills === undefined) {
+        item.skills = [];
+      }
       while (item?.skills?.length < 5) {
         item?.skills?.push({
           id: '',
