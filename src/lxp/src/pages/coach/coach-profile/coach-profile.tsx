@@ -126,7 +126,7 @@ export const CoachProfile: React.FC = () => {
                       text: 'Yes, log out',
                       colour: 'primary',
                       onClick: async () => {
-                        handleSync();
+                        await handleSync();
                         onSubmit();
                       },
                       type: 'filled',

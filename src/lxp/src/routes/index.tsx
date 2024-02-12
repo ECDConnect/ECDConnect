@@ -131,7 +131,7 @@ import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points
 import { MissingMeetingRegisters } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePrevious } from '@ecdlink/core';
-import * as H from 'history';
+import { Location } from 'history';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -172,7 +172,7 @@ const AuthRoutes: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const location = useLocation();
   const previousLocation = usePrevious(location) as
-    | H.Location<unknown>
+    | Location<unknown>
     | undefined;
 
   return (
