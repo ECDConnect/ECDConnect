@@ -162,6 +162,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     selectedLanguageFilterOptions,
     selectedThemeFilterOptions,
     selectedTypeFilterOptions,
+    selectedStory,
   ]);
 
   const applyFilters = (
