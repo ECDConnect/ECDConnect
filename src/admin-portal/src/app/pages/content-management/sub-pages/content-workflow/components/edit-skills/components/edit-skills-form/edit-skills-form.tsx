@@ -17,6 +17,7 @@ export interface EditSkillsFormProps {
   setChangedCategory?: (item: any[]) => void;
   changedCategory?: any[];
   setSelectedLanguageId?: (item: string) => void;
+  formType?: string;
   cancelEdit?: () => void;
 }
 
@@ -32,6 +33,7 @@ const EditSkillsForm: React.FC<EditSkillsFormProps> = ({
   setChangedCategory,
   changedCategory,
   setSelectedLanguageId,
+  formType,
   cancelEdit,
 }) => {
   const { register } = handleform;

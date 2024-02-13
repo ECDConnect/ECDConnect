@@ -329,6 +329,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             userId: userData?.id || '',
           })
         ).unwrap())();
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionerDisplayMetrics({
+            userType: 'practitioner',
+          })
+        ).unwrap())();
     }
     if (userData) {
       if (isPrincipal) {
@@ -423,10 +429,15 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               id: userData?.id!,
             })
           ).unwrap())();
-
         (async () =>
           await appDispatch(
             childrenThunkActions.getChildrenForCoach({})
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerDisplayMetrics({
+              userType: 'coach',
+            })
           ).unwrap())();
       }
       if (!isCoach) {

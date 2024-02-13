@@ -1195,7 +1195,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
             var licenseRepo = repoFactory.CreateRepository<License>(userContext: uId);
             //var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId); 
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             //var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
             var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
             var clubMeetingRegisterRepo = repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: uId);
@@ -1203,7 +1203,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
             var pqaRatingRepo = repoFactory.CreateGenericRepository<PQARating>(userContext: uId);
             //var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
-            var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId); 
+            var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
             var clubMemberRepo = repoFactory.CreateGenericRepository<ClubMember>(userContext: uId);
             var clubMeetingRepo = repoFactory.CreateGenericRepository<ClubMeeting>(userContext: uId);
 
@@ -1232,12 +1232,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId.ToString())).ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
             var clubMemberDictionary = clubMemberRepo.GetAll().Where(x => x.IsActive).Select(x => new { x.PractitionerId, x.ClubId }).ToList();
-                        
+
             var lastMonthClubMeetings = clubMeetingRepo.GetAll()
                 .Where(x => x.IsActive && x.MeetingDate.HasValue && x.MeetingDate.Value.Month == DateTime.Now.Month && x.MeetingDate.Value.Year == DateTime.Now.Year)
                 .Include(x => x.ClubMeetingRegister)
-                .ToList();            
-                
+                .ToList();
+
             var practitionerClubAbsenceDictionary = clubMeetingRegisterRepo.GetAll()
                 .Where(x => x.InsertedDate.Year == DateTime.Now.Year && x.IsActive && !x.Attended)
                 .GroupBy(x => x.PractitionerId)
@@ -1248,7 +1248,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
                 var practitionerClassroomGroupIds = classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == practitioner.UserId.Value).Select(x => x.Id).ToList();
                 var classroom = practitionerClassrooms.FirstOrDefault();
-                var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId).ToList(); 
+                var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId && x.AbsentDate <= DateTime.Now.Date).ToList();
 
                 var notification = new NotificationDisplay()
                 {
@@ -1383,14 +1383,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         else
                         {
                             var overdueCount = 0;
-                            if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now)
+                            var successtring = MetricsColorEnum.Success.ToString();
+                            if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now && traineeTimeline.CommunitySupportColor != successtring) overdueCount++;
+                            if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now && traineeTimeline.ConsolidationMeetingColor != successtring) overdueCount++;
+                            if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now && traineeTimeline.SignFranchiseeAgreementColor != successtring) overdueCount++;
+                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now && traineeTimeline.SignStartUpSupportAgreementColor != successtring)
                             && practitioner.IsOnStipend.HasValue && practitioner.IsOnStipend.Value) overdueCount++;
-                            if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
+                            if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now && traineeTimeline.SmartSpaceChecklistColor != successtring) overdueCount++;
+                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now && traineeTimeline.SSCoachVisitColor != successtring) overdueCount++;
+                            if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now && traineeTimeline.ThreeChildrenRegisteredColor != successtring) overdueCount++;
 
                             if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now &&
                                 traineeTimeline.SSCoachVisitDone == false)
@@ -1672,7 +1673,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region ON EXTENDED LEAVE
-                if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date >= DateTime.Now.Date || (x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date <= DateTime.Now.Date)))
+                if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date <= DateTime.Now.Date || (x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date <= DateTime.Now.Date)))
                 {
                     notification.Subject = "On leave";
                     notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1700,7 +1701,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region ABSENT 10-24% LAST MONTH
-                if (practitionerAbsenteeDays.Count() > 0 && practitionerAbsenteeDays.Count() <= 5)
+                if (practitionerAbsenteeDays.Count() > 0 && practitionerAbsenteeDays.Count() <= 5 && practitionerAbsenteeDays.Any(x => x.AbsentDate <= previousMonthEnd))
                 {
                     notification.Subject = "Practitioner absent last month";
                     notification.Icon = MetricsIconEnum.Warning.ToString();
@@ -1713,7 +1714,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
                 #endregion
 
-                if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
+                if ((practitioner.IsPrincipal.HasValue && (bool)practitioner.IsPrincipal.Value == true) || (practitioner.IsFundaAppAdmin.HasValue && (bool)practitioner.IsFundaAppAdmin.Value == true))
                 {
 
                     var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).FirstOrDefault();
@@ -1758,8 +1759,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (balance > 0)
                         {
                             notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Icon = MetricsIconEnum.Success.ToString();
+                            notification.Color = MetricsColorEnum.Success.ToString();
                             notification.Message = "";
                             notification.Notes = "";
                             notification.GroupingName = "Programme making profit";
