@@ -108,7 +108,7 @@ export const setStep = (
       subTitleColor:
         (status === licenceNotAwarded && 'errorMain') ||
         (date &&
-        new Date(date) < new Date() &&
+        new Date(date).getTime() < new Date().getTime() &&
         color?.toLowerCase() !== 'success'
           ? 'alertMain'
           : getStepType(color)?.color || ''),
