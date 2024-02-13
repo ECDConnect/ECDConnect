@@ -71,7 +71,7 @@ export const Practitioners: React.FC = () => {
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
   const location = useLocation<PractitionersRouteState>();
-  const filter = location.state?.filter;
+  const stateFilter = location.state?.filter;
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
@@ -158,8 +158,8 @@ export const Practitioners: React.FC = () => {
   }, [taskFilterOptions]);
 
   const applyFilter = () => {
-    if (filter && taskFilterOptions.length > 0) {
-      const newFilter = taskFilterOptions.filter((o) => o.id == filter);
+    if (stateFilter && taskFilterOptions.length > 0) {
+      const newFilter = taskFilterOptions.filter((o) => o.id == stateFilter);
       setFilterByTask(newFilter);
     }
   };
