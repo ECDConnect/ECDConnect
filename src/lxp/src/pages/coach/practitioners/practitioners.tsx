@@ -11,7 +11,7 @@ import {
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '../../../components/search-header/search-header';
 import { format } from 'date-fns';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import * as styles from './practitioners.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
@@ -25,6 +25,7 @@ import { useAppDispatch } from '@/store';
 import { getClubsForCoach } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
+import { PractitionersRouteState } from './practitioners-types';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
@@ -69,6 +70,8 @@ export const Practitioners: React.FC = () => {
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const location = useLocation<PractitionersRouteState>();
+  const stateFilter = location.state?.filter;
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
@@ -149,6 +152,17 @@ export const Practitioners: React.FC = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersList?.length, practitionersMessages]);
+
+  useEffect(() => {
+    applyFilter();
+  }, [taskFilterOptions]);
+
+  const applyFilter = () => {
+    if (stateFilter && taskFilterOptions.length > 0) {
+      const newFilter = taskFilterOptions.filter((o) => o.id == stateFilter);
+      setFilterByTask(newFilter);
+    }
+  };
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
