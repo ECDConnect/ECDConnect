@@ -151,7 +151,7 @@ namespace ECDLink.Core.Services
                             null, 
                             true);
 
-                        _notificationService.ExpireNotificationsTypesForUser(prac.PrincipalHierarchy.ToString(), TemplateTypeConstants.RejectedInvitation);
+                        _notificationService.ExpireNotificationsTypesForUser(prac.PrincipalHierarchy.ToString(), TemplateTypeConstants.RejectedInvitation, prac.User.FirstName + " " + prac.User.Surname );
                     }
 
                     prac.DateToBeRemoved = null;

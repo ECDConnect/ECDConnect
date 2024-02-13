@@ -6,3 +6,5 @@ update "MessageTemplate" set "Action" = '{"url":"/practitioner/profile}' where  
 
 update "MessageLog" set "Action" = '{"url":"/coach/practitioners","state":{"filter":"New trainee"}}' where  "MessageTemplateType"  in ('coach-new-trainees');
 update "MessageTemplate" set "Action" = '{"url":"/coach/practitioners","state":{"filter":"New trainee"}}' where  "TemplateType"  in ('coach-new-trainees') ;
+
+update "MessageTemplate" set "Action" = '{"url":"/principal/practitioner-profile","state":{"practitionerId":"[[PractitionerUserId]]"}}' where  "TemplateType"  in ('rejected-invitation') ;
