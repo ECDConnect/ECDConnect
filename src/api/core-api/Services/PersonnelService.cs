@@ -149,7 +149,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy == currentUser.Id).OrderBy(x => x.User.FirstName).ToList();
             }
-            else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
+            else if (currentUser.principalObjectData != null && currentUser.principalObjectData.IsPrincipal.HasValue && currentUser.principalObjectData.IsPrincipal.Value)
             {
                 practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == currentUser.Id).OrderBy(x => x.User.FirstName).ToList();
             }
