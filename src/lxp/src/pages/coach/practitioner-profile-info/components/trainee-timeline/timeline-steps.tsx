@@ -107,7 +107,9 @@ export const setStep = (
         ((color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon'),
       subTitleColor:
         (status === licenceNotAwarded && 'errorMain') ||
-        (new Date(date!) < new Date() && color?.toLowerCase() !== 'success'
+        (date &&
+        new Date(date) < new Date() &&
+        color?.toLowerCase() !== 'success'
           ? 'alertMain'
           : getStepType(color)?.color || ''),
       completedStepIcon: status === communitySupport2 && 'ThumbUpIcon',

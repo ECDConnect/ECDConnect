@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StackedList,
   BannerWrapper,
@@ -16,10 +16,7 @@ import * as styles from './practitioners.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { userSelectors } from '@store/user';
@@ -79,7 +76,7 @@ export const Practitioners: React.FC = () => {
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
-  const practitionersMetrics = useSelector(
+  const practitionersMessages = useSelector(
     practitionerSelectors.getPractitionersMetrics
   );
 
@@ -136,7 +133,7 @@ export const Practitioners: React.FC = () => {
     if (
       (isOnline &&
         !!practitionersList?.length &&
-        !!practitionersMetrics?.length) ||
+        !!practitionersMessages?.length) ||
       (!isOnline && !!practitionersList?.length)
     ) {
       const practitionerListItem: ListDataItem[] = [];
@@ -151,21 +148,7 @@ export const Practitioners: React.FC = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersList?.length, practitionersMetrics]);
-
-  const practitionersDetailsFor = useCallback(async () => {
-    if (isOnline) {
-      await appDispatch(
-        practitionerThunkActions.getPractitionerDisplayMetrics({
-          userType: isCoach ? 'coach' : 'practitioner',
-        })
-      );
-    }
-  }, [appDispatch, isCoach, isOnline]);
-
-  useEffect(() => {
-    practitionersDetailsFor();
-  }, [practitionersDetailsFor]);
+  }, [practitionersList?.length, practitionersMessages]);
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -190,7 +173,7 @@ export const Practitioners: React.FC = () => {
       (x) => x.userId === practitionerRecord.userId
     );
 
-    const currentPractitionerMessage = practitionersMetrics?.find((item) => {
+    const currentPractitionerMessage = practitionersMessages?.find((item) => {
       return item?.userId === practitionerRecord?.userId;
     });
 

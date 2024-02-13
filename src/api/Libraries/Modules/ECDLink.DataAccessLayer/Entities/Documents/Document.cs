@@ -40,7 +40,7 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         public string Hierarchy { get; set; }
 
         [ForeignKey(nameof(CreatedUserId))]
-        public Guid CreatedUserId { get; set; }
+        public Guid? CreatedUserId { get; set; }
 
         [NotMapped]
         public virtual ApplicationUser CreatedUser { get; set; }

@@ -1383,14 +1383,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         else
                         {
                             var overdueCount = 0;
-                            if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now)
+                            var successtring = MetricsColorEnum.Success.ToString();
+                            if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now && traineeTimeline.CommunitySupportColor != successtring) overdueCount++;
+                            if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now && traineeTimeline.ConsolidationMeetingColor != successtring) overdueCount++;
+                            if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now && traineeTimeline.SignFranchiseeAgreementColor != successtring) overdueCount++;
+                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now && traineeTimeline.SignStartUpSupportAgreementColor != successtring)
                             && practitioner.IsOnStipend.HasValue && practitioner.IsOnStipend.Value) overdueCount++;
-                            if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
+                            if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now && traineeTimeline.SmartSpaceChecklistColor != successtring) overdueCount++;
+                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now && traineeTimeline.SSCoachVisitColor != successtring) overdueCount++;
+                            if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now && traineeTimeline.ThreeChildrenRegisteredColor != successtring) overdueCount++;
 
                             if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now &&
                                 traineeTimeline.SSCoachVisitDone == false)
@@ -1758,8 +1759,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (balance > 0)
                         {
                             notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Icon = MetricsIconEnum.Success.ToString();
+                            notification.Color = MetricsColorEnum.Success.ToString();
                             notification.Message = "";
                             notification.Notes = "";
                             notification.GroupingName = "Programme making profit";
