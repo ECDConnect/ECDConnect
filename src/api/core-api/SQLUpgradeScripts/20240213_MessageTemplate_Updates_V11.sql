@@ -8,3 +8,6 @@ update "MessageLog" set "Action" = '{"url":"/coach/practitioners","state":{"filt
 update "MessageTemplate" set "Action" = '{"url":"/coach/practitioners","state":{"filter":"New trainee"}}' where  "TemplateType"  in ('coach-new-trainees') ;
 
 update "MessageTemplate" set "Action" = '{"url":"/principal/practitioner-profile","state":{"practitionerId":"[[PractitionerUserId]]"}}' where  "TemplateType"  in ('rejected-invitation') ;
+
+update "MessageLog" set "Action" = '{"url":"/community/points"}' where  "MessageTemplateType"  in ('monthly-points-reminder-a','monthly-points-reminder-b');
+update "MessageTemplate" set "Action" = '{"url":"/community/points"}' where  "TemplateType"  in ('monthly-points-reminder-a','monthly-points-reminder-b');
