@@ -122,7 +122,10 @@ namespace EcdLink.Api.CoreApi.Services
                     });
                     var parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
                     var userToSend = await _userManager.FindByIdAsync(parentUserId.ToString());
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true);
+                    if (userToSend != null && userToSend.coachObjectData == null) //do not send to coach parent objects
+                    {
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true);
+                    }
                 }
             }
         }
