@@ -449,7 +449,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
             {storyBookPartsValuesFormatted &&
               storyBookPartsValuesFormatted.map((item: any, idx: number) => {
                 return (
-                  <div className="mt-4">
+                  <div className="mt-4" key={'storybook_' + idx}>
                     {formType === StoryBookTypes.storyBook && (
                       <>
                         <Typography
