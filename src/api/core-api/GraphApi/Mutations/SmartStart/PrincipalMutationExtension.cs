@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HotChocolate.Execution;
+using DotLiquid;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -286,7 +287,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
 
-                        notificationService.ExpireNotificationsTypesForUser(principal.UserId.ToString(), TemplateTypeConstants.RejectedInvitation);
+                        notificationService.ExpireNotificationsTypesForUser(principal.UserId.ToString(), TemplateTypeConstants.RejectedInvitation, practitioner.User.FirstName + " " + practitioner.User.Surname);
                         //sendRejectedNotification = false;
                     }
                     else
@@ -313,7 +314,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         {
                             new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
                             new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName },
-                            new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() }
+                            new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() },
+                            new TagsReplacements() { FindValue = "PractitionerUserId", ReplacementValue = practitioner.UserId.ToString() }
                         };
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
                     }
