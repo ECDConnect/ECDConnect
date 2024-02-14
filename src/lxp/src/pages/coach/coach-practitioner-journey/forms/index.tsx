@@ -619,7 +619,7 @@ export const Form = ({
       },
     };
 
-    if (activityName === visitTypes.requestedVisit.description) {
+    if (activityName === visitTypes.requestedVisit.name) {
       return handleSubmitExtraVisit({
         payload,
         sections,
@@ -627,7 +627,7 @@ export const Form = ({
       });
     }
 
-    if (activityName === visitTypes.supportVisit.description) {
+    if (activityName === visitTypes.supportVisit.name) {
       return handleSubmitExtraVisit({
         payload,
         sections,
@@ -734,14 +734,14 @@ export const Form = ({
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
     if (
-      visitName === visitTypes.requestedVisit.description ||
-      visitName === visitTypes.supportVisit.description ||
+      visitName === visitTypes.requestedVisit.name ||
+      visitName === visitTypes.supportVisit.name ||
       visitName.includes(visitTypes.pqa.followUp.name) ||
       visitName.includes(visitTypes.reaccreditation.followUp.name)
     ) {
       if (
-        activityName === visitTypes.supportVisit.description ||
-        activityName === visitTypes.requestedVisit.description
+        activityName === visitTypes.supportVisit.name ||
+        activityName === visitTypes.requestedVisit.name
       ) {
         setTitle(visitTypes.supportVisit.description);
       } else if (activityName === visitTypes.reaccreditation.followUp.name) {

@@ -411,6 +411,11 @@ export const CoachPractitionerJourney = () => {
         eventType: visitTypes.prePqa.second.eventType,
         scheduleStartText: visitTypes.prePqa.second.scheduleStartText,
       };
+    if (visit.visitType?.name === visitTypes.supportVisit.name)
+      return {
+        eventType: visitTypes.supportVisit.eventType,
+        scheduleStartText: visitTypes.supportVisit.scheduleStartText,
+      };
   };
 
   const getScheduleOrStartProps = (
@@ -467,7 +472,7 @@ export const CoachPractitionerJourney = () => {
     if (!!visitId) {
       window.sessionStorage.setItem(
         currentActivityKey,
-        visitTypes.requestedVisit.description
+        visitTypes.supportVisit.name
       );
       window.sessionStorage.setItem(visitIdKey, visitId);
       setShowForm(true);
