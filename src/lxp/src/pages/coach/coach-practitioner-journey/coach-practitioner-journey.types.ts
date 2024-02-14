@@ -11,11 +11,13 @@ export const maxNumberOfVisits = 3;
 
 export const visitTypes = {
   supportVisit: {
+    name: 'support_visit',
     description: 'General support visit',
     eventType: 'General support visit' as 'General support visit',
     scheduleStartText: 'support visit',
   },
   requestedVisit: {
+    name: 'requested_support_visit',
     description: 'Requested visit',
     eventType: 'Requested visit' as 'Requested visit',
     scheduleStartText: 'requested visit',
