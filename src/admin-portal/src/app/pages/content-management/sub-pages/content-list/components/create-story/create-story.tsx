@@ -18,7 +18,7 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
-import { Alert, DialogPosition, Typography } from '@ecdlink/ui';
+import { Alert, DialogPosition } from '@ecdlink/ui';
 import {
   BookOpenIcon,
   SaveIcon,
@@ -27,6 +27,7 @@ import {
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateStoryForm from './components/create-story-form';
+import { LanguageId } from '../../../../../../constants/language';
 
 export interface ContentViewProps {
   content: any;
@@ -173,6 +174,14 @@ export default function CreateStory({
 
   const [storybookPartsIds, setStorybookPartsIds] = useState([]);
 
+  // Get story book default values
+  const englishDefaultValues = contentValues.filter(
+    (n) =>
+      n.contentTypeField.fieldName === 'type' ||
+      n.contentTypeField.fieldName === 'author' ||
+      n.contentTypeField.fieldName === 'illustrator'
+  );
+
   const deleteAndRefresh = async (event: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
 
@@ -278,6 +287,18 @@ export default function CreateStory({
         }
       });
 
+      // populate type from english when language is not english
+      if (selectedLanguageId !== LanguageId.enZa) {
+        const propType = t.fields.find((item) => item.propName === 'type');
+        if (propType.contentValue === undefined) {
+          const defaultType = englishDefaultValues.find(
+            (item) => item.contentTypeField.fieldName === 'type'
+          );
+          propType.contentValue = defaultType;
+          // set the answer for validation
+          setValue('type', defaultType.value);
+        }
+      }
       setTemplate(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -327,6 +348,10 @@ export default function CreateStory({
     let newStoryBook = '';
 
     const model = { ...values };
+    if (model.storyBookParts) {
+      const storyBookParts = model.storyBookParts.replace('undefined,', '');
+      model.storyBookParts = storyBookParts;
+    }
     if (!content?.id) {
       const createResponse = await crateContent({
         variables: {
@@ -595,9 +620,11 @@ export default function CreateStory({
         const newModel = {
           ...model,
           storyBookParts:
-            model?.storyBookParts +
-            ',' +
-            newCurrentStorybookPartsIds.toString(),
+            model?.storyBookParts !== undefined
+              ? model?.storyBookParts +
+                ',' +
+                newCurrentStorybookPartsIds.toString()
+              : newCurrentStorybookPartsIds.toString(),
         };
 
         await updateContent({
@@ -686,6 +713,7 @@ export default function CreateStory({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              selectedLanguageId={selectedLanguageId}
               setFilteredStoryBookParts={setFilteredStoryBookParts}
               setFilteredStoryBookPartsQuestions={
                 setFilteredStoryBookPartsQuestions
