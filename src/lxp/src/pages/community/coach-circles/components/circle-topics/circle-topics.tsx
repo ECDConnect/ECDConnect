@@ -56,12 +56,12 @@ export const CircleTopics: React.FC<CircleTopicsProps> = ({
 
   const getContent = useCallback(async () => {
     if (!isOnline) return;
-    if (circleTopics && circleTopics?.length === 0) {
+    if (!circleTopics || circleTopics?.length === 0) {
       appDispatch(
         coachThunkActions.getCoachingCircleTopics({
           locale: language.locale,
         })
-      );
+      ).unwrap();
     }
   }, [appDispatch, circleTopics, isOnline, language.locale]);
 
