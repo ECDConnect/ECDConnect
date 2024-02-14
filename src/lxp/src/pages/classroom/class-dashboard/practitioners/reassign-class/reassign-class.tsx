@@ -643,7 +643,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         </label>
         <ButtonGroup<boolean>
           options={yesNoOptions}
-          onOptionSelected={(value) => setIsOneDayLeave(value)}
+          onOptionSelected={(value) => {
+            setEndDate(undefined);
+            setIsOneDayLeave(value);
+          }}
           selectedOptions={isOneDayLeave}
           color="secondary"
           type={ButtonGroupTypes.Button}
@@ -773,7 +776,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           } for ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
-                          )}.`}
+                          )}${
+                            !!endDate
+                              ? ` to ${format(
+                                  new Date(endDate),
+                                  'EEEE, d LLLL'
+                                )}`
+                              : ''
+                          }.`}
                           type={'info'}
                         />
                       )}
@@ -823,7 +833,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           } for ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
-                          )}.`}
+                          )}${
+                            !!endDate
+                              ? ` to ${format(
+                                  new Date(endDate),
+                                  'EEEE, d LLLL'
+                                )}`
+                              : ''
+                          }.`}
                           type={'info'}
                         />
                       )}

@@ -479,7 +479,14 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                           } for ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
-                          )}.`}
+                          )}${
+                            !!endDate
+                              ? ` to ${format(
+                                  new Date(endDate),
+                                  'EEEE, d LLLL'
+                                )}`
+                              : ''
+                          }.`}
                           type={'info'}
                         />
                       )}
@@ -522,7 +529,14 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                           }'s programme and class from ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
-                          )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}.`}
+                          )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}${
+                            !!endDate
+                              ? ` to ${format(
+                                  new Date(endDate),
+                                  'EEEE, d LLLL'
+                                )}`
+                              : ''
+                          }.`}
                           list={[
                             `${principalOrFundaAppAdminPractitioner?.user?.firstName} will be the Funda App Admin for ${practitionerProgramme}`,
                             `${practitionerPresentName?.user?.firstName} will teach the ${item?.name} class`,
