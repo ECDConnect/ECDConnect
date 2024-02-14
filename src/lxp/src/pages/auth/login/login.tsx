@@ -26,6 +26,11 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
 import { StorageFull } from './storage-full/storage-full';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
+import { syncThunkActions } from '@/store/sync';
+import { useStoreSetup } from '@/hooks/useStoreSetup';
+
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
@@ -42,6 +47,10 @@ export const Login: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
+
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { resetAppStore, resetAuth } = useStoreSetup();
 
   navigator?.storage?.estimate &&
     navigator?.storage?.estimate().then((estimate) => {
@@ -73,9 +82,7 @@ export const Login: React.FC = () => {
     'user id'
   ).toString();
   const userLocalxpiration = Date.now() + 3600000000;
-  const [currentUserId, setCurrentUserId] = useState(
-    JSON.parse(localStorage?.getItem('userIdHash')!)
-  );
+  const currentUserId = JSON.parse(localStorage?.getItem('userIdHash')!);
 
   const userIdHashDecrypted = useMemo(
     () => (currentUserId ? CryptoJS.AES.decrypt(currentUserId, 'user id') : ''),
@@ -89,13 +96,31 @@ export const Login: React.FC = () => {
     [userIdHashDecrypted]
   );
 
+  const login = async () => {
+    appDispatch(settingActions.setApplicationVersion(version));
+    appDispatch(authActions.setUserExpired());
+    setIsLoading(false);
+    history.push(ROUTES.DASHBOARD);
+  };
+
+  const checkSyncData = async () => {
+    if (
+      checkIdOrPassport !== userIdHashDecryptedToString &&
+      !!practitioner &&
+      isOnline
+    ) {
+      if (practitioner?.isPrincipal === true) {
+        await appDispatch(syncThunkActions.syncOfflineData({}));
+      } else {
+        await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+      }
+
+      await resetAppStore();
+      await resetAuth();
+    }
+  };
+
   const submitForm = async () => {
-    localStorage.setItem('userHash', JSON.stringify(userHash));
-    localStorage.setItem('userIdHash', JSON.stringify(userIdHash));
-    localStorage.setItem(
-      'userLocalxpiration',
-      JSON.stringify(userLocalxpiration)
-    );
     setDisplayError(false);
     if (isValid) {
       if (freeMemory > 300 || freeMemory === 0) {
@@ -108,12 +133,26 @@ export const Login: React.FC = () => {
         };
 
         if (currentUserId && !isOnline) {
-          if (checkIdOrPassport !== userIdHashDecryptedToString) {
+          if (checkIdOrPassport === userIdHashDecryptedToString) {
+            setDisplayWrongUserError(false);
+            login();
+          } else {
             setDisplayWrongUserError(true);
             setIsLoading(false);
-            return;
           }
+
+          return;
         }
+
+        await checkSyncData();
+
+        localStorage.setItem('userHash', JSON.stringify(userHash));
+        localStorage.setItem('userIdHash', JSON.stringify(userIdHash));
+        localStorage.setItem(
+          'userLocalxpiration',
+          JSON.stringify(userLocalxpiration)
+        );
+
         setDisplayWrongUserError(false);
         appDispatch(authThunkActions.login(body))
           .then((isAuthenticated: any) => {
@@ -122,10 +161,7 @@ export const Login: React.FC = () => {
               isAuthenticated?.error === undefined &&
               isAuthenticated?.payload?.response?.status !== 401
             ) {
-              appDispatch(settingActions.setApplicationVersion(version));
-              appDispatch(authActions.setUserExpired());
-              setIsLoading(false);
-              history.push(ROUTES.DASHBOARD);
+              login();
             } else {
               setDisplayMessage(isAuthenticated?.payload!);
               setDisplayError(true);
@@ -258,9 +294,9 @@ export const Login: React.FC = () => {
             {displayWrongUserError && (
               <Alert
                 className={'mt-5 mb-3'}
-                message={
-                  'Another user is already logged in on this device. Please try again'
-                }
+                message={`Another user is already logged in on this device. Please try again ${
+                  isOnline ? '' : 'when you are online'
+                }`}
                 type={'error'}
               />
             )}
