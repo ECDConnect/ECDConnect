@@ -2,7 +2,6 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
-using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -55,8 +54,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? SmartSpaceLicenceDate { get; set; }
         public DateTime? StarterLicenceDate { get; set; }
         public string StipendType { get; set; }
-        public bool? IsOnStipend { get; set; }
-        [GraphQLIgnore]
+        public bool? IsOnStipend { get; set; }        
         public Guid PractitionerId { get; set; }
 
         public Guid? CoachHierarchy { get; set; }
