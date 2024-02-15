@@ -395,17 +395,23 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={smallGroupOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'smallGroupActivity' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'smallGroupActivity' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textLight"
                         fullWidth
-                        className="textDark h-full w-48"
+                        className={`textDark h-full w-48 px-0`}
                         selectedValue={
                           smallGroupOptions?.filter(
                             (option) =>
@@ -450,13 +456,19 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={largeGroupOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'largeGroupActivity' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'largeGroupActivity' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textDark"
                         fullWidth
@@ -505,13 +517,19 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={storyBookOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'storyBook' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'storyBook' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textDark"
                         fullWidth
@@ -558,13 +576,19 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={storyTimeOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'storyActivity' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'storyActivity' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textDark"
                         fullWidth
