@@ -93,3 +93,12 @@ export const DeleteContent = gql`
     deleteContent(id: $id)
   }
 `;
+
+export const UpdateSubCategorySkills = gql`
+  mutation UpdateSubCategorySkills(
+    $subCategories: [ProgressSubCategoryModelInput]
+    $localeId: UUID!
+  ) {
+    updateSubCategorySkills(subCategories: $subCategories, localeId: $localeId)
+  }
+`;
