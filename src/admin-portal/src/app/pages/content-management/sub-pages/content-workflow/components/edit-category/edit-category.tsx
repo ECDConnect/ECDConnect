@@ -117,12 +117,13 @@ export default function EditCategory({
 
     dialog({
       position: DialogPosition.Middle,
+      color: 'bg-white',
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Are you sure you want to delete this content?"
-          message={` You will not be able to recover this content if you delete it now.`}
+          message={`You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.`}
           onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'Keep editing']}
+          btnText={['Delete', 'Keep editing']}
           isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
@@ -135,7 +136,7 @@ export default function EditCategory({
               .then(() => {
                 cancelEdit();
                 setNotification({
-                  title: 'Successfully Deleted Content!',
+                  title: 'Content',
                   variant: NOTIFICATION.SUCCESS,
                 });
               })
@@ -276,17 +277,17 @@ export default function EditCategory({
       }
     }
 
-    setNotification({
-      title: 'Successfully Updated Content!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-
     if (filteredSubcategories?.length > 0) {
       for (let item of filteredSubcategories) {
         if (!item?.id) {
           savedContent();
 
           setLoading(false);
+
+          setNotification({
+            title: 'Changes published',
+            variant: NOTIFICATION.SUCCESS,
+          });
           return;
         }
 
@@ -299,7 +300,7 @@ export default function EditCategory({
             ?.map((skill) => skill?.id)
             ?.toString();
 
-          const updateThemeDayResponse = await updateSubcategoryContent({
+          await updateSubcategoryContent({
             variables: {
               id: item?.id.toString(),
               input: {
@@ -327,15 +328,13 @@ export default function EditCategory({
               console.log(error);
             });
           }
-
-          if (updateThemeDayResponse) {
-            setNotification({
-              title: `Changes saved!`,
-              variant: NOTIFICATION.SUCCESS,
-            });
-          }
         }
       }
+
+      setNotification({
+        title: 'Changes published',
+        variant: NOTIFICATION.SUCCESS,
+      });
 
       savedContent();
       setLoading(false);
