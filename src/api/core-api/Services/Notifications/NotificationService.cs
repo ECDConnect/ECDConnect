@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using DotLiquid;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
@@ -102,7 +103,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         //expire older messages of the same type when new ones are sent
                         if (expireOldMessagesOfType && user != null) {
-                            await this.ExpireNotificationsTypesForUser(user.Id.ToString(), item.TemplateType);
+                            await this.ExpireNotificationsTypesForUser(user.Id.ToString(), item.TemplateType, null, item.Protocol);
                         }
 
                         //remap all field
@@ -208,8 +209,8 @@ namespace EcdLink.Api.CoreApi.Services
                         MessageTemplateType = notification.MessageTemplate.TemplateType,
                         Message = notification.Message,
                         Subject = notification.Subject,
-                        MessageDate = notification.MessageDate,
-                        MessageEndDate = notification.MessageEndDate,
+                        MessageDate = notification.MessageDate.Value.Date,//midnight of date sent
+                        MessageEndDate = notification.MessageEndDate.Value.AddDays(1).Date, //midnight the next day
                         Status = notification.Status,
                         SentByUserId = notification.FromUserId,
                         CTA = notification.CTA,
@@ -269,7 +270,7 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null)
+        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null)
         {
             if (userId != null && templateType != null)
             {
@@ -278,7 +279,8 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     foreach (var notification in notifications)
                     {
-                        await DisableNotification(notification.Id.ToString());
+                        if (protocol == null || (protocol != null && notification.MessageProtocol == protocol))                        
+                            await DisableNotification(notification.Id.ToString());
                     }
                 }
             }

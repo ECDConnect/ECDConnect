@@ -107,48 +107,53 @@ namespace ECDLink.Api.CoreApi.Services
                 //Log to the history table for reassignment back to owner user after absentee end date and pass on the role selectiosn to for future use with assigned absenteeid
                 _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, absentee.Id.ToString());
 
-                //send notifications a) Absentee, b) long leave
-                var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                string parentUserId = absentee.LoggedBy;
-                if (userToSend.practitionerObjectData != null && userToSend.practitionerObjectData.PrincipalHierarchy.HasValue)
+                //send notifications a) Absentee, b) long leave // dont send if user is removed completely, the logic is shared here for complete removal and absentees
+                if (reason != "Practitioner removed from programme")
                 {
-                    parentUserId = userToSend.practitionerObjectData.PrincipalHierarchy.Value.ToString();
-                }
-                var parentUser = _userManager.FindByIdAsync(parentUserId).Result;
-                if (parentUser != null)
-                {
-                    var parentToSend = _userManager.FindByIdAsync(parentUser.Id).Result;
+                    var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
+                    List<TagsReplacements> replacements = new List<TagsReplacements>();
+                    string parentUserId = absentee.LoggedBy;
 
+                    if (userToSend.practitionerObjectData != null && userToSend.practitionerObjectData.PrincipalHierarchy.HasValue)
+                    {
+                        parentUserId = userToSend.practitionerObjectData.PrincipalHierarchy.Value.ToString();
+                    }
+                    var parentUser = _userManager.FindByIdAsync(parentUserId).Result;
+                    if (parentUser != null)
+                    {
+                        var parentToSend = _userManager.FindByIdAsync(parentUser.Id).Result;
+
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "PrincipalName",
+                            ReplacementValue = parentToSend.FirstName
+                        });
+                    }
+                    else
+                    {
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "PrincipalName",
+                            ReplacementValue = "Principal"
+                        });
+                    }
                     replacements.Add(new TagsReplacements()
                     {
-                        FindValue = "PrincipalName",
-                        ReplacementValue = parentToSend.FirstName
+                        FindValue = "AbsentStartDate",
+                        ReplacementValue = absentDate.ToLongDateString(),
                     });
-                }
-                else {
                     replacements.Add(new TagsReplacements()
                     {
-                        FindValue = "PrincipalName",
-                        ReplacementValue = "Principal"
+                        FindValue = "AbsentEndDate",
+                        ReplacementValue = (absentDateEnd.HasValue ? absentDateEnd.Value.ToLongDateString() : absentDate.AddDays(1).ToLongDateString()),
                     });
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "PractitionerUserId",
+                        ReplacementValue = parentUser.Id.ToString()
+                    });
+                    _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate.AddDays(1)), false, true);
                 }
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "AbsentStartDate",
-                    ReplacementValue = absentDate.ToLongDateString(),
-                });
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "AbsentEndDate",
-                    ReplacementValue = (absentDateEnd.HasValue ? absentDateEnd.Value.ToLongDateString() : absentDate.AddDays(1).ToLongDateString()),
-                });
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "PractitionerUserId",
-                    ReplacementValue = parentUser.Id.ToString()
-                });
-                _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate.AddDays(1)));
             }
 
             return createdAbsentee;
