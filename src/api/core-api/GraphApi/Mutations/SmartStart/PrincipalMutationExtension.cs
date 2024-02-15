@@ -288,7 +288,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         status.Leaving = true;
 
                         notificationService.ExpireNotificationsTypesForUser(principal.UserId.ToString(), TemplateTypeConstants.RejectedInvitation, practitioner.User.FirstName + " " + practitioner.User.Surname);
-                        //sendRejectedNotification = false;
+
+                        //if the practitioner is not registered and the principal rescinds the invite
+                        if (practitioner.IsRegistered == null && principal.UserId.Equals(uId))
+                        {
+                            sendRejectedNotification = false;
+                        }   
                     }
                     else
                     {
