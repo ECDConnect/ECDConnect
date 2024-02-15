@@ -12,6 +12,7 @@ export interface EditSkillsFormProps {
   handleform: any;
   setValue: any;
   defaultLanguageId: string;
+  selectedLanguageId: string;
   acceptedFileFormats?: string[];
   contentId?: number;
   setChangedCategory?: (item: any[]) => void;
@@ -28,6 +29,7 @@ const EditSkillsForm: React.FC<EditSkillsFormProps> = ({
   handleform,
   setValue,
   defaultLanguageId,
+  selectedLanguageId,
   acceptedFileFormats,
   contentId,
   setChangedCategory,
@@ -85,6 +87,7 @@ const EditSkillsForm: React.FC<EditSkillsFormProps> = ({
                   isReview={false}
                   contentValue={field.contentValue}
                   languageId={defaultLanguageId}
+                  selectedLanguageId={selectedLanguageId}
                   optionDefinition={field.optionDefinition}
                   setSelectedItems={(value) => onStateChange(propName, value)}
                   contentId={contentId}
