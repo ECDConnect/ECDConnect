@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -55,6 +56,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? StarterLicenceDate { get; set; }
         public string StipendType { get; set; }
         public bool? IsOnStipend { get; set; }
+        [GraphQLIgnore]
+        public Guid PractitionerId { get; set; }
 
         public Guid? CoachHierarchy { get; set; }
     }

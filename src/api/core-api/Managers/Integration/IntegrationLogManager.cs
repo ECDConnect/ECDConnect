@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -29,6 +30,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
+            _uId = _contextAccessor.HttpContext.GetUser()?.Id.ToString();
             _logRepo = _repositoryFactory.CreateGenericRepository<IntegrationLog>(userContext: _uId);
             _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
             _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
