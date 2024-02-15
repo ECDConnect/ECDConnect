@@ -102,7 +102,7 @@ export const RemovePractitionerFromProgramme: React.FC<
   );
 
   const removeNotifications = async () => {
-    if (removalNotifications.length > 0) {
+    if (removalNotifications && removalNotifications?.length > 0) {
       removalNotifications.map((notification) => {
         appDispatch(
           disableBackendNotification({
