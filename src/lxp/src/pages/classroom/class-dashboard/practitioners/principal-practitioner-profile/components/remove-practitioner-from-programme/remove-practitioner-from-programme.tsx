@@ -101,13 +101,8 @@ export const RemovePractitionerFromProgramme: React.FC<
       item?.message?.action?.includes(practitioner.id)
   );
 
-  // if (principalNotifications.length === 0)
-  //   console.log("None!")
-
   const removeNotifications = async () => {
-    console.log('Enter');
     if (removalNotifications.length > 0) {
-      console.log('Trigger');
       removalNotifications.map((notification) => {
         appDispatch(
           disableBackendNotification({
