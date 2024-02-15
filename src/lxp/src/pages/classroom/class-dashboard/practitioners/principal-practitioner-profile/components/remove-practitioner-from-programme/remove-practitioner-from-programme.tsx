@@ -512,7 +512,7 @@ export const RemovePractitionerFromProgramme: React.FC<
             setRemovePractionerPromptVisible(false);
             history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
             showMessage({
-              message: `${practitioner?.user?.firstName} NOT removed`,
+              message: `${practitioner?.user?.firstName} removed`,
             });
           }}
           onClose={() => setRemovePractionerPromptVisible(false)}
