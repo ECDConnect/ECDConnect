@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.ContentManagement.Repositories;
 using HotChocolate;
 using HotChocolate.Types;
@@ -37,7 +38,54 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return true;
+        }
 
+        public bool UpdateSubCategorySkills(
+            [Service] ContentManagementRepository contentRepo,
+            List<ProgressSubCategoryModel> subCategories,
+            Guid localeId
+            )
+        {
+            foreach (var subCat in subCategories)
+            {
+                var skillIds = new List<string>();
+
+                foreach (var skill in subCat.Skills)
+                {
+                    if (skill.Id == "")
+                    {
+                        Dictionary<string, object> skillDict = new Dictionary<string, object>
+                        {
+                            { "level", skill.Level.ToString() },
+                            { "name", skill.Name }
+                        };
+                        // insert skill
+                        skill.Id = contentRepo.Create(skill.ContentTypeId, localeId, skillDict).ToString();
+                    } else
+                    {
+                        Dictionary<string, object> skillDict = new Dictionary<string, object>
+                        {
+                            { "level", skill.Level.ToString() },
+                            { "name", skill.Name }
+                        };
+                        // update skill
+                        contentRepo.Update(int.Parse(skill.Id), localeId, skillDict);
+                    }
+
+                    skillIds.Add(skill.Id);
+
+                }
+                Dictionary<string, object> subCatDict = new Dictionary<string, object>
+                {
+                    { "skills", string.Join(",", skillIds) }
+                };
+
+                //update sub cat with skill ids
+                contentRepo.Update(subCat.SubCatId, localeId, subCatDict);
+            }
+            
+
+            return true;
         }
     }
 }
