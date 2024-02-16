@@ -2,6 +2,7 @@ import { createSelector } from 'reselect';
 import { RootState } from '../types';
 import { Notification } from './notifications.types';
 import { parseISO } from 'date-fns';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const getAllNotifications = createSelector(
   (state: RootState) => state.notifications.notifications,
@@ -9,14 +10,22 @@ export const getAllNotifications = createSelector(
     const currentISODate = new Date().toISOString();
     const currentDate = parseISO(currentISODate.replace('Z', ''));
 
+    const ctasMapped = Object.keys(notificationTagConfig).map(
+      (key) => notificationTagConfig[key].cta
+    );
+
     return [...notifications]?.filter((notification) => {
       const ISOdateCreated = new Date(
         notification?.message?.dateCreated
       ).toISOString();
       const dateCreated = parseISO(ISOdateCreated.replace('Z', ''));
 
+      const isCtaOk =
+        ctasMapped.includes(notification.message.cta) ||
+        !notification.message.cta;
+
       if (!notification?.message?.expiryDate) {
-        return dateCreated.getTime() <= currentDate.getTime();
+        return dateCreated.getTime() <= currentDate.getTime() && isCtaOk;
       }
 
       const expiryIsoDate = new Date(
@@ -26,7 +35,8 @@ export const getAllNotifications = createSelector(
 
       return (
         expiryDate.getTime() >= currentDate.getTime() &&
-        dateCreated.getTime() <= currentDate.getTime()
+        dateCreated.getTime() <= currentDate.getTime() &&
+        isCtaOk
       );
     });
   }
