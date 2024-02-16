@@ -43,6 +43,8 @@ import {
   initialRemovePractionerFromProgrammeValues,
   removePractitionerFromProgrammeModelSchema,
 } from '@/schemas/practitioner/remove-practioner-from-programme';
+import { notificationsSelectors } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
@@ -89,6 +91,27 @@ export const RemovePractitionerFromProgramme: React.FC<
 
   const [reasonDetailsVisible, setReasonDetailsVisible] =
     useState<boolean>(false);
+
+  const removalNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes('[[RemovePractitioner]]') &&
+      practitioner?.id &&
+      item?.message?.action?.includes(practitioner.id)
+  );
+
+  const removeNotifications = async () => {
+    if (removalNotifications && removalNotifications?.length > 0) {
+      removalNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
+  };
 
   const {
     getValues: getRemovePractionerFormValues,
@@ -479,6 +502,7 @@ export const RemovePractitionerFromProgramme: React.FC<
         <RemovePractitionerFromProgrammePrompt
           practitioner={practitioner}
           onProceed={() => {
+            removeNotifications();
             handleFormSubmit(getRemovePractionerFormValues());
             setRemovePractionerPromptVisible(false);
             history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
