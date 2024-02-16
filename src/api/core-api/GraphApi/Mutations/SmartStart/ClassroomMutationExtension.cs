@@ -140,7 +140,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             FindValue = "ClassName",
                             ReplacementValue = classRoom.Name
                         });
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, principalToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, principalToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false,true);
                     }
                 }
 

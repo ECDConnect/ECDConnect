@@ -344,7 +344,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var classRoom = classroomRepo.GetById(Guid.Parse(classroomId));
-            if (classRoom != null) {
+            if (classRoom != null)
+            {
                 var principalUser = userManager.FindByIdAsync(classRoom.UserId.ToString()).Result;
                 replacements.Add(new TagsReplacements()
                 {
@@ -359,12 +360,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 });
 
                 //principaluser to send
-                if (principalUser != null && userToSend != null )
+                if (principalUser != null && userToSend != null)
                 {
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now, principalUser, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = userToSend.FirstName } }, DateTime.Now.AddDays(7));
                 }
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval, userToSend, "", MessageStatusConstants.Red, replacements, null, false,true);
             }
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval, userToSend, "", MessageStatusConstants.Red, replacements, null,true);
 
 
 

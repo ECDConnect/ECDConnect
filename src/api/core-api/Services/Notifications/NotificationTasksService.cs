@@ -89,7 +89,7 @@ namespace EcdLink.Api.CoreApi.Services
                     FindValue = "ClassName",
                     ReplacementValue = unassignedClass.classroomData.Name
                 });
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, unassignedClass.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, unassignedClass.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
             }
         }
 
@@ -113,7 +113,7 @@ namespace EcdLink.Api.CoreApi.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "RemovalDate",
-                        ReplacementValue = DateTime.Now.AddDays(10).ToLongDateString()
+                        ReplacementValue = child.InsertedDate.AddDays(20).ToLongDateString()
                     });
                     replacements.Add(new TagsReplacements()
                     {
@@ -160,7 +160,7 @@ namespace EcdLink.Api.CoreApi.Services
                         FindValue = "ChildsName",
                         ReplacementValue = child.childData.User != null ? child.childData.User.FirstName + " " + child.childData.User.Surname : "Child"
                     });
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
                 }
             }
         }
@@ -189,7 +189,7 @@ namespace EcdLink.Api.CoreApi.Services
                     FindValue = "ClassName",
                     ReplacementValue = classroom.classroomGroupData.Name
                 });
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, classroom.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, classroom.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
             }
         }
 
@@ -356,7 +356,7 @@ namespace EcdLink.Api.CoreApi.Services
                             FindValue = "IsStipendReceiverText",
                             ReplacementValue = requiredAttendance.practitionerData.IsOnStipend.HasValue && requiredAttendance.practitionerData.IsOnStipend == true ? stipendReceiverText : ""
                         });
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitWeeksAttendance, DateTime.Now, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(2),true);
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitWeeksAttendance, DateTime.Now, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(2),false,true);
                     }
                 
             }
