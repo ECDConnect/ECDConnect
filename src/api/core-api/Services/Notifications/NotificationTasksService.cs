@@ -113,7 +113,7 @@ namespace EcdLink.Api.CoreApi.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "RemovalDate",
-                        ReplacementValue = child.InsertedDate.AddDays(-20).ToLongDateString()
+                        ReplacementValue = child.InsertedDate.AddDays(20).ToLongDateString()
                     });
                     replacements.Add(new TagsReplacements()
                     {
