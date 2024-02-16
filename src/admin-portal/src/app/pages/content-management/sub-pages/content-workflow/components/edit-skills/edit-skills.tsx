@@ -3,6 +3,7 @@ import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
+  ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
   NOTIFICATION,
@@ -309,7 +310,7 @@ export default function EditSkills({
                           skill?.level?.[0]?.id === ''
                             ? cat.level.toString()
                             : skill?.level?.[0]?.id.toString(),
-                        contentTypeId: 7,
+                        contentTypeId: ContentTypeEnum.ProgressTrackingSkill,
                       });
                     }
                   }
