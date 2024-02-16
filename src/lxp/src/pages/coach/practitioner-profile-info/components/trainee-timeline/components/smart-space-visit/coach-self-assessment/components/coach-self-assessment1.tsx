@@ -14,7 +14,6 @@ export const CoachSelfAssessment1: React.FC<CoachSelfAssessment1Props> = ({
   practitioner,
   handleNextSection,
 }) => {
-  const dispatch = useAppDispatch();
   const history = useHistory();
   return (
     <div className="p-4">
@@ -63,7 +62,6 @@ export const CoachSelfAssessment1: React.FC<CoachSelfAssessment1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
-                dispatch(traineeActions.resetCoachSmartSpaceVisitData());
                 history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
                   practitionerId: practitioner?.userId,
                 });

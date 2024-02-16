@@ -5769,7 +5769,6 @@ export type Mutation = {
   createWorkflowStatus?: Maybe<WorkflowStatus>;
   createWorkflowStatusType?: Maybe<WorkflowStatusType>;
   deActivatePractitioner: Scalars['Boolean'];
-  declineSmartSpaceLicenseForTrainee?: Maybe<License>;
   deleteAbsentees?: Maybe<Scalars['Boolean']>;
   deleteActivity?: Maybe<Scalars['Boolean']>;
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
@@ -7000,12 +6999,6 @@ export type MutationDeActivatePractitionerArgs = {
   leavingComment?: InputMaybe<Scalars['String']>;
   reasonDetails?: InputMaybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeclineSmartSpaceLicenseForTraineeArgs = {
-  dateDeclined: Scalars['DateTime'];
-  nextStepsComments?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 

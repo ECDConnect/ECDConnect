@@ -10,7 +10,7 @@ import {
 } from '../../startup-accept-agreement.types';
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
-  setSectionQuestions?: (value?: SectionQuestions[]) => void;
+  setSectionQuestions?: (value: SectionQuestions[]) => void;
   startupSupportAgreementSigned?: boolean;
 }
 

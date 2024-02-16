@@ -63,7 +63,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const [practitionerClassroomsData, setPractitionerClassroomsData] =
     useState<any[]>();
   const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
   );
   const [showRegisterChildrenInfo, setShowRegisterChildrenInfo] =
     useState(false);

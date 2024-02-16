@@ -1,6 +1,6 @@
-import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
-import { useAppDispatch } from '@/store';
+import ROUTES from '@/routes/routes';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 import { PractitionerDto } from '@ecdlink/core';
 import {
   Alert,
@@ -14,13 +14,16 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
 
 interface CoachTraineeFranchisorAgreement1Props {
+  smartSpaceVisitId: string;
   practitioner: PractitionerDto;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  saveFranchisorAgreementData: () => void;
+  saveFranchisorAgreementData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
   submitCoachFranchisorAgreement: () => void;
-  coachSmartSpaceVisit2DataNotAttendedStandards: SectionQuestions[] | undefined;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -38,105 +41,76 @@ export const getGroupColor = (count: number): Colours => {
 export const CoachTraineeFranchisorAgreement1: React.FC<
   CoachTraineeFranchisorAgreement1Props
 > = ({
+  smartSpaceVisitId,
   practitioner,
-  setSectionQuestions,
   saveFranchisorAgreementData,
   submitCoachFranchisorAgreement,
-  coachSmartSpaceVisit2DataNotAttendedStandards,
 }) => {
-  const appDispatch = useAppDispatch();
+  const visitSection = 'Franchisee agreement';
+
+  const history = useHistory();
+
   const visitData = useSelector(
-    traineeSelectors.getCoachFranchisorAgreementData
+    traineeSelectors.getCoachFranchisorAgreementSectionData(
+      smartSpaceVisitId,
+      visitSection
+    )
   );
   const coachVisitNextSteps = useSelector(
-    traineeSelectors?.getCoachFranchiseeAgreementVisitDataNextSteps
+    traineeSelectors.getCoachVisitDataNextSteps(smartSpaceVisitId)
   );
 
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
-      question: `${practitioner?.user?.firstName} agrees to take the actions described in the box above in order to meet & maintain all SmartSpace standards.`,
-      answer: false,
+      visitSection,
+      question: `${practitioner.user?.firstName} agrees to take the actions described in the box above in order to meet & maintain all SmartSpace standards.`,
+      questionAnswer: 'false',
     },
     {
-      question: `${practitioner?.user?.firstName} understands that the Club Coach will visit again within 2 weeks to make sure changes have been made and that the Practice Licence may be withdrawn if they have not.`,
-      answer: false,
+      visitSection,
+      question: `${practitioner.user?.firstName} understands that the Club Coach will visit again within 2 weeks to make sure changes have been made and that the Practice Licence may be withdrawn if they have not.`,
+      questionAnswer: 'false',
     },
     {
-      question: `${practitioner?.user?.firstName} understands that they should not have more than 20 children at their site.`,
-      answer: false,
+      visitSection,
+      question: `${practitioner.user?.firstName} understands that they should not have more than 20 children at their site.`,
+      questionAnswer: 'false',
     },
     {
-      question: `${practitioner?.user?.firstName} received the SmartStart playkit and SmartStart admin file.`,
-      answer: false,
+      visitSection,
+      question: `${practitioner.user?.firstName} received the SmartStart playkit and SmartStart admin file.`,
+      questionAnswer: 'false',
     },
   ]);
 
-  const visitSection = 'Franchisee agreement';
-
   const trueAnswers = useMemo(() => {
-    const answers = questions?.every((item) => item?.answer === true);
+    const answers = questions?.every((item) => item.questionAnswer === 'true');
     return answers;
   }, [questions]);
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   useEffect(() => {
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.some(
-        (item: any) => item?.answer === 'true' || Boolean(item?.answer) === true
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer!,
-        };
-      }
-
-      return item;
-    });
-
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
+    }
   }, []);
 
   return (
@@ -157,7 +131,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
         />
         <Typography
           type={'body'}
-          text={`• ${coachVisitNextSteps?.questions?.[0]?.answer}`}
+          text={`• ${coachVisitNextSteps?.questionAnswer}`}
           color={'textMid'}
           className={'my-3'}
         />
@@ -177,10 +151,16 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
           description={item.question}
           checked={questions?.some(
             (option) =>
-              option.question === item.question && option?.answer === true
+              option.question === item.question &&
+              option.questionAnswer === 'true'
           )}
           value={item.question}
-          onChange={() => onOptionSelected(!item.answer, index)}
+          onChange={() =>
+            onOptionSelected(
+              item.questionAnswer === 'true' ? 'false' : 'true',
+              index
+            )
+          }
           className="mb-1"
         />
       ))}
@@ -199,8 +179,11 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
-                saveFranchisorAgreementData();
+                saveFranchisorAgreementData(questions, visitSection);
                 submitCoachFranchisorAgreement();
+                history.push(ROUTES.COACH_SELF_ASSESSMENT, {
+                  practitioner: practitioner,
+                });
               }}
               disabled={!trueAnswers}
             >

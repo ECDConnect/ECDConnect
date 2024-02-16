@@ -16,13 +16,15 @@ import { traineeSelectors } from '@/store/trainee';
 import { useSelector } from 'react-redux';
 import { coachSelectors } from '@/store/coach';
 import { authSelectors } from '@/store/auth';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 interface SmartSpaceCheck1Props {
-  practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  coachSmartSpaceVisitId: string;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -43,192 +45,143 @@ const options = [
 ];
 
 export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
-  practitioner,
-  setSectionQuestions,
+  coachSmartSpaceVisitId,
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitSection = `Standards checklist`;
+
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(authSelectors.getAuthUser);
   const isCoach = coach?.user?.id === user?.id;
   const [answer, setAnswer] = useState<boolean | undefined>(undefined);
   const [enableButton, setEnableButton] = useState(false);
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection,
       question: `Is the daily routine displayed and at the right height for children to reach it? Is
         there a marker that can be moved to show where they are?`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Is the SmartStarter running the programme according to the daily Routine?',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `Did the SmartStarter use the message board to give children information
         about the day?`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `Is the playkit (or toys) unpacked in a way that children can reach and play
         with the toys and materials?`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `Are the different interest areas set up with the area labels (art, pretend,
           building, toys and games, story)?`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Does the SmartStarter participate in the child’s play and get on their level?',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Does the SmartStarter talk to the children in a warm, positive way?',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Does the SmartStarter give the children choice in what to play with, and how?',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Did the SmartStarter make sure children were supervised at all times while you were there?',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Is the learning space interesting, with child pictures and posters displayed?',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `Did the SmartStarter make children feel loved and comforted them when
         upset?`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `Did the SmartStarter chat to the children and encourage conversation
         through questions?`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'If you saw storytime, did the SmartStarter share a story (book or oral) and encourage children to participate with questions and talking?',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'If you were there at free playtime, did the SmartStarter give children at least 45 minutes to play and choose freely?',
-      answer: false,
+      questionAnswer: 'false',
     },
   ]);
 
-  const visitSection = `Standards checklist`;
-
   const trueAnswers = useMemo(() => {
-    const answers = questions?.filter((item) => item?.answer === true);
+    const answers = questions?.filter((item) => item.questionAnswer === 'true');
     return answers;
   }, [questions]);
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   useEffect(() => {
-    if (!isCoach) {
-      const previousData = questions.map((item) => {
-        const previousAnswer = visitData?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        });
-
-        const previousHasTrueAnswer =
-          Boolean(previousAnswer?.questionAnswer) === true ||
-          previousAnswer?.questionAnswer === 'true';
-
-        if (previousAnswer) {
-          return {
-            ...item,
-            answer: previousHasTrueAnswer!,
-          };
-        }
-
-        return item;
-      });
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: previousData,
-        },
-      ]);
-
-      setAnswers(previousData);
-      return;
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
     }
-
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.some(
-        (item: any) => item?.answer === 'true' || Boolean(item?.answer) === true
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer!,
-        };
-      }
-
-      return item;
-    });
-
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
   }, []);
 
   useEffect(() => {
     if (answer !== undefined) {
-      return setEnableButton?.(true);
+      return setEnableButton(true);
     }
     setEnableButton(false);
   }, [answer]);
@@ -295,10 +248,16 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
               description={item.question}
               checked={questions?.some(
                 (option) =>
-                  option.question === item.question && option?.answer === true
+                  option.question === item.question &&
+                  option.questionAnswer === 'true'
               )}
               value={item.question}
-              onChange={() => onOptionSelected(!item.answer, index)}
+              onChange={() =>
+                onOptionSelected(
+                  item.questionAnswer === 'true' ? 'false' : 'true',
+                  index
+                )
+              }
               className="mb-1"
               disabled={!isCoach}
             />
@@ -323,8 +282,8 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
+                saveSmartSpaceCheckData(questions, visitSection);
                 handleNextSection();
-                saveSmartSpaceCheckData();
               }}
               disabled={!enableButton && isCoach}
             >

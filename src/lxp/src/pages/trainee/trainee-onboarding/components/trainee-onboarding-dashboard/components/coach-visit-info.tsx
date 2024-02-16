@@ -13,6 +13,7 @@ import { PhoneIcon } from '@heroicons/react/solid';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { traineeSelectors } from '@/store/trainee';
+import { practitionerSelectors } from '@/store/practitioner';
 
 interface CoachVisitInfoProps {
   setShowCoachVisit: any;
@@ -25,7 +26,10 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const coach = useSelector(coachSelectors.getCoach);
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
 
   const call = () => {
     window.open(`tel:${coach?.user?.phoneNumber}`);

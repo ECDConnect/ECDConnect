@@ -24,7 +24,7 @@ import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from './programme-details.styles';
-import { ProgrammeDetailsProps, yesNoOptions } from './programme-details.types';
+import { yesNoOptions } from './programme-details.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import Article from '@/components/article/article';
 import {
@@ -32,7 +32,10 @@ import {
   ProgrammeDetailsSchema,
 } from '@/schemas/trainee/programme-details';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklistProps,
+  SmartSpaceChecklistStepsSteps,
+} from '../../smart-space-checklist.types';
 import { traineeSelectors } from '@/store/trainee';
 import { AddressMap } from '../map/map';
 import tool_R4c_form from '@/assets/tool_R4c_form.pdf';
@@ -47,13 +50,12 @@ import {
 } from '@/store/classroom';
 import { cloneDeep } from 'lodash';
 
-export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
+export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
   setSectionQuestions,
-  setShowProgrammeDetails,
   setVisitSection,
-  onSubmit,
   setActiveStep,
   onSubmitAndContinue,
+  checklistVisitId,
 }) => {
   const {
     getValues: getProgrammeFormValues,
@@ -86,7 +88,9 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const acceptedFormats = ['jpg, bmp'];
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(
+    traineeSelectors.getTraineeVisitData(checklistVisitId)
+  );
   const [showMap, setShowMap] = useState(false);
   const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] =
     useState<boolean>(false);
@@ -391,7 +395,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         title={'Programme details'}
         subTitle={'Step 1 of 4'}
         color={'primary'}
-        onBack={() => setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL)}
+        onBack={() => setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL)}
         displayOffline={!isOnline}
         className="pb-16"
       >

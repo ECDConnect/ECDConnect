@@ -76,13 +76,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
-    useState<any>();
+    useState<any>(); // TODO - Fix missing type
   const [isToRemoveSmartStarter, setIsToRemoveSmartStarter] =
     useState<boolean>(false);
   const [delicenseDate, setDelicenseDate] = useState<Date>();
 
   const isTrainee = practitioner?.isTrainee;
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
 
   const showBusinessItem =
     practitioner?.isFundaAppAdmin || practitioner?.isPrincipal;

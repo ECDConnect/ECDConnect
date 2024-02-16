@@ -10,9 +10,11 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as styles from './health-strutcture-area.styles';
-import { HealthSanitationSafetysProps } from './health-strutcture-area..types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklistProps,
+  SmartSpaceChecklistStepsSteps,
+} from '../../smart-space-checklist.types';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 
@@ -28,16 +30,18 @@ export const getGroupColor = (count: number): Colours => {
   return 'successMain';
 };
 
-export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
+export const HealthStructureArea: React.FC<SmartSpaceChecklistProps> = ({
   setSectionQuestions,
-  setShowProgrammeDetails,
   setVisitSection,
   onSubmit,
   setActiveStep,
   onSubmitAndContinue,
+  checklistVisitId,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(
+    traineeSelectors.getTraineeVisitData(checklistVisitId)
+  );
 
   const [questions, setAnswers] = useState([
     {
@@ -160,7 +164,7 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
         title={visitSection}
         subTitle={'Step 3 of 4'}
         color={'primary'}
-        onBack={() => setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL)}
+        onBack={() => setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL)}
         displayOffline={!isOnline}
         className="pb-16"
       >

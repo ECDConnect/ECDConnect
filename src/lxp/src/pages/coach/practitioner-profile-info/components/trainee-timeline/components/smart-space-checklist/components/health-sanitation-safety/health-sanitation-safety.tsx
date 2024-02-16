@@ -10,17 +10,20 @@ import {
   Alert,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm, useFormState } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import * as styles from './health-sanitation-safety.styles';
-import { HealthSanitationSafetysProps } from './health-sanitation-safety.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   ProgrammeDetailsModel,
   ProgrammeDetailsSchema,
 } from '@/schemas/trainee/programme-details';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklisstStepsSteps,
+  SmartSpaceChecklistProps,
+} from '../../smart-space-checklist.types';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 export const getGroupColor = (count: number): Colours => {
   if (count === 0) {
@@ -34,13 +37,13 @@ export const getGroupColor = (count: number): Colours => {
   return 'successMain';
 };
 
-export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
-  setSectionQuestions,
-  setShowProgrammeDetails,
-  setVisitSection,
+export const HealthSanitationSafety: React.FC<SmartSpaceChecklistProps> = ({
   setActiveStep,
   handleNextSection,
+  visitId,
 }) => {
+  const visitSection = 'Health, sanitation & safety';
+
   useForm<ProgrammeDetailsModel>({
     resolver: yupResolver(ProgrammeDetailsSchema),
     shouldUnregister: true,
@@ -48,7 +51,7 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
   });
 
   const { isOnline } = useOnlineStatus();
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(traineeSelectors.getTraineeVisitData(visitId));
 
   const [questions, setAnswers] = useState([
     {
@@ -56,6 +59,7 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
       answer: false,
     },
     {
+      visitSection,
       question:
         'The venue has a safe, clean and hygienic place for children to go to the toilet.',
       answer: false,
@@ -87,19 +91,9 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
   ]);
 
   const trueAnswers = useMemo(() => {
-    const answers = questions?.filter((item) => item?.answer === true);
+    const answers = questions?.filter((item) => item.answer === true);
     return answers;
   }, [questions]);
-
-  const visitSection = 'Health, sanitation & safety';
-
-  const completedItems = visitData
-    ?.filter((item) => item?.visitSection === visitSection)
-    .filter(
-      (item) =>
-        item?.questionAnswer === 'true' ||
-        (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
-    );
 
   const disableSection = true;
 
@@ -124,31 +118,6 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
 
     setAnswers(previousData);
   }, []);
-
-  const onOptionSelected = useCallback(
-    (value, index) => {
-      const currentQuestion = questions[index];
-
-      const updatedQuestions = questions.map((question) => {
-        if (question.question === currentQuestion.question) {
-          return {
-            ...question,
-            answer: value,
-          };
-        }
-        return question;
-      });
-
-      setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
-    },
-    [questions, setSectionQuestions]
-  );
 
   return (
     <>
@@ -193,11 +162,10 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
                 title={''}
                 description={item.question}
                 checked={questions?.some(
-                  (option) =>
-                    option.question === item.question && option?.answer === true
+                  (option) => option.question === item.question && option.answer
                 )}
                 value={item.question}
-                onChange={() => onOptionSelected(!item.answer, index)}
+                onChange={() => {}}
                 className="mb-1"
               />
             ))}

@@ -8,11 +8,13 @@ import {
   Alert,
   Divider,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as styles from './space-emergency-planning.styles';
-import { HealthSanitationSafetysProps } from './space-emergency-planning.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklisstStepsSteps,
+  SmartSpaceChecklistProps,
+} from '../../smart-space-checklist.types';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 
@@ -28,14 +30,15 @@ export const getGroupColor = (count: number): Colours => {
   return 'successMain';
 };
 
-export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
-  setSectionQuestions,
-  setVisitSection,
+export const SpaceEmergencyPlanning: React.FC<SmartSpaceChecklistProps> = ({
   handleNextSection,
   setActiveStep,
+  visitId,
 }) => {
+  const visitSection = 'Space & emergency planning';
+
   const { isOnline } = useOnlineStatus();
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(traineeSelectors.getTraineeVisitData(visitId));
 
   const [questions, setAnswers] = useState([
     {
@@ -60,46 +63,11 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
   ]);
 
   const trueAnswers = useMemo(() => {
-    const answers = questions?.filter((item) => item?.answer === true);
+    const answers = questions?.filter((item) => item.answer);
     return answers;
   }, [questions]);
 
-  const visitSection = 'Space & emergency planning';
-
-  const completedItems = visitData
-    ?.filter((item) => item?.visitSection === visitSection)
-    .filter(
-      (item) =>
-        item?.questionAnswer === 'true' ||
-        (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
-    );
-
   const disableSection = true;
-
-  const onOptionSelected = useCallback(
-    (value, index) => {
-      const currentQuestion = questions[index];
-
-      const updatedQuestions = questions.map((question) => {
-        if (question.question === currentQuestion.question) {
-          return {
-            ...question,
-            answer: value,
-          };
-        }
-        return question;
-      });
-
-      setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
-    },
-    [questions, setSectionQuestions]
-  );
 
   useEffect(() => {
     const previousData = questions.map((item) => {
@@ -166,11 +134,10 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
                 title={''}
                 description={item.question}
                 checked={questions?.some(
-                  (option) =>
-                    option.question === item.question && option?.answer === true
+                  (option) => option.question === item.question && option.answer
                 )}
                 value={item.question}
-                onChange={() => onOptionSelected(!item.answer, index)}
+                onChange={() => {}}
                 className="mb-1"
               />
             ))}
