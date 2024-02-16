@@ -199,6 +199,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   );
 
   const disableButton =
+    (!isOneDayLeave && !endDate) ||
     !practitioner ||
     !selectedDate ||
     !reason ||
