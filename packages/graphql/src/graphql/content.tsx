@@ -102,3 +102,19 @@ export const UpdateSubCategorySkills = gql`
     updateSubCategorySkills(subCategories: $subCategories, localeId: $localeId)
   }
 `;
+
+export const BulkUpdateConsentImages = gql`
+  mutation BulkUpdateConsentImages(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $imageUrl: String
+  ) {
+    bulkUpdateConsentImages(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      imageUrl: $imageUrl
+    )
+  }
+`;

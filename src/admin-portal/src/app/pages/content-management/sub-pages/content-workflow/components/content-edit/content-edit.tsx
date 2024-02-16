@@ -31,7 +31,10 @@ import {
   CoachingCircleText,
   ContentTypes,
 } from '../../../../../../constants/content-management';
-import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
+import {
+  BulkUpdateConsentImages,
+  bulkUpdateCoachingCircleTopicDates,
+} from '@ecdlink/graphql';
 import { format } from 'date-fns';
 
 export interface ContentViewProps {
@@ -114,6 +117,11 @@ export default function ContentEdit({
     bulkUpdateCoachingCircleTopicDates
   );
 
+  const [saveConsentImages] = useMutation(BulkUpdateConsentImages);
+
+  const [updateContent] = useMutation(updateMutation);
+  const [createContent] = useMutation(createMutation);
+
   const dialog = useDialog();
 
   const [deleteContent, { loading: isLoadingDeleteContent }] =
@@ -175,11 +183,7 @@ export default function ContentEdit({
     });
   };
 
-  const [updateContent] = useMutation(updateMutation);
-  const [createContent] = useMutation(createMutation);
-
   const [template, setTemplate] = useState<DynamicFormTemplate>();
-
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues = getValues();
   const [smallLargeGroupsSkills, setSmallLargeGroupsSkills] = useState([]);
@@ -369,6 +373,25 @@ export default function ContentEdit({
           console.log(error);
         });
       }
+
+      // if there is an image, we need to copy the image to the other languages
+      if (
+        contentType.name === ContentTypes.CONSENT ||
+        contentType?.name === ContentTypes.INFO_PAGES
+      ) {
+        if ('image' in model && model.image !== undefined) {
+          await saveConsentImages({
+            variables: {
+              contentId: +content.id,
+              contentTypeId: +contentType.id,
+              localeId: selectedLanguageId.toString(),
+              imageUrl: model.image,
+            },
+          }).catch((error) => {
+            console.log(error);
+          });
+        }
+      }
     }
 
     setNotification({
@@ -427,13 +450,13 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType?.name === 'Consent' ? (
+            {contentType?.name === ContentTypes.CONSENT ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : contentType?.name === 'Info Pages' ? (
+            ) : contentType?.name === ContentTypes.INFO_PAGES ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
