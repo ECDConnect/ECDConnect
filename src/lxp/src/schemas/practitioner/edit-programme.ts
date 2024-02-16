@@ -7,6 +7,7 @@ export interface EditProgrammeModel {
   smartStartPractitioners: number;
   nonSmartStartPractitioners: number;
   isPrincipleOrOwnerSmartStarter: boolean;
+  allowPermissions: boolean;
 }
 
 export const editProgrammeSchema = Yup.object().shape({
@@ -37,4 +38,5 @@ export const editProgrammeSchema = Yup.object().shape({
       then: Yup.number().min(0).required(),
       otherwise: Yup.number(),
     }),
+  allowPermissions: Yup.mixed().oneOf([true]).required(),
 });
