@@ -426,16 +426,12 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   };
 
   const navigateJourney = () => {
-    if (isOnline) {
-      history.push(
-        ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
-          ':practitionerId',
-          practitionerId
-        )
-      );
-    } else {
-      showOnlineOnly();
-    }
+    history.push(
+      ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+        ':practitionerId',
+        practitionerId
+      )
+    );
   };
 
   const listItems = [
