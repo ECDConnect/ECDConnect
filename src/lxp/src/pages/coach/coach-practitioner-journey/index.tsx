@@ -306,6 +306,7 @@ export const CoachPractitionerJourney = () => {
               onClick: () => {
                 onSubmit();
                 onSchedule({ visit, visitEventId, eventType, visitTypeName });
+                syncData();
               },
               leadingIcon: 'CalendarIcon',
             },
@@ -317,6 +318,7 @@ export const CoachPractitionerJourney = () => {
               onClick: () => {
                 onSubmit();
                 onStart(visitTypeName);
+                syncData();
               },
               leadingIcon: 'ArrowCircleRightIcon',
             },
