@@ -564,10 +564,22 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var numberOfChildrenNotRegistered = 0;
                 
                     var isFranchiseeHittingChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isVenueSafe = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isSmartSpaceStillFine = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault(); ;
+                    
+                    var isVenueSafeRecord = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isVenueSafe = "true";
+                    if (isVenueSafeRecord != null && isVenueSafeRecord != "")
+                    {
+                        isVenueSafe = isVenueSafeRecord == "false" ? "true" : "false";
+                    }
+                    var isSmartSpaceStillFineRecord = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isSmartSpaceStillFine = "true";
+                    if (isSmartSpaceStillFineRecord != null && isSmartSpaceStillFineRecord != "")
+                    {
+                        isSmartSpaceStillFine = isSmartSpaceStillFineRecord == "false" ? "true" : "false";
+                    }
+
                     var presentChildrenNotRegistered = "false";
 
                     jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
@@ -585,8 +597,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"Longitude\": null,");
                     jsonPutPostString.AppendLine("\"WasSuccessful\":" + wasSuccessful + ",");
                     jsonPutPostString.AppendLine("\"IsFranchiseeHittingChildren\":" + (isFranchiseeHittingChildren == null ? "false" : isFranchiseeHittingChildren) + ",");
-                    jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + (isSmartSpaceStillFine == null ? "false": isSmartSpaceStillFine) + ",");
-                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe == "false" ? "true" : "false" ) + ",");
+                    jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + isSmartSpaceStillFine + ",");
+                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + isVenueSafe + ",");
                     jsonPutPostString.AppendLine("\"IsThereTooManyChildren\":" + (isThereTooManyChildren == null ? "false" : isThereTooManyChildren) + ",");
                     jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
                     jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
@@ -933,7 +945,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var pqaAgreement = _visitDataRepo.GetAll().Where(x => x.Visit.PractitionerId == visit.PractitionerId &&
                                                                      x.Visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
                                                                      x.Question == Constants.SSSettings.franchisee_agreement).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isSmartSpaceStillFine = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault(); ;
                     var acceptedItems = 0;
                     if (pqaAgreement != null)
                     {
