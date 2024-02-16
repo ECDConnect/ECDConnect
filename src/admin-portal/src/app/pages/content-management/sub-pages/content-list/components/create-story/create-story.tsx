@@ -186,13 +186,14 @@ export default function CreateStory({
     event?.preventDefault();
 
     dialog({
+      color: 'bg-white',
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Are you sure you want to delete this content?"
-          message={` You will not be able to recover this content if you delete it now.`}
+          message={`You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.`}
           onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'Keep editing']}
+          btnText={['Delete', 'Keep editing']}
           isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
@@ -205,7 +206,7 @@ export default function CreateStory({
               .then(() => {
                 cancelEdit();
                 setNotification({
-                  title: 'Successfully Deleted Content!',
+                  title: 'Content deleted!',
                   variant: NOTIFICATION.SUCCESS,
                 });
               })
@@ -402,7 +403,7 @@ export default function CreateStory({
         });
         if (updateStoryBookPartResponse) {
           setNotification({
-            title: `Changes saved!`,
+            title: `Changes published`,
             variant: NOTIFICATION.SUCCESS,
           });
           setLoading(false);
@@ -425,7 +426,7 @@ export default function CreateStory({
 
                 if (deleteQuestionResponse) {
                   setNotification({
-                    title: 'Successfully Updated Content!',
+                    title: 'Changes published',
                     variant: NOTIFICATION.SUCCESS,
                   });
                 }
@@ -491,7 +492,7 @@ export default function CreateStory({
         });
 
         setNotification({
-          title: 'Successfully Updated Content!',
+          title: 'Changes published',
           variant: NOTIFICATION.SUCCESS,
         });
 
@@ -509,10 +510,6 @@ export default function CreateStory({
         });
 
         if (response) {
-          setNotification({
-            title: `Changes saved`,
-            variant: NOTIFICATION.SUCCESS,
-          });
           const currentStorybookParts = values?.storyBookParts || '';
           let currentStorybookPartsArray = currentStorybookParts?.split(',');
           const filteredcurrentStorybookPartsArray =
@@ -524,7 +521,7 @@ export default function CreateStory({
             ...values,
             storyBookParts: newData,
           };
-          updateContent({
+          await updateContent({
             variables: {
               id: content.id.toString(),
               input: { ...model },
@@ -533,6 +530,11 @@ export default function CreateStory({
           });
         }
         setLoading(false);
+
+        setNotification({
+          title: `Changes saved`,
+          variant: NOTIFICATION.SUCCESS,
+        });
 
         savedContent();
         cancelEdit();
@@ -552,11 +554,6 @@ export default function CreateStory({
         });
 
         if (createBookPartresponse && createBookPartresponse.data) {
-          setNotification({
-            title: `Changes saved`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-
           if (filteredStoryBookPartsQuestions?.length > 0) {
             const indexHasChanges = filteredStoryBookPartsQuestions?.find(
               (quest) => {
@@ -638,6 +635,11 @@ export default function CreateStory({
           },
         });
         setLoading(false);
+
+        setNotification({
+          title: `Changes published`,
+          variant: NOTIFICATION.SUCCESS,
+        });
 
         savedContent();
         cancelEdit();

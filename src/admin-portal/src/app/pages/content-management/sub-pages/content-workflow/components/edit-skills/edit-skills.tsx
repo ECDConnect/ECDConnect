@@ -97,12 +97,13 @@ export default function EditSkills({
 
     dialog({
       position: DialogPosition.Middle,
+      color: 'bg-white',
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Are you sure you want to delete this content?"
-          message={` You will not be able to recover this content if you delete it now.`}
+          message={`You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.`}
           onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'Keep editing']}
+          btnText={['Delete', 'Keep editing']}
           isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
@@ -115,7 +116,7 @@ export default function EditSkills({
               .then(() => {
                 cancelEdit();
                 setNotification({
-                  title: 'Successfully Deleted Content!',
+                  title: 'Content deleted',
                   variant: NOTIFICATION.SUCCESS,
                 });
               })
@@ -330,7 +331,7 @@ export default function EditSkills({
     }
 
     setNotification({
-      title: 'Successfully Updated Content!',
+      title: 'Changes published',
       variant: NOTIFICATION.SUCCESS,
     });
 
