@@ -173,9 +173,7 @@ export const PractitionersList: React.FC = () => {
               type: 'outlined',
               onClick: () => {
                 onCancel();
-                history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
-                  a: 'hello',
-                });
+                history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
               },
               leadingIcon: 'ViewGridAddIcon',
             },
