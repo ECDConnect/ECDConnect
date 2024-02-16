@@ -349,7 +349,8 @@ export default function CreateStory({
 
     const model = { ...values };
     if (model.storyBookParts) {
-      const storyBookParts = model.storyBookParts.replace('undefined,', '');
+      let storyBookParts = model.storyBookParts.replace('undefined,', '');
+      storyBookParts = model.storyBookParts.replace('null,', '');
       model.storyBookParts = storyBookParts;
     }
     if (!content?.id) {
