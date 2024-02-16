@@ -1909,7 +1909,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 }
                 else
                 {
-                    entities = _mapperRepo.GetAll().ToList();
+                    entities = _mapperRepo.GetAll().Where(x => x.UserId.ToString() != "").ToList();
                 }
             }
 
@@ -1925,7 +1925,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 if (_mappedEntities != null)
                     entities = _mappedEntities;
                 else
-                    entities = _mapperRepo.GetAll().ToList();
+                    entities = _mapperRepo.GetAll().Where(x => x.UserId.ToString() != "").ToList();
             }
 
             if (excludeDocs) //return everything except documents
@@ -2978,7 +2978,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             SmartSpaceLicenceDate = entity.SmartSpaceLicenceDate,
                             StipendType = entity.StipendType,
                             IsOnStipend = entity.StipendType != null ? true : false,
-                            CoachHierarchy = Guid.Parse(entity.localParentEntityUserId),
+                            CoachHierarchy = Guid.Parse(entity.localParentEntityUserId),                  
+                           
                             //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage
                             //HighestEducationLevel = entity.HighestEducationLevel,
                             //StartDate
@@ -2990,7 +2991,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             //HaveCommunitySupport
                             //CommunitySupportGained
                         };
-
+      
                         //    //check phone number is valid
                         //string numberToImport = null;
                         //try
@@ -3100,6 +3101,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 {
                                     _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapTrainee(1)]", Roles.PRACTITIONER, newUser.Id);
                                     await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                                    _practitionerRepo.Insert(newPractitioner);
+                                    if (newPractitioner != null)
+                                    {
+                                        newTrainee.Practitioner = newPractitioner;
+                                        newTrainee.PractitionerId = newPractitioner.Id;
+                                        existingPractitioner = newPractitioner;
+                                    }
                                     pracCreated = true;
                                 }
                                 else
