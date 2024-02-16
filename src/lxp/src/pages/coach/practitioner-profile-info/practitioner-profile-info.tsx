@@ -886,7 +886,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                     );
                   }
 
-                  if (absenceIsToday) {
+                  if (absenceIsToday && !isOnLeave) {
                     return (
                       <>
                         <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
@@ -970,15 +970,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                               type={'h1'}
                               color="textDark"
                               text={`${practitioner?.user?.firstName} is on leave`}
-                              className={'mt-6 ml-4'}
                             />
                             <div className="flex items-center gap-2">
                               <Typography
-                                type={'body'}
+                                type="h4"
                                 color="textMid"
                                 weight="bold"
                                 text={`Start date:`}
-                                className={'mt-4 ml-4'}
+                                className={'mt-4'}
                               />
                               <Typography
                                 type={'body'}
@@ -992,11 +991,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <Typography
-                                type={'body'}
+                                type="h4"
                                 color="textMid"
                                 weight="bold"
                                 text={`End date:`}
-                                className={'mt-4 ml-4'}
+                                className={'mt-4'}
                               />
                               <Typography
                                 type={'body'}
@@ -1014,17 +1013,32 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <Typography
-                                type={'body'}
+                                type="h4"
                                 color="textMid"
                                 weight="bold"
                                 text={`Reason:`}
-                                className={'mt-4 ml-4'}
+                                className={'mt-4'}
                               />
                               <Typography
                                 type={'body'}
                                 color="textMid"
                                 text={`${item?.reason}`}
                                 className={'mt-4'}
+                              />
+                            </div>
+                            <div className="mt-4 flex flex-wrap">
+                              <Typography
+                                type="h4"
+                                color="textMid"
+                                weight="bold"
+                                text={`${item?.className} class reassigned to:`}
+                                className="flex-grow"
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={item?.reassignedToPerson}
+                                className="flex-glow"
                               />
                             </div>
                             {isPrincipal && (
