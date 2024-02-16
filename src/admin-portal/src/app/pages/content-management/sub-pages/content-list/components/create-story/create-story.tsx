@@ -375,7 +375,9 @@ export default function CreateStory({
       });
       setLoading(false);
       savedContent();
-      cancelEdit();
+      if (cancelEdit) {
+        cancelEdit();
+      }
     }
 
     for (let item of filteredStoryBookParts) {
