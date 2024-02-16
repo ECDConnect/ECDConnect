@@ -1,13 +1,24 @@
-import { ClassroomDto, ProgrammeTypeDto } from '@ecdlink/core';
+import {
+  ClassroomDto,
+  ProgrammeTypeDto,
+  ContentConsentTypeEnum,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  ButtonGroup,
+  FormInput,
+  Typography,
+  Checkbox,
+} from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from './add-programme-form.styles';
-
+import Article from '@/components/article/article';
 import {
   EditProgrammeModel,
   editProgrammeSchema,
@@ -21,7 +32,7 @@ import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { practitionerSelectors } from '@/store/practitioner';
 import { traineeSelectors } from '@/store/trainee';
 
@@ -73,7 +84,8 @@ export const AddProgrammeForm: React.FC<{
   });
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
-
+  const [viewPermissionToShare, setViewPermissionToShare] =
+    useState<boolean>(false);
   const isSmartLinkImported = user?.isImported;
   const isTrainee = practitioner?.isTrainee;
 
@@ -392,12 +404,35 @@ export const AddProgrammeForm: React.FC<{
 
         {isPrincipleOrOwnerSmartStarter === true &&
           isPrincipalOrLeader === false && (
-            <div className="my-4">
-              <Alert
-                type="warning"
-                title="Ask the principal of the programme to add your details to their programme on Funda App."
+            <>
+              <Typography
+                type="h4"
+                text="Permission to share information with programme principal/owner/administrator"
               />
-            </div>
+              <div className="flex">
+                <Checkbox
+                  register={programmeFormRegister}
+                  nameProp="allowPermissions"
+                  className="flex-1"
+                  description="I accept that my information will be shared with the programme principal"
+                />
+                <Typography
+                  underline
+                  color="secondary"
+                  className="flex-0 ml-2 flex cursor-pointer items-center font-medium"
+                  type="body"
+                  text="Learn more"
+                  onClick={() => setViewPermissionToShare(true)}
+                />
+              </div>
+
+              <div className="my-4">
+                <Alert
+                  type="warning"
+                  title="Ask the principal of the programme to add your details to their programme on Funda App."
+                />
+              </div>
+            </>
           )}
 
         <div className="mb-2">
@@ -417,6 +452,13 @@ export const AddProgrammeForm: React.FC<{
           </Button>
         </div>
       </div>
+      <Article
+        visible={viewPermissionToShare}
+        consentEnumType={ContentConsentTypeEnum.PermissionToShare}
+        onClose={function (): void {
+          setViewPermissionToShare(false);
+        }}
+      />
     </div>
   );
 };
