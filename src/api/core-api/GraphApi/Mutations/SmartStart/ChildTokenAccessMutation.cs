@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Services;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -56,7 +57,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             AddChildSiteAddressTokenModel siteAddress,
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
-            AddChildUserConsentTokenModel consent)
+            AddChildUserConsentTokenModel consent,
+            INotificationService _notificationService)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -107,11 +109,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     AddConsent(scope, consent, tokenModel);
                 }
 
-                // Add points for registaering a child
+                // Add points for registering a child
                 var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
                 if (practitioner != null)
                 {
                     AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
+                    await _notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete);
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);

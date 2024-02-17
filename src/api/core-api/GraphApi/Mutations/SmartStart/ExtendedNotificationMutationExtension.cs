@@ -98,7 +98,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             });
 
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
         }
 
 
@@ -506,7 +506,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
         public async Task<bool> SendSetLeaveNotification(
 [Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string absentStartDate, string absentEndDate, string parentPrincipalFAACoachName)
+[Service] INotificationService notificationService, string userId, string absentStartDate, string absentEndDate, string parentPrincipalFAACoachName, string parentPrincipalUserId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -524,8 +524,13 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 FindValue = "ParentPrincipalFAACoachName",
                 ReplacementValue = parentPrincipalFAACoachName
             });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerUserId",
+                ReplacementValue = parentPrincipalUserId
+            });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1), false, true);
         }
 
 //        public async Task<bool> SendStartupSupportEndingIn2MonthsNotification(

@@ -112,7 +112,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
                 }
 
-                //update classrooms hierarchy and send through to next function         
+                //update classrooms hierarchy and send through to next function
+                string previousUser = classRoomGroup.UserId.ToString();
                 classRoomGroup.Hierarchy = hierarchy;
                 classRoomGroup.UserId = input.UserId;
                 classRoomGroup.ClassroomId = input.ClassroomId;
@@ -121,6 +122,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 classRoomGroup.ProgrammeTypeId = programmeType;
                 classRoomGroup.UpdatedBy = uId.ToString();
                 classRepo.Update(classRoomGroup);
+
+                //if this was a new assignment to a new practitioner trigger message to notify them
+               if (classRoomGroup.UserId != input.UserId)
+                {
+                    var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+                    Classroom classRoom = classroomRepo.GetAll().Where(x => x.Id.Equals(classRoomGroup.ClassroomId)).FirstOrDefault();
+                    var principalToSend = userManager.FindByIdAsync(classRoom.UserId.Value.ToString()).Result;
+                    var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
+                    List<TagsReplacements> replacements = new List<TagsReplacements>();
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "ClassName",
+                        ReplacementValue = input.Name
+                    });
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "PrincipalName",
+                        ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
+                    });
+
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                    //message the old user they were removed
+                    var oldUserToSend = userManager.FindByIdAsync(previousUser).Result;
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
                 var learnersReassigned = UpdateLearners(repoFactory, uId.ToString(), id, hierarchy);

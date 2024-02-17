@@ -115,7 +115,7 @@ namespace EcdLink.Api.CoreApi.Services
                             MessageProtocol = item.Protocol,
                             Message = !string.IsNullOrWhiteSpace(message) ? message : templateItem.Message,
                             Subject = templateItem.Subject,
-                            MessageDate = messageDate,
+                            MessageDate = messageDate.Date,
                             FromUserId = _uId,
                             MessageTemplateType = item.TemplateType,
                             MessageTemplate = item,
@@ -127,7 +127,7 @@ namespace EcdLink.Api.CoreApi.Services
                         };
                         if (messageEndDate != null)
                         {
-                            notification.MessageEndDate = messageEndDate;
+                            notification.MessageEndDate = messageEndDate.Value.AddDays(1).Date;
                         }
                         //skip if the enotification exists already for same date and person and template and protocol
                         if (!await NotificationExists(notification, dontSendIfExists))
