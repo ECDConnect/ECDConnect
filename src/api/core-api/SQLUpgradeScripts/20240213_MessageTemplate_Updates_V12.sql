@@ -31,3 +31,10 @@ INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","Upd
 UPDATE public."MessageTemplate"
 	SET "Action"='{"url":"/classroom","state":{"activeTabIndex:":"1"}}'
 	WHERE "TemplateType" in ('reassigned-to-new-class', 'reassigned-to-new-class-from-old');
+
+	UPDATE public."MessageLog"
+	SET "Action"='{"url":"/business"}'
+	WHERE "MessageTemplateType"  in ('income-statement-not-complete-by-1st');
+UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/classroom","state":{"activeTabIndex:":"1"}}'
+	WHERE "TemplateType" in ('income-statement-not-complete-by-1st');
