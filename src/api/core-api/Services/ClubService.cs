@@ -557,7 +557,10 @@ namespace EcdLink.Api.CoreApi.Services
 
                 foreach (ClubMember clubMember in clubMembers)
                 {
-                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NewClubleader, DateTime.Now, clubMember.Practitioner.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14), true);
+                    if (clubMember.Practitioner.UserId != leader.UserId)
+                    {
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NewClubleader, DateTime.Now, clubMember.Practitioner.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14), false, true);
+                    }
                 }
             }
 

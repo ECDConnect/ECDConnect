@@ -160,6 +160,11 @@ namespace EcdLink.Api.CoreApi.Services
                         FindValue = "ChildsName",
                         ReplacementValue = child.childData.User != null ? child.childData.User.FirstName + " " + child.childData.User.Surname : "Child"
                     });
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "ChildUserId",
+                        ReplacementValue = child.UserId.ToString()
+                    });
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
                 }
             }
@@ -261,12 +266,21 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            var classroomRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: adminId);
             //find all practitioners that has not yet created planning for their classes after a month of having the class
-            var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.IsPrincipal.Equals(true) || x.IsFundaAppAdmin.Equals(true))).ToList();
+            var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate < DateTime.Now.AddMonths(-1).Date).ToList();
+
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var pracData in practitioners)
             {
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PlanYourProgrammes, DateTime.Now, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                var classRooms = classroomRepo.GetAll()                    
+                    .Include(x => x.Programmes)
+                    .Where(x => x.UserId.ToString() == pracData.UserId && x.Programmes.Count < 3)
+                    .ToList();
+                if (classRooms.Any())
+                {
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PlanYourProgrammes, DateTime.Now, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                }
             }
         }
 
@@ -542,12 +556,12 @@ namespace EcdLink.Api.CoreApi.Services
                                         if (daysSinceStarterLicense.Days >= 28)
                                         {
                                             //3) Trainees not completed onboarding - 4 weeks - remove
-                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), true);
+                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), false, true);
                                         }
                                         else if (daysSinceStarterLicense.Days <= 14)
                                         {
                                             //2) Trainees not completed onboarding - 2 weeks
-                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
+                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true);
                                         }
                                     }
                                 }

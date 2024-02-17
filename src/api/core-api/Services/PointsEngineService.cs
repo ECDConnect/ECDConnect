@@ -1317,7 +1317,8 @@ namespace EcdLink.Api.CoreApi.Services
                 activity,
                 DateTime.Now,
                 (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
-                
+
+            _notificationService.ExpireNotificationsTypesForUser(userId, TemplateTypeConstants.ChildRegistrationIncomplete);
             return true;
         }
 
