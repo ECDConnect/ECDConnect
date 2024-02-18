@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 string templateType, string userId = null)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, templateType, DateTime.Now, userToSend);
+            return await notificationService.SendNotificationAsync(null, templateType, DateTime.Now.Date, userToSend);
         }
 
         public async Task<bool> SendAnyGGNotificationWithReplacements(
@@ -31,7 +31,7 @@ string templateType, string userId = null)
 string templateType, string userId = null, List<TagsReplacements> replacements = null)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, templateType, DateTime.Now, userToSend, null, MessageStatusConstants.Blue, replacements);
+            return await notificationService.SendNotificationAsync(null, templateType, DateTime.Now.Date, userToSend, null, MessageStatusConstants.Blue, replacements);
         }
 
         public async Task<bool> SendGGWalkthroughNotificationNotification(
@@ -39,7 +39,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
   [Service] INotificationService notificationService, string userId)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotification, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>());
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotification, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>());
         }
 
         public async Task<bool> SendGGUploadRTHNotification(
@@ -58,7 +58,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = firstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGUploadRTHNotification, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGUploadRTHNotification, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
         public async Task<bool> SendGGExpectedMomDeliveryDateApproachingNotification(
 [Service] ApplicationUserManager userManager,
@@ -76,7 +76,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = expectedDeliveryDate
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGExpectedMomDeliveryDateApproaching, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(1));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGExpectedMomDeliveryDateApproaching, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(1));
         }
 
         public async Task<bool> SendGGRedAlertMaternalDistressNotification(
@@ -90,7 +90,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = clientFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistress, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
         }
         public async Task<bool> SendGGChildMUACNotification(
 [Service] ApplicationUserManager userManager,
@@ -103,7 +103,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = childFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
         }
         public async Task<bool> SendGGChildGrowthIssueNotification(
 [Service] ApplicationUserManager userManager,
@@ -116,7 +116,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = childFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildGrowthIssue, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildGrowthIssue, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
         }
 
         public async Task<bool> SendGGMultipleReferralsNotification(
@@ -134,7 +134,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = noOfReferrals
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMultipleReferrals, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMultipleReferrals, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
         }
 
         public async Task<bool> SendGGVisitOverdueNotification(
@@ -149,7 +149,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 } 
             };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGVisitOverdue, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGVisitOverdue, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements);
         }
 
         public async Task<bool> SendGGReferralDangerSignsNotification(
@@ -167,7 +167,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = dangerSignsList
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSigns, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSigns, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGTwoVisitsMissedNotification(
@@ -185,7 +185,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = clientFirstName
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTwoVisitsMissed, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTwoVisitsMissed, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGVisitsNotCompleted14daysNotification(
 [Service] ApplicationUserManager userManager,
@@ -193,7 +193,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGVisitsNotCompleted14days, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGVisitsNotCompleted14days, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendGGXVisitsMissedNotification(
@@ -207,7 +207,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = visitsOverdue
             }};
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGXVisitsMissed, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGXVisitsMissed, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGChildOlderThanFiveNotification(
@@ -225,7 +225,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = removalDate
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildOlderThanFive, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildOlderThanFive, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendGGReferDOHANotification(
@@ -243,7 +243,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferDOHA, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferDOHA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
         public async Task<bool> SendGGReferSASSANotification(
 [Service] ApplicationUserManager userManager,
@@ -260,7 +260,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferSASSA, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferSASSA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendGGMaternalDistressNotification(
@@ -274,7 +274,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMaternalDistress, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGClinicVisitsNotUpToDateNotification(
@@ -288,7 +288,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGClinicVisitsNotUpToDate, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGClinicVisitsNotUpToDate, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGPregnantMomLowMUACNotification(
@@ -302,7 +302,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPregnantMomLowMUAC, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPregnantMomLowMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGChildMUACMalnutritionNotification(
@@ -316,7 +316,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = childFirstName
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendGGyoungerthan20Notification(
@@ -330,7 +330,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGyoungerthan20, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGyoungerthan20, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGSubstanceAbuseNotification(
 [Service] ApplicationUserManager userManager,
@@ -343,7 +343,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGSubstanceAbuse, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGSubstanceAbuse, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGLowBirthWeightNotification(
@@ -361,7 +361,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = caregiverFirstName
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGLowBirthWeight, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGLowBirthWeight, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendGGAddBreastfeedingClubNotification(
@@ -375,7 +375,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentMonth
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddBreastfeedingClub, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddBreastfeedingClub, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
         public async Task<bool> SendGGGGAddedABreastfeedingClubNotification(
 [Service] ApplicationUserManager userManager,
@@ -393,7 +393,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentClubs
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddedABreastfeedingClub, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddedABreastfeedingClub, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
 
@@ -409,7 +409,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentMonth
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGEarningPoints, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGEarningPoints, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendGGEarningXPointsNotification(
@@ -423,7 +423,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = averagePoints
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGEarningXPoints, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(10));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGEarningXPoints, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(10));
         }
 
         public async Task<bool> SendGGTopPointsEarnerNotification(
@@ -432,7 +432,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTopPointsEarner, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(10));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTopPointsEarner, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(10));
         }
 
         public async Task<bool> SendGGTopPointsTeamNotification(
@@ -446,7 +446,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = totalTeamPoints
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTopPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTopPointsTeam, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGTop25PercPointsTeamNotification(
 [Service] ApplicationUserManager userManager,
@@ -464,7 +464,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = pointsBehindWinningTeam
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTop25PercPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTop25PercPointsTeam, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> GGBottom75PercPointsTeam(
 [Service] ApplicationUserManager userManager,
@@ -477,7 +477,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = ranking
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBottom75PercPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBottom75PercPointsTeam, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGGoldTierPointsTeamNotification(
@@ -496,7 +496,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = quarter
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGGoldTierPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGGoldTierPointsTeam, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGSilverTierPointsTeamNotification(
 [Service] ApplicationUserManager userManager,
@@ -514,7 +514,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = quarter
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGSilverTierPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGSilverTierPointsTeam, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGBronzeTierPointsTeamNotification(
 [Service] ApplicationUserManager userManager,
@@ -532,7 +532,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = quarter
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBronzeTierPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBronzeTierPointsTeam, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGPointsTeamPlacementNotification(
 [Service] ApplicationUserManager userManager,
@@ -550,7 +550,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentYear
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacement, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacement, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGPointsTeamPlacementNotTop3Notification(
 [Service] ApplicationUserManager userManager,
@@ -568,7 +568,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentYear
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementNotTop3, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementNotTop3, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
         public async Task<bool> SendGGPointsTeamPlacementNotBottom75PercNotification(
 [Service] ApplicationUserManager userManager,
@@ -586,7 +586,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentYear
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementNotBottom75Perc, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementNotBottom75Perc, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGPointsYearlySummaryNotification(
@@ -605,7 +605,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentYear
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsYearlySummary, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsYearlySummary, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(7));
         }
 
     }

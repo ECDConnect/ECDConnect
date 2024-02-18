@@ -108,7 +108,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 });
 
                 var userToSend =  _userManager.FindByIdAsync(userId.ToString()).Result;
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
 
             }
 

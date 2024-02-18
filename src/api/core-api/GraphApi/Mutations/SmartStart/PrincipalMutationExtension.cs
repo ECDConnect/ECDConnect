@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                         string programmeName = principalClassRoom != null ? principalClassRoom.Name : "Programme";
                         //send message of invitation
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
 
                         return practitioner;
                     }
@@ -188,7 +188,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var userToSend = userManager.FindByIdAsync(principalId).Result;
             if (userToSend != null && practitioner != null && practitioner.User != null)
             {
-                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7));
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7));
             }
 
             return practitioner;
@@ -322,7 +322,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() },
                             new TagsReplacements() { FindValue = "PractitionerUserId", ReplacementValue = practitioner.UserId.ToString() }
                         };
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now.Date, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
                     }
                 }
                 else

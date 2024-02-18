@@ -212,7 +212,7 @@ namespace EcdLink.Api.CoreApi.Services
                         MessageTemplateType = notification.MessageTemplate.TemplateType,
                         Message = notification.Message,
                         Subject = notification.Subject,
-                        MessageDate = notification.MessageDate.Value.Date,//midnight of date sent
+                        MessageDate = notification.MessageDate.Value,
                         MessageEndDate = (notification.MessageEndDate.HasValue ? notification.MessageEndDate.Value.AddDays(1).Date : notification.MessageDate.Value.AddMonths(3).Date), //midnight the next day
                         Status = notification.Status,
                         SentByUserId = notification.FromUserId,

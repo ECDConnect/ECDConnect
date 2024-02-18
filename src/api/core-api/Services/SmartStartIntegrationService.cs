@@ -1466,7 +1466,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                                             //send notification to coach
                                             var userToSend = await _userManager.FindByIdAsync(coach.UserId.ToString());
-                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now.Date, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
                                             totalFranchiseesAddedToSS++;
                                             franchiseeCreated = true;
                                         }
@@ -3150,10 +3150,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     _practitionerRepo.Insert(newPractitioner);
                                 }
                                 //notify trainee to stary journey
-                                await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, DateTime.Now, newTrainee.User);
+                                await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, DateTime.Now.Date, newTrainee.User);
                                 if (entity.ConsolidationMeetingDate != null)
                                 {
-                                    await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.TraineeSetupVenue, DateTime.Now, newTrainee.User);
+                                    await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.TraineeSetupVenue, DateTime.Now.Date, newTrainee.User);
                                 }
 
                                 pracCreated = true;
