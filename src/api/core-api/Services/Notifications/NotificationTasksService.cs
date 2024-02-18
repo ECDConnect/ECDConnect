@@ -163,7 +163,7 @@ namespace EcdLink.Api.CoreApi.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "ChildUserId",
-                        ReplacementValue = child.UserId.ToString()
+                        ReplacementValue = child.childData.UserId.ToString()
                     });
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
                 }
@@ -213,8 +213,8 @@ namespace EcdLink.Api.CoreApi.Services
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "StatementCutOffDate",
-                ReplacementValue = DateTime.Now.GetStartOfMonth().AddDays(7).ToString()
-            });
+                ReplacementValue = DateTime.Now.GetStartOfMonth().AddDays(7).ToShortDateString()
+            }) ;
 
             foreach (var pracData in pracsDueSubmits)
             {
@@ -233,11 +233,11 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 replacements.Add(new TagsReplacements()
                 {
-                    FindValue = "StatementCutOffDate",
+                    FindValue = "IsStipendReceiverText",
                     ReplacementValue = isStipendReceiver ? stipendText : ""
                 });
 
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.IncomeStatementIncompleteBy1st, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.IncomeStatementIncompleteBy1st, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(6),false,true);
             }
         }
 
@@ -275,7 +275,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var classRooms = classroomRepo.GetAll()                    
                     .Include(x => x.Programmes)
-                    .Where(x => x.UserId.ToString() == pracData.UserId && x.Programmes.Count < 3)
+                    .Where(x => x.UserId.Equals(pracData.UserId) && x.Programmes.Count < 3)
                     .ToList();
                 if (classRooms.Any())
                 {
@@ -407,6 +407,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task DailyAttendanceNotTrackedNotification()
         {
+            try { 
             var adminId = _hierarchyEngine.GetAdminUserId();
             var classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: adminId);
             var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: adminId);
@@ -455,8 +456,12 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
                 }
-            //}
             }
+            catch (Exception ex)
+            {
+                _logger.LogError("Issue with attendance tracking in DailyAttendanceNotTrackedNotification" + ex.Message, ex);
+            }
+        }
 
         public async Task WeeklyCoachTraineesCheckReminderAsync()
         {
@@ -469,7 +474,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
                 var userToSend = await _userManager.FindByIdAsync(parentUserId.Value.ToString());
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2),true);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2),false, true);
             }
         }
 
@@ -600,7 +605,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Issue with trainee timeline in DailyCoachChecksNotification", ex.Message);
+                        _logger.LogError("Issue with trainee timeline in DailyCoachChecksNotification" + ex.Message, ex);
                     }
                 }
                 var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.IsTrainee == false && x.IsRegistered == true && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId)).ToList();
@@ -657,7 +662,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Issue with practitioner timeline in DailyCoachChecksNotification", ex.Message);
+                        _logger.LogError("Issue with practitioner timeline in DailyCoachChecksNotification " + ex.Message, ex);
                     }
                 }
 

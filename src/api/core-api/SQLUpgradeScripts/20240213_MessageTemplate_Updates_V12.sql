@@ -32,9 +32,9 @@ UPDATE public."MessageTemplate"
 	SET "Action"='{"url":"/classroom","state":{"activeTabIndex:":"1"}}'
 	WHERE "TemplateType" in ('reassigned-to-new-class', 'reassigned-to-new-class-from-old');
 
-	UPDATE public."MessageLog"
-	SET "Action"='{"url":"/business"}'
+UPDATE public."MessageLog"
+	SET "Action"='{"url":"/business"}',"Status" = 'red'
 	WHERE "MessageTemplateType"  in ('income-statement-not-complete-by-1st');
 UPDATE public."MessageTemplate"
-	SET "Action"='{"url":"/classroom","state":{"activeTabIndex:":"1"}}'
+	SET "Action"='{"url":"/classroom","state":{"activeTabIndex:":"1"}}', "NotificationColor" = 'red'
 	WHERE "TemplateType" in ('income-statement-not-complete-by-1st');
