@@ -163,7 +163,7 @@ namespace EcdLink.Api.CoreApi.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "ChildUserId",
-                        ReplacementValue = child.UserId.ToString()
+                        ReplacementValue = child.childData.UserId.ToString()
                     });
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
                 }
@@ -275,7 +275,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var classRooms = classroomRepo.GetAll()                    
                     .Include(x => x.Programmes)
-                    .Where(x => x.UserId.ToString() == pracData.UserId && x.Programmes.Count < 3)
+                    .Where(x => x.UserId.Equals(pracData.UserId) && x.Programmes.Count < 3)
                     .ToList();
                 if (classRooms.Any())
                 {
