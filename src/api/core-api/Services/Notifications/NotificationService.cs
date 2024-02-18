@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -64,7 +65,7 @@ namespace EcdLink.Api.CoreApi.Services
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).OrderBy(x => x.Protocol).ToList();
         }
 
-        public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false)
+        public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null)
         {
             if (!excludeDates)
             {
@@ -75,7 +76,8 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.IsActive, true) &&
                     string.Equals(x.Action, notification.Action) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
-                    x.MessageDate.Value.Date == notification.MessageDate.Value.Date && x.IsActive == true
+                    (searchCriteria != "" ? x.Subject.Contains(searchCriteria) || x.Message .Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
+                    x.MessageDate.Value.Date == notification.MessageDate.Value.Date
                 ).Any();
             } else
             {
@@ -85,13 +87,14 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.To, notification.To) &&
                     string.Equals(x.IsActive, true) &&
                     string.Equals(x.Action, notification.Action) &&
-                    string.Equals(x.MessageProtocol, notification.MessageProtocol) && x.IsActive == true
+                    (searchCriteria != "" ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
+                    string.Equals(x.MessageProtocol, notification.MessageProtocol)
                 ).Any();
             }
             //check if any exact templates for exact person for exact same date and protocol exists
         }
 
-        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false)
+        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false, string searchCriteria = null)
         {
             try
             {                
@@ -130,7 +133,7 @@ namespace EcdLink.Api.CoreApi.Services
                             notification.MessageEndDate = messageEndDate.Value.AddDays(1).Date;
                         }
                         //skip if the enotification exists already for same date and person and template and protocol
-                        if (!await NotificationExists(notification, dontSendIfExists))
+                        if (!await NotificationExists(notification, dontSendIfExists, searchCriteria))
                         {
                             switch (item.Protocol)
                             {

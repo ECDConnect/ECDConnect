@@ -11,11 +11,10 @@ namespace ECDLink.Core.Services.Interfaces
         Task DailyChildrenNotAssignedToClassNotification();
         Task DailyUnassignedProgrammesNotification();
         Task DailyAttendanceNotTrackedNotification();
-        Task DailyCoachChecksNotification();
+        Task CoachChecksNotification(bool weeklyChecksOnly = false);
         //other
         Task MonthlyStatementsReminderAsync();
         Task WeeklyAttendancesReminderAsync();
-        Task WeeklyCoachTraineesCheckReminderAsync();
         Task ProgressReportsReminderAsync();
         Task YearlyPreschoolFeeReminderAsync();
         //Task MonthlyStartupSupportEndReminderAsync();

@@ -10,7 +10,7 @@ namespace ECDLink.Core.Services.Interfaces
 {
     public interface INotificationService
     {
-        Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false);
+        Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false, string searchCriteria = null);
         Task<List<MessageTemplate>> RetrieveTemplate(string template);
         Task<MessageLog> CommitNotification(Notification notification, MessageTemplate template);
         Task<bool> DisableNotification(string notificationId);
@@ -20,5 +20,7 @@ namespace ECDLink.Core.Services.Interfaces
         MessageTemplateText RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements);
         Task<bool> SendGenericMessage(string to, string toGroups, string message, string subject, DateTime sendDate, MessageTemplate template, DateTime? messageEndDate = null);
         MessageLogModel RetrieveToGroupItems(string toGroups);
+        Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null);
+
     }
 }
