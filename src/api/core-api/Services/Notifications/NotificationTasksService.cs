@@ -38,6 +38,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
         IHolidayService<Holiday> _holidayService;
         private ILogger<NotificationTasksService> _logger;
+        private UserAnonymiseService _anonymiser;
 
 
         public NotificationTasksService(
@@ -50,7 +51,8 @@ namespace EcdLink.Api.CoreApi.Services
             IHolidayService<Holiday> holidayService,
             IPersonnelService personnelService,
             IPointsEngineService pointsService,
-            [Service] ILogger<NotificationTasksService> logger)
+            [Service] ILogger<NotificationTasksService> logger,
+            [Service] UserAnonymiseService anonymiser)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
@@ -62,6 +64,7 @@ namespace EcdLink.Api.CoreApi.Services
             _personnelService = personnelService;
             _pointsService = pointsService;
             _logger = logger;
+            _anonymiser = anonymiser;
         }
 
         public async Task DailyUnassignedClassesNotification()
@@ -583,19 +586,20 @@ namespace EcdLink.Api.CoreApi.Services
                                         }
                                         else if (daysToCheck.Days >= 35)
                                         {
-                                            //delete trainee
+                                            //mark trainee to be deleted
                                             flagDelete = true;
                                         }
 
                                         if (flag4weeks)
                                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), false, true, traineeName);
-                                        if (flag2weeks)
+                                        else if (flag2weeks)
                                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName);
-                                        if (flagDelete)
+                                        else if (flagDelete)
                                         {
                                             cancelStarter = true;
                                             //now delete the profile
-                                            await RemoveTrainee(trainee.UserId);
+                                            await _notificationService.DeleteAllNotificationsForUser(trainee.UserId.ToString());
+                                            _anonymiser.AnonymiseUser((Guid)trainee.UserId, "Trainee");
                                         }
 
                                     }
@@ -711,16 +715,6 @@ namespace EcdLink.Api.CoreApi.Services
             }
             _logger.LogInformation("DailyCoachChecksNotification ended at " + DateTime.Now);
         }
-
-        public async Task RemoveTrainee(Guid? userId)
-        {
-            //_notificationService.ex
-
-
-
-
-        }
-
 
 
 

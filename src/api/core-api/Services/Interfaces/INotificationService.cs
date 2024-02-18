@@ -21,6 +21,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> SendGenericMessage(string to, string toGroups, string message, string subject, DateTime sendDate, MessageTemplate template, DateTime? messageEndDate = null);
         MessageLogModel RetrieveToGroupItems(string toGroups);
         Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null);
+        Task<bool> DeleteAllNotificationsForUser(string userId);
 
     }
 }

@@ -417,8 +417,10 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                                .Where(x => x.UserId == userId.Value)
                                .OrderBy(x => x.Id)
                                .FirstOrDefault();
-
-            userHierarchyRepo.Delete(entity.Id);
+            if (entity != null)
+            {
+                userHierarchyRepo.Delete(entity.Id);
+            }
 
             return true;
         }
