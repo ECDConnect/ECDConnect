@@ -213,7 +213,7 @@ namespace EcdLink.Api.CoreApi.Services
                         Message = notification.Message,
                         Subject = notification.Subject,
                         MessageDate = notification.MessageDate.Value.Date,//midnight of date sent
-                        MessageEndDate = notification.MessageEndDate.Value.AddDays(1).Date, //midnight the next day
+                        MessageEndDate = (notification.MessageEndDate.HasValue ? notification.MessageEndDate.Value.AddDays(1).Date : notification.MessageDate.Value.AddMonths(3).Date), //midnight the next day
                         Status = notification.Status,
                         SentByUserId = notification.FromUserId,
                         CTA = notification.CTA,
@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.Services
                         ToGroups = notification.ToGroups,
                         Action = notification.Action                        
                     });
-                } else return null;
+                } else return new MessageLog();
            } catch (Exception ex)
            {
                throw ex;                
