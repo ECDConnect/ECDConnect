@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
             AddChildUserConsentTokenModel consent,
-            INotificationService _notificationService)
+            [Service]INotificationService _notificationService)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 

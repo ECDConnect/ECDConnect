@@ -38,3 +38,10 @@ UPDATE public."MessageLog"
 UPDATE public."MessageTemplate"
 	SET "Action"='{"url":"/classroom","state":{"activeTabIndex:":"1"}}', "NotificationColor" = 'red'
 	WHERE "TemplateType" in ('income-statement-not-complete-by-1st');
+
+	UPDATE public."MessageLog"
+	SET "Action"='{"url":"/practitioner/profile/playgroups"}',"Status" = 'amber'
+	WHERE "MessageTemplateType"  in ('unassigned-classes');
+UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/practitioner/profile/playgroups"}', "NotificationColor" = 'amber'
+	WHERE "TemplateType" in ('unassigned-classes');
