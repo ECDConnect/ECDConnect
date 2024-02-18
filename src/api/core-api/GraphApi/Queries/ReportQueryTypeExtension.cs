@@ -1248,7 +1248,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
                 var practitionerClassroomGroupIds = classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == practitioner.UserId.Value).Select(x => x.Id).ToList();
                 var classroom = practitionerClassrooms.FirstOrDefault();
-                var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId && x.AbsentDate <= DateTime.Now.Date).ToList();
+                var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId && x.AbsentDate <= DateTime.Now.Date && x.Reason != "Practitioner removed from programme").ToList();
 
                 var notification = new NotificationDisplay()
                 {
