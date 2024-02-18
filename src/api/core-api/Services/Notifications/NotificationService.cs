@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.Services
                         ToGroups = notification.ToGroups,
                         Action = notification.Action                        
                     });
-                } else return new MessageLog();
+                } else return null;
            } catch (Exception ex)
            {
                throw ex;                
