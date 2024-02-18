@@ -2,7 +2,6 @@ import {
   ClassroomGroupDto,
   ReasonForLeavingDto,
   ReasonsForPractitionerLeaving,
-  UserDto,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
