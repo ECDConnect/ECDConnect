@@ -152,7 +152,7 @@ namespace ECDLink.Api.CoreApi.Services
                         FindValue = "PractitionerUserId",
                         ReplacementValue = parentUser.Id.ToString()
                     });
-                    _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate.AddDays(1)), false, true);
+                    _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate.AddDays(1)), false, true);
                 }
             }
 

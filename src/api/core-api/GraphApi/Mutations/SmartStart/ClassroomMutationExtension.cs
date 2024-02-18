@@ -142,10 +142,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
                     });
 
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
                     //message the old user they were removed
                     var oldUserToSend = userManager.FindByIdAsync(previousUser).Result;
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
@@ -153,7 +153,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 UpdateChildren(repoFactory, uId.ToString(), hierarchy, learnersReassigned, input.UserId.ToString());              
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
-                //if (classRoomGroup.ClassroomId != null)
                 {
                     var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
                     Classroom classRoom = classroomRepo.GetAll().Where(x => x.Id.Equals(classRoomGroup.ClassroomId)).FirstOrDefault();
@@ -164,9 +163,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         replacements.Add(new TagsReplacements()
                         {
                             FindValue = "ClassName",
-                            ReplacementValue = classRoom.Name
+                            ReplacementValue = classRoomGroup.Name
                         });
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now, principalToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false,true);
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now.Date, principalToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7).Date, false,true);
                     }
                 }
 
@@ -255,7 +254,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                    var coachToSend = userManager.FindByIdAsync(parentId.ToString()).Result;
                     if (coachToSend != null)
                     {
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
                     }
                 }
             }

@@ -39,7 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string templateType, string userId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             if (startDate == null)
-                startDate = DateTime.Now;
+                startDate = DateTime.Now.Date;
             if (userId != null)
             {
                 var userToSend = await userManager.FindByIdAsync(userId);

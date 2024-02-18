@@ -1891,7 +1891,7 @@ namespace EcdLink.Api.CoreApi.Services
                             FindValue = "ClubId",
                             ReplacementValue = club.Id.ToString()
                         });
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
                     }
                 }
 

@@ -212,7 +212,7 @@ namespace EcdLink.Api.CoreApi.Services
                         MessageTemplateType = notification.MessageTemplate.TemplateType,
                         Message = notification.Message,
                         Subject = notification.Subject,
-                        MessageDate = notification.MessageDate.Value.Date,//midnight of date sent
+                        MessageDate = notification.MessageDate.Value,
                         MessageEndDate = (notification.MessageEndDate.HasValue ? notification.MessageEndDate.Value.AddDays(1).Date : notification.MessageDate.Value.AddMonths(3).Date), //midnight the next day
                         Status = notification.Status,
                         SentByUserId = notification.FromUserId,
@@ -269,6 +269,19 @@ namespace EcdLink.Api.CoreApi.Services
                 notification.MessageEndDate = DateTime.Now;
                 notification.UpdatedDate = DateTime.Now;
                 _messageRepo.Update(notification);
+            }
+            return true;
+        }
+
+        public async Task<bool> DeleteAllNotificationsForUser(string userId)
+        {
+            if (userId != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(x => x.To.Equals(userId)).ToList();
+                foreach (var notification in notifications)
+                {
+                    _messageRepo.Delete(notification.Id);
+                }
             }
             return true;
         }

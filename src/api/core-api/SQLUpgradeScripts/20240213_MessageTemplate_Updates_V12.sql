@@ -45,3 +45,19 @@ UPDATE public."MessageTemplate"
 UPDATE public."MessageTemplate"
 	SET "Action"='{"url":"/practitioner/profile/playgroups"}', "NotificationColor" = 'amber'
 	WHERE "TemplateType" in ('unassigned-classes');
+
+	UPDATE public."MessageLog"
+	SET "Action"='{"url":"/practitioner/programme-information/playgroups"}'
+	WHERE "MessageTemplateType"  in ('unassigned-classes');
+
+UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/practitioner/programme-information/playgroups"}'
+	WHERE "TemplateType" in ('unassigned-classes');
+
+UPDATE public."MessageLog"
+	SET "Action"='{"url":"/practitioner/profile/edit"}'
+	WHERE "MessageTemplateType"  in ('removed-from-programme');
+
+UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/practitioner/profile/edit"}'
+	WHERE "TemplateType"  in ('removed-from-programme');
