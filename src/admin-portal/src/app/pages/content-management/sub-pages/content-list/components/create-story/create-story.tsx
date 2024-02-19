@@ -341,7 +341,7 @@ export default function CreateStory({
         storyBookParts: storyBookParts,
         storyBookContentId: content.id,
         localeId: selectedLanguageId,
-        currentBookPartsIds: model.storyBookParts,
+        currentBookPartsIds: model.storyBookParts ? model.storyBookParts : '',
       },
     });
 

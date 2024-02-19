@@ -18,11 +18,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string currentBookPartsIds
             )
         {
-
-         //   storybook
-         //       ->storyBookParts
-         //           ->storyBookPartQuestions
-
             // Handle the question
             foreach (var part in storyBookParts)
             {
