@@ -102,6 +102,17 @@ export const PractitionerCommunity: React.FC = () => {
       color={'primary'}
       onBack={() => history.push(ROUTES.DASHBOARD)}
       displayOffline={!isOnline}
+      displayHelp
+      onHelp={() => {
+        if (selectedTabIndex && selectedTabIndex === 1) {
+          history.push(
+            ROUTES.COMMUNITY.LEAGUE.HELP.replace(
+              ':leagueId',
+              club?.league?.id || ''
+            ).replace(':helpSection', 'Practitioner')
+          );
+        }
+      }}
     >
       <div style={{ height: height - header_height }}>
         <TabList
