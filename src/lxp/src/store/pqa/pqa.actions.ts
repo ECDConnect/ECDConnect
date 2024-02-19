@@ -146,7 +146,7 @@ export const addVisitFormData = createAsyncThunk<
 
 export const addSupportVisitFormData = createAsyncThunk<
   any,
-  (SupportVisitModelInput & { syncId: string }) | undefined,
+  MergedCmsVisitDataInputModelInput | undefined,
   ThunkApiType<RootState>
 >(
   PqaActions.ADD_SUPPORT_VISIT_FORM_DATA,
@@ -162,17 +162,18 @@ export const addSupportVisitFormData = createAsyncThunk<
           const { syncId, ...payload } = input;
           const response = await new PQAService(
             userAuth?.auth_token
-          ).addSupportVisitForPractitioner(payload);
+          ).addSupportVisitData(payload);
 
           return response;
         }
+
         if (!!supportVisitFormData?.length) {
           const promises = supportVisitFormData?.map(async (item) => {
             const { syncId, ...payload } = item.formData;
 
             return await new PQAService(
               userAuth?.auth_token
-            ).addSupportVisitForPractitioner(payload);
+            ).addSupportVisitData(payload);
           });
 
           return promises?.length && Promise.all(promises);

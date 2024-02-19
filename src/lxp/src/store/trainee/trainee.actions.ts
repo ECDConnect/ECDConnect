@@ -45,10 +45,6 @@ export const getTraineeById = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
 
-      // if (!practitioner) {
-      //   return rejectWithValue('Error getting trainee practitioner');
-      // }
-
       return practitioner;
     } catch (err) {
       return rejectWithValue(err);
@@ -334,10 +330,6 @@ export const syncTraineeFranchisorAgreementData = createAsyncThunk<
     } = getState();
 
     try {
-      console.log(
-        'syncTraineeFranchisorAgreementData',
-        coachFranchisorAgreementData
-      );
       if (userAuth?.auth_token) {
         const visitDataToSync = Object.values(
           coachFranchisorAgreementData
