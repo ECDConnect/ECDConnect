@@ -440,20 +440,10 @@ export const Form = ({
         (item) => item?.question === visitOrCallQuestion
       )?.answer;
 
-      const supportPayload: SupportVisitModelInput = {
-        practitionerId,
-        // TODO: add schedule option
-        plannedVisitDate: new Date(),
-        isSupportCall: visitOrCallAnswer === callAnswer,
-        // TODO: add schedule option
-        attended: true,
-        supportData: payload,
-      };
-
       switch (type) {
         case 'support-visit':
           return onSubmitSupportVisit(
-            supportPayload,
+            payload,
             'support-visit',
             visitOrCallAnswer
           );

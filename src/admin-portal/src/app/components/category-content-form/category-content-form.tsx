@@ -159,6 +159,17 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
       }
 
       if (propName === 'description') {
+        if (
+          e?.target?.textLength === item?.description?.length &&
+          e?.key === 'Backspace'
+        ) {
+          item.description = e.target.value;
+          item.idx = idx;
+          tempArray[idx] = item;
+          setsubcategoriesFilt(tempArray);
+          return;
+        }
+
         item.description = e?.target?.value;
       }
 
@@ -184,6 +195,17 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
       }
 
       if (propName === 'description') {
+        if (
+          e?.target?.textLength === item?.description?.length &&
+          e?.key === 'Backspace'
+        ) {
+          item.description = e.target.value;
+          item.idx = idx;
+          tempArray[idx] = item;
+          setsubcategoriesFiltB(tempArray);
+          return;
+        }
+
         item.description = e?.target?.value;
       }
 
@@ -207,6 +229,12 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
     subcategoriesFiltB,
     tableData,
   ]);
+
+  useEffect(() => {
+    if (tableData && currentIds && subcategoriesFiltB) {
+      setFilteredSubcategories(subcategoriesFiltB);
+    }
+  }, [currentIds, setFilteredSubcategories, subcategoriesFiltB, tableData]);
 
   if (tempData && displayFields) {
     return (
@@ -279,7 +307,10 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
                       isAdminPortalField={true}
                       id={subcategoriesFilt?.[idx]?.id}
                       value={subcategoriesFilt?.[idx]?.description}
-                      onChange={(e) => onChange(e, idx, 'description')}
+                      onChange={(e) => {
+                        onChange(e, idx, 'description');
+                      }}
+                      onKeyDown={(e) => onChange(e, idx, 'description')}
                       textInputType="textarea"
                       placeholder={'Add a response...'}
                     />
@@ -309,6 +340,7 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
                       id={subcategoriesFiltB?.[idx]?.id}
                       value={subcategoriesFiltB?.[idx]?.name}
                       onChange={(e) => onSecondColumnChange(e, idx, 'name')}
+                      onKeyDown={(e) => onSecondColumnChange(e, idx, 'name')}
                       textInputType="input"
                       placeholder={'Add a response...'}
                     />
@@ -341,6 +373,9 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
                       id={subcategoriesFiltB?.[idx]?.id}
                       value={subcategoriesFiltB?.[idx]?.description}
                       onChange={(e) =>
+                        onSecondColumnChange(e, idx, 'description')
+                      }
+                      onKeyDown={(e) =>
                         onSecondColumnChange(e, idx, 'description')
                       }
                       textInputType="textarea"
