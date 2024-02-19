@@ -513,7 +513,7 @@ export const CoachPractitionerJourney = () => {
     ) {
       window.sessionStorage.setItem(
         currentActivityKey,
-        visitTypes.supportVisit.description
+        visitTypes.supportVisit.name
       );
       window.sessionStorage.setItem(visitIdKey, visit.id);
     } else {
