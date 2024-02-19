@@ -103,6 +103,22 @@ export const UpdateSubCategorySkills = gql`
   }
 `;
 
+export const UpdateStoryBookAndParts = gql`
+  mutation UpdateStoryBookAndParts(
+    $storyBookParts: [StoryBookModelInput]
+    $storyBookContentId: Int!
+    $localeId: UUID!
+    $currentBookPartsIds: String!
+  ) {
+    updateStoryBookAndParts(
+      storyBookParts: $storyBookParts
+      storyBookContentId: $storyBookContentId
+      localeId: $localeId
+      currentBookPartsIds: $currentBookPartsIds
+    )
+  }
+`;
+
 export const BulkUpdateConsentImages = gql`
   mutation BulkUpdateConsentImages(
     $contentId: Int!
