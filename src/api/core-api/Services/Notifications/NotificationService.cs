@@ -76,6 +76,7 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.IsActive, true) &&
                     string.Equals(x.Action, notification.Action) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
+                    string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
                     (searchCriteria != "" ? x.Subject.Contains(searchCriteria) || x.Message .Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
                     x.MessageDate.Value.Date == notification.MessageDate.Value.Date
                 ).Any();
@@ -88,13 +89,15 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.IsActive, true) &&
                     string.Equals(x.Action, notification.Action) &&
                     (searchCriteria != "" ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
+                    string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol)
+
                 ).Any();
             }
             //check if any exact templates for exact person for exact same date and protocol exists
         }
 
-        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false, string searchCriteria = null)
+        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false, string searchCriteria = null, string relatedToUserId = null)
         {
             try
             {                
@@ -126,7 +129,8 @@ namespace EcdLink.Api.CoreApi.Services
                             Status = status,
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
-                            Action = templateItem.Action
+                            Action = templateItem.Action,
+                            RelatedToUserId = relatedToUserId,
                         };
                         if (messageEndDate != null)
                         {
@@ -219,7 +223,8 @@ namespace EcdLink.Api.CoreApi.Services
                         CTA = notification.CTA,
                         CTAText = notification.CTAText,
                         ToGroups = notification.ToGroups,
-                        Action = notification.Action                        
+                        Action = notification.Action,
+                        RelatedToUserId = notification.RelatedToUserId,
                     });
                 } else return null;
            } catch (Exception ex)
@@ -286,11 +291,11 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null)
+        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null, string relatedToUserId = null)
         {
             if (userId != null && templateType != null)
             {
-                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType && (searchCriteria != null ? n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) : n.IsActive == true)).ToList();
+                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType && (searchCriteria != null ? n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) : n.IsActive == true) && (relatedToUserId != null ? n.RelatedToUserId.Contains(relatedToUserId) : n.IsActive == true)).ToList();
                 if (notifications.Any())
                 {
                     foreach (var notification in notifications)
