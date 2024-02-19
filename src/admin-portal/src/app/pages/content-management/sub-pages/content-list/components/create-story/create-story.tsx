@@ -341,7 +341,7 @@ export default function CreateStory({
         storyBookParts: storyBookParts,
         storyBookContentId: content.id,
         localeId: selectedLanguageId,
-        currentBookPartsIds: model.storyBookParts,
+        currentBookPartsIds: model.storyBookParts ? model.storyBookParts : '',
       },
     });
 
@@ -374,7 +374,7 @@ export default function CreateStory({
               </div>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+              {/* {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -383,7 +383,7 @@ export default function CreateStory({
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
                 </button>
-              )}
+              )} */}
 
               {!!cancelEdit && (
                 <button
