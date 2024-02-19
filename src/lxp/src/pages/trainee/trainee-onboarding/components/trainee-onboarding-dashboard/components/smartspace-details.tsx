@@ -18,6 +18,7 @@ import { getStepDate } from '../timeline-steps';
 interface SmartSpaceLicenceReceivedProps {
   setShowCoachVisit: (item: boolean) => void;
   setNotificationStep?: (item: string) => void;
+  practitionerUserId: string;
 }
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
@@ -29,29 +30,37 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
 export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
   setShowCoachVisit,
   setNotificationStep,
+  practitionerUserId,
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitionerUserId)
+  );
   const smartSpaceVisitId = timeline?.sSCoachVisitId;
-  const coachSmartSpaceAnwers = useSelector(
-    traineeSelectors?.getCoachSmartSpaceVisitData
+  const coachSmartSpaceAnswers = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisitData(smartSpaceVisitId)
   );
   const visitData1Completed = useSelector(
-    traineeSelectors.getCoachSmartSpaceSection1VisitDataCount
+    traineeSelectors.getCoachSmartSpaceSectionScore(
+      smartSpaceVisitId,
+      'SmartSpace check'
+    )
   );
   const coachSmartSpaceVisit1DataNotAttendedStandards = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandards
+    traineeSelectors.getCoachSmartSpaceSectionFailedQuestions(
+      smartSpaceVisitId,
+      'SmartSpace check'
+    )
   );
-  const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
-    coachSmartSpaceVisit1DataNotAttendedStandards?.length! > 0
-      ? coachSmartSpaceVisit1DataNotAttendedStandards?.map((item: any) => {
-          return item?.question;
-        })
-      : [];
 
-  const discussNextStepsItem = coachSmartSpaceAnwers?.find(
-    (item) => item?.visitSection === 'Discuss next steps'
+  const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
+    coachSmartSpaceVisit1DataNotAttendedStandards?.map((item) => {
+      return item.question;
+    });
+
+  const discussNextStepsItem = coachSmartSpaceAnswers?.visitData.find(
+    (item) => item.visitSection === 'Discuss next steps'
   );
 
   const fetchSmartSpaceVisitData = useCallback(async () => {

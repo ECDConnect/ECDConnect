@@ -73,7 +73,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   const storyBookTypeOptions = [
     { text: 'Story book', value: 'Story book' },
     { text: 'Read aloud', value: 'Read aloud' },
-    // { text: 'other', value: 'Other' }, // remove other EC-1685
+    { text: 'Other', value: 'Other' },
   ];
 
   const onStateChange = (name: string, state: any) => {
@@ -106,7 +106,6 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           ) {
             return (
               <div key={propName} className={contentWrapper}>
-                aaaa
                 <label
                   htmlFor={propName}
                   className="mb-1 block text-lg font-medium text-gray-800"

@@ -31,7 +31,10 @@ import {
   CoachingCircleText,
   ContentTypes,
 } from '../../../../../../constants/content-management';
-import { bulkUpdateCoachingCircleTopicDates } from '@ecdlink/graphql';
+import {
+  BulkUpdateConsentImages,
+  bulkUpdateCoachingCircleTopicDates,
+} from '@ecdlink/graphql';
 import { format } from 'date-fns';
 
 export interface ContentViewProps {
@@ -114,6 +117,11 @@ export default function ContentEdit({
     bulkUpdateCoachingCircleTopicDates
   );
 
+  const [saveConsentImages] = useMutation(BulkUpdateConsentImages);
+
+  const [updateContent] = useMutation(updateMutation);
+  const [createContent] = useMutation(createMutation);
+
   const dialog = useDialog();
 
   const [deleteContent, { loading: isLoadingDeleteContent }] =
@@ -123,13 +131,14 @@ export default function ContentEdit({
     event?.preventDefault();
 
     dialog({
+      color: 'bg-white',
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Are you sure you want to delete this content?"
-          message={` You will not be able to recover this content if you delete it now.`}
+          message={`You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.`}
           onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'Keep editing']}
+          btnText={['Delete', 'Keep editing']}
           isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
@@ -142,7 +151,7 @@ export default function ContentEdit({
               .then(() => {
                 cancelEdit();
                 setNotification({
-                  title: 'Successfully Deleted Content!',
+                  title: 'Content deleted',
                   variant: NOTIFICATION.SUCCESS,
                 });
               })
@@ -175,11 +184,7 @@ export default function ContentEdit({
     });
   };
 
-  const [updateContent] = useMutation(updateMutation);
-  const [createContent] = useMutation(createMutation);
-
   const [template, setTemplate] = useState<DynamicFormTemplate>();
-
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues = getValues();
   const [smallLargeGroupsSkills, setSmallLargeGroupsSkills] = useState([]);
@@ -369,10 +374,29 @@ export default function ContentEdit({
           console.log(error);
         });
       }
+
+      // if there is an image, we need to copy the image to the other languages
+      if (
+        contentType.name === ContentTypes.CONSENT ||
+        contentType?.name === ContentTypes.INFO_PAGES
+      ) {
+        if ('image' in model && model.image !== undefined) {
+          await saveConsentImages({
+            variables: {
+              contentId: +content.id,
+              contentTypeId: +contentType.id,
+              localeId: selectedLanguageId.toString(),
+              imageUrl: model.image,
+            },
+          }).catch((error) => {
+            console.log(error);
+          });
+        }
+      }
     }
 
     setNotification({
-      title: 'Successfully Updated Content!',
+      title: 'Changes published',
       variant: NOTIFICATION.SUCCESS,
     });
 
@@ -427,13 +451,13 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType?.name === 'Consent' ? (
+            {contentType?.name === ContentTypes.CONSENT ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : contentType?.name === 'Info Pages' ? (
+            ) : contentType?.name === ContentTypes.INFO_PAGES ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}

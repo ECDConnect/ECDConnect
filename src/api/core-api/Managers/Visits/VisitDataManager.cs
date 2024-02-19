@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Common;
+using DotLiquid;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
@@ -319,15 +320,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             //mark the visit as 'attended' once the sections are completed
             var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.coach_smartspace_check).Select(y => y.VisitSection).Distinct().ToList();
+
             if (completedSections.Count >= 10)
             {
+                var trainee = _traineeRepo.GetByUserId(input.TraineeId);
+                var smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId.Value, Constants.SSSettings.ss_smart_space_licence);
+
                 // when the smart space checklist is completed, we activate the smartspace license
-                Trainee trainee = _traineeRepo.GetByUserId(input.TraineeId);
-                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId.Value, Constants.SSSettings.ss_smart_space_licence);
                 if (smartSpaceLicense == null)
                 {
                     _userLicenseManager.AddSmartSpaceLicense(trainee.UserId.Value, DateTime.Now);
-                } else
+                } 
+                else
                 {
                     _userLicenseManager.UpdateSmartSpaceLicense(trainee.UserId.Value, DateTime.Now);
                 }
@@ -342,6 +346,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 return entityToUpdate;
             }
+            else if (completedSections.Count == 3)
+            {
+                var nextStepsComment = input.VisitData.Sections.FirstOrDefault(x => x.VisitSection == "Discuss next steps")?.Questions.FirstOrDefault()?.Answer;
+                _userLicenseManager.DeclineSmartSpaceLicense(Guid.Parse(input.TraineeId), DateTime.Now, nextStepsComment ?? "");           
+            }
+
             return new Visit();
         }
         public bool EditVisitData(CMSVisitDataInputModel input)

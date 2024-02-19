@@ -21,9 +21,9 @@ import { DateFormats } from '../../../../../constants/Dates';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: (notificationStep: string, options?: any) => void;
-  setIsSmartChecklist?: any;
-  practitioner?: PractitionerDto;
-  setShowTraineeDashboard: any;
+  setIsSmartChecklist: (value: boolean) => void;
+  practitioner: PractitionerDto; // TODO why is this nullable...
+  setShowTraineeDashboard: (value: boolean) => void;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
@@ -39,7 +39,9 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const { width } = useWindowSize();
 
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner.userId || '')
+  );
   const [showSteps, setShowSteps] = useState(true);
   const [showOverdueSteps, setShowOverdueSteps] = useState(false);
   const [showOnboardingNotCompleted, setShowOnboardingNotCompleted] =
@@ -187,8 +189,8 @@ export const OnboardingTraineeDashboard: React.FC<
       renderBorder={true}
       title={'Trainee Onboarding'}
       subTitle={
-        practitioner?.user?.fullName ||
-        `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
+        practitioner.user?.fullName ||
+        `${practitioner.user?.firstName} ${practitioner.user?.surname}`
       }
       color={'primary'}
       onBack={() => setShowTraineeDashboard(false)}

@@ -65,7 +65,9 @@ export const OnboardingTraineeDashboard: React.FC<
     item?.message?.cta?.includes(notificationTagConfig?.StartJourney.cta ?? '')
   );
 
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
   const [showSteps, setShowSteps] = useState(true);
   const [showCoachVisit, setShowCoachVisit] = useState(false);
 

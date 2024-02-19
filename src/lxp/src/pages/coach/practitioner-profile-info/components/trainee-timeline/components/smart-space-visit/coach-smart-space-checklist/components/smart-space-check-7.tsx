@@ -15,13 +15,16 @@ import { traineeSelectors } from '@/store/trainee';
 import covid_guidelines from '@/assets/CC14_COVID19_Reopening_Support_&_Verification_Visit.pdf';
 import { coachSelectors } from '@/store/coach';
 import { authSelectors } from '@/store/auth';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 interface SmartSpaceCheck1Props {
+  coachSmartSpaceVisitId: string;
   practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -37,200 +40,230 @@ export const getGroupColor = (count: number): Colours => {
 };
 
 export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
+  coachSmartSpaceVisitId,
   practitioner,
-  programmeName,
-  setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitSection = 'COVID safety checklist (CC14)';
+
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(authSelectors.getAuthUser);
   const isCoach = coach?.user?.id === user?.id;
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection,
       question:
         'A DSD self-assessment form was done for opening. If no, please provide a copy for completion.',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'The programme has 1 metre squared space per child to allow physical distancing.',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'The physical space where the early childhood development programme operates has been thoroughly cleaned and disinfected in line with the requirements of COVID-19.',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Daily cleaning and sanitising of the programme is set up including daily cleaning of teaching and learning support materials, equipment and apparatus when open. (see paragraph 8.7.1 and 8.7.2 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Information posters are displayed – How to stop the spread, how to watch for symptoms, children’s key behaviours and screening and queuing poster.',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'If the programme is run as part of a private home or any other space that is shared it is confirmed that it will be implemented in a dedicated space where other persons (including adults and children) cannot access, walk through or sit in for the full duration of the programme).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'The drop-off and pick-up poster us up and process for this communicated (see paragraph 8.3 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'All staff members have received an orientation and have been made aware of the provisions contained in the documents indicated above in section 4.1. (see paragraph 8.2.1 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'All staff members received a proper orientation all measures and COVID safety procedures as well as to the adaptations or changes to the daily routines to accommodate the minimum health, safety and social distancing measures on COVID19. (see paragraphs 8.4, 8.5, 8.6 and 8.2.1 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'At the entrance, there is a safe space to wash hands with soap and clean water or sanitize hands (see paragraph 8.3 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Daily screening questions are written or printed out and ready to be used and space for screening station identified/ set up (see paragraph 8.3 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'A standard letter/communication to parents explaining COVID safety has been sent (see paragraph 8.2.3 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'If the programme has more than one group/class, there is a schedule in place for outdoor play time to ensure that different groups/classes do not mix (see paragraph 8.4 and 8.9 of DSD SOP.).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'The programme area is laid out or adapted to enable children and adults to keep a distance of at least 1 meter, where appropriate (paragraph 8.4 and 8.9 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `There is natural ventilation (windows or doors that can open) where this early
         childhood development programme or partial care facility (see paragraph 8.1 and 8.2.2 of DSD SOP).`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'There is a sufficient supply of clean water for drinking and handwashing or measures are in place and confirmed to ensure that there is sufficient supply (see paragraph 8.1 of DSD SOP.).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'There is a tap, a tippy-tap, a water dispenser or similar for handwashing under clean running water with measures that allow for physical distancing as appropriate (see paragraph 8.1 and 8.2 of DSD SOP.).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Every staff member has at least 2 washable cloth face masks. (paragraph 8.5).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         ' There are additional clean face masks (about 1 for every 10 children) that can be used in the case where a child becomes sick with COVID-19 symptoms (see paragraph 8.5 and 8.11 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'The programme area is laid out or adapted to enable children and adults to keep a distance of at least 1 meter, where appropriate (paragraph 8.4 and 8.9 of DSD SOP..).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `There is natural ventilation (windows or doors that can open) where this early
         childhood development programme or partial care facility (see paragraph 8.1 and 8.2.2 of DSD SOP..).`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'There is a sufficient supply of clean water for drinking and handwashing or measures are in place and confirmed to ensure that there is sufficient supply (see paragraph 8.1 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `There is a tap, a tippy-tap, a water dispenser or similar for handwashing under clean running water with measures that allow for physical distancing as appropriate (see
           paragraph 8.1 and 8.2 of DSD SOP).`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Every staff member has at least 2 washable cloth face masks (paragraph 8.5 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'There are additional clean face masks (about 1 for every 10 children) that can be used in the case where a child becomes sick with COVID-19 symptoms (see paragraph 8.5 and 8.11 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
 
     {
+      visitSection,
       question:
         'There is a sufficient supply of clean tissues or toilet paper (in separate pieces) for wiping children’s noses (see paragraph 8.2 and 8.6 of DSD SOP for more).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Hand sanitizer and cleaning materials are stored out of reach of children at all times and labelled (see paragraph 8.8.5 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'There is a sufficient supply of soap, hand sanitizers, cleaning agents that kills germs, such as bleach or disinfectant, cloths/cleaning brushes. (paragraph 8.8.5 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'There is a basic first aid kit, which includes rubber gloves (see paragraph 8.11.4 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question:
         'Plans for basic hygiene practises, including the changing of nappies, use of potties, disposal of the aforementioned, amongst others are in place (see paragraph 8.6.3 of DSD SOP).',
-      answer: false,
+      questionAnswer: 'false',
     },
   ]);
 
-  const visitSection = 'COVID safety checklist (CC14)';
-
   const allTrueAnswers = useMemo(() => {
-    const allAnswersFilled = questions?.every((item) => item?.answer === true);
+    const allAnswersFilled = questions?.every(
+      (item) => item.questionAnswer === 'true'
+    );
     return allAnswersFilled;
   }, [questions]);
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   const onDownloadCovidGuidelines = () => {
@@ -243,69 +276,9 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
   };
 
   useEffect(() => {
-    if (!isCoach) {
-      const previousData = questions.map((item) => {
-        const previousAnswer = visitData?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        });
-
-        const previousHasTrueAnswer =
-          Boolean(previousAnswer?.questionAnswer) === true ||
-          previousAnswer?.questionAnswer === 'true';
-
-        if (previousAnswer) {
-          return {
-            ...item,
-            answer: previousHasTrueAnswer!,
-          };
-        }
-
-        return item;
-      });
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: previousData,
-        },
-      ]);
-
-      setAnswers(previousData);
-      return;
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
     }
-
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.some(
-        (item: any) => item?.answer === 'true' || Boolean(item?.answer) === true
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer!,
-        };
-      }
-
-      return item;
-    });
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
   }, []);
 
   return (
@@ -367,10 +340,16 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
           description={item.question}
           checked={questions?.some(
             (option) =>
-              option.question === item.question && option?.answer === true
+              option.question === item.question &&
+              option?.questionAnswer === 'true'
           )}
           value={item.question}
-          onChange={() => onOptionSelected(!item.answer, index)}
+          onChange={() =>
+            onOptionSelected(
+              item.questionAnswer === 'true' ? 'false' : 'true',
+              index
+            )
+          }
           className="mb-1"
           disabled={!isCoach}
         />
@@ -391,7 +370,7 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
-                saveSmartSpaceCheckData();
+                saveSmartSpaceCheckData(questions, visitSection);
                 handleNextSection();
               }}
             >

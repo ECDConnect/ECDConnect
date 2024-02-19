@@ -12,13 +12,15 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import * as styles from './health-sanitation-safety.styles';
-import { HealthSanitationSafetysProps } from './health-sanitation-safety.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   ProgrammeDetailsModel,
   ProgrammeDetailsSchema,
 } from '@/schemas/trainee/programme-details';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklistProps,
+  SmartSpaceChecklistStepsSteps,
+} from '../../smart-space-checklist.types';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 
@@ -34,13 +36,13 @@ export const getGroupColor = (count: number): Colours => {
   return 'successMain';
 };
 
-export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
+export const HealthSanitationSafety: React.FC<SmartSpaceChecklistProps> = ({
   setSectionQuestions,
-  setShowProgrammeDetails,
   setVisitSection,
   onSubmit,
   setActiveStep,
   onSubmitAndContinue,
+  checklistVisitId,
 }) => {
   useForm<ProgrammeDetailsModel>({
     resolver: yupResolver(ProgrammeDetailsSchema),
@@ -49,7 +51,9 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
   });
 
   const { isOnline } = useOnlineStatus();
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(
+    traineeSelectors.getTraineeVisitData(checklistVisitId)
+  );
 
   const [questions, setAnswers] = useState([
     {
@@ -160,7 +164,7 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
         title={'SmartSpace Checklist'}
         subTitle={'Step 2 of 4'}
         color={'primary'}
-        onBack={() => setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL)}
+        onBack={() => setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL)}
         displayOffline={!isOnline}
         className="pb-16"
       >

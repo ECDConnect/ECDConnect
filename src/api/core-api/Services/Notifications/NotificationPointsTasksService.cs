@@ -47,7 +47,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (topEarners.Count() == 1)
                 {
                     var userToSend = await _userManager.FindByIdAsync(topEarners.First().Key);
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TopSmartStarterPoints, DateTime.Now, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TopSmartStarterPoints, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                 }
             }
         }
@@ -84,7 +84,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (i <= midPosition)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now, practitioner.User, "", MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
                     }
                     else
                     {
@@ -96,7 +96,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 ReplacementValue = userPoints[i].Value.ToString(),
                             }
                         };
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now, practitioner.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                     }
                 }
             }
@@ -123,7 +123,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 };
 
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.EndofyearPointsEarned, DateTime.Now, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.EndofyearPointsEarned, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
             }
         }
     }

@@ -15,7 +15,9 @@ export const CompleteProfile: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userData = useSelector(userSelectors.getUser);
   const history = useHistory();
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
   const { isOnline } = useOnlineStatus();
   const isOnStipend = practitioner?.isOnStipend;
   const dialog = useDialog();

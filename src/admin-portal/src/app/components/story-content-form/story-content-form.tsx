@@ -355,6 +355,22 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     storyBookPartsValuesFormatted,
   ]);
 
+  const getQuestionValue = useCallback(
+    (linkedQuestions, idx) => {
+      if (linkedQuestions && linkedQuestions.length !== 0) {
+        const question = linkedQuestions[0];
+        const answer = initialStoryBookPartsQuestionsFormatted.find(
+          (q) => q.id === question.id
+        );
+        if (answer) {
+          return answer.question;
+        }
+      }
+      return '';
+    },
+    [initialStoryBookPartsQuestionsFormatted]
+  );
+
   if (
     tempData &&
     displayFields &&
@@ -466,7 +482,8 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                         />
                       </>
                     )}
-                    {formType === StoryBookTypes.readAloud && (
+                    {(formType === StoryBookTypes.readAloud ||
+                      formType === StoryBookTypes.other) && (
                       <>
                         <Typography
                           type={'h4'}
@@ -517,27 +534,24 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                       className="bg-adminPortalBg my-4 p-4"
                       isAdminPortalField={true}
                       id={item?.id}
-                      value={
-                        (storyBookPartsQuestionsFormatted &&
-                          storyBookPartsQuestionsFormatted?.length &&
-                          storyBookPartsQuestionsFormatted?.find(
-                            (question) =>
-                              question?.id ===
-                              item?.storyBookPartQuestions?.[0]?.id
-                          )?.question) ||
-                        storyBookPartsQuestionsFormatted?.find(
-                          (question) => question?.idx === idx
-                        )?.question
-                      }
+                      value={getQuestionValue(
+                        item?.storyBookPartQuestions,
+                        idx
+                      )}
+                      //   (storyBookPartsQuestionsFormatted &&
+                      //     storyBookPartsQuestionsFormatted?.length &&
+                      //     storyBookPartsQuestionsFormatted?.find(
+                      //       (question) =>
+                      //         question?.id.toString() === item?.storyBookPartQuestions?.[0]?.id.toString()
+                      //     )?.question) ||
+                      //   storyBookPartsQuestionsFormatted?.find(
+                      //     (question) => question?.idx === idx
+                      //   )?.question
+                      // }
                       disabled={item?.partText === ''}
                       onChange={(e) => onQuestionChange(e, idx)}
                       textInputType="textarea"
                       placeholder={'Add a question...'}
-                      // error={
-                      //   dataValuesDescriptionLength?.length === 0 && idx === 0
-                      //     ? 'This field is required'
-                      //     : ('' as any)
-                      // }
                     />
                   </div>
                 );

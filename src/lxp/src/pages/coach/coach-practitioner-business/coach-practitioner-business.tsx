@@ -39,7 +39,9 @@ export const CoachPractitionerBusiness = () => {
   const practitionerFirstName = practitioner?.user?.firstName;
   const practitionerFullname = `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`;
 
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
   const statements = useSelector(
     practitionerForCoachSelectors.getStatementsForUser(userId)
   );

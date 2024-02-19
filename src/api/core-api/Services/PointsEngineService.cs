@@ -1317,7 +1317,8 @@ namespace EcdLink.Api.CoreApi.Services
                 activity,
                 DateTime.Now,
                 (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
-                
+
+            _notificationService.ExpireNotificationsTypesForUser(userId, TemplateTypeConstants.ChildRegistrationIncomplete);
             return true;
         }
 
@@ -1890,7 +1891,7 @@ namespace EcdLink.Api.CoreApi.Services
                             FindValue = "ClubId",
                             ReplacementValue = club.Id.ToString()
                         });
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
                     }
                 }
 

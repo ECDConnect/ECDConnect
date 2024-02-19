@@ -14,8 +14,10 @@ import {
   StackedList,
   Card,
   ActionModal,
+  MenuListDataItem,
 } from '@ecdlink/ui';
-import { NoteTypeEnum } from '@ecdlink/graphql';
+import { NoteTypeEnum, PractitionerRemovalHistory } from '@ecdlink/graphql';
+import { PractitionerService } from '@/services/PractitionerService';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './practitioner-profile-info.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -56,12 +58,13 @@ import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
 import { clubSelectors, clubThunkActions } from '@/store/club';
 import { getActivityMeetRegularDetails } from '@/store/club/club.actions';
 import { PractitionerDelicensed } from './practitioner-delicensed/practitioner-delicensed';
+import { authSelectors } from '@/store/auth';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const history = useHistory();
-
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const classroom = useSelector(classroomsSelectors?.getClassroom);
@@ -76,13 +79,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
-    useState<any>();
+    useState<any>(); // TODO - Fix missing type
   const [isToRemoveSmartStarter, setIsToRemoveSmartStarter] =
     useState<boolean>(false);
   const [delicenseDate, setDelicenseDate] = useState<Date>();
 
   const isTrainee = practitioner?.isTrainee;
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
 
   const showBusinessItem =
     practitioner?.isFundaAppAdmin || practitioner?.isPrincipal;
@@ -140,6 +145,46 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
   const practitionerAbsentees = practitioner?.absentees;
+
+  const validAbsentee = practitionerAbsentees?.filter(
+    (item) =>
+      (!isPast(new Date(item?.absentDateEnd as string)) ||
+        isToday(new Date(item?.absentDate as string))) &&
+      item?.reason !== 'Practitioner removed from programme'
+  );
+
+  const currentAbsentee = validAbsentee?.find(
+    (item) => item?.absentDate === orderedDates?.[0]
+  ) as AbsenteeDto;
+
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
+  );
+
+  const isOnLeave =
+    isLeave &&
+    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
+      isToday(new Date(currentAbsentee?.absentDate as string))) &&
+    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
+
+  const absenceIsToday = isSameDay(
+    new Date(),
+    new Date(currentAbsentee?.absentDate || '')
+  );
+
+  const classesWithAbsence =
+    validAbsentee &&
+    Object.values(
+      validAbsentee?.reduce(
+        (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
+        {}
+      )
+    );
+
+  classesWithAbsence?.sort(function (a, b) {
+    return a?.absentDate?.localeCompare(b?.absentDate);
+  });
 
   useEffect(() => {
     appDispatch(getPractitionerTimeline({ userId: practitionerId }));
@@ -218,39 +263,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const orderedDates = currentDates?.sort(function (a, b) {
     return Date.parse(a) - Date.parse(b);
   });
-
-  const currentAbsentee = validAbsenteesDates?.find(
-    (item) => item?.absentDate === orderedDates?.[0]
-  ) as AbsenteeDto;
-
-  const classesWithAbsence =
-    validAbsenteesDates &&
-    Object.values(
-      validAbsenteesDates?.reduce(
-        (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
-        {}
-      )
-    );
-
-  classesWithAbsence?.sort(function (a, b) {
-    return a?.absentDate?.localeCompare(b?.absentDate);
-  });
-
-  const absenceIsToday = isSameDay(
-    new Date(),
-    new Date(currentAbsentee?.absentDate || '')
-  );
-
-  const isLeave = useMemo(
-    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
-    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
-  );
-
-  const isOnLeave =
-    isLeave &&
-    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
-      isToday(new Date(currentAbsentee?.absentDate as string))) &&
-    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
@@ -336,24 +348,43 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     );
   };
 
+  const [existingRemoval, setExistingRemoval] = useState<
+    PractitionerRemovalHistory | undefined
+  >();
+
+  const getRemovalForPractitioner = async () => {
+    const removalDetails = await new PractitionerService(
+      userAuth?.auth_token!
+    ).getRemovalForPractitioner(practitioner?.userId!);
+    setExistingRemoval(removalDetails);
+
+    return removalDetails;
+  };
+
   useEffect(() => {
-    const getTraineeTimeline = async () =>
-      await appDispatch(
-        traineeThunkActions.getTraineeTimeline({
-          userId: practitioner?.userId ? practitioner?.userId : '',
-        })
-      );
+    if (practitioner?.isTrainee) {
+      const getTraineeTimeline = async () =>
+        await appDispatch(
+          traineeThunkActions.getTraineeTimeline({
+            userId: practitioner?.userId ? practitioner?.userId : '',
+          })
+        );
 
-    const getTraineeVisitDate = async () =>
-      await appDispatch(
-        traineeThunkActions.getTraineeVisitData({
-          visitId: traineeCurrentVisit?.id,
-        })
-      );
-
-    getTraineeTimeline();
-    getTraineeVisitDate();
-  }, [appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
+      const getTraineeVisitDate = async () =>
+        await appDispatch(
+          traineeThunkActions.getTraineeVisitData({
+            visitId: traineeCurrentVisit?.id,
+          })
+        );
+      getTraineeTimeline();
+      getTraineeVisitDate();
+    }
+  }, [
+    appDispatch,
+    practitioner?.isTrainee,
+    practitioner?.userId,
+    traineeCurrentVisit?.id,
+  ]);
 
   // Load club points, we need them so we can calculate action items for this practitioner
   useEffect(() => {
@@ -385,6 +416,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   useEffect(() => {
     classroomsDetailsForPractitioner();
+    getRemovalForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -404,9 +436,16 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const navigateClassroom = () => {
     if (isOnline) {
-      history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
-        practitionerId,
-      });
+      if (existingRemoval) {
+        history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
+          practitionerId: practitionerId,
+          removePractitioner: true,
+        });
+      } else {
+        history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
+          practitionerId,
+        });
+      }
     } else {
       showOnlineOnly();
     }
@@ -426,19 +465,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   };
 
   const navigateJourney = () => {
-    if (isOnline) {
-      history.push(
-        ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
-          ':practitionerId',
-          practitionerId
-        )
-      );
-    } else {
-      showOnlineOnly();
-    }
+    history.push(
+      ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+        ':practitionerId',
+        practitionerId
+      )
+    );
   };
 
-  const listItems = [
+  const listItems: MenuListDataItem[] = [
     {
       title: 'SmartStarter journey',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
@@ -449,40 +484,28 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
       onActionClick: () =>
         onboardingNotCompleted && isTrainee
           ? setShowTraineeDashboard(true)
           : navigateJourney(),
-      classNames: 'bg-uiBg',
     },
     {
       title: 'Classroom',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: !isTrainee ? 'Children, progress & attendance' : 'Children',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      subTitle: existingRemoval
+        ? `${practitioner?.user?.firstName} removed from programme`
+        : !isTrainee
+        ? 'Children, progress & attendance'
+        : 'Children',
+      subTitleStyle: existingRemoval
+        ? 'text-sm font-h1 font-normal text-errorMain w-9/12 overflow-clip'
+        : 'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'AcademicCapIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
       onActionClick: () => navigateClassroom(),
-      classNames: 'bg-uiBg',
+      backgroundColor: existingRemoval ? 'alertBg' : 'uiBg',
     },
   ];
 
@@ -490,27 +513,29 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     listItems?.push({
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Location, classes & staff',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      subTitle: existingRemoval
+        ? `${practitioner?.user?.firstName} removed from programme`
+        : 'Location, classes & staff',
+      subTitleStyle: existingRemoval
+        ? 'text-sm font-h1 font-normal text-errorMain w-9/12 overflow-clip'
+        : 'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      backgroundColor: existingRemoval ? 'alertBg' : 'uiBg',
       menuIcon: 'InformationCircleIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
-      classNames: 'bg-uiBg',
       onActionClick: () => {
         if (isOnline) {
-          history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-            practitionerId,
-          });
+          if (existingRemoval) {
+            history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
+              practitionerId: practitionerId,
+              removePractitioner: true,
+            });
+          } else {
+            history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+              practitionerId,
+            });
+          }
         } else {
           showOnlineOnly();
         }
@@ -539,14 +564,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       iconBackgroundColor: onboardingIncompleteAfter2Weeks
         ? 'alertMain'
         : 'tertiary',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
       onActionClick: () =>
         onboardingNotCompleted && isTrainee
           ? setShowTraineeDashboard(true)
@@ -556,7 +573,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 practitionerId
               )
             ),
-      classNames: 'bg-uiBg',
     });
   }
 
@@ -571,20 +587,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
       onActionClick: () => navigateBusiness(),
-      classNames: 'bg-uiBg',
     });
   }
 
-  const noClassroomGroupsListItems = [
+  const noClassroomGroupsListItems: MenuListDataItem[] = [
     {
       title: 'SmartStarter journey',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
@@ -595,14 +602,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
       onActionClick: () =>
         history.push(
           ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
@@ -610,36 +609,37 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             practitionerId
           )
         ),
-      classNames: 'bg-uiBg',
     },
     {
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Location, classes & staff',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      subTitle: existingRemoval
+        ? `${practitioner?.user?.firstName} removed from programme`
+        : 'Location, classes & staff',
+      subTitleStyle: existingRemoval
+        ? 'text-sm font-h1 font-normal text-errorMain w-9/12 overflow-clip'
+        : 'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      backgroundColor: existingRemoval ? 'alertBg' : 'uiBg',
       menuIcon: 'InformationCircleIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
       onActionClick: () => {
         if (isOnline) {
-          history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-            practitionerId,
-          });
+          if (existingRemoval) {
+            history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
+              practitionerId: practitionerId,
+              removePractitioner: true,
+            });
+          } else {
+            history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+              practitionerId,
+            });
+          }
         } else {
           showOnlineOnly();
         }
       },
-      classNames: 'bg-uiBg',
     },
   ];
 
@@ -655,21 +655,12 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     menuIconClassName: 'text-white',
     showIcon: true,
     iconBackgroundColor: 'tertiary',
-    chipConfig: {
-      colorPalette: {
-        backgroundColour: 'alertMain',
-        borderColour: 'alertMain',
-        textColour: 'white',
-      },
-    },
-    text: '',
     onActionClick: () =>
       history.push(
         ROUTES.COMMUNITY.CLUB.MEMBER[!!practitionerClub ? 'ROOT' : 'ADD']
           .replace(':practitionerId', practitionerId)
           .replace(':clubId', practitioner?.clubId || 'new')
       ),
-    classNames: 'bg-uiBg',
   });
 
   const onCreatePractitionerNoteBack = () => {
@@ -886,7 +877,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                     );
                   }
 
-                  if (absenceIsToday) {
+                  if (absenceIsToday && !isOnLeave) {
                     return (
                       <>
                         <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
@@ -970,15 +961,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                               type={'h1'}
                               color="textDark"
                               text={`${practitioner?.user?.firstName} is on leave`}
-                              className={'mt-6 ml-4'}
                             />
                             <div className="flex items-center gap-2">
                               <Typography
-                                type={'body'}
+                                type="h4"
                                 color="textMid"
                                 weight="bold"
                                 text={`Start date:`}
-                                className={'mt-4 ml-4'}
+                                className={'mt-4'}
                               />
                               <Typography
                                 type={'body'}
@@ -992,11 +982,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <Typography
-                                type={'body'}
+                                type="h4"
                                 color="textMid"
                                 weight="bold"
                                 text={`End date:`}
-                                className={'mt-4 ml-4'}
+                                className={'mt-4'}
                               />
                               <Typography
                                 type={'body'}
@@ -1014,17 +1004,32 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <Typography
-                                type={'body'}
+                                type="h4"
                                 color="textMid"
                                 weight="bold"
                                 text={`Reason:`}
-                                className={'mt-4 ml-4'}
+                                className={'mt-4'}
                               />
                               <Typography
                                 type={'body'}
                                 color="textMid"
                                 text={`${item?.reason}`}
                                 className={'mt-4'}
+                              />
+                            </div>
+                            <div className="mt-4 flex flex-wrap">
+                              <Typography
+                                type="h4"
+                                color="textMid"
+                                weight="bold"
+                                text={`${item?.className} class reassigned to:`}
+                                className="flex-grow"
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={item?.reassignedToPerson}
+                                className="flex-glow"
                               />
                             </div>
                             {isPrincipal && (

@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -319,7 +320,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var practitioner = _practiGenericRepo.GetByUserId(userId);
             if (practitioner != null)
             {
-                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin ? practitioner : _practiGenericRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
+                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin || practitioner.PrincipalHierarchy == null
+                    ? practitioner 
+                    : _practiGenericRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
+
                 if (principal != null)
                 {
                     principalClassroom.PrincipalName = string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName;
@@ -340,17 +344,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         //if no classroomgroup is available to look at, use the classroom for principal
                         classroom = _classRepo.GetByUserId(principal.UserId.ToString());
                     }
-                    principalClassroom.Name = classroom.Name;
-                    principalClassroom.Id = classroom.Id.ToString();
-                    principalClassroom.InsertedDate = classroom.InsertedDate;
-                    principalClassroom.PreschoolFeeAmount = classroom.PreschoolFeeAmount;
-                    principalClassroom.PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate;
-                    
-                    if (classroom.SiteAddressId != null)
+                    if (classroom != null)
                     {
-                        SiteAddress classAddress = _addressRepo.GetById((Guid)classroom.SiteAddressId);
-                        principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
-                        principalClassroom.ClassSiteAddressId = classAddress.Id.ToString();
+                        principalClassroom.Name = classroom.Name;
+                        principalClassroom.Id = classroom.Id.ToString();
+                        principalClassroom.InsertedDate = classroom.InsertedDate;
+                        principalClassroom.PreschoolFeeAmount = classroom.PreschoolFeeAmount;
+                        principalClassroom.PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate;
+
+                        if (classroom.SiteAddressId != null)
+                        {
+                            SiteAddress classAddress = _addressRepo.GetById((Guid)classroom.SiteAddressId);
+                            principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
+                            principalClassroom.ClassSiteAddressId = classAddress.Id.ToString();
+                        }
                     }
                 }
             }
@@ -442,7 +449,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                             ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
                         });
 
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now, practi.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now.Date, practi.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
                     }
                 }
 
@@ -486,7 +493,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = classroomName
                 });
 
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7), true);
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7), false, true);
 
 
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
@@ -525,7 +532,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         FindValue = "ProgrammeName",
                         ReplacementValue = classroom.Name
                     });
-                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
                 }
 
             }
@@ -573,7 +580,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     FindValue = "ProgrammeName",
                     ReplacementValue = classroom.Name
                 });
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DemotedFromPrincipalOrFAA, DateTime.Now, practitionerToDemote.User, null, MessageStatusConstants.Amber, replacements);
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DemotedFromPrincipalOrFAA, DateTime.Now.Date, practitionerToDemote.User, null, MessageStatusConstants.Amber, replacements);
             }
 
             return practitionerToDemote;
@@ -941,7 +948,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             });
 
             var userToSend = _userManager.FindByIdAsync(userId).Result;
-            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
 
 
             return trainee;

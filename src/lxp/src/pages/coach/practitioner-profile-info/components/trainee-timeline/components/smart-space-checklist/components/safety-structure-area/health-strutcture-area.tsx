@@ -8,11 +8,13 @@ import {
   Divider,
   Alert,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as styles from './health-strutcture-area.styles';
-import { HealthSanitationSafetysProps } from './health-strutcture-area..types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklisstStepsSteps,
+  SmartSpaceChecklistProps,
+} from '../../smart-space-checklist.types';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 
@@ -28,15 +30,15 @@ export const getGroupColor = (count: number): Colours => {
   return 'successMain';
 };
 
-export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
-  setSectionQuestions,
-  setShowProgrammeDetails,
-  setVisitSection,
+export const HealthStructureArea: React.FC<SmartSpaceChecklistProps> = ({
   handleNextSection,
   setActiveStep,
+  visitId,
 }) => {
+  const visitSection = 'Safety - structure, space & area';
+
   const { isOnline } = useOnlineStatus();
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(traineeSelectors.getTraineeVisitData(visitId));
 
   const [questions, setAnswers] = useState([
     {
@@ -87,46 +89,11 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
   ]);
 
   const trueAnswers = useMemo(() => {
-    const answers = questions?.filter((item) => item?.answer === true);
+    const answers = questions?.filter((item) => item.answer);
     return answers;
   }, [questions]);
 
-  const visitSection = 'Safety - structure, space & area';
-
-  const completedItems = visitData
-    ?.filter((item) => item?.visitSection === visitSection)
-    .filter(
-      (item) =>
-        item?.questionAnswer === 'true' ||
-        (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
-    );
-
   const disableSection = true;
-
-  const onOptionSelected = useCallback(
-    (value, index) => {
-      const currentQuestion = questions[index];
-
-      const updatedQuestions = questions.map((question) => {
-        if (question.question === currentQuestion.question) {
-          return {
-            ...question,
-            answer: value,
-          };
-        }
-        return question;
-      });
-
-      setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
-    },
-    [questions, setSectionQuestions]
-  );
 
   useEffect(() => {
     const previousData = questions.map((item) => {
@@ -193,11 +160,10 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
                 title={''}
                 description={item.question}
                 checked={questions?.some(
-                  (option) =>
-                    option.question === item.question && option?.answer === true
+                  (option) => option.question === item.question && option.answer
                 )}
                 value={item.question}
-                onChange={() => onOptionSelected(!item.answer, index)}
+                onChange={() => {}}
                 className="mb-1"
               />
             ))}

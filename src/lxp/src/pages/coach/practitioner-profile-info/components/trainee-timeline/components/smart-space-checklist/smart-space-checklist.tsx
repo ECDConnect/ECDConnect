@@ -10,32 +10,33 @@ import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ProgrammeDetails } from './components/programme-details/programme-details';
 import { traineeSelectors } from '@/store/trainee';
-import { SectionQuestions } from './components/programme-details/programme-details.types';
 import { SmartSpaceChecklisstStepsSteps } from './smart-space-checklist.types';
 import { HealthSanitationSafety } from './components/health-sanitation-safety/health-sanitation-safety';
-import { HealthStructureArea } from './components/safety-structure-area/health-strutcture-area.';
+import { HealthStructureArea } from './components/safety-structure-area/health-strutcture-area';
 import { SpaceEmergencyPlanning } from './components/space-emergency-planning/space-emergency-planning';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 interface SmartSpaceChecklistProps {
-  setNotificationStep: any;
-  isSmartChecklist?: any;
+  setNotificationStep: (value: string) => void;
+  practitionerUserId: string;
 }
 
 export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   setNotificationStep,
+  practitionerUserId,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const [sectionQuestions, setSectionQuestions] =
-    useState<SectionQuestions[]>();
-  const [visitSection, setVisitSection] = useState('');
   const [activeStep, setActiveStep] = useState(
     SmartSpaceChecklisstStepsSteps.INITIAL
   );
   const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline
+    traineeSelectors.getTraineeOnboardTimeline(practitionerUserId)
   );
-  const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitId = traineeTimeline?.traineeVisits?.[0]?.id || '';
+  const traineeVisitData = useSelector(
+    traineeSelectors.getTraineeVisitData(visitId)
+  );
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
 
@@ -66,8 +67,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       case SmartSpaceChecklisstStepsSteps.PROGRAMME_DETAILS:
         return (
           <ProgrammeDetails
-            setSectionQuestions={setSectionQuestions}
-            setVisitSection={setVisitSection}
+            visitId={visitId}
             handleNextSection={handleNextSection}
             setActiveStep={setActiveStep}
           />
@@ -76,8 +76,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       case SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY:
         return (
           <HealthSanitationSafety
-            setSectionQuestions={setSectionQuestions}
-            setVisitSection={setVisitSection}
+            visitId={visitId}
             handleNextSection={handleNextSection}
             setActiveStep={setActiveStep}
           />
@@ -85,8 +84,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       case SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA:
         return (
           <HealthStructureArea
-            setSectionQuestions={setSectionQuestions}
-            setVisitSection={setVisitSection}
+            visitId={visitId}
             handleNextSection={handleNextSection}
             setActiveStep={setActiveStep}
           />
@@ -94,8 +92,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       case SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING:
         return (
           <SpaceEmergencyPlanning
-            setSectionQuestions={setSectionQuestions}
-            setVisitSection={setVisitSection}
+            visitId={visitId}
             handleNextSection={handleNextSection}
             setActiveStep={setActiveStep}
           />

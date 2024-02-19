@@ -92,7 +92,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const isPrincipal = practitioner?.isPrincipal;
 
   const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
   );
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];

@@ -564,10 +564,22 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var numberOfChildrenNotRegistered = 0;
                 
                     var isFranchiseeHittingChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isVenueSafe = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isSmartSpaceStillFine = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault(); ;
+                    
+                    var isVenueSafeRecord = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isVenueSafe = "true";
+                    if (isVenueSafeRecord != null && isVenueSafeRecord != "")
+                    {
+                        isVenueSafe = isVenueSafeRecord == "false" ? "true" : "false";
+                    }
+                    var isSmartSpaceStillFineRecord = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isSmartSpaceStillFine = "true";
+                    if (isSmartSpaceStillFineRecord != null && isSmartSpaceStillFineRecord != "")
+                    {
+                        isSmartSpaceStillFine = isSmartSpaceStillFineRecord == "false" ? "true" : "false";
+                    }
+
                     var presentChildrenNotRegistered = "false";
 
                     jsonPutPostString.AppendLine("\"ObservationNotes\":\"" + observationNotes + "\",");
@@ -585,8 +597,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"Longitude\": null,");
                     jsonPutPostString.AppendLine("\"WasSuccessful\":" + wasSuccessful + ",");
                     jsonPutPostString.AppendLine("\"IsFranchiseeHittingChildren\":" + (isFranchiseeHittingChildren == null ? "false" : isFranchiseeHittingChildren) + ",");
-                    jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + (isSmartSpaceStillFine == null ? "false": isSmartSpaceStillFine) + ",");
-                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + (isVenueSafe == null ? "false" : isVenueSafe == "false" ? "true" : "false" ) + ",");
+                    jsonPutPostString.AppendLine("\"IsSmartSpaceStillFine\":" + isSmartSpaceStillFine + ",");
+                    jsonPutPostString.AppendLine("\"IsVenueSafe\":" + isVenueSafe + ",");
                     jsonPutPostString.AppendLine("\"IsThereTooManyChildren\":" + (isThereTooManyChildren == null ? "false" : isThereTooManyChildren) + ",");
                     jsonPutPostString.AppendLine("\"IsRoutineLongEnough\":" + (isRoutineLongEnough == null ? "false" : isRoutineLongEnough) + ",");
                     jsonPutPostString.AppendLine("\"DidAcceptAgreements\":" + didAcceptAgreements + ",");
@@ -933,7 +945,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var pqaAgreement = _visitDataRepo.GetAll().Where(x => x.Visit.PractitionerId == visit.PractitionerId &&
                                                                      x.Visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
                                                                      x.Question == Constants.SSSettings.franchisee_agreement).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isSmartSpaceStillFine = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault(); ;
                     var acceptedItems = 0;
                     if (pqaAgreement != null)
                     {
@@ -1455,7 +1466,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                                             //send notification to coach
                                             var userToSend = await _userManager.FindByIdAsync(coach.UserId.ToString());
-                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now.Date, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
                                             totalFranchiseesAddedToSS++;
                                             franchiseeCreated = true;
                                         }
@@ -1898,7 +1909,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 }
                 else
                 {
-                    entities = _mapperRepo.GetAll().ToList();
+                    entities = _mapperRepo.GetAll().Where(x => x.UserId.ToString() != "").ToList();
                 }
             }
 
@@ -1914,7 +1925,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 if (_mappedEntities != null)
                     entities = _mappedEntities;
                 else
-                    entities = _mapperRepo.GetAll().ToList();
+                    entities = _mapperRepo.GetAll().Where(x => x.UserId.ToString() != "").ToList();
             }
 
             if (excludeDocs) //return everything except documents
@@ -2967,7 +2978,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             SmartSpaceLicenceDate = entity.SmartSpaceLicenceDate,
                             StipendType = entity.StipendType,
                             IsOnStipend = entity.StipendType != null ? true : false,
-                            CoachHierarchy = Guid.Parse(entity.localParentEntityUserId),
+                            CoachHierarchy = Guid.Parse(entity.localParentEntityUserId),                  
+                           
                             //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage
                             //HighestEducationLevel = entity.HighestEducationLevel,
                             //StartDate
@@ -2979,7 +2991,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             //HaveCommunitySupport
                             //CommunitySupportGained
                         };
-
+      
                         //    //check phone number is valid
                         //string numberToImport = null;
                         //try
@@ -3089,6 +3101,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 {
                                     _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapTrainee(1)]", Roles.PRACTITIONER, newUser.Id);
                                     await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                                    _practitionerRepo.Insert(newPractitioner);
+                                    if (newPractitioner != null)
+                                    {
+                                        newTrainee.Practitioner = newPractitioner;
+                                        newTrainee.PractitionerId = newPractitioner.Id;
+                                        existingPractitioner = newPractitioner;
+                                    }
                                     pracCreated = true;
                                 }
                                 else
@@ -3131,10 +3150,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     _practitionerRepo.Insert(newPractitioner);
                                 }
                                 //notify trainee to stary journey
-                                await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, DateTime.Now, newTrainee.User);
+                                await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, DateTime.Now.Date, newTrainee.User);
                                 if (entity.ConsolidationMeetingDate != null)
                                 {
-                                    await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.TraineeSetupVenue, DateTime.Now, newTrainee.User);
+                                    await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.TraineeSetupVenue, DateTime.Now.Date, newTrainee.User);
                                 }
 
                                 pracCreated = true;

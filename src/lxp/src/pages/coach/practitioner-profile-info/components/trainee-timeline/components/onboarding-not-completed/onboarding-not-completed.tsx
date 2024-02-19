@@ -16,7 +16,7 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 
 interface OnboardingNotCompletedProps {
-  practitioner?: PractitionerDto;
+  practitioner: PractitionerDto;
   starterLicenseDate: Date;
   setShowOnboardingNotCompleted: (item: boolean) => void;
   isRemoveTrainee: boolean;
@@ -66,15 +66,15 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
         {isRemoveTrainee && (
           <>
             <Typography
-              text={`${practitioner?.user?.firstName} did not complete trainee onboarding in 4 weeks.`}
+              text={`${practitioner.user?.firstName} did not complete trainee onboarding in 4 weeks.`}
               type="h2"
               color="textDark"
               className={'mt-4'}
             />
             <Typography
-              text={`Remove ${practitioner?.user?.firstName}'s profile.
+              text={`Remove ${practitioner.user?.firstName}'s profile.
 
-      ${practitioner?.user?.firstName} received a Starter License on ${new Date(
+      ${practitioner.user?.firstName} received a Starter License on ${new Date(
                 starterLicenseDate
               ).toLocaleDateString('en-ZA', dateLongMonthOptions)}.
 
@@ -100,7 +100,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
               } to find out what's wrong, or deactivate this profile.
 
           ${
-            practitioner?.user?.firstName
+            practitioner.user?.firstName
           } received a Starter License on ${new Date(
                 starterLicenseDate
               ).toLocaleDateString('en-ZA', dateLongMonthOptions)}.
@@ -117,13 +117,13 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
             />
 
             <Typography
-              text={`Contact ${practitioner?.user?.firstName}`}
+              text={`Contact ${practitioner.user?.firstName}`}
               type="h3"
               color="textDark"
               className="mt-4"
             />
             <Typography
-              text={`${practitioner?.user?.phoneNumber}`}
+              text={`${practitioner.user?.phoneNumber}`}
               type="h2"
               weight="skinny"
               color="primary"
@@ -163,7 +163,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
                     aria-hidden="true"
                   />
                   <Typography
-                    text={`Call ${practitioner?.user?.firstName}`}
+                    text={`Call ${practitioner.user?.firstName}`}
                     type="button"
                     weight="skinny"
                     color="primary"
@@ -185,7 +185,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
             className={'mt-6 mb-6 w-full'}
             onClick={() =>
               history.push(ROUTES.COACH.PRACTIONER_REMOVE, {
-                practitionerId: practitioner?.userId,
+                practitionerId: practitioner.userId,
               })
             }
           >
@@ -194,7 +194,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
               type="body"
               className="mr-4"
               color="primary"
-              text={`Remove ${practitioner?.user?.firstName}`}
+              text={`Remove ${practitioner.user?.firstName}`}
             ></Typography>
           </Button>
         </div>

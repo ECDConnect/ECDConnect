@@ -33,6 +33,7 @@ export const getClassroom = createAsyncThunk<
     const {
       auth: { userAuth },
       classroomData: { classroom: classroomsCache },
+      user: { user: userCache },
     } = getState();
 
     if (!classroomsCache) {
@@ -51,6 +52,15 @@ export const getClassroom = createAsyncThunk<
           return rejectWithValue('Error getting Classrooms');
         }
 
+        if (userCache?.principalObjectData?.isPrincipal) {
+          const classRoom = classrooms?.find((classroom: ClassroomDto) => {
+            return classroom?.userId === userCache?.id;
+          });
+
+          if (classRoom) {
+            return classRoom;
+          }
+        }
         return classrooms[0];
       } catch (err) {
         return rejectWithValue(err);

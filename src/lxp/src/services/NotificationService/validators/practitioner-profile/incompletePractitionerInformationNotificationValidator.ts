@@ -70,7 +70,10 @@ export class IncompletePractitionerInformationNotificationValidator
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
-        const timeline = traineeState?.traineeOnboardTimeline;
+        const timeline =
+          traineeState?.traineeOnboardTimeline[
+            practitionerState.practitioner.userId || ''
+          ];
         const steps = timelineSteps(
           timeline!,
           () => {},

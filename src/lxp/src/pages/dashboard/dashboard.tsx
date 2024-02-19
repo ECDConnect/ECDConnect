@@ -53,7 +53,7 @@ import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { traineeSelectors } from '@/store/trainee';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { PractitionerInput } from '@ecdlink/graphql';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
@@ -116,7 +116,9 @@ export const Dashboard: React.FC = () => {
   const hasConsent = practitioner?.shareInfo;
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -147,6 +149,14 @@ export const Dashboard: React.FC = () => {
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
+
+  // Sync the coach data -> TODO make a better sync method
+  useEffect(() => {
+    if (isCoach) {
+      appDispatch(traineeThunkActions.syncCoachSmartSpaceVisitData());
+      appDispatch(traineeThunkActions.syncTraineeFranchisorAgreementData());
+    }
+  }, []);
 
   useEffect(() => {
     //This will prevent points card showing up for coaches

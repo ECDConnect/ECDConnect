@@ -1,27 +1,42 @@
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
 import { Notification } from './notifications.types';
+import { parseISO } from 'date-fns';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const getAllNotifications = createSelector(
   (state: RootState) => state.notifications.notifications,
   (notifications: Notification[]) => {
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
+    const currentISODate = new Date().toISOString();
+    const currentDate = parseISO(currentISODate.replace('Z', ''));
+
+    const ctasMapped = Object.keys(notificationTagConfig).map(
+      (key) => notificationTagConfig[key].cta
+    );
 
     return [...notifications]?.filter((notification) => {
-      const dateCreated = new Date(notification?.message?.dateCreated);
-      dateCreated.setHours(0, 0, 0, 0);
+      const ISOdateCreated = new Date(
+        notification?.message?.dateCreated
+      ).toISOString();
+      const dateCreated = parseISO(ISOdateCreated.replace('Z', ''));
+
+      const isCtaOk =
+        ctasMapped.includes(notification.message.cta) ||
+        !notification.message.cta;
 
       if (!notification?.message?.expiryDate) {
-        return dateCreated.getTime() <= currentDate.getTime();
+        return dateCreated.getTime() <= currentDate.getTime() && isCtaOk;
       }
 
-      const expiryDate = new Date(notification?.message?.expiryDate);
-      expiryDate.setHours(0, 0, 0, 0);
+      const expiryIsoDate = new Date(
+        notification?.message?.expiryDate
+      ).toISOString();
+      const expiryDate = parseISO(expiryIsoDate.replace('Z', ''));
 
       return (
         expiryDate.getTime() >= currentDate.getTime() &&
-        dateCreated.getTime() <= currentDate.getTime()
+        dateCreated.getTime() <= currentDate.getTime() &&
+        isCtaOk
       );
     });
   }

@@ -212,7 +212,7 @@ export const AddMeeting: React.FC = () => {
       setStep((prevStep) => prevStep + 1);
     } else if (isScheduleInCalendar) {
       const hours = new Date().toISOString().split('T')[1];
-      const formattedDate = new Date(`${step1.date}T${hours}`);
+      const formattedDate = new Date(`${step1.date.split('T')[0]}T${hours}`);
       const start = formattedDate.toISOString();
       formattedDate.setHours(formattedDate.getHours() + 1);
       const end = formattedDate.toISOString();

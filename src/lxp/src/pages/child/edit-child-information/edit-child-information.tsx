@@ -73,6 +73,8 @@ import { documentActions, documentSelectors } from '@store/document';
 import { userSelectors } from '@store/user';
 import ROUTES from '../../../../src/routes/routes';
 import { UNSURE_CLASS } from '@/constants/classroom';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationsSelectors } from '@/store/notifications';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -194,6 +196,27 @@ export const EditChildInformation: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChild, caregiver, currentChildLearnerRecord]);
+
+  const assignToClassNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes('[[AddChildToClass]]') &&
+      childId &&
+      item?.message?.action?.includes(childId)
+  );
+
+  const removeNotifications = async () => {
+    if (assignToClassNotifications && assignToClassNotifications?.length > 0) {
+      assignToClassNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
+  };
 
   const openChildConfirmEditClassPrompt = () => {
     dialog({
@@ -536,6 +559,8 @@ export const EditChildInformation: React.FC = () => {
         stoppedAttendance: new Date().toISOString(),
         isActive: false,
       };
+
+      removeNotifications();
 
       appDispatch(
         classroomsActions.updateClassroomGroupLearner(learnerInputModel)

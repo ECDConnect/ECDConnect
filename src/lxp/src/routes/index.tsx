@@ -84,7 +84,7 @@ import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-on
 import Calendar from '@/pages/calendar/calendar-home';
 import RemovePractitionerFromProgramme from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/remove-practitioner-from-programme';
 import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
-import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { FranchiseeAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/franchisee-agreement/franchisee-agreement';
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
 import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
@@ -601,7 +601,7 @@ const AuthRoutes: React.FC = () => {
       <Route
         exact
         path={ROUTES.COACH_FRANCHISE_AGREEMENT}
-        component={CoachTraineeFranchisorAgreement}
+        component={FranchiseeAgreement}
       />
       <Route
         exact

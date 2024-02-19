@@ -21,7 +21,9 @@ export const StatementNotSubmitted: React.FC<StatementNotSubmittedProps> = ({
   const { userId } = useParams<PractitionerBusinessParams>();
   const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
   const hasStartUpSupport =
     timeline?.startUpSupportStartDate !== null &&
     timeline?.startUpSupportEndDate !== null;

@@ -410,7 +410,7 @@ namespace EcdLink.Api.CoreApi.Services
             _notificationService.ExpireNotificationsTypesForUser(userToSend.Id.ToString(), TemplateTypeConstants.ClubLeaderRoleAssigned);
 
             // Add new notification for new club leader assignment
-            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
+            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
 
             // Archive leader in member table
             ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId).FirstOrDefault();
@@ -520,7 +520,7 @@ namespace EcdLink.Api.CoreApi.Services
                 _notificationService.ExpireNotificationsTypesForUser(user.Id.ToString(), TemplateTypeConstants.UserAddedToClub);
 
                 // Add notification to show user is new to club
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
             }
 
             return true;
@@ -557,7 +557,10 @@ namespace EcdLink.Api.CoreApi.Services
 
                 foreach (ClubMember clubMember in clubMembers)
                 {
-                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NewClubleader, DateTime.Now, clubMember.Practitioner.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14), true);
+                    if (clubMember.Practitioner.UserId != leader.UserId)
+                    {
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NewClubleader, DateTime.Now.Date, clubMember.Practitioner.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14), false, true);
+                    }
                 }
             }
 
