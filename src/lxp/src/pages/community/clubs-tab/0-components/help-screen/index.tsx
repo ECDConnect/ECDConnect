@@ -7,6 +7,7 @@ import { MoreInformation } from '@ecdlink/graphql';
 import { authSelectors } from '@/store/auth';
 import { staticDataSelectors } from '@/store/static-data';
 import InfoService from '@/services/InfoService/InfoService';
+import { clubSelectors } from '@/store/club';
 
 export type HelpSection =
   | 'Be Creative'
@@ -17,6 +18,7 @@ export type HelpSection =
   | 'Leave No One Behind - Purple'
   | 'Meet Regularly'
   | 'Coach'
+  | 'Practitioner'
   | 'Club Leader Agreement';
 
 export const ActivityHelp: React.FC = () => {
@@ -27,13 +29,14 @@ export const ActivityHelp: React.FC = () => {
 
   const userAuth = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
+  const league = useSelector(clubSelectors.getLeagueForPractitionerSelector);
 
   const history = useHistory();
 
   const { helpSection } = useParams<ActivityHelpRouteState>();
 
   const section =
-    helpSection === 'Coach'
+    helpSection === 'Coach' || helpSection === 'Practitioner'
       ? `Community - League - ${helpSection}`
       : `Community - Club - ${helpSection}`;
 
@@ -42,11 +45,19 @@ export const ActivityHelp: React.FC = () => {
     new InfoService()
       .getMoreInformation(section, selectedLanguage)
       .then((info) => {
-        setData(info);
+        if (helpSection === 'Practitioner') {
+          setData(
+            info.filter((item: MoreInformation) => {
+              return item.visit?.includes(league?.leagueTypeName || '');
+            })
+          );
+        } else {
+          setData(info);
+        }
         setIsLoading(false);
       })
       .catch(() => setIsLoading(false));
-  }, [section, selectedLanguage, userAuth]);
+  }, [league?.leagueTypeName, section, selectedLanguage, userAuth]);
 
   return (
     <MoreInformationPage
