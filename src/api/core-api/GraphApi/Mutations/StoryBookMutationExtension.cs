@@ -48,7 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     { "storyBookPartQuestions", part.QuestionId },
                     { "partText", part.PartText },
-                    { "part", part.Part },
+                    { "part", part.Part.Replace("Part ", "") },
                     { "name", part.Name}
                 };
 
