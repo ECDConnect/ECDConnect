@@ -22,7 +22,7 @@ export const getAllNotifications = createSelector(
 
       const isCtaOk =
         ctasMapped.includes(notification.message.cta) ||
-        notification.message.cta ||
+        !notification.message.cta ||
         notification.message.action;
 
       if (!notification?.message?.expiryDate) {
