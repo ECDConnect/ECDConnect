@@ -20,9 +20,7 @@ export const getAllNotifications = createSelector(
       ).toISOString();
       const dateCreated = parseISO(ISOdateCreated.replace('Z', ''));
 
-      const isCtaOk =
-        ctasMapped.includes(notification.message.cta) ||
-        notification.message.cta;
+      const isCtaOk = ctasMapped.includes(notification.message.cta);
 
       if (!notification?.message?.expiryDate) {
         return dateCreated.getTime() <= currentDate.getTime() && isCtaOk;
