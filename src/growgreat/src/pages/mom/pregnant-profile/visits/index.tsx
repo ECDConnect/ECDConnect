@@ -189,20 +189,7 @@ export const Visits: React.FC = () => {
   );
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => {
-      const dueDate = getDateWithoutTimeZone(item.dueDate);
-      const orderDate = getDateWithoutTimeZone(item.orderDate);
-      const isAttend = item.attended;
-      if (dueDate) {
-        return !isAttend && dueDate >= todayDateWithoutTimeZone!;
-      }
-
-      if (orderDate) {
-        return !isAttend && orderDate >= todayDateWithoutTimeZone!;
-      }
-
-      return !isAttend;
-    });
+    const filteredVisits = visits.filter((item) => !item.attended);
 
     const sortedVisits = getSortedVisits(filteredVisits);
     const isToShowPastVisits = visits.length > filteredVisits.length;
@@ -217,27 +204,37 @@ export const Visits: React.FC = () => {
 
       const orderDate = getDateWithoutTimeZone(orderDateString);
 
+      const isMissedVisit =
+        orderDate?.getTime()! < todayDateWithoutTimeZone?.getTime()!;
+
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
+
+      let subTitle = `By ${day} ${orderDate?.toLocaleString('default', {
+        month: 'long',
+      })} ${orderDate?.getFullYear()}`;
+
+      if (isAdditionalVisit && item.comment) {
+        subTitle = item.comment;
+      }
+
+      if (isMissedVisit && (!previousItem || previousItem?.attended)) {
+        subTitle = 'Missed visit deadline';
+      }
 
       return {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName || 'Visit',
-        subTitle:
-          isAdditionalVisit && item.comment!
-            ? item.comment
-            : `By ${day} ${orderDate?.toLocaleString('default', {
-                month: 'long',
-              })} ${orderDate?.getFullYear()}`,
-        ...(isAdditionalVisit && {
+        subTitle,
+        ...((isMissedVisit || isAdditionalVisit) && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: 'CalendarIcon',
         type: getType(item),
         showActionButton:
           (!previousItem || previousItem?.attended) &&
-          getType(item) === 'inProgress',
+          (getType(item) === 'inProgress' || isMissedVisit),
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>

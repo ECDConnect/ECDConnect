@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -153,26 +153,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       item?.reason !== 'Practitioner removed from programme'
   );
 
-  const currentAbsentee = validAbsentee?.find(
-    (item) => item?.absentDate === orderedDates?.[0]
-  ) as AbsenteeDto;
-
-  const isLeave = useMemo(
-    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
-    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
-  );
-
-  const isOnLeave =
-    isLeave &&
-    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
-      isToday(new Date(currentAbsentee?.absentDate as string))) &&
-    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
-
-  const absenceIsToday = isSameDay(
-    new Date(),
-    new Date(currentAbsentee?.absentDate || '')
-  );
-
   const classesWithAbsence =
     validAbsentee &&
     Object.values(
@@ -263,6 +243,26 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const orderedDates = currentDates?.sort(function (a, b) {
     return Date.parse(a) - Date.parse(b);
   });
+
+  const currentAbsentee = validAbsentee?.find(
+    (item) => item?.absentDate === orderedDates?.[0]
+  ) as AbsenteeDto;
+
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
+  );
+
+  const isOnLeave =
+    isLeave &&
+    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
+      isToday(new Date(currentAbsentee?.absentDate as string))) &&
+    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
+
+  const absenceIsToday = isSameDay(
+    new Date(),
+    new Date(currentAbsentee?.absentDate || '')
+  );
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
@@ -780,7 +780,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
                   if (absenceIsUntilSevenDaysPast) {
                     return (
-                      <>
+                      <Fragment key={item?.absenteeId}>
                         <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
                           <div className={'p-4'}>
                             <Typography
@@ -873,7 +873,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                             </div>
                           </div>
                         </Card>
-                      </>
+                      </Fragment>
                     );
                   }
 
@@ -1217,7 +1217,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                           {item?.className &&
                             practitionerAbsenteeClasses?.map(
                               (classroomGroup) => (
-                                <div className="flex items-center gap-2">
+                                <div
+                                  className="flex items-center gap-2"
+                                  key={classroomGroup?.absenteeId}
+                                >
                                   <Typography
                                     type={'body'}
                                     color="textMid"

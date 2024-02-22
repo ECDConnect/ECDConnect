@@ -47,11 +47,11 @@ UPDATE public."MessageTemplate"
 	WHERE "TemplateType" in ('unassigned-classes');
 
 	UPDATE public."MessageLog"
-	SET "Action"='{"url":"/practitioner/programme-information/playgroups"}'
+	SET "Action"='{"url":"/practitioner/profile/playgroups"}'
 	WHERE "MessageTemplateType"  in ('unassigned-classes');
 
 UPDATE public."MessageTemplate"
-	SET "Action"='{"url":"/practitioner/programme-information/playgroups"}'
+	SET "Action"='{"url":"/practitioner/profile/playgroups"}'
 	WHERE "TemplateType" in ('unassigned-classes');
 
 UPDATE public."MessageLog"
@@ -61,3 +61,11 @@ UPDATE public."MessageLog"
 UPDATE public."MessageTemplate"
 	SET "Action"='{"url":"/practitioner/profile/edit"}'
 	WHERE "TemplateType"  in ('removed-from-programme');
+
+	UPDATE public."MessageLog"
+	SET "Action"='{"url":"/practitioner/community"}'
+	WHERE "MessageTemplateType"  in ('new-clubleader');
+
+UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"/practitioner/community"}'
+	WHERE "TemplateType"  in ('new-clubleader');

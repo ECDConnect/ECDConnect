@@ -41,6 +41,8 @@ import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
+import { notificationsSelectors } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   removeReasonId,
@@ -142,6 +144,27 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     setRemovePractionerFormValues('reassignedClassrooms', mappedClasses);
     triggerRemovePractionerForm();
     return classroomDetails;
+  };
+
+  const removalNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes('[[SeeTrainee]]') &&
+      item?.message?.action?.includes(practitionerUserId) &&
+      item?.message?.title?.includes('has not completed on boarding')
+  );
+
+  const removeNotifications = async () => {
+    if (removalNotifications && removalNotifications?.length > 0) {
+      removalNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
   };
 
   useEffect(() => {
@@ -382,6 +405,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
           onProceed={() => {
             handleFormSubmit(getRemovePractionerFormValues());
             setRemovePractionerPromptVisible(false);
+            removeNotifications();
             history.push(ROUTES.COACH.PRACTITIONERS);
             onSuccess();
           }}

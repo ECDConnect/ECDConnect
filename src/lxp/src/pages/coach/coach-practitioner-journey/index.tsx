@@ -81,6 +81,8 @@ import { getUserPointsSummaryForCoach } from '@/store/points/points.actions';
 import { pointsConstants } from '@/constants/points';
 import ROUTES from '@/routes/routes';
 import { coachSelectors } from '@/store/coach';
+import { notificationsSelectors } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -280,6 +282,27 @@ export const CoachPractitionerJourney = () => {
     });
   };
 
+  const scheduleVisitNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes('[[ScheduleVisit]]') &&
+      item?.message?.action?.includes(practitionerId) &&
+      item?.message?.title?.includes('requested a visit')
+  );
+
+  const removeNotifications = async () => {
+    if (scheduleVisitNotifications && scheduleVisitNotifications?.length > 0) {
+      scheduleVisitNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
+  };
+
   const onScheduleOrStart = ({
     scheduleStartText,
     eventType,
@@ -305,6 +328,7 @@ export const CoachPractitionerJourney = () => {
               type: 'filled',
               onClick: () => {
                 onSubmit();
+                removeNotifications();
                 onSchedule({ visit, visitEventId, eventType, visitTypeName });
                 syncData();
               },
@@ -317,6 +341,7 @@ export const CoachPractitionerJourney = () => {
               type: 'outlined',
               onClick: () => {
                 onSubmit();
+                removeNotifications();
                 onStart(visitTypeName);
                 syncData();
               },
