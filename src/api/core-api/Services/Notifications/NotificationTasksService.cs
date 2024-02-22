@@ -530,7 +530,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     if (trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true)
                                         traineeOnboardingCount = 9;
 
-                                    bool cancelStarter = false;
+                                    bool cancelStarter = false; //remove startup notificatiosn for trainee
                                     bool flagDelete = false;
                                     bool flag4weeks = false;
                                     bool flag2weeks = false;
@@ -575,12 +575,11 @@ namespace EcdLink.Api.CoreApi.Services
                                             traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done ||
                                             traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
                                             traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||
-                                            traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed ||
+                                            (traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed && trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true) ||
                                             traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit) &&
                                             traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
                                         {
                                             cancelStarter = false;
-
                                             TimeSpan daysToCheck = trainee.StarterLicenceDate.HasValue ? (DateTime.Now - (DateTime)trainee.StarterLicenceDate) : (DateTime.Now - (DateTime)trainee.InsertedDate);
 
                                             if (daysToCheck.Days >= 28 && daysToCheck.Days < 35)
@@ -610,7 +609,6 @@ namespace EcdLink.Api.CoreApi.Services
                                                 await _notificationService.DeleteAllNotificationsForUser(trainee.UserId.ToString());
                                                 _anonymiser.AnonymiseUser((Guid)trainee.UserId, "Trainee");
                                             }
-
                                         }
                                         if (cancelStarter)
                                         {
