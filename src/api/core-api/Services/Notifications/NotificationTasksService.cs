@@ -501,14 +501,17 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var coachToSend = coach.User;
 
-                var newTraineesCheck = traineeRepo.GetAll()
-                    .Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7) && x.TraineeConvertedDate == null && x.CoachHierarchy.Equals(coach.UserId))
-                    .ToList(); //because some trainees dont have practtitioner records
-                if (newTraineesCheck.Any())
+                if (weeklyChecksOnly)
                 {
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, null, DateTime.Now.AddDays(2), false, true);
+                    var newTraineesCheck = traineeRepo.GetAll()
+                        .Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7) && x.TraineeConvertedDate == null && x.CoachHierarchy.Equals(coach.UserId))
+                        .ToList(); //because some trainees dont have practtitioner records
+                    if (newTraineesCheck.Any())
+                    {
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, null, DateTime.Now.AddDays(2), false, true);
+                    }
                 }
-                if (!weeklyChecksOnly)
+                else
                 {
 
                     bool overdueVisists = false;
@@ -528,7 +531,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     //if stipenreceiver then 9 steps otherwise 7
                                     if (trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true)
-                                        traineeOnboardingCount = 9;
+                                        traineeOnboardingCount = 8;
 
                                     bool cancelStarter = false; //remove startup notificatiosn for trainee
                                     bool flagDelete = false;
