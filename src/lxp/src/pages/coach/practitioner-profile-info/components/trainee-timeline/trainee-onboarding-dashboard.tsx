@@ -93,7 +93,9 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title === 'Consolidation meeting attended'
   );
 
-  const onboardingNotCompleted = completedSteps?.length < 8;
+  const onboardingNotCompleted =
+    (practitioner?.isOnStipend && completedSteps?.length < 8) ||
+    (practitioner?.isOnStipend !== true && completedSteps?.length < 7);
   const twoWeeksAgo = addDays(new Date(), -14);
   const fourWeeksAgo = addDays(new Date(), -28);
   const starterLicenseDate = timeline?.starterLicenseDate
@@ -211,19 +213,21 @@ export const OnboardingTraineeDashboard: React.FC<
         )}
         {showSteps && (
           <>
-            {nextStep && overdueSteps?.length <= 0 && (
-              <StackedList
-                isFullHeight={false}
-                className={'flex flex-col gap-2'}
-                listItems={notificationItem}
-                type={'MenuList'}
-                onClickItem={
-                  notificationItem.length > 0
-                    ? notificationItem[0].onActionClick
-                    : undefined
-                }
-              />
-            )}
+            {nextStep &&
+              overdueSteps?.length <= 0 &&
+              !onboardingIncompleted && (
+                <StackedList
+                  isFullHeight={false}
+                  className={'flex flex-col gap-2'}
+                  listItems={notificationItem}
+                  type={'MenuList'}
+                  onClickItem={
+                    notificationItem.length > 0
+                      ? notificationItem[0].onActionClick
+                      : undefined
+                  }
+                />
+              )}
 
             {timeline && (
               <Steps
