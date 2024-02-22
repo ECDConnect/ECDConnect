@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.Services
                     var userToSend = await _userManager.FindByIdAsync(parentUserId.ToString());
                     if (userToSend != null && userToSend.coachObjectData == null) //do not send to coach parent objects
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true);
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, child.UserId.ToString());
                     }
                 }
             }
