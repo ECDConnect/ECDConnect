@@ -120,12 +120,6 @@ export const SetupPrincipal: React.FC = () => {
             progress: 2.0,
           })
         );
-
-        await appDispatch(
-          practitionerThunkActions.updatePractitionerShareInfo({
-            practitionerId: user.id,
-          })
-        );
         stopService();
       }
 
