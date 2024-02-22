@@ -28,6 +28,7 @@ public class WeeklyNotificationChecks : CronJobService
              //run weekly attendance reminder
             await service.WeeklyAttendancesReminderAsync();
             await service.CoachChecksNotification(true);
+            await service.WeeklyCoachTraineesCheckReminderAsync();
         }
     }
 }

@@ -12,6 +12,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task DailyUnassignedProgrammesNotification();
         Task DailyAttendanceNotTrackedNotification();
         Task CoachChecksNotification(bool weeklyChecksOnly = false);
+        Task WeeklyCoachTraineesCheckReminderAsync();
         //other
         Task MonthlyStatementsReminderAsync();
         Task WeeklyAttendancesReminderAsync();

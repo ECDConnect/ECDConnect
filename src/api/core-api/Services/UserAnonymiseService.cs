@@ -1,23 +1,17 @@
-﻿using ECDLink.Abstractrions.Enums;
-using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Abstractrions.Constants;
-using NPOI.POIFS.Properties;
-using Org.BouncyCastle.Asn1.Ocsp;
-using static ECDLink.Core.SystemSettings.SettingGroups;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -86,7 +80,39 @@ namespace EcdLink.Api.CoreApi.Services
                                 foreach (var jobNotificationRow in jobNotification)
                                 { _context.Remove(jobNotificationRow); }
                             }
+                            //remove classroomgroups and children via classrooms and learners linke dto this user
+                            List<ClassroomGroup> classroomGroups = _context.ClassroomGroupss.Where(x => x.UserId == userId).ToList();
+                            List<Classroom> classrooms = _context.Classrooms.Where(x => x.UserId == userId).ToList();
 
+                            if (classroomGroups.Any())
+                            {
+                                foreach (var group in classroomGroups)
+                                {
+                                    List<Learner> learners = _context.Learners.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
+                                    if (learners.Any())
+                                    {
+                                        foreach (var learner in learners) {
+                                            List<Child> children = _context.Children.Where(x => x.UserId.Equals(learner.UserId)).ToList();
+                                            if (children.Any())
+                                            {
+                                                foreach (var child in children)
+                                                {
+                                                    _context.Remove(child);
+                                                }
+                                            }
+                                            _context.Remove(learner);
+                                        }
+                                    }
+                                    _context.Remove(group);
+                                }
+                            }
+                            if (classrooms.Any())
+                            {
+                                foreach (var classroom in classrooms)
+                                {
+                                    _context.Remove(classroom);
+                                }
+                            }
                             //remove hierarchy
                             _hierarchyEngine.DeleteHierarchy(userId);
                             //remove trainee
