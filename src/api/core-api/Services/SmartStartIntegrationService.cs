@@ -5135,6 +5135,9 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             jsonAttendanceString.AppendLine("},");
                         }
                     }
+                    // Remove newline and trailing comma
+                    jsonAttendanceString = jsonAttendanceString.Remove(jsonAttendanceString.Length - 3, 1);
+
                     jsonAttendanceString.AppendLine("]");
 
                     try
