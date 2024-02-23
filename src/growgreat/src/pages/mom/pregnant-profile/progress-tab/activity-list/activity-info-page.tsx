@@ -255,7 +255,7 @@ export const ActivityInfoPage = ({
       renderOverflow
     >
       <div className="bg-uiBg border-primary border-t px-4">
-        <LanguageSelector selectLanguage={setLanguage} />
+        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
       </div>
       <div className="p-4">
         <Card className="bg-uiBg my-4 flex flex-col justify-center rounded-2xl p-4">
