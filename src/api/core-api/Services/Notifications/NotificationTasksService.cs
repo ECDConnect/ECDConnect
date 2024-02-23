@@ -518,7 +518,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     bool overdueVisists = false;
                     var newTraineesForCoach = traineeRepo.GetAll()
-                        .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId))
+                        .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId) && x.UserId.ToString() == "728094c5-14cb-ee11-8355-00155dee5a05")
                         .ToList();
 
                     foreach (var trainee in newTraineesForCoach)
@@ -584,15 +584,35 @@ namespace EcdLink.Api.CoreApi.Services
                                             cancelStarter = true;
                                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName, trainee.UserId.ToString());
                                         }
+                                        bool flagIncompleteOnboarding = false;
+                                        if (trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true)
+                                        {
+                                            if ((traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received ||
+                                                traineeTimeline.ConsolidationMeetingStatus != Constants.SSSettings.consolidation_meeting ||
+                                                traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done ||
+                                                traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
+                                                traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||
+                                                traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit) ||
+                                                traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed ||
+                                                traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
+                                            {
+                                                flagIncompleteOnboarding = true;
+                                            }
+                                        } else
+                                        {
+                                            if ((traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received ||
+                                                traineeTimeline.ConsolidationMeetingStatus != Constants.SSSettings.consolidation_meeting ||
+                                                traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done ||
+                                                traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
+                                                traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||                                            
+                                                traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit) ||
+                                                traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
+                                            {
+                                                flagIncompleteOnboarding = true;
+                                            }
+                                        }
 
-                                        if ((traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received ||
-                                            traineeTimeline.ConsolidationMeetingStatus != Constants.SSSettings.consolidation_meeting ||
-                                            traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done ||
-                                            traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
-                                            traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||
-                                            (traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed && trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true) ||
-                                            traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit) &&
-                                            traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
+                                        if (flagIncompleteOnboarding)
                                         {
                                             cancelStarter = false;
                                             TimeSpan daysToCheck = trainee.StarterLicenceDate.HasValue ? (DateTime.Now - (DateTime)trainee.StarterLicenceDate) : (DateTime.Now - (DateTime)trainee.InsertedDate);

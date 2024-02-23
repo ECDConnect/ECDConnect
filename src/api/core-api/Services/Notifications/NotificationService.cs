@@ -291,6 +291,19 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public async Task<bool> DeleteAllNotificationsRelatedToUser(string userId)
+        {
+            if (userId != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(x => x.RelatedToUserId == userId).ToList();
+                foreach (var notification in notifications)
+                {
+                    _messageRepo.Delete(notification.Id);
+                }
+            }
+            return true;
+        }
+
         public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null, string relatedToUserId = null)
         {
             if (userId != null && templateType != null)
