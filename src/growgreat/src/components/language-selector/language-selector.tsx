@@ -38,7 +38,6 @@ export const LanguageSelector = ({
 
   const handleOfflineAlert = useCallback(() => {
     if (isOfflineAlert) {
-      console.log('loop?');
       setTimeout(() => {
         setIsOfflineAlert(false);
       }, 5000);
