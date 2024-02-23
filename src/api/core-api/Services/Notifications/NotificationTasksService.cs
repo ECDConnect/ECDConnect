@@ -23,6 +23,8 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.VisualBasic;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -77,7 +79,7 @@ namespace EcdLink.Api.CoreApi.Services
             //find the principal that owns the classroomgroup and message them
             var unassignedClassroom =
             (
-                from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.UserId == null)
+                from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.UserId == null && x.Name != "Unsure")
                 join classroomData in classroomRepo.GetAll() on classroomGroupData.ClassroomId equals classroomData.Id
                 join principalData in principalRepo.GetAll().Where(p => (p.IsPrincipal == true || p.IsFundaAppAdmin == true)) on classroomData.UserId equals principalData.UserId
                 select new { classroomData,classroomGroupData, principalData.User }
@@ -94,10 +96,38 @@ namespace EcdLink.Api.CoreApi.Services
                         ReplacementValue = unassignedClass.classroomGroupData.Name
                     });
 
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now.Date, unassignedClass.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7).Date, false, true);
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now.Date, unassignedClass.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7).Date, false, true, null, unassignedClass.User.Id.ToString());
                 }
             }
         }
+
+        //public async Task DailyUnassignedProgrammesNotification()
+        //{
+        //    var adminId = _hierarchyEngine.GetAdminUserId();
+
+        //    var principalRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+        //    var classRoomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: adminId);
+        //    var classRoomRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: adminId);
+
+        //    var unassignedClasses =
+        //      (
+        //          from classroomGroupData in classRoomGroupRepo.GetAll().Where(x => x.UserId == null)
+        //          join classroomData in classRoomRepo.GetAll() on classroomGroupData.ClassroomId equals classroomData.Id
+        //          join principalData in principalRepo.GetAll().Where(p => (p.IsPrincipal == true || p.IsFundaAppAdmin == true)) on classroomData.UserId equals principalData.UserId
+        //          select new { classroomGroupData, principalData.User }
+        //      ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
+
+        //    foreach (var classroom in unassignedClasses)
+        //    {
+        //        List<TagsReplacements> replacements = new List<TagsReplacements>();
+        //        replacements.Add(new TagsReplacements()
+        //        {
+        //            FindValue = "ClassName",
+        //            ReplacementValue = classroom.classroomGroupData.Name
+        //        });
+        //        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now.Date, classroom.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7).Date, false, true);
+        //    }
+        //}
 
         public async Task DailyChildrenRegistrationsIncompleteNotification()
         {
@@ -130,7 +160,7 @@ namespace EcdLink.Api.CoreApi.Services
                     var userToSend = await _userManager.FindByIdAsync(parentUserId.ToString());
                     if (userToSend != null && userToSend.coachObjectData == null) //do not send to coach parent objects
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true);
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, child.UserId.ToString());
                     }
                 }
             }
@@ -171,36 +201,8 @@ namespace EcdLink.Api.CoreApi.Services
                         FindValue = "ChildUserId",
                         ReplacementValue = child.childData.UserId.ToString()
                     });
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now.Date, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now.Date, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true, null, child.childData.UserId.ToString());
                 }
-            }
-        }
-
-        public async Task DailyUnassignedProgrammesNotification()
-        {
-            var adminId = _hierarchyEngine.GetAdminUserId();
-
-            var principalRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
-            var classRoomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: adminId);
-            var classRoomRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: adminId);
-
-            var unassignedClasses =
-              (
-                  from classroomGroupData in classRoomGroupRepo.GetAll().Where(x => x.UserId == null)
-                  join classroomData in classRoomRepo.GetAll() on classroomGroupData.ClassroomId equals classroomData.Id
-                  join principalData in principalRepo.GetAll().Where(p => (p.IsPrincipal == true || p.IsFundaAppAdmin == true)) on classroomData.UserId equals principalData.UserId
-                  select new { classroomGroupData, principalData.User }
-              ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
-
-            foreach (var classroom in unassignedClasses)
-            {
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "ClassName",
-                    ReplacementValue = classroom.classroomGroupData.Name
-                });
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now.Date, classroom.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7).Date,false, true);
             }
         }
 
@@ -243,7 +245,7 @@ namespace EcdLink.Api.CoreApi.Services
                     ReplacementValue = isStipendReceiver ? stipendText : ""
                 });
 
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.IncomeStatementIncompleteBy1st, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(6),false,true);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.IncomeStatementIncompleteBy1st, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(6),false,true, pracData.Key.ToString());
             }
         }
 
@@ -285,7 +287,7 @@ namespace EcdLink.Api.CoreApi.Services
                     .ToList();
                 if (classRooms.Any())
                 {
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PlanYourProgrammes, DateTime.Now.Date, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PlanYourProgrammes, DateTime.Now.Date, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, pracData.UserId.ToString());
                 }
             }
         }
@@ -338,7 +340,7 @@ namespace EcdLink.Api.CoreApi.Services
                     FindValue = "DueDate",
                     ReplacementValue = dueDate.ToString("dddd, dd MMMM yyyy")
                 });
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now.Date, item.pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90), false, true);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now.Date, item.pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90), false, true, null, item.pracData.UserId.ToString());
             }
         }
 
@@ -562,6 +564,16 @@ namespace EcdLink.Api.CoreApi.Services
                                             FindValue = "TraineeName",
                                             ReplacementValue = traineeName
                                         });
+                                        replacements.Add(new TagsReplacements()
+                                        {
+                                            FindValue = "PractitionerUserId",
+                                            ReplacementValue = trainee.UserId.ToString()
+                                        });
+                                        replacements.Add(new TagsReplacements()
+                                        {
+                                            FindValue = "PractitionerId",
+                                            ReplacementValue = trainee.UserId.ToString()
+                                        });
                                         if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received && 
                                             traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting && 
                                             traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done && 
@@ -570,7 +582,7 @@ namespace EcdLink.Api.CoreApi.Services
                                             traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received)
                                         {
                                             cancelStarter = true;
-                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName);
+                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName, trainee.UserId.ToString());
                                         }
 
                                         if ((traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received ||
@@ -602,9 +614,9 @@ namespace EcdLink.Api.CoreApi.Services
                                             }
 
                                             if (flag4weeks)
-                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), false, true, traineeName);
+                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), false, true, traineeName, trainee.UserId.ToString());
                                             else if (flag2weeks)
-                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName);
+                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName, trainee.UserId.ToString());
                                             else if (flagDelete)
                                             {
                                                 cancelStarter = true;
@@ -616,7 +628,7 @@ namespace EcdLink.Api.CoreApi.Services
                                         if (cancelStarter)
                                         {
                                             //switch off starter notifications for this trainee if there was any
-                                            await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.StartTraineeJourney, traineeName);
+                                            await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.StartTraineeJourney, traineeName, null, trainee.UserId.ToString());
                                         }
                                         if (!flagDelete && !flag2weeks && !flag4weeks) //if not even started dont botehr with this
                                         {
@@ -643,7 +655,19 @@ namespace EcdLink.Api.CoreApi.Services
 
                                             if (traineeOnboardingCount - traineeCount == 2)
                                             {
-                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now.Date, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, traineeName);
+                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now.Date, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, traineeName, trainee.UserId.ToString());
+                                            } else if (traineeOnboardingCount - traineeCount > 2) 
+                                            {
+                                                //overdue trainee tasks EC-997
+
+                                                //replacements.Add(new TagsReplacements()
+                                                //{
+                                                //    FindValue = "DueDate",
+                                                //    ReplacementValue = dueDate.ToString()
+                                                //});
+
+                                                //await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeOverdueTasks, DateTime.Now.Date, trainee.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7),false, true, null, trainee.UserId.ToString());
+
                                             }
                                         }
                                     }
@@ -693,8 +717,8 @@ namespace EcdLink.Api.CoreApi.Services
                                         FindValue = "PractitionerFirstName",
                                         ReplacementValue = pracName
                                     });
-                                    await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.CoachSelfAssessmentFormReminder, pracName);
-                                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true, pracName);
+                                    await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.CoachSelfAssessmentFormReminder, pracName, null, prac.UserId.ToString());
+                                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true, pracName, prac.UserId.ToString());
                                 }
 
 
@@ -716,6 +740,7 @@ namespace EcdLink.Api.CoreApi.Services
                             _logger.LogError("Issue with practitioner timeline in DailyCoachChecksNotification " + ex.Message, ex);
                         }
                     }
+
 
                     if (overdueVisists)
                     {

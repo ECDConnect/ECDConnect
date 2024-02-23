@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using HotChocolate;
 using HotChocolate.Types;
@@ -397,7 +398,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
         public async Task<bool> SendCoachTraineeReadySmartspaceCheckNotification(
 [Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string traineeFirstName)
+[Service] INotificationService notificationService, string userId, string traineeFirstName, string traineeUserId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -405,8 +406,23 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 FindValue = "TraineeFirstName",
                 ReplacementValue = traineeFirstName
             });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "TraineeName",
+                ReplacementValue = traineeFirstName
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerUserId",
+                ReplacementValue = traineeUserId
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerId",
+                ReplacementValue = traineeUserId
+            });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true, traineeFirstName, traineeUserId);
         }
 
         public async Task<bool> SendCoachVisitRequestedNotification(
@@ -501,7 +517,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = parentPrincipalFAACoachUserId
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1).Date,false, true);
         }
 
         public async Task<bool> SendSetLeaveNotification(
@@ -530,7 +546,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = parentPrincipalUserId
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1), false, true);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1).Date, false, true);
         }
 
         //        public async Task<bool> SendStartupSupportEndingIn2MonthsNotification(

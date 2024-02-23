@@ -9,18 +9,14 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.Notifications.NoSms;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
-using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using NJsonSchema.CodeGeneration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +116,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     toGroups = item.ToGroups.Replace("Region:", "").Replace("Province:", "").Replace("Role:", ""); //Clean out group text for display
                 }
-                notifications.Add(new Notification() { From = item.From, FromUserId = item.FromUserId, Id = item.Id, Message = item.Message, MessageProtocol = item.MessageProtocol, To = item.To, SentByUserId = item.SentByUserId, Subject = item.Subject, MessageTemplateType = item.MessageTemplateType, MessageTemplate = template, CTA = item.CTA, CTAText = item.CTAText, MessageDate = item.MessageDate, MessageEndDate = item.MessageEndDate, Status = item.Status, ToGroups = item.ToGroups, ReadDate = item.ReadDate, Ordering = template.Ordering, Action = item.Action  });
+                notifications.Add(new Notification() { From = item.From, 
+                    FromUserId = item.FromUserId, Id = item.Id,
+                    Message = item.Message, 
+                    MessageProtocol = item.MessageProtocol, 
+                    To = item.To,
+                    SentByUserId = item.SentByUserId, 
+                    Subject = item.Subject, 
+                    MessageTemplateType = item.MessageTemplateType, 
+                    MessageTemplate = template, 
+                    CTA = item.CTA, 
+                    CTAText = item.CTAText, 
+                    MessageDate = item.MessageDate, 
+                    MessageEndDate = item.MessageEndDate,
+                    Status = item.Status, ToGroups = item.ToGroups, 
+                    ReadDate = item.ReadDate, 
+                    Ordering = template.Ordering, 
+                    Action = item.Action,
+                    RelatedToUserId = item.RelatedToUserId
+                });
 
             }
 
