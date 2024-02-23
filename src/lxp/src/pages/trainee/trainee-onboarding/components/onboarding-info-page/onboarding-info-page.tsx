@@ -1,36 +1,26 @@
-import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
 import {
-  ActionModal,
   BannerWrapper,
   Button,
-  DialogPosition,
   Divider,
   StepItem,
   Steps,
   Typography,
 } from '@ecdlink/ui';
-import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
-import LanguageSelector from '../../../../../components/language-selector/language-selector';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { ContentService } from '@services/ContentService';
-import { useAppDispatch } from '@store';
-import { authSelectors } from '@store/auth';
-import { progressTrackingThunkActions } from '@store/progress-tracking';
 
 const MOCKED_INCOMPLETE_DATA = {
   visit: {
     title: 'First site visit',
-    subTitle: 'By 10 April 2020',
+    subTitle: 'By 10 April 2024',
   },
   alert: {
     title: 'SmartSpace Licence received',
-    subTitle: 'By 13 December 2021',
+    subTitle: 'By 13 December 2023',
   },
   steps: [
     {
       title: 'Sign start-up support agreement',
-      subTitle: '22 Feb 2020',
+      subTitle: '22 Feb 2024',
       type: 'todo',
       showActionButton: true,
       actionButtonText: 'Sign',
@@ -47,16 +37,16 @@ const MOCKED_INCOMPLETE_DATA = {
 const MOCKED_COMPLETE_DATA = {
   visit: {
     title: 'First site visit',
-    subTitle: 'By 10 April 2020',
+    subTitle: 'By 10 April 2024',
   },
   alert: {
     title: 'SmartSpace Licence received',
-    subTitle: '10 March 2020',
+    subTitle: '10 March 2023',
   },
   steps: [
     {
       title: 'Attended day 1 of start-up training',
-      subTitle: '22 Feb 2020',
+      subTitle: '22 Feb 2024',
       type: 'completed',
     },
   ] as StepItem[],
@@ -69,70 +59,7 @@ interface OnboardingInfoProps {
 export const OnboardingInfoPage: React.FC<OnboardingInfoProps> = ({
   setShowInfo,
 }) => {
-  const appDispatch = useAppDispatch();
-  const history = useHistory();
-  const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
-  const userAuth = useSelector(authSelectors.getAuthUser);
-
-  const getDataByLanguage = async (language: LanguageDto) => {
-    const hasTranslations = await new ContentService(
-      userAuth?.auth_token ?? ''
-    ).hasContentTypeBeenTranslated(
-      ContentTypeEnum.ProgressTrackingCategory,
-      language.id ?? ''
-    );
-
-    if (hasTranslations) {
-      await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingCategories({
-          locale: language.locale,
-        })
-      ).unwrap();
-      await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSubCategories({
-          locale: language.locale,
-        })
-      ).unwrap();
-      await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSkills({
-          locale: language.locale,
-        })
-      ).unwrap();
-    } else {
-      presentUnavailableAlert();
-    }
-  };
-
-  const presentUnavailableAlert = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, close) => {
-        return (
-          <ActionModal
-            className={'mx-4'}
-            title="No content found"
-            paragraphs={[
-              'Could not find any content for the selected language, please select another.',
-            ]}
-            icon={'InformationCircleIcon'}
-            iconColor={'infoDark'}
-            iconBorderColor={'infoBb'}
-            actionButtons={[
-              {
-                text: 'Close',
-                colour: 'primary',
-                onClick: close,
-                type: 'filled',
-                textColour: 'white',
-                leadingIcon: 'XIcon',
-              },
-            ]}
-          />
-        );
-      },
-    });
-  };
 
   return (
     <BannerWrapper
@@ -145,11 +72,6 @@ export const OnboardingInfoPage: React.FC<OnboardingInfoProps> = ({
       backgroundColour={'white'}
       displayOffline={!isOnline}
     >
-      <LanguageSelector
-        currentLocale={'en-za'}
-        selectLanguage={getDataByLanguage}
-        className="bg-uiBg"
-      />
       <div className={'bg-white px-4'}>
         <Typography
           className="mt-4"
@@ -171,7 +93,7 @@ export const OnboardingInfoPage: React.FC<OnboardingInfoProps> = ({
             className="-mt-4"
             color={'textMid'}
             type={'body'}
-            text={`When you a finish a step, a green circle and a tick will appear next to the step.`}
+            text={`Complete each step by the deadline. Some steps can only be completed once previous steps are done.`}
           />
         </div>
         <Divider dividerType="dashed" />
@@ -194,7 +116,7 @@ export const OnboardingInfoPage: React.FC<OnboardingInfoProps> = ({
           className="mb-4 w-11/12"
           type="filled"
           color="primary"
-          text="Start"
+          text="Go to onboarding journey"
           textColor="white"
           icon="ArrowCircleRightIcon"
           onClick={() => setShowInfo(false)}
