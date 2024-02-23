@@ -153,7 +153,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
       (item?.message?.cta?.includes('[[SeeTrainee]]') ||
         item?.message?.cta?.includes('[[SeeSmartStarters]]')) &&
       item?.message?.action?.includes(practitionerUserId) &&
-      (item?.message?.title?.includes('has not completed on boarding') ||
+      (item?.message?.message?.includes(
+        'has not completed onboarding within 2 weeks'
+      ) ||
         item?.message?.message?.includes('did not complete trainee onboarding'))
   );
 
