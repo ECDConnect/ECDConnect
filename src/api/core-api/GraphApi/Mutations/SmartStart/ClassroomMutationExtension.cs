@@ -142,33 +142,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
                     });
 
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, input.UserId.ToString());
                     //message the old user they were removed
                     var oldUserToSend = userManager.FindByIdAsync(previousUser).Result;
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, previousUser);
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
                 var learnersReassigned = UpdateLearners(repoFactory, uId.ToString(), id, hierarchy);
                 UpdateChildren(repoFactory, uId.ToString(), hierarchy, learnersReassigned, input.UserId.ToString());              
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
-
-                //if (classRoomGroup.ClassroomId != null) 
-                //{
-                //    var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-                //    Classroom classRoom = classroomRepo.GetAll().Where(x => x.Id.Equals(classRoomGroup.ClassroomId)).FirstOrDefault();
-                //    if (classRoom != null)
-                //    {
-                //        var principalToSend = userManager.FindByIdAsync(classRoom.UserId.Value.ToString()).Result;
-                //        List<TagsReplacements> replacements = new List<TagsReplacements>();
-                //        replacements.Add(new TagsReplacements()
-                //        {
-                //            FindValue = "ClassName",
-                //            ReplacementValue = classRoomGroup.Name
-                //        });
-                //        notificationService.SendNotificationAsync(null, TemplateTypeConstants.UnassignedClasses, DateTime.Now.Date, principalToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7).Date, false,true);
-                //    }
-                //}
 
                 return classRoomGroup;
             }

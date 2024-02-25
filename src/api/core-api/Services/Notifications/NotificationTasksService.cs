@@ -23,8 +23,6 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.VisualBasic;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -101,6 +99,40 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
+
+        public async Task DailyUserOfflineNotification()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+
+            var offlinePractitionesrs = practitionerRepo.GetAll().Where(x => x.User.LastSeen.Date <= DateTime.Now.AddDays(-14).Date && x.UserId.ToString() == "15b8b74e-7691-4a3a-a92d-22a7ee6d25a5").OrderByDescending(x => x.User.LastSeen).ToList();//&& x.UserId.ToString() == "15b8b74e-7691-4a3a-a92d-22a7ee6d25a5"
+
+            foreach (var prac in offlinePractitionesrs)
+            {
+                TimeSpan daysToCheck = (DateTime.Now - prac.User.LastSeen);
+                if (daysToCheck.Days > 0)
+                {
+                    if (daysToCheck.Days >= 21 && daysToCheck.Days <30)
+                    {
+
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
+                    }
+                    else if (daysToCheck.Days >= 30)
+                    {
+
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
+                    }
+                }
+            }
+        }
+        public async Task DailyAttendanceSMSNotification()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            //to return to, old logic has been dumped now have to bring it back
+            
+        }
+
         //public async Task DailyUnassignedProgrammesNotification()
         //{
         //    var adminId = _hierarchyEngine.GetAdminUserId();
@@ -149,7 +181,7 @@ namespace EcdLink.Api.CoreApi.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "RemovalDate",
-                        ReplacementValue = child.InsertedDate.AddDays(20).ToLongDateString()
+                        ReplacementValue = child.InsertedDate.AddDays(30).ToLongDateString()
                     });
                     replacements.Add(new TagsReplacements()
                     {
@@ -327,7 +359,7 @@ namespace EcdLink.Api.CoreApi.Services
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
             var visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: adminId);
             var assessmentsDue = (
-                from pracData in practitionerRepo.GetAll().Where(x => x.IsActive == true)
+                from pracData in practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsTrainee == false)
                 join visitData in visitRepo.GetAll().Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment && x.DueDate <= DateTime.Now.AddDays(30) && x.Attended == false && x.ActualVisitDate == null && x.IsActive == true) on pracData.UserId equals visitData.Practitioner.UserId
                 select new { pracData, visitData }
             ).ToList();
@@ -341,6 +373,34 @@ namespace EcdLink.Api.CoreApi.Services
                     ReplacementValue = dueDate.ToString("dddd, dd MMMM yyyy")
                 });
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now.Date, item.pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90), false, true, null, item.pracData.UserId.ToString());
+            }
+        }
+
+        public async Task SelfAssessmentReminderNewAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            var visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: adminId);
+            var assessmentsPracs = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsTrainee == false).ToList();
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            foreach (var prac in assessmentsPracs)
+            {
+                PractitionerTimeline practTimeline = _personnelService.GetPractitionerTimeline(prac.UserId.ToString());
+                if (practTimeline != null)
+                {
+                    if (practTimeline.SelfAssessmentStatus != null && practTimeline.SelfAssessmentStatus != Constants.SSSettings.self_assessment)
+                    {
+                        DateTime dueDate = (practTimeline.SelfAssessmentDate.HasValue ? (DateTime)practTimeline.SelfAssessmentDate : DateTime.Now.AddDays(21));
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "DueDate",
+                            ReplacementValue = dueDate.ToString("dddd, dd MMMM yyyy")
+                        });
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FillInSelfAsessmentForm, DateTime.Now.Date, prac.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(90), false, true, null, prac.UserId.ToString());
+
+                    }
+                }
+
             }
         }
 
@@ -378,7 +438,7 @@ namespace EcdLink.Api.CoreApi.Services
                             FindValue = "IsStipendReceiverText",
                             ReplacementValue = requiredAttendance.practitionerData.IsOnStipend.HasValue && requiredAttendance.practitionerData.IsOnStipend == true ? stipendReceiverText : ""
                         });
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitWeeksAttendance, DateTime.Now.Date, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(2),false,true);
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitWeeksAttendance, DateTime.Now.Date, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(2),false,true, null, requiredAttendance.practitionerData.UserId.ToString());
                     }
                 
             }
@@ -471,20 +531,6 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-        public async Task WeeklyCoachTraineesCheckReminderAsync(string coachUserId = null)
-        {
-            var adminId = _hierarchyEngine.GetAdminUserId();
-            var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
-            //find all trainees thats new in last 7 days
-            var newTrainee = traineeRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7)).ToList();
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            foreach (var trainee in newTrainee)
-            {
-                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
-                var userToSend = await _userManager.FindByIdAsync(parentUserId.Value.ToString());
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true);
-            }
-        }
 
         public async Task CoachChecksNotification(bool weeklyChecksOnly = false)
         {
@@ -585,6 +631,7 @@ namespace EcdLink.Api.CoreApi.Services
                                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName, trainee.UserId.ToString());
                                         }
                                         bool flagIncompleteOnboarding = false;
+                                        bool flagOnboardingComplete = false;
                                         if (trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true)
                                         {
                                             if ((traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received ||
@@ -597,7 +644,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                 traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
                                             {
                                                 flagIncompleteOnboarding = true;
-                                            }
+                                            } else flagOnboardingComplete = true;
                                         } else
                                         {
                                             if ((traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received ||
@@ -609,7 +656,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                 traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
                                             {
                                                 flagIncompleteOnboarding = true;
-                                            }
+                                            } else flagOnboardingComplete = true;
                                         }
 
                                         if (flagIncompleteOnboarding)
@@ -633,7 +680,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                 flagDelete = true;
                                             }
 
-                                            if (flag4weeks)
+                                            if (flag4weeks) 
                                                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(2), false, true, traineeName, trainee.UserId.ToString());
                                             else if (flag2weeks)
                                                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Trainee2WeekOnboardingWarning, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), false, true, traineeName, trainee.UserId.ToString());
@@ -644,6 +691,67 @@ namespace EcdLink.Api.CoreApi.Services
                                                 await _notificationService.DeleteAllNotificationsForUser(trainee.UserId.ToString());
                                                 _anonymiser.AnonymiseUser((Guid)trainee.UserId, "Trainee");
                                             }
+                                            if (!flagDelete)
+                                            {
+                                                DateTime dueDate = DateTime.Now;
+                                                //overdue trainee tasks EC-997
+                                                //find out which is the first item missing and youngest date missed
+                                                if (traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received)
+                                                {
+                                                    if (traineeTimeline.SmartSpaceLicenseDate.HasValue && traineeTimeline.SmartSpaceLicenseDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.SmartSpaceLicenseDate.Value;
+                                                }
+                                                if (traineeTimeline.ConsolidationMeetingStatus != Constants.SSSettings.consolidation_meeting)
+                                                {
+                                                    if (traineeTimeline.ConsolidationDeadlineDate.HasValue && traineeTimeline.ConsolidationDeadlineDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.ConsolidationDeadlineDate.Value;
+                                                }
+                                                if (traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done)
+                                                {
+                                                    if (traineeTimeline.SmartSpaceChecklistDeadlineDate.HasValue && traineeTimeline.SmartSpaceChecklistDeadlineDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.SmartSpaceChecklistDeadlineDate.Value;
+                                                }
+                                                if (traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered)
+                                                {
+                                                    if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate.HasValue && traineeTimeline.ThreeChildrenRegisteredDeadlineDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.ThreeChildrenRegisteredDeadlineDate.Value;
+                                                }
+                                                if (traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support)
+                                                {
+                                                    if (traineeTimeline.CommunitySupportDeadlineDate.HasValue && traineeTimeline.CommunitySupportDeadlineDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.CommunitySupportDeadlineDate.Value;
+                                                }
+                                                if (traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit)
+                                                {
+                                                    if (traineeTimeline.SSCoachVisitDeadlineDate.HasValue && traineeTimeline.SSCoachVisitDeadlineDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.SSCoachVisitDeadlineDate.Value;
+                                                }
+                                                if (trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true && traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed)
+                                                {
+                                                    if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate.HasValue && traineeTimeline.SignStartUpSupportAgreementDeadlineDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.SignStartUpSupportAgreementDeadlineDate.Value;
+                                                }
+                                                if (traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
+                                                {
+                                                    if (traineeTimeline.StarterLicenseDate.HasValue && traineeTimeline.StarterLicenseDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.StarterLicenseDate.Value;
+                                                }
+                                                replacements.Add(new TagsReplacements()
+                                                {
+                                                    FindValue = "DueDate",
+                                                    ReplacementValue = dueDate.ToShortDateString()
+                                                });
+
+                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeOverdueTasks, DateTime.Now.Date, trainee.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7),false, true, null, trainee.UserId.ToString());
+                                            }
+                                            //user specific
+
+                                        }
+                                        else if (flagOnboardingComplete)
+                                        { //disable all teh onboarding warnings for this trainee if they are complete
+                                            await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.TwoOnboardingStepsLeft, traineeName, null, trainee.UserId.ToString());
+                                            await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.Trainee2WeekOnboardingWarning, traineeName, null, trainee.UserId.ToString());
+                                            await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.CoachRemoveTrainee, traineeName, null, trainee.UserId.ToString());
                                         }
                                         if (cancelStarter)
                                         {
@@ -676,19 +784,7 @@ namespace EcdLink.Api.CoreApi.Services
                                             if (traineeOnboardingCount - traineeCount == 2)
                                             {
                                                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now.Date, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, traineeName, trainee.UserId.ToString());
-                                            } else if (traineeOnboardingCount - traineeCount > 2) 
-                                            {
-                                                //overdue trainee tasks EC-997
-
-                                                //replacements.Add(new TagsReplacements()
-                                                //{
-                                                //    FindValue = "DueDate",
-                                                //    ReplacementValue = dueDate.ToString()
-                                                //});
-
-                                                //await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeOverdueTasks, DateTime.Now.Date, trainee.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7),false, true, null, trainee.UserId.ToString());
-
-                                            }
+                                            } 
                                         }
                                     }
                                 }

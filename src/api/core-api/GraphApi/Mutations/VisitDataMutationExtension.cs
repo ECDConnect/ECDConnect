@@ -1,9 +1,12 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
@@ -17,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool AddVisitData([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, CMSVisitDataInputModel input)
+        public bool AddVisitData([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, HierarchyEngine hierarchyEngine, [Service] INotificationService notificationService, CMSVisitDataInputModel input)
         {
             if (input.MotherId != null)
             {
@@ -41,11 +44,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var pqaRating = visitDataManager.CalculateAndSaveReAccreditationRating(visit);
                     visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, visit.PractitionerId.Value, visit);
                 }
+                var parentUser = hierarchyEngine.GetUserParentUserId(new Guid(input.PractitionerId));
+                if (parentUser != null)
+                {
+                    notificationService.ExpireNotificationsTypesForUser(parentUser.ToString(), TemplateTypeConstants.CoachVisitRequested, null, null, input.PractitionerId);
+                }
             }
             else if (input.TraineeId != null)
             {
                 visitDataManager.AddTraineeVisitData(input);
+                var parentUser = hierarchyEngine.GetUserParentUserId(new Guid(input.TraineeId));
+                if (parentUser != null)
+                {
+                    notificationService.ExpireNotificationsTypesForUser(parentUser.ToString(), TemplateTypeConstants.CoachVisitRequested, null, null, input.TraineeId);
+                }
             }
+            //remove visit notifications for this user from the coach
+            
+
             return true;
         }
 

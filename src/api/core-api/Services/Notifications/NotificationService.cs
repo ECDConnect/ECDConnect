@@ -15,10 +15,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -346,6 +344,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            var loginLink = TenantExecutionContext.Tenant.SiteAddress ;
             if (user != null)
             {
                 string firstName = user.FirstName;
@@ -359,6 +358,8 @@ namespace EcdLink.Api.CoreApi.Services
 
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.ApplicationName, ReplacementValue = applicationName });
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.OrganisationName, ReplacementValue = organisationName });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.LoginLink, ReplacementValue = loginLink + "/login" });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.LoginLinkShort, ReplacementValue = loginLink + "/login" });
             //add all basic tags here
 
             foreach (var replacement in replacements)
