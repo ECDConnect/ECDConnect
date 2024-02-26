@@ -153,10 +153,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
       (item?.message?.cta?.includes('[[SeeTrainee]]') ||
         item?.message?.cta?.includes('[[SeeSmartStarters]]')) &&
       item?.message?.action?.includes(practitionerUserId) &&
-      (item?.message?.message?.includes(
-        'has not completed onboarding within 2 weeks'
-      ) ||
-        item?.message?.message?.includes('did not complete trainee onboarding'))
+      item?.message?.action.includes('remove')
   );
 
   const removeNotifications = async () => {
