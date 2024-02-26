@@ -49,3 +49,7 @@ UPDATE public."MessageLog"
 	WHERE "TemplateType" in ('monthly-points-reminder-a', 'monthly-points-reminder-b');
 
 	update "MessageTemplate" set "Message" = 'Encourage [[PractitionerFirstName]] to complete the self-assessment form before your [[VisitType]] visit.' where "TemplateType" = 'coach-fillin-self-asessment-form';
+
+	INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2023-09-04 05:18:21.754','2023-09-04 05:18:21.754',NULL,'push','coach-address-updated-schedule-visit','[[PrincipalOrFAA]] has updated the location of [[ProgrammeName]]. Conduct a SmartSpace check as soon as possible.','258a15e6-3736-45ea-875c-48d9377de4c8','SmartSpace check required for new programme address','[[ScheduleSmartSpaceVisit]]','Schedule SmartSpace visit',NULL,'green',9,'{"url":"/coach/programme-information","state":{"practitionerId":"[[PractitionerUserId]]"}}');
+		update "MessageTemplate" set "Action" = '{"url":"/coach/programme-information","state":{"practitionerId":"[[PractitionerUserId]]"}}' where "TemplateType" = 'coach-address-updated-schedule-visit';
