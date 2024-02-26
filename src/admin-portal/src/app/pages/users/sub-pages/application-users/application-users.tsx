@@ -134,11 +134,12 @@ export default function ApplicationUsers() {
           const { __typename: __, ...roleRest } = role;
           return roleRest;
         });
-
         return { ...rest, roles: modifiedRoles };
       });
-      const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
-      setTableData(finalTableData);
+
+      // const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
+
+      setTableData(modifiedData);
     }
   }, [data]);
 
@@ -313,10 +314,10 @@ export default function ApplicationUsers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    {
-                      field: 'displayColumnIdPassportEmail',
-                      use: 'ID/Passport/Email',
-                    },
+                    // {
+                    //   field: 'displayColumnIdPassportEmail',
+                    //   use: 'ID/Passport/Email',
+                    // },
                     { field: 'fullName', use: 'Name' },
                     {
                       field: 'roles',

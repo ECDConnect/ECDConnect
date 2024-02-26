@@ -460,23 +460,34 @@ export default function UiTable({
       );
     } else if (column.field === 'roles') {
       rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
-          {display_value?.map((item: any) => (
-            <div
-              key={`role_` + item?.id}
-              className={
-                `${
-                  item[column.displayProperty] === 'Administrator'
-                    ? 'bg-tertiary'
-                    : item[column.displayProperty] === 'Practitioner'
-                    ? 'bg-secondary'
-                    : 'bg-primary'
-                }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
+        <div className="ml-0 flex cursor-pointer items-center">
+          {display_value?.map((item: any) => {
+            const chipColor = (role?: string) => {
+              switch (role) {
+                case 'Administrator':
+                  return 'bg-infoMain';
+                case 'Practitioner':
+                  return 'bg-secondary';
+                case 'Community Health Worker':
+                  return 'bg-secondary';
+                default:
+                  return 'bg-primary';
               }
-            >
-              {item[column?.displayProperty]}
-            </div>
-          ))}
+            };
+            return (
+              <div
+                key={`role_` + item?.id}
+                className={
+                  `${chipColor(item[column.displayProperty])}` +
+                  ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                }
+              >
+                {item[column?.displayProperty] === 'Community Health Worker'
+                  ? 'CHW'
+                  : item[column?.displayProperty]}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (column.type === 'workflowStatus') {
