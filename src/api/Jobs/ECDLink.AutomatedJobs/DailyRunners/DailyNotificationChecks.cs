@@ -34,7 +34,8 @@ public class DailyNotificationChecks : CronJobService
             ////await service.DailyUnassignedProgrammesNotification();
             await service.SelfAssessmentReminderNewAsync();
 
-            await service.CoachChecksNotification();
+            await service.CoachChecksPractitionersNotification();
+            await service.CoachChecksTraineeNotification();
 
             //await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
 

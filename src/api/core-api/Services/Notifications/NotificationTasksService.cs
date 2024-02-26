@@ -23,6 +23,8 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
+using ECDLink.AutomatedJobs.DailyRunners;
+using EcdLink.Api.CoreApi.Managers.Visits;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -39,7 +41,7 @@ namespace EcdLink.Api.CoreApi.Services
         IHolidayService<Holiday> _holidayService;
         private ILogger<NotificationTasksService> _logger;
         private UserAnonymiseService _anonymiser;
-
+        private VisitManager _visitManager;
 
         public NotificationTasksService(
             IGenericRepositoryFactory repositoryFactory,
@@ -52,7 +54,8 @@ namespace EcdLink.Api.CoreApi.Services
             IPersonnelService personnelService,
             IPointsEngineService pointsService,
             [Service] ILogger<NotificationTasksService> logger,
-            [Service] UserAnonymiseService anonymiser)
+            [Service] UserAnonymiseService anonymiser,
+            VisitManager visitManager)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
@@ -65,6 +68,7 @@ namespace EcdLink.Api.CoreApi.Services
             _pointsService = pointsService;
             _logger = logger;
             _anonymiser = anonymiser;
+            _visitManager = visitManager;
         }
 
         public async Task DailyUnassignedClassesNotification()
@@ -532,7 +536,7 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
 
-        public async Task CoachChecksNotification(bool weeklyChecksOnly = false)
+        public async Task CoachChecksTraineeNotification(bool weeklyChecksOnly = false)
         {
 
             _logger.LogInformation("DailyCoachChecksNotification started at " + DateTime.Now);
@@ -795,7 +799,40 @@ namespace EcdLink.Api.CoreApi.Services
                             }
                         }
                     }
-                    var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.IsTrainee == false && x.IsRegistered == true && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId)).ToList();
+
+                    if (overdueVisists)
+                    {
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitsOverdue, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, null, DateTime.Now.AddDays(2), false, true);
+                    }
+                }
+
+            }
+            _logger.LogInformation("DailyCoachChecksNotification ended at " + DateTime.Now);
+        }
+
+        public async Task CoachChecksPractitionersNotification(bool weeklyChecksOnly = false)
+        {
+
+            _logger.LogInformation("DailyCoachChecksPractitionersNotification started at " + DateTime.Now);
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: adminId);
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+
+            ////find all trainees thats new in last 7 days            
+            List<Coach> coaches = coachRepo.GetAll().Where(x => x.IsActive.Equals(true)).ToList();
+
+            foreach (var coach in coaches)
+            {
+                bool overdueVisists = false;
+                var coachToSend = coach.User;
+
+                if (weeklyChecksOnly)
+                {
+                    //weekly practitioner by coach checks
+                }
+                else
+                {
+                    var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsTrainee == false && x.IsRegistered == true && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId) && x.UserId.ToString() == "94e353d1-4581-4493-bd5b-05ebe1e03926").ToList();
                     foreach (var prac in practitioners)
                     {
                         List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -836,7 +873,24 @@ namespace EcdLink.Api.CoreApi.Services
                                     await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.CoachSelfAssessmentFormReminder, pracName, null, prac.UserId.ToString());
                                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true, pracName, prac.UserId.ToString());
                                 }
+                                else
+                                {
+                                    //self assessments may need to be checked again directly
+                                    List<Visit> visits = _visitManager.GetVisitsForClient(prac.UserId.ToString(), Constants.SSSettings.client_practitioner);
+                                    visits = visits.OrderBy(x => x.InsertedDate).ToList();
+                                    var selfAssessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
 
+                                    if (selfAssessments.Any())
+                                    {
+                                        foreach (var item in selfAssessments)
+                                        {
+                                            if (item.Attended == false && item.ActualVisitDate == null && item.DueDate < DateTime.Now)
+                                            {
+                                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true, pracName, prac.UserId.ToString());
+                                            }
+                                        }
+                                    }
+                                }
 
                                 ////5) Overdue visits - find any trainees/practitioners that are overdue any visits                    
                                 if (practTimeline.RequestedCoachVisits.Any())
@@ -853,10 +907,9 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError("Issue with practitioner timeline in DailyCoachChecksNotification " + ex.Message, ex);
+                            _logger.LogError("Issue with practitioner timeline in DailyCoachChecksPractitionersNotification " + ex.Message, ex);
                         }
                     }
-
 
                     if (overdueVisists)
                     {
@@ -865,7 +918,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
 
             }
-            _logger.LogInformation("DailyCoachChecksNotification ended at " + DateTime.Now);
+            _logger.LogInformation("DailyCoachChecksPractitionersNotification ended at " + DateTime.Now);
         }
 
 
