@@ -22,6 +22,7 @@ namespace ECDLink.Core.Services.Interfaces
         MessageLogModel RetrieveToGroupItems(string toGroups);
         Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null);
         Task<bool> DeleteAllNotificationsForUser(string userId);
+        Task<bool> DeleteAllNotificationsRelatedToUser(string userId);
 
     }
 }

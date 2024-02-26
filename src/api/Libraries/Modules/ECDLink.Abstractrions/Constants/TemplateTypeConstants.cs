@@ -124,5 +124,9 @@ namespace ECDLink.Abstractrions.Constants
 
         //Bulk messaging
         public const string GenericMessage = "generic-message";
+
+        //SMS messaging
+        public const string Offline30Days = "30days-offline";
+        public const string Offline21Days = "21days-offline";
     }
 }

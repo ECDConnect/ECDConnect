@@ -15,10 +15,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -291,6 +289,19 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public async Task<bool> DeleteAllNotificationsRelatedToUser(string userId)
+        {
+            if (userId != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(x => x.RelatedToUserId == userId).ToList();
+                foreach (var notification in notifications)
+                {
+                    _messageRepo.Delete(notification.Id);
+                }
+            }
+            return true;
+        }
+
         public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null, string relatedToUserId = null)
         {
             if (userId != null && templateType != null)
@@ -333,6 +344,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            var loginLink = TenantExecutionContext.Tenant.SiteAddress ;
             if (user != null)
             {
                 string firstName = user.FirstName;
@@ -346,6 +358,8 @@ namespace EcdLink.Api.CoreApi.Services
 
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.ApplicationName, ReplacementValue = applicationName });
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.OrganisationName, ReplacementValue = organisationName });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.LoginLink, ReplacementValue = loginLink + "/login" });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.LoginLinkShort, ReplacementValue = loginLink + "/login" });
             //add all basic tags here
 
             foreach (var replacement in replacements)

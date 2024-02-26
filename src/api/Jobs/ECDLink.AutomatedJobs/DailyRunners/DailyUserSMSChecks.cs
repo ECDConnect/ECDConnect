@@ -3,16 +3,15 @@ using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
-public class WeeklyNotificationChecks : CronJobService
+public class DailyUserSMSChecks : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public WeeklyNotificationChecks(IServiceScopeFactory scopeFactory, CronJobConfig<WeeklyNotificationChecks> config, ILogger<WeeklyNotificationChecks> logger)
+    public DailyUserSMSChecks(IServiceScopeFactory scopeFactory, CronJobConfig<DailyUserSMSChecks> config, ILogger<DailyUserSMSChecks> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;
@@ -25,9 +24,7 @@ public class WeeklyNotificationChecks : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
-             //run weekly attendance reminder
-            await service.WeeklyAttendancesReminderAsync();
-            await service.CoachChecksTraineeNotification(true);            
+            await service.DailyUserOfflineNotification();
         }
     }
 }

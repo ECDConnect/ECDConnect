@@ -1463,10 +1463,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                             //Create franchisee and map in SS system
                                             franchisee.localParentEntityId = coach.LocalId;
                                             newPractitioner = await MapFranchisee(franchisee);
-
-                                            //send notification to coach
-                                            var userToSend = await _userManager.FindByIdAsync(coach.UserId.ToString());
-                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now.Date, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                                            
                                             totalFranchiseesAddedToSS++;
                                             franchiseeCreated = true;
                                         }
@@ -1531,6 +1528,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             }
                             if (totalFranchiseesAddedToSS > 0)
                             {
+                                var userToSend = await _userManager.FindByIdAsync(coach.UserId.ToString());
+                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now.Date, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
                                 //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet - only run when something has been added and mapped
                                 await MatchPrincipals();
                             }
