@@ -35,3 +35,6 @@ UPDATE public."MessageTemplate"
 UPDATE public."MessageLog"
 		SET "CTA" ='[[PrincipalAgreement]]', "CTAText" = 'Accept Agreement'
 	WHERE "MessageTemplateType"  in ('principal-changed');
+
+		delete from "MessageLog" where "MessageTemplateType" = 'coach-fillin-self-asessment-form' and "MessageProtocol" = 'hub';
+	delete from "MessageTemplate" mt where "TemplateType" = 'coach-fillin-self-asessment-form' and "Protocol" = 'hub';
