@@ -129,7 +129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
         }
 
-        public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
+        public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor, [Service] INotificationService notificationService,
             IGenericRepositoryFactory repoFactory,
             string practitionerId)
         {
@@ -143,6 +143,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     practitioner.ShareInfo = true;
                     practitionerRepo.Update(practitioner);
+                    //deactivate notifications
+                    notificationService.ExpireNotificationsTypesForUser(practitionerId, TemplateTypeConstants.PrincipalFAAChanged, null, null, practitionerId);
+
                     return true;
                 }
             }
