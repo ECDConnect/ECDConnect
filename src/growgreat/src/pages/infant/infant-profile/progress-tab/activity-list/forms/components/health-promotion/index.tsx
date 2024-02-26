@@ -183,7 +183,7 @@ export const HealthPromotion = ({
         subTitle={subTitle}
       />
       <div className="bg-uiBg border-primary border-t px-4">
-        <LanguageSelector selectLanguage={setLanguage} />
+        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
       </div>
       <div className="flex h-full flex-col p-4">
         {renderHeader}
