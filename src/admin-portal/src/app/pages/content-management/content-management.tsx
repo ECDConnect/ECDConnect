@@ -117,9 +117,8 @@ export function ContentManagement() {
           id: 4,
         },
         {
-          name: ContentManagementTabs.COMMUNITY.name,
-          href: 'CommunitySectionGG',
-          id: 5,
+          name: ContentManagementTabs.GGCOMMUNITY.name,
+          id: ContentManagementTabs.GGCOMMUNITY.id,
         },
       ];
     } else {
