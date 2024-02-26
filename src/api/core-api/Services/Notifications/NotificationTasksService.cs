@@ -832,7 +832,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 else
                 {
-                    var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsTrainee == false && x.IsRegistered == true && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId) && x.UserId.ToString() == "94e353d1-4581-4493-bd5b-05ebe1e03926").ToList();
+                    var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsTrainee == false && x.IsRegistered == true && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId)).ToList();
                     foreach (var prac in practitioners)
                     {
                         List<TagsReplacements> replacements = new List<TagsReplacements>();
