@@ -188,7 +188,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var userToSend = userManager.FindByIdAsync(principalId).Result;
             if (userToSend != null && practitioner != null && practitioner.User != null)
             {
-                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7));
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7), false, true, null, practitioner.UserId.ToString());
             }
 
             return practitioner;

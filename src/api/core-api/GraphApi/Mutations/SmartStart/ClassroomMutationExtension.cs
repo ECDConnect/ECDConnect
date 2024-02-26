@@ -172,6 +172,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepository<SiteAddress, Guid> addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
             IGenericRepository<Classroom, Guid> dbRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
 
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+
             Classroom updateClass = dbRepo.GetById(input.Id);
             bool sendNotification = false;
 
@@ -232,13 +234,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     FindValue = "ProgrammeName",
                     ReplacementValue = updateClass.Name != null  ? updateClass.Name : ""
                 });
-                
-                var parentId = engine.GetUserParentUserId(principal.Id);
-                if (parentId != null) {
-                   var coachToSend = userManager.FindByIdAsync(parentId.ToString()).Result;
+
+                var practitioner = practitionerRepo.GetByUserId(updateClass.UserId.ToString());
+                if (practitioner != null && practitioner.CoachHierarchy != null) {
+                   var coachToSend = userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
                     if (coachToSend != null)
                     {
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true);
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, practitioner.UserId.ToString());
                     }
                 }
             }
