@@ -27,3 +27,11 @@ UPDATE public."MessageTemplate"
 	UPDATE public."MessageTemplate"
 	SET "TypeCode"=3
 	where "TemplateType" = 'three-week-notification' and "Protocol" = 'sms';
+
+UPDATE public."MessageTemplate"
+	SET "CTA" ='[[PrincipalAgreement]]', "CTAText" = 'Accept Agreement'
+	WHERE "TemplateType"  in ('principal-changed');
+
+UPDATE public."MessageLog"
+		SET "CTA" ='[[PrincipalAgreement]]', "CTAText" = 'Accept Agreement'
+	WHERE "MessageTemplateType"  in ('principal-changed');
