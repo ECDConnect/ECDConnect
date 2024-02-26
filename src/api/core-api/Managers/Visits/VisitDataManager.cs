@@ -1,10 +1,9 @@
 ﻿using AngleSharp.Common;
-using DotLiquid;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -40,6 +39,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private VisitManager _visitManager;
 
         private Guid _applicationUserId;
+        private INotificationService _notificationService;
 
         public VisitDataManager(
             IHttpContextAccessor contextAccessor,
@@ -49,7 +49,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             UserLicenseManager userLicenseManager,
             VisitManager visitManager,
             [Service] IPointsEngineService pointsEngineService,
-            HierarchyEngine hierarchyEngine)
+            HierarchyEngine hierarchyEngine, 
+            [Service] INotificationService notificationService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -59,6 +60,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
             _visitManager = visitManager;
+            _notificationService = notificationService;
 
             _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -444,6 +446,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             visit.UpdatedDate = DateTime.Now;
             visit.UpdatedBy = _applicationUserId.ToString();
             _visitRepo.Update(visit);
+
+            _notificationService.ExpireNotificationsTypesForUser(input.PractitionerId, TemplateTypeConstants.CoachVisitRequested);
 
             return true;
         }

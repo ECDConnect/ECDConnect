@@ -27,3 +27,25 @@ UPDATE public."MessageTemplate"
 	UPDATE public."MessageTemplate"
 	SET "TypeCode"=3
 	where "TemplateType" = 'three-week-notification' and "Protocol" = 'sms';
+
+UPDATE public."MessageTemplate"
+	SET "CTA" ='[[PrincipalAgreement]]', "CTAText" = 'Accept Agreement'
+	WHERE "TemplateType"  in ('principal-changed');
+
+UPDATE public."MessageLog"
+		SET "CTA" ='[[PrincipalAgreement]]', "CTAText" = 'Accept Agreement'
+	WHERE "MessageTemplateType"  in ('principal-changed');
+
+		delete from "MessageLog" where "MessageTemplateType" = 'coach-fillin-self-asessment-form' and "MessageProtocol" = 'hub';
+	delete from "MessageTemplate" mt where "TemplateType" = 'coach-fillin-self-asessment-form' and "Protocol" = 'hub';
+
+	UPDATE public."MessageLog"
+	SET "Action"='{"url":"practitioner/points/summary"}'
+	WHERE "MessageTemplateType"  in ('monthly-points-reminder-a', 'monthly-points-reminder-b');
+
+
+	UPDATE public."MessageTemplate"
+	SET "Action"='{"url":"practitioner/points/summary"}'
+	WHERE "TemplateType" in ('monthly-points-reminder-a', 'monthly-points-reminder-b');
+
+	update "MessageTemplate" set "Message" = 'Encourage [[PractitionerFirstName]] to complete the self-assessment form before your [[VisitType]] visit.' where "TemplateType" = 'coach-fillin-self-asessment-form';

@@ -23,7 +23,6 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
-using ECDLink.AutomatedJobs.DailyRunners;
 using EcdLink.Api.CoreApi.Managers.Visits;
 
 namespace EcdLink.Api.CoreApi.Services
@@ -838,6 +837,7 @@ namespace EcdLink.Api.CoreApi.Services
                         List<TagsReplacements> replacements = new List<TagsReplacements>();
                         try
                         {
+                            string visitType = "";
                             string pracName = prac.User.FirstName + " " + prac.User.Surname;
                             //4) Practitioner not completed self assessment form - find any practitioners not completed self assessment forms yet
                             PractitionerTimeline practTimeline = _personnelService.GetPractitionerTimeline(prac.UserId.ToString());
@@ -845,8 +845,6 @@ namespace EcdLink.Api.CoreApi.Services
                             {
                                 if (practTimeline.SelfAssessmentStatus != null && practTimeline.SelfAssessmentStatus != Constants.SSSettings.self_assessment)
                                 {
-
-                                    string visitType = "";
                                     if (practTimeline.PrePQAVisitDate1 <= DateTime.Now.AddDays(14))
                                         visitType = "First PQA";
 
@@ -870,6 +868,11 @@ namespace EcdLink.Api.CoreApi.Services
                                         FindValue = "PractitionerFirstName",
                                         ReplacementValue = pracName
                                     });
+                                    replacements.Add(new TagsReplacements()
+                                    {
+                                        FindValue = "PractitionerUserId",
+                                        ReplacementValue = prac.UserId.ToString()
+                                    });
                                     await _notificationService.ExpireNotificationsTypesForUser(coachToSend.Id.ToString(), TemplateTypeConstants.CoachSelfAssessmentFormReminder, pracName, null, prac.UserId.ToString());
                                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true, pracName, prac.UserId.ToString());
                                 }
@@ -886,6 +889,34 @@ namespace EcdLink.Api.CoreApi.Services
                                         {
                                             if (item.Attended == false && item.ActualVisitDate == null && item.DueDate < DateTime.Now)
                                             {
+                                                if (practTimeline.PrePQAVisitDate1 <= DateTime.Now.AddDays(14))
+                                                    visitType = "First PQA";
+
+                                                if (practTimeline.ReAccreditationVisits != null)
+                                                {
+                                                    foreach (var visit in practTimeline.ReAccreditationVisits)
+                                                    {
+                                                        if (visit.DueDate <= DateTime.Now.AddDays(14))
+                                                        {
+                                                            visitType = "First Re-accreditation";
+                                                        }
+                                                    }
+                                                }
+                                                replacements.Add(new TagsReplacements()
+                                                {
+                                                    FindValue = "VisitType",
+                                                    ReplacementValue = visitType //First PQA / Re-accreditation = show First PQA if that is the upcoming visit for which the self-assessment form is required; else show Re-accreditation if that is the upcoming visit for which the self-assessment is required.
+                                                });
+                                                replacements.Add(new TagsReplacements()
+                                                {
+                                                    FindValue = "PractitionerFirstName",
+                                                    ReplacementValue = pracName
+                                                });
+                                                replacements.Add(new TagsReplacements()
+                                                {
+                                                    FindValue = "PractitionerUserId",
+                                                    ReplacementValue = prac.UserId.ToString()
+                                                });
                                                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachSelfAssessmentFormReminder, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true, pracName, prac.UserId.ToString());
                                             }
                                         }
