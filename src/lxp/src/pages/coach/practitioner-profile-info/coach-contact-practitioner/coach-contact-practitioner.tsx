@@ -93,7 +93,9 @@ export const CoachContactPractitioner: React.FC = () => {
             <>
               <div>
                 <Typography
-                  text={`Removed from `}
+                  text={`Removed from ${
+                    practitionerClassroom?.name || `their programme`
+                  }.`}
                   type="h1"
                   color="textDark"
                   className={'m-4'}
