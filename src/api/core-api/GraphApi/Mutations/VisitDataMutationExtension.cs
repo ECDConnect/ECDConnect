@@ -44,23 +44,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var pqaRating = visitDataManager.CalculateAndSaveReAccreditationRating(visit);
                     visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, visit.PractitionerId.Value, visit);
                 }
-                var parentUser = hierarchyEngine.GetUserParentUserId(new Guid(input.PractitionerId));
-                if (parentUser != null)
-                {
-                    notificationService.ExpireNotificationsTypesForUser(parentUser.ToString(), TemplateTypeConstants.CoachVisitRequested, null, null, input.PractitionerId);
-                }
             }
             else if (input.TraineeId != null)
             {
                 visitDataManager.AddTraineeVisitData(input);
-                var parentUser = hierarchyEngine.GetUserParentUserId(new Guid(input.TraineeId));
-                if (parentUser != null)
-                {
-                    notificationService.ExpireNotificationsTypesForUser(parentUser.ToString(), TemplateTypeConstants.CoachVisitRequested, null, null, input.TraineeId);
-                }
-            }
-            //remove visit notifications for this user from the coach
-            
+            }           
 
             return true;
         }
