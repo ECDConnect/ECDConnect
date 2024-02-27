@@ -10,6 +10,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -32,14 +33,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = applicationUserId.ToString(),
                 UserId = new Guid(input.UserId),
-                ClinicId = input.ClinicId,
                 JobTitle = input.JobTitle
             };
 
+            if (input.ClinicId.HasValue)
+            {
+                teamLead.Clinics = new List<ClinicTeamLead>
+                {
+                    new ClinicTeamLead
+                    {
+                        Id = new Guid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = applicationUserId.ToString(),
+                        TeamLeadId = teamLead.Id,
+                        ClinicId = input.ClinicId.Value
+                    }
+                };
+            }
+
             var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: applicationUserId);
             return teamLeadRepo.Insert(teamLead);
-
         }
-
     }
 }

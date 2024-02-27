@@ -32,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 UpdatedBy = applicationUserId.ToString(),
                 UserId = Guid.Parse(input.UserId),
                 LanguageId = input.LanguageId,
-                TeamLeadId = input.TeamLeadId,
+                //TeamLeadId = input.TeamLeadId, Needs to change to clinic id
                 ClickedVisitTab = false,
                 ClickedProgressTab = false,
                 ClickedReferralsTab = false,
@@ -67,10 +67,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 healthCareWorkerToUpdate.LanguageId = input.LanguageId;
             }
 
-            if (input.TeamLeadId != null)
-            {
-                healthCareWorkerToUpdate.TeamLeadId = input.TeamLeadId;
-            }
+            // TODO needs to change to update the clinic id
+            //if (input.TeamLeadId != null)
+            //{
+            //    healthCareWorkerToUpdate.TeamLeadId = input.TeamLeadId;
+            //}
 
             if (input.User?.PhoneNumber != null)
             {
@@ -100,31 +101,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
 
             if (input.ClickedVisitTab != null)
             {
-                healthCareWorkerToUpdate.ClickedVisitTab = input.ClickedVisitTab;
+                healthCareWorkerToUpdate.ClickedVisitTab = input.ClickedVisitTab.Value;
             }
             if (input.ClickedProgressTab != null)
             {
-                healthCareWorkerToUpdate.ClickedProgressTab = input.ClickedProgressTab;
+                healthCareWorkerToUpdate.ClickedProgressTab = input.ClickedProgressTab.Value;
             }
             if (input.ClickedReferralsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
+                healthCareWorkerToUpdate.ClickedReferralsTab = input.ClickedReferralsTab.Value;
             }
             if (input.ClickedContactTab != null)
             {
-                healthCareWorkerToUpdate.ClickedContactTab = input.ClickedContactTab;
+                healthCareWorkerToUpdate.ClickedContactTab = input.ClickedContactTab.Value;
             }
             if (input.ClickedDashboardClientsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedDashboardClientsTab = input.ClickedDashboardClientsTab;
+                healthCareWorkerToUpdate.ClickedDashboardClientsTab = input.ClickedDashboardClientsTab.Value;
             }
             if (input.ClickedDashboardVisitsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedDashboardVisitsTab = input.ClickedDashboardVisitsTab;
+                healthCareWorkerToUpdate.ClickedDashboardVisitsTab = input.ClickedDashboardVisitsTab.Value;
             }
             if (input.ClickedDashboardHighlightsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedDashboardHighlightsTab = input.ClickedDashboardHighlightsTab;
+                healthCareWorkerToUpdate.ClickedDashboardHighlightsTab = input.ClickedDashboardHighlightsTab.Value;
             }
 
             return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);

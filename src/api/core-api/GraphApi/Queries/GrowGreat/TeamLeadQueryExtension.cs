@@ -44,14 +44,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+
             if (!string.IsNullOrWhiteSpace(provinceSearch))
             {
-                teamLeadRepo.Include(h => h.Clinic.SiteAddress.Province);
-                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+                teamLeadRepo = teamLeadRepo.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%")));
             }
+
             if (!string.IsNullOrWhiteSpace(clinicSearch))
-                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
-            
+            {
+                teamLeadRepo = teamLeadRepo.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.Name, $"%{clinicSearch}%")));
+            }
+
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
@@ -72,15 +75,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
 
             if (!string.IsNullOrWhiteSpace(search))
+            {
                 teamLeadRepo = teamLeadRepo
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+            }
+
             if (!string.IsNullOrWhiteSpace(provinceSearch))
-                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            {
+                teamLeadRepo = teamLeadRepo.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%")));
+            }
             if (!string.IsNullOrWhiteSpace(clinicSearch))
-                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
+            {
+                teamLeadRepo = teamLeadRepo.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.Name, $"%{clinicSearch}%")));
+            }
 
             return teamLeadRepo.Count();
         }

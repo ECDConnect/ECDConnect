@@ -80,9 +80,9 @@ namespace EcdLink.Api.CoreApi.Services
             //find the principal that owns the classroomgroup and message them
             var unassignedClassroom =
             (
-                from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.UserId == null && x.Name != "Unsure")
+                from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.UserId == null && x.Name != "Unsure" && x.IsActive == true)
                 join classroomData in classroomRepo.GetAll() on classroomGroupData.ClassroomId equals classroomData.Id
-                join principalData in principalRepo.GetAll().Where(p => (p.IsPrincipal == true || p.IsFundaAppAdmin == true)) on classroomData.UserId equals principalData.UserId
+                join principalData in principalRepo.GetAll().Where(p => (p.IsPrincipal == true || p.IsFundaAppAdmin == true) && p.UserId.ToString() == "4b723ba0-5ad6-432d-8551-ffb98e4e8a4f") on classroomData.UserId equals principalData.UserId
                 select new { classroomData,classroomGroupData, principalData.User }
             ).OrderByDescending(y => y.classroomData.InsertedDate).ToList();
 
@@ -108,7 +108,7 @@ namespace EcdLink.Api.CoreApi.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
 
-            var offlinePractitionesrs = practitionerRepo.GetAll().Where(x => x.User.LastSeen.Date <= DateTime.Now.AddDays(-14).Date && x.UserId.ToString() == "15b8b74e-7691-4a3a-a92d-22a7ee6d25a5").OrderByDescending(x => x.User.LastSeen).ToList();//&& x.UserId.ToString() == "15b8b74e-7691-4a3a-a92d-22a7ee6d25a5"
+            var offlinePractitionesrs = practitionerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-14).Date).OrderByDescending(x => x.User.LastSeen).ToList();//&& x.UserId.ToString() == "15b8b74e-7691-4a3a-a92d-22a7ee6d25a5"
 
             foreach (var prac in offlinePractitionesrs)
             {
@@ -170,7 +170,7 @@ namespace EcdLink.Api.CoreApi.Services
             var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: adminId);
 
             //find the principal that owns the classroomgroup and message them
-            var unregisteredChildren = childRepo.GetAll().Where(p => p.InsertedDate <= DateTime.Now.AddDays(-20) && p.CaregiverId == null).ToList();
+            var unregisteredChildren = childRepo.GetAll().Where(p => p.IsActive == true && p.InsertedDate <= DateTime.Now.AddDays(-20) && p.CaregiverId == null).ToList();
             foreach (var child in unregisteredChildren)
             {
                 if (child.User != null)
@@ -213,8 +213,8 @@ namespace EcdLink.Api.CoreApi.Services
             //find the principal that owns the classroomgroup and message them
             var unassignedChildren =
             (
-                from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name == "Unsure")
-                join learnerData in learnerRepo.GetAll() on classroomGroupData.Id equals learnerData.ClassroomGroupId where learnerData.InsertedDate.Date <= learnerData.InsertedDate.Date.AddDays(-7)
+                from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name == "Unsure" && x.IsActive == true)
+                join learnerData in learnerRepo.GetAll() on classroomGroupData.Id equals learnerData.ClassroomGroupId where learnerData.InsertedDate.Date <= learnerData.InsertedDate.Date.AddDays(-7) && learnerData.IsActive == true
                 join childData in childRepo.GetAll() on learnerData.UserId equals childData.UserId
                 join classroomData in classroomRepo.GetAll() on classroomGroupData.ClassroomId equals classroomData.Id
                 join principalData in principalRepo.GetAll().Where(p => (p.IsPrincipal == true || p.IsFundaAppAdmin == true)) on classroomData.UserId equals principalData.UserId
@@ -384,7 +384,7 @@ namespace EcdLink.Api.CoreApi.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
             var visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: adminId);
-            var assessmentsPracs = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsTrainee == false).ToList();
+            var assessmentsPracs = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsTrainee == false && x.IsRegistered == true).ToList();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var prac in assessmentsPracs)
             {
@@ -443,7 +443,6 @@ namespace EcdLink.Api.CoreApi.Services
                         });
                         await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitWeeksAttendance, DateTime.Now.Date, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(2),false,true, null, requiredAttendance.practitionerData.UserId.ToString());
                     }
-                
             }
         }
 
