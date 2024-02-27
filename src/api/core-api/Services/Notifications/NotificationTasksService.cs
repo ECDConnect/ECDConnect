@@ -170,7 +170,7 @@ namespace EcdLink.Api.CoreApi.Services
             var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: adminId);
 
             //find the principal that owns the classroomgroup and message them
-            var unregisteredChildren = childRepo.GetAll().Where(p => p.IsActive == true && p.InsertedDate <= DateTime.Now.AddDays(-20) && p.CaregiverId == null && p.UserId.ToString() == "69ec72e8-d3c7-41cc-aaa3-b47073b94fdb").ToList();
+            var unregisteredChildren = childRepo.GetAll().Where(p => p.IsActive == true && p.InsertedDate <= DateTime.Now.AddDays(-20) && p.CaregiverId == null).ToList();
             foreach (var child in unregisteredChildren)
             {
                 if (child.User != null)
