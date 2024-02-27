@@ -2,6 +2,8 @@ import {
   LanguageDto,
   LocalStorageKeys,
   UserDto,
+  useDialog,
+  usePrevious,
   useTheme,
 } from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
@@ -17,12 +19,13 @@ import {
   StackedList,
   Typography,
   Dropdown,
+  Avatar,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -46,8 +49,11 @@ import {
 } from '@/store/healthCareWorker';
 import { ClinicDetails } from './components/clinicDetails/clinic-details';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
+import { PractitionerAboutRouteState } from './practitioner-about.types';
+import { BackToCommunityDialog } from './components/back-to-community-modal';
 
 export const PractitionerAbout: React.FC = () => {
+  const location = useLocation<PractitionerAboutRouteState>();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -77,6 +83,15 @@ export const PractitionerAbout: React.FC = () => {
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [clinicDetails, setClinicDetails] = useState(false);
+
+  const dialog = useDialog();
+  const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
+  const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
+
+  const avatar =
+    userProfilePicture?.file ||
+    user?.profileImageUrl ||
+    userProfilePicture?.reference;
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -206,8 +221,41 @@ export const PractitionerAbout: React.FC = () => {
     }
   };
 
-  const displayProfilePicturePrompt = () => {
+  const displayProfilePicturePrompt = useCallback(() => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
+  }, [editProfilePictureVisible]);
+
+  const handlePicturePromptOnClose = () => {
+    if (isFromCommunityWelcome) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <BackToCommunityDialog
+              hideTitle={!avatar}
+              avatar={
+                avatar ? (
+                  <Avatar dataUrl={avatar} size="header" className="mb-4" />
+                ) : undefined
+              }
+              onSubmit={() => {
+                history.push(ROUTES.COMMUNITY.ROOT, {
+                  isFromCommunityWelcome: false,
+                } as PractitionerAboutRouteState);
+                onClose();
+              }}
+              onClose={() => {
+                displayProfilePicturePrompt();
+                onClose();
+              }}
+            />
+          );
+        },
+      });
+    }
+
+    displayProfilePicturePrompt();
   };
 
   const closeEditField = () => {
@@ -224,7 +272,9 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userActions.updateUser(copy));
     }
 
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+    if (!isFromCommunityWelcome) {
+      setEditProfilePictureVisible(!editProfilePictureVisible);
+    }
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -281,6 +331,16 @@ export const PractitionerAbout: React.FC = () => {
       setNewStackListItems(copy);
     }
   };
+
+  useEffect(() => {
+    if (isFromCommunityWelcome && !wasFromCommunityWelcome) {
+      displayProfilePicturePrompt();
+    }
+  }, [
+    displayProfilePicturePrompt,
+    isFromCommunityWelcome,
+    wasFromCommunityWelcome,
+  ]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -479,7 +539,7 @@ export const PractitionerAbout: React.FC = () => {
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"
-            onClose={displayProfilePicturePrompt}
+            onClose={handlePicturePromptOnClose}
             onAction={picturePromtOnAction}
             onDelete={userProfilePicture ? deleteProfilePicture : undefined}
           />

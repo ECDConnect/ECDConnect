@@ -22,7 +22,12 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   CALENDAR: '/calendar',
-  COMMUNITY: '/community',
+  COMMUNITY: addPrefix('/community', {
+    WELCOME: '/welcome',
+    TEAM: addPrefix('/team', {
+      INFO_PAGE: '/info-page',
+    }),
+  }),
   DASHBOARD: '/dashboard',
   CLIENTS: addPrefix('/clients', {
     ROOT: '/',
