@@ -18,7 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     public class HealthCareWorker<TKey> : EntityBase<TKey>,
         ApplicationUserJoin,
         LanguageJoin<Guid?>,
-        TeamLeadJoin<Guid?>
+        ClinicJoin<Guid?>
          where TKey : IEquatable<TKey>
     {
         public bool ConsentForPhoto { get; set; }
@@ -31,21 +31,19 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
 
-        [ForeignKey(nameof(TeamLeadId))]
-        public virtual TeamLead TeamLead { get; set; }
-        public Guid? TeamLeadId { get; set; }
+        [ForeignKey(nameof(ClinicId))]
+        public virtual Clinic Clinic { get; set; }
+        public Guid? ClinicId { get; set; }
 
         public bool IsRegistered { get; set; }
-        public Boolean? ClickedVisitTab { get; set; }
-        public Boolean? ClickedProgressTab { get; set; }
-        public Boolean? ClickedReferralsTab { get; set; }
-        public Boolean? ClickedContactTab { get; set; }
-        public Boolean? ClickedDashboardClientsTab { get; set; }
-        public Boolean? ClickedDashboardVisitsTab { get; set; }
-        public Boolean? ClickedDashboardHighlightsTab { get; set; }
-        
-        [NotMapped]
-        public virtual HCWPointsEngine PointsEngineData { get; set; }
+        public bool ClickedVisitTab { get; set; }
+        public bool ClickedProgressTab { get; set; }
+        public bool ClickedReferralsTab { get; set; }
+        public bool ClickedContactTab { get; set; }
+        public bool ClickedDashboardClientsTab { get; set; }
+        public bool ClickedDashboardVisitsTab { get; set; }
+        public bool ClickedDashboardHighlightsTab { get; set; }
+        public bool ClickedTeamTab { get; set; }
     }
 
     public interface HealthCareWorkerJoin<TKey>
@@ -54,54 +52,4 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public HealthCareWorker HealthCareWorker { get; set; }
         public TKey HealthCareWorkerId { get; set; }
     }
-
-    public class HCWVisitStatus
-    {
-        public int MotherOverDueVisits { get; set; }
-        public int MotherDueVisits { get; set; }
-        public int ChildDueVisits { get; set; }
-    }
-
-    public class HCWHighlights
-    {
-        public int totalThisWeekFamilyVisits { get; set; }
-        public int totalThisWeekGrowthMonitored { get; set; }
-        public int totalThisWeekNewClients { get; set; }
-        public int totalLastWeekFamilyVisits { get; set; }
-        public int totalLastWeekGrowthMonitored { get; set; }
-        public int totalLastWeekNewClients { get; set; }
-    }
-
-    public class HCWSummary
-    {
-        public DateTime startDate { get; set; }
-        public DateTime EndDate { get; set; }
-
-        public int totalPregnantMoms { get; set; }
-        public int totalChildren { get; set; }
-
-        public int totalClientsVisited { get; set; }
-        public int totalFoldersOpened { get; set; }
-
-        public int totalVisitsMissed { get; set; }
-        public int totalPregnantMomsWithUrgentIssues { get; set; }
-        public int totalCaregiversAndChildrenWithUrgentIssues { get; set; }
-
-        public int totalVisitsOverdue { get; set; }
-        public int totalPregnantMomsWithIssues { get; set; }
-        public int totalCaregiversAndChildrenWithIssues { get; set; }
-
-        public int totalPregnantMomsWithNoIssues { get; set; }
-        public int totalChildrenWithNoIssues { get; set; }
-    }
-
-    public class HCWPointsEngine
-    {
-        // TODO: This class breaks Hot Chocolate as it has no fields
-        // Why isn't is using EF navigations?
-        public bool ignored { get; set; }
-        public virtual ICollection<PointsLibrary> PointsLibrary { get; set; }
-        public virtual ICollection<PointsUserSummary> PointsUserSummary { get; set; }
-    }
-
 }

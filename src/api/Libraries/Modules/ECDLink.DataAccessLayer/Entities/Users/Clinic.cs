@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
@@ -14,7 +15,8 @@ namespace ECDLink.DataAccessLayer.Entities
     }
 
     public class Clinic<TKey> : EntityBase<TKey>,
-        SiteAddressJoin<Guid?>
+        SiteAddressJoin<Guid?>,
+        SubDistrictJoin<Guid?>
         where TKey : IEquatable<TKey>
     {
 
@@ -29,6 +31,12 @@ namespace ECDLink.DataAccessLayer.Entities
         public string EmergencyContactPerson { get; set; }
 
         public string EmergencyContactNumber { get; set; }
+        public Guid? SubDistrictId { get; set; }
+
+        [ForeignKey(nameof(SubDistrictId))]
+        public virtual SubDistrict SubDistrict { get; set; }
+        public virtual ICollection<ClinicTeamLead> TeamLeads { get; set; }
+        public virtual ICollection<ClinicLeague> Leagues { get; set; }
     }
 
     public interface ClinicJoin<TKey>

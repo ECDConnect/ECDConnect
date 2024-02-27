@@ -233,7 +233,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
                     var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
-                    hcw.TeamLeadId = teamLeadSaIdToIdsMap.First(teamLead => teamLead.Value == teamLeadSAIdNum).Key;
+                    // TODO
+                    //hcw.TeamLeadId = teamLeadSaIdToIdsMap.First(teamLead => teamLead.Value == teamLeadSAIdNum).Key;
                     hcw.UserId = user.Id;
 
                     communityHealthWorkerRepo.Insert(hcw);
@@ -376,13 +377,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var clinicName = ExcelHelper.GetCellValue(currentRow.GetCell(7));
 
                     if (idOrPassport is null
-                    && id is null
-                    && passport is null
-                    && firstName is null
-                    && surname is null
-                    && cellphone is null
-                    && email is null
-                    && clinicName is null)
+                        && id is null
+                        && passport is null
+                        && firstName is null
+                        && surname is null
+                        && cellphone is null
+                        && email is null
+                        && clinicName is null)
                         continue;
 
                     var rowErrors = GetValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email, clinicName);
@@ -432,8 +433,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             User = user,
                             JobTitle = RolesGG.TEAM_LEAD,
                             TenantId = tenantId,
-                            // Clinics to be added.
-                            ClinicId = null,
                             InsertedDate = insertedDate,
                             IsActive = true
                         });
@@ -533,7 +532,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (userClinicNames.TryGetValue(user.UserName, out string clinicName))
                     {
                         var clinic = clinics.First(c => c.Name == clinicName);
-                        newTl.ClinicId = clinic.Id;
+                        newTl.Clinics = new List<ClinicTeamLead>
+                        {
+                            new ClinicTeamLead
+                            {
+                                Id = new Guid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                TeamLeadId = newTl.Id,
+                                ClinicId = clinic.Id
+                            }
+                        };
                     }
 
                     try

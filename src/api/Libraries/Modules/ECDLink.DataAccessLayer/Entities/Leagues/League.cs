@@ -17,6 +17,8 @@ namespace ECDLink.DataAccessLayer.Entities.Leagues
         [ForeignKey(nameof(LeagueTypeId))]
         public virtual LeagueType LeagueType { get; set; }
         public string Name { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
     }
 

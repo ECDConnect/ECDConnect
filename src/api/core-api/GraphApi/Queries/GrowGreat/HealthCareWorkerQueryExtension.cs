@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Files;
@@ -57,18 +58,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             if (!string.IsNullOrWhiteSpace(teamLeadSearch))
             {
                 healthCareWorkers = healthCareWorkers
-                    .Include(h => h.TeamLead.User)
-                    .Where(h => EF.Functions.ILike(h.TeamLead.User.FullName, $"%{teamLeadSearch}%")
-                    || EF.Functions.ILike(h.TeamLead.User.IdNumber, $"%{teamLeadSearch}%")
-                    || EF.Functions.ILike(h.TeamLead.User.PhoneNumber, $"%{teamLeadSearch}%")
-                    || EF.Functions.ILike(h.TeamLead.User.Email, $"%{teamLeadSearch}%"));
+                    .Where(h => h.Clinic.TeamLeads.Any(tl => EF.Functions.ILike(tl.TeamLead.User.FullName, $"%{teamLeadSearch}%")
+                    || EF.Functions.ILike(tl.TeamLead.User.IdNumber, $"%{teamLeadSearch}%")
+                    || EF.Functions.ILike(tl.TeamLead.User.PhoneNumber, $"%{teamLeadSearch}%")
+                    || EF.Functions.ILike(tl.TeamLead.User.Email, $"%{teamLeadSearch}%")));
             }
 
             if (!string.IsNullOrWhiteSpace(provinceSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
 
             if (!string.IsNullOrWhiteSpace(clinicSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.Name, $"%{clinicSearch}%"));
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
             
             if (cancellationToken.IsCancellationRequested)
                 return null;
@@ -90,15 +90,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
 
             if (!string.IsNullOrWhiteSpace(search))
+            {
                 healthCareWorkers = healthCareWorkers
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+            }
+
             if (!string.IsNullOrWhiteSpace(provinceSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            {
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            }
+
             if (!string.IsNullOrWhiteSpace(clinicSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.Name, $"%{clinicSearch}%"));
+            {
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
+            }
 
             return healthCareWorkers.Count();
         }
@@ -115,18 +123,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).OrderBy(x => x.Id).FirstOrDefault();
             DateTime today = DateTime.Now.Date;
 
-            var pointsEngineData = new HCWPointsEngine();
-            pointsEngineData.PointsLibrary = pointsEngineService.GetPointsLibraryForTenant();  // use this for showing points that can be earned
-            pointsEngineData.PointsUserSummary = pointsEngineService.GetSummaryUserPoints(healthCareWorker.Id.ToString(), new DateTime(today.Year, 1, 1)); // this is a summary of points earned
+            // TODO
+            //var pointsEngineData = new HCWPointsEngine();
+            //pointsEngineData.PointsLibrary = pointsEngineService.GetPointsLibraryForTenant();  // use this for showing points that can be earned
+            //pointsEngineData.PointsUserSummary = pointsEngineService.GetSummaryUserPoints(healthCareWorker.Id.ToString(), new DateTime(today.Year, 1, 1)); // this is a summary of points earned
 
-            healthCareWorker.PointsEngineData = pointsEngineData;
             return healthCareWorker;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public HCWVisitStatus GetHealthCareWorkerVisitStatus([Service] VisitManager visitManager, string userId)
         {
-            HCWVisitStatus visitStatus = new HCWVisitStatus();
+            var visitStatus = new HCWVisitStatus();
             visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, Constants.GGSettings.client_mother);
             visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_mother);
             visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_child);
@@ -144,13 +152,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         {
             HCWHighlights highlights = new HCWHighlights();
 
-            highlights.totalThisWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, true) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, true);
-            highlights.totalThisWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, true);
-            highlights.totalThisWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, true) + infantManager.GetTotalNewInfantsForWeek(Guid.Parse(userId), true);
+            highlights.TotalThisWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, true) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, true);
+            highlights.TotalThisWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, true);
+            highlights.TotalThisWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, true) + infantManager.GetTotalNewInfantsForWeek(Guid.Parse(userId), true);
 
-            highlights.totalLastWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, false) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, false); ;
-            highlights.totalLastWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, false);
-            highlights.totalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(Guid.Parse(userId), false);
+            highlights.TotalLastWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, false) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, false); ;
+            highlights.TotalLastWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, false);
+            highlights.TotalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(Guid.Parse(userId), false);
 
             return highlights;
         }
@@ -191,28 +199,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             HCWSummary summary = new HCWSummary();
 
             // TODO: its meant to be filtered to the current date range: , _startDate, _endDate);
-            summary.totalPregnantMoms = motherManager.GetTotalPregnantMothers(healthCareWorkerUserId, _startDate, _endDate);
-            summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(healthCareWorkerUserId, _startDate, _endDate);
+            summary.TotalPregnantMoms = motherManager.GetTotalPregnantMothers(healthCareWorkerUserId, _startDate, _endDate);
+            summary.TotalChildren = infantManager.GetTotalInfantCountForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
-            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(healthCareWorkerUserId.ToString(), null, _startDate, _endDate);
+            summary.TotalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(healthCareWorkerUserId.ToString(), null, _startDate, _endDate);
 
             // Mothers and Infants are folders.
-            summary.totalFoldersOpened = motherManager.GetTotalNewClientsForPeriod(healthCareWorkerUserId, _startDate, _endDate);
+            summary.TotalFoldersOpened = motherManager.GetTotalNewClientsForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
-            summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_child, _startDate, _endDate);
+            summary.TotalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_child, _startDate, _endDate);
 
             var motherVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_mother, _startDate, _endDate);
             var infantVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_mother, _startDate, _endDate);
-            summary.totalVisitsOverdue = motherVisitsOverdue + infantVisitsOverdue;
+            summary.TotalVisitsOverdue = motherVisitsOverdue + infantVisitsOverdue;
 
-            summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
-            summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
+            summary.TotalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
+            summary.TotalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
 
-            summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
-            summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate); ;
+            summary.TotalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
+            summary.TotalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate); ;
 
-            summary.totalPregnantMomsWithNoIssues = visitManager.GetTotalPregnantMothersWithNoIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
-            summary.totalChildrenWithNoIssues = visitManager.GetTotalCaregiversAndChildrenWithNoIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate); ;
+            summary.TotalPregnantMomsWithNoIssues = visitManager.GetTotalPregnantMothersWithNoIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
+            summary.TotalChildrenWithNoIssues = visitManager.GetTotalCaregiversAndChildrenWithNoIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate); ;
 
             return summary;
         }
