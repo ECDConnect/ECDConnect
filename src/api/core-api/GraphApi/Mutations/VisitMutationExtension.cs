@@ -527,19 +527,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.LinkedVisitId = input.LinkedVisitId;
             input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             input.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "PractitionerFirstName",
-                ReplacementValue = practitioner.User.FirstName + " " + practitioner.User.Surname
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "PractitionerUserId",
-                ReplacementValue = practitioner.Id.ToString()
-            });
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now.Date, coach.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, practitioner.UserId.ToString());
-
             return visitManager.AddVisitForCoach(input);
         }
 

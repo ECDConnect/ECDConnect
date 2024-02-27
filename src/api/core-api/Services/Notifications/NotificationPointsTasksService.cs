@@ -125,10 +125,6 @@ namespace EcdLink.Api.CoreApi.Services
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.EndofyearPointsEarned, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
             }
         }
-        public async Task WeeklyCoachTraineesCheckReminderAsync()
-        {
-            //
-        }
             
     }
 }

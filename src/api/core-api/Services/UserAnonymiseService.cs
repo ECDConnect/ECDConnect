@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -46,23 +48,19 @@ namespace EcdLink.Api.CoreApi.Services
             if (userId != null)
             {
                 try
-                {
-                    
-                    var parentUserId = _hierarchyEngine.GetUserParentUserId(userId);
-                    
+                { 
                     if (userType == "Trainee")
                     {
                         var pracToDelete = _context.Practitioners.Where(p => p.UserId.Equals(userId)).FirstOrDefault();
                         
                         var traineeToDelete = _context.Trainees.Where(c => c.UserId.ToString() == userId.ToString())
                             .Include(c => c.User)
-                            .FirstOrDefault();
-
-                        if (parentUserId!=null) //delete any messages to the parent user about this user
-                            _notificationService.ExpireNotificationsTypesForUser(parentUserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, traineeToDelete.User.FirstName.Trim() + " " + traineeToDelete.User.Surname.Trim()); //remove parent related notifications for this specific user
+                            .FirstOrDefault();                        
 
                         if (traineeToDelete != null && traineeToDelete.User != null)
                         {
+                            _notificationService.DeleteAllNotificationsForUser(traineeToDelete.UserId.ToString());
+
                             if (pracToDelete != null)
                             {
                                 //remove practitioner
@@ -111,6 +109,30 @@ namespace EcdLink.Api.CoreApi.Services
                                 foreach (var classroom in classrooms)
                                 {
                                     _context.Remove(classroom);
+                                }
+                            }
+                            List<Visit> pracVisits = _context.Visits.Where(x => x.PractitionerId == userId).ToList();
+                            if (pracVisits.Any())
+                            {
+                                foreach (var visit in pracVisits)
+                                {
+                                    _context.Remove(visit);
+                                }
+                            }
+                            List<Visit> traineeVisits = _context.Visits.Where(x => x.TraineeId == userId).ToList();
+                            if (traineeVisits.Any())
+                            {
+                                foreach (var visit in traineeVisits)
+                                {
+                                    _context.Remove(visit);
+                                }
+                            }
+                            List<ClubMember> clubsMembers = _context.ClubMember.Where(x => x.PractitionerId == userId).ToList();
+                            if (clubsMembers.Any())
+                            {
+                                foreach (var clubsMember in clubsMembers)
+                                {
+                                    _context.Remove(clubsMember);
                                 }
                             }
                             //remove hierarchy

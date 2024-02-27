@@ -25,15 +25,17 @@ public class DailyNotificationChecks : CronJobService
         using (var scope = _scopeFactory.CreateScope())
         {
             TenancyContext.SetTenantContext(scope);
-            var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();            
+            var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
+            await service.DailyUserOfflineNotification();
             await service.DailyUnassignedClassesNotification();
             await service.DailyChildrenRegistrationsIncompleteNotification();
             await service.DailyChildrenNotAssignedToClassNotification();
             ////await service.DailyUnassignedProgrammesNotification();
-            await service.SelfAssessmentReminderAsync();
+            await service.SelfAssessmentReminderNewAsync();
 
-            await service.CoachChecksNotification();
+            await service.CoachChecksPractitionersNotification();
+            await service.CoachChecksTraineeNotification();
 
             //await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
 

@@ -114,7 +114,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (practitioner != null)
                 {
                     AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
-                    await _notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete);
+                    await _notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString());
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);

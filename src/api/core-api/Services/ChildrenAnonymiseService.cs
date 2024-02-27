@@ -63,7 +63,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                     _hierarchyEngine.DeleteHierarchy(child.UserId);
                     var parentUserId = _hierarchyEngine.GetUserParentUserId(child.UserId);
-                    _notificationService.ExpireNotificationsTypesForUser(parentUserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, child.User.FirstName.Trim() + " " + child.User.Surname.Trim()); //remove prac notifications for this specific child
+                    _notificationService.ExpireNotificationsTypesForUser(parentUserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString()); //remove prac notifications for this specific child
                     var documents = _context.Documents.Where(x => x.UserId == child.UserId).ToList();
                     if (documents.Any())
                     {
@@ -80,7 +80,7 @@ namespace EcdLink.Api.CoreApi.Services
                     _context.Remove(child);
                     _context.SaveChanges();
                     
-                    var result = _userManager.DeleteAsync(child.User).Result; _notificationService.ExpireNotificationsTypesForUser(parentUserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete);
+                    var result = _userManager.DeleteAsync(child.User).Result;                     
                     if (result.Succeeded)
                     {
                         _logger.LogInformation("AnonymiseChild Succeeded for child Id: {0} and UserId {1}", child.Id, child.UserId);
