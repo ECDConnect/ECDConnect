@@ -566,7 +566,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     bool overdueVisists = false;
                     var newTraineesForCoach = traineeRepo.GetAll()
-                        .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId) && x.UserId.ToString() == "2d76240e-0fcb-ee11-8355-00155dee5a05")
+                        .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId))
                         .ToList();
 
                     foreach (var trainee in newTraineesForCoach)
