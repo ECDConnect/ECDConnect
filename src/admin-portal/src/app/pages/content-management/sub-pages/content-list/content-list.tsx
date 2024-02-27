@@ -242,16 +242,16 @@ export default function ContentList({
           ...item,
         }));
 
-        let clientProfileData = copyItems.filter(
-          (item: { type: string; name: string }) => {
-            return (
-              item.type !== 'TermsAndConditions' &&
-              item.name !== 'Personal Information'
-            );
-          }
-        );
+        // let clientProfileData = copyItems.filter(
+        //   (item: { type: string; name: string }) => {
+        //     return (
+        //       item.type !== 'TermsAndConditions' &&
+        //       item.name !== 'Personal Information'
+        //     );
+        //   }
+        // );
 
-        setTableData(clientProfileData);
+        setTableData(copyItems);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
