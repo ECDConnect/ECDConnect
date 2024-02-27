@@ -566,7 +566,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     bool overdueVisists = false;
                     var newTraineesForCoach = traineeRepo.GetAll()
-                        .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId))
+                        .Where(x => x.IsActive.Equals(true) && x.TraineeConvertedDate == null && (x.CoachHierarchy.HasValue && x.CoachHierarchy == coach.UserId) && x.UserId.ToString() == "2d76240e-0fcb-ee11-8355-00155dee5a05")
                         .ToList();
 
                     foreach (var trainee in newTraineesForCoach)
@@ -626,7 +626,8 @@ namespace EcdLink.Api.CoreApi.Services
                                             traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting && 
                                             traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done && 
                                             traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered && 
-                                            traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support && 
+                                            traineeTimeline.CommunitySupportStatus == Constants.SSSettings.community_support &&
+                                            traineeTimeline.SSCoachVisitDone == true &&
                                             traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received)
                                         {
                                             cancelStarter = true;
@@ -642,6 +643,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                 traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
                                                 traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||
                                                 traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit) ||
+                                                traineeTimeline.SSCoachVisitDone == true &&
                                                 traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed ||
                                                 traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
                                             {
@@ -654,7 +656,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                 traineeTimeline.SmartSpaceChecklistStatus != Constants.SSSettings.checklist_done ||
                                                 traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered ||
                                                 traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support ||                                            
-                                                traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit) ||
+                                                traineeTimeline.SSCoachVisitDone != true) ||
                                                 traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
                                             {
                                                 flagIncompleteOnboarding = true;
@@ -698,10 +700,11 @@ namespace EcdLink.Api.CoreApi.Services
                                                 DateTime dueDate = DateTime.Now;
                                                 //overdue trainee tasks EC-997
                                                 //find out which is the first item missing and youngest date missed
-                                                if (traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received)
+
+                                                if (traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
                                                 {
-                                                    if (traineeTimeline.SmartSpaceLicenseDate.HasValue && traineeTimeline.SmartSpaceLicenseDate.Value < dueDate)
-                                                        dueDate = traineeTimeline.SmartSpaceLicenseDate.Value;
+                                                    if (traineeTimeline.StarterLicenseDate.HasValue && traineeTimeline.StarterLicenseDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.StarterLicenseDate.Value;
                                                 }
                                                 if (traineeTimeline.ConsolidationMeetingStatus != Constants.SSSettings.consolidation_meeting)
                                                 {
@@ -713,31 +716,32 @@ namespace EcdLink.Api.CoreApi.Services
                                                     if (traineeTimeline.SmartSpaceChecklistDeadlineDate.HasValue && traineeTimeline.SmartSpaceChecklistDeadlineDate.Value < dueDate)
                                                         dueDate = traineeTimeline.SmartSpaceChecklistDeadlineDate.Value;
                                                 }
-                                                if (traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered)
-                                                {
-                                                    if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate.HasValue && traineeTimeline.ThreeChildrenRegisteredDeadlineDate.Value < dueDate)
-                                                        dueDate = traineeTimeline.ThreeChildrenRegisteredDeadlineDate.Value;
-                                                }
                                                 if (traineeTimeline.CommunitySupportStatus != Constants.SSSettings.community_support)
                                                 {
                                                     if (traineeTimeline.CommunitySupportDeadlineDate.HasValue && traineeTimeline.CommunitySupportDeadlineDate.Value < dueDate)
                                                         dueDate = traineeTimeline.CommunitySupportDeadlineDate.Value;
                                                 }
-                                                if (traineeTimeline.SSCoachVisitStatus != Constants.SSSettings.coach_visit)
+                                                if (traineeTimeline.ThreeChildrenRegisteredStatus != Constants.SSSettings.children_registered)
                                                 {
-                                                    if (traineeTimeline.SSCoachVisitDeadlineDate.HasValue && traineeTimeline.SSCoachVisitDeadlineDate.Value < dueDate)
-                                                        dueDate = traineeTimeline.SSCoachVisitDeadlineDate.Value;
+                                                    if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate.HasValue && traineeTimeline.ThreeChildrenRegisteredDeadlineDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.ThreeChildrenRegisteredDeadlineDate.Value;
+                                                }
+                                                //if (traineeTimeline.SSCoachVisitDone != true)
+                                                //{
+                                                //    if (traineeTimeline.SSCoachVisitDeadlineDate.HasValue && traineeTimeline.SSCoachVisitDeadlineDate.Value < dueDate)
+                                                //        dueDate = traineeTimeline.SSCoachVisitDeadlineDate.Value;
+                                                //}
+                                                if (traineeTimeline.SmartSpaceLicenseStatus != Constants.SSSettings.smart_space_licence_received)
+                                                {
+                                                    if (traineeTimeline.SmartSpaceLicenseDate.HasValue && traineeTimeline.SmartSpaceLicenseDate.Value < dueDate)
+                                                        dueDate = traineeTimeline.SmartSpaceLicenseDate.Value;
                                                 }
                                                 if (trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true && traineeTimeline.SignStartUpSupportAgreementStatus != Constants.SSSettings.support_agreement_signed)
                                                 {
                                                     if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate.HasValue && traineeTimeline.SignStartUpSupportAgreementDeadlineDate.Value < dueDate)
                                                         dueDate = traineeTimeline.SignStartUpSupportAgreementDeadlineDate.Value;
                                                 }
-                                                if (traineeTimeline.StarterLicenseStatus != Constants.SSSettings.starter_licence_received)
-                                                {
-                                                    if (traineeTimeline.StarterLicenseDate.HasValue && traineeTimeline.StarterLicenseDate.Value < dueDate)
-                                                        dueDate = traineeTimeline.StarterLicenseDate.Value;
-                                                }
+
                                                 replacements.Add(new TagsReplacements()
                                                 {
                                                     FindValue = "DueDate",
@@ -766,8 +770,6 @@ namespace EcdLink.Api.CoreApi.Services
                                             int traineeCount = 0;
                                             if (traineeTimeline.StarterLicenseStatus == Constants.SSSettings.starter_licence_received)
                                                 traineeCount++;
-                                            if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
-                                                traineeCount++;
                                             if (traineeTimeline.ConsolidationMeetingStatus == Constants.SSSettings.consolidation_meeting)
                                                 traineeCount++;
                                             if (traineeTimeline.SmartSpaceChecklistStatus == Constants.SSSettings.checklist_done)
@@ -776,16 +778,25 @@ namespace EcdLink.Api.CoreApi.Services
                                                 traineeCount++;
                                             if (traineeTimeline.ThreeChildrenRegisteredStatus == Constants.SSSettings.children_registered)
                                                 traineeCount++;
+                                            if (traineeTimeline.SmartSpaceLicenseStatus == Constants.SSSettings.smart_space_licence_received)
+                                                traineeCount++;
+                                            //if (traineeTimeline.SSCoachVisitDone)
+                                            //    traineeCount++;
                                             if (traineeTimeline.SignFranchiseeAgreementStatus == Constants.SSSettings.franchisee_signed)
                                                 traineeCount++;
-                                            if (traineeTimeline.SSCoachVisitStatus == Constants.SSSettings.coach_visit)
+                                            if (trainee.IsOnStipend.HasValue && (bool)trainee.IsOnStipend == true && traineeTimeline.SignStartUpSupportAgreementStatus == Constants.SSSettings.support_agreement_signed)
                                                 traineeCount++;
-                                            if (traineeTimeline.SignStartUpSupportAgreementStatus == Constants.SSSettings.support_agreement_signed)
-                                                traineeCount++;
+
+
 
                                             if (traineeOnboardingCount - traineeCount == 2)
                                             {
                                                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now.Date, trainee.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, traineeName, trainee.UserId.ToString());
+                                            }
+                                            else if (traineeOnboardingCount - traineeCount < 2)
+                                            {
+                                                //cancel any 2 step messages
+                                                await _notificationService.ExpireNotificationsTypesForUser(trainee.UserId.ToString(), TemplateTypeConstants.TwoOnboardingStepsLeft, null, null, trainee.UserId.ToString());                                            
                                             } 
                                         }
                                     }
