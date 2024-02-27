@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -325,6 +327,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
+            [Service] ApplicationUserManager userManager,
+            [Service] INotificationService notificationService,
             SSChecklistVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
@@ -352,6 +356,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.ChecklistData.VisitId = visit.Id.ToString();
             input.ChecklistData.TraineeId = trainee.Id.ToString();
             visitDataManager.AddTraineeVisitData(input.ChecklistData);
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "SupportDate",
+                ReplacementValue = trainee.InsertedDate.AddDays(21).ToShortDateString(),
+            });
+
+            var userToSend = userManager.FindByIdAsync(trainee.UserId).Result;
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), false,true,null, trainee.UserId.ToString());
+
 
             return visit;
         }
