@@ -11,6 +11,7 @@ import {
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { activities as activityConstants } from './constants';
+import { formatTextToSlug } from '@ecdlink/core';
 
 export const TeamPoints = () => {
   const history = useHistory();
@@ -29,7 +30,13 @@ export const TeamPoints = () => {
         ? { backgroundColor: activity.color }
         : { hexBackgroundColor: activity.hexColor }),
       subItem: '{points}',
-      onActionClick: () => {},
+      onActionClick: () =>
+        history.push(
+          ROUTES.COMMUNITY.TEAM.POINTS.ACTIVITY_DETAILS.replace(
+            ':activitySlug',
+            formatTextToSlug(activity.name)
+          )
+        ),
     })
   );
 

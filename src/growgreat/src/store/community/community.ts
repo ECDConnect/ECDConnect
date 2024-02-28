@@ -8,6 +8,7 @@ import {
   getAllConnect,
   getAllConnectItem,
   getMoreInformation,
+  getPointsActivityInfo,
   saveWelcomeMessage,
 } from './community.actions';
 
@@ -15,7 +16,8 @@ const initialState: CommunityState & ThunkStateStatus = {
   connect: [],
   connectItem: [],
   team: {
-    info: [],
+    activityInfo: [],
+    earnPointsInfo: [],
   },
 };
 
@@ -32,24 +34,57 @@ const communitySlice = createSlice({
     setThunkActionStatus(builder, getAllConnectItem);
     setThunkActionStatus(builder, saveWelcomeMessage);
     setThunkActionStatus(builder, getMoreInformation);
+    setThunkActionStatus(builder, getPointsActivityInfo);
+    builder.addCase(getPointsActivityInfo.fulfilled, (state, action) => {
+      const locale = action?.meta?.arg?.locale;
+      const activitySlug = action?.meta?.arg?.activitySlug;
+
+      if (!state.team) {
+        state.team = { activityInfo: [] };
+      }
+
+      if (!state.team.activityInfo) {
+        state.team.activityInfo = [];
+      }
+
+      // Try to find the existing entry for the activitySlug
+      let activityEntryIndex = state.team.activityInfo.findIndex((entry) =>
+        Object.keys(entry).includes(activitySlug)
+      );
+
+      // If not found, create a new entry
+      if (activityEntryIndex === -1) {
+        const newActivityEntry = { [activitySlug]: {} };
+        state.team.activityInfo.push(newActivityEntry);
+        activityEntryIndex = state.team.activityInfo.length - 1; // Update the index to the new entry
+      }
+
+      // Update or insert the locale data in the existing entry
+      state.team.activityInfo[activityEntryIndex][activitySlug][locale] = {
+        dateLoaded: new Date().toISOString(),
+        data: action.payload,
+      };
+
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {
       const tab = action?.meta?.arg?.tab;
       const locale = action?.meta?.arg?.locale;
 
       if (tab) {
-        const tabInfo = state[tab] || { info: [] };
+        const tabInfo = state[tab] || { earnPointsInfo: [] };
         state[tab] = tabInfo;
 
-        if (!tabInfo.info) {
-          tabInfo.info = [];
+        if (!tabInfo.earnPointsInfo) {
+          tabInfo.earnPointsInfo = [];
         }
 
-        const existingLocaleIndex = tabInfo?.info.findIndex((infoItem) =>
-          Object.hasOwnProperty.call(infoItem, locale)
+        const existingLocaleIndex = tabInfo?.earnPointsInfo.findIndex(
+          (infoItem) => Object.hasOwnProperty.call(infoItem, locale)
         );
 
         if (existingLocaleIndex !== -1) {
-          tabInfo.info[existingLocaleIndex][locale] = {
+          tabInfo.earnPointsInfo[existingLocaleIndex][locale] = {
             dateLoaded: new Date().toISOString(),
             data: action.payload,
           };
@@ -60,7 +95,7 @@ const communitySlice = createSlice({
               data: action.payload,
             },
           };
-          tabInfo.info.push(newLocaleData);
+          tabInfo.earnPointsInfo.push(newLocaleData);
         }
       }
 

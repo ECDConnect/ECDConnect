@@ -52,6 +52,8 @@
     "experimentalReplAwait": true
   },
   "include": [
-    "src"
+    "src",
+    "../../packages/ui/src/components/language-selector",
+    "../../packages/ui/src/components/more-information-page"
   ]
 }

@@ -26,7 +26,9 @@ const ROUTES = {
     WELCOME: '/welcome',
     TEAM: addPrefix('/team', {
       INFO_PAGE: '/info-page',
-      POINTS: addPrefix('/points', {}),
+      POINTS: addPrefix('/points', {
+        ACTIVITY_DETAILS: '/activity-details/:activitySlug',
+      }),
     }),
   }),
   DASHBOARD: '/dashboard',
