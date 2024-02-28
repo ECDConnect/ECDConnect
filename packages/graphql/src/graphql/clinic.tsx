@@ -5,7 +5,18 @@ export const GetAllClinic = gql`
     GetAllClinic(where: { isActive: { eq: $isActive } }) {
       id
       name
+      phoneNumber
       insertedDate
+      siteAddress {
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        province {
+          description
+        }
+      }
       teamLeads {
         teamLead {
           id
