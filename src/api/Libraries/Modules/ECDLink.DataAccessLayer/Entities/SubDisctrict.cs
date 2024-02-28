@@ -1,5 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -18,7 +17,6 @@ namespace ECDLink.DataAccessLayer.Entities
          where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }
-        public string UniqueId { get; set; }
         public Guid DistrictId { get; set; }
 
         [ForeignKey(nameof(DistrictId))]

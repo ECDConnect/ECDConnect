@@ -3346,39 +3346,69 @@ export type DisplaySetSortInput = {
 
 export type District = {
   __typename?: 'District';
-  description?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  province?: Maybe<Province>;
+  provinceId: Scalars['UUID'];
+  subDistricts?: Maybe<Array<Maybe<SubDistrict>>>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
 
 export type DistrictFilterInput = {
   and?: InputMaybe<Array<DistrictFilterInput>>;
-  description?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<DistrictFilterInput>>;
+  province?: InputMaybe<ProvinceFilterInput>;
+  provinceId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  subDistricts?: InputMaybe<ListFilterInputTypeOfSubDistrictFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
 
 export type DistrictInput = {
-  Description?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  Name?: InputMaybe<Scalars['String']>;
+  Province?: InputMaybe<ProvinceInput>;
+  ProvinceId: Scalars['UUID'];
+  SubDistricts?: InputMaybe<Array<InputMaybe<SubDistrictInput>>>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type DistrictModelInput = {
+  id?: InputMaybe<Scalars['UUID']>;
+  name?: InputMaybe<Scalars['String']>;
+  provinceId: Scalars['UUID'];
+};
+
 export type DistrictSortInput = {
-  description?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  name?: InputMaybe<SortEnumType>;
+  province?: InputMaybe<ProvinceSortInput>;
+  provinceId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type DistrictStatsModel = {
+  __typename?: 'DistrictStatsModel';
+  id?: Maybe<Scalars['UUID']>;
+  insertedDate: Scalars['DateTime'];
+  name?: Maybe<Scalars['String']>;
+  province?: Maybe<Province>;
+  subDistricts?: Maybe<Array<Maybe<SubDistrict>>>;
+  totalClinics: Scalars['Int'];
+  totalHCWs: Scalars['Int'];
+  totalSubDistricts: Scalars['Int'];
+  totalTeamLeads: Scalars['Int'];
 };
 
 export type Document = {
@@ -5237,6 +5267,13 @@ export type ListFilterInputTypeOfStatementsIncomeFilterInput = {
   some?: InputMaybe<StatementsIncomeFilterInput>;
 };
 
+export type ListFilterInputTypeOfSubDistrictFilterInput = {
+  all?: InputMaybe<SubDistrictFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<SubDistrictFilterInput>;
+  some?: InputMaybe<SubDistrictFilterInput>;
+};
+
 export type ListFilterInputTypeOfVisitDataFilterInput = {
   all?: InputMaybe<VisitDataFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -5736,6 +5773,7 @@ export type Mutation = {
   addCoachVisitData: Scalars['Boolean'];
   addCoachVisitInviteForPractitioner?: Maybe<Visit>;
   addCoachVisitInviteForTrainee?: Maybe<Visit>;
+  addDistrict?: Maybe<District>;
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
   addFamilyDayMeeting?: Maybe<ClubMeeting>;
@@ -5758,6 +5796,7 @@ export type Mutation = {
   addSelfAssessmentForPractitioner?: Maybe<Visit>;
   addSmartSpaceLicenseForTrainee?: Maybe<License>;
   addStartupSupportAgreementForTrainee?: Maybe<Visit>;
+  addSubDistrict?: Maybe<SubDistrict>;
   addSupportVisitData: Scalars['Boolean'];
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<TeamLead>;
@@ -6044,6 +6083,8 @@ export type Mutation = {
   demotePractitionerAsPrincipal?: Maybe<Practitioner>;
   disableNotification: Scalars['Boolean'];
   editAbsentee?: Maybe<Absentees>;
+  editDistrict?: Maybe<District>;
+  editSubDistrict?: Maybe<SubDistrict>;
   editVisitData: Scalars['Boolean'];
   expireNotification: Scalars['Boolean'];
   expireNotificationsTypesForUser: Scalars['Boolean'];
@@ -6419,6 +6460,10 @@ export type MutationAddCoachVisitInviteForTraineeArgs = {
   input?: InputMaybe<SsChecklistVisitModelInput>;
 };
 
+export type MutationAddDistrictArgs = {
+  input?: InputMaybe<DistrictModelInput>;
+};
+
 export type MutationAddEventRecordArgs = {
   input?: InputMaybe<EventRecordModelInput>;
 };
@@ -6522,6 +6567,10 @@ export type MutationAddSmartSpaceLicenseForTraineeArgs = {
 
 export type MutationAddStartupSupportAgreementForTraineeArgs = {
   input?: InputMaybe<SupportVisitModelInput>;
+};
+
+export type MutationAddSubDistrictArgs = {
+  input?: InputMaybe<SubDistrictModelInput>;
 };
 
 export type MutationAddSupportVisitDataArgs = {
@@ -7765,6 +7814,14 @@ export type MutationEditAbsenteeArgs = {
   reason?: InputMaybe<Scalars['String']>;
   reassignedToPractitioner?: InputMaybe<Scalars['String']>;
   roleAssignedToUser?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationEditDistrictArgs = {
+  input?: InputMaybe<DistrictModelInput>;
+};
+
+export type MutationEditSubDistrictArgs = {
+  input?: InputMaybe<SubDistrictModelInput>;
 };
 
 export type MutationEditVisitDataArgs = {
@@ -11547,6 +11604,7 @@ export type Query = {
   countWorkflowStatusType?: Maybe<Scalars['Int']>;
   dailyAttendance?: Maybe<Array<Maybe<Attendance>>>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
+  districtsAndStats?: Maybe<Array<Maybe<DistrictStatsModel>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
   entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
   franchisorByUserId?: Maybe<Franchisor>;
@@ -11621,6 +11679,7 @@ export type Query = {
   statementsIncomeExpensesPDFData?: Maybe<
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
+  subDistrictsAndStats?: Maybe<Array<Maybe<SubDistrictStatsModel>>>;
   teamLeadTemplateGenerator?: Maybe<FileModel>;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
@@ -15640,7 +15699,6 @@ export type SubDistrict = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   name?: Maybe<Scalars['String']>;
-  uniqueId?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -15654,7 +15712,6 @@ export type SubDistrictFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<SubDistrictFilterInput>>;
-  uniqueId?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
@@ -15665,8 +15722,13 @@ export type SubDistrictInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Name?: InputMaybe<Scalars['String']>;
-  UniqueId?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type SubDistrictModelInput = {
+  districtId: Scalars['UUID'];
+  id?: InputMaybe<Scalars['UUID']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type SubDistrictSortInput = {
@@ -15676,9 +15738,19 @@ export type SubDistrictSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   name?: InputMaybe<SortEnumType>;
-  uniqueId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type SubDistrictStatsModel = {
+  __typename?: 'SubDistrictStatsModel';
+  district?: Maybe<District>;
+  id?: Maybe<Scalars['UUID']>;
+  insertedDate: Scalars['DateTime'];
+  name?: Maybe<Scalars['String']>;
+  totalClinics: Scalars['Int'];
+  totalHCWs: Scalars['Int'];
+  totalTeamLeads: Scalars['Int'];
 };
 
 export type SubmitStatementModelInput = {
