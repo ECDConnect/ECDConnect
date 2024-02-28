@@ -17,7 +17,7 @@ import ROUTES from '@/routes/routes';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { CommunityRouteState } from '../community.types';
 import { useWindowSize } from '@reach/window-size';
-import { format, getMonth } from 'date-fns';
+import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
 
 export const TeamTab: React.FC = () => {
   const history = useHistory();
@@ -86,30 +86,6 @@ export const TeamTab: React.FC = () => {
     [history, isTop25Percent]
   );
 
-  const getQuarterDescription = (date: Date) => {
-    const quarters = [
-      { startMonth: 9, endMonth: 11, quarter: 1, name: 'October to December' }, // Q1: Oct, Nov, Dec
-      { startMonth: 0, endMonth: 2, quarter: 2, name: 'January to March' }, // Q2: Jan, Feb, Mar
-      { startMonth: 3, endMonth: 5, quarter: 3, name: 'April to June' }, // Q3: Apr, May, Jun
-      { startMonth: 6, endMonth: 8, quarter: 4, name: 'July to September' }, // Q4: Jul, Aug, Sep
-    ];
-
-    const month = getMonth(date);
-    let quarterDescription = '';
-
-    quarters.forEach((currentQuarter) => {
-      if (
-        month >= currentQuarter.startMonth &&
-        month <= currentQuarter.endMonth
-      ) {
-        const year = format(date, 'yyyy');
-        quarterDescription = `Quarter ${currentQuarter.quarter}: ${currentQuarter.name} ${year}`;
-      }
-    });
-
-    return quarterDescription;
-  };
-
   if (isLoading) {
     <LoadingSpinner
       className="mt-10"
@@ -129,7 +105,7 @@ export const TeamTab: React.FC = () => {
         <Typography
           type="h4"
           color="textMid"
-          text={getQuarterDescription(today)}
+          text={getCommunityQuarterDescription(today)}
         />
         <div className="mt-4 flex items-center justify-start gap-2">
           <StatusChip
@@ -185,7 +161,7 @@ export const TeamTab: React.FC = () => {
                   text: '{pointsBadge}',
                 }}
                 textColour="black"
-                onClick={() => {}}
+                onClick={() => history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)}
               />
             </>
           ) : (
