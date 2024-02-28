@@ -5,8 +5,11 @@ export const GetAllDistrict = gql`
     GetAllDistrict {
       id
       name
-      provinceId
       insertedDate
+      province {
+        id
+        description
+      }
       subDistricts {
         id
         name
