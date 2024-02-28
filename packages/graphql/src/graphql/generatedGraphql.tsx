@@ -1852,12 +1852,6 @@ export type ClinicFilterInput = {
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
 
-export type ClinicFilterModel = {
-  __typename?: 'ClinicFilterModel';
-  id: Scalars['UUID'];
-  name?: Maybe<Scalars['String']>;
-};
-
 export type ClinicInput = {
   EmergencyContactNumber?: InputMaybe<Scalars['String']>;
   EmergencyContactPerson?: InputMaybe<Scalars['String']>;
@@ -11091,12 +11085,6 @@ export type ProvinceFilterInput = {
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
 
-export type ProvinceFilterModel = {
-  __typename?: 'ProvinceFilterModel';
-  id: Scalars['UUID'];
-  name?: Maybe<Scalars['String']>;
-};
-
 export type ProvinceInput = {
   Description?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -11678,7 +11666,6 @@ export type Query = {
   userCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
   userClubStanding?: Maybe<UserClubStandingModel>;
   userCountForMessageCriteria: Scalars['Int'];
-  userFilters?: Maybe<UserFilterModel>;
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
   visitAnswersForInfant?: Maybe<Array<Maybe<VisitData>>>;
@@ -15704,14 +15691,6 @@ export type SubDistrictFilterInput = {
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
 
-export type SubDistrictFilterModel = {
-  __typename?: 'SubDistrictFilterModel';
-  districtId: Scalars['UUID'];
-  districtName?: Maybe<Scalars['String']>;
-  id: Scalars['UUID'];
-  name?: Maybe<Scalars['String']>;
-};
-
 export type SubDistrictInput = {
   District?: InputMaybe<DistrictInput>;
   DistrictId: Scalars['UUID'];
@@ -15844,13 +15823,6 @@ export type TeamLeadFilterInput = {
   userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
 };
 
-export type TeamLeadFilterModel = {
-  __typename?: 'TeamLeadFilterModel';
-  firstName?: Maybe<Scalars['String']>;
-  id: Scalars['UUID'];
-  surname?: Maybe<Scalars['String']>;
-};
-
 export type TeamLeadInput = {
   Clinics?: InputMaybe<Array<InputMaybe<ClinicTeamLeadInput>>>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -15864,7 +15836,6 @@ export type TeamLeadInput = {
 export type TeamLeadModelInput = {
   clinic?: InputMaybe<ClinicInput>;
   clinicId?: InputMaybe<Scalars['UUID']>;
-  id: Scalars['UUID'];
   jobTitle?: InputMaybe<Scalars['String']>;
   user?: InputMaybe<ApplicationUserInput>;
   userId?: InputMaybe<Scalars['String']>;
@@ -16278,14 +16249,6 @@ export type UserConsentSortInput = {
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   userId?: InputMaybe<SortEnumType>;
-};
-
-export type UserFilterModel = {
-  __typename?: 'UserFilterModel';
-  clinics?: Maybe<Array<Maybe<ClinicFilterModel>>>;
-  provinces?: Maybe<Array<Maybe<ProvinceFilterModel>>>;
-  subDistricts?: Maybe<Array<Maybe<SubDistrictFilterModel>>>;
-  teamLeads?: Maybe<Array<Maybe<TeamLeadFilterModel>>>;
 };
 
 export type UserGrant = {
