@@ -1,6 +1,7 @@
 import { ReactElement } from 'react';
 import { Colours, ComponentBaseProps } from '../../models';
 import { ProgressBarProps } from '../progress-bar';
+import { StatusChipProps } from '../status-chip/status-chip';
 
 export interface ScoreCardProps extends ComponentBaseProps {
   image?: ReactElement;
@@ -14,7 +15,12 @@ export interface ScoreCardProps extends ComponentBaseProps {
   bgColour: Colours;
   barColour: Colours;
   barBgColour: Colours;
+  barSize?: ProgressBarProps['size'];
+  barStatusChip?: StatusChipProps;
+  barDivides?: ProgressBarProps['divides'];
   textColour: Colours;
   textPosition?: ProgressBarProps['textPosition'];
+  statusChip?: StatusChipProps;
   onClick?: () => void;
+  onClickClassName?: string;
 }
