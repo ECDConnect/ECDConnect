@@ -1,6 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -11,7 +9,7 @@ namespace ECDLink.DataAccessLayer.Entities
 {
     [Table(nameof(District))]
     [EntityPermission(PermissionGroups.GENERAL)]
-    public class District : Province<Guid>
+    public class District : District<Guid>
     {
     }
 
@@ -20,7 +18,6 @@ namespace ECDLink.DataAccessLayer.Entities
          where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }
-        public string UniqueId { get; set; }
         public Guid ProvinceId { get; set; }
 
         [ForeignKey(nameof(ProvinceId))]

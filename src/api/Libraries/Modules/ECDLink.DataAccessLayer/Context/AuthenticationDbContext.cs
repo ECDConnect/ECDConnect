@@ -1,6 +1,5 @@
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Models;
-using ECDLink.DataAccessLayer.Context.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
@@ -29,11 +28,8 @@ using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Jobs;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security.JwtSecurity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Namotion.Reflection;
 using System;
 
 namespace ECDLink.DataAccessLayer.Context
@@ -166,6 +162,12 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ClubPoints> ClubPoints { get; set; }
         public DbSet<ClubActivityUpload> ClubActivityUpload { get; set; }
         public DbSet<ClubActivityUploadType> ClubActivityUploadType { get; set; }
+
+        // Clinics, Districts, SubDistricts
+        public DbSet<District> District { get; set; }
+        public DbSet<SubDistrict> SubDistrict { get; set; }
+        public DbSet<ClinicLeague> ClinicLeague { get; set; }
+        public DbSet<ClinicTeamLead> ClinicTeamLead { get; set; }
 
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }
