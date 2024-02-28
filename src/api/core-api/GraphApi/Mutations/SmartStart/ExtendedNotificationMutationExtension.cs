@@ -393,7 +393,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = programmeName
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, userId);
         }
 
         public async Task<bool> SendCoachTraineeReadySmartspaceCheckNotification(

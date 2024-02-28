@@ -236,7 +236,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 });
 
                 var practitioner = practitionerRepo.GetByUserId(updateClass.UserId.ToString());
-                if (practitioner != null && practitioner.CoachHierarchy != null) {
+                if (practitioner != null && practitioner.CoachHierarchy != null && practitioner.IsRegistered == true && practitioner.IsPrincipal == true) {
                    var coachToSend = userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
                     if (coachToSend != null)
                     {
