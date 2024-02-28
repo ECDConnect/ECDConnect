@@ -5,7 +5,6 @@ CREATE TABLE public."District" (
     "UpdatedDate" timestamp NOT NULL,
     "UpdatedBy" text NULL,
     "Name" text NULL,
-    "UniqueId" text NULL,
     "ProvinceId" uuid not NULL,
     "TenantId" uuid NULL,
     CONSTRAINT "PK_District" PRIMARY KEY ("Id")
@@ -19,7 +18,6 @@ CREATE TABLE public."SubDistrict" (
     "UpdatedDate" timestamp NOT NULL,
     "UpdatedBy" text NULL,
     "Name" text NULL,
-    "UniqueId" text NULL,
     "DistrictId" uuid not NULL,
     "TenantId" uuid NULL,
     CONSTRAINT "PK_SubDistrict" PRIMARY KEY ("Id")

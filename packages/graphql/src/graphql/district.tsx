@@ -18,6 +18,26 @@ export const GetAllDistrict = gql`
   }
 `;
 
+export const GetDistrictByName = gql`
+  query GetDistrictByName($name: String!) {
+    districtByName(name: $name) {
+      id
+      name
+    }
+  }
+`;
+
+export const GetDistrictStats = gql`
+  query GetDistrictStats($districtId: UUID!) {
+    districtStats(districtId: $districtId) {
+      totalSubDistricts
+      totalClinics
+      totalTeamLeads
+      totalHCWs
+    }
+  }
+`;
+
 export const AddDistrict = gql`
   mutation AddDistrict($input: DistrictModelInput) {
     addDistrict(input: $input) {

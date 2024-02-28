@@ -9,4 +9,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Guid ProvinceId { get; set; }
 
     }
+
+    public class DistrictStatsModel
+    {
+        public int TotalSubDistricts { get; set; }
+        public int TotalClinics { get; set; }
+        public int TotalTeamLeads { get; set; }
+        public int TotalHCWs { get; set; }
+    }
 }
