@@ -22,6 +22,15 @@ export const GetDistrictsAndStats = gql`
     }
 `;
 
+export const GetFilterDistricts = gql`
+  query GetAllDistrict($isActive: Boolean = true) {
+    GetAllDistrict(where: { isActive: { eq: $isActive } }) {
+      id
+      name
+    }
+  }
+`;
+
 export const AddDistrict = gql`
   mutation AddDistrict($input: DistrictModelInput) {
     addDistrict(input: $input) {
