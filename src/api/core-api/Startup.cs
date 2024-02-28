@@ -1,8 +1,11 @@
+using DinkToPdf;
+using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
@@ -11,6 +14,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
@@ -34,6 +38,7 @@ using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
 using ECDLink.SmartStart.Services;
+using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
@@ -43,12 +48,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
-using EcdLink.Api.CoreApi.Managers.Integration;
-using ECDLink.SmartStart.Services.Interfaces;
-using Castle.Core.Logging;
-using DinkToPdf.Contracts;
-using DinkToPdf;
-using EcdLink.Api.CoreApi.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -176,6 +175,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
+            services.AddTransient<IClinicService, ClinicService>();
 
             services.AddSingleton<IConverter, SynchronizedConverter>(serviceProvider =>
             {

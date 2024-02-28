@@ -1,24 +1,33 @@
 import { gql } from '@apollo/client';
 
 export const GetSubDistrictsAndStats = gql`
-query GetSubDistrictsAndStats() {
-  subDistrictsAndStats() {
+  query GetSubDistrictsAndStats() {
+    subDistrictsAndStats() {
+        id
+        name
+        insertedDate
+        district {
+            id
+            name 
+            province {
+                id
+                description
+            }
+        }
+        totalClinics
+        totalTeamLeads
+        totalHCWs
+    }
+  }
+`;
+
+export const GetFilterSubDistricts = gql`
+  query GetAllSubDistrict($isActive: Boolean = true) {
+    GetAllSubDistrict(where: { isActive: { eq: $isActive } }) {
       id
       name
-      insertedDate
-      district {
-          id
-          name 
-          province {
-              id
-              description
-          }
-      }
-      totalClinics
-      totalTeamLeads
-      totalHCWs
+    }
   }
-}
 `;
 
 export const AddSubDistrict = gql`
