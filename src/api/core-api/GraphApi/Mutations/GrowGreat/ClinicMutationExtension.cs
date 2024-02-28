@@ -40,8 +40,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: applicationUserId);
             return clinicRepo.Insert(clinic);
-
         }
-
     }
 }

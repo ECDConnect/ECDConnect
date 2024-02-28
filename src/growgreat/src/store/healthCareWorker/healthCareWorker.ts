@@ -10,7 +10,7 @@ import { HealthCareWorkerState } from './healthCareWorker.types';
 
 const initialState: HealthCareWorkerState = {
   healthCareWorker: undefined,
-  healthCareWorkers: undefined,
+  healthCareWorkers: undefined, // Is this used? Can it be removed?
 };
 
 const healthCareWorkerSlice = createSlice({

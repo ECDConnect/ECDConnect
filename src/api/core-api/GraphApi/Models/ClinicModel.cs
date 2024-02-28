@@ -3,6 +3,7 @@ using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
+    // TODO - rename to input model and move to GG namespace
     public class ClinicModel
     {
         public string Name { get; set; }

@@ -1,7 +1,7 @@
 import { api } from '../axios.helper';
-import { Config, PractitionerDto, HealthCareWorkerDto } from '@ecdlink/core';
+import { Config, HealthCareWorkerDto } from '@ecdlink/core';
 import {
-  HealthCareWorkerModelInput,
+  HealthCareWorkerInputModelInput,
   MutationUpdateHealthCareWorkerArgs,
 } from '@ecdlink/graphql';
 
@@ -22,7 +22,6 @@ class HealthCareWorkerService {
         healthCareWorkerByUserId(userId: $userId) {
           user {
               id
-              userName
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
@@ -30,39 +29,11 @@ class HealthCareWorkerService {
               idNumber
               firstName
               surname
-              fullName
               contactPreference
               genderId
               phoneNumber
               profileImageUrl
-              emailConfirmed
-              phoneNumberConfirmed
-              twoFactorEnabled
-              isActive
-              lastSeen
-          }
-          teamLead {
-            jobTitle
-            user {
-              firstName
-              surname
-              phoneNumber
-            }
-            clinic {
-              name
-              phoneNumber
-                siteAddress {
-                    name
-                    addressLine1
-                    addressLine2
-                    addressLine3
-                    postalCode
-                    province {
-                        description
-                    }
-                }
-            }
-          }
+          }          
           id
           isRegistered
           languageId
@@ -72,31 +43,8 @@ class HealthCareWorkerService {
           clickedVisitTab
           clickedProgressTab
           clickedReferralsTab
-          clickedContactTab
-          pointsEngineData {
-            pointsLibrary {
-              activity
-              subActivity
-              points
-              maxPointsIndividualMonthly
-              calculatedAtMonthEnd
-              calculatedAtYearEnd
-            }
-            pointsUserSummary {
-              pointsTotal
-              pointsYTD
-              month
-              year
-              pointsLibrary {
-                activity
-                subActivity
-                points
-                maxPointsIndividualMonthly
-                calculatedAtMonthEnd
-                calculatedAtYearEnd
-              }
-            }
-          }
+          clickedContactTab    
+          clinicId      
         }
       }
       `,
@@ -106,152 +54,62 @@ class HealthCareWorkerService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Practitioner Failed - Server connection error');
+      throw new Error(
+        'getHealthCareWorkerByUserId Failed - Server connection error'
+      );
     }
 
     return response.data.data.healthCareWorkerByUserId;
   }
 
-  async getPractitionerByUserId(userId: string): Promise<PractitionerDto> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetPractitionerByUserId($userId: String) {
-          practitionerByUserId(userId: $userId) {
-            id
-            userId
-            user {
-              id
-              firstName
-              surname
-              fullName
-              email
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-            }
-            siteAddress {
-              id
-              province {
-                id
-                description
-              }
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-            }
-            isPrincipal
-            isRegistered
-            principalHierarchy
-            attendanceRegisterLink
-            maxChildren
-            consentForPhoto
-            parentFees
-            languageUsedInGroups
-            startDate
-            monthSinceFranchisee
-            shareInfo
-            dateLinked
-            dateAccepted
-            dateToBeRemoved
-            isLeaving
-            progress
-          }
-        }
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error('Get Practitioner Failed - Server connection error');
-    }
-
-    return response.data.data.practitionerByUserId;
-  }
-
-  async UpdatePractitionerRegistered(
-    practitionerId: string,
-    status: boolean = true
-  ): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation UpdatePractitionerRegistered(
-          $practitionerId: String
-          $status: Boolean
-        ) {
-          updatePractitionerRegistered(
-            practitionerId: $practitionerId
-            status: $status
-          )
-        }
-      `,
-      variables: {
-        practitionerId,
-        status,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.updatePractitionerRegistered;
-  }
-
-  async UpdateHealthCareWorker(
+  async updateHealthCareWorker(
     userId: string,
     input: MutationUpdateHealthCareWorkerArgs
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updateHealthCareWorker(
+      query: `mutation updateHealthCareWorker(
         $userId: String,
         $input: HealthCareWorkerModelInput
-    ) {
-      updateHealthCareWorker(
+      ) {
+        updateHealthCareWorker(
           userId: $userId,
           input: $input
         ) {
+          user {
             id
-            language {
-                description
-            }
-            isRegistered
-            user {
-                firstName
-                surname
-                email
-                phoneNumber
-                emailConfirmed
-            }
-            teamLead {
-              jobTitle
-                clinic {
-                  name
-                  phoneNumber
-                    siteAddress {
-                        name
-                        addressLine1
-                        addressLine2
-                        addressLine3
-                        postalCode
-                        province {
-                            description
-                        }
-                    }
-                }
-            }
-      }
-    }
-      `,
+            userName
+            email
+            isSouthAfricanCitizen
+            verifiedByHomeAffairs
+            dateOfBirth
+            idNumber
+            firstName
+            surname
+            fullName
+            contactPreference
+            genderId
+            phoneNumber
+            profileImageUrl
+            emailConfirmed
+            phoneNumberConfirmed
+            twoFactorEnabled
+            isActive
+            lastSeen
+          }          
+          id
+          isRegistered
+          languageId
+          clickedDashboardClientsTab
+          clickedDashboardVisitsTab
+          clickedDashboardHighlightsTab
+          clickedVisitTab
+          clickedProgressTab
+          clickedReferralsTab
+          clickedContactTab    
+          clinicId      
+        }
+      }`,
       variables: {
         userId,
         input,
@@ -259,7 +117,7 @@ class HealthCareWorkerService {
     });
     if (response.status !== 200) {
       throw new Error(
-        'Update Practitioner by ID number Failed - Server connection error'
+        'updateHealthCareWorker Failed - Server connection error'
       );
     }
 
@@ -267,15 +125,14 @@ class HealthCareWorkerService {
   }
 
   async updateHealthCareWorkerTabs(
-    input: HealthCareWorkerModelInput,
+    input: HealthCareWorkerInputModelInput,
     userId: string
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { updateHealthCareWorkerTabs: HealthCareWorkerDto };
     }>(``, {
-      query: `
-        mutation UpdateHealthCareWorkerTabs($input: HealthCareWorkerModelInput, $userId: String) {
+      query: `mutation UpdateHealthCareWorkerTabs($input: HealthCareWorkerModelInput, $userId: String) {
           updateHealthCareWorkerTabs(input: $input, userId: $userId) {
             user {
               id
@@ -297,42 +154,20 @@ class HealthCareWorkerService {
               twoFactorEnabled
               isActive
               lastSeen
+            }          
+            id
+            isRegistered
+            languageId
+            clickedDashboardClientsTab
+            clickedDashboardVisitsTab
+            clickedDashboardHighlightsTab
+            clickedVisitTab
+            clickedProgressTab
+            clickedReferralsTab
+            clickedContactTab    
+            clinicId      
           }
-          teamLead {
-            jobTitle
-            user {
-              firstName
-              surname
-              phoneNumber
-            }
-            clinic {
-              name
-              phoneNumber
-                siteAddress {
-                    name
-                    addressLine1
-                    addressLine2
-                    addressLine3
-                    postalCode
-                    province {
-                        description
-                    }
-                }
-            }
-          }
-          id
-          isRegistered
-          languageId
-          clickedDashboardClientsTab
-          clickedDashboardVisitsTab
-          clickedDashboardHighlightsTab
-          clickedVisitTab
-          clickedProgressTab
-          clickedReferralsTab
-          clickedContactTab
-          }
-        }
-      `,
+        }`,
       variables: {
         input,
         userId,
@@ -341,7 +176,7 @@ class HealthCareWorkerService {
 
     if (response.status !== 200) {
       throw new Error(
-        'Updating health careworker failed - Server connection error'
+        'updateHealthCareWorkerTabs failed - Server connection error'
       );
     }
 

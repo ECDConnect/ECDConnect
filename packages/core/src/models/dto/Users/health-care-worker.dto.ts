@@ -7,22 +7,20 @@ import { DocumentDto } from '../Documents/document.dto';
 export interface HealthCareWorkerDto extends EntityBase {
   user?: UserDto;
   userId?: string;
-  siteAddress?: SiteAddressDto;
-  siteAddressId?: string;
   consentForPhoto?: boolean;
   isRegistered?: boolean;
   language?: string;
   languageId?: string;
-  documents?: DocumentDto[];
-  emergencyContactPerson?: string;
-  emergencyContactNumber?: string;
-  clickedDashboardClientsTab?: boolean;
-  clickedDashboardVisitsTab?: boolean;
-  clickedDashboardHighlightsTab?: boolean;
-  clickedVisitTab?: boolean;
-  clickedProgressTab?: boolean;
-  clickedReferralsTab?: boolean;
-  clickedContactTab?: boolean;
+  clickedDashboardClientsTab: boolean;
+  clickedDashboardVisitsTab: boolean;
+  clickedDashboardHighlightsTab: boolean;
+  clickedVisitTab: boolean;
+  clickedProgressTab: boolean;
+  clickedReferralsTab: boolean;
+  clickedContactTab: boolean;
+  clickedTeamTab: boolean;
+  clinicId?: string;
+  // TODO - Remove the team lead fields
   teamLeadId?: string;
   teamLead?: {
     jobTitle?: string;
