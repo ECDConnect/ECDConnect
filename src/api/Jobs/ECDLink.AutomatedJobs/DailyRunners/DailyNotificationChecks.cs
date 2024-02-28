@@ -21,7 +21,8 @@ public class DailyNotificationChecks : CronJobService
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
-    {
+
+  {
         using (var scope = _scopeFactory.CreateScope())
         {
             TenancyContext.SetTenantContext(scope);
@@ -33,12 +34,11 @@ public class DailyNotificationChecks : CronJobService
             await service.DailyChildrenNotAssignedToClassNotification();
             ////await service.DailyUnassignedProgrammesNotification();
             await service.SelfAssessmentReminderNewAsync();
-
+            await service.MonthlyPlanningReminderAsync();
             await service.CoachChecksPractitionersNotification();
             await service.CoachChecksTraineeNotification();
-
-            //await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
-
+            ////await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
+            
             //specific day checks in year/month
             if (DateTime.Now.Day == 15 && DateTime.Now.Month == 1) //15 Jan each year only
             {
