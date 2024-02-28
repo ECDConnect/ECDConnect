@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -8,11 +9,9 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Clubs;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -20,34 +19,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     public class DistrictQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public District GetDistrictByName(
+        public List<DistrictStatsModel> GetDistrictsAndStats(
             [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string name)
+            IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var districtRepo = repoFactory.CreateRepository<District>(userContext: uId);
-            return districtRepo.GetAll().Where(x => x.Name == name).FirstOrDefault();
-        }
-
-        public DistrictStatsModel GetDistrictStats(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            Guid districtId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var subDistrictRepo = repoFactory.CreateRepository<SubDistrict>(userContext: uId);
             var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
             var clinicTeamLeadRepo = repoFactory.CreateRepository<ClinicTeamLead>(userContext: uId);
             var hcwRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
 
-            DistrictStatsModel districtStatsModel = new DistrictStatsModel();
-            districtStatsModel.TotalSubDistricts = subDistrictRepo.GetAll().Where(x => x.IsActive && x.DistrictId == districtId).Distinct().Count();
-            districtStatsModel.TotalClinics = clinicRepo.GetAll().Where(x => x.IsActive && x.SubDistrict.DistrictId == districtId).Distinct().Count();
-            districtStatsModel.TotalTeamLeads = clinicTeamLeadRepo.GetAll().Where(x => x.IsActive && x.Clinic.SubDistrict.DistrictId == districtId).Distinct().Count();
-            districtStatsModel.TotalHCWs = hcwRepo.GetAll().Where(x => x.IsActive && x.Clinic.SubDistrict.DistrictId == districtId).Distinct().Count();
+            var districtRecords = districtRepo.GetAll().Include(x => x.SubDistricts).Where(x => x.IsActive).ToList();
+            var clinics = clinicRepo.GetAll().Where(x => x.IsActive && x.SubDistrictId.HasValue).ToList();
+            var clinicTeamLeads = clinicTeamLeadRepo.GetAll().Where(x => x.IsActive).ToList();
+            var hCWs = hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
 
-            return districtStatsModel;
+            List<DistrictStatsModel> districts = new List<DistrictStatsModel>();
+            foreach (var district in districtRecords)
+            {
+                districts.Add(new DistrictStatsModel() { 
+                    Id = district.Id,
+                    Name = district.Name,
+                    InsertedDate = district.InsertedDate,
+                    Province = district.Province,
+                    SubDistricts = district.SubDistricts,
+                    TotalSubDistricts = district.SubDistricts.Count(),
+                    TotalClinics = clinics.Where(x => x.SubDistrict.DistrictId == district.Id).Distinct().Count(),
+                    TotalTeamLeads = clinicTeamLeads.Where(x => x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count(),
+                    TotalHCWs = hCWs.Where(x => x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count()
+                });
+            }
+
+            return districts;
         }
     }
 }
