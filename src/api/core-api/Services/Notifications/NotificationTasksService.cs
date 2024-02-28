@@ -108,21 +108,19 @@ namespace EcdLink.Api.CoreApi.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
 
-            var offlinePractitionesrs = practitionerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-14).Date).OrderByDescending(x => x.User.LastSeen).ToList();//&& x.UserId.ToString() == "15b8b74e-7691-4a3a-a92d-22a7ee6d25a5"
+            var offlinePractitioners = practitionerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
 
-            foreach (var prac in offlinePractitionesrs)
+            foreach (var prac in offlinePractitioners)
             {
                 TimeSpan daysToCheck = (DateTime.Now - prac.User.LastSeen);
                 if (daysToCheck.Days > 0)
                 {
                     if (daysToCheck.Days >= 21 && daysToCheck.Days <30)
                     {
-
                         await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
                     }
                     else if (daysToCheck.Days >= 30)
                     {
-
                         await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
                     }
                 }
@@ -309,20 +307,20 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
-            var classroomRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: adminId);
+            var classroomRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: adminId);
             //find all practitioners that has not yet created planning for their classes after a month of having the class
-            var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate < DateTime.Now.AddMonths(-1).Date).ToList();
+            var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.IsRegistered.Equals(true) && x.InsertedDate <= DateTime.Now.AddMonths(-1).Date).ToList(); //&& (x.IsPrincipal == true || x.IsFundaAppAdmin == true)
 
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var pracData in practitioners)
             {
                 var classRooms = classroomRepo.GetAll()                    
-                    .Include(x => x.Programmes)
-                    .Where(x => x.UserId.Equals(pracData.UserId) && x.Programmes.Count < 3)
+                    .Include(x => x.ClassProgrammes)
+                    .Where(x => x.UserId.Equals(pracData.UserId) && x.ClassProgrammes.Count <= 1 && x.Name != "Unsure" && x.IsActive == true)
                     .ToList();
                 if (classRooms.Any())
                 {
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PlanYourProgrammes, DateTime.Now.Date, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, pracData.UserId.ToString());
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PlanYourProgrammes, DateTime.Now.Date, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), true, true, null, pracData.UserId.ToString());
                 }
             }
         }

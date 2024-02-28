@@ -61,3 +61,7 @@ UPDATE public."MessageLog"
 UPDATE public."MessageLog"
 		SET "Message" = 'Other practitioners are submitting their income statements each month - join them and submit yours!'
 	WHERE "MessageTemplateType"  in ('income-statement-not-complete-by-1st');
+
+	UPDATE public."MessageTemplate"
+	SET "Action" = '{"url":"/classroom"}'
+	WHERE "TemplateType"  in ('rejected-invitation');

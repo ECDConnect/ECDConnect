@@ -939,18 +939,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             _traineeRepo.Update(trainee);
-
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "SupportDate",
-                ReplacementValue = trainee.InsertedDate.AddDays(21).ToShortDateString(),
-            });
-
-            var userToSend = _userManager.FindByIdAsync(userId).Result;
-            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
-
-
+            //remove communitysupport notification
+            _notificationService.ExpireNotificationsTypesForUser(userId, TemplateTypeConstants.GainCommunitySupport, null, null, userId);
             return trainee;
         }
 

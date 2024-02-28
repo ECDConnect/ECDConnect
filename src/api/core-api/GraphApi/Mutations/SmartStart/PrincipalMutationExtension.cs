@@ -335,7 +335,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     status.AcceptedDate = DateTime.Now;
                     status.Leaving = false;
 
-                    notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, practitioner.User.FirstName + " " + practitioner.User.Surname, null, practitioner.UserId.ToString());
+                    notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId.ToString());
                 }
                 //update practitioner with column changes
                 practitionerRepo.Update(practitioner);
