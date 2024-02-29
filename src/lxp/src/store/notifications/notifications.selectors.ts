@@ -23,7 +23,8 @@ export const getAllNotifications = createSelector(
       const isCtaOk =
         ctasMapped.includes(notification.message.cta) ||
         !notification.message.cta ||
-        notification.message.action;
+        notification.message.action ||
+        notification.message.routeConfig;
 
       if (!notification?.message?.expiryDate) {
         return dateCreated.getTime() <= currentDate.getTime() && isCtaOk;

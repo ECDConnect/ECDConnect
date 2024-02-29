@@ -29,9 +29,11 @@ export class IncompletePractitionerInformationNotificationValidator
       user: userState,
       classroomData: classroomState,
       practitioner: practitionerState,
+      trainee: traineeState,
     } = this.store.getState();
 
     if (!classroomState || !userState) return [];
+    const isOnStipend = practitionerState?.practitioner?.isOnStipend;
 
     /**
      * Notification is returned when
@@ -65,6 +67,57 @@ export class IncompletePractitionerInformationNotificationValidator
       const showNotificationForPrincipalFlow =
         (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
         (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
+      const isTrainee = practitionerState?.practitioner?.isTrainee;
+
+      if (isTrainee) {
+        const timeline =
+          traineeState?.traineeOnboardTimeline[
+            practitionerState.practitioner.userId || ''
+          ];
+        const steps = timelineSteps(
+          timeline!,
+          () => {},
+          false,
+          true,
+          // @ts-ignore
+          undefined,
+          '',
+          timeline?.consolidationMeetingStatus,
+          isOnStipend
+        );
+
+        const completedSteps = steps.filter(
+          (item) => item?.type === 'completed'
+        );
+        const overdueSteps = steps
+          .filter((item) => {
+            const overdueDate = (item as StepItem<{ date: Date }>)?.extraData
+              ?.date;
+            return (
+              (item?.type === 'todo' || item?.type === 'inProgress') &&
+              overdueDate &&
+              overdueDate < new Date()
+            );
+          })
+          .sort(
+            (stepA, stepB) =>
+              ((stepA as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
+                0) -
+              ((stepB as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
+                0)
+          ) as StepItem<{ date: Date }>[];
+
+        if (overdueSteps?.length > 0) {
+          return [];
+        }
+
+        if (
+          (isOnStipend && completedSteps?.length < 8) ||
+          (!isOnStipend && completedSteps?.length < 7)
+        ) {
+          return [];
+        }
+      }
 
       if (showNotificationForPrincipalFlow) {
         return [
