@@ -1,9 +1,8 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using System;
+﻿using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
-    public class PortalClinicModel
+    public class PortalClinicInputModel
     {
         public Guid? Id { get; set; }
         public string Name { get; set; }
@@ -17,33 +16,41 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     public class ClinicReportModel
     {
         public int TotalHCWs { get; set; }
-        public int LeaguePosition { get; set; }
-        public int TotalQuarterPoints { get; set; }
+        public int LeagueRanking { get; set; }
+        public int PointsTotal { get; set; }
+        public int MomsTargetPerc { get; set; }
+        public string MomsTargetPercColor { get; set; }
+        public int MomsTopTeamPerc { get; set; }
+        public int MomsRankingPerc { get; set; }
+        public int ChildrenTargetPerc { get; set; }
+        public string ChildrenTargetPercColor { get; set; }
+        public int ChildrenTopTeamPerc { get; set; }
+        public int ChildrenRankingPerc { get; set; }
     }
 
     public class ClinicVisitReportModel
     {
-        public ClientRegistration ClientRegistration { get; set; }
-        public PregnantMoms PregnantMoms { get; set; }
-        public ChildClients ChildClients { get; set; }
-        public BreastFeedingClub BreastFeedingClub { get; set; }
+        public ClientRegistrationModel ClientRegistration { get; set; }
+        public PregnantMomsModel PregnantMoms { get; set; }
+        public ChildClientsModel ChildClients { get; set; }
+        public BreastFeedingClubModel BreastFeedingClub { get; set; }
     }
 
-    public class ClientRegistration
+    public class ClientRegistrationModel
     {
         public int TotalChildFoldersOpened { get; set; }
         public int TotalMotherFoldersOpened { get; set; }
         public int TotalMotherFoldersBefore20WeeksOpened { get; set; }
     }
 
-    public class PregnantMoms
+    public class PregnantMomsModel
     {
         public int TotalMaternalDistress { get; set; }
         public int TotalMaternalMalnutrition { get; set; }
         public int TotalAlcoholAbuse { get; set; }
     }
 
-    public class ChildClients
+    public class ChildClientsModel
     {
         public int TotalSupportGrant { get; set; }
         public int TotalGrowthMonitored { get; set; }
@@ -52,7 +59,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public int TotalUpToDateDeworming { get; set; }
     }
 
-    public class BreastFeedingClub
+    public class BreastFeedingClubModel
     {
         public int TotalClubsHeld { get; set; }
         public int TotalCaregiversAttended { get; set; }

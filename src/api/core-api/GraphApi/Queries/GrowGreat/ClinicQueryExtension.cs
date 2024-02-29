@@ -20,9 +20,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     public class ClinicQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ClinicReportModel GetClinicReportData([Service] IClinicService clinicService, Guid clinicId)
+        public ClinicReportModel GetClinicPointsData([Service] IClinicService clinicService, Guid clinicId)
         {
-            return clinicService.GetClinicReportData(clinicId);
+            return clinicService.GetClinicPointsData(clinicId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

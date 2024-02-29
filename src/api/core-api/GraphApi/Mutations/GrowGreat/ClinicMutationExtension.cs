@@ -14,13 +14,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     public class ClinicMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Clinic AddClinic([Service] IClinicService clinicService, PortalClinicModel input)
+        public Clinic AddClinic([Service] IClinicService clinicService, PortalClinicInputModel input)
         {
             return clinicService.AddClinic(input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Clinic EditClinic([Service] IClinicService clinicService, PortalClinicModel input)
+        public Clinic EditClinic([Service] IClinicService clinicService, PortalClinicInputModel input)
         {
             return clinicService.EditClinic(input);
         }

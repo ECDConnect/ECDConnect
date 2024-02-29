@@ -144,3 +144,21 @@ export const DeleteClinic = gql`
     }
   }
 `;
+
+export const GetClinicPointsData = gql`
+  query GetClinicPointsData($clinicId: UUID!) {
+    clinicPointsData(clinicId: $clinicId) {
+      totalHCWs
+      leagueRanking
+      pointsTotal
+      momsTargetPerc
+      momsTargetPercColor
+      momsTopTeamPerc
+      momsRankingPerc
+      childrenTargetPerc
+      childrenTargetPercColor
+      childrenTopTeamPerc
+      childrenRankingPerc
+    }
+  }
+`;

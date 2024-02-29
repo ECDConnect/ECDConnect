@@ -1,6 +1,8 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -24,6 +26,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<Clinic, Guid> _clinicRepo;
         private readonly IGenericRepository<ClinicTeamLead, Guid> _clinicTeamRepo;
         private readonly IGenericRepository<HealthCareWorker, Guid> _hcwRepo;
+        private readonly IGenericRepository<PointsLibrary, Guid> _pointsLibraryRepo;
 
         private readonly string _applicationUserId;
 
@@ -41,6 +44,7 @@ namespace EcdLink.Api.CoreApi.Services
             _clinicRepo = _repositoryFactory.CreateGenericRepository<Clinic>(userContext: _applicationUserId);
             _clinicTeamRepo = _repositoryFactory.CreateGenericRepository<ClinicTeamLead>(userContext: _applicationUserId);
             _hcwRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: _applicationUserId);
+            _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _applicationUserId);
             
         }
 
@@ -73,7 +77,7 @@ namespace EcdLink.Api.CoreApi.Services
             return districts;
         }
 
-        public District AddDistrict(DistrictModel input)
+        public District AddDistrict(DistrictInputModel input)
         {
             return _districtRepo.Insert(new District()
             {
@@ -88,7 +92,7 @@ namespace EcdLink.Api.CoreApi.Services
             );
         }
 
-        public District EditDistrict(DistrictModel input)
+        public District EditDistrict(DistrictInputModel input)
         {
             var district = _districtRepo.GetById((Guid)input.Id);
             district.Name = input.Name;
@@ -135,7 +139,7 @@ namespace EcdLink.Api.CoreApi.Services
             return subDistricts;
         }
 
-        public SubDistrict AddSubDistrict(SubDistrictModel input)
+        public SubDistrict AddSubDistrict(SubDistrictInputModel input)
         {
             return _subDistrictRepo.Insert(new SubDistrict()
             {
@@ -150,14 +154,14 @@ namespace EcdLink.Api.CoreApi.Services
             );
         }
 
-        public SubDistrict EditSubDistrict(SubDistrictModel input)
+        public SubDistrict EditSubDistrict(SubDistrictInputModel input)
         {
-            var district = _subDistrictRepo.GetById((Guid)input.Id);
-            district.Name = input.Name;
-            district.DistrictId = input.DistrictId;
-            district.UpdatedDate = DateTime.Now;
-            district.UpdatedBy = _applicationUserId;
-            return _subDistrictRepo.Update(district);
+            var subDistrict = _subDistrictRepo.GetById((Guid)input.Id);
+            subDistrict.Name = input.Name;
+            subDistrict.DistrictId = input.DistrictId;
+            subDistrict.UpdatedDate = DateTime.Now;
+            subDistrict.UpdatedBy = _applicationUserId;
+            return _subDistrictRepo.Update(subDistrict);
         }
 
         public SubDistrict DeleteSubDistrict(Guid subDistrictId)
@@ -173,13 +177,35 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region Clinic
 
-        // This data will come from G11 - could be replaced - this is temp
-        public ClinicReportModel GetClinicReportData(Guid clinicId)
+        // This data will come from G11 - waiting for backend development to finish, then we can adjust the below
+        public ClinicReportModel GetClinicPointsData(Guid clinicId)
         {
+            var clinic = _clinicRepo.GetAll()
+                .Where(x => x.Id == clinicId)
+                .Include(x => x.TeamLeads)
+                .Include(x => x.SiteAddress)
+                .Include(x => x.HealthCareWorkers)
+                .Include(x => x.Leagues)
+                .FirstOrDefault();
+
+            var activities = _pointsLibraryRepo.GetAll().ToList();
+            var clinicData = new ClinicModel(clinic, activities);
+
             ClinicReportModel clinicReportModel = new ClinicReportModel();
-            clinicReportModel.TotalHCWs = _hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId == clinicId).Count();
-            clinicReportModel.LeaguePosition = 0;
-            clinicReportModel.TotalQuarterPoints = 0;
+
+            clinicReportModel.TotalHCWs = clinic.HealthCareWorkers.Count;
+            clinicReportModel.LeagueRanking = clinicData.LeagueRanking;
+            clinicReportModel.PointsTotal = clinicData.PointsTotal;
+
+            clinicReportModel.MomsTargetPerc = 0;
+            clinicReportModel.MomsTargetPercColor = MetricsColorEnum.Error.ToString();
+            clinicReportModel.MomsTopTeamPerc = 0;
+            clinicReportModel.MomsRankingPerc = 0;
+
+            clinicReportModel.ChildrenTargetPerc = 0;
+            clinicReportModel.ChildrenTargetPercColor = MetricsColorEnum.Error.ToString();
+            clinicReportModel.ChildrenTopTeamPerc = 0;
+            clinicReportModel.ChildrenRankingPerc = 0;
 
             return clinicReportModel;
         }
@@ -190,7 +216,7 @@ namespace EcdLink.Api.CoreApi.Services
             return new ClinicVisitReportModel();
         }
 
-        public Clinic AddClinic(PortalClinicModel input)
+        public Clinic AddClinic(PortalClinicInputModel input)
         {
             var clinic = _clinicRepo.Insert(new Clinic()
                 {
@@ -212,7 +238,7 @@ namespace EcdLink.Api.CoreApi.Services
             return clinic;
         }
 
-        public Clinic EditClinic(PortalClinicModel input)
+        public Clinic EditClinic(PortalClinicInputModel input)
         {
             var clinic = _clinicRepo.GetById((Guid)input.Id);
             clinic.UpdatedDate = DateTime.Now;

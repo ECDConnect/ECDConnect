@@ -14,13 +14,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     public class SubDistrictMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public SubDistrict AddSubDistrict([Service] IClinicService clinicService, SubDistrictModel input)
+        public SubDistrict AddSubDistrict([Service] IClinicService clinicService, SubDistrictInputModel input)
         {
             return clinicService.AddSubDistrict(input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public SubDistrict EditSubDistrict([Service] IClinicService clinicService, SubDistrictModel input)
+        public SubDistrict EditSubDistrict([Service] IClinicService clinicService, SubDistrictInputModel input)
         {
             return clinicService.EditSubDistrict(input);
         }

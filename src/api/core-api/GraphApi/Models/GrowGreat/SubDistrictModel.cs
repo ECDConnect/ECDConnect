@@ -3,7 +3,7 @@ using ECDLink.DataAccessLayer.Entities;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
-    public class SubDistrictModel
+    public class SubDistrictInputModel
     {
         public Guid? Id { get; set; }
         public string Name { get; set; }
