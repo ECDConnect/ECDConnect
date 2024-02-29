@@ -13,6 +13,8 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
+  RoundIcon,
+  TitleListItem,
 } from '@ecdlink/ui';
 
 import { useDocuments } from '@/hooks/useDocuments';
@@ -35,6 +37,12 @@ import { MenuModal } from './components/menu-modal';
 import { NewFolderModal } from './components/new-folder-modal';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { communitySelectors } from '@/store/community';
+import {
+  getLeaguePointsColours,
+  getTierDetails,
+} from '@/utils/community/league-position';
+import { LeagueType } from '@/constants/Community';
 
 export const Dashboard: React.FC = () => {
   const history = useHistory();
@@ -56,6 +64,12 @@ export const Dashboard: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+
+  const { tierName, tierColor } = getTierDetails(
+    (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
+    clinicDetails?.pointsTotal ?? 0
+  );
 
   const { userProfilePicture } = useDocuments();
 
@@ -63,6 +77,15 @@ export const Dashboard: React.FC = () => {
 
   // TODO: Change to dynamic value
   const isFirstTimeCommunitySection = true;
+  // TODO: get the length of the league
+  const isTop25PercentInTheLeague = false;
+  // TODO: get the length of the league
+  const isMiddle50PercentInTheLeague = false;
+
+  const leaguePointsColours = getLeaguePointsColours(
+    isTop25PercentInTheLeague,
+    isMiddle50PercentInTheLeague
+  );
 
   function goToProfile() {
     history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
@@ -229,40 +252,42 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
-  // TODO: Change to dynamic value
-  const communityCard = useMemo((): ScoreCardProps => {
-    const mainColor = 'secondary';
-    const bgColour = 'secondaryAccent2';
-
-    return {
-      image: (
+  const communityCard = useMemo(
+    (): ScoreCardProps => ({
+      image: !!clinicDetails?.leagueRanking ? (
         <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
           <Badge
             className="absolute z-0 h-12 w-12"
-            fill={`var(--${mainColor})`}
+            fill={`var(--${leaguePointsColours.mainColour})`}
           />
           <Typography
             className="relative z-10"
             color="white"
             type="h1"
-            text={'0'}
+            text={String(clinicDetails?.leagueRanking ?? '')}
           />
         </div>
+      ) : (
+        <RoundIcon
+          backgroundColor="tertiary"
+          className="mr-4 h-12 w-12"
+          icon="UserGroupIcon"
+        />
       ),
-      currentPoints: 0 ?? 0,
-      maxPoints: 0 ?? 0,
+      currentPoints: clinicDetails?.pointsTotal ?? 0,
+      maxPoints: clinicDetails?.maxPointsTotal ?? 0,
       barBgColour: 'white',
-      barColour: mainColor,
-      hint: '{clinicName}' ?? '',
+      barColour: leaguePointsColours.mainColour,
+      hint: clinicDetails?.name ?? 'Community',
       mainText: '',
       hintClassName: 'mt-10',
-      bgColour,
+      bgColour: leaguePointsColours.backgroundColour,
       textColour: 'textDark',
       statusChip: {
-        backgroundColour: 'tertiary',
-        borderColour: 'tertiary',
+        backgroundColour: tierColor,
+        borderColour: tierColor,
         textColour: 'white',
-        text: '{tier}',
+        text: tierName,
         textWeight: 'normal',
       },
       onClick: () =>
@@ -271,8 +296,9 @@ export const Dashboard: React.FC = () => {
             ? ROUTES.COMMUNITY.WELCOME
             : ROUTES.COMMUNITY.ROOT
         ),
-    };
-  }, []);
+    }),
+    []
+  );
 
   useEffect(() => {
     if (shouldUserSync) {
@@ -358,23 +384,35 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        <ScoreCard
-          className="mt-30 h-20 w-full"
-          mainText={communityCard.mainText}
-          hint={communityCard.hint}
-          hintClassName={communityCard.hintClassName}
-          textPosition="left"
-          currentPoints={communityCard.currentPoints}
-          maxPoints={communityCard.maxPoints}
-          onClick={communityCard.onClick}
-          barBgColour={communityCard.barBgColour}
-          barColour={communityCard.barColour}
-          bgColour={communityCard.bgColour}
-          image={communityCard.image}
-          textColour={communityCard.textColour}
-          onClickClassName="text-textLight"
-          statusChip={communityCard.statusChip}
-        />
+        {!!clinicDetails?.league ? (
+          <ScoreCard
+            className="mt-30 h-20 w-full"
+            mainText={communityCard.mainText}
+            hint={communityCard.hint}
+            hintClassName={communityCard.hintClassName}
+            textPosition="left"
+            currentPoints={communityCard.currentPoints}
+            maxPoints={communityCard.maxPoints}
+            onClick={communityCard.onClick}
+            barBgColour={communityCard.barBgColour}
+            barColour={communityCard.barColour}
+            bgColour={communityCard.bgColour}
+            image={communityCard.image}
+            textColour={communityCard.textColour}
+            onClickClassName="text-textLight"
+            statusChip={communityCard.statusChip}
+          />
+        ) : (
+          <TitleListItem
+            item={{
+              title: communityCard.hint,
+              onActionClick: communityCard.onClick!,
+              titleIcon: 'UserGroupIcon',
+              titleIconClassName: 'bg-tertiary text-white',
+              classNames: 'bg-uiBg w-full mt-30',
+            }}
+          />
+        )}
       </div>
     </BannerWrapper>
   );
