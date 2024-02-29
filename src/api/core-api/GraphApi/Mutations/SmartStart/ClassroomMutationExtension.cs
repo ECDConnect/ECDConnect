@@ -21,6 +21,7 @@ using EcdLink.Api.CoreApi.Services;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Managers;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -58,7 +59,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id == id).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id == id).Include(x => x.Classroom).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             Guid? programmeType = input.ProgrammeTypeId;
 
@@ -123,29 +124,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 classRoomGroup.UpdatedBy = uId.ToString();
                 classRepo.Update(classRoomGroup);
 
-                //if this was a new assignment to a new practitioner trigger message to notify them
-               if (classRoomGroup.UserId != input.UserId)
+                //get principal details
+                var principalToSend = userManager.FindByIdAsync(classRoomGroup.Classroom.UserId.Value.ToString()).Result;
+                var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
                 {
-                    var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-                    Classroom classRoom = classroomRepo.GetAll().Where(x => x.Id.Equals(classRoomGroup.ClassroomId)).FirstOrDefault();
-                    var principalToSend = userManager.FindByIdAsync(classRoom.UserId.Value.ToString()).Result;
-                    var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
-                    List<TagsReplacements> replacements = new List<TagsReplacements>();
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "ClassName",
-                        ReplacementValue = input.Name
-                    });
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "PrincipalName",
-                        ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
-                    });
-
+                    FindValue = "ClassName",
+                    ReplacementValue = input.Name
+                });
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PrincipalName",
+                    ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
+                });
+                //if this was a new assignment to a new practitioner trigger message to notify them
+                if (previousUser != input.UserId.ToString())
+                {
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, input.UserId.ToString());
                     //message the old user they were removed
                     var oldUserToSend = userManager.FindByIdAsync(previousUser).Result;
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, previousUser);
+                } else
+                {
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, input.UserId.ToString());
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
