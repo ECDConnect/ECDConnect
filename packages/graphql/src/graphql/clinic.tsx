@@ -38,6 +38,7 @@ export const GetAllClinic = gql`
           }
         }
       }
+      isActive
     }
   }
 `;

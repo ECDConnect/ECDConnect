@@ -423,7 +423,10 @@ export default function UiTable({
           ))}
         </div>
       );
-    } else if (column.field === 'subCategories') {
+    } else if (
+      column.field === 'subCategories' ||
+      column.field === 'subDistricts'
+    ) {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
@@ -436,6 +439,14 @@ export default function UiTable({
                 : `${item?.name};`}
             </div>
           ))}
+        </div>
+      );
+    } else if (column.field === 'province' && column?.use === 'Province') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.description}
+          </div>
         </div>
       );
     } else if (column.field === 'availableLanguages') {

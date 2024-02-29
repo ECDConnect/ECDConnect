@@ -1,22 +1,22 @@
 import { gql } from '@apollo/client';
 
 export const GetSubDistrictsAndStats = gql`
-  query GetSubDistrictsAndStats() {
-    subDistrictsAndStats() {
+  query GetSubDistrictsAndStats {
+    subDistrictsAndStats {
+      id
+      name
+      insertedDate
+      district {
         id
         name
-        insertedDate
-        district {
-            id
-            name 
-            province {
-                id
-                description
-            }
+        province {
+          id
+          description
         }
-        totalClinics
-        totalTeamLeads
-        totalHCWs
+      }
+      totalClinics
+      totalTeamLeads
+      totalHCWs
     }
   }
 `;
