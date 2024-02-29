@@ -75,7 +75,7 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.Action, notification.Action) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
                     string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
-                    (searchCriteria != "" ? x.Subject.Contains(searchCriteria) || x.Message .Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
+                      (!string.IsNullOrEmpty(searchCriteria) ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
                     x.MessageDate.Value.Date == notification.MessageDate.Value.Date
                 ).Any();
             } else
@@ -86,7 +86,7 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.To, notification.To) &&
                     string.Equals(x.IsActive, true) &&
                     string.Equals(x.Action, notification.Action) &&
-                    (searchCriteria != "" ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
+                    (!string.IsNullOrEmpty(searchCriteria) ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
                     string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol)
 
