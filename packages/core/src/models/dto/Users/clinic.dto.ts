@@ -1,12 +1,43 @@
-import { EntityBase } from '../entity-base';
 import {} from '../StaticData/education-level.dto';
 import { SiteAddressDto } from '../SiteAddress';
+import { TeamLeadDto } from './team-lead.dto';
 
-export interface ClinicDto extends EntityBase {
-  name?: string;
-  phoneNumber?: string;
+export interface ClinicDto {
+  id: string;
+  name: string;
+  phoneNumber: string;
   siteAddress?: SiteAddressDto;
-  siteAddressId?: string;
-  emergencyContactPerson?: string;
-  emergencyContactNumber?: string;
+  league?: LeagueDto;
+  teamLeads: TeamLeadDto[];
+  clinicMembers: ClinicMemberDto[];
+  leagueRanking: number;
+  pointsTotal: number;
+  maxPointsTotal: number;
+  points: PointsActivityDto[];
+}
+
+export interface LeagueDto {
+  id: string;
+  name: string;
+  startDate?: string;
+  endDate?: string;
+  leagueTypeId: string;
+  leagueTypeName: string;
+}
+
+export interface ClinicMemberDto {
+  firstName: string;
+  surname: string;
+  phoneNumber: string;
+  whatsAppNumber: string;
+  profileImageUrl: string;
+  welcomeMessage: string;
+  shareContactInfo: boolean;
+}
+
+export interface PointsActivityDto {
+  pointsLibraryId: string;
+  pointsTotal: string;
+  activityName: string;
+  subActivityName: string;
 }

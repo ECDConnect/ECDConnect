@@ -40,7 +40,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
         {!!image && image}
         <div className={classNames(progressBarClassName, 'relative w-full')}>
           <ProgressBar
-            className="pr-4"
+            className={classNames(!!onClick ? 'pr-4' : '', '')}
             style={{ marginTop: '-14px' }}
             label={mainText}
             subLabel={secondaryText || ''}

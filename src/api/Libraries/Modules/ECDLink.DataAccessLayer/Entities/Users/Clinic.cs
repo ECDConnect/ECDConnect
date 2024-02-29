@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -37,6 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public virtual SubDistrict SubDistrict { get; set; }
         public virtual ICollection<ClinicTeamLead> TeamLeads { get; set; }
         public virtual ICollection<ClinicLeague> Leagues { get; set; }
+        public virtual ICollection<HealthCareWorker> HealthCareWorkers { get; set; }
     }
 
     public interface ClinicJoin<TKey>

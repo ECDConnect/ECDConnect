@@ -50,3 +50,13 @@ export const EditDistrict = gql`
     }
   }
 `;
+
+export const DeleteDistrict = gql`
+  mutation DeleteDistrict($districtId: UUID!) {
+    deleteDistrict(districtId: $districtId) {
+      id
+      name
+      isActive
+    }
+  }
+`;

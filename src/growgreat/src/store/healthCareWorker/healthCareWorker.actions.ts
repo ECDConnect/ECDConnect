@@ -1,11 +1,14 @@
-import { HealthCareWorkerService } from '@/services/healthCareWorkerService';
+import { HealthCareWorkerService } from '@/services/HealthCareWorkerService';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
-import { HealthCareWorkerModelInput } from '@ecdlink/graphql';
+import { HealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 import { HealthCareWorkerDto } from '@ecdlink/core';
+import { ClinicService } from '@/services/Clinic';
 
 export const HealthCareWorkerActions = {
   UPDATE_HEALTH_CAREWORKER_TABS: 'updateHealthCareWorkerTabs',
+  UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE:
+    'updateHealthCareWorkerWelcomeMessage',
 };
 
 export const getHealthCareWorkerByUserId = createAsyncThunk<
@@ -63,7 +66,7 @@ export const updateHealthCareWorkerById = createAsyncThunk<
       if (userAuth?.auth_token) {
         await new HealthCareWorkerService(
           userAuth?.auth_token
-        ).UpdateHealthCareWorker(userId, input);
+        ).updateHealthCareWorker(userId, input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -75,7 +78,7 @@ export const updateHealthCareWorkerById = createAsyncThunk<
 
 export const updateHealthCareWorkerTabs = createAsyncThunk<
   HealthCareWorkerDto,
-  { input: HealthCareWorkerModelInput; userId: string },
+  { input: HealthCareWorkerInputModelInput; userId: string },
   ThunkApiType<RootState>
 >(
   HealthCareWorkerActions.UPDATE_HEALTH_CAREWORKER_TABS,
@@ -88,6 +91,43 @@ export const updateHealthCareWorkerTabs = createAsyncThunk<
         const response = await new HealthCareWorkerService(
           userAuth?.auth_token
         ).updateHealthCareWorkerTabs(input, userId);
+
+        return response;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateHealthCareWorkerWelcomeMessage = createAsyncThunk<
+  HealthCareWorkerDto,
+  {
+    healthCareWorkerId: string;
+    welcomeMessage: string;
+    shareContactInfo: boolean;
+  },
+  ThunkApiType<RootState>
+>(
+  HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE,
+  async (
+    { healthCareWorkerId, welcomeMessage, shareContactInfo },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (userAuth?.auth_token) {
+        const response = await new HealthCareWorkerService(
+          userAuth?.auth_token
+        ).updateHealthCareWorkerWelcomeMessage(
+          healthCareWorkerId,
+          welcomeMessage,
+          shareContactInfo
+        );
 
         return response;
       } else {

@@ -13,7 +13,7 @@ import {
   CreateHealthCareWorker,
   CreateSiteAddress,
   CreateUser,
-  HealthCareWorkerModelInput,
+  HealthCareWorkerInput,
   RoleList,
   SendInviteToApplication,
   UserModelInput,
@@ -145,50 +145,48 @@ export default function HealthCareWorkerPanelCreate(
   };
 
   const saveHealthCareWorker = async (userId: string) => {
-    const healthCareWorkerForm = healthCareWorkerGetValues();
-    const healthCareWorkModel: HealthCareWorkerModelInput = {
-      userId: userId,
-      teamLeadId: healthCareWorkerForm?.teamLeadId,
-      languageId: null,
-      isRegistered: false,
-    };
-
-    await createHealthCareWorker({
-      variables: {
-        input: { ...healthCareWorkModel },
-      },
-    })
-      .then(() => {
-        setNotification({
-          title: 'Successfully Created CHW!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-      })
-      .catch((err) => {
-        setNotification({
-          title: 'Failed to Create CHW!',
-          variant: NOTIFICATION.ERROR,
-        });
-      });
-
-    if (userId) {
-      await sendInviteToApplication({
-        variables: {
-          userId: userId,
-          inviteToPortal: false,
-        },
-      }).catch((err) => [
-        setNotification({
-          title: 'Failed to send CHW Invite!',
-          variant: NOTIFICATION.SUCCESS,
-        }),
-      ]);
-
-      setNotification({
-        title: 'Successfully Sent CHW Invite!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-    }
+    // comment this out to ensure FE builds for BE - revert changes
+    // const healthCareWorkerForm = healthCareWorkerGetValues();
+    // const healthCareWorkModel: HealthCareWorkerInput = {
+    //   UserId: userId,
+    //   teamLeadId: healthCareWorkerForm?.teamLeadId,
+    //   languageId: null,
+    //   isRegistered: false,
+    // };
+    // await createHealthCareWorker({
+    //   variables: {
+    //     input: { ...healthCareWorkModel },
+    //   },
+    // })
+    //   .then(() => {
+    //     setNotification({
+    //       title: 'Successfully Created CHW!',
+    //       variant: NOTIFICATION.SUCCESS,
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     setNotification({
+    //       title: 'Failed to Create CHW!',
+    //       variant: NOTIFICATION.ERROR,
+    //     });
+    //   });
+    // if (userId) {
+    //   await sendInviteToApplication({
+    //     variables: {
+    //       userId: userId,
+    //       inviteToPortal: false,
+    //     },
+    //   }).catch((err) => [
+    //     setNotification({
+    //       title: 'Failed to send CHW Invite!',
+    //       variant: NOTIFICATION.SUCCESS,
+    //     }),
+    //   ]);
+    //   setNotification({
+    //     title: 'Successfully Sent CHW Invite!',
+    //     variant: NOTIFICATION.SUCCESS,
+    //   });
+    // }
   };
 
   const saveRoles = async (userId: string) => {

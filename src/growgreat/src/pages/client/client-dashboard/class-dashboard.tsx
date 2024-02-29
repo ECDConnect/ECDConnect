@@ -32,7 +32,7 @@ import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
 import { useSelector } from 'react-redux';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
-import { HealthCareWorkerModelInput } from '@ecdlink/graphql';
+import { HealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 import { updateHealthCareWorkerTabs } from '@/store/healthCareWorker/healthCareWorker.actions';
 import { SuccessCard } from '@/components/success-card/success-card';
 import Joyride, { Step } from 'react-joyride';
@@ -174,7 +174,7 @@ export const ClassDashboard: React.FC = () => {
   }, [history, isInfoPage]);
 
   const updateClickedTab = useCallback(() => {
-    var input: HealthCareWorkerModelInput = {
+    var input: HealthCareWorkerInputModelInput = {
       clickedDashboardClientsTab: healthCareWorker?.clickedDashboardClientsTab,
       clickedDashboardHighlightsTab:
         healthCareWorker?.clickedDashboardHighlightsTab,

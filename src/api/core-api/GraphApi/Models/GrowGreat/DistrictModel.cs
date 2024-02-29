@@ -1,11 +1,10 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
-using iTextSharp.text;
 using System;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
-    public class DistrictModel
+    public class DistrictInputModel
     {
         public Guid? Id { get; set; }
         public string Name { get; set; }

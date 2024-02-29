@@ -15,6 +15,7 @@ export const CommunityActions = {
   GET_ALL_CONNECT_ITEM: 'getAllConnectItem',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   GET_MORE_INFORMATION: 'getMoreInformation',
+  GET_POINTS_ACTIVITY_INFO: 'getPointsActivityInfo',
 };
 
 export const getAllConnect = createAsyncThunk<
@@ -112,7 +113,48 @@ export const getMoreInformation = createAsyncThunk<
     } = getState();
 
     try {
-      const currentInfo = team?.info?.find((item) => item[locale])?.[locale];
+      const currentInfo = team?.earnPointsInfo?.find((item) => item[locale])?.[
+        locale
+      ];
+
+      if (currentInfo) {
+        const daysSinceLateLoad = differenceInDays(
+          new Date(),
+          new Date(currentInfo?.dateLoaded)
+        );
+
+        if (daysSinceLateLoad < 1) {
+          return currentInfo?.data;
+        }
+      }
+      if (userAuth?.auth_token) {
+        return await new InfoService().getMoreInformation(section, locale);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getPointsActivityInfo = createAsyncThunk<
+  MoreInformation[],
+  { section: string; locale: string; activitySlug: string },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.GET_POINTS_ACTIVITY_INFO,
+  async ({ locale, section, activitySlug }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      community: { team },
+    } = getState();
+
+    try {
+      const activity = team?.activityInfo?.find((item) => item[activitySlug])?.[
+        activitySlug
+      ];
+      const currentInfo = activity?.[locale];
 
       if (currentInfo) {
         const daysSinceLateLoad = differenceInDays(

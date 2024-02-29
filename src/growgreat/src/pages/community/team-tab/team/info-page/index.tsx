@@ -60,6 +60,7 @@ export const TeamTabInfoPage = () => {
       languages={languagesOptions}
       moreInformation={info}
       onClose={() => history.push(ROUTES.COMMUNITY.ROOT)}
+      selectedLanguage={selectedLanguage}
       setSelectedLanguage={handleLanguageChange}
     />
   );

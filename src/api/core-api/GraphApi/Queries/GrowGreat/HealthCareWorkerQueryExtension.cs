@@ -112,7 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public HealthCareWorker GetHealthCareWorkerByUserId(
+        public HealthCareWorkerModel GetHealthCareWorkerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IPointsEngineService pointsEngineService,
@@ -120,15 +120,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).OrderBy(x => x.Id).FirstOrDefault();
-            DateTime today = DateTime.Now.Date;
-
-            // TODO
-            //var pointsEngineData = new HCWPointsEngine();
-            //pointsEngineData.PointsLibrary = pointsEngineService.GetPointsLibraryForTenant();  // use this for showing points that can be earned
-            //pointsEngineData.PointsUserSummary = pointsEngineService.GetSummaryUserPoints(healthCareWorker.Id.ToString(), new DateTime(today.Year, 1, 1)); // this is a summary of points earned
-
-            return healthCareWorker;
+            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).OrderBy(x => x.Id).FirstOrDefault();
+           
+            return new HealthCareWorkerModel(healthCareWorker);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

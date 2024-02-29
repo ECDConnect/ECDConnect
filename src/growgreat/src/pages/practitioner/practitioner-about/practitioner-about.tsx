@@ -314,7 +314,7 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userThunkActions.updateUser(copy));
       appDispatch(
         healthCareWorkerActions.updateHealthCareWorker({
-          ...healthCareWorker,
+          ...healthCareWorker!,
           languageId: copy.languageId,
         })
       );
