@@ -213,7 +213,34 @@ namespace EcdLink.Api.CoreApi.Services
         public ClinicVisitReportModel GetClinicVisitReportData(Guid clinicId, DateTime startDate, DateTime endDate)
         {
             // TODO
-            return new ClinicVisitReportModel();
+            ClinicVisitReportModel clinicVisitReportModel = new ClinicVisitReportModel();
+            clinicVisitReportModel.ClientRegistration = new ClientRegistrationModel()
+            {
+                TotalChildFoldersOpened = 0,
+                TotalMotherFoldersOpened = 0,
+                TotalMotherFoldersBefore20WeeksOpened = 0
+            };
+            clinicVisitReportModel.PregnantMoms = new PregnantMomsModel()
+            {
+                TotalMaternalDistress = 0,
+                TotalMaternalMalnutrition = 0,
+                TotalAlcoholAbuse = 0
+            };
+            clinicVisitReportModel.ChildClients = new ChildClientsModel()
+            {
+                TotalSupportGrant = 0,
+                TotalGrowthMonitored = 0,
+                TotalUpToDateImmunisations = 0,
+                TotalUpToDateDeworming = 0,
+                TotalUpToDateVitaminA = 0
+            };
+            clinicVisitReportModel.BreastFeedingClub = new BreastFeedingClubModel()
+            {
+                TotalClubsHeld = 0,
+                TotalCaregiversAttended = 0
+            };
+
+            return clinicVisitReportModel;
         }
 
         public Clinic AddClinic(PortalClinicInputModel input)

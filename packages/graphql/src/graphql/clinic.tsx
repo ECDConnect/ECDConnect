@@ -162,3 +162,39 @@ export const GetClinicPointsData = gql`
     }
   }
 `;
+
+export const GetClinicVisitReportData = gql`
+  query GetClinicVisitReportData(
+    $clinicId: UUID!
+    $startDate: DateTime!
+    $endDate: DateTime!
+  ) {
+    clinicVisitReportData(
+      clinicId: $clinicId
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      clientRegistration {
+        totalChildFoldersOpened
+        totalMotherFoldersOpened
+        totalMotherFoldersBefore20WeeksOpened
+      }
+      pregnantMoms {
+        totalMaternalDistress
+        totalMaternalMalnutrition
+        totalAlcoholAbuse
+      }
+      childClients {
+        totalSupportGrant
+        totalGrowthMonitored
+        totalUpToDateImmunisations
+        totalUpToDateVitaminA
+        totalUpToDateDeworming
+      }
+      breastFeedingClub {
+        totalClubsHeld
+        totalCaregiversAttended
+      }
+    }
+  }
+`;
