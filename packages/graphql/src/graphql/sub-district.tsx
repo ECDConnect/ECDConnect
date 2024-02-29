@@ -49,3 +49,13 @@ export const EditSubDistrict = gql`
     }
   }
 `;
+
+export const DeleteSubDistrict = gql`
+  mutation DeleteSubDistrict($subDistrictId: UUID!) {
+    deleteSubDistrict(subDistrictId: $subDistrictId) {
+      id
+      name
+      isActive
+    }
+  }
+`;

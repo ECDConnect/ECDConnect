@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -11,7 +12,6 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
@@ -20,15 +20,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     public class ClinicQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Clinic> GetAllClinics(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+        public ClinicReportModel GetClinicPointsData([Service] IClinicService clinicService, Guid clinicId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
-            List<Clinic> clinics = healthCareWorkerRepo.GetAll().ToList();
+            return clinicService.GetClinicPointsData(clinicId);
+        }
 
-            return clinics;
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public ClinicVisitReportModel GetClinicVisitReportData([Service] IClinicService clinicService, Guid clinicId, DateTime startDate, DateTime endDate)
+        {
+            return clinicService.GetClinicVisitReportData(clinicId, startDate, endDate);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

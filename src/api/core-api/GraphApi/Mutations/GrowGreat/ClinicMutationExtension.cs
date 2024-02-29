@@ -1,14 +1,11 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
@@ -17,29 +14,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     public class ClinicMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Clinic AddClinic(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            ClinicModel input)
+        public Clinic AddClinic([Service] IClinicService clinicService, PortalClinicInputModel input)
         {
-            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            return clinicService.AddClinic(input);
+        }
 
-            var clinic = new Clinic()
-            {
-                Id = new Guid(),
-                IsActive = true,
-                InsertedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId.ToString(),
-                Name = input.Name,
-                PhoneNumber = input.PhoneNumber,
-                SiteAddressId = input.SiteAddressId,
-                EmergencyContactPerson = input.EmergencyContactPerson,
-                EmergencyContactNumber = input.EmergencyContactNumber
-            };
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Clinic EditClinic([Service] IClinicService clinicService, PortalClinicInputModel input)
+        {
+            return clinicService.EditClinic(input);
+        }
 
-            var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: applicationUserId);
-            return clinicRepo.Insert(clinic);
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Clinic DeleteClinic([Service] IClinicService clinicService, Guid clinicId)
+        {
+            return clinicService.DeleteClinic(clinicId);
         }
     }
 }

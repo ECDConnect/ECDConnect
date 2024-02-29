@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
