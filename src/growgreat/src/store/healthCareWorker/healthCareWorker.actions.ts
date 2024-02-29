@@ -3,7 +3,6 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { HealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 import { HealthCareWorkerDto } from '@ecdlink/core';
-import { ClinicService } from '@/services/Clinic';
 
 export const HealthCareWorkerActions = {
   UPDATE_HEALTH_CAREWORKER_TABS: 'updateHealthCareWorkerTabs',

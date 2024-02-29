@@ -8,6 +8,7 @@ import {
   updateHealthCareWorkerWelcomeMessage,
 } from './healthCareWorker.actions';
 import { HealthCareWorkerState } from './healthCareWorker.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: HealthCareWorkerState = {
   healthCareWorker: undefined,
@@ -32,6 +33,7 @@ const healthCareWorkerSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateHealthCareWorkerWelcomeMessage);
     builder.addCase(getHealthCareWorkerByUserId.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
@@ -44,7 +46,12 @@ const healthCareWorkerSlice = createSlice({
     builder.addCase(
       updateHealthCareWorkerWelcomeMessage.fulfilled,
       (state, action) => {
-        state.healthCareWorker = action.payload;
+        state.healthCareWorker = {
+          ...state.healthCareWorker,
+          ...action.payload,
+        };
+
+        setFulfilledThunkActionStatus(state, action);
       }
     );
   },

@@ -72,7 +72,10 @@ export const TeamTab: React.FC = () => {
 
   useEffect(() => {
     appDispatch(
-      communityThunkActions.getClinicById({ clinicId: hcw?.clinicId ?? '' })
+      communityThunkActions.getClinicById({
+        clinicId: hcw?.clinicId ?? '',
+        forceReload: true,
+      })
     );
 
     // trigger only once

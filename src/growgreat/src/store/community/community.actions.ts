@@ -182,17 +182,29 @@ export const getPointsActivityInfo = createAsyncThunk<
 
 export const getClinicById = createAsyncThunk<
   ClinicDto,
-  { clinicId: string },
+  { clinicId: string; forceReload?: boolean },
   ThunkApiType<RootState>
 >(
   CommunityActions.GET_CLINIC_BY_ID,
-  async ({ clinicId }, { getState, rejectWithValue }) => {
+  async ({ clinicId, forceReload }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      community: { team },
     } = getState();
 
     try {
       if (userAuth?.auth_token) {
+        if (team?.clinic?.data && !forceReload) {
+          const daysSinceLateLoad = differenceInDays(
+            new Date(),
+            new Date(team?.clinic?.dateLoaded)
+          );
+
+          if (daysSinceLateLoad < 1) {
+            return team?.clinic?.data;
+          }
+        }
+
         return await new ClinicService(
           userAuth?.auth_token ?? ''
         ).getClinicById(clinicId);

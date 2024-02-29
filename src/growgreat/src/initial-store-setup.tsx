@@ -25,6 +25,7 @@ import {
 import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { subMonths } from 'date-fns';
+import { communityThunkActions } from './store/community';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -75,12 +76,22 @@ function InitialStoreSetup(props: Props) {
 
   useEffect(() => {
     if (healthCareWorker) {
-      (async () =>
-        await appDispatch(
-          caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id || '',
-          })
-        ).unwrap())();
+      (async () => {
+        const promises = [
+          appDispatch(
+            communityThunkActions.getClinicById({
+              clinicId: healthCareWorker?.clinicId || '',
+            })
+          ).unwrap(),
+          appDispatch(
+            caregiverThunkActions.getCaregiversForHealthCareWorker({
+              id: healthCareWorker?.id || '',
+            })
+          ).unwrap(),
+        ];
+
+        await Promise.all(promises);
+      })();
     }
   }, [appDispatch, healthCareWorker]);
 

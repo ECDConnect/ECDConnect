@@ -185,38 +185,13 @@ class HealthCareWorkerService {
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { updateHealthCareWorkerTabs: HealthCareWorkerDto };
+      data: { updateHealthCareWorkerWelcomeMessage: HealthCareWorkerDto };
     }>(``, {
       query: `mutation UpdateHealthCareWorkerWelcomeMessage($healthcareWorkerId: UUID!, $welcomeMessage: String, $shareContactInfo: Boolean!) {
           updateHealthCareWorkerWelcomeMessage(healthcareWorkerId: $healthcareWorkerId, welcomeMessage: $welcomeMessage, shareContactInfo: $shareContactInfo) {
-            user {
-              id
-              email
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              dateOfBirth
-              idNumber
-              firstName
-              surname
-              contactPreference
-              genderId
-              phoneNumber
-              profileImageUrl
-            }          
-            id
-            isRegistered
-            languageId
-            clickedDashboardClientsTab
-            clickedDashboardVisitsTab
-            clickedDashboardHighlightsTab
-            clickedVisitTab
-            clickedProgressTab
-            clickedReferralsTab
-            clickedContactTab    
-            clinicId
-            welcomeMessage
-            shareContactInfo
-            isNewAtClinic
+              welcomeMessage
+              shareContactInfo
+              isNewAtClinic
           }
         }`,
       variables: {
@@ -232,8 +207,7 @@ class HealthCareWorkerService {
       );
     }
 
-    console.log('response.data.data.updateHealthCareWorkerTabs', response);
-    return response.data.data.updateHealthCareWorkerTabs;
+    return response.data.data.updateHealthCareWorkerWelcomeMessage;
   }
 }
 
