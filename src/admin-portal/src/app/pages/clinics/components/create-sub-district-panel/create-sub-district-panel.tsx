@@ -23,6 +23,7 @@ import {
   AddSubDistrict,
   EditSubDistrict,
   GetDistrictsAndStats,
+  GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
@@ -31,6 +32,12 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { data: districtData, refetch } = useQuery(GetDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
+  const { data: subDistrictData, refetch: refetchSubDistricts } = useQuery(
+    GetSubDistrictsAndStats,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
   const [addSubDistrictMutation, { loading: loadingAddSubDistrict }] =
     useMutation(AddSubDistrict);
   const [editSubDistrictMutation, { loading: loadingEditSubDistrict }] =
@@ -53,12 +60,19 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const [districts, setDistricts] = useState<SearchDropDownOption<string>[]>(
     []
   );
+  console.log({ subDistrictData });
 
   const { setNotification } = useNotifications();
   const watchFields = useWatch({ control });
   const disableButton = !watchFields?.subDistrictName || !watchFields?.district;
   console.log({ watchFields });
   console.log({ disableButton });
+  console.log(subDistrictData?.subDistrictsAndStats);
+  const existingSubDistrict = subDistrictData?.subDistrictsAndStats?.find(
+    (item) => item?.name?.includes(String(watchFields?.subDistrictName))
+  );
+  console.log(watchFields?.subDistrictName);
+  console.log({ existingSubDistrict });
 
   const addDistrict = useCallback(async () => {
     const districtInputModel = {
