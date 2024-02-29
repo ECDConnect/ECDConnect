@@ -20,6 +20,9 @@ export interface HealthCareWorkerDto extends EntityBase {
   clickedContactTab: boolean;
   clickedTeamTab: boolean;
   clinicId?: string;
+  welcomeMessage: string;
+  shareContactInfo: boolean;
+  isNewAtClinic: boolean;
   // TODO - Remove the team lead fields
   teamLeadId?: string;
   teamLead?: {

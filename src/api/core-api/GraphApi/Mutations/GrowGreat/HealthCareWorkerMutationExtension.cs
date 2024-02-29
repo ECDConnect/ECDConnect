@@ -136,5 +136,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
 
             return new HealthCareWorkerModel(updatedHealthCareWorker);
         }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public HealthCareWorkerModel UpdateHealthCareWorkerWelcomeMessage(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid healthcareWorkerId,
+            string welcomeMessage,
+            bool shareContactInfo)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetById(healthcareWorkerId);
+
+            if (healthCareWorkerToUpdate == null)
+            {
+                throw new ArgumentException("Invalid healthCareWorkerId, HCW not found");
+            }
+
+            healthCareWorkerToUpdate.WelcomeMessage = welcomeMessage;
+            healthCareWorkerToUpdate.IsNewAtClinic = false;
+            healthCareWorkerToUpdate.ShareContactInfo = shareContactInfo;
+
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker);
+        }
     }
 }

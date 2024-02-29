@@ -7,7 +7,7 @@ export interface ClinicDto {
   name: string;
   phoneNumber: string;
   siteAddress?: SiteAddressDto;
-  league: LeagueDto;
+  league?: LeagueDto;
   teamLeads: TeamLeadDto[];
   clinicMembers: ClinicMemberDto[];
   leagueRanking: number;

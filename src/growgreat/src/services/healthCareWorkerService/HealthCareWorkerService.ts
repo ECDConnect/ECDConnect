@@ -44,7 +44,10 @@ class HealthCareWorkerService {
           clickedProgressTab
           clickedReferralsTab
           clickedContactTab    
-          clinicId      
+          clinicId
+          welcomeMessage
+          shareContactInfo
+          isNewAtClinic
         }
       }
       `,
@@ -78,7 +81,6 @@ class HealthCareWorkerService {
         ) {
           user {
             id
-            userName
             email
             isSouthAfricanCitizen
             verifiedByHomeAffairs
@@ -86,16 +88,10 @@ class HealthCareWorkerService {
             idNumber
             firstName
             surname
-            fullName
             contactPreference
             genderId
             phoneNumber
             profileImageUrl
-            emailConfirmed
-            phoneNumberConfirmed
-            twoFactorEnabled
-            isActive
-            lastSeen
           }          
           id
           isRegistered
@@ -107,7 +103,10 @@ class HealthCareWorkerService {
           clickedProgressTab
           clickedReferralsTab
           clickedContactTab    
-          clinicId      
+          clinicId
+          welcomeMessage
+          shareContactInfo
+          isNewAtClinic
         }
       }`,
       variables: {
@@ -136,7 +135,6 @@ class HealthCareWorkerService {
           updateHealthCareWorkerTabs(input: $input, userId: $userId) {
             user {
               id
-              userName
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
@@ -144,16 +142,10 @@ class HealthCareWorkerService {
               idNumber
               firstName
               surname
-              fullName
               contactPreference
               genderId
               phoneNumber
               profileImageUrl
-              emailConfirmed
-              phoneNumberConfirmed
-              twoFactorEnabled
-              isActive
-              lastSeen
             }          
             id
             isRegistered
@@ -165,7 +157,10 @@ class HealthCareWorkerService {
             clickedProgressTab
             clickedReferralsTab
             clickedContactTab    
-            clinicId      
+            clinicId
+            welcomeMessage
+            shareContactInfo
+            isNewAtClinic
           }
         }`,
       variables: {
@@ -180,6 +175,64 @@ class HealthCareWorkerService {
       );
     }
 
+    return response.data.data.updateHealthCareWorkerTabs;
+  }
+
+  async updateHealthCareWorkerWelcomeMessage(
+    healthcareWorkerId: string,
+    welcomeMessage: string,
+    shareContactInfo: boolean
+  ): Promise<HealthCareWorkerDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateHealthCareWorkerTabs: HealthCareWorkerDto };
+    }>(``, {
+      query: `mutation UpdateHealthCareWorkerWelcomeMessage($healthcareWorkerId: UUID!, $welcomeMessage: String, $shareContactInfo: Boolean!) {
+          updateHealthCareWorkerWelcomeMessage(healthcareWorkerId: $healthcareWorkerId, welcomeMessage: $welcomeMessage, shareContactInfo: $shareContactInfo) {
+            user {
+              id
+              email
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+              dateOfBirth
+              idNumber
+              firstName
+              surname
+              contactPreference
+              genderId
+              phoneNumber
+              profileImageUrl
+            }          
+            id
+            isRegistered
+            languageId
+            clickedDashboardClientsTab
+            clickedDashboardVisitsTab
+            clickedDashboardHighlightsTab
+            clickedVisitTab
+            clickedProgressTab
+            clickedReferralsTab
+            clickedContactTab    
+            clinicId
+            welcomeMessage
+            shareContactInfo
+            isNewAtClinic
+          }
+        }`,
+      variables: {
+        healthcareWorkerId: healthcareWorkerId,
+        welcomeMessage: welcomeMessage,
+        shareContactInfo: shareContactInfo,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'updateHealthCareWorkerWelcomeMessage failed - Server connection error'
+      );
+    }
+
+    console.log('response.data.data.updateHealthCareWorkerTabs', response);
     return response.data.data.updateHealthCareWorkerTabs;
   }
 }

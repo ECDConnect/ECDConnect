@@ -5,6 +5,7 @@ import {
   getHealthCareWorkerByUserId,
   updateHealthCareWorkerById,
   updateHealthCareWorkerTabs,
+  updateHealthCareWorkerWelcomeMessage,
 } from './healthCareWorker.actions';
 import { HealthCareWorkerState } from './healthCareWorker.types';
 
@@ -40,6 +41,12 @@ const healthCareWorkerSlice = createSlice({
     builder.addCase(updateHealthCareWorkerTabs.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
+    builder.addCase(
+      updateHealthCareWorkerWelcomeMessage.fulfilled,
+      (state, action) => {
+        state.healthCareWorker = action.payload;
+      }
+    );
   },
 });
 

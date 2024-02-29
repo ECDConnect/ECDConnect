@@ -23,9 +23,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
                 ProfileImageUrl = healthCareWorker.User.ProfileImageUrl;
             }
 
-            // TODO
-            WelcomeMessage = "TODO Welcome message";
-            ShareContactInfo = true;
+            WelcomeMessage = healthCareWorker.WelcomeMessage;
+            ShareContactInfo = healthCareWorker.ShareContactInfo;
         }
     }
 }

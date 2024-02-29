@@ -44,6 +44,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool ClickedDashboardVisitsTab { get; set; }
         public bool ClickedDashboardHighlightsTab { get; set; }
         public bool ClickedTeamTab { get; set; }
+        public bool IsNewAtClinic { get; set; }
+        public bool ShareContactInfo { get; set; }
+        public string WelcomeMessage { get; set; }
     }
 
     public interface HealthCareWorkerJoin<TKey>

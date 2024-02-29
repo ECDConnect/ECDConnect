@@ -22,6 +22,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public bool ClickedContactTab { get; set; }
         public bool ClickedTeamTab { get; set; }
         public Guid? ClinicId { get; set; } // TODO - Can we make this non-nullable once we have the data set up?
+        public string WelcomeMessage { get; set; }
+        public bool ShareContactInfo { get; set; }
+        public bool IsNewAtClinic { get; set; }
 
         public HealthCareWorkerModel(HealthCareWorker entity)
         {
@@ -41,6 +44,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
             ClickedTeamTab = entity.ClickedTeamTab;
             ClickedVisitTab = entity.ClickedVisitTab;
             ClinicId = entity.ClinicId;
+            WelcomeMessage = entity.WelcomeMessage;
+            ShareContactInfo = entity.ShareContactInfo;
+            IsNewAtClinic = entity.IsNewAtClinic;
         }
     }
 }

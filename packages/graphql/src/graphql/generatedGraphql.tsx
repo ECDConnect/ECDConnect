@@ -4081,13 +4081,16 @@ export type HealthCareWorker = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isNewAtClinic: Scalars['Boolean'];
   isRegistered: Scalars['Boolean'];
   language?: Maybe<Language>;
   languageId?: Maybe<Scalars['UUID']>;
+  shareContactInfo: Scalars['Boolean'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['UUID']>;
+  welcomeMessage?: Maybe<Scalars['String']>;
 };
 
 export type HealthCareWorkerFilterInput = {
@@ -4106,14 +4109,17 @@ export type HealthCareWorkerFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isNewAtClinic?: InputMaybe<BooleanOperationFilterInput>;
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   language?: InputMaybe<LanguageFilterInput>;
   languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<HealthCareWorkerFilterInput>>;
+  shareContactInfo?: InputMaybe<BooleanOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  welcomeMessage?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type HealthCareWorkerInput = {
@@ -4130,12 +4136,15 @@ export type HealthCareWorkerInput = {
   ConsentForPhoto: Scalars['Boolean'];
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  IsNewAtClinic: Scalars['Boolean'];
   IsRegistered: Scalars['Boolean'];
   Language?: InputMaybe<LanguageInput>;
   LanguageId?: InputMaybe<Scalars['UUID']>;
+  ShareContactInfo: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['UUID']>;
+  WelcomeMessage?: InputMaybe<Scalars['String']>;
 };
 
 export type HealthCareWorkerInputModelInput = {
@@ -4167,11 +4176,14 @@ export type HealthCareWorkerModel = {
   clinicId?: Maybe<Scalars['UUID']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
   id: Scalars['UUID'];
+  isNewAtClinic: Scalars['Boolean'];
   isRegistered?: Maybe<Scalars['Boolean']>;
   language?: Maybe<Scalars['String']>;
   languageId: Scalars['UUID'];
+  shareContactInfo: Scalars['Boolean'];
   user?: Maybe<UserModel>;
   userId: Scalars['UUID'];
+  welcomeMessage?: Maybe<Scalars['String']>;
 };
 
 export type HealthCareWorkerSortInput = {
@@ -4189,13 +4201,16 @@ export type HealthCareWorkerSortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isNewAtClinic?: InputMaybe<SortEnumType>;
   isRegistered?: InputMaybe<SortEnumType>;
   language?: InputMaybe<LanguageSortInput>;
   languageId?: InputMaybe<SortEnumType>;
+  shareContactInfo?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
+  welcomeMessage?: InputMaybe<SortEnumType>;
 };
 
 export type HealthPromotion = {
@@ -6337,6 +6352,7 @@ export type Mutation = {
   updateGrant?: Maybe<Grant>;
   updateHealthCareWorker?: Maybe<HealthCareWorkerModel>;
   updateHealthCareWorkerTabs?: Maybe<HealthCareWorkerModel>;
+  updateHealthCareWorkerWelcomeMessage?: Maybe<HealthCareWorkerModel>;
   updateHealthPromotion?: Maybe<HealthPromotion>;
   updateHierarchyEntity?: Maybe<HierarchyEntity>;
   updateIncome?: Maybe<IncomeItemModel>;
@@ -8780,6 +8796,12 @@ export type MutationUpdateHealthCareWorkerArgs = {
 export type MutationUpdateHealthCareWorkerTabsArgs = {
   input?: InputMaybe<HealthCareWorkerInputModelInput>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateHealthCareWorkerWelcomeMessageArgs = {
+  healthcareWorkerId: Scalars['UUID'];
+  shareContactInfo: Scalars['Boolean'];
+  welcomeMessage?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateHealthPromotionArgs = {
