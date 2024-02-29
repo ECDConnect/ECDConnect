@@ -1,4 +1,8 @@
-import { Connect, ConnectItem } from '@ecdlink/graphql/lib';
+import {
+  Connect,
+  ConnectItem,
+  MutationSaveWelcomeMessageArgs,
+} from '@ecdlink/graphql/lib';
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
 
@@ -60,6 +64,32 @@ class CommunityService {
       throw new Error('Get All Connect Item Failed - Server connection error');
     }
     return response.data.data.GetAllConnectItem;
+  }
+
+  async saveWelcomeMessage(
+    input: MutationSaveWelcomeMessageArgs
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { saveWelcomeMessage: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation SaveWelcomeMessage($clubId: UUID!, $practitionerId: UUID!, $welcomeMessage: String, $shareContactInfo: Boolean!) {
+          saveWelcomeMessage(clubId: $clubId, practitionerId: $practitionerId, welcomeMessage: $welcomeMessage, shareContactInfo: $shareContactInfo) {
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Save welcome message failed - Server connection error');
+    }
+
+    return response.data.data.saveWelcomeMessage;
   }
 }
 

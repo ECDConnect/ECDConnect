@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
-  ActionModal,
   Avatar,
   BannerWrapper,
   DialogPosition,
@@ -13,6 +12,7 @@ import {
   NavigationDropdown,
   Typography,
   UserAvatar,
+  ScoreCard,
 } from '@ecdlink/ui';
 
 import { useDocuments } from '@/hooks/useDocuments';
@@ -29,23 +29,12 @@ import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
 import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
-import { DashboardRouteState } from './dashboard.types';
+import { DashboardRouteState, NavigationTypes } from './dashboard.types';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { CLIENT_TABS } from '../client/client-dashboard/class-dashboard';
-
-export enum NavigationTypes {
-  Home = 'Home',
-  ClientFolders = 'Client folders',
-  Clients = 'Clients',
-  Visits = 'Visits',
-  Highlights = 'Highlights',
-  Calendar = 'Calendar',
-  Profile = 'Profile',
-  Messages = 'Messages',
-  Training = 'Training',
-  Community = 'Community',
-  Logout = 'Log out',
-}
+import { MenuModal } from './components/menu-modal';
+import { NewFolderModal } from './components/new-folder-modal';
+import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 
 export const Dashboard: React.FC = () => {
   const history = useHistory();
@@ -71,6 +60,9 @@ export const Dashboard: React.FC = () => {
   const { userProfilePicture } = useDocuments();
 
   const { startService } = useNotificationService();
+
+  // TODO: Change to dynamic value
+  const isFirstTimeCommunitySection = true;
 
   function goToProfile() {
     history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
@@ -99,37 +91,8 @@ export const Dashboard: React.FC = () => {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Open a new folder"
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Pregnant mom',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'UserAddIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.MOM_REGISTER);
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Child',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'UserGroupIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.INFANT_REGISTER);
-                },
-              },
-            ]}
-          />
-        );
+      render: (onClose) => {
+        return <NewFolderModal onClose={onClose} />;
       },
     });
   }
@@ -138,76 +101,11 @@ export const Dashboard: React.FC = () => {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
-      render: (onSubmit) => {
+      render: (onClose) => {
         return (
-          <ActionModal
-            className="z-50"
-            title="What do you want to do?"
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Visit clients',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'HomeIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.VISIT,
-                  });
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Find a client folder',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'FolderOpenIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.CLIENT,
-                    isFindClient: true,
-                  });
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Open a new folder',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'FolderAddIcon',
-                onClick: () => {
-                  onSubmit();
-                  showNewFolderDialog();
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'See my highlights',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'PresentationChartLineIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.HIGHLIGHTS,
-                  });
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Something else',
-                textColour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.CLIENT,
-                  });
-                },
-              },
-            ]}
+          <MenuModal
+            onClose={onClose}
+            showNewFolderDialog={showNewFolderDialog}
           />
         );
       },
@@ -223,7 +121,6 @@ export const Dashboard: React.FC = () => {
         })
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
@@ -286,7 +183,9 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
+      href: isFirstTimeCommunitySection
+        ? ROUTES.COMMUNITY.WELCOME
+        : ROUTES.COMMUNITY.ROOT,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -299,6 +198,81 @@ export const Dashboard: React.FC = () => {
       showDivider: true,
     },
   ];
+
+  const dashboardItems = [
+    {
+      title: 'Client folders',
+      titleIcon: 'UserGroupIcon',
+      titleIconClassName: styles.classRoomIcon,
+      onActionClick: () => {
+        showMenuDialog();
+      },
+      classNames: 'bg-secondaryAccent2',
+    },
+    {
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.classRoomIcon,
+      onActionClick: () => {
+        history.push(ROUTES.CALENDAR);
+      },
+      classNames: 'bg-secondaryAccent2',
+    },
+    {
+      title: 'Training',
+      titleIcon: 'BriefcaseIcon',
+      titleIconClassName: styles.businessIcon,
+      onActionClick: () => {
+        history.push(ROUTES.TRAINING);
+      },
+      classNames: 'bg-uiBg',
+    },
+  ];
+
+  // TODO: Change to dynamic value
+  const communityCard = useMemo((): ScoreCardProps => {
+    const mainColor = 'secondary';
+    const bgColour = 'secondaryAccent2';
+
+    return {
+      image: (
+        <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
+          <Badge
+            className="absolute z-0 h-12 w-12"
+            fill={`var(--${mainColor})`}
+          />
+          <Typography
+            className="relative z-10"
+            color="white"
+            type="h1"
+            text={'0'}
+          />
+        </div>
+      ),
+      currentPoints: 0 ?? 0,
+      maxPoints: 0 ?? 0,
+      barBgColour: 'white',
+      barColour: mainColor,
+      hint: '{clinicName}' ?? '',
+      mainText: '',
+      hintClassName: 'mt-10',
+      bgColour,
+      textColour: 'textDark',
+      statusChip: {
+        backgroundColour: 'tertiary',
+        borderColour: 'tertiary',
+        textColour: 'white',
+        text: '{tier}',
+        textWeight: 'normal',
+      },
+      onClick: () =>
+        history.push(
+          isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT
+        ),
+    };
+  }, []);
 
   useEffect(() => {
     if (shouldUserSync) {
@@ -381,36 +355,25 @@ export const Dashboard: React.FC = () => {
 
       <div className={`${styles.wrapper}`}>
         <DashboardItems
-          listItems={[
-            {
-              title: 'Client folders',
-              titleIcon: 'UserGroupIcon',
-              titleIconClassName: styles.classRoomIcon,
-              onActionClick: () => {
-                showMenuDialog();
-              },
-              classNames: 'bg-secondaryAccent2',
-            },
-            {
-              title: 'Calendar',
-              titleIcon: 'CalendarIcon',
-              titleIconClassName: styles.classRoomIcon,
-              onActionClick: () => {
-                history.push(ROUTES.CALENDAR);
-              },
-              classNames: 'bg-secondaryAccent2',
-            },
-            {
-              title: 'Training',
-              titleIcon: 'BriefcaseIcon',
-              titleIconClassName: styles.businessIcon,
-              onActionClick: () => {
-                history.push(ROUTES.TRAINING);
-              },
-              classNames: 'bg-uiBg',
-            },
-          ]}
+          listItems={dashboardItems}
           notification={dashboardNotification}
+        />
+        <ScoreCard
+          className="mt-30 h-20 w-full"
+          mainText={communityCard.mainText}
+          hint={communityCard.hint}
+          hintClassName={communityCard.hintClassName}
+          textPosition="left"
+          currentPoints={communityCard.currentPoints}
+          maxPoints={communityCard.maxPoints}
+          onClick={communityCard.onClick}
+          barBgColour={communityCard.barBgColour}
+          barColour={communityCard.barColour}
+          bgColour={communityCard.bgColour}
+          image={communityCard.image}
+          textColour={communityCard.textColour}
+          onClickClassName="text-textLight"
+          statusChip={communityCard.statusChip}
         />
       </div>
     </BannerWrapper>

@@ -30,6 +30,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         {
             return clinicService.DeleteClinic(clinicId);
         }
-
     }
 }

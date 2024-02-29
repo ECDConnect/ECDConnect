@@ -45,6 +45,8 @@ import { InfantBackReferralUpdate } from '@/pages/infant/infant-profile/referral
 import { MotherBackReferralUpdate } from '@/pages/mom/pregnant-profile/referrals-tab/update-back-referral';
 import { Community } from '@/pages/community/community';
 import Calendar from '@/pages/calendar/calendar-home';
+import { CommunityWelcome } from '@/pages/community/welcome';
+import { TeamTabInfoPage } from '@/pages/community/team-tab/team/info-page';
 
 function PublicRoutes() {
   return (
@@ -258,7 +260,17 @@ function AuthRoutes() {
         component={EditPractitionerProfile}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
-      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
+      <Route path={ROUTES.COMMUNITY.ROOT} component={Community} exact />
+      <Route
+        path={ROUTES.COMMUNITY.WELCOME}
+        component={CommunityWelcome}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.INFO_PAGE}
+        component={TeamTabInfoPage}
+        exact
+      />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />
     </Switch>
   );

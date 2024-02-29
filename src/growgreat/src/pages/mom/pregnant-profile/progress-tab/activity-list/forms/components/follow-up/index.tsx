@@ -267,7 +267,6 @@ export const FollowUp = ({
         />
         <div className="h-16 w-2/4">
           <ProgressBar
-            className="h-2"
             label={
               walkthroughData?.progressBar.label ||
               previousVisitStatus?.score ||

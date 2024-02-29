@@ -16,10 +16,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
     public class HealthCareWorkerMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public HealthCareWorker AddHealthCareWorker(
+        public HealthCareWorkerModel AddHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HealthCareWorkerModel input)
+            HealthCareWorkerInputModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
 
@@ -43,15 +43,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
             };
 
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
-            return healthCareWorkerRepo.Insert(healthCareWorker);
+            var newHealthCareWorker = healthCareWorkerRepo.Insert(healthCareWorker);
+
+            return new HealthCareWorkerModel(newHealthCareWorker);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public HealthCareWorker UpdateHealthCareWorker(
+        public HealthCareWorkerModel UpdateHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId,
-            HealthCareWorkerModel input)
+            HealthCareWorkerInputModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
@@ -83,16 +85,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 healthCareWorkerToUpdate.User.Email = input.User.Email;
             }
 
-            return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker);
         }
 
 
         
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public HealthCareWorker UpdateHealthCareWorkerTabs(
+        public HealthCareWorkerModel UpdateHealthCareWorkerTabs(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HealthCareWorkerModel input,
+            HealthCareWorkerInputModel input,
             string userId)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
@@ -128,7 +132,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 healthCareWorkerToUpdate.ClickedDashboardHighlightsTab = input.ClickedDashboardHighlightsTab.Value;
             }
 
-            return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker);
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public HealthCareWorkerModel UpdateHealthCareWorkerWelcomeMessage(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid healthcareWorkerId,
+            string welcomeMessage,
+            bool shareContactInfo)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetById(healthcareWorkerId);
+
+            if (healthCareWorkerToUpdate == null)
+            {
+                throw new ArgumentException("Invalid healthCareWorkerId, HCW not found");
+            }
+
+            healthCareWorkerToUpdate.WelcomeMessage = welcomeMessage;
+            healthCareWorkerToUpdate.IsNewAtClinic = false;
+            healthCareWorkerToUpdate.ShareContactInfo = shareContactInfo;
+
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker);
         }
     }
 }
