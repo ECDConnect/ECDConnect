@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -98,6 +99,15 @@ namespace EcdLink.Api.CoreApi.Services
             return _districtRepo.Update(district);
         }
 
+        public District DeleteDistrict(Guid districtId)
+        {
+            var district = _districtRepo.GetById(districtId);
+            district.IsActive = false;
+            district.UpdatedDate = DateTime.Now;
+            district.UpdatedBy = _applicationUserId;
+            return _districtRepo.Update(district);
+        }
+
         #endregion
 
         #region SubDistrict
@@ -151,9 +161,168 @@ namespace EcdLink.Api.CoreApi.Services
             return _subDistrictRepo.Update(district);
         }
 
+        public SubDistrict DeleteSubDistrict(Guid subDistrictId)
+        {
+            var subDistrict = _subDistrictRepo.GetById(subDistrictId);
+            subDistrict.IsActive = false;
+            subDistrict.UpdatedDate = DateTime.Now;
+            subDistrict.UpdatedBy = _applicationUserId;
+            return _subDistrictRepo.Update(subDistrict);
+        }
+
         #endregion
 
         #region Clinic
+
+        // This data will come from G11 - could be replaced - this is temp
+        public ClinicReportModel GetClinicReportData(Guid clinicId)
+        {
+            ClinicReportModel clinicReportModel = new ClinicReportModel();
+            clinicReportModel.TotalHCWs = _hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId == clinicId).Count();
+            clinicReportModel.LeaguePosition = 0;
+            clinicReportModel.TotalQuarterPoints = 0;
+
+            return clinicReportModel;
+        }
+
+        public ClinicVisitReportModel GetClinicVisitReportData(Guid clinicId, DateTime startDate, DateTime endDate)
+        {
+            // TODO
+            return new ClinicVisitReportModel();
+        }
+
+        public Clinic AddClinic(PortalClinicModel input)
+        {
+            var clinic = _clinicRepo.Insert(new Clinic()
+                {
+                    Id = new Guid(),
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId,
+                    Name = input.Name,
+                    PhoneNumber = input.PhoneNumber,
+                    SiteAddressId = input.SiteAddressId,
+                    SubDistrictId = input.SubDistrictId,
+                }
+            );
+
+            // TeamLead1 is compulsory
+            ManageTeamLead(clinic.Id, input.TeamLead1Id, input.TeamLead2Id);
+
+            return clinic;
+        }
+
+        public Clinic EditClinic(PortalClinicModel input)
+        {
+            var clinic = _clinicRepo.GetById((Guid)input.Id);
+            clinic.UpdatedDate = DateTime.Now;
+            clinic.UpdatedBy = _applicationUserId;
+            clinic.Name = input.Name;
+            clinic.PhoneNumber = input.PhoneNumber;
+            clinic.SiteAddressId = input.SiteAddressId;
+            clinic.SubDistrictId = input.SubDistrictId;
+
+            // TeamLead1 is compulsory
+            ManageTeamLead(clinic.Id, input.TeamLead1Id, input.TeamLead2Id);
+
+            return _clinicRepo.Update(clinic);
+        }
+
+        private bool ManageTeamLead(Guid clinicId, Guid teamLead1Id, Guid? teamLead2Id)
+        {
+            var clinicRecords = _clinicTeamRepo.GetAll().Where(x => x.ClinicId == clinicId).ToList();
+            if (clinicRecords.Any())
+            {
+                // Get all records that is not associated with team lead 1 and lead 2 and archive them
+                List<Guid> teamLeadIds = new List<Guid>() { teamLead1Id };
+                if (teamLead2Id != null)
+                {
+                    teamLeadIds.Add((Guid)teamLead2Id);
+                }
+                var currentIds = clinicRecords.Where(x => !teamLeadIds.Contains(x.TeamLeadId) && x.IsActive).ToList();
+                if (currentIds.Any())
+                {
+                    foreach (var item in currentIds)
+                    {
+                        item.UpdatedDate = DateTime.Now;
+                        item.UpdatedBy = _applicationUserId;
+                        item.IsActive = false;
+                        _clinicTeamRepo.Update(item);
+                    }
+                } 
+
+                // Add team lead 1 if not available, but set active if available and in active
+                var teamLead1 = clinicRecords.Where(x => x.TeamLeadId == teamLead1Id).FirstOrDefault();
+                if (teamLead1 == null)
+                {
+                    AddClinicTeamLead(clinicId, teamLead1Id);
+                } else
+                {
+                    if (!teamLead1.IsActive)
+                    {
+                        teamLead1.UpdatedDate = DateTime.Now;
+                        teamLead1.UpdatedBy = _applicationUserId;
+                        teamLead1.IsActive = true;
+                        _clinicTeamRepo.Update(teamLead1);
+                    }
+                }
+
+
+                if (teamLead2Id != null)
+                {
+                    // Add team lead 2 if not available, but set active if available and in active
+                    var teamLead2 = clinicRecords.Where(x => x.TeamLeadId == (Guid)teamLead2Id).FirstOrDefault();
+                    if (teamLead2 == null)
+                    {
+                        AddClinicTeamLead(clinicId, (Guid)teamLead2Id);
+                    } else
+                    {
+                        if (!teamLead2.IsActive)
+                        {
+                            teamLead2.UpdatedDate = DateTime.Now;
+                            teamLead2.UpdatedBy = _applicationUserId;
+                            teamLead2.IsActive = true;
+                            _clinicTeamRepo.Update(teamLead2);
+                        }
+                    }
+                }
+            } 
+            else
+            {
+                AddClinicTeamLead(clinicId, teamLead1Id);
+
+                if (teamLead2Id != null)
+                {
+                    AddClinicTeamLead(clinicId, (Guid)teamLead2Id);
+                }
+            }
+
+            return true;
+        }
+
+        private ClinicTeamLead AddClinicTeamLead(Guid clinicId, Guid teamLeadId)
+        {
+            return _clinicTeamRepo.Insert(new ClinicTeamLead()
+            {
+                Id = new Guid(),
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _applicationUserId,
+                ClinicId = clinicId,
+                TeamLeadId = teamLeadId
+            });
+        }
+
+        public Clinic DeleteClinic(Guid clinicId)
+        {
+            var clinic = _clinicRepo.GetById(clinicId);
+            clinic.IsActive = false;
+            clinic.UpdatedDate = DateTime.Now;
+            clinic.UpdatedBy = _applicationUserId;
+            return _clinicRepo.Update(clinic);
+        }
 
         #endregion
     }

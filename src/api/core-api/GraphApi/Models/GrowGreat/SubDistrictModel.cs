@@ -1,7 +1,7 @@
 ﻿using System;
 using ECDLink.DataAccessLayer.Entities;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
     public class SubDistrictModel
     {

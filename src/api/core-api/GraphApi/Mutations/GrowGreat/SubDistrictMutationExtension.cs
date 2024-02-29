@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -6,6 +6,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -22,6 +23,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         public SubDistrict EditSubDistrict([Service] IClinicService clinicService, SubDistrictModel input)
         {
             return clinicService.EditSubDistrict(input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public SubDistrict DeleteSubDistrict([Service] IClinicService clinicService, Guid subDistrictId)
+        {
+            return clinicService.DeleteSubDistrict(subDistrictId);
         }
 
     }
