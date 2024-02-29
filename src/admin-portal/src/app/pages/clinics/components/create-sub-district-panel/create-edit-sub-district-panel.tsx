@@ -3,13 +3,11 @@ import {
   Divider,
   Dropdown,
   FormInput,
-  SearchDropDown,
   SearchDropDownOption,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import {
-  ClinicModel,
   ClinicPanelCreateProps,
   subDistrictModel,
   subDistrictInitialValues,
@@ -21,6 +19,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { SaveIcon, TrashIcon } from '@heroicons/react/solid';
 import {
   AddSubDistrict,
+  DeleteSubDistrict,
   EditSubDistrict,
   GetDistrictsAndStats,
   GetSubDistrictsAndStats,
@@ -28,7 +27,7 @@ import {
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 
-export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
+export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { data: districtData, refetch } = useQuery(GetDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
@@ -42,6 +41,8 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
     useMutation(AddSubDistrict);
   const [editSubDistrictMutation, { loading: loadingEditSubDistrict }] =
     useMutation(EditSubDistrict);
+  const [deleteSubDistrictMutation, { loading: loadingDeleteSubDistrict }] =
+    useMutation(DeleteSubDistrict);
 
   const {
     register: subDistrictRegister,
@@ -56,23 +57,19 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   });
 
   const { errors, isValid: isDistrictValid, isDirty } = subDistrictFormState;
-  console.log({ isDistrictValid });
+
   const [districts, setDistricts] = useState<SearchDropDownOption<string>[]>(
     []
   );
-  console.log({ subDistrictData });
 
   const { setNotification } = useNotifications();
   const watchFields = useWatch({ control });
   const disableButton = !watchFields?.subDistrictName || !watchFields?.district;
-  console.log({ watchFields });
-  console.log({ disableButton });
-  console.log(subDistrictData?.subDistrictsAndStats);
-  const existingSubDistrict = subDistrictData?.subDistrictsAndStats?.find(
-    (item) => item?.name?.includes(String(watchFields?.subDistrictName))
-  );
-  console.log(watchFields?.subDistrictName);
-  console.log({ existingSubDistrict });
+
+  // TO DO: Try a double distric logic
+  // const existingSubDistrict = subDistrictData?.subDistrictsAndStats?.find(
+  //   (item) => item?.name?.includes(String(watchFields?.subDistrictName))
+  // );
 
   const addDistrict = useCallback(async () => {
     const districtInputModel = {
@@ -124,6 +121,21 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
     watchFields?.subDistrictName,
   ]);
 
+  const deleteSubDistrict = useCallback(async () => {
+    const response = await deleteSubDistrictMutation({
+      variables: { subDistrictId: props?.subDistrict?.id },
+    });
+
+    props.closeDialog(true);
+
+    if (response) {
+      setNotification({
+        title: ` Sub-district deleted!`,
+        variant: NOTIFICATION.ALERT,
+      });
+    }
+  }, [deleteSubDistrictMutation, props, setNotification]);
+
   const handleSaveData = useCallback(() => {
     if (props?.isEdit) {
       editDistrict();
@@ -133,10 +145,9 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
       props.closeDialog(true);
     }
   }, [addDistrict, editDistrict, props]);
-  console.log({ districtData });
+
   useEffect(() => {
     if (districtData?.districtsAndStats?.length > 0) {
-      console.log('haaaaa');
       setDistricts(
         districtData?.districtsAndStats?.map((item) => {
           return {
@@ -147,8 +158,6 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
       );
     }
   }, [districtData]);
-
-  console.log({ props });
 
   useEffect(() => {
     if (props?.isEdit) {
@@ -258,14 +267,14 @@ export const CreateSubDistrictPanel = (props: ClinicPanelCreateProps) => {
       <div className="mt-2 flex flex-row">
         <button
           type="submit"
-          onClick={handleSaveData}
+          onClick={deleteSubDistrict}
           className={`bg-white ${
             disableButton ? 'opacity-25' : ''
           } focus:outline-none border-secondary text-secondary flex inline-flex w-full items-center justify-center rounded-2xl border px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
           disabled={disableButton}
         >
           <TrashIcon width="22px" className="mr-2" />
-          Remove district
+          Remove sub-district
         </button>
       </div>
     </div>

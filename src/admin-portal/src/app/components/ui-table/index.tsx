@@ -424,8 +424,9 @@ export default function UiTable({
         </div>
       );
     } else if (
-      column.field === 'subCategories' ||
-      column.field === 'subDistricts'
+      column?.field === 'subCategories' ||
+      column?.field === 'subDistricts' ||
+      column?.field === 'teamLead(s)'
     ) {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
@@ -446,6 +447,33 @@ export default function UiTable({
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
             {display_value?.description}
+          </div>
+        </div>
+      );
+    } else if (column.field === 'district' && column?.use === 'District') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.name}
+          </div>
+        </div>
+      );
+    } else if (
+      column.field === 'subDistrict' &&
+      column?.use === 'Sub-district'
+    ) {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.name}
+          </div>
+        </div>
+      );
+    } else if (column.field === 'district' && column?.use === 'Province') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.province?.description}
           </div>
         </div>
       );

@@ -1,60 +1,118 @@
-import { useQuery, useMutation } from '@apollo/client';
-import {
-  CoachDto,
-  PermissionEnum,
-  usePanel,
-  useDialog,
-  useNotifications,
-  NOTIFICATION,
-  ClinicDto,
-} from '@ecdlink/core';
+import { useQuery } from '@apollo/client';
+import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
 import {
+  GetAllProvince,
   GetDistrictsAndStats,
   GetSubDistrictsAndStats,
-  SendInviteToApplication,
 } from '@ecdlink/graphql';
-import { DialogPosition, Dropdown } from '@ecdlink/ui';
+import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import { SearchIcon } from '@heroicons/react/solid';
-import { CreateClinicPanel } from '../../components/create-clinic-panel/create-clinic-panel';
-import { CreateDistrictPanel } from '../../components/create-district-panel/create-district-panel';
-import { CreateSubDistrictPanel } from '../../components/create-sub-district-panel/create-sub-district-panel';
+import { CreateEditSubDistrictPanel } from '../../components/create-sub-district-panel/create-edit-sub-district-panel';
 
 export default function SubDistrictsSubPage() {
   const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
-  const dialog = useDialog();
   const { data, refetch } = useQuery(GetSubDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: districtData } = useQuery(GetDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const { data: provincetData } = useQuery(GetAllProvince, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState('active');
   const [showFilter, setShowFilter] = useState(false);
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
-  const [nameFilter, setNameFilter] = useState(true);
+  const [districts, setDistricts] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+
+  const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+
+  const [district, setDistrict] = useState('');
+  const [province, setProvince] = useState('');
 
   const clearFilters = () => {
-    setStatusFilter('');
-    setNameFilter(false);
+    setDistrict('');
+    setProvince('');
   };
 
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  useEffect(() => {
+    if (districtData?.districtsAndStats?.length > 0) {
+      setDistricts(
+        districtData?.districtsAndStats?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+          };
+        })
+      );
+    }
+  }, [districtData?.districtsAndStats]);
+
+  useEffect(() => {
+    if (provincetData?.GetAllProvince?.length > 0) {
+      setProvinces(
+        provincetData?.GetAllProvince?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.description,
+          };
+        })
+      );
+    }
+  }, [provincetData?.GetAllProvince]);
+
+  useEffect(() => {
+    if (district && districtData?.districtsAndStats?.length > 0) {
+      setTableData(
+        data?.subDistrictsAndStats?.filter(
+          (item) => item?.district?.id === district
+        )
+      );
+    } else {
+      setTableData(data?.subDistrictsAndStats);
+    }
+  }, [
+    district,
+    data?.subDistrictsAndStats,
+    districtData?.districtsAndStats?.length,
+  ]);
+
+  useEffect(() => {
+    if (province && provincetData?.GetAllProvince?.length > 0) {
+      setTableData(
+        data?.subDistrictsAndStats?.filter(
+          (item) => item?.district?.province?.id === province
+        )
+      );
+    } else {
+      setTableData(data?.subDistrictsAndStats);
+    }
+  }, [
+    data?.subDistrictsAndStats,
+    province,
+    provincetData?.GetAllProvince?.length,
+  ]);
 
   useEffect(() => {
     if (data && data.subDistrictsAndStats) {
       const copyItems = data.subDistrictsAndStats?.map((item: ClinicDto) => ({
         ...item,
         id: `${item?.id}`,
-        isActive: item?.isActive,
         name: item?.name,
+        isActive: item?.isActive,
         _view: undefined,
         _edit: undefined,
         _url: undefined,
@@ -69,7 +127,7 @@ export default function SubDistrictsSubPage() {
       noPadding: true,
       title: 'Add a sub-district',
       render: (onSubmit: any) => (
-        <CreateSubDistrictPanel
+        <CreateEditSubDistrictPanel
           key={`subDistrictPanelCreate`}
           closeDialog={(subDistrictCreated: boolean) => {
             onSubmit();
@@ -88,14 +146,13 @@ export default function SubDistrictsSubPage() {
       noPadding: true,
       title: 'Edit a sub-district',
       render: (onSubmit: any) => (
-        <CreateSubDistrictPanel
+        <CreateEditSubDistrictPanel
           key={`subDistricthPanelEdit`}
           closeDialog={(districtCreated: boolean) => {
             onSubmit();
 
             refetch();
             if (districtCreated) {
-              console.log('entrouuuuu');
               refetch();
             }
           }}
@@ -125,7 +182,7 @@ export default function SubDistrictsSubPage() {
                   </span>
                   <input
                     className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="         Search by unique ID or clinic name..."
+                    placeholder="         Search by sub-district name..."
                     onChange={search}
                   />
                 </div>
@@ -136,94 +193,31 @@ export default function SubDistrictsSubPage() {
                         fillType="filled"
                         textColor="white"
                         fillColor="secondary"
-                        placeholder="Filter By Name"
+                        placeholder="District"
                         labelColor="white"
-                        selectedValue={nameFilter}
-                        list={[
-                          { label: 'Ascending', value: false },
-                          { label: 'Descending', value: true },
-                        ]}
+                        // selectedValue={district}
+                        list={districts}
                         onChange={(item) => {
-                          setNameFilter(item);
+                          setDistrict(item);
                         }}
                         className="p-2"
                       />
                     </div>
 
-                    <div>
-                      <div className="relative inline-block text-left">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowDropDownFilter(!showDropDownFilter)
-                            }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                              !showDropDownFilter
-                                ? 'bg-secondary text-white'
-                                : 'text-secondary border-secondary border-2 bg-white'
-                            } hover:text-secondary hover:bg-white `}
-                            id="menu-button"
-                            aria-expanded={showDropDownFilter}
-                            aria-haspopup={showDropDownFilter}
-                          >
-                            {statusFilter === ''
-                              ? 'Filter by status'
-                              : statusFilter}
-                            <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${
-                                !showDropDownFilter
-                                  ? 'hover:text-secondary text-white'
-                                  : 'text-secondary hover:text-white'
-                              }`}
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        {/*  */}
-                        {showDropDownFilter && (
-                          <div
-                            className="focus:outline-none absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                            role="menu"
-                            aria-orientation="horizontal"
-                            aria-labelledby="menu-button"
-                          >
-                            <div className="py-1" role="none">
-                              {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('active');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className=" focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-0"
-                              >
-                                Active
-                              </a>
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('inactive');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className="focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-1"
-                              >
-                                Inactive
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                    <div className=" w-6/12">
+                      <Dropdown
+                        fillType="filled"
+                        textColor="white"
+                        fillColor="secondary"
+                        placeholder="Province"
+                        labelColor="white"
+                        // selectedValue={province}
+                        list={provinces}
+                        onChange={(item) => {
+                          setProvince(item);
+                        }}
+                        className="p-2"
+                      />
                     </div>
 
                     <div className="justify-self col-end-3 ">
@@ -287,8 +281,8 @@ export default function SubDistrictsSubPage() {
                   columns={[
                     { field: 'id', use: 'Unique ID' },
                     { field: 'name', use: 'Sub-district' },
-                    // { field: 'district', use: 'District' },
-                    // { field: `province`, use: 'Province'},
+                    { field: 'district', use: 'District' },
+                    { field: `district`, use: 'Province' },
                     { field: 'insertedDate', use: 'Inserted date' },
                   ]}
                   rows={tableData}

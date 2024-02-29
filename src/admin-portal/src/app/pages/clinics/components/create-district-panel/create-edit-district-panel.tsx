@@ -2,12 +2,9 @@ import {
   Divider,
   Dropdown,
   FormInput,
-  SearchDropDown,
   SearchDropDownOption,
-  Typography,
 } from '@ecdlink/ui';
 import {
-  ClinicModel,
   ClinicPanelCreateProps,
   DistrictModel,
   districtInitialValues,
@@ -16,11 +13,17 @@ import {
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
-import { SaveIcon } from '@heroicons/react/solid';
-import { AddDistrict, EditDistrict, GetAllProvince } from '@ecdlink/graphql';
+import { SaveIcon, TrashIcon } from '@heroicons/react/solid';
+import {
+  AddDistrict,
+  DeleteDistrict,
+  EditDistrict,
+  GetAllProvince,
+} from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
+import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 
-export const CreateDistrictPanel = (props: ClinicPanelCreateProps) => {
+export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { data: provinceData, refetch } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
@@ -28,6 +31,8 @@ export const CreateDistrictPanel = (props: ClinicPanelCreateProps) => {
     useMutation(AddDistrict);
   const [editDistrictMutation, { loading: loadingEditDistrict }] =
     useMutation(EditDistrict);
+  const [deleteDistrictMutation, { loading: loadingDeleteDistrict }] =
+    useMutation(DeleteDistrict);
 
   const {
     register: districtRegister,
@@ -42,15 +47,13 @@ export const CreateDistrictPanel = (props: ClinicPanelCreateProps) => {
   });
 
   const { errors, isValid: isDistrictValid, isDirty } = districtFormState;
-  console.log({ isDistrictValid });
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
 
+  const { setNotification } = useNotifications();
   const watchFields = useWatch({ control });
   const disableButton = !watchFields?.districtName || !watchFields?.province;
-  console.log({ watchFields });
-  console.log({ disableButton });
 
   const addDistrict = useCallback(async () => {
     const districtInputModel = {
@@ -62,7 +65,19 @@ export const CreateDistrictPanel = (props: ClinicPanelCreateProps) => {
         input: { ...districtInputModel },
       },
     });
-  }, [addDistrictMutation, watchFields?.districtName, watchFields?.province]);
+
+    if (response) {
+      setNotification({
+        title: `District added!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }
+  }, [
+    addDistrictMutation,
+    setNotification,
+    watchFields?.districtName,
+    watchFields?.province,
+  ]);
 
   const editDistrict = useCallback(async () => {
     const districtInputModel = {
@@ -75,12 +90,35 @@ export const CreateDistrictPanel = (props: ClinicPanelCreateProps) => {
         input: { ...districtInputModel },
       },
     });
+
+    if (response) {
+      setNotification({
+        title: `District updated!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }
   }, [
     editDistrictMutation,
     props?.district?.id,
+    setNotification,
     watchFields?.districtName,
     watchFields?.province,
   ]);
+
+  const deleteDistrict = useCallback(async () => {
+    const response = await deleteDistrictMutation({
+      variables: { districtId: props?.district?.id },
+    });
+
+    props.closeDialog(true);
+
+    if (response) {
+      setNotification({
+        title: ` District deleted!`,
+        variant: NOTIFICATION.ALERT,
+      });
+    }
+  }, [deleteDistrictMutation, props, setNotification]);
 
   const handleSaveData = useCallback(() => {
     if (props?.isEdit) {
@@ -104,8 +142,6 @@ export const CreateDistrictPanel = (props: ClinicPanelCreateProps) => {
       );
     }
   }, [provinceData]);
-
-  console.log({ props });
 
   useEffect(() => {
     if (props?.isEdit) {
@@ -167,6 +203,21 @@ export const CreateDistrictPanel = (props: ClinicPanelCreateProps) => {
           Save & publish
         </button>
       </div>
+      {props?.isEdit && (
+        <div className="mt-2 flex flex-row">
+          <button
+            type="submit"
+            onClick={deleteDistrict}
+            className={`bg-white ${
+              disableButton ? 'opacity-25' : ''
+            } focus:outline-none border-secondary text-secondary flex inline-flex w-full items-center justify-center rounded-2xl border px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
+            disabled={disableButton}
+          >
+            <TrashIcon width="22px" className="mr-2" />
+            Remove district
+          </button>
+        </div>
+      )}
     </div>
   );
 };

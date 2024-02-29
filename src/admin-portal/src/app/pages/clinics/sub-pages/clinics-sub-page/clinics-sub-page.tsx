@@ -49,8 +49,8 @@ export default function ClinicsSubPage() {
       ).map((item: ClinicDto) => ({
         ...item,
         id: `${item?.id}`,
-        isActive: item?.isActive,
         name: item?.name,
+        isActive: item?.isActive,
         _view: undefined,
         _edit: undefined,
         _url: undefined,
@@ -307,7 +307,9 @@ export default function ClinicsSubPage() {
                   columns={[
                     { field: 'id', use: 'Unique ID' },
                     { field: 'name', use: 'Name' },
-                    { field: 'isActive', use: 'Active' },
+                    { field: 'teamLead', use: 'teamLead(s)' },
+                    { field: 'subDistrict', use: 'Sub-district' },
+                    { field: 'insertedDate', use: 'Date added' },
                   ]}
                   rows={tableData}
                   // editRow={

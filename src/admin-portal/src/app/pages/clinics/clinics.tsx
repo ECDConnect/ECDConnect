@@ -42,7 +42,7 @@ export function ClinicsMainPage() {
       history.push(navigation[0].href);
     }
 
-    init().catch(console.error);
+    init()?.catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

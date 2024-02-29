@@ -1,50 +1,37 @@
-import { useQuery, useMutation } from '@apollo/client';
-import {
-  CoachDto,
-  PermissionEnum,
-  usePanel,
-  useDialog,
-  useNotifications,
-  NOTIFICATION,
-  ClinicDto,
-} from '@ecdlink/core';
+import { useQuery } from '@apollo/client';
+import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
-import {
-  GetDistrictsAndStats,
-  SendInviteToApplication,
-} from '@ecdlink/graphql';
-import { DialogPosition, Dropdown } from '@ecdlink/ui';
+import { GetAllProvince, GetDistrictsAndStats } from '@ecdlink/graphql';
+import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import { SearchIcon } from '@heroicons/react/solid';
-import { CreateClinicPanel } from '../../components/create-clinic-panel/create-clinic-panel';
-import { CreateDistrictPanel } from '../../components/create-district-panel/create-district-panel';
+import { CreateEditDistrictPanel } from '../../components/create-district-panel/create-edit-district-panel';
 
 export default function DistrictsSubPage() {
   const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
-  const dialog = useDialog();
   const { data, refetch } = useQuery(GetDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: provincetData } = useQuery(GetAllProvince, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState('active');
   const [showFilter, setShowFilter] = useState(false);
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
-  const [nameFilter, setNameFilter] = useState(true);
+  const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+  const [province, setProvince] = useState('');
 
   const clearFilters = () => {
-    setStatusFilter('');
-    setNameFilter(false);
+    setProvince('');
   };
 
   const [tableData, setTableData] = useState<any[]>([]);
-
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   useEffect(() => {
     if (data && data.districtsAndStats) {
@@ -61,13 +48,42 @@ export default function DistrictsSubPage() {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (provincetData?.GetAllProvince?.length > 0) {
+      setProvinces(
+        provincetData?.GetAllProvince?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.description,
+          };
+        })
+      );
+    }
+  }, [provincetData?.GetAllProvince]);
+
+  useEffect(() => {
+    if (province && provincetData?.GetAllProvince?.length > 0) {
+      setTableData(
+        data?.districtsAndStats?.filter(
+          (item) => item?.province?.id === province
+        )
+      );
+    } else {
+      setTableData(data?.districtsAndStats);
+    }
+  }, [
+    data?.districtsAndStats,
+    province,
+    provincetData?.GetAllProvince?.length,
+  ]);
+
   const panel = usePanel();
   const displayPanel = () => {
     panel({
       noPadding: true,
       title: 'Add a District',
       render: (onSubmit: any) => (
-        <CreateDistrictPanel
+        <CreateEditDistrictPanel
           key={`districtPanelCreate`}
           closeDialog={(districtCreated: boolean) => {
             onSubmit();
@@ -86,15 +102,12 @@ export default function DistrictsSubPage() {
       noPadding: true,
       title: 'Edit District',
       render: (onSubmit: any) => (
-        <CreateDistrictPanel
+        <CreateEditDistrictPanel
           key={`districthPanelEdit`}
           closeDialog={(districtCreated: boolean) => {
             onSubmit();
-            console.log('test');
-            console.log({ districtCreated });
             refetch();
             if (districtCreated) {
-              console.log('entrouuuuu');
               refetch();
             }
           }}
@@ -108,33 +121,6 @@ export default function DistrictsSubPage() {
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
-
-  const sendInvite = async (coach: CoachDto) => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Coach Invite"
-          message={`You are about to send an invite to ${coach.user.firstName} ${coach.user.surname}`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            sendInviteToApplication({
-              variables: {
-                userId: coach.userId,
-                inviteToPortal: false,
-              },
-            }).then(() => {
-              setNotification({
-                title: 'Successfully Sent Coach Invite!',
-                variant: NOTIFICATION.SUCCESS,
-              });
-            });
-          }}
-        />
-      ),
-    });
-  };
 
   if (tableData) {
     return (
@@ -151,7 +137,7 @@ export default function DistrictsSubPage() {
                   </span>
                   <input
                     className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="         Search by unique ID or clinic name..."
+                    placeholder="         Search by district name..."
                     onChange={search}
                   />
                 </div>
@@ -162,94 +148,15 @@ export default function DistrictsSubPage() {
                         fillType="filled"
                         textColor="white"
                         fillColor="secondary"
-                        placeholder="Filter By Name"
+                        placeholder="Province"
                         labelColor="white"
-                        selectedValue={nameFilter}
-                        list={[
-                          { label: 'Ascending', value: false },
-                          { label: 'Descending', value: true },
-                        ]}
+                        selectedValue={province}
+                        list={provinces}
                         onChange={(item) => {
-                          setNameFilter(item);
+                          setProvince(item);
                         }}
                         className="p-2"
                       />
-                    </div>
-
-                    <div>
-                      <div className="relative inline-block text-left">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowDropDownFilter(!showDropDownFilter)
-                            }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                              !showDropDownFilter
-                                ? 'bg-secondary text-white'
-                                : 'text-secondary border-secondary border-2 bg-white'
-                            } hover:text-secondary hover:bg-white `}
-                            id="menu-button"
-                            aria-expanded={showDropDownFilter}
-                            aria-haspopup={showDropDownFilter}
-                          >
-                            {statusFilter === ''
-                              ? 'Filter by status'
-                              : statusFilter}
-                            <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${
-                                !showDropDownFilter
-                                  ? 'hover:text-secondary text-white'
-                                  : 'text-secondary hover:text-white'
-                              }`}
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        {/*  */}
-                        {showDropDownFilter && (
-                          <div
-                            className="focus:outline-none absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                            role="menu"
-                            aria-orientation="horizontal"
-                            aria-labelledby="menu-button"
-                          >
-                            <div className="py-1" role="none">
-                              {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('active');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className=" focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-0"
-                              >
-                                Active
-                              </a>
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('inactive');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className="focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-1"
-                              >
-                                Inactive
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                     <div className="justify-self col-end-3 ">
@@ -325,9 +232,9 @@ export default function DistrictsSubPage() {
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
                   }
-                  sendRow={
-                    hasPermission(PermissionEnum.update_user) && sendInvite
-                  }
+                  // sendRow={
+                  //   hasPermission(PermissionEnum.update_user) && sendInvite
+                  // }
                   searchInput={searchValue}
                 />
               </div>

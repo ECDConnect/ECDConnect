@@ -1,3 +1,4 @@
+import { ClinicDto } from './clinic.dto';
 import { UserDto } from './user.dto';
 
 export interface TeamLeadDto {
@@ -7,4 +8,5 @@ export interface TeamLeadDto {
   jobTitle: string;
   phoneNumber: string;
   user?: UserDto;
+  clinic?: ClinicDto;
 }
