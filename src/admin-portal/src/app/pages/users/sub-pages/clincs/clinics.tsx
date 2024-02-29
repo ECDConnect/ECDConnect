@@ -20,7 +20,7 @@ export default function Clinics() {
       const copyItems = data.GetAllClinic.map((item: ClinicDto) => ({
         ...item,
         fullName: item.name,
-        isActive: item.isActive,
+        // isActive: item.isActive,
         _view: undefined,
         _edit: undefined,
         _url: undefined,

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "set PORT=3001 && craco start",
+    "start": "craco start",
     "build": "craco build"
   },
   "dependencies": {
