@@ -5,7 +5,6 @@ import BannerWrapper from '../banner-wrapper/banner-wrapper';
 import Button from '../button/button';
 import LanguageSelector from '../language-selector/language-selector';
 import { useWindowSize } from '@reach/window-size';
-import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 // This is a copy paste from the text.utils, since this project doesn't have access
 const replaceBraces = (sentenceWithBraces: string, value: string) => {
@@ -21,11 +20,13 @@ export interface MoreInformationPageProps {
   name?: string;
   onClose: () => void;
   setSelectedLanguage: (locale: string) => void;
+  selectedLanguage?: string;
   title?: string;
   moreInformation: any; // TODO - doesn't ref the graphQL library which is what we are passing in here :/ Could make a DTO
   languages: { value: string; label: string }[];
   children?: React.ReactNode;
   childrenPosition?: 'top' | 'bottom';
+  languageSelectorPosition?: 'top' | 'bottom';
 }
 
 export const MoreInformationPage = ({
@@ -36,9 +37,11 @@ export const MoreInformationPage = ({
   moreInformation,
   languages,
   setSelectedLanguage,
+  selectedLanguage,
   isLoading,
   children,
   childrenPosition = 'top',
+  languageSelectorPosition = 'top',
   isClosable = true,
 }: MoreInformationPageProps) => {
   const { height } = useWindowSize();
@@ -194,6 +197,17 @@ export const MoreInformationPage = ({
     return 'Unavailable translation';
   }, [name, moreInformation]);
 
+  const renderLanguageSelector = useMemo(
+    () => (
+      <LanguageSelector
+        selectLanguage={setSelectedLanguage}
+        languages={languages}
+        currentLocale={selectedLanguage}
+      />
+    ),
+    [languages, setSelectedLanguage, selectedLanguage]
+  );
+
   return (
     <BannerWrapper
       isLoading={isLoading}
@@ -203,17 +217,26 @@ export const MoreInformationPage = ({
       renderOverflow
       {...(isClosable && { onClose })}
     >
-      <div className="bg-uiBg border-primary border-t px-4">
-        <LanguageSelector
-          selectLanguage={setSelectedLanguage}
-          languages={languages}
-        />
-      </div>
+      {languageSelectorPosition === 'top' && (
+        <div className="bg-uiBg border-primary border-t px-4">
+          {renderLanguageSelector}
+        </div>
+      )}
       <div
         className="flex flex-col p-4"
-        style={{ height: height - SELECTOR_HEIGHT }}
+        style={{
+          height:
+            languageSelectorPosition === 'top'
+              ? height - SELECTOR_HEIGHT
+              : height,
+        }}
       >
         {childrenPosition === 'top' && children}
+        {languageSelectorPosition === 'bottom' && (
+          <div className="border-primary border border-l-0 border-r-0 border-dashed pb-1">
+            {renderLanguageSelector}
+          </div>
+        )}
         {renderContent}
         {childrenPosition === 'bottom' && children}
         <Button

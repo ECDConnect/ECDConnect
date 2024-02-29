@@ -13,6 +13,16 @@ export const getConnectItems = (
 
 export const getMoreInformationSelector = (locale: string) =>
   createSelector(
-    (state: RootState) => state.community?.team?.info,
+    (state: RootState) => state.community?.team?.earnPointsInfo,
     (info) => info?.find((item) => item[locale])?.[locale]?.data
+  );
+
+export const getPointsActivityInfoSelector = (
+  activitySlug: string,
+  locale: string
+) =>
+  createSelector(
+    (state: RootState) => state.community?.team?.activityInfo,
+    (info) =>
+      info?.find((item) => item[activitySlug])?.[activitySlug]?.[locale]?.data
   );
