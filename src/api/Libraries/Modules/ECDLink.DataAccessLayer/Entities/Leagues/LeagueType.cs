@@ -15,6 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Leagues
         public string Name { get; set; }
         public string NormalizedName { get; set; }
         public string Description { get; set; }
+        public int MaxPoints { get; set; }
     }
 
     public interface LeagueTypeJoin<TKey>

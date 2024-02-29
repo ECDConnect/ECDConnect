@@ -1,10 +1,6 @@
-import {
-  Connect,
-  ConnectItem,
-  MutationSaveWelcomeMessageArgs,
-} from '@ecdlink/graphql/lib';
+import { Connect, ConnectItem } from '@ecdlink/graphql/lib';
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
+import { Config, LeagueWithClinicRankingsDto } from '@ecdlink/core';
 
 class CommunityService {
   _accessToken: string;
@@ -66,30 +62,42 @@ class CommunityService {
     return response.data.data.GetAllConnectItem;
   }
 
-  async saveWelcomeMessage(
-    input: MutationSaveWelcomeMessageArgs
-  ): Promise<boolean> {
+  async getLeagueById(leagueId: string): Promise<LeagueWithClinicRankingsDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { saveWelcomeMessage: boolean };
+      data: {
+        leagueById: LeagueWithClinicRankingsDto;
+      };
       errors?: {};
     }>(``, {
       query: `
-        mutation SaveWelcomeMessage($clubId: UUID!, $practitionerId: UUID!, $welcomeMessage: String, $shareContactInfo: Boolean!) {
-          saveWelcomeMessage(clubId: $clubId, practitionerId: $practitionerId, welcomeMessage: $welcomeMessage, shareContactInfo: $shareContactInfo) {
+      query getLeagueById($leagueId: UUID!) {
+        leagueById(leagueId: $leagueId) {
+          id
+          name
+          startDate
+          endDate
+          leagueTypeId
+          leagueTypeName
+          clinics {
+            clinicId
+            clinicName
+            leagueRanking
+            pointsTotal
           }
         }
+      }
       `,
       variables: {
-        ...input,
+        leagueId: leagueId,
       },
     });
 
-    if (response.status !== 200 || response.data.errors) {
-      throw new Error('Save welcome message failed - Server connection error');
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('getLeagueById Failed - Server connection error');
     }
 
-    return response.data.data.saveWelcomeMessage;
+    return response.data.data.leagueById;
   }
 }
 

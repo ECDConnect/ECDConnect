@@ -7,9 +7,9 @@ import { CommunityState } from './community.types';
 import {
   getAllConnect,
   getAllConnectItem,
+  getLeagueById,
   getMoreInformation,
   getPointsActivityInfo,
-  saveWelcomeMessage,
 } from './community.actions';
 
 const initialState: CommunityState & ThunkStateStatus = {
@@ -32,8 +32,8 @@ const communitySlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getAllConnect);
     setThunkActionStatus(builder, getAllConnectItem);
-    setThunkActionStatus(builder, saveWelcomeMessage);
     setThunkActionStatus(builder, getMoreInformation);
+    setThunkActionStatus(builder, getLeagueById);
     setThunkActionStatus(builder, getPointsActivityInfo);
     builder.addCase(getPointsActivityInfo.fulfilled, (state, action) => {
       const locale = action?.meta?.arg?.locale;
@@ -101,17 +101,16 @@ const communitySlice = createSlice({
 
       setFulfilledThunkActionStatus(state, action);
     });
-    builder.addCase(saveWelcomeMessage.fulfilled, (state, action) => {
-      setFulfilledThunkActionStatus(state, action);
-
-      // TODO: handle fulfilled action, add message to state
-    });
     builder.addCase(getAllConnect.fulfilled, (state, action) => {
       state.connect = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getAllConnectItem.fulfilled, (state, action) => {
       state.connectItem = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getLeagueById.fulfilled, (state, action) => {
+      state.league = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
   },
