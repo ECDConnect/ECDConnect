@@ -15,6 +15,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? LanguageId { get; set; }
 
         public bool IsRegistered { get; set; }
+        public bool IsNewAtClinic { get; set; }
         public Boolean? ClickedVisitTab { get; set; }
         public Boolean? ClickedProgressTab { get; set; }
         public Boolean? ClickedReferralsTab { get; set; }
