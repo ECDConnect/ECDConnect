@@ -1,9 +1,6 @@
 import { api } from '../axios.helper';
 import { Config, HealthCareWorkerDto } from '@ecdlink/core';
-import {
-  HealthCareWorkerInputModelInput,
-  MutationUpdateHealthCareWorkerArgs,
-} from '@ecdlink/graphql';
+import { HealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 class HealthCareWorkerService {
   _accessToken: string;
@@ -67,13 +64,13 @@ class HealthCareWorkerService {
 
   async updateHealthCareWorker(
     userId: string,
-    input: MutationUpdateHealthCareWorkerArgs
+    input: HealthCareWorkerInputModelInput
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `mutation updateHealthCareWorker(
         $userId: String,
-        $input: HealthCareWorkerModelInput
+        $input: HealthCareWorkerInputModelInput
       ) {
         updateHealthCareWorker(
           userId: $userId,

@@ -75,8 +75,7 @@ export const Dashboard: React.FC = () => {
 
   const { startService } = useNotificationService();
 
-  // TODO: Change to dynamic value
-  const isFirstTimeCommunitySection = true;
+  const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
   // TODO: get the length of the league
   const isTop25PercentInTheLeague = false;
   // TODO: get the length of the league

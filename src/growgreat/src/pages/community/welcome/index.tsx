@@ -45,15 +45,31 @@ export const CommunityWelcome: React.FC = () => {
   const location = useLocation<CommunityRouteState>();
   const appDispatch = useAppDispatch();
 
-  const { isLoading } = useThunkFetchCall(
+  const { isLoading: isLoadingWelcomeMessage } = useThunkFetchCall(
     'healthCareWorker',
     HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE
   );
+  const { isLoading: isLoadingUpdateHealthCareWorkerById } = useThunkFetchCall(
+    'healthCareWorker',
+    HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_BY_ID
+  );
+
+  const isLoading =
+    isLoadingWelcomeMessage || isLoadingUpdateHealthCareWorkerById;
 
   const dialog = useDialog();
 
   const onSave = async () => {
     if (isOnCharacterLimit) {
+      await appDispatch(
+        healthCareWorkerThunkActions.updateHealthCareWorkerById({
+          userId: user?.id ?? '',
+          input: {
+            isNewAtClinic: false,
+            isRegistered: true,
+          },
+        })
+      );
       await appDispatch(
         healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
           healthCareWorkerId: hcw?.id ?? '',

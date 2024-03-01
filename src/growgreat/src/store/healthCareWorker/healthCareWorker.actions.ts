@@ -8,6 +8,7 @@ export const HealthCareWorkerActions = {
   UPDATE_HEALTH_CAREWORKER_TABS: 'updateHealthCareWorkerTabs',
   UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE:
     'updateHealthCareWorkerWelcomeMessage',
+  UPDATE_HEALTH_CARE_WORKER_BY_ID: 'updateHealthCareWorkerById',
 };
 
 export const getHealthCareWorkerByUserId = createAsyncThunk<
@@ -54,8 +55,7 @@ export const updateHealthCareWorkerById = createAsyncThunk<
   UpdateHealthCareWorkerRequest,
   ThunkApiType<RootState>
 >(
-  'updateHealthCareWorkerById',
-  // eslint-disable-next-line no-empty-pattern
+  HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_BY_ID,
   async ({ input, userId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
