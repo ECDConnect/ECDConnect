@@ -31,7 +31,7 @@ export const GetFilterSubDistricts = gql`
 `;
 
 export const AddSubDistrict = gql`
-  mutation AddSubDistrict($input: SubDistrictModelInput) {
+  mutation AddSubDistrict($input: SubDistrictInputModelInput) {
     addSubDistrict(input: $input) {
       id
       name
@@ -41,7 +41,7 @@ export const AddSubDistrict = gql`
 `;
 
 export const EditSubDistrict = gql`
-  mutation EditSubDistrict($input: SubDistrictModelInput) {
+  mutation EditSubDistrict($input: SubDistrictInputModelInput) {
     editSubDistrict(input: $input) {
       id
       name

@@ -15,23 +15,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              string type
              )
          {
-             if (type == "CalculatePregnantMomClientRegistration")
-             {
-                 return pointsEngineService.CalculatePregnantMomClientRegistration(userId, today);
-             } 
-             else if (type == "CalculateInfantClientRegistration")
-             {
-                 return pointsEngineService.CalculateInfantClientRegistration(userId, today);
-             }
-             else if (type == "CalculatePregnantMomVisits")
-             {
-                 return pointsEngineService.CalculatePregnantMomVisits(userId, today);
-             }
-             else if (type == "CalculateInfantVisits")
-             {
-                 return pointsEngineService.CalculateInfantVisits(userId, today);
-             }
-             else if (type == "CalculateChildrenRegistrationAdd")
+             //if (type == "CalculatePregnantMomClientRegistration")
+             //{
+             //    return pointsEngineService.CalculatePregnantMomClientRegistration(userId, today);
+             //} 
+             //else if (type == "CalculateInfantClientRegistration")
+             //{
+             //    return pointsEngineService.CalculateInfantClientRegistration(userId, today);
+             //}
+             //else if (type == "CalculatePregnantMomVisits")
+             //{
+             //    return pointsEngineService.CalculatePregnantMomVisits(userId, today);
+             //}
+             //else if (type == "CalculateInfantVisits")
+             //{
+             //    return pointsEngineService.CalculateInfantVisits(userId, today);
+             //}
+             //else 
+             if (type == "CalculateChildrenRegistrationAdd")
              {
                  return pointsEngineService.CalculateChildrenRegistrationAdd(userId);
              }

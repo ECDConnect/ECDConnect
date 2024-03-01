@@ -167,8 +167,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 AddVisits(infant.Id, infant.User.DateOfBirth);
             }
 
-            // Call points engine for hcw
-            _pointsEngineService.CalculateInfantClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
+            // Call points engine for hcw TODO
+            //_pointsEngineService.CalculateInfantClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
 
             return createdInfant;
         }
