@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -34,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClinicModel GetClinicById(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IPointsEngineService pointsEngineService,
             IGenericRepositoryFactory repoFactory,
             Guid clinicId)
         {
@@ -49,9 +51,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 .Include(x => x.Leagues)
                 .FirstOrDefault();
 
-            var activities = pointsLibraryRepo.GetAll().ToList();
+            var clinicPoints = pointsEngineService.GetPointsDetailsForClinic(clinicId);
 
-            return new ClinicModel(clinic, activities);
+            return new ClinicModel(clinic, clinicPoints);
         }
     }
 }

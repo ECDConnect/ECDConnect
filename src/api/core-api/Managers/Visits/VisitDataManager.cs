@@ -117,11 +117,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // then handle status data
             bool result = _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
 
-            // call points engine for hcw
-            if (result)
-            {
-                _pointsEngineService.CalculateInfantVisits(_applicationUserId.ToString(), DateTime.UtcNow);
-            }
+            // call points engine for hcw TODO
+            //if (result)
+            //{
+            //    _pointsEngineService.CalculateInfantVisits(_applicationUserId.ToString(), DateTime.UtcNow);
+            //}
             return true;
         }
         public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
@@ -166,11 +166,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // then handle status data
             bool result = _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
 
-            // call points engine for hcw
-            if (result)
-            {
-                _pointsEngineService.CalculatePregnantMomVisits(_applicationUserId.ToString(), DateTime.UtcNow);
-            }
+            // call points engine for hcw TODO
+            //if (result)
+            //{
+            //    _pointsEngineService.CalculatePregnantMomVisits(_applicationUserId.ToString(), DateTime.UtcNow);
+            //}
             return true;
         }
         public Visit AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)

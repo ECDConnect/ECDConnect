@@ -15,9 +15,13 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
     {        
         public int TimesScored { get; set; }
         public int PointsTotal { get; set; }
+        // TODO - I think we should remove this, and just recalculate it from the individual month scores
         public int PointsYTD { get; set; }
+        // TODO - Remove
         public int Month { get; set; }
+        // TODO - Remove
         public int Year { get; set; }
+        public DateTime DateScored { get; set; }
         public Guid? UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }

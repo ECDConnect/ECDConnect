@@ -7,7 +7,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import {
-  PortalClinicModelInput,
+  PortalClinicInputModelInput,
   CreateClinic,
   CreateSiteAddress,
   SiteAddressInput,
@@ -92,7 +92,7 @@ export default function ClinicPanelCreate(props: UserPanelCreateProps) {
 
   const saveClinic = async (siteAddressId?: string) => {
     const clinicForm = clinicGetValues();
-    const clinicModel: PortalClinicModelInput = {
+    const clinicModel: PortalClinicInputModelInput = {
       name: clinicForm.name,
       phoneNumber: clinicForm.phoneNumber,
       siteAddressId: siteAddressId,

@@ -1,5 +1,4 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +14,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public GrowGreatLeagueModel League { get; set; }
         public List<TeamLeadModel> TeamLeads { get; set; }
         public List<ClinicMemberModel> ClinicMembers { get; set; }
+        public ClinicPointsModel Points { get; set; }
 
-        public int LeagueRanking { get; set; }
-        public int PointsTotal { get; set; }
-        public int MaxPointsTotal { get; set; }
-        public List<PointsActivityModel> Points { get; set; }
-
-        public ClinicModel(Clinic clinic, List<PointsLibrary> activities)
+        public ClinicModel(Clinic clinic, ClinicPointsModel points)
         {
             Id = clinic.Id;
             Name = clinic.Name;
@@ -41,17 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
                 League = new GrowGreatLeagueModel(league.League);
             }
 
-            // TODO - Add real data
-            LeagueRanking = 3;
-            PointsTotal = 850;
-            MaxPointsTotal = 5000;
-            Points = activities.Select(x => new PointsActivityModel()
-            {
-                PointsLibraryId = x.Id,
-                ActivityName = x.Activity,
-                SubActivityName = x.SubActivity,
-                PointsTotal = 50,
-            }).ToList();
+            Points = points;
         }
     }
 }

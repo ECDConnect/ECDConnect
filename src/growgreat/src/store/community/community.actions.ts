@@ -1,22 +1,17 @@
-import {
-  Connect,
-  ConnectItem,
-  MoreInformation,
-  MutationSaveWelcomeMessageArgs,
-} from '@ecdlink/graphql';
+import { Connect, ConnectItem, MoreInformation } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
 import InfoService from '@/services/InfoService/InfoService';
 import { differenceInDays } from 'date-fns';
-import { ClinicDto } from '@ecdlink/core';
+import { ClinicDto, LeagueWithClinicRankingsDto } from '@ecdlink/core';
 import { ClinicService } from '@/services/Clinic';
 
 export const CommunityActions = {
   GET_ALL_CONNECT: 'getAllConnect',
   GET_ALL_CONNECT_ITEM: 'getAllConnectItem',
-  SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   GET_MORE_INFORMATION: 'getMoreInformation',
+  GET_LEAGUE_BY_ID: 'getLeagueById',
   GET_POINTS_ACTIVITY_INFO: 'getPointsActivityInfo',
   GET_CLINIC_BY_ID: 'getClinicById',
 };
@@ -69,31 +64,6 @@ export const getAllConnectItem = createAsyncThunk<
         ).getAllConnectItem(locale);
 
         return content;
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const saveWelcomeMessage = createAsyncThunk<
-  boolean,
-  MutationSaveWelcomeMessageArgs,
-  ThunkApiType<RootState>
->(
-  CommunityActions.SAVE_WELCOME_MESSAGE,
-  async (input, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        return await new CommunityService(
-          userAuth?.auth_token
-        ).saveWelcomeMessage(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -208,6 +178,35 @@ export const getClinicById = createAsyncThunk<
         return await new ClinicService(
           userAuth?.auth_token ?? ''
         ).getClinicById(clinicId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getLeagueById = createAsyncThunk<
+  LeagueWithClinicRankingsDto,
+  { leagueId: string },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.GET_LEAGUE_BY_ID,
+  async ({ leagueId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let league: LeagueWithClinicRankingsDto | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        league = await new CommunityService(
+          userAuth?.auth_token ?? ''
+        ).getLeagueById(leagueId);
+
+        return league;
       } else {
         return rejectWithValue('no access token, profile check required');
       }

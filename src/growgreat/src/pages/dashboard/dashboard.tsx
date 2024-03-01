@@ -68,7 +68,7 @@ export const Dashboard: React.FC = () => {
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
-    clinicDetails?.pointsTotal ?? 0
+    clinicDetails?.points?.pointsTotal ?? 0
   );
 
   const { userProfilePicture } = useDocuments();
@@ -254,7 +254,7 @@ export const Dashboard: React.FC = () => {
 
   const communityCard = useMemo(
     (): ScoreCardProps => ({
-      image: !!clinicDetails?.leagueRanking ? (
+      image: !!clinicDetails?.points?.leagueRanking ? (
         <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
           <Badge
             className="absolute z-0 h-12 w-12"
@@ -264,7 +264,7 @@ export const Dashboard: React.FC = () => {
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(clinicDetails?.leagueRanking ?? '')}
+            text={String(clinicDetails?.points?.leagueRanking ?? '')}
           />
         </div>
       ) : (
@@ -274,8 +274,8 @@ export const Dashboard: React.FC = () => {
           icon="UserGroupIcon"
         />
       ),
-      currentPoints: clinicDetails?.pointsTotal ?? 0,
-      maxPoints: clinicDetails?.maxPointsTotal ?? 0,
+      currentPoints: clinicDetails?.points?.pointsTotal ?? 0,
+      maxPoints: clinicDetails?.points?.maxPointsTotal ?? 0,
       barBgColour: 'white',
       barColour: leaguePointsColours.mainColour,
       hint: clinicDetails?.name ?? 'Community',
