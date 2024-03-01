@@ -38,7 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string WhatsAppNumber { get; set; }
 
         [ForeignKey(nameof(LinkedCaregiverId))]
-        public virtual Caregiver.Caregiver Caregiver { get; set; }
+        public virtual Caregiver Caregiver { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
         public Boolean? ClickedVisitTab { get; set; }
         public Boolean? ClickedProgressTab { get; set; }
