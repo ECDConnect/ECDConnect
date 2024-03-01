@@ -28,7 +28,13 @@ export const TeamMembers = () => {
       avatarColor: 'var(--primaryAccent2)',
       alertSeverity: 'none',
       hideAlertSeverity: true,
-      onActionClick: () => {},
+      onActionClick: () =>
+        history.push(
+          ROUTES.COMMUNITY.TEAM.MEMBERS.LEADER_PROFILE.replace(
+            ':leaderId',
+            leader.id
+          )
+        ),
     })) ?? [];
 
   const members: UserAlertListDataItem[] =
@@ -42,7 +48,13 @@ export const TeamMembers = () => {
       avatarColor: 'var(--primaryAccent2)',
       alertSeverity: 'none',
       hideAlertSeverity: true,
-      onActionClick: () => {},
+      onActionClick: () =>
+        history.push(
+          ROUTES.COMMUNITY.TEAM.MEMBERS.MEMBER_PROFILE.replace(
+            ':memberId',
+            member.firstName + member.surname
+          )
+        ),
     })) ?? [];
 
   return (
@@ -53,21 +65,27 @@ export const TeamMembers = () => {
       className="flex h-full flex-col p-4 pt-6"
     >
       <Typography type="h2" text={`${clinicDetails?.name} team members`} />
-      <Typography
-        className="mb-2 mt-6"
-        type="h3"
-        text={`Team leader${leaders.length > 1 ? 's' : ''}`}
-      />
-      <div className="mb-4">
-        <StackedList
-          isFullHeight={false}
-          type={'UserAlertList' as StackedListType}
-          listItems={leaders}
-        />
-      </div>
+      {!!leaders.length && (
+        <>
+          <Typography
+            className="mb-2 mt-6"
+            type="h3"
+            text={`Team leader${leaders.length > 1 ? 's' : ''}`}
+          />
+          <div className="mb-4">
+            <StackedList
+              className="flex flex-col gap-2"
+              isFullHeight={false}
+              type={'UserAlertList' as StackedListType}
+              listItems={leaders}
+            />
+          </div>
+        </>
+      )}
       <Typography className="mb-2 mt-6" type="h3" text="Team members" />
       <div className="mb-4">
         <StackedList
+          className="flex flex-col gap-2"
           isFullHeight={false}
           type={'UserAlertList' as StackedListType}
           listItems={members}

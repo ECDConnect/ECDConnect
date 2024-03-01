@@ -207,18 +207,23 @@ export const TeamTab: React.FC = () => {
             />
           </div>
         )}
-        <Typography
-          className="mb-2 mt-6"
-          type="h3"
-          text={`Team leader${leaders.length > 1 ? 's' : ''}`}
-        />
-        <div className="mb-4">
-          <StackedList
-            isFullHeight={false}
-            type={'UserAlertList' as StackedListType}
-            listItems={leaders}
-          />
-        </div>
+        {!!leaders.length && (
+          <>
+            <Typography
+              className="mb-2 mt-6"
+              type="h3"
+              text={`Team leader${leaders.length > 1 ? 's' : ''}`}
+            />
+            <div className="mb-4">
+              <StackedList
+                className="flex flex-col gap-2"
+                isFullHeight={false}
+                type={'UserAlertList' as StackedListType}
+                listItems={leaders}
+              />
+            </div>
+          </>
+        )}
         <div className={`mt-auto flex flex-col gap-4`}>
           <Button
             icon="UserGroupIcon"
