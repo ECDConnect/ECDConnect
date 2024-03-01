@@ -1,10 +1,11 @@
-import { LeagueWithClinicRankingsDto } from '@ecdlink/core';
+import { ClinicDto, LeagueWithClinicRankingsDto } from '@ecdlink/core';
 import { Connect, ConnectItem, MoreInformation } from '@ecdlink/graphql';
 
 export interface CommunityState {
   connect?: Connect[];
   connectItem?: ConnectItem[];
   team?: {
+    clinic?: ClinicDto;
     activityInfo?: {
       [activitySlug: string]: {
         [locale: string]: {
