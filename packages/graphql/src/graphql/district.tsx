@@ -32,7 +32,7 @@ export const GetFilterDistricts = gql`
 `;
 
 export const AddDistrict = gql`
-  mutation AddDistrict($input: DistrictModelInput) {
+  mutation AddDistrict($input: DistrictInputModelInput) {
     addDistrict(input: $input) {
       id
       name
@@ -42,7 +42,7 @@ export const AddDistrict = gql`
 `;
 
 export const EditDistrict = gql`
-  mutation EditDistrict($input: DistrictModelInput) {
+  mutation EditDistrict($input: DistrictInputModelInput) {
     editDistrict(input: $input) {
       id
       name

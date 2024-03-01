@@ -53,14 +53,16 @@ class ClinicService {
             welcomeMessage
             shareContactInfo
           }
-          leagueRanking
-          pointsTotal
-          maxPointsTotal
           points {
-            pointsLibraryId
+            leagueRanking
             pointsTotal
-            activityName
-            subActivityName
+            maxPointsTotal
+            points {
+              pointsLibraryId
+              pointsTotal
+              activityName
+              subActivityName
+            }
           }
         }
       }

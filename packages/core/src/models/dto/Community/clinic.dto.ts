@@ -1,6 +1,6 @@
 import {} from '../StaticData/education-level.dto';
 import { SiteAddressDto } from '../SiteAddress';
-import { TeamLeadDto } from './team-lead.dto';
+import { TeamLeadDto } from '../Users/team-lead.dto';
 
 export interface ClinicDto {
   id: string;
@@ -13,8 +13,8 @@ export interface ClinicDto {
   leagueRanking: number;
   pointsTotal: number;
   maxPointsTotal: number;
-  points: PointsActivityDto[];
   isActive?: boolean;
+  points?: ClinicPointsDto;
 }
 
 export interface LeagueDto {
@@ -34,6 +34,13 @@ export interface ClinicMemberDto {
   profileImageUrl: string;
   welcomeMessage: string;
   shareContactInfo: boolean;
+}
+
+export interface ClinicPointsDto {
+  leagueRanking: number;
+  pointsTotal: number;
+  maxPointsTotal: number;
+  points: PointsActivityDto[];
 }
 
 export interface PointsActivityDto {

@@ -1,6 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -30,9 +31,12 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly string _applicationUserId;
 
+        IPointsEngineService _pointsEngineService;
+
         public ClinicService(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repositoryFactory
+            IGenericRepositoryFactory repositoryFactory,
+            [Service] IPointsEngineService pointsEngineService
             )
         {
             _contextAccessor = contextAccessor;
@@ -45,7 +49,9 @@ namespace EcdLink.Api.CoreApi.Services
             _clinicTeamRepo = _repositoryFactory.CreateGenericRepository<ClinicTeamLead>(userContext: _applicationUserId);
             _hcwRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: _applicationUserId);
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _applicationUserId);
-            
+
+            _pointsEngineService = pointsEngineService;
+
         }
 
         #region District
@@ -186,16 +192,16 @@ namespace EcdLink.Api.CoreApi.Services
                 .Include(x => x.SiteAddress)
                 .Include(x => x.HealthCareWorkers)
                 .Include(x => x.Leagues)
-                .FirstOrDefault();
+            .FirstOrDefault();
 
-            var activities = _pointsLibraryRepo.GetAll().ToList();
-            var clinicData = new ClinicModel(clinic, activities);
+            var clinicPoints = _pointsEngineService.GetPointsDetailsForClinic(clinicId);
+            var clinicData = new ClinicModel(clinic, clinicPoints);
 
             ClinicReportModel clinicReportModel = new ClinicReportModel();
 
             clinicReportModel.TotalHCWs = clinic.HealthCareWorkers.Count;
-            clinicReportModel.LeagueRanking = clinicData.LeagueRanking;
-            clinicReportModel.PointsTotal = clinicData.PointsTotal;
+            clinicReportModel.LeagueRanking = clinicData.Points.LeagueRanking;
+            clinicReportModel.PointsTotal = clinicData.Points.PointsTotal;
 
             clinicReportModel.MomsTargetPerc = 0;
             clinicReportModel.MomsTargetPercColor = MetricsColorEnum.Error.ToString();

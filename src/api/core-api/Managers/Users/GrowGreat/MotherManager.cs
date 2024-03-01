@@ -80,8 +80,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
             }
 
-            // Call points engine for hcw
-            _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
+            // Call points engine for hcw TODO
+            //_pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
             return createdMom;
         }
 
@@ -95,8 +95,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
                 AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
 
-                // Call points engine for hcw
-                _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
+                // Call points engine for hcw TODO
+                //_pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
                 
                 return _motherRepo.Update(entityToUpdate);
             }
