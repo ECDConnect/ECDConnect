@@ -79,25 +79,26 @@ export default function ClinicsSubPage() {
     });
   };
 
-  // const displayEditPanel = (coach: CoachDto) => {
-  //   panel({
-  //     noPadding: true,
-  //     title: 'Edit Coach',
-  //     render: (onSubmit: any) => (
-  //       <CoachPanelEdit
-  //         coach={coach}
-  //         key={`coachPanelEdit`}
-  //         closeDialog={(userCreated: boolean) => {
-  //           onSubmit();
+  const displayEditPanel = (clinic) => {
+    panel({
+      noPadding: true,
+      title: 'Add a clinic',
+      render: (onSubmit: any) => (
+        <CreateClinicPanel
+          key={`clinicPanelCreate`}
+          isEdit={true}
+          clinic={clinic}
+          closeDialog={(clinicCreated: boolean) => {
+            onSubmit();
 
-  //           if (userCreated) {
-  //             refetch();
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
+            if (clinicCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -312,10 +313,10 @@ export default function ClinicsSubPage() {
                     { field: 'insertedDate', use: 'Date added' },
                   ]}
                   rows={tableData}
-                  // editRow={
-                  //   hasPermission(PermissionEnum.update_user) &&
-                  //   displayEditPanel
-                  // }
+                  viewRow={
+                    hasPermission(PermissionEnum.update_user) &&
+                    displayEditPanel
+                  }
                   sendRow={
                     hasPermission(PermissionEnum.update_user) && sendInvite
                   }

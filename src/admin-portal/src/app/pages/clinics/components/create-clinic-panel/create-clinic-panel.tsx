@@ -14,7 +14,7 @@ import {
 } from '../../clinics.types';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SaveIcon } from '@heroicons/react/solid';
 
 export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
@@ -28,12 +28,19 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     defaultValues: clinicInitialValues,
     mode: 'onBlur',
   });
-
+  console.log({ props });
   const { errors, isValid: isClinicValid, isDirty } = clinicFormState;
 
   const [taskFilterOptions, setTaskFilterOptions] = useState<
     SearchDropDownOption<string>[]
   >([]);
+
+  useEffect(() => {
+    if (props?.isEdit) {
+      clinicSetValue('name', props?.clinic?.name);
+    }
+  });
+
   return (
     <div className="h-screen">
       <Divider dividerType="dashed" className="py-8" />

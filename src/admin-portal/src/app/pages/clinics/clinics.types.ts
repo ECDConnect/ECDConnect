@@ -4,6 +4,7 @@ export interface ClinicPanelCreateProps {
   closeDialog: (value: boolean) => void;
   setFormIsDirty?: (value: boolean) => void;
   isEdit?: boolean;
+  clinic?: any;
   district?: any;
   subDistrict?: any;
 }

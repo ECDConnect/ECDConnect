@@ -14,6 +14,7 @@ export interface ClinicDto {
   pointsTotal: number;
   maxPointsTotal: number;
   points: PointsActivityDto[];
+  isActive?: boolean;
 }
 
 export interface LeagueDto {
