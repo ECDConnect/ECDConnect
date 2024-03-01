@@ -94,7 +94,7 @@ export const CreateClinic = gql`
 `;
 
 export const EditClinic = gql`
-  mutation EditClinic($input: PortalClinicModelInput) {
+  mutation EditClinic($input: PortalClinicInputModelInput) {
     editClinic(input: $input) {
       id
       name
