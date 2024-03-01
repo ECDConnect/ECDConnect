@@ -28,4 +28,4 @@ export const getPointsActivityInfoSelector = (
   );
 
 export const getClinicSelector = (state: RootState) =>
-  state.community?.team?.clinic;
+  state.community?.team?.clinic?.data;

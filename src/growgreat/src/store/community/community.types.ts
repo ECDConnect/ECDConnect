@@ -5,7 +5,10 @@ export interface CommunityState {
   connect?: Connect[];
   connectItem?: ConnectItem[];
   team?: {
-    clinic?: ClinicDto;
+    clinic?: {
+      dateLoaded: string;
+      data: ClinicDto;
+    };
     activityInfo?: {
       [activitySlug: string]: {
         [locale: string]: {

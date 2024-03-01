@@ -1,6 +1,5 @@
 import {
   Button,
-  Colours,
   LoadingSpinner,
   MenuListDataItem,
   ScoreCard,
@@ -26,6 +25,7 @@ import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
   calculateTierPercentages,
+  getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
@@ -65,9 +65,17 @@ export const TeamTab: React.FC = () => {
       (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League
     );
 
+  const leaguePointsColours = getLeaguePointsColours(
+    isTop25PercentInTheLeague,
+    isMiddle50PercentInTheLeague
+  );
+
   useEffect(() => {
     appDispatch(
-      communityThunkActions.getClinicById({ clinicId: hcw?.clinicId ?? '' })
+      communityThunkActions.getClinicById({
+        clinicId: hcw?.clinicId ?? '',
+        forceReload: true,
+      })
     );
 
     // trigger only once
@@ -86,21 +94,8 @@ export const TeamTab: React.FC = () => {
       onActionClick: () => {},
     })) ?? [];
 
-  const leagueCard: MenuListDataItem = useMemo(() => {
-    let badgeColor: Colours = 'alertMain';
-    let backgroundColor: Colours = 'alertBg';
-
-    if (isTop25PercentInTheLeague) {
-      badgeColor = 'successMain';
-      backgroundColor = 'successBg';
-    }
-
-    if (isMiddle50PercentInTheLeague) {
-      badgeColor = 'secondary';
-      backgroundColor = 'secondaryAccent2';
-    }
-
-    return {
+  const leagueCard: MenuListDataItem = useMemo(
+    () => ({
       title: `in the league ${isTop25PercentInTheLeague ? '🥳' : ''}`,
       titleStyle: 'text-textDark',
       onActionClick: () => {
@@ -112,7 +107,7 @@ export const TeamTab: React.FC = () => {
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
             className="absolute z-0 h-auto w-auto"
-            fill={`var(--${badgeColor})`}
+            fill={`var(--${leaguePointsColours.mainColour})`}
           />
           <Typography
             className="relative z-10"
@@ -122,14 +117,15 @@ export const TeamTab: React.FC = () => {
           />
         </div>
       ),
-      backgroundColor,
-    };
-  }, [
-    clinicDetails?.points?.leagueRanking,
-    history,
-    isMiddle50PercentInTheLeague,
-    isTop25PercentInTheLeague,
-  ]);
+      backgroundColor: leaguePointsColours.backgroundColour,
+    }),
+    [
+      clinicDetails?.points?.leagueRanking,
+      history,
+      isTop25PercentInTheLeague,
+      leaguePointsColours,
+    ]
+  );
 
   if (isLoading) {
     return (

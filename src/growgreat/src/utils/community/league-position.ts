@@ -60,3 +60,23 @@ export function calculateTierPercentages(
     goldPercentage,
   };
 }
+
+export function getLeaguePointsColours(
+  isTop25PercentInTheLeague: boolean,
+  isMiddle50PercentInTheLeague: boolean
+): { mainColour: Colours; backgroundColour: Colours } {
+  let mainColour: Colours = 'alertMain';
+  let backgroundColour: Colours = 'alertBg';
+
+  if (isTop25PercentInTheLeague) {
+    mainColour = 'successMain';
+    backgroundColour = 'successBg';
+  }
+
+  if (isMiddle50PercentInTheLeague) {
+    mainColour = 'secondary';
+    backgroundColour = 'secondaryAccent2';
+  }
+
+  return { mainColour, backgroundColour };
+}

@@ -39,7 +39,10 @@ const communitySlice = createSlice({
     setThunkActionStatus(builder, getClinicById);
     builder.addCase(getClinicById.fulfilled, (state, action) => {
       state.team = state.team ?? {};
-      state.team.clinic = action.payload;
+      state.team.clinic = {
+        dateLoaded: new Date().toISOString(),
+        data: action.payload,
+      };
 
       setFulfilledThunkActionStatus(state, action);
     });
