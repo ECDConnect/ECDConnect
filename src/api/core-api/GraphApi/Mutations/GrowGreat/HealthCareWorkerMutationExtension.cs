@@ -69,6 +69,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 healthCareWorkerToUpdate.LanguageId = input.LanguageId;
             }
 
+            if (input.IsNewAtClinic)
+            {
+                healthCareWorkerToUpdate.IsNewAtClinic = input.IsNewAtClinic;
+            }
+
             // TODO needs to change to update the clinic id
             //if (input.TeamLeadId != null)
             //{
