@@ -27,7 +27,7 @@ const ROUTES = {
     TEAM: addPrefix('/team', {
       INFO_PAGE: '/info-page',
       POINTS: addPrefix('/points', {
-        ACTIVITY_DETAILS: '/activity-details/:activitySlug',
+        ACTIVITY_DETAILS: '/activity-details/:activitySlug/:currentPoints',
       }),
       MEMBERS: addPrefix('/members', {
         LEADER_PROFILE: '/:leaderId',

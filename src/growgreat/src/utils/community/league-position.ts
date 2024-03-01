@@ -10,26 +10,59 @@ interface TierPercentages {
 export function getTierDetails(
   teamType: LeagueType,
   points: number
-): { tierName: Tier; tierColor: Colours } {
+): {
+  tierName: Tier;
+  tierColor: Colours;
+  pointsToNextTier: number;
+  nextTier?: 'Silver' | 'Gold';
+} {
   const bronzeColour: Colours = 'alertDark';
   const silverColour: Colours = 'textLight';
   const goldColour: Colours = 'tertiary';
 
   if (teamType === LeagueType.SuperLeague) {
     if (points < 5000) {
-      return { tierName: Tier.Bronze, tierColor: bronzeColour };
+      return {
+        tierName: Tier.Bronze,
+        tierColor: bronzeColour,
+        pointsToNextTier: 5000 - points,
+        nextTier: 'Silver',
+      };
     } else if (points >= 5000 && points <= 8000) {
-      return { tierName: Tier.Silver, tierColor: silverColour };
+      return {
+        tierName: Tier.Silver,
+        tierColor: silverColour,
+        pointsToNextTier: 8000 - points,
+        nextTier: 'Gold',
+      };
     } else {
-      return { tierName: Tier.Gold, tierColor: goldColour };
+      return {
+        tierName: Tier.Gold,
+        tierColor: goldColour,
+        pointsToNextTier: 0,
+      };
     }
   } else {
     if (points < 1000) {
-      return { tierName: Tier.Bronze, tierColor: bronzeColour };
+      return {
+        tierName: Tier.Bronze,
+        tierColor: bronzeColour,
+        pointsToNextTier: 1000 - points,
+        nextTier: 'Silver',
+      };
     } else if (points >= 1000 && points <= 3000) {
-      return { tierName: Tier.Silver, tierColor: silverColour };
+      return {
+        tierName: Tier.Silver,
+        tierColor: silverColour,
+        pointsToNextTier: 3000 - points,
+        nextTier: 'Gold',
+      };
     } else {
-      return { tierName: Tier.Gold, tierColor: goldColour };
+      return {
+        tierName: Tier.Gold,
+        tierColor: goldColour,
+        pointsToNextTier: 0,
+      };
     }
   }
 }
