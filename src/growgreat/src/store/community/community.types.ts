@@ -1,4 +1,4 @@
-import { ClinicDto } from '@ecdlink/core';
+import { ClinicDto, LeagueWithClinicRankingsDto } from '@ecdlink/core';
 import { Connect, ConnectItem, MoreInformation } from '@ecdlink/graphql';
 
 export interface CommunityState {
@@ -24,4 +24,5 @@ export interface CommunityState {
       };
     }[];
   };
+  league?: LeagueWithClinicRankingsDto;
 }

@@ -94,7 +94,7 @@ export const CreateClinic = gql`
 `;
 
 export const EditClinic = gql`
-  mutation EditClinic($input: PortalClinicModelInput) {
+  mutation EditClinic($input: PortalClinicInputModelInput) {
     editClinic(input: $input) {
       id
       name
@@ -159,6 +159,42 @@ export const GetClinicPointsData = gql`
       childrenTargetPercColor
       childrenTopTeamPerc
       childrenRankingPerc
+    }
+  }
+`;
+
+export const GetClinicVisitReportData = gql`
+  query GetClinicVisitReportData(
+    $clinicId: UUID!
+    $startDate: DateTime!
+    $endDate: DateTime!
+  ) {
+    clinicVisitReportData(
+      clinicId: $clinicId
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      clientRegistration {
+        totalChildFoldersOpened
+        totalMotherFoldersOpened
+        totalMotherFoldersBefore20WeeksOpened
+      }
+      pregnantMoms {
+        totalMaternalDistress
+        totalMaternalMalnutrition
+        totalAlcoholAbuse
+      }
+      childClients {
+        totalSupportGrant
+        totalGrowthMonitored
+        totalUpToDateImmunisations
+        totalUpToDateVitaminA
+        totalUpToDateDeworming
+      }
+      breastFeedingClub {
+        totalClubsHeld
+        totalCaregiversAttended
+      }
     }
   }
 `;

@@ -58,7 +58,7 @@ export const TeamTab: React.FC = () => {
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
-    clinicDetails?.pointsTotal ?? 0
+    clinicDetails?.points?.pointsTotal ?? 0
   );
   const { bronzePercentage, silverPercentage, goldPercentage } =
     calculateTierPercentages(
@@ -113,14 +113,14 @@ export const TeamTab: React.FC = () => {
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(clinicDetails?.leagueRanking ?? 0)}
+            text={String(clinicDetails?.points?.leagueRanking ?? 0)}
           />
         </div>
       ),
       backgroundColor: leaguePointsColours.backgroundColour,
     }),
     [
-      clinicDetails?.leagueRanking,
+      clinicDetails?.points?.leagueRanking,
       history,
       isTop25PercentInTheLeague,
       leaguePointsColours,
@@ -183,10 +183,10 @@ export const TeamTab: React.FC = () => {
             />
             <ScoreCard
               className="mt-2"
-              mainText={String(clinicDetails?.pointsTotal ?? 0)}
+              mainText={String(clinicDetails?.points?.pointsTotal ?? 0)}
               hint="points"
-              currentPoints={clinicDetails.pointsTotal ?? 0}
-              maxPoints={clinicDetails?.maxPointsTotal ?? 0}
+              currentPoints={clinicDetails?.points?.pointsTotal ?? 0}
+              maxPoints={clinicDetails?.points?.maxPointsTotal ?? 0}
               barBgColour="uiLight"
               barColour={tierColor}
               bgColour="uiBg"
