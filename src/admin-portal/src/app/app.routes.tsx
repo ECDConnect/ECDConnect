@@ -48,6 +48,7 @@ import ClinicsMainPage from './pages/clinics/clinics';
 import ClinicsSubPage from './pages/clinics/sub-pages/clinics-sub-page/clinics-sub-page';
 import DistrictsSubPage from './pages/clinics/sub-pages/districts-sub-page/districts-sub-page';
 import SubDistrictsSubPage from './pages/clinics/sub-pages/sub-districts-sub-page/sub-districts-sub-page';
+import { ViewClinicReport } from './pages/clinics/components/view-clinic-report/view-clinic-report';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -112,6 +113,10 @@ const ClinicsRoutes: React.FC = () => {
   return (
     <Switch>
       <Route path={`/clinics/clinics`} component={ClinicsSubPage}></Route>
+      <Route
+        path={`/clinics/view-clinics`}
+        component={ViewClinicReport}
+      ></Route>
       <Route path={`/clinics/districts`} component={DistrictsSubPage}></Route>
       <Route
         path={`/clinics/sub-districts`}

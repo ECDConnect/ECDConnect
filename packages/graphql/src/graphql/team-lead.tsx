@@ -37,15 +37,6 @@ export const GetAllTeamLead = gql`
           name
         }
       }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
-      }
     }
   }
 `;

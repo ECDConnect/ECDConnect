@@ -1,4 +1,4 @@
-import { ClinicDto } from './clinic.dto';
+import { ClinicDto } from '../Community';
 import { UserDto } from './user.dto';
 
 export interface TeamLeadDto {

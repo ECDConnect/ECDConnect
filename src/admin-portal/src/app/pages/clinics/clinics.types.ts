@@ -1,4 +1,10 @@
+import { ClinicDto } from '@ecdlink/core';
+import { SA_CELL_REGEX } from '@ecdlink/ui';
 import * as Yup from 'yup';
+
+export interface ClinicsRouteState {
+  clinic?: ClinicDto;
+}
 
 export interface ClinicPanelCreateProps {
   closeDialog: (value: boolean) => void;
@@ -34,9 +40,8 @@ export const clinicSchema = Yup.object().shape({
   subDistrict: Yup.string()
     .required('Distric is required')
     .max(160, 'Distric name too long'),
-  phoneNumber: Yup.date().required('Phone number is required'),
+  phoneNumber: Yup.string().required('Phone number is required'),
   address: Yup.string().required('Address is required'),
-  provinceId: Yup.string(),
   teamLeadOne: Yup.string().required('Team lead is required'),
   teamLeadTwo: Yup.string(),
 });

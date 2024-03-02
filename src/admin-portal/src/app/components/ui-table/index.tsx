@@ -425,8 +425,7 @@ export default function UiTable({
       );
     } else if (
       column?.field === 'subCategories' ||
-      column?.field === 'subDistricts' ||
-      column?.field === 'teamLead(s)'
+      column?.field === 'subDistricts'
     ) {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
@@ -438,6 +437,19 @@ export default function UiTable({
               {index === display_value?.length - 1
                 ? `${item?.name}`
                 : `${item?.name};`}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (column.field === 'teamLeads') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div
+              key={`teamLeads_` + item?.id + Math.random()}
+              className={' text-textMid m-1 rounded-full py-1 text-xs'}
+            >
+              {`${item?.teamLead?.user?.firstName}, `}
             </div>
           ))}
         </div>

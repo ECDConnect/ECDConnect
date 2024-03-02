@@ -1,31 +1,22 @@
-import { useQuery, useMutation } from '@apollo/client';
-import {
-  CoachDto,
-  PermissionEnum,
-  usePanel,
-  useDialog,
-  useNotifications,
-  NOTIFICATION,
-  ClinicDto,
-} from '@ecdlink/core';
+import { useQuery } from '@apollo/client';
+import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
-import { GetAllClinic, SendInviteToApplication } from '@ecdlink/graphql';
-import { DialogPosition, Dropdown } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { GetAllClinic } from '@ecdlink/graphql';
+import { Dropdown } from '@ecdlink/ui';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import { SearchIcon } from '@heroicons/react/solid';
-import { CreateClinicPanel } from '../../components/create-clinic-panel/create-clinic-panel';
+import { CreateClinicPanel } from '../../components/create-clinic-panel/create-edit-clinic-panel';
+import { useHistory } from 'react-router';
 
 export default function ClinicsSubPage() {
   const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
-  const dialog = useDialog();
   const { data, refetch } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
+  const history = useHistory();
 
   const [searchValue, setSearchValue] = useState('');
   const [statusFilter, setStatusFilter] = useState('active');
@@ -39,8 +30,6 @@ export default function ClinicsSubPage() {
   };
 
   const [tableData, setTableData] = useState<any[]>([]);
-
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   useEffect(() => {
     if (data && data.GetAllClinic) {
@@ -104,32 +93,18 @@ export default function ClinicsSubPage() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const sendInvite = async (coach: CoachDto) => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Coach Invite"
-          message={`You are about to send an invite to ${coach.user.firstName} ${coach.user.surname}`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            sendInviteToApplication({
-              variables: {
-                userId: coach.userId,
-                inviteToPortal: false,
-              },
-            }).then(() => {
-              setNotification({
-                title: 'Successfully Sent Coach Invite!',
-                variant: NOTIFICATION.SUCCESS,
-              });
-            });
-          }}
-        />
-      ),
-    });
-  };
+  const handleViewClinic = useCallback(
+    (clinic) => {
+      history.push({
+        pathname: '/clinics/view-clinics',
+        state: {
+          component: 'clinic',
+          clinic: clinic,
+        },
+      });
+    },
+    [history]
+  );
 
   if (tableData) {
     return (
@@ -308,18 +283,19 @@ export default function ClinicsSubPage() {
                   columns={[
                     { field: 'id', use: 'Unique ID' },
                     { field: 'name', use: 'Name' },
-                    { field: 'teamLead', use: 'teamLead(s)' },
+                    { field: 'teamLeads', use: 'teamLead(s)' },
                     { field: 'subDistrict', use: 'Sub-district' },
                     { field: 'insertedDate', use: 'Date added' },
                   ]}
                   rows={tableData}
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
-                    displayEditPanel
+                    // displayEditPanel
+                    handleViewClinic
                   }
-                  sendRow={
-                    hasPermission(PermissionEnum.update_user) && sendInvite
-                  }
+                  // sendRow={
+                  //   hasPermission(PermissionEnum.update_user) && sendInvite
+                  // }
                   searchInput={searchValue}
                 />
               </div>

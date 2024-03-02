@@ -1,5 +1,8 @@
 import {
+  ActionModal,
   Alert,
+  Dialog,
+  DialogPosition,
   Divider,
   Dropdown,
   FormInput,
@@ -31,12 +34,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { data: districtData, refetch } = useQuery(GetDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
-  const { data: subDistrictData, refetch: refetchSubDistricts } = useQuery(
-    GetSubDistrictsAndStats,
-    {
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+
   const [addSubDistrictMutation, { loading: loadingAddSubDistrict }] =
     useMutation(AddSubDistrict);
   const [editSubDistrictMutation, { loading: loadingEditSubDistrict }] =
@@ -53,10 +51,10 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   } = useForm({
     resolver: yupResolver(subDistrictSchema),
     defaultValues: subDistrictInitialValues,
-    mode: 'onBlur',
+    mode: 'onChange',
   });
 
-  const { errors, isValid: isDistrictValid, isDirty } = subDistrictFormState;
+  const { errors } = subDistrictFormState;
 
   const [districts, setDistricts] = useState<SearchDropDownOption<string>[]>(
     []
@@ -65,6 +63,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { setNotification } = useNotifications();
   const watchFields = useWatch({ control });
   const disableButton = !watchFields?.subDistrictName || !watchFields?.district;
+  const [handleDeleteModal, setHandleDeleteModal] = useState(false);
 
   // TO DO: Try a double distric logic
   // const existingSubDistrict = subDistrictData?.subDistrictsAndStats?.find(
@@ -267,7 +266,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
       <div className="mt-2 flex flex-row">
         <button
           type="submit"
-          onClick={deleteSubDistrict}
+          onClick={() => setHandleDeleteModal(true)}
           className={`bg-white ${
             disableButton ? 'opacity-25' : ''
           } focus:outline-none border-secondary text-secondary flex inline-flex w-full items-center justify-center rounded-2xl border px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
@@ -277,6 +276,41 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
           Remove sub-district
         </button>
       </div>
+      <Dialog
+        className="right-50 absolute w-6/12"
+        stretch
+        visible={handleDeleteModal}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          className="z-80"
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Are you sure you want to remove this sub-district?`}
+          actionButtons={[
+            {
+              text: 'Remove sub-district',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => {
+                // submit();
+                deleteSubDistrict();
+              },
+              leadingIcon: 'PencilIcon',
+            },
+            {
+              text: 'Keep editing',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => setHandleDeleteModal(false),
+              leadingIcon: 'TrashIcon',
+            },
+          ]}
+        />
+      </Dialog>
     </div>
   );
 };

@@ -1,4 +1,7 @@
 import {
+  ActionModal,
+  Dialog,
+  DialogPosition,
   Divider,
   Dropdown,
   FormInput,
@@ -54,6 +57,7 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { setNotification } = useNotifications();
   const watchFields = useWatch({ control });
   const disableButton = !watchFields?.districtName || !watchFields?.province;
+  const [handleDeleteModal, setHandleDeleteModal] = useState(false);
 
   const addDistrict = useCallback(async () => {
     const districtInputModel = {
@@ -207,7 +211,7 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
         <div className="mt-2 flex flex-row">
           <button
             type="submit"
-            onClick={deleteDistrict}
+            onClick={() => setHandleDeleteModal(true)}
             className={`bg-white ${
               disableButton ? 'opacity-25' : ''
             } focus:outline-none border-secondary text-secondary flex inline-flex w-full items-center justify-center rounded-2xl border px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
@@ -218,6 +222,41 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
           </button>
         </div>
       )}
+      <Dialog
+        className="right-50 absolute w-6/12"
+        stretch
+        visible={handleDeleteModal}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          className="z-80"
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Are you sure you want to remove this district?`}
+          actionButtons={[
+            {
+              text: 'Remove district',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => {
+                // submit();
+                deleteDistrict();
+              },
+              leadingIcon: 'PencilIcon',
+            },
+            {
+              text: 'Keep editing',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => setHandleDeleteModal(false),
+              leadingIcon: 'TrashIcon',
+            },
+          ]}
+        />
+      </Dialog>
     </div>
   );
 };

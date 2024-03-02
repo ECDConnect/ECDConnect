@@ -123,6 +123,7 @@ export const ProgressBar = ({
           <div className="absolute top-0 z-10 flex h-full w-full">
             {divides?.map((divide, index) => (
               <div
+                key={index + Math.random()}
                 className={classNames(
                   index + 1 === divides?.length ? '' : 'border-r-2',
                   divide?.colour ? `border-${divide.colour}` : 'border-primary',
