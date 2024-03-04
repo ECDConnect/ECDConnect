@@ -1,9 +1,6 @@
 import { api } from '../axios.helper';
 import { Config, HealthCareWorkerDto } from '@ecdlink/core';
-import {
-  HealthCareWorkerInputModelInput,
-  MutationUpdateHealthCareWorkerArgs,
-} from '@ecdlink/graphql';
+import { HealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 class HealthCareWorkerService {
   _accessToken: string;
@@ -67,13 +64,13 @@ class HealthCareWorkerService {
 
   async updateHealthCareWorker(
     userId: string,
-    input: MutationUpdateHealthCareWorkerArgs
+    input: HealthCareWorkerInputModelInput
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `mutation updateHealthCareWorker(
         $userId: String,
-        $input: HealthCareWorkerModelInput
+        $input: HealthCareWorkerInputModelInput
       ) {
         updateHealthCareWorker(
           userId: $userId,
@@ -185,38 +182,13 @@ class HealthCareWorkerService {
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { updateHealthCareWorkerTabs: HealthCareWorkerDto };
+      data: { updateHealthCareWorkerWelcomeMessage: HealthCareWorkerDto };
     }>(``, {
       query: `mutation UpdateHealthCareWorkerWelcomeMessage($healthcareWorkerId: UUID!, $welcomeMessage: String, $shareContactInfo: Boolean!) {
           updateHealthCareWorkerWelcomeMessage(healthcareWorkerId: $healthcareWorkerId, welcomeMessage: $welcomeMessage, shareContactInfo: $shareContactInfo) {
-            user {
-              id
-              email
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              dateOfBirth
-              idNumber
-              firstName
-              surname
-              contactPreference
-              genderId
-              phoneNumber
-              profileImageUrl
-            }          
-            id
-            isRegistered
-            languageId
-            clickedDashboardClientsTab
-            clickedDashboardVisitsTab
-            clickedDashboardHighlightsTab
-            clickedVisitTab
-            clickedProgressTab
-            clickedReferralsTab
-            clickedContactTab    
-            clinicId
-            welcomeMessage
-            shareContactInfo
-            isNewAtClinic
+              welcomeMessage
+              shareContactInfo
+              isNewAtClinic
           }
         }`,
       variables: {
@@ -232,8 +204,7 @@ class HealthCareWorkerService {
       );
     }
 
-    console.log('response.data.data.updateHealthCareWorkerTabs', response);
-    return response.data.data.updateHealthCareWorkerTabs;
+    return response.data.data.updateHealthCareWorkerWelcomeMessage;
   }
 }
 

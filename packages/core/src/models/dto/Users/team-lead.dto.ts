@@ -7,6 +7,8 @@ export interface TeamLeadDto {
   surname: string;
   jobTitle: string;
   phoneNumber: string;
+  whatsAppNumber: string;
+  welcomeMessage: string;
   user?: UserDto;
   clinic?: ClinicDto;
 }

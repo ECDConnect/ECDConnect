@@ -1,15 +1,11 @@
-import {
-  Connect,
-  ConnectItem,
-  MoreInformation,
-  MutationSaveWelcomeMessageArgs,
-} from '@ecdlink/graphql';
+import { Connect, ConnectItem, MoreInformation } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
 import InfoService from '@/services/InfoService/InfoService';
 import { differenceInDays } from 'date-fns';
-import { LeagueWithClinicRankingsDto } from '@ecdlink/core';
+import { ClinicDto, LeagueWithClinicRankingsDto } from '@ecdlink/core';
+import { ClinicService } from '@/services/Clinic';
 
 export const CommunityActions = {
   GET_ALL_CONNECT: 'getAllConnect',
@@ -17,6 +13,7 @@ export const CommunityActions = {
   GET_MORE_INFORMATION: 'getMoreInformation',
   GET_LEAGUE_BY_ID: 'getLeagueById',
   GET_POINTS_ACTIVITY_INFO: 'getPointsActivityInfo',
+  GET_CLINIC_BY_ID: 'getClinicById',
 };
 
 export const getAllConnect = createAsyncThunk<
@@ -144,6 +141,43 @@ export const getPointsActivityInfo = createAsyncThunk<
       }
       if (userAuth?.auth_token) {
         return await new InfoService().getMoreInformation(section, locale);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getClinicById = createAsyncThunk<
+  ClinicDto,
+  { clinicId: string; forceReload?: boolean },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.GET_CLINIC_BY_ID,
+  async ({ clinicId, forceReload }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      community: { team },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (team?.clinic?.data && !forceReload) {
+          const daysSinceLateLoad = differenceInDays(
+            new Date(),
+            new Date(team?.clinic?.dateLoaded)
+          );
+
+          if (daysSinceLateLoad < 1) {
+            return team?.clinic?.data;
+          }
+        }
+
+        return await new ClinicService(
+          userAuth?.auth_token ?? ''
+        ).getClinicById(clinicId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

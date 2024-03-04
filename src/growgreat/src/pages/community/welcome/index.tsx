@@ -19,6 +19,13 @@ import { CommunityRouteState } from '../community.types';
 import { useAppDispatch } from '@/store';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { PractitionerAboutRouteState } from '@/pages/practitioner/practitioner-about/practitioner-about.types';
+import {
+  healthCareWorkerSelectors,
+  healthCareWorkerThunkActions,
+} from '@/store/healthCareWorker';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
+import { communitySelectors } from '@/store/community';
 
 export const CommunityWelcome: React.FC = () => {
   const [message, setMessage] = useState<string>('');
@@ -27,32 +34,49 @@ export const CommunityWelcome: React.FC = () => {
   >();
 
   const user = useSelector(userSelectors.getUser);
+  const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
   const isToShowAddPhotoScreen = !user?.profileImageUrl;
-
+  const isOnCharacterLimit = message?.length <= 125;
   const { theme } = useTheme();
 
   const history = useHistory();
   const location = useLocation<CommunityRouteState>();
   const appDispatch = useAppDispatch();
 
-  const isLoading = false;
+  const { isLoading: isLoadingWelcomeMessage } = useThunkFetchCall(
+    'healthCareWorker',
+    HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE
+  );
+  const { isLoading: isLoadingUpdateHealthCareWorkerById } = useThunkFetchCall(
+    'healthCareWorker',
+    HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_BY_ID
+  );
+
+  const isLoading =
+    isLoadingWelcomeMessage || isLoadingUpdateHealthCareWorkerById;
 
   const dialog = useDialog();
 
   const onSave = async () => {
-    if (message) {
-      appDispatch(() => {});
-      // await appDispatch(
-      //   clubThunkActions.updateCoachAboutInfo({
-      //     aboutInfo: value,
-      //     userId: user?.id,
-      //   })
-      // );
-
-      // await appDispatch(
-      //   coachThunkActions.updateCoachClubClicked({ userId: user?.id! })
-      // );
+    if (isOnCharacterLimit) {
+      await appDispatch(
+        healthCareWorkerThunkActions.updateHealthCareWorkerById({
+          userId: user?.id ?? '',
+          input: {
+            isNewAtClinic: false,
+            isRegistered: true,
+          },
+        })
+      );
+      await appDispatch(
+        healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
+          healthCareWorkerId: hcw?.id ?? '',
+          welcomeMessage: message,
+          shareContactInfo: shareContactInfo as boolean,
+        })
+      );
     }
 
     if (isToShowAddPhotoScreen) {
@@ -104,7 +128,7 @@ export const CommunityWelcome: React.FC = () => {
         <Typography
           type="h1"
           color="white"
-          text="Connect with the {clinicName} team!"
+          text={`Connect with the ${clinicDetails?.name ?? ''} team!`}
           className="py-30 w-full break-words"
         />
         <Card className="bg-uiBg flex flex-col items-center rounded-3xl p-4 text-center">
@@ -121,6 +145,7 @@ export const CommunityWelcome: React.FC = () => {
           placeholder="E.g. I am a champion for children"
           className="mt-10"
           value={message}
+          maxCharacters={!!message?.length ? 125 : undefined}
           onChange={(event) => setMessage(event.target.value)}
         />
         <Typography
@@ -149,7 +174,9 @@ export const CommunityWelcome: React.FC = () => {
           icon="SaveIcon"
           className="mt-auto mb-14"
           isLoading={isLoading}
-          disabled={isLoading}
+          disabled={
+            isLoading || !isOnCharacterLimit || shareContactInfo === undefined
+          }
           onClick={onSave}
         />
       </div>

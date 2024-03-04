@@ -26,3 +26,6 @@ export const getPointsActivityInfoSelector = (
     (info) =>
       info?.find((item) => item[activitySlug])?.[activitySlug]?.[locale]?.data
   );
+
+export const getClinicSelector = (state: RootState) =>
+  state.community?.team?.clinic?.data;

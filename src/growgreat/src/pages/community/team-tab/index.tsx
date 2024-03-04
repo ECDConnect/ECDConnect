@@ -10,57 +10,93 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { CommunityRouteState } from '../community.types';
 import { useWindowSize } from '@reach/window-size';
 import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
+import { useAppDispatch } from '@/store';
+import { communitySelectors, communityThunkActions } from '@/store/community';
+import { useSelector } from 'react-redux';
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { CommunityActions } from '@/store/community/community.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import {
+  calculateTierPercentages,
+  getLeaguePointsColours,
+  getTierDetails,
+} from '@/utils/community/league-position';
+import { LeagueType } from '@/constants/Community';
 
 export const TeamTab: React.FC = () => {
-  const history = useHistory();
+  const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
-  const { isOnline } = useOnlineStatus();
+  const history = useHistory();
 
   const { height } = useWindowSize();
 
-  // const { isLoading: isLoadingClub } = useThunkFetchCall(
-  //   'clubs',
-  //   ClubActions.GET_CLUB_FOR_USER
-  // );
-  // const { isLoading: isLoadingMeetRegular } = useThunkFetchCall(
-  //   'clubs',
-  //   ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS
-  // );
-  // const { isLoading: isLoadingHostFamily } = useThunkFetchCall(
-  //   'clubs',
-  //   ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
-  // );
+  const appDispatch = useAppDispatch();
 
-  const isLoading = false;
+  const { isLoading } = useThunkFetchCall(
+    'community',
+    CommunityActions.GET_CLINIC_BY_ID
+  );
 
-  const isTop25Percent = true;
+  const memberCount = clinicDetails?.clinicMembers?.length ?? 0;
+
+  // TODO: get the length of the league
+  const isTop25PercentInTheLeague = false;
+  // TODO: get the length of the league
+  const isMiddle50PercentInTheLeague = false;
 
   const headerHeight = 122;
 
   const today = new Date();
 
-  const leader: UserAlertListDataItem = {
-    title: `{leaderName}`,
-    titleStyle: 'text-textDark',
-    profileDataUrl: '',
-    profileText: `LN`,
-    avatarColor: 'var(--primaryAccent2)',
-    alertSeverity: 'none',
-    hideAlertSeverity: true,
-    onActionClick: () => {},
-  };
+  const { tierName, tierColor } = getTierDetails(
+    (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
+    clinicDetails?.points?.pointsTotal ?? 0
+  );
+  const { bronzePercentage, silverPercentage, goldPercentage } =
+    calculateTierPercentages(
+      (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League
+    );
+
+  const leaguePointsColours = getLeaguePointsColours(
+    isTop25PercentInTheLeague,
+    isMiddle50PercentInTheLeague
+  );
+
+  useEffect(() => {
+    appDispatch(
+      communityThunkActions.getClinicById({
+        clinicId: hcw?.clinicId ?? '',
+        forceReload: true,
+      })
+    );
+
+    // trigger only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const leaders: UserAlertListDataItem[] =
+    clinicDetails?.teamLeads?.map((leader) => ({
+      title: `${leader.firstName ?? ''} ${leader.surname ?? ''}`,
+      titleStyle: 'text-textDark',
+      profileDataUrl: '',
+      profileText: `${leader.firstName.charAt(0)}${leader.surname.charAt(0)}`,
+      avatarColor: 'var(--primaryAccent2)',
+      alertSeverity: 'none',
+      hideAlertSeverity: true,
+      onActionClick: () => {},
+    })) ?? [];
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: 'in the league 🥳',
+      title: `in the league ${isTop25PercentInTheLeague ? '🥳' : ''}`,
       titleStyle: 'text-textDark',
       onActionClick: () => {
         history.push(ROUTES.COMMUNITY.ROOT, {
@@ -71,28 +107,35 @@ export const TeamTab: React.FC = () => {
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
             className="absolute z-0 h-auto w-auto"
-            fill={`var(--${isTop25Percent ? 'successMain' : 'secondary'})`}
+            fill={`var(--${leaguePointsColours.mainColour})`}
           />
           <Typography
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(0)}
+            text={String(clinicDetails?.points?.leagueRanking ?? 0)}
           />
         </div>
       ),
-      backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
+      backgroundColor: leaguePointsColours.backgroundColour,
     }),
-    [history, isTop25Percent]
+    [
+      clinicDetails?.points?.leagueRanking,
+      history,
+      isTop25PercentInTheLeague,
+      leaguePointsColours,
+    ]
   );
 
   if (isLoading) {
-    <LoadingSpinner
-      className="mt-10"
-      size="medium"
-      spinnerColor="primary"
-      backgroundColor="uiLight"
-    />;
+    return (
+      <LoadingSpinner
+        className="mt-6"
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+      />
+    );
   }
 
   return (
@@ -101,7 +144,7 @@ export const TeamTab: React.FC = () => {
       style={{ height: height - headerHeight }}
     >
       <div className="flex h-full flex-col">
-        <Typography type="h2" text={'{clinicName}'} />
+        <Typography type="h2" text={clinicDetails?.name} />
         <Typography
           type="h4"
           color="textMid"
@@ -113,68 +156,67 @@ export const TeamTab: React.FC = () => {
             backgroundColour="successMain"
             borderColour="successMain"
             textColour="white"
-            text={`{totalMembers} members`}
+            text={`${memberCount} ${memberCount === 1 ? 'member' : 'members'}`}
             iconPosition="start"
           />
           <StatusChip
             className="h-7"
-            backgroundColour="primary"
-            borderColour="primary"
+            backgroundColour={tierColor}
+            borderColour={tierColor}
             textColour="white"
-            text={`{tier}`}
+            text={tierName}
             iconPosition="start"
             icon="StarIcon"
           />
         </div>
-        <div className="mt-7 mb-5">
-          <Typography
-            className="mb-2"
-            type="h3"
-            text="League position & points"
-          />
-          {isOnline ? (
-            <>
-              <StackedList
-                isFullHeight={false}
-                type={'MenuList' as StackedListType}
-                listItems={[leagueCard]}
-              />
-              <ScoreCard
-                className="mt-2"
-                mainText={String(0)}
-                hint="points"
-                currentPoints={600}
-                maxPoints={1000}
-                barBgColour="uiLight"
-                barColour="successMain"
-                bgColour="uiBg"
-                barSize="medium"
-                barDivides={[
-                  { widthPercentage: 40 },
-                  { widthPercentage: 40 },
-                  { widthPercentage: 20 },
-                ]}
-                barStatusChip={{
-                  backgroundColour: 'primary',
-                  borderColour: 'primary',
-                  textColour: 'white',
-                  text: '{pointsBadge}',
-                }}
-                textColour="black"
-                onClick={() => history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)}
-              />
-            </>
-          ) : (
-            <></>
-            // <OfflineAlert />
-          )}
-        </div>
-        <Typography className="mb-2 mt-6" type="h3" text="Team leader" />
+        {!!clinicDetails?.league && (
+          <div className="mt-7 mb-5">
+            <Typography
+              className="mb-2"
+              type="h3"
+              text="League position & points"
+            />
+            <StackedList
+              isFullHeight={false}
+              type={'MenuList' as StackedListType}
+              listItems={[leagueCard]}
+            />
+            <ScoreCard
+              className="mt-2"
+              mainText={String(clinicDetails?.points?.pointsTotal ?? 0)}
+              hint="points"
+              currentPoints={clinicDetails?.points?.pointsTotal ?? 0}
+              maxPoints={clinicDetails?.points?.maxPointsTotal ?? 0}
+              barBgColour="uiLight"
+              barColour={tierColor}
+              bgColour="uiBg"
+              barSize="medium"
+              barDivides={[
+                { widthPercentage: bronzePercentage },
+                { widthPercentage: silverPercentage },
+                { widthPercentage: goldPercentage },
+              ]}
+              barStatusChip={{
+                backgroundColour: 'primary',
+                borderColour: 'primary',
+                textColour: 'white',
+                text: tierName,
+              }}
+              textColour="black"
+              onClick={() => history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)}
+            />
+          </div>
+        )}
+        <Typography
+          className="mb-2 mt-6"
+          type="h3"
+          text={`Team leader${leaders.length > 1 ? 's' : ''}`}
+        />
         <div className="mb-4">
           <StackedList
             isFullHeight={false}
             type={'UserAlertList' as StackedListType}
-            listItems={[leader]}
+            listItems={leaders}
           />
         </div>
         <div className={`mt-auto flex flex-col gap-4`}>
@@ -184,7 +226,7 @@ export const TeamTab: React.FC = () => {
             textColor="white"
             color="primary"
             text="See club members"
-            onClick={() => {}}
+            onClick={() => history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT)}
           />
           <Button
             className="mb-4"

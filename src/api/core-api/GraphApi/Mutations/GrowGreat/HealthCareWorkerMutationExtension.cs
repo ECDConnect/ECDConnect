@@ -48,6 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
             return new HealthCareWorkerModel(newHealthCareWorker);
         }
 
+        // TODO - Need to fix this input, it has a ton of extra and unused fields
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public HealthCareWorkerModel UpdateHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
@@ -67,6 +68,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
             if (input.LanguageId != null)
             {
                 healthCareWorkerToUpdate.LanguageId = input.LanguageId;
+            }
+
+            if (input.IsNewAtClinic)
+            {
+                healthCareWorkerToUpdate.IsNewAtClinic = input.IsNewAtClinic;
             }
 
             // TODO needs to change to update the clinic id

@@ -1,5 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -47,6 +46,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool IsNewAtClinic { get; set; }
         public bool ShareContactInfo { get; set; }
         public string WelcomeMessage { get; set; }
+        public virtual ICollection<Mother> Mothers { get; set; }
+        public virtual ICollection<Caregiver> Caregivers { get; set; }
     }
 
     public interface HealthCareWorkerJoin<TKey>

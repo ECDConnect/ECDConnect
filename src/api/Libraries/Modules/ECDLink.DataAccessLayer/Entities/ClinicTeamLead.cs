@@ -24,6 +24,8 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [ForeignKey(nameof(TeamLeadId))]
         public virtual TeamLead TeamLead { get; set; }
+
+        public string WelcomeMessage { get; set; }
     }
 
     public interface ClinicTeamLeadJoin<TKey>

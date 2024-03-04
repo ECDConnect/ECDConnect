@@ -43,8 +43,11 @@ class ClinicService {
             surname
             jobTitle
             phoneNumber
+            whatsAppNumber
+            welcomMessage
           }
           clinicMembers {
+            healthCareWorkerId
             firstName
             surname
             phoneNumber

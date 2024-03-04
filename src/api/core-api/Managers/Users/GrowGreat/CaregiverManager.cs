@@ -1,6 +1,6 @@
-﻿using ECDLink.DataAccessLayer.Entities.Caregiver;
-using ECDLink.DataAccessLayer.Repositories.Factories;
+﻿using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Http;
 using System;
