@@ -49,6 +49,7 @@ import { CommunityWelcome } from '@/pages/community/welcome';
 import { TeamTabInfoPage } from '@/pages/community/team-tab/team/info-page';
 import { TeamPoints } from '@/pages/community/team-tab/team/points';
 import { TeamPointsActivityDetails } from '@/pages/community/team-tab/team/points/activity-details';
+import { TeamMembers } from '@/pages/community/team-tab/team/members';
 
 function PublicRoutes() {
   return (
@@ -281,6 +282,11 @@ function AuthRoutes() {
       <Route
         path={ROUTES.COMMUNITY.TEAM.POINTS.ACTIVITY_DETAILS}
         component={TeamPointsActivityDetails}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT}
+        component={TeamMembers}
         exact
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />
