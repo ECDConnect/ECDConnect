@@ -19,7 +19,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ClinicVisitReportModel GetClinicVisitReportData(Guid clinicId, DateTime startDate, DateTime endDate);
         public Clinic AddClinic(PortalClinicInputModel input);
         public Clinic EditClinic(PortalClinicInputModel input);
-        public Clinic DeleteClinic(Guid clinicId);
+        public Clinic DeleteClinicById(Guid clinicId);
 
     }
 }
