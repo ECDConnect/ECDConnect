@@ -17,6 +17,7 @@ export interface ScoreCardProps extends ComponentBaseProps {
   barBgColour: Colours;
   barSize?: ProgressBarProps['size'];
   barStatusChip?: StatusChipProps;
+  hideProgressBar?: boolean;
   barDivides?: ProgressBarProps['divides'];
   textColour: Colours;
   textPosition?: ProgressBarProps['textPosition'];

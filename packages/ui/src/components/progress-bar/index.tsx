@@ -11,6 +11,7 @@ export type ProgressBarProps = {
   hintClassName?: string;
   textPosition?: 'left' | 'center';
   isHiddenSubLabel?: boolean;
+  isHiddenBar?: boolean;
   value: number;
   className?: string;
   primaryColour?: Colours;
@@ -40,6 +41,7 @@ export const ProgressBar = ({
   size = 'small',
   statusChip,
   style: customStyle,
+  isHiddenBar,
 }: ProgressBarProps) => {
   const [statusChipWidth, setStatusChipWidth] = useState<number>();
 
@@ -112,28 +114,32 @@ export const ProgressBar = ({
           {hint}
         </p>
       </div>
-      <div
-        className={`rounded-10 ${currentSize} bg-${secondaryColour} relative z-0 overflow-hidden`}
-      >
+      {!isHiddenBar && (
         <div
-          className={`bg-${primaryColour} relative z-20 h-full`}
-          style={style}
-        ></div>
-        {divides?.length && (
-          <div className="absolute top-0 z-10 flex h-full w-full">
-            {divides?.map((divide, index) => (
-              <div
-                className={classNames(
-                  index + 1 === divides?.length ? '' : 'border-r-2',
-                  divide?.colour ? `border-${divide.colour}` : 'border-primary',
-                  'h-full bg-transparent'
-                )}
-                style={{ width: `${divide.widthPercentage}%` }}
-              ></div>
-            ))}
-          </div>
-        )}
-      </div>
+          className={`rounded-10 ${currentSize} bg-${secondaryColour} relative z-0 overflow-hidden`}
+        >
+          <div
+            className={`bg-${primaryColour} relative z-20 h-full`}
+            style={style}
+          ></div>
+          {divides?.length && (
+            <div className="absolute top-0 z-10 flex h-full w-full">
+              {divides?.map((divide, index) => (
+                <div
+                  className={classNames(
+                    index + 1 === divides?.length ? '' : 'border-r-2',
+                    divide?.colour
+                      ? `border-${divide.colour}`
+                      : 'border-primary',
+                    'h-full bg-transparent'
+                  )}
+                  style={{ width: `${divide.widthPercentage}%` }}
+                ></div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       {statusChip && (
         <div
           className={`z-20 mt-4 flex h-auto justify-end bg-transparent`}

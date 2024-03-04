@@ -59,7 +59,7 @@ export const TeamPoints = () => {
           ROUTES.COMMUNITY.TEAM.POINTS.ACTIVITY_DETAILS.replace(
             ':activitySlug',
             formatTextToSlug(activity.name)
-          )
+          ).replace(':currentPoints', String(points))
         ),
     };
   });
@@ -106,7 +106,6 @@ export const TeamPoints = () => {
           text: tierName,
         }}
         textColour="black"
-        onClick={() => history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)}
       />
       {!!nextTier && (
         <Alert
@@ -122,6 +121,7 @@ export const TeamPoints = () => {
         color="textDark"
       />
       <StackedList
+        isFullHeight={false}
         className="flex flex-col gap-2"
         type={'MenuList' as StackedListType}
         listItems={activities}

@@ -14,7 +14,7 @@ export const getConnectItems = (
 export const getMoreInformationSelector = (locale: string) =>
   createSelector(
     (state: RootState) => state.community?.team?.earnPointsInfo,
-    (info) => info?.find((item) => item[locale])?.[locale]?.data
+    (info) => info?.find((item) => item[locale])?.[locale]?.data?.[0]
   );
 
 export const getPointsActivityInfoSelector = (
@@ -24,7 +24,8 @@ export const getPointsActivityInfoSelector = (
   createSelector(
     (state: RootState) => state.community?.team?.activityInfo,
     (info) =>
-      info?.find((item) => item[activitySlug])?.[activitySlug]?.[locale]?.data
+      info?.find((item) => item[activitySlug])?.[activitySlug]?.[locale]
+        ?.data?.[0]
   );
 
 export const getClinicSelector = (state: RootState) =>

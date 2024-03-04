@@ -1,9 +1,18 @@
 import ROUTES from '@/routes/routes';
 import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
-import { ScoreCard, Typography, MoreInformationPage } from '@ecdlink/ui';
+import {
+  ScoreCard,
+  Typography,
+  MoreInformationPage,
+  Button,
+  Colours,
+} from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { ActivityDetailsParams } from './index.types';
-import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import {
+  formatStringWithFirstLetterCapitalized,
+  useSnackbar,
+} from '@ecdlink/core';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';
@@ -14,11 +23,12 @@ import {
 } from '@/store/community/community.actions';
 import { communitySelectors } from '@/store/community';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ActivitySectionName } from '@/constants/Community';
 
 export const TeamPointsActivityDetails = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
 
-  const { activitySlug } = useParams<ActivityDetailsParams>();
+  const { activitySlug, currentPoints } = useParams<ActivityDetailsParams>();
 
   const languages = useSelector(staticDataSelectors.getLanguages);
   const info = useSelector(
@@ -27,6 +37,7 @@ export const TeamPointsActivityDetails = () => {
       selectedLanguage
     )
   );
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
   const { isLoading } = useThunkFetchCall(
     'community',
@@ -37,10 +48,27 @@ export const TeamPointsActivityDetails = () => {
 
   const history = useHistory();
 
+  const { showMessage } = useSnackbar();
+
   const today = new Date();
 
-  // TODO: update section name (from portal)
-  const section = activitySlug;
+  const isChildFoldersOpened = activitySlug === 'child-folders-opened';
+  const isPregnantMomFoldersOpened =
+    activitySlug === 'pregnant-mom-folders-opened';
+  const isBreastFeeding = activitySlug === 'breastfeeding-clubs';
+
+  const slugToKey = (slug: string): string => {
+    const words: string[] = slug.split('-');
+    const titleWords: string[] = words.map(
+      (word) => word.charAt(0).toUpperCase() + word.slice(1)
+    );
+    return titleWords.join('');
+  };
+
+  const section =
+    ActivitySectionName[
+      slugToKey(activitySlug) as keyof typeof ActivitySectionName
+    ];
 
   const languagesOptions = useMemo(
     () =>
@@ -50,6 +78,37 @@ export const TeamPointsActivityDetails = () => {
       })),
     [languages]
   );
+
+  const { barColour, maxPoints } = useMemo(() => {
+    let maxPoints = 0;
+    let barColour: Colours = 'alertMain';
+
+    // 100 * 3 * number of CHWs in clinic
+    if (isChildFoldersOpened) {
+      maxPoints = 100 * 3 * (clinicDetails?.clinicMembers?.length ?? 0);
+    }
+
+    // 50 * 3 * number of CHWs in clinic
+    if (isPregnantMomFoldersOpened) {
+      maxPoints = 50 * 3 * (clinicDetails?.clinicMembers?.length ?? 0);
+    }
+
+    if (isBreastFeeding) {
+      maxPoints = 600;
+    }
+
+    if (Number(currentPoints) === maxPoints) {
+      barColour = 'successMain';
+    }
+
+    return { maxPoints, barColour };
+  }, [
+    clinicDetails?.clinicMembers?.length,
+    currentPoints,
+    isBreastFeeding,
+    isChildFoldersOpened,
+    isPregnantMomFoldersOpened,
+  ]);
 
   const handleLanguageChange = (language: string) => {
     appDispatch(
@@ -90,16 +149,37 @@ export const TeamPointsActivityDetails = () => {
       />
       <ScoreCard
         className="my-4"
-        mainText={String(0)}
+        mainText={currentPoints}
         hint="points earned"
-        currentPoints={300}
-        maxPoints={1000}
+        currentPoints={Number(currentPoints)}
+        maxPoints={maxPoints}
         barBgColour="uiLight"
-        barColour="alertMain"
+        barColour={barColour}
         bgColour="uiBg"
         barSize="small"
         textColour="black"
+        hideProgressBar={
+          !isChildFoldersOpened &&
+          !isPregnantMomFoldersOpened &&
+          !isBreastFeeding
+        }
       />
+      {isBreastFeeding && (
+        <Button
+          type="filled"
+          color="primary"
+          textColor="white"
+          text="Add a breastfeeding club"
+          icon="PlusCircleIcon"
+          className="mb-4"
+          onClick={() =>
+            showMessage({
+              message: 'This feature is not yet available, (EC-2260)',
+              type: 'warning',
+            })
+          }
+        />
+      )}
     </MoreInformationPage>
   );
 };
