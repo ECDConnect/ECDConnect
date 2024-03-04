@@ -201,10 +201,13 @@ namespace EcdLink.Api.CoreApi.Services
 
             ClinicReportModel clinicReportModel = new ClinicReportModel();
 
-            clinicReportModel.TotalHCWs = clinic.HealthCareWorkers.Count;
-            clinicReportModel.LeagueRanking = clinicData.Points.LeagueRanking;
-            clinicReportModel.PointsTotal = clinicData.Points.PointsTotal;
+            if (clinicData.Points != null)
+            {
+                clinicReportModel.LeagueRanking = clinicData.Points.LeagueRanking;
+                clinicReportModel.PointsTotal = clinicData.Points.PointsTotal;
+            }
 
+            clinicReportModel.TotalHCWs = clinic.HealthCareWorkers.Count;
             clinicReportModel.MomsTargetPerc = 0;
             clinicReportModel.MomsTargetPercColor = MetricsColorEnum.Error.ToString();
             clinicReportModel.MomsTopTeamPerc = 0;
@@ -464,7 +467,7 @@ namespace EcdLink.Api.CoreApi.Services
             });
         }
 
-        public Clinic DeleteClinic(Guid clinicId)
+        public Clinic DeleteClinicById(Guid clinicId)
         {
             var clinic = _clinicRepo.GetById(clinicId);
             clinic.IsActive = false;

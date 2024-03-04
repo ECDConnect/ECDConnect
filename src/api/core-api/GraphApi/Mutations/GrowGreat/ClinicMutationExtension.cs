@@ -25,10 +25,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return clinicService.EditClinic(input);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Clinic DeleteClinic([Service] IClinicService clinicService, Guid clinicId)
+        public Clinic DeleteClinicById([Service] IClinicService clinicService, Guid clinicId)
         {
-            return clinicService.DeleteClinic(clinicId);
+            return clinicService.DeleteClinicById(clinicId);
         }
     }
 }
