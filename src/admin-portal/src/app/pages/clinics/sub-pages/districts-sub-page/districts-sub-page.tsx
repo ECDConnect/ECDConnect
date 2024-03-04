@@ -224,18 +224,12 @@ export default function DistrictsSubPage() {
                     { field: 'insertedDate', use: 'Inserted date' },
                   ]}
                   rows={tableData}
-                  // editRow={
-                  //   hasPermission(PermissionEnum.update_user) &&
-                  //   displayEditPanel
-                  // }
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
                   }
-                  // sendRow={
-                  //   hasPermission(PermissionEnum.update_user) && sendInvite
-                  // }
                   searchInput={searchValue}
+                  noBulkSelection={true}
                 />
               </div>
             </div>

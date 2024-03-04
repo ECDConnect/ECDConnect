@@ -1,11 +1,4 @@
-import {
-  Button,
-  PointsProgressCard,
-  ProgressBar,
-  ScoreCard,
-  StatusChip,
-  Typography,
-} from '@ecdlink/ui';
+import { Button, Typography } from '@ecdlink/ui';
 import { useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
@@ -15,34 +8,48 @@ import {
   GetClinicPointsData,
   GetClinicVisitReportData,
 } from '@ecdlink/graphql';
-import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { ReportsDataChart } from './components/reportsDataChart';
+import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
+import Infant from '../../../../../assets/gg-icons/infant.svg';
+import { ClientRegistration } from './components/client-registration';
+import { PointsReportSummary } from './components/points-report-summary';
+
+export interface PointsReportSummaryDto {
+  childrenRankingPerc: number;
+  childrenTargetPerc: number;
+  childrenTargetPercColor: string;
+  childrenTopTeamPerc: number;
+  leagueRanking: number;
+  momsRankingPerc: number;
+  momsTargetPerc: number;
+  momsTargetPercColor: string;
+  momsTopTeamPerc: number;
+  pointsTotal: number;
+  totalHCWs: number;
+}
 
 export const ViewClinicReport = () => {
   const location = useLocation<ClinicsRouteState>();
   const panel = usePanel();
   const clinic = location?.state?.clinic;
 
-  const { data: clinicReportData, refetch } = useQuery(
-    GetClinicVisitReportData,
-    {
-      fetchPolicy: 'cache-and-network',
-      variables: {
-        clinicId: clinic?.id,
-        startDate: '2022-11-30T22:56:30.085Z',
-        endDate: '2023-11-30T22:56:30.085Z',
-      },
-    }
-  );
+  const { data: clinicReportData } = useQuery(GetClinicVisitReportData, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      clinicId: clinic?.id,
+      startDate: '2022-11-30T22:56:30.085Z',
+      endDate: '2023-11-30T22:56:30.085Z',
+    },
+  });
 
-  const { data: clinicPointsData, refetch: refetchPointsData } = useQuery(
-    GetClinicPointsData,
-    {
-      fetchPolicy: 'cache-and-network',
-      variables: {
-        clinicId: clinic?.id,
-      },
-    }
-  );
+  const { data: clinicPointsData } = useQuery(GetClinicPointsData, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      clinicId: clinic?.id,
+    },
+  });
+
+  const dataFromClinicPointsData = clinicPointsData?.clinicPointsData;
 
   const displayEditPanel = () => {
     panel({
@@ -203,62 +210,115 @@ export const ViewClinicReport = () => {
         </div>
       </div>
       <div className="mt-8">
-        <Typography
-          className="truncate"
-          type="h2"
-          weight="bold"
-          color="textMid"
-          text={`Summary`}
+        <PointsReportSummary
+          dataFromClinicPointsData={dataFromClinicPointsData}
         />
-        <div className="mt-2 flex items-center">
-          <StatusChip
-            backgroundColour="darkBlue"
-            borderColour="darkBlue"
-            text={`pclinics`}
-            textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
-          />{' '}
-          <StatusChip
-            backgroundColour="successMain"
-            borderColour="successMain"
-            text={`pclinics`}
-            textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
+      </div>
+      <div className="bg-adminPortalBg mt-8 w-full">
+        <div>
+          <Typography
+            type="h4"
+            color="textDark"
+            text={`% targets met so far this year`}
+            align="left"
+          />
+          <Typography
+            type="help"
+            color="textDark"
+            text={`October 2023 - September 2024`}
+            align="left"
           />
         </div>
-        <div className="mt-8 w-6/12 rounded-2xl bg-white p-8">
-          <div className="bg-alertBg flex flex-col justify-center rounded-2xl p-12">
-            <Typography
-              align="center"
-              type="unspecified"
-              weight="bold"
-              color="textMid"
-              text={`2940`}
-              fontSize="48"
-            />
-            <Typography
-              type="h4"
-              weight="bold"
-              color="textDark"
-              text={`poinst so far in Quarter number#`}
-              align="center"
-            />
-            <ProgressBar
-              className="h1"
-              label={``}
-              subLabel=""
-              value={50}
-              primaryColour={'uiLight'}
-              secondaryColour={'alertMain'}
-              size="medium"
-              divides={[
-                { widthPercentage: 40 },
-                { widthPercentage: 40 },
-                { widthPercentage: 20 },
-              ]}
-              textColour="textDark"
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <ReportsDataChart
+            clinic={clinic}
+            targetPerc={clinicPointsData?.clinicPointsData?.momsTargetPerc}
+            targetPercColor={
+              clinicPointsData?.clinicPointsData?.momsTargetPercColor
+            }
+            topTeamPerc={clinicPointsData?.clinicPointsData?.momsTopTeamPerc}
+            title={'Pregnant moms'}
+            icon={Pregnant}
+          />
+          <ReportsDataChart
+            clinic={clinic}
+            targetPerc={clinicPointsData?.clinicPointsData?.childrenTargetPerc}
+            targetPercColor={
+              clinicPointsData?.clinicPointsData?.childrenTargetPercColor
+            }
+            topTeamPerc={
+              clinicPointsData?.clinicPointsData?.childrenTopTeamPerc
+            }
+            title={'Children'}
+            icon={Infant}
+          />
+        </div>
+      </div>
+      <div className="mt-8">
+        <div>
+          <Typography
+            type="h4"
+            weight="bold"
+            color="textDark"
+            text={`Visit information`}
+            align="left"
+          />
+        </div>
+        <div>
+          <ClientRegistration
+            totalCaregiversAttended={
+              clinicReportData?.clinicVisitReportData?.breastFeedingClub
+                ?.totalCaregiversAttended
+            }
+            totalClubsHeld={
+              clinicReportData?.clinicVisitReportData?.breastFeedingClub
+                ?.totalClubsHeld
+            }
+            totalGrowthMonitored={
+              clinicReportData?.clinicVisitReportData?.childClients
+                ?.totalGrowthMonitored
+            }
+            totalSupportGrant={
+              clinicReportData?.clinicVisitReportData?.childClients
+                ?.totalSupportGrant
+            }
+            totalUpToDateDeworming={
+              clinicReportData?.clinicVisitReportData?.childClients
+                ?.totalUpToDateDeworming
+            }
+            totalUpToDateImmunisations={
+              clinicReportData?.clinicVisitReportData?.childClients
+                ?.totalUpToDateImmunisations
+            }
+            totalUpToDateVitaminA={
+              clinicReportData?.clinicVisitReportData?.childClients
+                ?.totalUpToDateVitaminA
+            }
+            totalChildFoldersOpened={
+              clinicReportData?.clinicVisitReportData?.clientRegistration
+                ?.totalChildFoldersOpened
+            }
+            totalMotherFoldersBefore20WeeksOpened={
+              clinicReportData?.clinicVisitReportData?.clientRegistration
+                ?.totalMotherFoldersBefore20WeeksOpened
+            }
+            totalMotherFoldersOpened={
+              clinicReportData?.clinicVisitReportData?.clientRegistration
+                ?.totalMotherFoldersOpened
+            }
+            totalAlcoholAbuse={
+              clinicReportData?.clinicVisitReportData?.pregnantMoms
+                ?.totalAlcoholAbuse
+            }
+            totalMaternalDistress={
+              clinicReportData?.clinicVisitReportData?.pregnantMoms
+                ?.totalMaternalDistress
+            }
+            totalMaternalMalnutrition={
+              clinicReportData?.clinicVisitReportData?.pregnantMoms
+                ?.totalMaternalMalnutrition
+            }
+          />
         </div>
       </div>
     </div>

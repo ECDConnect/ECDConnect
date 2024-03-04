@@ -174,17 +174,14 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
           maxCharacters={50}
           maxLength={50}
           isAdminPortalField={true}
-          // disabled={isView}
-          // value={messageTitle}
           onChange={(event) => {
             districtSetValue('districtName', event.target.value);
           }}
         />
         <Dropdown
-          placeholder={'Click to select sub-district'}
+          placeholder={'Click to select Province'}
           className={'justify-between'}
-          label={'Sub-district *'}
-          // disabled={loading}
+          label={'Province *'}
           selectedValue={watchFields?.province}
           list={provinces}
           onChange={(item) => districtSetValue('province', item)}

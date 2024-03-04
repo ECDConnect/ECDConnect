@@ -286,15 +286,12 @@ export default function SubDistrictsSubPage() {
                     { field: 'insertedDate', use: 'Inserted date' },
                   ]}
                   rows={tableData}
-                  // editRow={
-                  //   hasPermission(PermissionEnum.update_user) &&
-                  //   displayEditPanel
-                  // }
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
                   }
                   searchInput={searchValue}
+                  noBulkSelection={true}
                 />
               </div>
             </div>

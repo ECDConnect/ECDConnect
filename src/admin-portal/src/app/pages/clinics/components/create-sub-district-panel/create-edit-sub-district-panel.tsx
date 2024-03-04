@@ -179,21 +179,21 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
             borderColour="successMain"
             text={`${props?.subDistrict?.totalClinics} clinics`}
             textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
+            className={'mr-2 px-6 py-1.5'}
           />
           <StatusChip
             backgroundColour="successMain"
             borderColour="successMain"
             text={`${props?.subDistrict?.totalTeamLeads} Team Leads`}
             textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
+            className={'mr-2 px-6 py-1.5'}
           />
           <StatusChip
             backgroundColour="successMain"
             borderColour="successMain"
             text={`${props?.subDistrict?.totalHCWs} CHWs`}
             textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
+            className={'mr-2 px-6 py-1.5'}
           />
         </div>
       )}
@@ -263,19 +263,21 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
           Save
         </button>
       </div>
-      <div className="mt-2 flex flex-row">
-        <button
-          type="submit"
-          onClick={() => setHandleDeleteModal(true)}
-          className={`bg-white ${
-            disableButton ? 'opacity-25' : ''
-          } focus:outline-none border-secondary text-secondary flex inline-flex w-full items-center justify-center rounded-2xl border px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
-          disabled={disableButton}
-        >
-          <TrashIcon width="22px" className="mr-2" />
-          Remove sub-district
-        </button>
-      </div>
+      {props?.isEdit && (
+        <div className="mt-2 flex flex-row">
+          <button
+            type="submit"
+            onClick={() => setHandleDeleteModal(true)}
+            className={`bg-white ${
+              disableButton ? 'opacity-25' : ''
+            } focus:outline-none border-secondary text-secondary flex inline-flex w-full items-center justify-center rounded-2xl border px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
+            disabled={disableButton}
+          >
+            <TrashIcon width="22px" className="mr-2" />
+            Remove sub-district
+          </button>
+        </div>
+      )}
       <Dialog
         className="right-50 absolute w-6/12"
         stretch

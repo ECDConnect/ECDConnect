@@ -77,6 +77,10 @@ module.exports = {
         quaternary: "#D2F1F9",
         quatenaryMain: "#1DBADF",
         darkBlue: "#27385A",
+        primaryGG: '#FAAB35',
+        secondaryGG: '#8CDBDF',
+        tertiaryGG: '#FF9D7B',
+        quaternaryGG: '#D8C498'
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',

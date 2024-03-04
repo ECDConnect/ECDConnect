@@ -39,6 +39,7 @@ export default function UiTable({
   isLoading,
   onBulkActionCallback,
   languages,
+  noBulkSelection,
 }: UiTableProps) {
   const [inviteRows, setInviteRows] = useState<boolean>(false);
   const { setNotification } = useNotifications();
@@ -218,6 +219,10 @@ export default function UiTable({
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
+
+    if (noBulkSelection) {
+      return columns;
+    }
     if (component === 'cms' || component === 'roles') {
       return [...columns];
     }

@@ -290,13 +290,10 @@ export default function ClinicsSubPage() {
                   rows={tableData}
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
-                    // displayEditPanel
                     handleViewClinic
                   }
-                  // sendRow={
-                  //   hasPermission(PermissionEnum.update_user) && sendInvite
-                  // }
                   searchInput={searchValue}
+                  noBulkSelection={true}
                 />
               </div>
             </div>
