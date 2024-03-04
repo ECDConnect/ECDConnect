@@ -3,7 +3,6 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;

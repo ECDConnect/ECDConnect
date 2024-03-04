@@ -23,6 +23,7 @@ export interface LeagueDto {
 }
 
 export interface ClinicMemberDto {
+  healthCareWorkerId: string;
   firstName: string;
   surname: string;
   phoneNumber: string;
