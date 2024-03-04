@@ -27,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
                 SiteAddress = new SiteAddressModel(clinic.SiteAddress);
             }
 
-            TeamLeads = clinic.TeamLeads.Select(x => new TeamLeadModel(x.TeamLead)).ToList();
+            TeamLeads = clinic.TeamLeads.Select(x => new TeamLeadModel(x.TeamLead, x.WelcomeMessage)).ToList();
             ClinicMembers = clinic.HealthCareWorkers.Select(x => new ClinicMemberModel(x)).ToList();
 
             var league = clinic.Leagues.FirstOrDefault(x => x.IsActive);

@@ -48,6 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
             return new HealthCareWorkerModel(newHealthCareWorker);
         }
 
+        // TODO - Need to fix this input, it has a ton of extra and unused fields
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public HealthCareWorkerModel UpdateHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,

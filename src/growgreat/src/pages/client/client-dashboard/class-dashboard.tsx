@@ -184,6 +184,7 @@ export const ClassDashboard: React.FC = () => {
       clickedReferralsTab: healthCareWorker?.clickedReferralsTab,
       clickedContactTab: healthCareWorker?.clickedContactTab,
       isRegistered: true,
+      isNewAtClinic: healthCareWorker?.isNewAtClinic!,
     };
 
     switch (state?.activeTabIndex) {
