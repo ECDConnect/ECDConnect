@@ -15,7 +15,10 @@ import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { MemberProfileParams } from './types';
 import { useAppDispatch } from '@/store';
-import { healthCareWorkerThunkActions } from '@/store/healthCareWorker';
+import {
+  healthCareWorkerSelectors,
+  healthCareWorkerThunkActions,
+} from '@/store/healthCareWorker';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
 import { useEffect, useState } from 'react';
@@ -38,8 +41,11 @@ export const TeamMemberProfile = () => {
   const { showMessage } = useSnackbar();
 
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorker
+  );
 
-  const { memberId } = useParams<MemberProfileParams>();
+  const { memberHealthCareWorkerId } = useParams<MemberProfileParams>();
 
   const appDispatch = useAppDispatch();
 
@@ -53,13 +59,11 @@ export const TeamMemberProfile = () => {
     HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE
   );
 
-  // TODO: compare the hcw with the current hwc id
-  const isOwnProfile = true;
-
-  // TODO: find the member by hcw id
   const member = clinicDetails?.clinicMembers?.find(
-    (member) => member.firstName + member.surname === memberId
+    (member) => member.healthCareWorkerId === memberHealthCareWorkerId
   );
+
+  const isOwnProfile = member?.healthCareWorkerId === healthCareWorker?.id;
 
   const headerHeight = 254;
 
@@ -72,8 +76,7 @@ export const TeamMemberProfile = () => {
   const onUpdateShareContactInfo = async (message?: string) => {
     await appDispatch(
       healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
-        // TODO: get the healthCareWorkerId
-        healthCareWorkerId: '',
+        healthCareWorkerId: member?.healthCareWorkerId || '',
         welcomeMessage: message || welcomeMessage || '',
         shareContactInfo: !shareContactInfo,
       })
@@ -155,8 +158,9 @@ export const TeamMemberProfile = () => {
         {(shareContactInfo || isOwnProfile) && (
           <Typography
             type="body"
-            text={(phoneNumber && whatsAppNumber) ?? 'Phone number unavailable'}
+            text={phoneNumber || whatsAppNumber || 'Phone number unavailable'}
             color="secondary"
+            className="mt-1"
           />
         )}
         {isOwnProfile && (
@@ -197,18 +201,14 @@ export const TeamMemberProfile = () => {
                   alt="whatsapp"
                   className="mr-2"
                 />
-                <Typography
-                  type="button"
-                  text="WhatsApp team leader"
-                  color="primary"
-                />
+                <Typography type="button" text="WhatsApp CHW" color="primary" />
               </Button>
               <Button
                 className="flex-grow"
                 icon="PhoneIcon"
                 type="outlined"
                 color="primary"
-                text="Call team leader"
+                text="Call CHW"
                 textColor="primary"
                 onClick={onCall}
               />

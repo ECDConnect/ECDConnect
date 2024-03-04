@@ -32,7 +32,7 @@ export const ShareContactDialog = ({
           type: 'filled',
           text: 'Share',
           leadingIcon: 'ShareIcon',
-          onClick: onShare,
+          onClick: () => onShare(),
         },
         {
           disabled: isLoading,

@@ -31,7 +31,7 @@ const ROUTES = {
       }),
       MEMBERS: addPrefix('/members', {
         LEADER_PROFILE: '/:leaderId',
-        MEMBER_PROFILE: '/:memberId',
+        MEMBER_PROFILE: '/:memberHealthCareWorkerId',
       }),
     }),
   }),

@@ -12,6 +12,7 @@ import {
   getMoreInformation,
   getPointsActivityInfo,
 } from './community.actions';
+import { updateHealthCareWorkerWelcomeMessage } from '../healthCareWorker/healthCareWorker.actions';
 
 const initialState: CommunityState & ThunkStateStatus = {
   connect: [],
@@ -124,6 +125,30 @@ const communitySlice = createSlice({
       state.league = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(
+      updateHealthCareWorkerWelcomeMessage.fulfilled,
+      (state, action) => {
+        const healthCareWorkerId = action?.meta?.arg?.healthCareWorkerId;
+
+        if (state.team && state.team.clinic) {
+          state.team.clinic.data = state.team.clinic.data ?? {};
+          state.team.clinic.data = {
+            ...state.team.clinic.data,
+            clinicMembers: state.team.clinic.data.clinicMembers.map(
+              (member) => {
+                if (member.healthCareWorkerId === healthCareWorkerId) {
+                  return {
+                    ...member,
+                    ...action.payload,
+                  };
+                }
+                return member;
+              }
+            ),
+          };
+        }
+      }
+    );
   },
 });
 

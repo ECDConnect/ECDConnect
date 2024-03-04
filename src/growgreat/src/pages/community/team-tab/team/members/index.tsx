@@ -20,8 +20,7 @@ export const TeamMembers = () => {
     clinicDetails?.teamLeads?.map((leader) => ({
       title: `${leader.firstName ?? ''} ${leader.surname ?? ''}`,
       titleStyle: 'text-textDark',
-      // TODO: get the welcome message from the backend (currently not available)
-      subTitle: `{welcomeMessage}`,
+      subTitle: leader.welcomeMessage ?? '',
       subTitleStyle: 'text-infoDark',
       profileDataUrl: '',
       profileText: `${leader.firstName.charAt(0)}${leader.surname.charAt(0)}`,
@@ -51,8 +50,8 @@ export const TeamMembers = () => {
       onActionClick: () =>
         history.push(
           ROUTES.COMMUNITY.TEAM.MEMBERS.MEMBER_PROFILE.replace(
-            ':memberId',
-            member.firstName + member.surname
+            ':memberHealthCareWorkerId',
+            member.healthCareWorkerId
           )
         ),
     })) ?? [];

@@ -1,3 +1,3 @@
 export interface MemberProfileParams {
-  memberId?: string;
+  memberHealthCareWorkerId?: string;
 }

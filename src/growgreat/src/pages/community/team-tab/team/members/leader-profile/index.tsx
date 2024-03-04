@@ -15,16 +15,8 @@ import { useWindowSize } from '@reach/window-size';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { LeaderProfileParams } from './types';
-import { useAppDispatch } from '@/store';
-import { healthCareWorkerThunkActions } from '@/store/healthCareWorker';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
-import { useEffect, useState } from 'react';
-import { AboutYourselfDialog } from '../components/about-yourself-dialog';
 
 export const TeamLeaderProfile = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
   const { isOnline } = useOnlineStatus();
 
   const history = useHistory();
@@ -39,21 +31,6 @@ export const TeamLeaderProfile = () => {
 
   const { leaderId } = useParams<LeaderProfileParams>();
 
-  const appDispatch = useAppDispatch();
-
-  const {
-    isLoading: isUpdatingWelcomeMessage,
-    wasLoading: wasUpdatingWelcomeMessage,
-    isRejected: isRejectedUpdateWelcomeMessage,
-    error: errorWelcomeMessage,
-  } = useThunkFetchCall(
-    'healthCareWorker',
-    HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE
-  );
-
-  // TODO: compare the hcw with the current hwc id
-  const isOwnProfile = true;
-
   const leader = clinicDetails?.teamLeads?.find(
     (leader) => leader.id === leaderId
   );
@@ -61,22 +38,9 @@ export const TeamLeaderProfile = () => {
   const headerHeight = 254;
 
   const phoneNumber = leader?.phoneNumber;
-  // TODO: leader whatsAppNumber is not available
-  const whatsAppNumber = leader?.phoneNumber;
+  const whatsAppNumber = leader?.whatsAppNumber;
   const name = `${leader?.firstName} ${leader?.surname}`;
-  // TODO: get the welcome message from the backend (currently not available)
-  const welcomeMessage = `{welcomeMessage}`;
-
-  const onUpdateShareContactInfo = async (message?: string) => {
-    await appDispatch(
-      healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
-        // TODO: get the healthCareWorkerId
-        healthCareWorkerId: '',
-        welcomeMessage: message || welcomeMessage || '',
-        shareContactInfo: true,
-      })
-    );
-  };
+  const welcomeMessage = leader?.welcomeMessage;
 
   const onWhatsapp = () => {
     if (whatsAppNumber) {
@@ -99,22 +63,6 @@ export const TeamLeaderProfile = () => {
       type: 'error',
     });
   };
-
-  useEffect(() => {
-    if (wasUpdatingWelcomeMessage && !isUpdatingWelcomeMessage) {
-      if (isRejectedUpdateWelcomeMessage) {
-        showMessage({ message: errorWelcomeMessage, type: 'error' });
-      } else {
-        setIsDialogOpen(false);
-      }
-    }
-  }, [
-    errorWelcomeMessage,
-    isUpdatingWelcomeMessage,
-    isRejectedUpdateWelcomeMessage,
-    showMessage,
-    wasUpdatingWelcomeMessage,
-  ]);
 
   return (
     <BannerWrapper
@@ -148,76 +96,46 @@ export const TeamLeaderProfile = () => {
         style={{ height: height - headerHeight }}
       >
         <Typography type="h3" text={name} />
-        {isOwnProfile && (
-          <Typography
-            type="body"
-            text={(phoneNumber && whatsAppNumber) ?? 'Phone number unavailable'}
-            color="secondary"
+        <Typography
+          type="body"
+          text={phoneNumber || whatsAppNumber || 'Phone number unavailable'}
+          color="secondary"
+          className="mt-1"
+        />
+        <div className="my-4 flex flex-wrap justify-between gap-4">
+          <Button
+            className="flex-grow"
+            type="outlined"
+            color="primary"
+            textColor="primary"
+            onClick={onWhatsapp}
+          >
+            <img
+              src={getLogo(LogoSvgs.whatsapp)}
+              alt="whatsapp"
+              className="mr-2"
+            />
+            <Typography
+              type="button"
+              text="WhatsApp team leader"
+              color="primary"
+            />
+          </Button>
+          <Button
+            className="flex-grow"
+            icon="PhoneIcon"
+            type="outlined"
+            color="primary"
+            text="Call team leader"
+            textColor="primary"
+            onClick={onCall}
           />
-        )}
-        {!isOwnProfile && (
-          <>
-            <div className="my-4 flex flex-wrap justify-between gap-4">
-              <Button
-                className="flex-grow"
-                type="outlined"
-                color="primary"
-                textColor="primary"
-                onClick={onWhatsapp}
-              >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className="mr-2"
-                />
-                <Typography
-                  type="button"
-                  text="WhatsApp team leader"
-                  color="primary"
-                />
-              </Button>
-              <Button
-                className="flex-grow"
-                icon="PhoneIcon"
-                type="outlined"
-                color="primary"
-                text="Call team leader"
-                textColor="primary"
-                onClick={onCall}
-              />
-            </div>
-            <Alert
-              type="info"
-              title="WhatsApps and phone calls will be charged at your standard carrier rates."
-            />
-          </>
-        )}
-        {isOwnProfile && (
-          <div className="mt-auto flex flex-col gap-4 pt-4">
-            <Button
-              icon="PencilIcon"
-              type="filled"
-              color="primary"
-              text="Edit short description"
-              textColor="white"
-              onClick={() => setIsDialogOpen(true)}
-            />
-            <Button
-              icon="UserIcon"
-              type="outlined"
-              color="primary"
-              text="Edit my profile"
-              textColor="primary"
-              onClick={() => history.push(ROUTES.PRACTITIONER.ABOUT)}
-            />
-          </div>
-        )}
+        </div>
+        <Alert
+          type="info"
+          title="WhatsApps and phone calls will be charged at your standard carrier rates."
+        />
       </div>
-      <AboutYourselfDialog
-        visible={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        onSave={onUpdateShareContactInfo}
-      />
     </BannerWrapper>
   );
 };
