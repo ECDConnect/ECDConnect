@@ -204,15 +204,19 @@ export const Dashboard: React.FC = () => {
       current: false,
       showDivider: true,
     },
-    {
-      name: NavigationTypes.Community,
-      href: isFirstTimeCommunitySection
-        ? ROUTES.COMMUNITY.WELCOME
-        : ROUTES.COMMUNITY.ROOT,
-      icon: 'BookOpenIcon',
-      current: false,
-      showDivider: true,
-    },
+    ...(clinicDetails
+      ? [
+          {
+            name: NavigationTypes.Community,
+            href: isFirstTimeCommunitySection
+              ? ROUTES.COMMUNITY.WELCOME
+              : ROUTES.COMMUNITY.ROOT,
+            icon: 'UserGroupIcon',
+            current: false,
+            showDivider: true,
+          },
+        ]
+      : []),
     {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,
@@ -384,34 +388,38 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!clinicDetails?.league ? (
-          <ScoreCard
-            className="mt-30 h-20 w-full"
-            mainText={communityCard.mainText}
-            hint={communityCard.hint}
-            hintClassName={communityCard.hintClassName}
-            textPosition="left"
-            currentPoints={communityCard.currentPoints}
-            maxPoints={communityCard.maxPoints}
-            onClick={communityCard.onClick}
-            barBgColour={communityCard.barBgColour}
-            barColour={communityCard.barColour}
-            bgColour={communityCard.bgColour}
-            image={communityCard.image}
-            textColour={communityCard.textColour}
-            onClickClassName="text-textLight"
-            statusChip={communityCard.statusChip}
-          />
-        ) : (
-          <TitleListItem
-            item={{
-              title: communityCard.hint,
-              onActionClick: communityCard.onClick!,
-              titleIcon: 'UserGroupIcon',
-              titleIconClassName: 'bg-tertiary text-white',
-              classNames: 'bg-uiBg w-full mt-30',
-            }}
-          />
+        {!!clinicDetails && (
+          <>
+            {!!clinicDetails?.league ? (
+              <ScoreCard
+                className="mt-30 h-20 w-full"
+                mainText={communityCard.mainText}
+                hint={communityCard.hint}
+                hintClassName={communityCard.hintClassName}
+                textPosition="left"
+                currentPoints={communityCard.currentPoints}
+                maxPoints={communityCard.maxPoints}
+                onClick={communityCard.onClick}
+                barBgColour={communityCard.barBgColour}
+                barColour={communityCard.barColour}
+                bgColour={communityCard.bgColour}
+                image={communityCard.image}
+                textColour={communityCard.textColour}
+                onClickClassName="text-textLight"
+                statusChip={communityCard.statusChip}
+              />
+            ) : (
+              <TitleListItem
+                item={{
+                  title: communityCard.hint,
+                  onActionClick: communityCard.onClick!,
+                  titleIcon: 'UserGroupIcon',
+                  titleIconClassName: 'bg-tertiary text-white',
+                  classNames: 'bg-uiBg w-full mt-30',
+                }}
+              />
+            )}
+          </>
         )}
       </div>
     </BannerWrapper>

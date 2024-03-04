@@ -8,24 +8,22 @@ import {
   BannerWrapper,
   Button,
   ProfileAvatar,
+  StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
-import { MemberProfileParams } from './types';
+import { LeaderProfileParams } from './types';
 import { useAppDispatch } from '@/store';
 import { healthCareWorkerThunkActions } from '@/store/healthCareWorker';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
 import { useEffect, useState } from 'react';
 import { AboutYourselfDialog } from '../components/about-yourself-dialog';
-import { ShareContactDialog } from '../components/share-contact-dialog';
 
-export const TeamMemberProfile = () => {
+export const TeamLeaderProfile = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isShareContactInfoDialogOpen, setShareContactInfoDialogOpen] =
-    useState(false);
 
   const { isOnline } = useOnlineStatus();
 
@@ -39,7 +37,7 @@ export const TeamMemberProfile = () => {
 
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
-  const { memberId } = useParams<MemberProfileParams>();
+  const { leaderId } = useParams<LeaderProfileParams>();
 
   const appDispatch = useAppDispatch();
 
@@ -56,18 +54,18 @@ export const TeamMemberProfile = () => {
   // TODO: compare the hcw with the current hwc id
   const isOwnProfile = true;
 
-  // TODO: find the member by hcw id
-  const member = clinicDetails?.clinicMembers?.find(
-    (member) => member.firstName + member.surname === memberId
+  const leader = clinicDetails?.teamLeads?.find(
+    (leader) => leader.id === leaderId
   );
 
   const headerHeight = 254;
 
-  const phoneNumber = member?.phoneNumber;
-  const whatsAppNumber = member?.whatsAppNumber;
-  const name = `${member?.firstName} ${member?.surname}`;
-  const shareContactInfo = member?.shareContactInfo;
-  const welcomeMessage = member?.welcomeMessage;
+  const phoneNumber = leader?.phoneNumber;
+  // TODO: leader whatsAppNumber is not available
+  const whatsAppNumber = leader?.phoneNumber;
+  const name = `${leader?.firstName} ${leader?.surname}`;
+  // TODO: get the welcome message from the backend (currently not available)
+  const welcomeMessage = `{welcomeMessage}`;
 
   const onUpdateShareContactInfo = async (message?: string) => {
     await appDispatch(
@@ -75,17 +73,9 @@ export const TeamMemberProfile = () => {
         // TODO: get the healthCareWorkerId
         healthCareWorkerId: '',
         welcomeMessage: message || welcomeMessage || '',
-        shareContactInfo: !shareContactInfo,
+        shareContactInfo: true,
       })
     );
-  };
-
-  const handleUpdateAboutInfo = () => {
-    if (shareContactInfo) {
-      return onUpdateShareContactInfo();
-    }
-
-    return setShareContactInfoDialogOpen(true);
   };
 
   const onWhatsapp = () => {
@@ -115,7 +105,6 @@ export const TeamMemberProfile = () => {
       if (isRejectedUpdateWelcomeMessage) {
         showMessage({ message: errorWelcomeMessage, type: 'error' });
       } else {
-        setShareContactInfoDialogOpen(false);
         setIsDialogOpen(false);
       }
     }
@@ -145,6 +134,13 @@ export const TeamMemberProfile = () => {
           dataUrl={''}
           size={'header'}
         />
+        <StatusChip
+          backgroundColour="secondary"
+          borderColour="secondary"
+          text="Team leader"
+          textColour="white"
+          className="mt-4 px-3 py-1.5"
+        />
         <Typography className="mt-4" type="h4" text={welcomeMessage} />
       </div>
       <div
@@ -152,37 +148,14 @@ export const TeamMemberProfile = () => {
         style={{ height: height - headerHeight }}
       >
         <Typography type="h3" text={name} />
-        {(shareContactInfo || isOwnProfile) && (
+        {isOwnProfile && (
           <Typography
             type="body"
             text={(phoneNumber && whatsAppNumber) ?? 'Phone number unavailable'}
             color="secondary"
           />
         )}
-        {isOwnProfile && (
-          <Alert
-            className="mt-5"
-            type={shareContactInfo ? 'info' : 'warning'}
-            title={
-              shareContactInfo
-                ? 'You are sharing your contact details with club members.'
-                : 'You are not sharing your contact details with club members.'
-            }
-            button={
-              <Button
-                isLoading={isUpdatingWelcomeMessage}
-                disabled={isUpdatingWelcomeMessage}
-                type="filled"
-                color="primary"
-                textColor="white"
-                icon={shareContactInfo ? 'XIcon' : 'ShareIcon'}
-                text={shareContactInfo ? 'Stop sharing' : 'Start sharing'}
-                onClick={handleUpdateAboutInfo}
-              />
-            }
-          />
-        )}
-        {shareContactInfo && !isOwnProfile && (
+        {!isOwnProfile && (
           <>
             <div className="my-4 flex flex-wrap justify-between gap-4">
               <Button
@@ -219,13 +192,6 @@ export const TeamMemberProfile = () => {
             />
           </>
         )}
-        {!shareContactInfo && !isOwnProfile && (
-          <Alert
-            className="mt-5"
-            type="info"
-            title="No phone or WhatsApp number shared."
-          />
-        )}
         {isOwnProfile && (
           <div className="mt-auto flex flex-col gap-4 pt-4">
             <Button
@@ -251,12 +217,6 @@ export const TeamMemberProfile = () => {
         visible={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSave={onUpdateShareContactInfo}
-      />
-      <ShareContactDialog
-        isLoading={isUpdatingWelcomeMessage}
-        visible={isShareContactInfoDialogOpen}
-        onClose={() => setShareContactInfoDialogOpen(false)}
-        onShare={onUpdateShareContactInfo}
       />
     </BannerWrapper>
   );
