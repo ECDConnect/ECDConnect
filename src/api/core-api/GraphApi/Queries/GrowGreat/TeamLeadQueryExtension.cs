@@ -116,7 +116,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string> {"Surname", "Text, (required)"},
                 new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
                 new List<string> {"Email address", "email, (optional)"},
-                new List<string> {"Clinic Name", "exact name of clinic, (required)"}
+                new List<string>{"Clinic ID 1", "Clinic's ID, (required)" },
+                new List<string>{"Clinic ID 2", "Clinic's ID, (optional)" }
             };
             
             var templateHeaderSheet = $"Team Lead Template";
@@ -130,13 +131,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     "Surname",
                     "Cellphone number",
                     "Email address",
-                    "Clinic Name"
+                    "Clinic Id 1",
+                    "Clinic Id 2"
                 }
             };
 
             var clinicNameSheet = $"Clinic Names";
             var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: uId);
-            var clinicNames = clinicRepo.GetAll().Where(c => c.TenantId == TenantExecutionContext.Tenant.Id).Select(c => new List<string> { c.Name, "" }).ToList();
+            var clinicNames = clinicRepo.GetAll().Where(c => c.TenantId == TenantExecutionContext.Tenant.Id).Select(c => new List<string> { c.Name, c.Id.ToString(), "" }).ToList();
 
             var spreadSheets = new Dictionary<string, List<List<string>>>() {
                 { templateHeaderSheet, templateHeaders },

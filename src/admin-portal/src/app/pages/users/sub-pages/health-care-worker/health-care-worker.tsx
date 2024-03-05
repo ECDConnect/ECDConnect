@@ -88,7 +88,8 @@ export default function HealthCareWorkers() {
     return {
       provinceSearch: province,
       clinicSearch: clinic,
-      teamLeadSearch: teamLead,
+      // @Bira, this search replace the team lead search
+      subDistrictSearch: '',
       search: search,
       order: [
         {

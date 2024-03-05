@@ -13,6 +13,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
@@ -40,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             string search = null,
             string provinceSearch = null,
             string clinicSearch = null,
-            string teamLeadSearch = null)
+            string subDistrictSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
@@ -53,17 +54,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
-            if (!string.IsNullOrWhiteSpace(teamLeadSearch))
-            {
-                healthCareWorkers = healthCareWorkers
-                    .Where(h => h.Clinic.TeamLeads.Any(tl => EF.Functions.ILike(tl.TeamLead.User.FullName, $"%{teamLeadSearch}%")
-                    || EF.Functions.ILike(tl.TeamLead.User.IdNumber, $"%{teamLeadSearch}%")
-                    || EF.Functions.ILike(tl.TeamLead.User.PhoneNumber, $"%{teamLeadSearch}%")
-                    || EF.Functions.ILike(tl.TeamLead.User.Email, $"%{teamLeadSearch}%")));
-            }
+            if (!string.IsNullOrWhiteSpace(subDistrictSearch))
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.SubDistrict.Name, $"%{subDistrictSearch}%"));
 
             if (!string.IsNullOrWhiteSpace(provinceSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.SubDistrict.District.Province.Description, $"%{provinceSearch}%"));
 
             if (!string.IsNullOrWhiteSpace(clinicSearch))
                 healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
@@ -249,8 +244,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<FileModel> HealthCareWorkerTemplateGenerator(
-          [Service] IFileGenerationService fileService)
+          [Service] IFileGenerationService fileService,
+          [Service] IHttpContextAccessor contextAccessor,
+          IGenericRepositoryFactory repoFactory)
         {
+
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user.Id;
+
             var fieldDefinitionList = new List<List<string>>
             {
                 new List<string>{"Column", "Type Description"},
@@ -260,7 +261,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string>{"First name", "Text, (required)"},
                 new List<string>{"Surname", "Text, (required)"},
                 new List<string>{"Cellphone number", "Number, (required, 10 digits)"},
-                new List<string>{"Team Lead ID", "Team Lead's ID number, (required; please add all TLs before linking them to CHWs, the ID number added must match a Team Lead currently on CHW Connect)" }
+                new List<string>{"Clinic ID", "Clinic's ID, (required)" }
             };
             var fieldDefinitionSheet = $"Field Definition";
 
@@ -273,15 +274,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     "First name",
                     "Surname",
                     "Cellphone number",
-                    "Team Lead ID"
+                    "Clinic ID"
                 }
             };
             var templateHeaderSheet = $"Community Health Worker Template";
+
+            var clinicNameSheet = $"Clinic Names";
+            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: uId);
+            var clinicNames = clinicRepo.GetAll().Where(c => c.TenantId == TenantExecutionContext.Tenant.Id).Select(c => new List<string> { c.Name, c.Id.ToString(), "" }).ToList();
 
             var fileName = templateHeaderSheet.Replace(" ", "_");
             var spreadSheets = new Dictionary<string, List<List<string>>>() {
                 { templateHeaderSheet, templateHeaders },
                 { fieldDefinitionSheet, fieldDefinitionList },
+                { clinicNameSheet, clinicNames }
             };
 
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);

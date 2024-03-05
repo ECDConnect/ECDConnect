@@ -37,15 +37,6 @@ export const GetAllTeamLead = gql`
           name
         }
       }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
-      }
     }
   }
 `;
@@ -73,15 +64,6 @@ export const GetAllTeamLeadAdminList = gql`
         email
         idNumber
         fullName
-      }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
       }
     }
   }
@@ -154,15 +136,6 @@ export const GetTeamLead = gql`
         roles @include(if: $fetchRoles) {
           id
           name
-        }
-      }
-
-      clinic @include(if: $fetchClinic) {
-        name
-        siteAddress {
-          province {
-            description
-          }
         }
       }
     }
