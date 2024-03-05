@@ -1,8 +1,8 @@
 import { useQuery } from '@apollo/client';
 import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
-import { GetAllClinic } from '@ecdlink/graphql';
-import { Dropdown } from '@ecdlink/ui';
+import { GetAllClinic, GetSubDistrictsAndStats } from '@ecdlink/graphql';
+import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -16,20 +16,25 @@ export default function ClinicsSubPage() {
   const { data, refetch } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: subDistrictsData } = useQuery(GetSubDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const history = useHistory();
 
   const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState('active');
   const [showFilter, setShowFilter] = useState(false);
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
-  const [nameFilter, setNameFilter] = useState(true);
+  const [subDistricts, setSubDistricts] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
 
   const clearFilters = () => {
-    setStatusFilter('');
-    setNameFilter(false);
+    setSubDistrict('');
   };
 
   const [tableData, setTableData] = useState<any[]>([]);
+  const [subDistrict, setSubDistrict] = useState('');
 
   useEffect(() => {
     if (data && data.GetAllClinic) {
@@ -48,6 +53,31 @@ export default function ClinicsSubPage() {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (subDistrictsData?.subDistrictsAndStats?.length > 0) {
+      setSubDistricts(
+        subDistrictsData?.subDistrictsAndStats?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+          };
+        })
+      );
+    }
+  }, [subDistrictsData?.subDistrictsAndStats]);
+
+  useEffect(() => {
+    if (subDistrict && subDistrictsData?.subDistrictsAndStats?.length > 0) {
+      setTableData(
+        data?.GetAllClinic?.filter(
+          (item) => item?.subDistrict?.id === subDistrict
+        )
+      );
+    } else {
+      setTableData(data?.GetAllClinic);
+    }
+  }, [data, subDistrict, subDistrictsData?.subDistrictsAndStats?.length]);
+
   const panel = usePanel();
   const displayPanel = () => {
     panel({
@@ -56,27 +86,6 @@ export default function ClinicsSubPage() {
       render: (onSubmit: any) => (
         <CreateClinicPanel
           key={`clinicPanelCreate`}
-          closeDialog={(clinicCreated: boolean) => {
-            onSubmit();
-
-            if (clinicCreated) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-  const displayEditPanel = (clinic) => {
-    panel({
-      noPadding: true,
-      title: 'Add a clinic',
-      render: (onSubmit: any) => (
-        <CreateClinicPanel
-          key={`clinicPanelCreate`}
-          isEdit={true}
-          clinic={clinic}
           closeDialog={(clinicCreated: boolean) => {
             onSubmit();
 
@@ -132,94 +141,15 @@ export default function ClinicsSubPage() {
                         fillType="filled"
                         textColor="white"
                         fillColor="secondary"
-                        placeholder="Filter By Name"
+                        placeholder="Sub-district"
                         labelColor="white"
-                        selectedValue={nameFilter}
-                        list={[
-                          { label: 'Ascending', value: false },
-                          { label: 'Descending', value: true },
-                        ]}
+                        selectedValue={subDistrict}
+                        list={subDistricts}
                         onChange={(item) => {
-                          setNameFilter(item);
+                          setSubDistrict(item);
                         }}
                         className="p-2"
                       />
-                    </div>
-
-                    <div>
-                      <div className="relative inline-block text-left">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowDropDownFilter(!showDropDownFilter)
-                            }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                              !showDropDownFilter
-                                ? 'bg-secondary text-white'
-                                : 'text-secondary border-secondary border-2 bg-white'
-                            } hover:text-secondary hover:bg-white `}
-                            id="menu-button"
-                            aria-expanded={showDropDownFilter}
-                            aria-haspopup={showDropDownFilter}
-                          >
-                            {statusFilter === ''
-                              ? 'Filter by status'
-                              : statusFilter}
-                            <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${
-                                !showDropDownFilter
-                                  ? 'hover:text-secondary text-white'
-                                  : 'text-secondary hover:text-white'
-                              }`}
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        {/*  */}
-                        {showDropDownFilter && (
-                          <div
-                            className="focus:outline-none absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                            role="menu"
-                            aria-orientation="horizontal"
-                            aria-labelledby="menu-button"
-                          >
-                            <div className="py-1" role="none">
-                              {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('active');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className=" focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-0"
-                              >
-                                Active
-                              </a>
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('inactive');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className="focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-1"
-                              >
-                                Inactive
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                     <div className="justify-self col-end-3 ">

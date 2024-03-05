@@ -6,6 +6,7 @@ import {
   Dropdown,
   FormInput,
   SearchDropDownOption,
+  StatusChip,
 } from '@ecdlink/ui';
 import {
   ClinicPanelCreateProps,
@@ -161,6 +162,38 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   return (
     <div className="h-screen">
+      {props?.isEdit && (
+        <div className="flex">
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${props?.district?.totalSubDistricts} sub-districts`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${props?.district?.totalClinics} clinics`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${props?.district?.totalTeamLeads} Team Leads`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${props?.district?.totalHCWs} CHWs`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
+        </div>
+      )}
       <Divider dividerType="dashed" className="py-8" />
       <div className="flex flex-col gap-4">
         <FormInput<DistrictModel>

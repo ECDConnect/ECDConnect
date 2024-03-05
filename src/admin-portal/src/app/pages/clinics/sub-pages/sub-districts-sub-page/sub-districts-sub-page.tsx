@@ -195,7 +195,7 @@ export default function SubDistrictsSubPage() {
                         fillColor="secondary"
                         placeholder="District"
                         labelColor="white"
-                        // selectedValue={district}
+                        selectedValue={district}
                         list={districts}
                         onChange={(item) => {
                           setDistrict(item);
