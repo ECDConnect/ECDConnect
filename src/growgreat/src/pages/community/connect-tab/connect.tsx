@@ -74,7 +74,8 @@ export const Connect: React.FC = () => {
   }, [connectData, connectItemData]);
 
   const onLinkClicked = (link: string) => {
-    window.open(link, '_blank');
+    const newWindow = window.open(link, '_blank', 'noopener,noreferrer');
+    if (newWindow) newWindow.opener = null;
   };
 
   return (
@@ -125,6 +126,8 @@ export const Connect: React.FC = () => {
                         onClick={() => {
                           onLinkClicked(child?.link || '');
                         }}
+                        target="_blank"
+                        rel="noreferrer"
                       >
                         <img className={''} src={OpenLink} alt="" />
                       </a>
