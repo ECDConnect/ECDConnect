@@ -43,12 +43,11 @@ export interface ClinicPointsDto {
   leagueRanking: number;
   pointsTotal: number;
   maxPointsTotal: number;
-  points: PointsActivityDto[];
+  points: PointsCategoryDto[];
 }
 
-export interface PointsActivityDto {
-  pointsLibraryId: string;
+export interface PointsCategoryDto {
+  pointsCategoryId: string;
   pointsTotal: string;
-  activityName: string;
-  subActivityName: string;
+  categoryName: string;
 }

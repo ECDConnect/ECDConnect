@@ -61,10 +61,9 @@ class ClinicService {
             pointsTotal
             maxPointsTotal
             points {
-              pointsLibraryId
+              pointsCategoryId
               pointsTotal
-              activityName
-              subActivityName
+              categoryName
             }
           }
         }

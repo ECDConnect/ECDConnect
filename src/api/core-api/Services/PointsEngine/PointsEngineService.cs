@@ -37,6 +37,8 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepositoryFactory _repositoryFactory;
 
         private readonly IGenericRepository<PointsLibrary, Guid> _pointsLibraryRepo;
+        private readonly IGenericRepository<PointsCategory, Guid> _pointsCategoryRepo;
+        private readonly IGenericRepository<PointsActivity, Guid> _pointsActivityRepo;
         private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
 
         private readonly IGenericRepository<Child, Guid> _childRepo;
@@ -88,6 +90,8 @@ namespace EcdLink.Api.CoreApi.Services
             _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().GetValueOrDefault());
 
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
+            _pointsCategoryRepo = _repositoryFactory.CreateGenericRepository<PointsCategory>(userContext: _uId);
+            _pointsActivityRepo = _repositoryFactory.CreateGenericRepository<PointsActivity>(userContext: _uId);
             _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _uId);
 
             _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
@@ -133,7 +137,6 @@ namespace EcdLink.Api.CoreApi.Services
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return _pointsLibraryRepo.GetAll().Where(x => x.TenantId == tenantId).ToList();
         }
-
 
         public List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null)
         {
@@ -1135,7 +1138,12 @@ namespace EcdLink.Api.CoreApi.Services
         public ClinicPointsModel GetPointsDetailsForClinic(Guid clinicId)
         {
             // Get clinic with HCWs
-            var clinic = _clinicRepo.GetById(clinicId);
+            var clinic = _clinicRepo.GetAll().Where(x => x.Id == clinicId).FirstOrDefault();
+
+            if (clinic == null)
+            {
+                return null;
+            }
 
             // Get active league
             var league = clinic.Leagues.FirstOrDefault(x => x.IsActive);
@@ -1154,21 +1162,28 @@ namespace EcdLink.Api.CoreApi.Services
 
             var totalPoints = userPoints.Sum(x => x.PointsTotal);
 
-            var groupedPoints = userPoints.GroupBy(x => x.PointsLibraryId).Select(x => new PointsActivityModel()
-            {
-                PointsLibraryId = x.First().PointsLibraryId,
-                ActivityName = x.First().PointsLibrary.Activity,
-                SubActivityName = x.First().PointsLibrary.SubActivity,
-                PointsTotal = x.Sum(x => x.PointsTotal)
-            }).ToList();
-
             var leagueWithRankings = GetLeagueWithClinicRankings(league.LeagueId);
             var clinicRanking = leagueWithRankings.Clinics.First(x => x.ClinicId == clinicId);
+
+            var allCategories = _pointsCategoryRepo.GetAll().ToList();
+
+            // Note: for clinics, we group the activities by category before returning the total
+            var clinicPoints = new List<PointsCategoryModel>();
+            foreach (var category in allCategories)
+            {
+                var categoryPoints = userPoints.Where(x => x.PointsActivity.PointsCategoryId == category.Id).Sum(x => x.PointsTotal);
+                clinicPoints.Add(new PointsCategoryModel()
+                {
+                    PointsCategoryId = category.Id,
+                    CategoryName = category.Name,
+                    PointsTotal = categoryPoints,
+                });
+            }
 
             return new ClinicPointsModel()
             {
                 LeagueRanking = clinicRanking.LeagueRanking,
-                Points = groupedPoints,
+                Points = clinicPoints,
                 PointsTotal = totalPoints,
                 MaxPointsTotal = league.League.LeagueType.MaxPoints,
             };
