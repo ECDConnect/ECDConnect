@@ -6,7 +6,7 @@ import {
   GetDistrictsAndStats,
   GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
-import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import { SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -55,13 +55,12 @@ export default function SubDistrictsSubPage() {
     [data.subDistrictsAndStats, filteredProvinces]
   );
 
-  const [district, setDistrict] = useState('');
-
   const [districtsFiltered, setdistrictsFiltered] =
     useState<SearchDropDownOption<string>[]>();
 
   const clearFilters = () => {
     setdistrictsFiltered([]);
+    setProvincesFiltered([]);
   };
 
   const districtsFilteredArray = useMemo(
