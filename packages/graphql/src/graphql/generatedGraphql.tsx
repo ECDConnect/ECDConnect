@@ -341,6 +341,11 @@ export type AddChildUserConsentTokenModelInput = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type AddHealthCareWorkerInputModelInput = {
+  languageId?: InputMaybe<Scalars['UUID']>;
+  userId: Scalars['UUID'];
+};
+
 export type AgeSpreadDisplay = {
   __typename?: 'AgeSpreadDisplay';
   color?: Maybe<Scalars['String']>;
@@ -4199,23 +4204,6 @@ export type HealthCareWorkerInput = {
   WelcomeMessage?: InputMaybe<Scalars['String']>;
 };
 
-export type HealthCareWorkerInputModelInput = {
-  clickedContactTab?: InputMaybe<Scalars['Boolean']>;
-  clickedDashboardClientsTab?: InputMaybe<Scalars['Boolean']>;
-  clickedDashboardHighlightsTab?: InputMaybe<Scalars['Boolean']>;
-  clickedDashboardVisitsTab?: InputMaybe<Scalars['Boolean']>;
-  clickedProgressTab?: InputMaybe<Scalars['Boolean']>;
-  clickedReferralsTab?: InputMaybe<Scalars['Boolean']>;
-  clickedVisitTab?: InputMaybe<Scalars['Boolean']>;
-  isNewAtClinic: Scalars['Boolean'];
-  isRegistered: Scalars['Boolean'];
-  languageId?: InputMaybe<Scalars['UUID']>;
-  teamLead?: InputMaybe<TeamLeadInput>;
-  teamLeadId?: InputMaybe<Scalars['UUID']>;
-  user?: InputMaybe<ApplicationUserInput>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type HealthCareWorkerModel = {
   __typename?: 'HealthCareWorkerModel';
   clickedContactTab: Scalars['Boolean'];
@@ -6132,7 +6120,8 @@ export type Mutation = {
   deleteClassReassignmentHistory?: Maybe<Scalars['Boolean']>;
   deleteClassroom?: Maybe<Scalars['Boolean']>;
   deleteClassroomGroup?: Maybe<Scalars['Boolean']>;
-  deleteClinic?: Maybe<Clinic>;
+  deleteClinic?: Maybe<Scalars['Boolean']>;
+  deleteClinicById?: Maybe<Clinic>;
   deleteClinicLeague?: Maybe<Scalars['Boolean']>;
   deleteClinicTeamLead?: Maybe<Scalars['Boolean']>;
   deleteClub?: Maybe<Scalars['Boolean']>;
@@ -6651,7 +6640,7 @@ export type MutationAddFollowUpVisitForPractitionerArgs = {
 };
 
 export type MutationAddHealthCareWorkerArgs = {
-  input?: InputMaybe<HealthCareWorkerInputModelInput>;
+  input?: InputMaybe<AddHealthCareWorkerInputModelInput>;
 };
 
 export type MutationAddInfantArgs = {
@@ -7447,8 +7436,11 @@ export type MutationDeleteClassroomGroupArgs = {
 };
 
 export type MutationDeleteClinicArgs = {
-  clinicId: Scalars['UUID'];
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteClinicByIdArgs = {
+  clinicId: Scalars['UUID'];
 };
 
 export type MutationDeleteClinicLeagueArgs = {
@@ -8876,12 +8868,12 @@ export type MutationUpdateGrantArgs = {
 
 export type MutationUpdateHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<HealthCareWorkerInputModelInput>;
+  input?: InputMaybe<UpdateHealthCareWorkerInputModelInput>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateHealthCareWorkerTabsArgs = {
-  input?: InputMaybe<HealthCareWorkerInputModelInput>;
+  input?: InputMaybe<UpdateHealthCareWorkerTabsInputModelInput>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -16384,6 +16376,21 @@ export type TraineeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
+};
+
+export type UpdateHealthCareWorkerInputModelInput = {
+  isRegistered: Scalars['Boolean'];
+  languageId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type UpdateHealthCareWorkerTabsInputModelInput = {
+  clickedContactTab?: InputMaybe<Scalars['Boolean']>;
+  clickedDashboardClientsTab?: InputMaybe<Scalars['Boolean']>;
+  clickedDashboardHighlightsTab?: InputMaybe<Scalars['Boolean']>;
+  clickedDashboardVisitsTab?: InputMaybe<Scalars['Boolean']>;
+  clickedProgressTab?: InputMaybe<Scalars['Boolean']>;
+  clickedReferralsTab?: InputMaybe<Scalars['Boolean']>;
+  clickedVisitTab?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type UpdateVisitPlannedVisitDateModelInput = {

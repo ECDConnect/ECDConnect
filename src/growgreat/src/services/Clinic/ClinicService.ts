@@ -44,7 +44,7 @@ class ClinicService {
             jobTitle
             phoneNumber
             whatsAppNumber
-            welcomMessage
+            welcomeMessage
           }
           clinicMembers {
             healthCareWorkerId

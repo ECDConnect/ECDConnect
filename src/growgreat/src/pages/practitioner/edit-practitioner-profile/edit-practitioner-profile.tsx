@@ -19,6 +19,7 @@ import {
   healthCareWorkerSelectors,
   healthCareWorkerThunkActions,
 } from '@/store/healthCareWorker';
+import { UpdateHealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -63,78 +64,27 @@ export const EditPractitionerProfile: React.FC = () => {
   };
 
   const onAllStepsComplete = async () => {
-    const copy = Object.assign({}, healthCareWorker);
-
-    const siteAddress = copy?.teamLead?.clinic?.siteAddress;
-
-    const copyUpdated: any = {
-      userId: copy?.id,
-      isRegistered: true,
+    const input: UpdateHealthCareWorkerInputModelInput = {
       languageId: language,
-      teamLead: {
-        JobTitle: copy?.teamLead?.jobTitle,
-        IsActive: true,
-        Clinic: {
-          Name: copy?.teamLead?.clinic?.name,
-          PhoneNumber: copy?.teamLead?.clinic?.phoneNumber,
-          SiteAddress: {
-            AddressLine1: siteAddress?.addressLine1,
-            AddressLine2: siteAddress?.addressLine2,
-            AddressLine3: siteAddress?.addressLine3,
-            Name: siteAddress?.name,
-            PostalCode: siteAddress?.postalCode,
-            Province: {
-              Description: siteAddress?.province?.description,
-              IsActive: true,
-            },
-            IsActive: true,
-          },
-          IsActive: true,
-        },
-        User: {
-          firstName: copy?.teamLead?.user?.firstName,
-          surname: copy?.teamLead?.user?.surname,
-          phoneNumber: copy?.teamLead?.user?.phoneNumber,
-          emailConfirmed: true,
-          phoneNumberConfirmed: true,
-          twoFactorEnabled: false,
-          isSouthAfricanCitizen: true,
-          verifiedByHomeAffairs: true,
-          dateOfBirth: new Date(),
-          isActive: true,
-          lastSeen: new Date(),
-        },
-      },
-      user: copy?.user,
+      isRegistered: true,
     };
-    if (copy) {
-      copy.languageId = language;
-      copy.isRegistered = true;
 
-      await appDispatch(
-        healthCareWorkerActions.updateHealthCareWorker(copyUpdated)
-      );
-      await appDispatch(
-        healthCareWorkerThunkActions.updateHealthCareWorkerById({
-          userId: user?.id!,
-          input: copyUpdated,
-        })
-      );
-      await appDispatch(
-        healthCareWorkerThunkActions.getHealthCareWorkerByUserId({
-          userId: user?.id!,
-        })
-      );
+    await appDispatch(healthCareWorkerActions.updateHealthCareWorker(input));
+    await appDispatch(
+      healthCareWorkerThunkActions.updateHealthCareWorker({
+        userId: user?.id!,
+        input: input,
+      })
+    );
 
-      if (isOnline) {
-        //   await healthCareWorkerThunkActions?.updateHealthCareWorkerById({
-        // id: user?.id!, input: copy}
-        //   )
-      } else {
-        showOnlineOnly();
-      }
-      history.push(ROUTES.ROOT);
+    if (isOnline) {
+      //   await healthCareWorkerThunkActions?.updateHealthCareWorkerById({
+      // id: user?.id!, input: copy}
+      //   )
+    } else {
+      showOnlineOnly();
     }
+    history.push(ROUTES.ROOT);
   };
 
   const steps = (step: EditPractitionerSteps) => {

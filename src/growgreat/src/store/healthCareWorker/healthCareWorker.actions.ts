@@ -1,7 +1,10 @@
 import { HealthCareWorkerService } from '@/services/HealthCareWorkerService';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
-import { HealthCareWorkerInputModelInput } from '@ecdlink/graphql';
+import {
+  UpdateHealthCareWorkerInputModelInput,
+  UpdateHealthCareWorkerTabsInputModelInput,
+} from '@ecdlink/graphql';
 import { HealthCareWorkerDto } from '@ecdlink/core';
 
 export const HealthCareWorkerActions = {
@@ -47,11 +50,11 @@ export const getHealthCareWorkerByUserId = createAsyncThunk<
 
 export type UpdateHealthCareWorkerRequest = {
   userId: string;
-  input: any;
+  input: UpdateHealthCareWorkerInputModelInput;
 };
 
-export const updateHealthCareWorkerById = createAsyncThunk<
-  any,
+export const updateHealthCareWorker = createAsyncThunk<
+  HealthCareWorkerDto,
   UpdateHealthCareWorkerRequest,
   ThunkApiType<RootState>
 >(
@@ -63,9 +66,11 @@ export const updateHealthCareWorkerById = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        await new HealthCareWorkerService(
+        const response = await new HealthCareWorkerService(
           userAuth?.auth_token
         ).updateHealthCareWorker(userId, input);
+
+        return response;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -77,7 +82,7 @@ export const updateHealthCareWorkerById = createAsyncThunk<
 
 export const updateHealthCareWorkerTabs = createAsyncThunk<
   HealthCareWorkerDto,
-  { input: HealthCareWorkerInputModelInput; userId: string },
+  { input: UpdateHealthCareWorkerTabsInputModelInput; userId: string },
   ThunkApiType<RootState>
 >(
   HealthCareWorkerActions.UPDATE_HEALTH_CAREWORKER_TABS,
