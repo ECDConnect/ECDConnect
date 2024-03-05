@@ -67,6 +67,7 @@ export const TeamMemberProfile = () => {
 
   const headerHeight = 254;
 
+  const profileImageUrl = member?.profileImageUrl;
   const phoneNumber = member?.phoneNumber;
   const whatsAppNumber = member?.whatsAppNumber;
   const name = `${member?.firstName} ${member?.surname}`;
@@ -78,7 +79,7 @@ export const TeamMemberProfile = () => {
       healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
         healthCareWorkerId: member?.healthCareWorkerId || '',
         welcomeMessage: message || welcomeMessage || '',
-        shareContactInfo: !shareContactInfo,
+        shareContactInfo: message ? !!shareContactInfo : !shareContactInfo,
       })
     );
   };
@@ -145,7 +146,7 @@ export const TeamMemberProfile = () => {
         <ProfileAvatar
           hasConsent={true}
           canChangeImage={false}
-          dataUrl={''}
+          dataUrl={profileImageUrl}
           size={'header'}
         />
         <Typography className="mt-4" type="h4" text={welcomeMessage} />

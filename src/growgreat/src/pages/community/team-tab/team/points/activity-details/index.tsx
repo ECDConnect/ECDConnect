@@ -7,8 +7,8 @@ import {
   Button,
   Colours,
 } from '@ecdlink/ui';
-import { useHistory, useParams } from 'react-router';
-import { ActivityDetailsParams } from './index.types';
+import { useHistory, useLocation, useParams } from 'react-router';
+import { ActivityDetailsParams, ActivityDetailsState } from './index.types';
 import {
   formatStringWithFirstLetterCapitalized,
   useSnackbar,
@@ -24,11 +24,14 @@ import {
 import { communitySelectors } from '@/store/community';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ActivitySectionName } from '@/constants/Community';
+import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 
 export const TeamPointsActivityDetails = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
 
-  const { activitySlug, currentPoints } = useParams<ActivityDetailsParams>();
+  const { activitySlug } = useParams<ActivityDetailsParams>();
+  const location = useLocation<ActivityDetailsState>();
+  const currentPoints = location.state?.currentPoints ?? '0';
 
   const languages = useSelector(staticDataSelectors.getLanguages);
   const info = useSelector(
@@ -97,7 +100,7 @@ export const TeamPointsActivityDetails = () => {
       maxPoints = 600;
     }
 
-    if (Number(currentPoints) === maxPoints) {
+    if (Number(currentPoints) >= maxPoints) {
       barColour = 'successMain';
     }
 
@@ -164,6 +167,19 @@ export const TeamPointsActivityDetails = () => {
           !isBreastFeeding
         }
       />
+      {(isChildFoldersOpened ||
+        isPregnantMomFoldersOpened ||
+        isBreastFeeding) &&
+        Number(currentPoints) >= maxPoints && (
+          <div className="bg-successBg rounded-10 mb-4 flex items-center gap-4 p-4">
+            <PollyImpressed className="h-14 w-14 self-center" />
+            <Typography
+              type="h4"
+              text={`Great work ${clinicDetails?.name ?? ''} team!`}
+              color="successDark"
+            />
+          </div>
+        )}
       {isBreastFeeding && (
         <Button
           type="filled"

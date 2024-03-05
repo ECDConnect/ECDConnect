@@ -19,6 +19,7 @@ import {
   getTierDetails,
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
+import { ActivityDetailsState } from './activity-details/index.types';
 
 export const TeamPoints = () => {
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
@@ -38,7 +39,10 @@ export const TeamPoints = () => {
     );
 
   const activities = activityConstants.map((activity): MenuListDataItem => {
-    const points = '';
+    const points =
+      clinicDetails?.points?.points?.find(
+        (point) => point.pointsCategoryId === activity.id
+      )?.pointsTotal ?? 0;
 
     return {
       showIcon: true,
@@ -56,7 +60,8 @@ export const TeamPoints = () => {
           ROUTES.COMMUNITY.TEAM.POINTS.ACTIVITY_DETAILS.replace(
             ':activitySlug',
             formatTextToSlug(activity.name)
-          ).replace(':currentPoints', String(points))
+          ),
+          { currentPoints: points } as ActivityDetailsState
         ),
     };
   });
