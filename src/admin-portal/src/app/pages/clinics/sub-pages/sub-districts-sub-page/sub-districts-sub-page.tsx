@@ -6,8 +6,8 @@ import {
   GetDistrictsAndStats,
   GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
-import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import { useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -37,14 +37,42 @@ export default function SubDistrictsSubPage() {
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
+  const [provincesFiltered, setProvincesFiltered] =
+    useState<SearchDropDownOption<string>[]>();
+
+  const filteredProvinces = useMemo(
+    () => provincesFiltered?.map((item) => item?.id),
+    [provincesFiltered]
+  );
+
+  const provincesFilteredArray = useMemo(
+    () =>
+      data.subDistrictsAndStats?.filter((el) => {
+        return filteredProvinces?.some((prov) => {
+          return prov === el?.district?.province?.id;
+        });
+      }),
+    [data.subDistrictsAndStats, filteredProvinces]
+  );
 
   const [district, setDistrict] = useState('');
-  const [province, setProvince] = useState('');
+
+  const [districtsFiltered, setdistrictsFiltered] =
+    useState<SearchDropDownOption<string>[]>();
 
   const clearFilters = () => {
-    setDistrict('');
-    setProvince('');
+    setdistrictsFiltered([]);
   };
+
+  const districtsFilteredArray = useMemo(
+    () =>
+      districtData?.districtsAndStats?.filter((el) => {
+        return districtsFiltered?.some((dis) => {
+          return dis?.id === el?.id;
+        });
+      }),
+    [districtData?.districtsAndStats, districtsFiltered]
+  );
 
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -55,6 +83,7 @@ export default function SubDistrictsSubPage() {
           return {
             value: item?.id,
             label: item?.name,
+            id: item?.id,
           };
         })
       );
@@ -68,6 +97,7 @@ export default function SubDistrictsSubPage() {
           return {
             value: item?.id,
             label: item?.description,
+            id: item?.id,
           };
         })
       );
@@ -75,36 +105,20 @@ export default function SubDistrictsSubPage() {
   }, [provincetData?.GetAllProvince]);
 
   useEffect(() => {
-    if (district && districtData?.districtsAndStats?.length > 0) {
-      setTableData(
-        data?.subDistrictsAndStats?.filter(
-          (item) => item?.district?.id === district
-        )
-      );
+    if (districtsFiltered && districtsFilteredArray?.length > 0) {
+      setTableData(districtsFilteredArray);
     } else {
       setTableData(data?.subDistrictsAndStats);
     }
-  }, [
-    district,
-    data?.subDistrictsAndStats,
-    districtData?.districtsAndStats?.length,
-  ]);
+  }, [data?.subDistrictsAndStats, districtsFiltered, districtsFilteredArray]);
 
   useEffect(() => {
-    if (province && provincetData?.GetAllProvince?.length > 0) {
-      setTableData(
-        data?.subDistrictsAndStats?.filter(
-          (item) => item?.district?.province?.id === province
-        )
-      );
+    if (provincesFiltered && provincesFilteredArray.length > 0) {
+      setTableData(provincesFilteredArray);
     } else {
       setTableData(data?.subDistrictsAndStats);
     }
-  }, [
-    data?.subDistrictsAndStats,
-    province,
-    provincetData?.GetAllProvince?.length,
-  ]);
+  }, [data?.subDistrictsAndStats, provincesFiltered, provincesFilteredArray]);
 
   useEffect(() => {
     if (data && data.subDistrictsAndStats) {
@@ -188,36 +202,40 @@ export default function SubDistrictsSubPage() {
                 </div>
                 {showFilter && (
                   <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
-                    <div className=" w-6/12">
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="District"
-                        labelColor="white"
-                        selectedValue={district}
-                        list={districts}
-                        onChange={(item) => {
-                          setDistrict(item);
-                        }}
-                        className="p-2"
-                      />
-                    </div>
+                    <div className="flex gap-2">
+                      <div className=" w-6/12">
+                        <SearchDropDown<string>
+                          displayMenuOverlay={true}
+                          className={'mr-1'}
+                          menuItemClassName={
+                            'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                          }
+                          overlayTopOffset={'120'}
+                          options={districts}
+                          selectedOptions={districtsFiltered}
+                          onChange={setdistrictsFiltered}
+                          placeholder={'Distric'}
+                          multiple={true}
+                          color={'secondary'}
+                        />
+                      </div>
 
-                    <div className=" w-6/12">
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="Province"
-                        labelColor="white"
-                        // selectedValue={province}
-                        list={provinces}
-                        onChange={(item) => {
-                          setProvince(item);
-                        }}
-                        className="p-2"
-                      />
+                      <div className=" w-6/12">
+                        <SearchDropDown<string>
+                          displayMenuOverlay={true}
+                          className={'mr-1'}
+                          menuItemClassName={
+                            'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                          }
+                          overlayTopOffset={'120'}
+                          options={provinces}
+                          selectedOptions={provincesFiltered}
+                          onChange={setProvincesFiltered}
+                          placeholder={'Province'}
+                          multiple={true}
+                          color={'secondary'}
+                        />
+                      </div>
                     </div>
 
                     <div className="justify-self col-end-3 ">
@@ -279,11 +297,10 @@ export default function SubDistrictsSubPage() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'id', use: 'Unique ID' },
                     { field: 'name', use: 'Sub-district' },
                     { field: 'district', use: 'District' },
                     { field: `district`, use: 'Province' },
-                    { field: 'insertedDate', use: 'Inserted date' },
+                    { field: 'insertedDate', use: 'Date added' },
                   ]}
                   rows={tableData}
                   viewRow={

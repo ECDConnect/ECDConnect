@@ -2,8 +2,8 @@ import { useQuery } from '@apollo/client';
 import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
 import { GetAllProvince, GetDistrictsAndStats } from '@ecdlink/graphql';
-import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import { useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -25,13 +25,28 @@ export default function DistrictsSubPage() {
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
-  const [province, setProvince] = useState('');
+  const [provincesFiltered, setProvincesFiltered] =
+    useState<SearchDropDownOption<string>[]>();
 
   const clearFilters = () => {
-    setProvince('');
+    setProvincesFiltered([]);
   };
 
   const [tableData, setTableData] = useState<any[]>([]);
+  const filteredProvinces = useMemo(
+    () => provincesFiltered?.map((item) => item?.id),
+    [provincesFiltered]
+  );
+
+  const provincesFilteredArray = useMemo(
+    () =>
+      data.districtsAndStats?.filter((el) => {
+        return filteredProvinces?.some((sub) => {
+          return sub === el?.province?.id;
+        });
+      }),
+    [data.districtsAndStats, filteredProvinces]
+  );
 
   useEffect(() => {
     if (data && data.districtsAndStats) {
@@ -55,6 +70,7 @@ export default function DistrictsSubPage() {
           return {
             value: item?.id,
             label: item?.description,
+            id: item?.id,
           };
         })
       );
@@ -62,20 +78,12 @@ export default function DistrictsSubPage() {
   }, [provincetData?.GetAllProvince]);
 
   useEffect(() => {
-    if (province && provincetData?.GetAllProvince?.length > 0) {
-      setTableData(
-        data?.districtsAndStats?.filter(
-          (item) => item?.province?.id === province
-        )
-      );
+    if (provincesFiltered && provincesFilteredArray?.length > 0) {
+      setTableData(provincesFilteredArray);
     } else {
       setTableData(data?.districtsAndStats);
     }
-  }, [
-    data?.districtsAndStats,
-    province,
-    provincetData?.GetAllProvince?.length,
-  ]);
+  }, [data?.districtsAndStats, provincesFiltered, provincesFilteredArray]);
 
   const panel = usePanel();
   const displayPanel = () => {
@@ -144,18 +152,19 @@ export default function DistrictsSubPage() {
                 {showFilter && (
                   <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
                     <div className=" w-6/12">
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="Province"
-                        labelColor="white"
-                        selectedValue={province}
-                        list={provinces}
-                        onChange={(item) => {
-                          setProvince(item);
-                        }}
-                        className="p-2"
+                      <SearchDropDown<string>
+                        displayMenuOverlay={true}
+                        className={'mr-1'}
+                        menuItemClassName={
+                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                        }
+                        overlayTopOffset={'120'}
+                        options={provinces}
+                        selectedOptions={provincesFiltered}
+                        onChange={setProvincesFiltered}
+                        placeholder={'Province'}
+                        multiple={true}
+                        color={'secondary'}
                       />
                     </div>
 
@@ -221,7 +230,7 @@ export default function DistrictsSubPage() {
                     { field: 'name', use: 'Name' },
                     { field: 'subDistricts', use: 'Sub-districts' },
                     { field: `province`, use: 'Province' },
-                    { field: 'insertedDate', use: 'Inserted date' },
+                    { field: 'insertedDate', use: 'Date added' },
                   ]}
                   rows={tableData}
                   viewRow={

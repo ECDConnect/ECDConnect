@@ -1,4 +1,4 @@
-import { Button, Typography } from '@ecdlink/ui';
+import { Button, ScoreCard, StatusChip, Typography } from '@ecdlink/ui';
 import { useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
@@ -12,7 +12,6 @@ import { ReportsDataChart } from './components/reportsDataChart';
 import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
-import { PointsReportSummary } from './components/points-report-summary';
 
 export interface PointsReportSummaryDto {
   childrenRankingPerc: number;
@@ -209,10 +208,57 @@ export const ViewClinicReport = () => {
           />
         </div>
       </div>
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <PointsReportSummary
           dataFromClinicPointsData={dataFromClinicPointsData}
         />
+      </div> */}
+      <div className="mt-8">
+        <Typography
+          className="truncate"
+          type="h2"
+          weight="bold"
+          color="textMid"
+          text={`Summary`}
+        />
+        <div className="mt-2 flex w-full items-center gap-2">
+          <StatusChip
+            backgroundColour="darkBlue"
+            borderColour="darkBlue"
+            text={`${dataFromClinicPointsData?.totalHCWs} CHWs`}
+            textColour={'white'}
+            className={'px-4 py-1.5'}
+          />
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`#${dataFromClinicPointsData?.leagueRanking} in the league`}
+            textColour={'white'}
+            className={'px-4 py-1.5'}
+          />
+        </div>
+      </div>
+      <div className="mt-8 w-6/12 rounded-2xl bg-white p-6">
+        <div className="bg-alertBg rounded-2xl p-2">
+          <ScoreCard
+            className="my-4"
+            mainText={String(300)}
+            hint="points earned"
+            currentPoints={300}
+            maxPoints={1000}
+            barBgColour="uiLight"
+            barColour="alertMain"
+            bgColour="alertBg"
+            barSize="small"
+            textColour="black"
+            barStatusChip={{
+              backgroundColour: 'alertMain',
+              borderColour: 'alertMain',
+              textColour: 'white',
+              text: 'Bronze',
+            }}
+          />
+        </div>
       </div>
       <div className="bg-adminPortalBg mt-8 w-full">
         <div>

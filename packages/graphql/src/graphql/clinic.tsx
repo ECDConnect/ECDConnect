@@ -39,6 +39,17 @@ export const GetAllClinic = gql`
           }
         }
       }
+      leagues {
+        league {
+          id
+          startDate
+          endDate
+          leagueType {
+            id
+            name
+          }
+        }
+      }
       isActive
     }
   }
