@@ -65,16 +65,16 @@ export default function SubDistrictsSubPage() {
 
   const districtsFilteredArray = useMemo(
     () =>
-      districtData?.districtsAndStats?.filter((el) => {
+      data?.subDistrictsAndStats?.filter((el) => {
         return districtsFiltered?.some((dis) => {
-          return dis?.id === el?.id;
+          return dis?.id === el?.district?.id;
         });
       }),
-    [districtData?.districtsAndStats, districtsFiltered]
+    [data?.subDistrictsAndStats, districtsFiltered]
   );
 
   const [tableData, setTableData] = useState<any[]>([]);
-
+  console.log({ tableData });
   useEffect(() => {
     if (districtData?.districtsAndStats?.length > 0) {
       setDistricts(
