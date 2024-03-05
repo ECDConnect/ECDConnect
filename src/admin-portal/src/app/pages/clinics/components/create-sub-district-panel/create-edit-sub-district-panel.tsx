@@ -53,7 +53,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
-
+  console.log({ props });
   useEffect(() => {
     if (isDirty) {
       setFormIsDirty(true);
@@ -247,8 +247,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
           maxCharacters={50}
           maxLength={50}
           isAdminPortalField={true}
-          // disabled={isView}
-          // value={messageTitle}
+          value={watchFields?.subDistrictName}
           onChange={(event) => {
             subDistrictSetValue('subDistrictName', event.target.value);
           }}
@@ -280,7 +279,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
           Save
         </button>
       </div>
-      {props?.isEdit && (
+      {props?.isEdit && props?.subDistrict?.totalClinics === 0 && (
         <div className="mt-2 flex flex-row">
           <button
             type="submit"

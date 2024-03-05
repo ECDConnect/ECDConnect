@@ -299,6 +299,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         <FormInput<ClinicModel>
           register={clinicRegister}
           error={errors?.name}
+          value={watchFields?.name}
           nameProp={'name'}
           placeholder="Clinic name"
           label="Clinic name *"
@@ -340,6 +341,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           register={clinicRegister}
           error={errors?.name}
           nameProp={'address'}
+          value={watchFields?.address}
           placeholder="Address"
           label="Address *"
           type={'text'}
