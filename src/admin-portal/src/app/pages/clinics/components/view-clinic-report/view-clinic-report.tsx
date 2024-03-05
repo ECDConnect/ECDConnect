@@ -130,7 +130,7 @@ export const ViewClinicReport = () => {
             type="h4"
             weight="bold"
             color="textMid"
-            text={`Adress:`}
+            text={`Address:`}
           />
           <Typography
             className="truncate"
@@ -145,7 +145,7 @@ export const ViewClinicReport = () => {
             type="h4"
             weight="bold"
             color="textMid"
-            text={`Subd-district:`}
+            text={`Sub-district:`}
           />
           <Typography
             className="truncate"
