@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -11,7 +12,8 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
+{
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class HealthCareWorkerMutationExtension
     {
@@ -19,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
         public HealthCareWorkerModel AddHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HealthCareWorkerInputModel input)
+            AddHealthCareWorkerInputModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
 
@@ -30,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = applicationUserId.ToString(),
-                UserId = Guid.Parse(input.UserId),
+                UserId = input.UserId,
                 LanguageId = input.LanguageId,
                 //TeamLeadId = input.TeamLeadId, Needs to change to clinic id
                 ClickedVisitTab = false,
@@ -48,13 +50,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
             return new HealthCareWorkerModel(newHealthCareWorker);
         }
 
-        // TODO - Need to fix this input, it has a ton of extra and unused fields
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public HealthCareWorkerModel UpdateHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId,
-            HealthCareWorkerInputModel input)
+            UpdateHealthCareWorkerInputModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
@@ -70,39 +71,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 healthCareWorkerToUpdate.LanguageId = input.LanguageId;
             }
 
-            if (input.IsNewAtClinic)
-            {
-                healthCareWorkerToUpdate.IsNewAtClinic = input.IsNewAtClinic;
-            }
-
-            // TODO needs to change to update the clinic id
-            //if (input.TeamLeadId != null)
-            //{
-            //    healthCareWorkerToUpdate.TeamLeadId = input.TeamLeadId;
-            //}
-
-            if (input.User?.PhoneNumber != null)
-            {
-                healthCareWorkerToUpdate.User.PhoneNumber = input.User.PhoneNumber;
-            }
-
-            if (input.User?.Email != null)
-            {
-                healthCareWorkerToUpdate.User.Email = input.User.Email;
-            }
-
             var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
 
             return new HealthCareWorkerModel(updatedHealthCareWorker);
         }
-
-
-        
+                
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public HealthCareWorkerModel UpdateHealthCareWorkerTabs(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HealthCareWorkerInputModel input,
+            UpdateHealthCareWorkerTabsInputModel input,
             string userId)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
@@ -142,7 +120,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
 
             return new HealthCareWorkerModel(updatedHealthCareWorker);
         }
-
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public HealthCareWorkerModel UpdateHealthCareWorkerWelcomeMessage(

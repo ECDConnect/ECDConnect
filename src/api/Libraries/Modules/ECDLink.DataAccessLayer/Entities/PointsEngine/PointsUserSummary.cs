@@ -21,6 +21,8 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
         public int Month { get; set; }
         // TODO - Remove
         public int Year { get; set; }
+
+        // Year and month of points summary, day will be defaulted to 1st
         public DateTime DateScored { get; set; }
         public Guid? UserId { get; set; }
         [ForeignKey(nameof(UserId))]
@@ -29,6 +31,10 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
 
         [ForeignKey(nameof(PointsLibraryId))]
         public virtual PointsLibrary PointsLibrary { get; set; }
+        public TKey PointsActivityId { get; set; }
+
+        [ForeignKey(nameof(PointsActivityId))]
+        public virtual PointsActivity PointsActivity { get; set; }
     }
 
     public interface PointsUserSummaryJoin<TKey>

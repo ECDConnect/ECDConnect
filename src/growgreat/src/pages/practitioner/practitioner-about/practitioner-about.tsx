@@ -313,17 +313,11 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
       appDispatch(
-        healthCareWorkerActions.updateHealthCareWorker({
-          ...healthCareWorker!,
-          languageId: copy.languageId,
-        })
-      );
-      appDispatch(
-        healthCareWorkerThunkActions.updateHealthCareWorkerById({
+        healthCareWorkerThunkActions.updateHealthCareWorker({
           userId: user?.id!,
           input: {
-            languageId: copy.languageId,
-            isRegistered: healthCareWorker?.isRegistered,
+            languageId: practitionerForm.languageId,
+            isRegistered: healthCareWorker?.isRegistered!,
           },
         })
       );

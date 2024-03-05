@@ -1,6 +1,9 @@
 import { api } from '../axios.helper';
 import { Config, HealthCareWorkerDto } from '@ecdlink/core';
-import { HealthCareWorkerInputModelInput } from '@ecdlink/graphql';
+import {
+  UpdateHealthCareWorkerInputModelInput,
+  UpdateHealthCareWorkerTabsInputModelInput,
+} from '@ecdlink/graphql';
 
 class HealthCareWorkerService {
   _accessToken: string;
@@ -64,7 +67,7 @@ class HealthCareWorkerService {
 
   async updateHealthCareWorker(
     userId: string,
-    input: HealthCareWorkerInputModelInput
+    input: UpdateHealthCareWorkerInputModelInput
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -121,7 +124,7 @@ class HealthCareWorkerService {
   }
 
   async updateHealthCareWorkerTabs(
-    input: HealthCareWorkerInputModelInput,
+    input: UpdateHealthCareWorkerTabsInputModelInput,
     userId: string
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
