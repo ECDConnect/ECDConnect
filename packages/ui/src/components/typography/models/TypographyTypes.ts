@@ -1,4 +1,4 @@
-export type TypographyFontSizes = '12' | '14' | '16' | '18' | '24';
+export type TypographyFontSizes = '12' | '14' | '16' | '18' | '24' | '48';
 export type TypographyAlign = 'left' | 'center' | 'right';
 export type TypographyLineHeight =
   | 'tight'

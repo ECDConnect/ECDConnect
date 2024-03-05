@@ -8,6 +8,9 @@ export const initialClinicValues: ClinicDto = {
   teamLeads: [],
   clinicMembers: [],
   points: undefined,
+  leagueRanking: 0,
+  pointsTotal: 0,
+  maxPointsTotal: 0,
 };
 
 export const clkinicSchema = Yup.object().shape({

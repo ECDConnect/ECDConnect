@@ -1,25 +1,25 @@
 import { gql } from '@apollo/client';
 
 export const GetDistrictsAndStats = gql`
-    query GetDistrictsAndStats() {
-        districtsAndStats() {
-            id
-            name
-            insertedDate
-            province {
-                id
-                description
-            }
-            subDistricts {
-                id
-                name
-            }
-            totalSubDistricts
-            totalClinics
-            totalTeamLeads
-            totalHCWs
-        }
+  query GetDistrictsAndStats {
+    districtsAndStats {
+      id
+      name
+      insertedDate
+      province {
+        id
+        description
+      }
+      subDistricts {
+        id
+        name
+      }
+      totalSubDistricts
+      totalClinics
+      totalTeamLeads
+      totalHCWs
     }
+  }
 `;
 
 export const GetFilterDistricts = gql`

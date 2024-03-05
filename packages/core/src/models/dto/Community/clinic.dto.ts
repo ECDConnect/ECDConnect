@@ -1,6 +1,7 @@
 import {} from '../StaticData/education-level.dto';
 import { SiteAddressDto } from '../SiteAddress';
 import { TeamLeadDto } from '../Users/team-lead.dto';
+import { SubDistrictDto } from './sub-district.dto';
 
 export interface ClinicDto {
   id: string;
@@ -10,7 +11,12 @@ export interface ClinicDto {
   league?: LeagueDto;
   teamLeads: TeamLeadDto[];
   clinicMembers: ClinicMemberDto[];
+  leagueRanking: number;
+  pointsTotal: number;
+  maxPointsTotal: number;
+  isActive?: boolean;
   points?: ClinicPointsDto;
+  subDistrict?: SubDistrictDto;
 }
 
 export interface LeagueDto {

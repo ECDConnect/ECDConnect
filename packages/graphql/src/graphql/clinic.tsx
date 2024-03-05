@@ -17,6 +17,7 @@ export const GetAllClinic = gql`
           description
         }
       }
+      siteAddressId
       teamLeads {
         teamLead {
           id
@@ -38,6 +39,7 @@ export const GetAllClinic = gql`
           }
         }
       }
+      isActive
     }
   }
 `;
