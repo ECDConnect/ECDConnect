@@ -74,7 +74,7 @@ export default function SubDistrictsSubPage() {
   );
 
   const [tableData, setTableData] = useState<any[]>([]);
-  console.log({ tableData });
+
   useEffect(() => {
     if (districtData?.districtsAndStats?.length > 0) {
       setDistricts(
