@@ -7,6 +7,7 @@ import {
   Dropdown,
   FormInput,
   SearchDropDownOption,
+  StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import {
@@ -165,7 +166,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   useEffect(() => {
     if (!watchFields?.teamLeadOne && teamLeadtData?.allTeamLeads?.length > 0) {
-      setOptionalTeamLeads(
+      const teamLeads = setOptionalTeamLeads(
         teamLeadtData?.allTeamLeads?.map((item) => {
           return {
             value: item?.id,
@@ -227,7 +228,8 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       subDistrictId: watchFields?.subDistrict,
       siteAddressId: props?.clinic?.siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
-      teamLead2Id: watchFields?.teamLeadTwo,
+      teamLead2Id:
+        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
     };
     const response = await editClinictMutation({
       variables: {
@@ -296,6 +298,24 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           </button>
         </div>
       )}
+      {props?.isEdit && (
+        <div className="flex">
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${props?.clinic?.teamLeads?.length} Team Leads`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${0} CHWs`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
+        </div>
+      )}
       <Divider dividerType="dashed" className="py-8" />
       {props?.isEdit && (
         <>
@@ -362,7 +382,6 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           placeholder="Phone number"
           label="Phone number *"
           type={'text'}
-          maxCharacters={50}
           maxLength={50}
           isAdminPortalField={true}
           onChange={(event) => {
@@ -402,7 +421,13 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           label={'Team Lead'}
           subLabel="Optional"
           selectedValue={watchFields?.teamLeadTwo}
-          list={optionalTeamLeads}
+          list={[
+            {
+              value: '1',
+              label: 'None',
+            },
+            ...optionalTeamLeads,
+          ]}
           onChange={(item) => clinicSetValue('teamLeadTwo', item)}
           fullWidth
           labelColor="textMid"

@@ -40,7 +40,9 @@ export const clinicSchema = Yup.object().shape({
   subDistrict: Yup.string()
     .required('Distric is required')
     .max(160, 'Distric name too long'),
-  phoneNumber: Yup.string().required('Phone number is required'),
+  phoneNumber: Yup.string()
+    .required('Phone number is required')
+    .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
   address: Yup.string().required('Address is required'),
   teamLeadOne: Yup.string().required('Team lead is required'),
   teamLeadTwo: Yup.string(),

@@ -59,7 +59,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
-  console.log({ props });
+
   useEffect(() => {
     if (isDirty) {
       setFormIsDirty(true);
