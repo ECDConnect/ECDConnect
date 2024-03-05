@@ -40,17 +40,17 @@ export default function DistrictsSubPage() {
 
   const provincesFilteredArray = useMemo(
     () =>
-      data.districtsAndStats?.filter((el) => {
+      data?.districtsAndStats?.filter((el) => {
         return filteredProvinces?.some((sub) => {
           return sub === el?.province?.id;
         });
       }),
-    [data.districtsAndStats, filteredProvinces]
+    [data?.districtsAndStats, filteredProvinces]
   );
 
   useEffect(() => {
     if (data && data.districtsAndStats) {
-      const copyItems = data.districtsAndStats?.map((item: ClinicDto) => ({
+      const copyItems = data?.districtsAndStats?.map((item: ClinicDto) => ({
         ...item,
         id: `${item?.id}`,
         isActive: item?.isActive,

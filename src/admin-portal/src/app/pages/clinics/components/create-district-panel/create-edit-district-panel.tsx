@@ -223,6 +223,7 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
           subLabel="The combination of clinic name & sub-district must be unique."
           type={'text'}
           maxCharacters={50}
+          value={watchFields?.districtName}
           maxLength={50}
           isAdminPortalField={true}
           onChange={(event) => {
