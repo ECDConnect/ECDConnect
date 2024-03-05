@@ -25,7 +25,7 @@ import {
 import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { subMonths } from 'date-fns';
-import { communityThunkActions } from './store/community';
+import { communitySelectors, communityThunkActions } from './store/community';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -54,6 +54,7 @@ function InitialStoreSetup(props: Props) {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors.getHealthCareWorker
   );
+  const userClinic = useSelector(communitySelectors.getClinicSelector);
 
   const clearSiteData = useClearSiteData();
 
@@ -94,6 +95,17 @@ function InitialStoreSetup(props: Props) {
       })();
     }
   }, [appDispatch, healthCareWorker]);
+
+  useEffect(() => {
+    if (userClinic) {
+      (async () =>
+        await appDispatch(
+          communityThunkActions.getLeagueById({
+            leagueId: userClinic?.league?.id || '',
+          })
+        ).unwrap())();
+    }
+  }, [appDispatch, userClinic]);
 
   const values = {
     initloading,

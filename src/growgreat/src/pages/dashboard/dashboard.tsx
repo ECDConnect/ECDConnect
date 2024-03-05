@@ -39,10 +39,13 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { communitySelectors } from '@/store/community';
 import {
+  calculateClinicLeaguePositionPercentiles,
   getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
+import { CommunityActions } from '@/store/community/community.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const Dashboard: React.FC = () => {
   const history = useHistory();
@@ -65,6 +68,7 @@ export const Dashboard: React.FC = () => {
     healthCareWorkerSelectors?.getHealthCareWorker
   );
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const league = useSelector(communitySelectors.getLeagueSelector);
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -75,11 +79,24 @@ export const Dashboard: React.FC = () => {
 
   const { startService } = useNotificationService();
 
+  const { isLoading: isLoadingLeague } = useThunkFetchCall(
+    'community',
+    CommunityActions.GET_LEAGUE_BY_ID
+  );
+  const { isLoading: isLoadingClinic } = useThunkFetchCall(
+    'community',
+    CommunityActions.GET_CLINIC_BY_ID
+  );
+
+  const isLoading = isLoadingClinic || isLoadingLeague;
+
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
-  // TODO: get the length of the league
-  const isTop25PercentInTheLeague = false;
-  // TODO: get the length of the league
-  const isMiddle50PercentInTheLeague = false;
+
+  const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
+    calculateClinicLeaguePositionPercentiles(
+      league?.clinics ?? [],
+      clinicDetails!
+    );
 
   const leaguePointsColours = getLeaguePointsColours(
     isTop25PercentInTheLeague,
@@ -300,7 +317,7 @@ export const Dashboard: React.FC = () => {
             : ROUTES.COMMUNITY.ROOT
         ),
     }),
-    []
+    [clinicDetails, league]
   );
 
   useEffect(() => {
@@ -333,6 +350,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={

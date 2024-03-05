@@ -24,6 +24,7 @@ import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
+  calculateClinicLeaguePositionPercentiles,
   calculateTierPercentages,
   getLeaguePointsColours,
   getTierDetails,
@@ -33,6 +34,7 @@ import { LeagueType } from '@/constants/Community';
 export const TeamTab: React.FC = () => {
   const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const league = useSelector(communitySelectors.getLeagueSelector);
 
   const history = useHistory();
 
@@ -40,17 +42,24 @@ export const TeamTab: React.FC = () => {
 
   const appDispatch = useAppDispatch();
 
-  const { isLoading } = useThunkFetchCall(
+  const { isLoading: isLoadingClinic } = useThunkFetchCall(
     'community',
     CommunityActions.GET_CLINIC_BY_ID
   );
+  const { isLoading: isLoadingLeague } = useThunkFetchCall(
+    'community',
+    CommunityActions.GET_LEAGUE_BY_ID
+  );
+
+  const isLoading = isLoadingClinic || (!league && isLoadingLeague);
 
   const memberCount = clinicDetails?.clinicMembers?.length ?? 0;
 
-  // TODO: get the length of the league
-  const isTop25PercentInTheLeague = false;
-  // TODO: get the length of the league
-  const isMiddle50PercentInTheLeague = false;
+  const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
+    calculateClinicLeaguePositionPercentiles(
+      league?.clinics ?? [],
+      clinicDetails!
+    );
 
   const headerHeight = 122;
 

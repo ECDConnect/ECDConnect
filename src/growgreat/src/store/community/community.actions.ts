@@ -189,24 +189,32 @@ export const getClinicById = createAsyncThunk<
 
 export const getLeagueById = createAsyncThunk<
   LeagueWithClinicRankingsDto,
-  { leagueId: string },
+  { leagueId: string; forceReload?: boolean },
   ThunkApiType<RootState>
 >(
   CommunityActions.GET_LEAGUE_BY_ID,
-  async ({ leagueId }, { getState, rejectWithValue }) => {
+  async ({ leagueId, forceReload }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      community: { league },
     } = getState();
 
     try {
-      let league: LeagueWithClinicRankingsDto | undefined = undefined;
-
       if (userAuth?.auth_token) {
-        league = await new CommunityService(
+        if (league?.data && !forceReload) {
+          const daysSinceLateLoad = differenceInDays(
+            new Date(),
+            new Date(league?.dateLoaded)
+          );
+
+          if (daysSinceLateLoad < 1) {
+            return league?.data;
+          }
+        }
+
+        return await new CommunityService(
           userAuth?.auth_token ?? ''
         ).getLeagueById(leagueId);
-
-        return league;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
