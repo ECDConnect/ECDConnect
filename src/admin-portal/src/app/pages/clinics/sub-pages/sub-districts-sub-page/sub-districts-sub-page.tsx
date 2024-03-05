@@ -7,7 +7,7 @@ import {
   GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -47,12 +47,12 @@ export default function SubDistrictsSubPage() {
 
   const provincesFilteredArray = useMemo(
     () =>
-      data.subDistrictsAndStats?.filter((el) => {
+      data?.subDistrictsAndStats?.filter((el) => {
         return filteredProvinces?.some((prov) => {
           return prov === el?.district?.province?.id;
         });
       }),
-    [data.subDistrictsAndStats, filteredProvinces]
+    [data?.subDistrictsAndStats, filteredProvinces]
   );
 
   const [districtsFiltered, setdistrictsFiltered] =
@@ -92,7 +92,9 @@ export default function SubDistrictsSubPage() {
   useEffect(() => {
     if (provincetData?.GetAllProvince?.length > 0) {
       setProvinces(
-        provincetData?.GetAllProvince?.map((item) => {
+        provincetData?.GetAllProvince?.filter(
+          (prov) => prov?.description !== 'N/A'
+        )?.map((item) => {
           return {
             value: item?.id,
             label: item?.description,
@@ -180,6 +182,13 @@ export default function SubDistrictsSubPage() {
     setSearchValue(e.target.value || '');
   }, 150);
 
+  const filterByValue = useCallback((array, value) => {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+    );
+  }, []);
+
   if (tableData) {
     return (
       <div>
@@ -213,7 +222,7 @@ export default function SubDistrictsSubPage() {
                           options={districts}
                           selectedOptions={districtsFiltered}
                           onChange={setdistrictsFiltered}
-                          placeholder={'Distric'}
+                          placeholder={'District'}
                           multiple={true}
                           color={'secondary'}
                         />
@@ -301,12 +310,15 @@ export default function SubDistrictsSubPage() {
                     { field: `district`, use: 'Province' },
                     { field: 'insertedDate', use: 'Date added' },
                   ]}
-                  rows={tableData}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
                   }
-                  searchInput={searchValue}
                   noBulkSelection={true}
                 />
               </div>

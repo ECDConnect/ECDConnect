@@ -23,12 +23,14 @@ import {
   CreateClinic,
   DeleteClinic,
   EditClinic,
+  GetAllClinic,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { useHistory } from 'react-router';
+import { findObjectWithString } from '../../../../utils/string-utils/string-utils';
 
 export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
@@ -36,6 +38,10 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   });
 
   const { data: teamLeadtData } = useQuery(GetAllTeamLead, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const { data: clinicsData, refetch } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -59,6 +65,23 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const history = useHistory();
 
   const watchFields = useWatch({ control });
+  const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
+
+  const duplicatedName = findObjectWithString(
+    clinicsData?.GetAllClinic,
+    'name',
+    watchFields?.name,
+    props?.isEdit
+  );
+
+  useEffect(() => {
+    if (duplicatedName) {
+      setDuplicatedNameMessage(
+        `There is a different clinic with the same name. Please choose a different clinic name.`
+      );
+    }
+  }, [duplicatedName]);
+
   const disableButton =
     !watchFields?.name ||
     !watchFields?.address ||
@@ -296,22 +319,31 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         </>
       )}
       <div className="flex flex-col gap-4">
-        <FormInput<ClinicModel>
-          register={clinicRegister}
-          error={errors?.name}
-          value={watchFields?.name}
-          nameProp={'name'}
-          placeholder="Clinic name"
-          label="Clinic name *"
-          subLabel="The combination of clinic name & sub-district must be unique."
-          type={'text'}
-          maxCharacters={50}
-          maxLength={50}
-          isAdminPortalField={true}
-          onChange={(event) => {
-            clinicSetValue('name', event.target.value);
-          }}
-        />
+        <div>
+          <FormInput<ClinicModel>
+            register={clinicRegister}
+            error={errors?.name || duplicatedName}
+            value={watchFields?.name}
+            nameProp={'name'}
+            placeholder="Clinic name"
+            label="Clinic name *"
+            subLabel="The combination of clinic name & sub-district must be unique."
+            type={'text'}
+            maxCharacters={50}
+            maxLength={50}
+            isAdminPortalField={true}
+            onChange={(event) => {
+              clinicSetValue('name', event.target.value);
+            }}
+          />
+          {duplicatedName && (
+            <Typography
+              text={duplicateNameMessage}
+              type={'help'}
+              color="errorMain"
+            />
+          )}
+        </div>
         <Dropdown
           placeholder={'Click to select sub-district'}
           className={'justify-between'}
