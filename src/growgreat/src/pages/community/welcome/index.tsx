@@ -62,15 +62,6 @@ export const CommunityWelcome: React.FC = () => {
   const onSave = async () => {
     if (isOnCharacterLimit) {
       await appDispatch(
-        healthCareWorkerThunkActions.updateHealthCareWorkerById({
-          userId: user?.id ?? '',
-          input: {
-            isNewAtClinic: false,
-            isRegistered: true,
-          },
-        })
-      );
-      await appDispatch(
         healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
           healthCareWorkerId: hcw?.id ?? '',
           welcomeMessage: message,

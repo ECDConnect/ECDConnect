@@ -54,3 +54,5 @@ export * from './clinic';
 export * from './personalRecords';
 export * from './messaging';
 export * from './coach-circle-topics';
+export * from './district';
+export * from './sub-district';

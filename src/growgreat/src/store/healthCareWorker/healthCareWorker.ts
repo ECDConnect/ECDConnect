@@ -3,16 +3,16 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getHealthCareWorkerByUserId,
-  updateHealthCareWorkerById,
+  updateHealthCareWorker,
   updateHealthCareWorkerTabs,
   updateHealthCareWorkerWelcomeMessage,
 } from './healthCareWorker.actions';
 import { HealthCareWorkerState } from './healthCareWorker.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { UpdateHealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 const initialState: HealthCareWorkerState = {
   healthCareWorker: undefined,
-  healthCareWorkers: undefined, // Is this used? Can it be removed?
 };
 
 const healthCareWorkerSlice = createSlice({
@@ -21,24 +21,27 @@ const healthCareWorkerSlice = createSlice({
   reducers: {
     resetHealthCareWorkerState: (state) => {
       state.healthCareWorker = initialState.healthCareWorker;
-      state.healthCareWorkers = initialState.healthCareWorkers;
     },
     updateHealthCareWorker: (
       state,
-      action: PayloadAction<HealthCareWorkerDto>
+      action: PayloadAction<UpdateHealthCareWorkerInputModelInput>
     ) => {
       if (state.healthCareWorker) {
-        state.healthCareWorker = action.payload;
+        state.healthCareWorker = {
+          ...state.healthCareWorker,
+          isRegistered: action.payload.isRegistered,
+          languageId: action.payload.languageId,
+        };
       }
     },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, updateHealthCareWorkerWelcomeMessage);
-    setThunkActionStatus(builder, updateHealthCareWorkerById);
+    setThunkActionStatus(builder, updateHealthCareWorker);
     builder.addCase(getHealthCareWorkerByUserId.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
-    builder.addCase(updateHealthCareWorkerById.fulfilled, (state, action) => {
+    builder.addCase(updateHealthCareWorker.fulfilled, (state, action) => {
       state.healthCareWorker = {
         ...state.healthCareWorker,
         ...action.payload,
