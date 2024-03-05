@@ -1,3 +1,4 @@
+import { ClinicDto } from '../Community';
 import { UserDto } from './user.dto';
 
 export interface TeamLeadDto {
@@ -6,5 +7,8 @@ export interface TeamLeadDto {
   surname: string;
   jobTitle: string;
   phoneNumber: string;
+  whatsAppNumber: string;
+  welcomeMessage: string;
   user?: UserDto;
+  clinic?: ClinicDto;
 }

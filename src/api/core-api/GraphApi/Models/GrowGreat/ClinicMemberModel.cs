@@ -1,9 +1,11 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Users;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
     public class ClinicMemberModel
     {
+        public Guid HealthCareWorkerId { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
         public string PhoneNumber { get; set; }
@@ -23,6 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
                 ProfileImageUrl = healthCareWorker.User.ProfileImageUrl;
             }
 
+            HealthCareWorkerId = healthCareWorker.Id;
             WelcomeMessage = healthCareWorker.WelcomeMessage;
             ShareContactInfo = healthCareWorker.ShareContactInfo;
         }

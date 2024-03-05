@@ -207,7 +207,11 @@ export const TeamTab: React.FC = () => {
             />
           </div>
         )}
-        <Typography className="mb-2 mt-6" type="h3" text="Team leader" />
+        <Typography
+          className="mb-2 mt-6"
+          type="h3"
+          text={`Team leader${leaders.length > 1 ? 's' : ''}`}
+        />
         <div className="mb-4">
           <StackedList
             isFullHeight={false}
@@ -222,7 +226,7 @@ export const TeamTab: React.FC = () => {
             textColor="white"
             color="primary"
             text="See club members"
-            onClick={() => {}}
+            onClick={() => history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT)}
           />
           <Button
             className="mb-4"
