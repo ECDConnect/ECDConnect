@@ -31,17 +31,13 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { data: provinceData, refetch } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
-  const [addDistrictMutation, { loading: loadingAddDistrict }] =
-    useMutation(AddDistrict);
-  const [editDistrictMutation, { loading: loadingEditDistrict }] =
-    useMutation(EditDistrict);
-  const [deleteDistrictMutation, { loading: loadingDeleteDistrict }] =
-    useMutation(DeleteDistrict);
+  const [addDistrictMutation] = useMutation(AddDistrict);
+  const [editDistrictMutation] = useMutation(EditDistrict);
+  const [deleteDistrictMutation] = useMutation(DeleteDistrict);
 
   const {
     register: districtRegister,
     formState: districtFormState,
-    getValues: districtGetValues,
     setValue: districtSetValue,
     control,
   } = useForm({

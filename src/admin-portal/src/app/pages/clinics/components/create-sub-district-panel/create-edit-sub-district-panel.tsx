@@ -25,27 +25,22 @@ import {
   DeleteSubDistrict,
   EditSubDistrict,
   GetDistrictsAndStats,
-  GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 
 export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
-  const { data: districtData, refetch } = useQuery(GetDistrictsAndStats, {
+  const { data: districtData } = useQuery(GetDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [addSubDistrictMutation, { loading: loadingAddSubDistrict }] =
-    useMutation(AddSubDistrict);
-  const [editSubDistrictMutation, { loading: loadingEditSubDistrict }] =
-    useMutation(EditSubDistrict);
-  const [deleteSubDistrictMutation, { loading: loadingDeleteSubDistrict }] =
-    useMutation(DeleteSubDistrict);
+  const [addSubDistrictMutation] = useMutation(AddSubDistrict);
+  const [editSubDistrictMutation] = useMutation(EditSubDistrict);
+  const [deleteSubDistrictMutation] = useMutation(DeleteSubDistrict);
 
   const {
     register: subDistrictRegister,
     formState: subDistrictFormState,
-    getValues: subDistrictGetValues,
     setValue: subDistrictSetValue,
     control,
   } = useForm({
