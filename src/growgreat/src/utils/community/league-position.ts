@@ -119,12 +119,7 @@ export function calculateClinicLeaguePositionPercentiles(
   clinics: LeagueClinicPointsDto[],
   selectedClinic: ClinicDto
 ) {
-  // Sorting clinics based on leagueRanking
-  const sortedClinics = [...clinics].sort(
-    (a, b) => a.leagueRanking - b.leagueRanking
-  );
-
-  const totalClinics = sortedClinics?.length;
+  const totalClinics = clinics?.length;
 
   const position = selectedClinic?.points?.leagueRanking || 0;
 
