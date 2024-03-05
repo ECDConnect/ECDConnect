@@ -79,6 +79,7 @@ export const Community: React.FC = () => {
     >
       <TabList
         className="bg-uiBg"
+        tabClassName="min-w-0 mr-8"
         tabItems={tabItems}
         setSelectedIndex={selectedTabIndex}
         tabSelected={(tab: TabItem, tabIndex: number) =>
