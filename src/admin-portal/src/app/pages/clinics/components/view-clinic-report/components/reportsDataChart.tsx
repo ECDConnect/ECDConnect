@@ -2,6 +2,7 @@ import { Divider, RoundIcon, Typography } from '@ecdlink/ui';
 import { Chart } from 'react-chartjs-2';
 import { ClinicDto } from '@ecdlink/core';
 import { FlagIcon } from '@heroicons/react/solid';
+import { useMemo } from 'react';
 
 interface ReportsDataCharProps {
   clinic: ClinicDto;
@@ -20,12 +21,20 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
   icon,
   title,
 }) => {
-  const renderPositionText = (value) => {
-    switch (value) {
-      case value > 50:
-        return 'better';
+  const renderPositionText = useMemo(() => {
+    if (targetPerc < 50) {
+      return 'bottom';
+    } else {
+      return 'top';
+    }
+  }, [targetPerc]);
+
+  const renderOpenedFolderText = (title) => {
+    switch (title) {
+      case 'Pregnant moms':
+        return `This team is in ${renderPositionText} than ${targetPerc}% of other GGC teams for pregnant mom folders opened!`;
       default:
-        return 'bottom';
+        return `This team is in the ${renderPositionText} ${targetPerc}% for number of child folders opened compared to other GGC teams.`;
     }
   };
 
@@ -99,7 +108,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         ctx.marginTop = '4pxß';
 
         // Draw "Total" on the first line
-        var text1 = `${targetPerc}%`;
+        var text1 = `${targetPerc || 0}%`;
         var textX1 = Math.round((width - ctx.measureText(text1).width) / 2);
         var textY1 = height / 2.8;
         ctx.fillText(text1, textX1, textY1);
@@ -142,9 +151,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
       <Typography
         type="body"
         color={'textMid'}
-        text={`This team is doing ${renderPositionText(
-          targetPerc
-        )} than ${targetPerc}% of other GGC teams for pregnant mom folders opened!`}
+        text={renderOpenedFolderText(title)}
         className="mt-4"
       />
       <Divider className="p-4" dividerType="dashed" />

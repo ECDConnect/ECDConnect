@@ -19,7 +19,7 @@ import {
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
-import { SaveIcon, TrashIcon } from '@heroicons/react/solid';
+import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import {
   AddSubDistrict,
   DeleteSubDistrict,
@@ -49,7 +49,18 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
     mode: 'onChange',
   });
 
-  const { errors } = subDistrictFormState;
+  const { errors, isDirty } = subDistrictFormState;
+
+  const [formIsDirty, setFormIsDirty] = useState(false);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+
+  useEffect(() => {
+    if (isDirty) {
+      setFormIsDirty(true);
+    } else {
+      setFormIsDirty(false);
+    }
+  }, [isDirty]);
 
   const [districts, setDistricts] = useState<SearchDropDownOption<string>[]>(
     []
@@ -167,6 +178,17 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   return (
     <div className="h-screen">
+      {formIsDirty && (
+        <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+          <button
+            className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+            onClick={() => setDisplayFormIsDirty(true)}
+          >
+            <span className="sr-only">Close panel</span>
+            <XIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+      )}
       {props?.isEdit && (
         <div className="flex">
           <StatusChip
@@ -303,6 +325,41 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
               colour: 'secondary',
               type: 'filled',
               onClick: () => setHandleDeleteModal(false),
+              leadingIcon: 'TrashIcon',
+            },
+          ]}
+        />
+      </Dialog>
+      <Dialog
+        className="right-50 absolute w-6/12"
+        stretch
+        visible={displayFormIsDirty}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Discard unsaved changes?`}
+          detailText={'If you leave now, you will lose all of your changes.'}
+          buttonClass="rounded-2xl"
+          actionButtons={[
+            {
+              text: 'Keep editing',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => setDisplayFormIsDirty(false),
+              leadingIcon: 'XIcon',
+            },
+            {
+              text: 'Discard changes',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => {
+                props.closeDialog(true);
+              },
               leadingIcon: 'TrashIcon',
             },
           ]}
