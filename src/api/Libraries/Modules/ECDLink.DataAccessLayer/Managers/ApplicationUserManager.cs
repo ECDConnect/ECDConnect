@@ -34,6 +34,7 @@ namespace ECDLink.DataAccessLayer.Managers
 
         public async Task<ApplicationUser> FindByIdAsync(Guid? userId)
         {
+            if (!userId.HasValue) return null;
             var user = await base.FindByIdAsync(userId.Value.ToString());
             if (user != null) await SetObjectDataAsync(user);
             return user;
@@ -48,6 +49,7 @@ namespace ECDLink.DataAccessLayer.Managers
 
         public async override Task<ApplicationUser> FindByIdAsync(string userId)
         {
+            if (string.IsNullOrEmpty(userId)) return null;
             var user = await base.FindByIdAsync(userId);
             if (user != null) await SetObjectDataAsync(user);
             return user;
