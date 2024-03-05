@@ -16,7 +16,7 @@ import {
   subDistrictInitialValues,
   subDistrictSchema,
 } from '../../clinics.types';
-import { useForm, useWatch } from 'react-hook-form';
+import { FieldError, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
@@ -25,12 +25,18 @@ import {
   DeleteSubDistrict,
   EditSubDistrict,
   GetDistrictsAndStats,
+  GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { findObjectWithString } from '../../../../utils/string-utils/string-utils';
 
 export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { data: districtData } = useQuery(GetDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -70,11 +76,22 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const watchFields = useWatch({ control });
   const disableButton = !watchFields?.subDistrictName || !watchFields?.district;
   const [handleDeleteModal, setHandleDeleteModal] = useState(false);
+  const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
-  // TO DO: Try a double distric logic
-  // const existingSubDistrict = subDistrictData?.subDistrictsAndStats?.find(
-  //   (item) => item?.name?.includes(String(watchFields?.subDistrictName))
-  // );
+  const duplicatedName = findObjectWithString(
+    subDistrictData?.subDistrictsAndStats,
+    'name',
+    watchFields?.subDistrictName,
+    props?.isEdit
+  );
+
+  useEffect(() => {
+    if (duplicatedName) {
+      setDuplicatedNameMessage(
+        `There is a different sub-district within this district with the same name. Please choose a different sub-district name.`
+      );
+    }
+  }, [duplicatedName]);
 
   const addDistrict = useCallback(async () => {
     const districtInputModel = {
@@ -237,26 +254,34 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
         </>
       )}
       <div className="flex flex-col gap-4">
-        <FormInput<subDistrictModel>
-          register={subDistrictRegister}
-          error={errors?.subDistrictName}
-          nameProp={'subDistrictName'}
-          placeholder="Sub-district name"
-          label="Sub-district name *"
-          type={'text'}
-          maxCharacters={50}
-          maxLength={50}
-          isAdminPortalField={true}
-          value={watchFields?.subDistrictName}
-          onChange={(event) => {
-            subDistrictSetValue('subDistrictName', event.target.value);
-          }}
-        />
+        <div>
+          <FormInput<subDistrictModel>
+            register={subDistrictRegister}
+            error={errors?.subDistrictName || duplicatedName}
+            nameProp={'subDistrictName'}
+            placeholder="Sub-district name"
+            label="Sub-district name *"
+            type={'text'}
+            maxCharacters={50}
+            maxLength={50}
+            isAdminPortalField={true}
+            value={watchFields?.subDistrictName}
+            onChange={(event) => {
+              subDistrictSetValue('subDistrictName', event.target.value);
+            }}
+          />
+          {duplicatedName && (
+            <Typography
+              text={duplicateNameMessage}
+              type={'help'}
+              color="errorMain"
+            />
+          )}
+        </div>
         <Dropdown
           placeholder={'Click to select district'}
           className={'justify-between'}
           label={'District *'}
-          // disabled={loading}
           selectedValue={watchFields?.district}
           list={districts}
           onChange={(item) => subDistrictSetValue('district', item)}

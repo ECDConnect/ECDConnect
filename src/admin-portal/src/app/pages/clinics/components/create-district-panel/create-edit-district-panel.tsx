@@ -7,6 +7,7 @@ import {
   FormInput,
   SearchDropDownOption,
   StatusChip,
+  Typography,
 } from '@ecdlink/ui';
 import {
   ClinicPanelCreateProps,
@@ -23,14 +24,21 @@ import {
   DeleteDistrict,
   EditDistrict,
   GetAllProvince,
+  GetDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { findObjectWithString } from '../../../../utils/string-utils/string-utils';
 
 export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
-  const { data: provinceData, refetch } = useQuery(GetAllProvince, {
+  const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: districtData } = useQuery(GetDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const [addDistrictMutation] = useMutation(AddDistrict);
   const [editDistrictMutation] = useMutation(EditDistrict);
   const [deleteDistrictMutation] = useMutation(DeleteDistrict);
@@ -46,13 +54,30 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
     mode: 'onBlur',
   });
 
-  const { errors, isValid: isDistrictValid, isDirty } = districtFormState;
+  const { errors, isDirty } = districtFormState;
+  const watchFields = useWatch({ control });
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
 
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+  const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
+
+  const duplicatedName = findObjectWithString(
+    districtData?.districtsAndStats,
+    'name',
+    watchFields?.districtName,
+    props?.isEdit
+  );
+
+  useEffect(() => {
+    if (duplicatedName) {
+      setDuplicatedNameMessage(
+        `There is a different district the same name. Please choose a different district name.`
+      );
+    }
+  }, [duplicatedName]);
 
   useEffect(() => {
     if (isDirty) {
@@ -63,7 +88,6 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   }, [isDirty]);
 
   const { setNotification } = useNotifications();
-  const watchFields = useWatch({ control });
   const disableButton = !watchFields?.districtName || !watchFields?.province;
   const [handleDeleteModal, setHandleDeleteModal] = useState(false);
 
@@ -214,22 +238,31 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
       )}
       <Divider dividerType="dashed" className="py-8" />
       <div className="flex flex-col gap-4">
-        <FormInput<DistrictModel>
-          register={districtRegister}
-          error={errors?.districtName}
-          nameProp={'districtName'}
-          placeholder="District name"
-          label="District name *"
-          subLabel="The combination of clinic name & sub-district must be unique."
-          type={'text'}
-          maxCharacters={50}
-          value={watchFields?.districtName}
-          maxLength={50}
-          isAdminPortalField={true}
-          onChange={(event) => {
-            districtSetValue('districtName', event.target.value);
-          }}
-        />
+        <div>
+          <FormInput<DistrictModel>
+            register={districtRegister}
+            error={errors?.districtName || duplicatedName}
+            nameProp={'districtName'}
+            placeholder="District name"
+            label="District name *"
+            subLabel="The combination of clinic name & sub-district must be unique."
+            type={'text'}
+            maxCharacters={50}
+            value={watchFields?.districtName}
+            maxLength={50}
+            isAdminPortalField={true}
+            onChange={(event) => {
+              districtSetValue('districtName', event.target.value);
+            }}
+          />
+          {duplicatedName && (
+            <Typography
+              text={duplicateNameMessage}
+              type={'help'}
+              color="errorMain"
+            />
+          )}
+        </div>
         <Dropdown
           placeholder={'Click to select Province'}
           className={'justify-between'}
@@ -290,7 +323,6 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
               colour: 'secondary',
               type: 'outlined',
               onClick: () => {
-                // submit();
                 deleteDistrict();
               },
               leadingIcon: 'PencilIcon',

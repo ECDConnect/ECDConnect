@@ -112,6 +112,13 @@ export default function ClinicsSubPage() {
     });
   };
 
+  const filterByValue = useCallback((array, value) => {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+    );
+  }, []);
+
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
@@ -232,12 +239,15 @@ export default function ClinicsSubPage() {
                     { field: 'subDistrict', use: 'Sub-district' },
                     { field: 'insertedDate', use: 'Date added' },
                   ]}
-                  rows={tableData}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
                     handleViewClinic
                   }
-                  searchInput={searchValue}
                   noBulkSelection={true}
                 />
               </div>
