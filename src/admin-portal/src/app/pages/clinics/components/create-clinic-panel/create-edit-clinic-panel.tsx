@@ -45,7 +45,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const { data: clinicsData, refetch } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
-  console.log({ teamLeadtData });
+
   const [addClinictMutation] = useMutation(CreateClinic);
   const [editClinictMutation] = useMutation(EditClinic);
   const [deleteClinicMutation] = useMutation(DeleteClinic);
@@ -60,7 +60,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     defaultValues: clinicInitialValues,
     mode: 'onBlur',
   });
-  console.log({ props });
+
   const { errors, isDirty } = clinicFormState;
   const { setNotification } = useNotifications();
   const history = useHistory();
@@ -219,7 +219,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     watchFields?.teamLeadOne,
     watchFields?.teamLeadTwo,
   ]);
-  console.log({ watchFields });
+
   const editClinic = useCallback(async () => {
     const districtInputModel = {
       id: props?.clinic?.id,
