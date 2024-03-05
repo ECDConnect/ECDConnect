@@ -38,10 +38,7 @@ export const TeamPoints = () => {
     );
 
   const activities = activityConstants.map((activity): MenuListDataItem => {
-    const points =
-      clinicDetails?.points?.points
-        ?.filter((point) => point.activityName === activity.name)
-        .reduce((acc, point) => acc ?? 0 + point.pointsTotal, 0) ?? 0;
+    const points = '';
 
     return {
       showIcon: true,
@@ -59,7 +56,7 @@ export const TeamPoints = () => {
           ROUTES.COMMUNITY.TEAM.POINTS.ACTIVITY_DETAILS.replace(
             ':activitySlug',
             formatTextToSlug(activity.name)
-          )
+          ).replace(':currentPoints', String(points))
         ),
     };
   });
@@ -106,7 +103,6 @@ export const TeamPoints = () => {
           text: tierName,
         }}
         textColour="black"
-        onClick={() => history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)}
       />
       {!!nextTier && (
         <Alert
@@ -122,6 +118,7 @@ export const TeamPoints = () => {
         color="textDark"
       />
       <StackedList
+        isFullHeight={false}
         className="flex flex-col gap-2"
         type={'MenuList' as StackedListType}
         listItems={activities}

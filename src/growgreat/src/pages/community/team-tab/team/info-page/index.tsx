@@ -29,8 +29,7 @@ export const TeamTabInfoPage = () => {
 
   const history = useHistory();
 
-  // TODO: update section name (from portal)
-  const section = 'points';
+  const section = 'Community - Team - Points';
 
   const languagesOptions = useMemo(
     () =>
