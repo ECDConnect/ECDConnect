@@ -20,46 +20,72 @@ import {
 } from '@/store/community/community.actions';
 import { communitySelectors } from '@/store/community';
 import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
+import { calculateClinicLeaguePositionPercentiles } from '@/utils/community/league-position';
+import { useSnackbar } from '@ecdlink/core';
 
 export const LeagueTab: React.FC = () => {
   const [showAbove, setShowAbove] = useState<number>(1);
   const [showBelow, setShowBelow] = useState<number>(1);
 
-  const userClinic = useSelector(communitySelectors.getClinicSelector);
+  const currentClinic = useSelector(communitySelectors.getClinicSelector);
   const league = useSelector(communitySelectors.getLeagueSelector);
 
   const appDispatch = useAppDispatch();
 
+  const { showMessage } = useSnackbar();
+
   const today = new Date();
 
-  const { isLoading: isLoadingLeague } = useThunkFetchCall(
-    'community',
-    CommunityActions.GET_LEAGUE_BY_ID
+  const {
+    isLoading: isLoadingLeague,
+    wasLoading: wasLoadingLeague,
+    isRejected: isRejectedLeague,
+    error: errorLeague,
+  } = useThunkFetchCall('community', CommunityActions.GET_LEAGUE_BY_ID);
+  const {
+    isLoading: isLoadingClinic,
+    wasLoading: wasLoadingClinic,
+    isRejected: isRejectedClinic,
+    error: errorClinic,
+  } = useThunkFetchCall('community', CommunityActions.GET_CLINIC_BY_ID);
+
+  const isLoading = isLoadingLeague || (!currentClinic && isLoadingClinic);
+  const wasLoading = wasLoadingLeague || wasLoadingClinic;
+  const isRejected = isRejectedLeague || isRejectedClinic;
+  const error = errorLeague || errorClinic;
+
+  useEffect(() => {
+    if (wasLoading && !isLoading && isRejected) {
+      showMessage({
+        message: error,
+        type: 'error',
+      });
+    }
+  }, [error, isLoading, isRejected, showMessage, wasLoading]);
+
+  const userClinic = league?.clinics.find(
+    (clinic) => clinic.clinicId === currentClinic?.id
   );
-  const { isLoading: isLoadingClinic } = useThunkFetchCall(
-    'community',
-    CommunityActions.GET_CLINIC_BY_ID
-  );
 
-  const isLoading = isLoadingLeague || (!userClinic && isLoadingClinic);
-
-  const userQuarterPosition = userClinic?.points?.leagueRanking || 0;
-  // TODO: Implement end of year ranking
-  const userEndOfYearPosition = /* userClinic?.points?.endOfYearRanking ||  */ 0;
-
-  const userClinicBottom =
-    userQuarterPosition === (league?.clinics.length || 0) - 1;
-
-  // TODO: Implement end of year ranking
-  ////////////////////////////////////
-  const isFirstPlaceEndOfYear = false;
-  const isSecondPlaceEndOfYear = false;
-  const isThirdPlaceEndOfYear = false;
-  const isTop25PercentEndOfYear = false;
-  const isMiddle50PercentEndOfYear = false;
-  /////////////////////////////////////////////
   // From 1 to 15 October, show the end-of-year league scoreboard instead of the quarterly board.
   const isEndOfTheYear = today.getMonth() === 9 && today.getDate() <= 15;
+
+  const userClinicPosition = isEndOfTheYear
+    ? userClinic?.leagueRankingForYear ?? 0
+    : userClinic?.leagueRankingForQuarter ?? 0;
+
+  const userClinicBottom =
+    userClinicPosition === (league?.clinics.length || 0) - 1;
+
+  const isFirstPlace = userClinicPosition === 1;
+  const isSecondPlace = userClinicPosition === 2;
+  const isThirdPlace = userClinicPosition === 3;
+
+  const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
+    calculateClinicLeaguePositionPercentiles(
+      league?.clinics ?? [],
+      userClinicPosition
+    );
 
   const description = isEndOfTheYear
     ? `Oct ${today.getFullYear() - 1} to Sep ${today.getFullYear()}`
@@ -69,40 +95,40 @@ export const LeagueTab: React.FC = () => {
       )})`;
 
   const alertProps = useMemo((): AlertProps => {
-    const message = `You ended the year in position ${userEndOfYearPosition} in the ${league?.name} league.`;
-    if (isFirstPlaceEndOfYear) {
+    const message = `You ended the year in position ${userClinicPosition} in the ${league?.name} league.`;
+    if (isFirstPlace) {
       return {
         type: 'warning',
-        title: `Well done ${userClinic?.name} team!`,
+        title: `Well done ${currentClinic?.name} team!`,
         message: `You won first place in the ${league?.name} league!`,
         customIcon: <PollyImpressed className="h-14 w-14 self-center" />,
       };
     }
 
-    if (isSecondPlaceEndOfYear || isThirdPlaceEndOfYear) {
+    if (isSecondPlace || isThirdPlace) {
       return {
         type: 'warning',
-        title: `Well done ${userClinic?.name} team!`,
+        title: `Well done ${currentClinic?.name} team!`,
         message: `You ended the year in ${
-          isSecondPlaceEndOfYear ? 'second' : 'third'
+          isSecondPlace ? 'second' : 'third'
         } place in the ${league?.name} league!`,
         customIcon: <PollyImpressed className="h-14 w-14 self-center" />,
       };
     }
 
-    if (isTop25PercentEndOfYear) {
+    if (isTop25PercentInTheLeague) {
       return {
         type: 'warning',
-        title: `Good job ${userClinic?.name} team!`,
+        title: `Good job ${currentClinic?.name} team!`,
         message,
         customIcon: <PollyHappy className="h-14 w-14 self-center" />,
       };
     }
 
-    if (isMiddle50PercentEndOfYear) {
+    if (isMiddle50PercentInTheLeague) {
       return {
         type: 'warning',
-        title: `Not too bad ${userClinic?.name} team!`,
+        title: `Not too bad ${currentClinic?.name} team!`,
         message,
         customIcon: <PollyHappy className="h-14 w-14 self-center" />,
       };
@@ -110,41 +136,42 @@ export const LeagueTab: React.FC = () => {
 
     return {
       type: 'warning',
-      title: `Keep going, ${userClinic?.name} team!`,
+      title: `Keep going, ${currentClinic?.name} team!`,
       message,
       customIcon: <PollyNeutral className="h-14 w-14 self-center" />,
     };
   }, [
-    isFirstPlaceEndOfYear,
-    isMiddle50PercentEndOfYear,
-    isSecondPlaceEndOfYear,
-    isThirdPlaceEndOfYear,
-    isTop25PercentEndOfYear,
+    currentClinic?.name,
+    isFirstPlace,
+    isMiddle50PercentInTheLeague,
+    isSecondPlace,
+    isThirdPlace,
+    isTop25PercentInTheLeague,
     league?.name,
-    userClinic?.name,
+    userClinicPosition,
   ]);
 
   // Set up which clinics to show
   const handleClinicPosition = useCallback(() => {
     if (!!league?.clinics.length && league?.clinics.length <= 15) {
-      setShowAbove(userQuarterPosition);
-      setShowBelow(league?.clinics.length - userQuarterPosition - 1);
+      setShowAbove(userClinicPosition);
+      setShowBelow(league?.clinics.length - userClinicPosition - 1);
     }
 
-    if (userQuarterPosition === 0) {
+    if (userClinicPosition === 0) {
       setShowAbove(0);
       setShowBelow(4);
     }
 
-    if (userQuarterPosition <= 5) {
-      setShowAbove(userQuarterPosition);
-      setShowBelow(4 - userQuarterPosition);
+    if (userClinicPosition <= 5) {
+      setShowAbove(userClinicPosition);
+      setShowBelow(4 - userClinicPosition);
     }
 
     if (userClinicBottom) {
       setShowAbove(2);
     }
-  }, [league?.clinics.length, userClinicBottom, userQuarterPosition]);
+  }, [league?.clinics.length, userClinicBottom, userClinicPosition]);
 
   useEffect(() => {
     handleClinicPosition();
@@ -153,11 +180,11 @@ export const LeagueTab: React.FC = () => {
   useEffect(() => {
     appDispatch(
       getLeagueById({
-        leagueId: userClinic?.league?.id || '',
+        leagueId: currentClinic?.league?.id || '',
         forceReload: true,
       })
     );
-  }, [appDispatch, userClinic?.league?.id]);
+  }, [appDispatch, currentClinic?.league?.id]);
 
   if (isLoading) {
     return (
@@ -171,7 +198,7 @@ export const LeagueTab: React.FC = () => {
   }
   return (
     <div className="flex flex-col p-4 pt-6">
-      <Typography type="h2" text={`${league?.name} scoreboard`} />
+      <Typography type="h2" text={`${league?.name ?? ''} scoreboard`} />
       <Typography
         type="h4"
         color="textMid"
@@ -192,10 +219,18 @@ export const LeagueTab: React.FC = () => {
       {!!league && !!league.clinics.length && (
         <div>
           {/* Show top clinic if not already included */}
-          {!!league && userQuarterPosition - showAbove > 0 && (
+          {!!league && userClinicPosition - showAbove > 0 && (
             <PointsDetailsCard
-              pointsEarned={league?.clinics[0].pointsTotal}
-              activityCount={league?.clinics[0].leagueRanking}
+              pointsEarned={
+                isEndOfTheYear
+                  ? league?.clinics[0].leagueRankingForYear
+                  : league?.clinics[0].leagueRankingForQuarter
+              }
+              activityCount={
+                isEndOfTheYear
+                  ? league?.clinics[0].leagueRankingForYear
+                  : league?.clinics[0].leagueRankingForQuarter
+              }
               title={league?.clinics[0].clinicName}
               size="medium"
               className={'mb-1'}
@@ -210,7 +245,7 @@ export const LeagueTab: React.FC = () => {
             />
           )}
           {/* Show select more if we are not already at the top */}
-          {!!league && userQuarterPosition - showAbove > 0 && (
+          {!!league && userClinicPosition - showAbove > 0 && (
             <Button
               shape="normal"
               color="primary"
@@ -226,50 +261,66 @@ export const LeagueTab: React.FC = () => {
           {/* Show main group around users clinic */}
           {league.clinics
             .slice(
-              Math.max(userQuarterPosition - showAbove, 0),
-              userQuarterPosition + showBelow + 1
+              Math.max(userClinicPosition - showAbove, 0),
+              userClinicPosition + showBelow + 1
             )
-            .map((clinic) => (
-              <div key={clinic.clinicId}>
-                <PointsDetailsCard
-                  pointsEarned={clinic.pointsTotal}
-                  activityCount={clinic.leagueRanking}
-                  title={clinic.clinicName}
-                  size="medium"
-                  className={
-                    clinic.clinicId === userClinic?.id ? 'mb-3 mt-2' : 'mb-1'
-                  }
-                  textColour={
-                    clinic.clinicId === userClinic?.id ? 'white' : 'textMid'
-                  }
-                  colour={
-                    clinic.clinicId === userClinic?.id
-                      ? 'successMain'
-                      : clinic.leagueRanking <= 3
-                      ? 'successBg'
-                      : 'uiBg'
-                  }
-                  badgeTextColour={
-                    clinic.clinicId === userClinic?.id ? 'successMain' : 'white'
-                  }
-                  badgeImage={
-                    <Badge
-                      className="absolute z-0 h-full w-full"
-                      fill={
-                        clinic.clinicId === userClinic?.id
-                          ? '#FFFFFF'
-                          : clinic.leagueRanking <= 3
-                          ? 'var(--successMain)'
-                          : 'var(--primary)'
-                      }
-                    />
-                  }
-                />
-              </div>
-            ))}
+            .map((clinic) => {
+              const leagueRanking = isEndOfTheYear
+                ? clinic.leagueRankingForYear
+                : clinic.leagueRankingForQuarter;
+
+              return (
+                <div key={clinic.clinicId}>
+                  <PointsDetailsCard
+                    pointsEarned={
+                      isEndOfTheYear
+                        ? clinic.pointsTotalForYear
+                        : clinic.pointsTotalForQuarter
+                    }
+                    activityCount={leagueRanking}
+                    title={clinic.clinicName}
+                    size="medium"
+                    className={
+                      clinic.clinicId === currentClinic?.id
+                        ? 'mb-3 mt-2'
+                        : 'mb-1'
+                    }
+                    textColour={
+                      clinic.clinicId === currentClinic?.id
+                        ? 'white'
+                        : 'textMid'
+                    }
+                    colour={
+                      clinic.clinicId === currentClinic?.id
+                        ? 'successMain'
+                        : leagueRanking <= 3
+                        ? 'successBg'
+                        : 'uiBg'
+                    }
+                    badgeTextColour={
+                      clinic.clinicId === currentClinic?.id
+                        ? 'successMain'
+                        : 'white'
+                    }
+                    badgeImage={
+                      <Badge
+                        className="absolute z-0 h-full w-full"
+                        fill={
+                          clinic.clinicId === currentClinic?.id
+                            ? '#FFFFFF'
+                            : leagueRanking <= 3
+                            ? 'var(--successMain)'
+                            : 'var(--primary)'
+                        }
+                      />
+                    }
+                  />
+                </div>
+              );
+            })}
           {/* Show select more button if we are not already at the bottom */}
           {!!league &&
-            userQuarterPosition + showBelow < league.clinics.length - 1 && (
+            userClinicPosition + showBelow < league.clinics.length - 1 && (
               <Button
                 shape="normal"
                 color="primary"
