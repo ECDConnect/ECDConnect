@@ -14,6 +14,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
   badgeImage,
   badgeTextColour = 'white',
   textColour = 'textMid',
+  hideActivityCount,
 }) => {
   return (
     <div
@@ -22,14 +23,20 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
         `bg-${colour} rounded-10 flex w-full flex-row items-center p-5 pl-8`
       )}
     >
-      <p
-        className={`text-center ${size === 'large' ? 'text-6xl' : 'text-4xl'}
+      {!hideActivityCount && (
+        <p
+          className={`text-center ${size === 'large' ? 'text-6xl' : 'text-4xl'}
         ${isShare ? 'mb-11' : ''}
         font-semibold text-${textColour}`}
+        >
+          {activityCount}
+        </p>
+      )}
+      <div
+        className={`${hideActivityCount ? '' : 'ml-8'} ${
+          isShare ? 'mb-5' : ''
+        }`}
       >
-        {activityCount}
-      </p>
-      <div className={`ml-8 ${isShare ? 'mb-5' : ''}`}>
         <Typography
           type={size === 'large' ? 'h1' : 'h4'}
           text={title}

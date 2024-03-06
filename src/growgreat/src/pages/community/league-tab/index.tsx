@@ -88,6 +88,14 @@ export const LeagueTab: React.FC = () => {
       userClinicPosition
     );
 
+  const isToShowRanking =
+    league?.clinics?.some((clinic) =>
+      isEndOfTheYear
+        ? clinic.pointsTotalForYear > 0
+        : clinic.pointsTotalForQuarter > 0
+    ) ?? false;
+
+  console.log({ isToShowRanking });
   const description = isEndOfTheYear
     ? `Oct ${today.getFullYear() - 1} to Sep ${today.getFullYear()}`
     : `Points earned so far in ${getCommunityQuarterDescription(today).replace(
@@ -151,6 +159,18 @@ export const LeagueTab: React.FC = () => {
     league?.name,
     userClinicPosition,
   ]);
+
+  const clinics = useMemo(() => {
+    if (isToShowRanking) {
+      return league?.clinics ?? [];
+    }
+
+    return (
+      league?.clinics.filter(
+        (clinic) => clinic.clinicId !== currentClinic?.id
+      ) ?? []
+    );
+  }, [currentClinic?.id, isToShowRanking, league?.clinics]);
 
   // Set up which clinics to show
   const handleClinicPosition = useCallback(() => {
@@ -229,14 +249,15 @@ export const LeagueTab: React.FC = () => {
             <PointsDetailsCard
               pointsEarned={
                 isEndOfTheYear
-                  ? league?.clinics[0].leagueRankingForYear
-                  : league?.clinics[0].leagueRankingForQuarter
+                  ? league?.clinics[0].pointsTotalForYear
+                  : league?.clinics[0].pointsTotalForQuarter
               }
               activityCount={
                 isEndOfTheYear
                   ? league?.clinics[0].leagueRankingForYear
                   : league?.clinics[0].leagueRankingForQuarter
               }
+              hideActivityCount={!isToShowRanking}
               title={league?.clinics[0].clinicName}
               size="medium"
               className={'mb-1'}
@@ -263,9 +284,24 @@ export const LeagueTab: React.FC = () => {
               className={'mt-3 mb-4 w-full rounded-2xl'}
             />
           )}
-
+          {!isToShowRanking && (
+            <PointsDetailsCard
+              pointsEarned={0}
+              activityCount={0}
+              hideActivityCount
+              title={userClinic?.clinicName ?? ''}
+              size="medium"
+              className={'mb-4'}
+              colour={'successMain'}
+              badgeTextColour={'successMain'}
+              textColour="white"
+              badgeImage={
+                <Badge className="absolute z-0 h-full w-full" fill={'#FFFF'} />
+              }
+            />
+          )}
           {/* Show main group around users clinic */}
-          {league.clinics
+          {clinics
             .slice(
               Math.max(userClinicPosition - showAbove, 0),
               userClinicPosition + showBelow + 1
@@ -284,6 +320,7 @@ export const LeagueTab: React.FC = () => {
                         : clinic.pointsTotalForQuarter
                     }
                     activityCount={leagueRanking}
+                    hideActivityCount={!isToShowRanking}
                     title={clinic.clinicName}
                     size="medium"
                     className={
@@ -299,7 +336,7 @@ export const LeagueTab: React.FC = () => {
                     colour={
                       clinic.clinicId === currentClinic?.id
                         ? 'successMain'
-                        : leagueRanking <= 3
+                        : leagueRanking <= 3 && isToShowRanking
                         ? 'successBg'
                         : 'uiBg'
                     }
@@ -314,7 +351,7 @@ export const LeagueTab: React.FC = () => {
                         fill={
                           clinic.clinicId === currentClinic?.id
                             ? '#FFFFFF'
-                            : leagueRanking <= 3
+                            : leagueRanking <= 3 && isToShowRanking
                             ? 'var(--successMain)'
                             : 'var(--primary)'
                         }
