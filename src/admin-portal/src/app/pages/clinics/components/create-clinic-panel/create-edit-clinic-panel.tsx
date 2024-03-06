@@ -22,11 +22,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import {
   CreateClinic,
-  DeleteClinic,
+  CreateSiteAddress,
+  DeleteClinicById,
   EditClinic,
   GetAllClinic,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
+  SiteAddressInput,
+  UpdateSiteAddress,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
@@ -48,7 +51,9 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   const [addClinictMutation] = useMutation(CreateClinic);
   const [editClinictMutation] = useMutation(EditClinic);
-  const [deleteClinicMutation] = useMutation(DeleteClinic);
+  const [deleteClinicMutation] = useMutation(DeleteClinicById);
+  const [createSiteAddress] = useMutation(CreateSiteAddress);
+  const [updateSiteAddress] = useMutation(UpdateSiteAddress);
 
   const {
     register: clinicRegister,
@@ -117,22 +122,28 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     if (props?.isEdit) {
       clinicSetValue('name', props?.clinic?.name);
       clinicSetValue('phoneNumber', props?.clinic?.phoneNumber);
+      clinicSetValue('siteAddressId', props?.clinic?.siteAddressId);
       clinicSetValue('address', props?.clinic?.siteAddress?.addressLine1);
       clinicSetValue('subDistrict', props?.clinic?.subDistrict?.id);
-      clinicSetValue(
-        'teamLeadOne',
-        String(props?.clinic?.teamLeads?.[0]?.teamLead?.id)
-      );
-      clinicSetValue(
-        'teamLeadTwo',
-        String(props?.clinic?.teamLeads?.[1]?.teamLead?.id)
-      );
+      if (props?.clinic?.teamLeads?.[0]?.teamLead?.id) {
+        clinicSetValue(
+          'teamLeadOne',
+          String(props?.clinic?.teamLeads?.[0]?.teamLead?.id)
+        );
+      }
+      if (props?.clinic?.teamLeads?.[1]?.teamLead?.id) {
+        clinicSetValue(
+          'teamLeadTwo',
+          String(props?.clinic?.teamLeads?.[1]?.teamLead?.id)
+        );
+      }
     }
   }, [
     clinicSetValue,
     props?.clinic?.name,
     props?.clinic?.phoneNumber,
-    props?.clinic?.siteAddress,
+    props?.clinic?.siteAddress?.addressLine1,
+    props?.clinic?.siteAddressId,
     props?.clinic?.subDistrict?.id,
     props?.clinic?.teamLeads,
     props?.isEdit,
@@ -166,7 +177,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   useEffect(() => {
     if (!watchFields?.teamLeadOne && teamLeadtData?.allTeamLeads?.length > 0) {
-      const teamLeads = setOptionalTeamLeads(
+      setOptionalTeamLeads(
         teamLeadtData?.allTeamLeads?.map((item) => {
           return {
             value: item?.id,
@@ -189,17 +200,58 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   }, [teamLeadtData, watchFields?.teamLeadOne]);
 
   const addClinic = useCallback(async () => {
+    const newSiteAddressInputModel: SiteAddressInput = {
+      AddressLine1: watchFields.address,
+      IsActive: true,
+    };
+
+    const siteAddressInputModel: SiteAddressInput = {
+      Id: watchFields.siteAddressId,
+      AddressLine1: watchFields.address,
+      IsActive: true,
+    };
+
+    let siteAddressId = '';
+    if (props?.clinic?.siteAddressId) {
+      await updateSiteAddress({
+        variables: {
+          id: watchFields.siteAddressId,
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = watchFields?.siteAddressId;
+    } else {
+      const returnSiteAddress = await createSiteAddress({
+        variables: {
+          input: { ...newSiteAddressInputModel },
+        },
+      });
+      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+    }
+
+    const clinicInputModeWithTeamLead2 = {
+      name: watchFields?.name,
+      phoneNumber: watchFields?.phoneNumber,
+      subDistrictId: watchFields?.subDistrict,
+      siteAddressId: watchFields?.siteAddressId || siteAddressId,
+      teamLead1Id: watchFields?.teamLeadOne,
+      teamLead2Id:
+        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
+    };
+
     const clinicInputModel = {
       name: watchFields?.name,
       phoneNumber: watchFields?.phoneNumber,
       subDistrictId: watchFields?.subDistrict,
-      siteAddressId: watchFields?.address,
+      siteAddressId: watchFields?.siteAddressId || siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
-      teamLead2Id: watchFields?.teamLeadTwo,
     };
+
     const response = await addClinictMutation({
       variables: {
-        input: { ...clinicInputModel },
+        input: watchFields?.teamLeadTwo
+          ? { ...clinicInputModeWithTeamLead2 }
+          : { ...clinicInputModel },
       },
     });
 
@@ -209,31 +261,77 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
+
+    history.push({
+      pathname: '/clinics/clinics',
+    });
   }, [
     addClinictMutation,
+    createSiteAddress,
+    history,
+    props,
     setNotification,
-    watchFields?.address,
+    updateSiteAddress,
+    watchFields.address,
     watchFields?.name,
     watchFields?.phoneNumber,
+    watchFields.siteAddressId,
     watchFields?.subDistrict,
     watchFields?.teamLeadOne,
     watchFields?.teamLeadTwo,
   ]);
 
   const editClinic = useCallback(async () => {
+    const siteAddressInputModel: SiteAddressInput = {
+      Id: watchFields.siteAddressId,
+      AddressLine1: watchFields.address,
+      IsActive: true,
+    };
+
+    let siteAddressId = '';
+    if (props?.clinic?.siteAddressId) {
+      await updateSiteAddress({
+        variables: {
+          id: watchFields.siteAddressId,
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = watchFields?.siteAddressId;
+    } else {
+      const returnSiteAddress = await createSiteAddress({
+        variables: {
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+    }
+
     const districtInputModel = {
       id: props?.clinic?.id,
       name: watchFields?.name,
       phoneNumber: watchFields?.phoneNumber,
       subDistrictId: watchFields?.subDistrict,
-      siteAddressId: props?.clinic?.siteAddressId,
+      siteAddressId: props?.clinic?.siteAddressId || siteAddressId,
+      teamLead1Id: watchFields?.teamLeadOne,
+    };
+
+    const clinicInputModeWithTeamLead2 = {
+      id: props?.clinic?.id,
+      name: watchFields?.name,
+      phoneNumber: watchFields?.phoneNumber,
+      subDistrictId: watchFields?.subDistrict,
+      siteAddressId: props?.clinic?.siteAddressId || siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
       teamLead2Id:
         watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
     };
     const response = await editClinictMutation({
       variables: {
-        input: { ...districtInputModel },
+        input: watchFields?.teamLeadTwo
+          ? { ...clinicInputModeWithTeamLead2 }
+          : { ...districtInputModel },
       },
     });
 
@@ -244,17 +342,22 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       });
     }
 
+    props.closeDialog(true);
+
     history.push({
       pathname: '/clinics/clinics',
     });
   }, [
+    createSiteAddress,
     editClinictMutation,
     history,
-    props?.clinic?.id,
-    props?.clinic?.siteAddressId,
+    props,
     setNotification,
+    updateSiteAddress,
+    watchFields.address,
     watchFields?.name,
     watchFields?.phoneNumber,
+    watchFields.siteAddressId,
     watchFields?.subDistrict,
     watchFields?.teamLeadOne,
     watchFields?.teamLeadTwo,
@@ -273,7 +376,11 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.ALERT,
       });
     }
-  }, [deleteClinicMutation, props, setNotification]);
+
+    history.push({
+      pathname: '/clinics/clinics',
+    });
+  }, [deleteClinicMutation, history, props, setNotification]);
 
   const handleSaveData = useCallback(() => {
     if (props?.isEdit) {
