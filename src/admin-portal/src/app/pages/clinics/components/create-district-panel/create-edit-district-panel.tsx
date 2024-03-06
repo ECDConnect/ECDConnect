@@ -168,15 +168,24 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   useEffect(() => {
     if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
       setProvinces(
-        provinceData?.GetAllProvince?.filter(
-          (prov) => prov?.description !== 'N/A'
-        )?.map((item) => {
-          return {
-            value: item?.id,
-            label: item?.description,
-          };
-        })
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+            };
+          })
       );
     }
   }, [provinceData]);

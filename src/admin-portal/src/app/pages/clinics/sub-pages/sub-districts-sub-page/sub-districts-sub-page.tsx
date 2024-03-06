@@ -24,7 +24,7 @@ export default function SubDistrictsSubPage() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: provincetData } = useQuery(GetAllProvince, {
+  const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -90,20 +90,29 @@ export default function SubDistrictsSubPage() {
   }, [districtData?.districtsAndStats]);
 
   useEffect(() => {
-    if (provincetData?.GetAllProvince?.length > 0) {
+    if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
       setProvinces(
-        provincetData?.GetAllProvince?.filter(
-          (prov) => prov?.description !== 'N/A'
-        )?.map((item) => {
-          return {
-            value: item?.id,
-            label: item?.description,
-            id: item?.id,
-          };
-        })
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+              id: item?.id,
+            };
+          })
       );
     }
-  }, [provincetData?.GetAllProvince]);
+  }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
     if (districtsFiltered && districtsFilteredArray?.length > 0) {

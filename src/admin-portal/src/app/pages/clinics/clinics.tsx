@@ -22,7 +22,7 @@ export function ClinicsMainPage() {
           href: '/clinics/clinics',
         },
         {
-          name: 'Districs',
+          name: 'Districts',
           href: '/clinics/districts',
         },
         {
