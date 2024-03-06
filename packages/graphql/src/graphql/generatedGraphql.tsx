@@ -4933,8 +4933,10 @@ export type LeagueClinicPointsModel = {
   __typename?: 'LeagueClinicPointsModel';
   clinicId: Scalars['UUID'];
   clinicName?: Maybe<Scalars['String']>;
-  leagueRanking: Scalars['Int'];
-  pointsTotal: Scalars['Int'];
+  leagueRankingForQuarter: Scalars['Int'];
+  leagueRankingForYear: Scalars['Int'];
+  pointsTotalForQuarter: Scalars['Int'];
+  pointsTotalForYear: Scalars['Int'];
 };
 
 export type LeagueClinicsModel = {

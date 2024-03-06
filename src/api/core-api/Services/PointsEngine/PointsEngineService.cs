@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
+using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -1154,11 +1155,11 @@ namespace EcdLink.Api.CoreApi.Services
 
             var healthCareWorkerUserIds = clinic.HealthCareWorkers.Select(x => x.UserId).ToList();
 
-            // Get all points for the user for the league range
+            // Get all points for the user for the current quarter
             var userPoints = _pointsUserSummaryRepo.GetAll().Where(x
                 => healthCareWorkerUserIds.Contains(x.UserId)
-                && x.DateScored >= league.League.StartDate
-                && x.DateScored <= league.League.EndDate).ToList();
+                && x.DateScored >= DateTimeHelper.GetCurrentGrowGreatQuarterStart()
+                && x.DateScored <= DateTimeHelper.GetCurrentGrowGreatQuarterEnd()).ToList();
 
             var totalPoints = userPoints.Sum(x => x.PointsTotal);
 
@@ -1182,7 +1183,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             return new ClinicPointsModel()
             {
-                LeagueRanking = clinicRanking.LeagueRanking,
+                LeagueRanking = clinicRanking.LeagueRankingForQuarter,
                 Points = clinicPoints,
                 PointsTotal = totalPoints,
                 MaxPointsTotal = league.League.LeagueType.MaxPoints,
@@ -1214,31 +1215,55 @@ namespace EcdLink.Api.CoreApi.Services
                 && x.DateScored <= league.EndDate)
                 .ToList();
 
+            var quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
+            var quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
+
             var clinicList = new List<LeagueClinicPointsModel>();
             foreach (var clinic in clinicsWithUsers)
             {
-                var pointsTotal = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal);
+                var pointsTotalForYear = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal);
+                var pointsTotalForQuarter = allUserPoints.Where(x => 
+                    clinic.UserIds.Contains(x.UserId)
+                    && x.DateScored >= quarterStart
+                    && x.DateScored <= quarterEnd)
+                    .Sum(x => x.PointsTotal);
 
                 clinicList.Add(new LeagueClinicPointsModel()
                 {
                     ClinicId = clinic.ClinicId,
                     ClinicName = clinic.ClinicName,
-                    PointsTotal = pointsTotal,
+                    PointsTotalForYear = pointsTotalForYear,
+                    PointsTotalForQuarter = pointsTotalForQuarter,
                 });
             }
 
-            clinicList = clinicList.OrderBy(x => x.PointsTotal).ToList();
-            // Set league ranks, keeping highest rank for all that have equal points
-            clinicList[0].LeagueRanking = 1;
+            // Set league ranks for year, keeping highest rank for all that have equal points
+            clinicList = clinicList.OrderBy(x => x.PointsTotalForYear).ToList();
+            clinicList[0].LeagueRankingForYear = 1;
             for (int i = 1; i < clinicList.Count; i++)
             {
-                if (clinicList[i].PointsTotal == clinicList[i - 1].PointsTotal)
+                if (clinicList[i].PointsTotalForYear == clinicList[i - 1].PointsTotalForYear)
                 {
-                    clinicList[i].LeagueRanking = clinicList[i - 1].LeagueRanking;
+                    clinicList[i].LeagueRankingForYear = clinicList[i - 1].LeagueRankingForYear;
                 }
                 else
                 {
-                    clinicList[i].LeagueRanking = i + 1;
+                    clinicList[i].LeagueRankingForYear = i + 1;
+                }
+            }
+
+            // Set league ranks for year, keeping highest rank for all that have equal points
+            clinicList = clinicList.OrderBy(x => x.PointsTotalForQuarter).ToList();
+            clinicList[0].LeagueRankingForQuarter = 1;
+            for (int i = 1; i < clinicList.Count; i++)
+            {
+                if (clinicList[i].PointsTotalForQuarter == clinicList[i - 1].PointsTotalForQuarter)
+                {
+                    clinicList[i].LeagueRankingForQuarter = clinicList[i - 1].LeagueRankingForQuarter;
+                }
+                else
+                {
+                    clinicList[i].LeagueRankingForQuarter = i + 1;
                 }
             }
 
