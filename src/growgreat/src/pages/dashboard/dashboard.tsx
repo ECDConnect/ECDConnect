@@ -44,8 +44,6 @@ import {
   getTierDetails,
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
-import { CommunityActions } from '@/store/community/community.actions';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const Dashboard: React.FC = () => {
   const history = useHistory();
@@ -78,17 +76,6 @@ export const Dashboard: React.FC = () => {
   const { userProfilePicture } = useDocuments();
 
   const { startService } = useNotificationService();
-
-  const { isLoading: isLoadingLeague } = useThunkFetchCall(
-    'community',
-    CommunityActions.GET_LEAGUE_BY_ID
-  );
-  const { isLoading: isLoadingClinic } = useThunkFetchCall(
-    'community',
-    CommunityActions.GET_CLINIC_BY_ID
-  );
-
-  const isLoading = isLoadingClinic || isLoadingLeague;
 
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
 
@@ -350,7 +337,6 @@ export const Dashboard: React.FC = () => {
 
   return (
     <BannerWrapper
-      isLoading={isLoading}
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
@@ -405,38 +391,34 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!clinicDetails && (
-          <>
-            {!!clinicDetails?.league ? (
-              <ScoreCard
-                className="mt-30 h-20 w-full"
-                mainText={communityCard.mainText}
-                hint={communityCard.hint}
-                hintClassName={communityCard.hintClassName}
-                textPosition="left"
-                currentPoints={communityCard.currentPoints}
-                maxPoints={communityCard.maxPoints}
-                onClick={communityCard.onClick}
-                barBgColour={communityCard.barBgColour}
-                barColour={communityCard.barColour}
-                bgColour={communityCard.bgColour}
-                image={communityCard.image}
-                textColour={communityCard.textColour}
-                onClickClassName="text-textLight"
-                statusChip={communityCard.statusChip}
-              />
-            ) : (
-              <TitleListItem
-                item={{
-                  title: communityCard.hint,
-                  onActionClick: communityCard.onClick!,
-                  titleIcon: 'UserGroupIcon',
-                  titleIconClassName: 'bg-tertiary text-white',
-                  classNames: 'bg-uiBg w-full mt-30',
-                }}
-              />
-            )}
-          </>
+        {!!clinicDetails?.league ? (
+          <ScoreCard
+            className="mt-30 h-20 w-full"
+            mainText={communityCard.mainText}
+            hint={communityCard.hint}
+            hintClassName={communityCard.hintClassName}
+            textPosition="left"
+            currentPoints={communityCard.currentPoints}
+            maxPoints={communityCard.maxPoints}
+            onClick={communityCard.onClick}
+            barBgColour={communityCard.barBgColour}
+            barColour={communityCard.barColour}
+            bgColour={communityCard.bgColour}
+            image={communityCard.image}
+            textColour={communityCard.textColour}
+            onClickClassName="text-textLight"
+            statusChip={communityCard.statusChip}
+          />
+        ) : (
+          <TitleListItem
+            item={{
+              title: communityCard.hint,
+              onActionClick: communityCard.onClick!,
+              titleIcon: 'UserGroupIcon',
+              titleIconClassName: 'bg-tertiary text-white',
+              classNames: 'bg-uiBg w-full mt-30',
+            }}
+          />
         )}
       </div>
     </BannerWrapper>

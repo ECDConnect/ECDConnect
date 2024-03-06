@@ -22,6 +22,7 @@ import { communitySelectors } from '@/store/community';
 import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
 import { calculateClinicLeaguePositionPercentiles } from '@/utils/community/league-position';
 import { useSnackbar } from '@ecdlink/core';
+import { NoCommunityFound } from '../components/no-community-found';
 
 export const LeagueTab: React.FC = () => {
   const [showAbove, setShowAbove] = useState<number>(1);
@@ -196,6 +197,11 @@ export const LeagueTab: React.FC = () => {
       />
     );
   }
+
+  if (!league) {
+    return <NoCommunityFound />;
+  }
+
   return (
     <div className="flex flex-col p-4 pt-6">
       <Typography type="h2" text={`${league?.name ?? ''} scoreboard`} />
