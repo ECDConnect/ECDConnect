@@ -110,10 +110,13 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     watchFields?.subDistrictName,
     watchFields?.district,
     addSubDistrictMutation,
+    props,
     setNotification,
   ]);
 
@@ -135,9 +138,11 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     editSubDistrictMutation,
-    props?.subDistrict?.id,
+    props,
     setNotification,
     watchFields?.district,
     watchFields?.subDistrictName,

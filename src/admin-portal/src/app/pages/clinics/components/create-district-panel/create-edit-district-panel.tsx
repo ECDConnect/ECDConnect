@@ -108,8 +108,11 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     addDistrictMutation,
+    props,
     setNotification,
     watchFields?.districtName,
     watchFields?.province,
@@ -133,9 +136,11 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     editDistrictMutation,
-    props?.district?.id,
+    props,
     setNotification,
     watchFields?.districtName,
     watchFields?.province,
