@@ -510,7 +510,10 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var healthCareWorkerIdsForClinic = _healthCareWorkerRepo.GetAll().Where(x => x.ClinicId == clinicId).Select(x => x.Id).ToList();
 
-            var breastFeedingClubs = _breastFeedingClubRepo.GetAll().Where(x => healthCareWorkerIdsForClinic.Contains(x.HealthCareWorkerId)).ToList();
+            var breastFeedingClubs = _breastFeedingClubRepo.GetAll()
+                .Where(x => healthCareWorkerIdsForClinic.Contains(x.HealthCareWorkerId)
+                    && x.MeetingDate > new DateTime(DateTime.Now.Year, 1, 1))                
+                .ToList();
 
             return breastFeedingClubs;
         }
