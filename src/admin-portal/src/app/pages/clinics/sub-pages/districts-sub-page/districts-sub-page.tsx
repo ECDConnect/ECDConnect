@@ -89,7 +89,7 @@ export default function DistrictsSubPage() {
   }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
-    if (provincesFiltered && provincesFilteredArray?.length > 0) {
+    if (provincesFiltered?.length > 0) {
       setTableData(provincesFilteredArray);
     } else {
       setTableData(data?.districtsAndStats);
