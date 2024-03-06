@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client';
 import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
 import { GetAllClinic, GetSubDistrictsAndStats } from '@ecdlink/graphql';
-import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import { SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -85,7 +85,7 @@ export default function ClinicsSubPage() {
   }, [subDistrictsData?.subDistrictsAndStats]);
 
   useEffect(() => {
-    if (subDistrictsFiltered && subDistrictsFilteredArray?.length > 0) {
+    if (subDistrictsFiltered?.length > 0) {
       setTableData(subDistrictsFilteredArray);
     } else {
       setTableData(data?.GetAllClinic);
@@ -174,7 +174,7 @@ export default function ClinicsSubPage() {
                       />
                     </div>
 
-                    <div className="justify-self col-end-3 ">
+                    <div className="justify-self z-20 col-end-3">
                       <button
                         onClick={clearFilters}
                         type="button"

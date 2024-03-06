@@ -186,7 +186,7 @@ export default function DistrictsSubPage() {
                       />
                     </div>
 
-                    <div className="justify-self col-end-3 ">
+                    <div className="justify-self z-20 col-end-3">
                       <button
                         onClick={clearFilters}
                         type="button"
