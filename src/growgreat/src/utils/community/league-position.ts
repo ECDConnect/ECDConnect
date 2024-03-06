@@ -1,5 +1,5 @@
 import { LeagueType, Tier } from '@/constants/Community';
-import { ClinicDto, LeagueClinicPointsDto } from '@ecdlink/core';
+import { LeagueClinicPointsDto } from '@ecdlink/core';
 import { Colours } from '@ecdlink/ui';
 
 interface TierPercentages {
@@ -117,11 +117,11 @@ export function getLeaguePointsColours(
 
 export function calculateClinicLeaguePositionPercentiles(
   clinics: LeagueClinicPointsDto[],
-  selectedClinic: ClinicDto
+  selectedClinicRanking: number
 ) {
   const totalClinics = clinics?.length;
 
-  const position = selectedClinic?.points?.leagueRanking || 0;
+  const position = selectedClinicRanking || 0;
 
   const top25Percentile = Math.ceil(0.25 * totalClinics);
   const top50Percentile = Math.ceil(0.5 * totalClinics);

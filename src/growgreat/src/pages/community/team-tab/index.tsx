@@ -58,7 +58,7 @@ export const TeamTab: React.FC = () => {
   const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
     calculateClinicLeaguePositionPercentiles(
       league?.clinics ?? [],
-      clinicDetails!
+      clinicDetails?.leagueRanking ?? 0
     );
 
   const headerHeight = 122;
