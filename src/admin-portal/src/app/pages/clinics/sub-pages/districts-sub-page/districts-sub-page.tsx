@@ -89,7 +89,7 @@ export default function DistrictsSubPage() {
   }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
-    if (provincesFiltered && provincesFilteredArray?.length > 0) {
+    if (provincesFiltered?.length > 0) {
       setTableData(provincesFilteredArray);
     } else {
       setTableData(data?.districtsAndStats);
@@ -186,7 +186,7 @@ export default function DistrictsSubPage() {
                       />
                     </div>
 
-                    <div className="justify-self col-end-3 ">
+                    <div className="justify-self z-20 col-end-3">
                       <button
                         onClick={clearFilters}
                         type="button"
