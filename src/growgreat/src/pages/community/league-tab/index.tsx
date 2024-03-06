@@ -95,7 +95,6 @@ export const LeagueTab: React.FC = () => {
         : clinic.pointsTotalForQuarter > 0
     ) ?? false;
 
-  console.log({ isToShowRanking });
   const description = isEndOfTheYear
     ? `Oct ${today.getFullYear() - 1} to Sep ${today.getFullYear()}`
     : `Points earned so far in ${getCommunityQuarterDescription(today).replace(
