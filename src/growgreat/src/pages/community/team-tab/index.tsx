@@ -31,6 +31,9 @@ import {
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
 
+import { NoCommunityFound } from '../components/no-community-found';
+import { useSnackbar } from '@ecdlink/core';
+
 export const TeamTab: React.FC = () => {
   const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
@@ -42,16 +45,34 @@ export const TeamTab: React.FC = () => {
 
   const appDispatch = useAppDispatch();
 
-  const { isLoading: isLoadingClinic } = useThunkFetchCall(
-    'community',
-    CommunityActions.GET_CLINIC_BY_ID
-  );
-  const { isLoading: isLoadingLeague } = useThunkFetchCall(
-    'community',
-    CommunityActions.GET_LEAGUE_BY_ID
-  );
+  const { showMessage } = useSnackbar();
+
+  const {
+    isLoading: isLoadingClinic,
+    wasLoading: wasLoadingClinic,
+    isRejected: isRejectedClinic,
+    error: errorClinic,
+  } = useThunkFetchCall('community', CommunityActions.GET_CLINIC_BY_ID);
+  const {
+    isLoading: isLoadingLeague,
+    wasLoading: wasLoadingLeague,
+    isRejected: isRejectedLeague,
+    error: errorLeague,
+  } = useThunkFetchCall('community', CommunityActions.GET_LEAGUE_BY_ID);
 
   const isLoading = isLoadingClinic || (!league && isLoadingLeague);
+  const wasLoading = wasLoadingLeague || wasLoadingClinic;
+  const isRejected = isRejectedLeague || isRejectedClinic;
+  const error = errorLeague || errorClinic;
+
+  useEffect(() => {
+    if (wasLoading && !isLoading && isRejected) {
+      showMessage({
+        message: error,
+        type: 'error',
+      });
+    }
+  }, [error, isLoading, isRejected, showMessage, wasLoading]);
 
   const memberCount = clinicDetails?.clinicMembers?.length ?? 0;
 
@@ -145,6 +166,10 @@ export const TeamTab: React.FC = () => {
         backgroundColor="uiLight"
       />
     );
+  }
+
+  if (!clinicDetails) {
+    return <NoCommunityFound />;
   }
 
   return (
