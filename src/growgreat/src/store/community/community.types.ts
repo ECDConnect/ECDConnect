@@ -24,5 +24,8 @@ export interface CommunityState {
       };
     }[];
   };
-  league?: LeagueWithClinicRankingsDto;
+  league?: {
+    dateLoaded: string;
+    data: LeagueWithClinicRankingsDto;
+  };
 }

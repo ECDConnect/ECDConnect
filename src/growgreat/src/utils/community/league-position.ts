@@ -1,4 +1,5 @@
 import { LeagueType, Tier } from '@/constants/Community';
+import { ClinicDto, LeagueClinicPointsDto } from '@ecdlink/core';
 import { Colours } from '@ecdlink/ui';
 
 interface TierPercentages {
@@ -101,15 +102,36 @@ export function getLeaguePointsColours(
   let mainColour: Colours = 'alertMain';
   let backgroundColour: Colours = 'alertBg';
 
-  if (isTop25PercentInTheLeague) {
-    mainColour = 'successMain';
-    backgroundColour = 'successBg';
-  }
-
   if (isMiddle50PercentInTheLeague) {
     mainColour = 'secondary';
     backgroundColour = 'secondaryAccent2';
   }
 
+  if (isTop25PercentInTheLeague) {
+    mainColour = 'successMain';
+    backgroundColour = 'successBg';
+  }
+
   return { mainColour, backgroundColour };
+}
+
+export function calculateClinicLeaguePositionPercentiles(
+  clinics: LeagueClinicPointsDto[],
+  selectedClinic: ClinicDto
+) {
+  const totalClinics = clinics?.length;
+
+  const position = selectedClinic?.points?.leagueRanking || 0;
+
+  const top25Percentile = Math.ceil(0.25 * totalClinics);
+  const top50Percentile = Math.ceil(0.5 * totalClinics);
+
+  const isTop25PercentInTheLeague = position > 0 && position <= top25Percentile;
+  const isMiddle50PercentInTheLeague =
+    position > 0 && position <= top50Percentile;
+
+  return {
+    isTop25PercentInTheLeague,
+    isMiddle50PercentInTheLeague,
+  };
 }
