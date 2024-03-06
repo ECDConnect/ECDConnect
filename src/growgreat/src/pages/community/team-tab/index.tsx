@@ -12,7 +12,7 @@ import {
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useEffect, useMemo } from 'react';
 
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { CommunityRouteState } from '../community.types';
 import { useWindowSize } from '@reach/window-size';
@@ -33,6 +33,7 @@ import { LeagueType } from '@/constants/Community';
 
 import { NoCommunityFound } from '../components/no-community-found';
 import { useSnackbar } from '@ecdlink/core';
+import { TeamTabState } from './types';
 
 export const TeamTab: React.FC = () => {
   const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
@@ -46,6 +47,8 @@ export const TeamTab: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const { showMessage } = useSnackbar();
+
+  const { state } = useLocation<TeamTabState>();
 
   const {
     isLoading: isLoadingClinic,
@@ -79,7 +82,7 @@ export const TeamTab: React.FC = () => {
   const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
     calculateClinicLeaguePositionPercentiles(
       league?.clinics ?? [],
-      clinicDetails?.leagueRanking ?? 0
+      clinicDetails?.points?.leagueRanking ?? 0
     );
 
   const headerHeight = 122;
@@ -104,7 +107,7 @@ export const TeamTab: React.FC = () => {
     appDispatch(
       communityThunkActions.getClinicById({
         clinicId: hcw?.clinicId ?? '',
-        forceReload: true,
+        forceReload: state?.forceReload ?? true,
       })
     );
 
@@ -121,7 +124,14 @@ export const TeamTab: React.FC = () => {
       avatarColor: 'var(--primaryAccent2)',
       alertSeverity: 'none',
       hideAlertSeverity: true,
-      onActionClick: () => {},
+      onActionClick: () =>
+        history.push(
+          ROUTES.COMMUNITY.TEAM.MEMBERS.LEADER_PROFILE.replace(
+            ':leaderId',
+            leader.id
+          ),
+          { isFromTeamTab: true } as TeamTabState
+        ),
     })) ?? [];
 
   const leagueCard: MenuListDataItem = useMemo(
@@ -204,9 +214,9 @@ export const TeamTab: React.FC = () => {
           />
         </div>
         {!!clinicDetails?.league && (
-          <div className="mt-7 mb-5">
+          <div className="my-7">
             <Typography
-              className="mb-2"
+              className="mb-5"
               type="h3"
               text="League position & points"
             />
@@ -244,7 +254,7 @@ export const TeamTab: React.FC = () => {
         {!!leaders.length && (
           <>
             <Typography
-              className="mb-2 mt-6"
+              className="mb-5"
               type="h3"
               text={`Team leader${leaders.length > 1 ? 's' : ''}`}
             />
@@ -264,7 +274,7 @@ export const TeamTab: React.FC = () => {
             type="filled"
             textColor="white"
             color="primary"
-            text="See club members"
+            text="See team members"
             onClick={() => history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT)}
           />
           <Button
@@ -274,7 +284,11 @@ export const TeamTab: React.FC = () => {
             textColor="primary"
             color="primary"
             text="How to earn points"
-            onClick={() => history.push(ROUTES.COMMUNITY.TEAM.INFO_PAGE)}
+            onClick={() =>
+              history.push(ROUTES.COMMUNITY.TEAM.INFO_PAGE, {
+                isFromTeamTab: true,
+              } as TeamTabState)
+            }
           />
         </div>
       </div>

@@ -13,13 +13,15 @@ import {
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
 import { useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { LeaderProfileParams } from './types';
+import { TeamTabState } from '../../../types';
 
 export const TeamLeaderProfile = () => {
   const { isOnline } = useOnlineStatus();
 
   const history = useHistory();
+  const { state } = useLocation<TeamTabState>();
 
   const { theme } = useTheme();
 
@@ -73,13 +75,23 @@ export const TeamLeaderProfile = () => {
       className="z-10"
       size="small"
       title={name}
-      onBack={() => history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT)}
+      onBack={() =>
+        history.push(
+          state?.isFromTeamTab
+            ? ROUTES.COMMUNITY.ROOT
+            : ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT,
+          { forceReload: false } as TeamTabState
+        )
+      }
     >
       <div className="inline-flex w-full flex-col items-center justify-center pt-8">
         <ProfileAvatar
           hasConsent={true}
           canChangeImage={false}
           dataUrl={''}
+          userAvatarText={`${leader?.firstName?.charAt(0) ?? ''}${
+            leader?.surname?.charAt(0) ?? ''
+          }`}
           size={'header'}
         />
         <StatusChip
