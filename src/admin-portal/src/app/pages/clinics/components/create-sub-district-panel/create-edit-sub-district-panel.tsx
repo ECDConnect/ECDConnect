@@ -78,12 +78,12 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const [handleDeleteModal, setHandleDeleteModal] = useState(false);
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
-  const duplicatedName = findObjectWithString(
-    subDistrictData?.subDistrictsAndStats,
-    'name',
-    watchFields?.subDistrictName,
-    props?.isEdit
-  );
+  const duplicatedName =
+    findObjectWithString(
+      subDistrictData?.subDistrictsAndStats,
+      'name',
+      watchFields?.subDistrictName
+    ) && watchFields?.subDistrictName !== props?.subDistrict?.name;
 
   useEffect(() => {
     if (duplicatedName) {
@@ -257,7 +257,7 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
         <div>
           <FormInput<subDistrictModel>
             register={subDistrictRegister}
-            error={errors?.subDistrictName || duplicatedName}
+            error={errors?.subDistrictName || (duplicatedName as any)}
             nameProp={'subDistrictName'}
             placeholder="Sub-district name"
             label="Sub-district name *"
@@ -296,9 +296,9 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
           type="submit"
           onClick={handleSaveData}
           className={`bg-secondary ${
-            disableButton ? 'opacity-25' : ''
+            disableButton || duplicatedName ? 'opacity-25' : ''
           } focus:outline-none mt-3 flex inline-flex w-full items-center justify-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-          disabled={disableButton}
+          disabled={disableButton || duplicatedName}
         >
           <SaveIcon width="22px" className="mr-2" />
           Save
@@ -338,7 +338,6 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
               colour: 'secondary',
               type: 'outlined',
               onClick: () => {
-                // submit();
                 deleteSubDistrict();
               },
               leadingIcon: 'PencilIcon',

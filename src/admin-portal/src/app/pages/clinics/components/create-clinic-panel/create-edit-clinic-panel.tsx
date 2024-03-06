@@ -68,12 +68,12 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const watchFields = useWatch({ control });
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
-  const duplicatedName = findObjectWithString(
-    clinicsData?.GetAllClinic,
-    'name',
-    watchFields?.name,
-    props?.isEdit
-  );
+  const duplicatedName =
+    findObjectWithString(
+      clinicsData?.GetAllClinic,
+      'name',
+      watchFields?.name
+    ) && watchFields?.name !== props?.clinic?.name;
 
   useEffect(() => {
     if (duplicatedName) {
@@ -342,7 +342,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         <div>
           <FormInput<ClinicModel>
             register={clinicRegister}
-            error={errors?.name || duplicatedName}
+            error={errors?.name || (duplicatedName as any)}
             value={watchFields?.name}
             nameProp={'name'}
             placeholder="Clinic name"
@@ -439,9 +439,9 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         <button
           type="submit"
           className={`bg-secondary ${
-            disableButton ? 'opacity-25' : ''
+            disableButton || duplicatedName ? 'opacity-25' : ''
           } focus:outline-none mt-3 flex inline-flex w-full items-center justify-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-          disabled={disableButton}
+          disabled={disableButton || duplicatedName}
           onClick={handleSaveData}
         >
           <SaveIcon width="22px" className="mr-2" />

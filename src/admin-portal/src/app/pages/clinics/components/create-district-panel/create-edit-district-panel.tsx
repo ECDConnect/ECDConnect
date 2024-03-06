@@ -64,12 +64,12 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
-  const duplicatedName = findObjectWithString(
-    districtData?.districtsAndStats,
-    'name',
-    watchFields?.districtName,
-    props?.isEdit
-  );
+  const duplicatedName =
+    findObjectWithString(
+      districtData?.districtsAndStats,
+      'name',
+      watchFields?.districtName
+    ) && watchFields?.districtName !== props?.district?.name;
 
   useEffect(() => {
     if (duplicatedName) {
@@ -169,7 +169,9 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   useEffect(() => {
     if (provinceData?.GetAllProvince?.length > 0) {
       setProvinces(
-        provinceData?.GetAllProvince?.map((item) => {
+        provinceData?.GetAllProvince?.filter(
+          (prov) => prov?.description !== 'N/A'
+        )?.map((item) => {
           return {
             value: item?.id,
             label: item?.description,
@@ -241,7 +243,7 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
         <div>
           <FormInput<DistrictModel>
             register={districtRegister}
-            error={errors?.districtName || duplicatedName}
+            error={errors?.districtName || (duplicatedName as any)}
             nameProp={'districtName'}
             placeholder="District name"
             label="District name *"
@@ -281,9 +283,9 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
           type="submit"
           onClick={handleSaveData}
           className={`bg-secondary ${
-            disableButton ? 'opacity-25' : ''
+            disableButton || duplicatedName ? 'opacity-25' : ''
           } focus:outline-none mt-3 flex inline-flex w-full items-center justify-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-          disabled={disableButton}
+          disabled={disableButton || duplicatedName}
         >
           <SaveIcon width="22px" className="mr-2" />
           Save & publish
