@@ -167,6 +167,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<SubDistrict> SubDistrict { get; set; }
         public DbSet<ClinicLeague> ClinicLeague { get; set; }
         public DbSet<ClinicTeamLead> ClinicTeamLead { get; set; }
+        public DbSet<BreastFeedingClub> BreastFeedingClubs { get; set; }
 
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }

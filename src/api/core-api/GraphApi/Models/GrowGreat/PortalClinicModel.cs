@@ -33,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public ClientRegistrationModel ClientRegistration { get; set; }
         public PregnantMomsModel PregnantMoms { get; set; }
         public ChildClientsModel ChildClients { get; set; }
-        public BreastFeedingClubModel BreastFeedingClub { get; set; }
+        public BreastFeedingClubPortalModel BreastFeedingClub { get; set; }
     }
 
     public class ClientRegistrationModel
@@ -59,7 +59,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public int TotalUpToDateDeworming { get; set; }
     }
 
-    public class BreastFeedingClubModel
+    public class BreastFeedingClubPortalModel
     {
         public int TotalClubsHeld { get; set; }
         public int TotalCaregiversAttended { get; set; }

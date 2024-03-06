@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -29,5 +30,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         {
             return clinicService.DeleteClinicById(clinicId);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public BreastFeedingClubModel AddBreastFeedingClub(
+            [Service] IClinicService clinicService,
+            AddBreastFeedingClubInputModel input)
+        {
+            // TODO -> validation
+
+            var newBreastFeedingClub = clinicService.AddBreastFeedingClub(input.HealthCareWorkerId, input.MeetingDate, input.ClientsAttendedConfirmed, input.Clients);
+
+            return new BreastFeedingClubModel(newBreastFeedingClub);
+        }
+
     }
 }

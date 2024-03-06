@@ -11,7 +11,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,9 +26,11 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<SubDistrict, Guid> _subDistrictRepo;
         private readonly IGenericRepository<Clinic, Guid> _clinicRepo;
         private readonly IGenericRepository<ClinicTeamLead, Guid> _clinicTeamRepo;
-        private readonly IGenericRepository<HealthCareWorker, Guid> _hcwRepo;
+        private readonly IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
         private readonly IGenericRepository<Infant, Guid> _infantRepo;
         private readonly IGenericRepository<VisitData, Guid> _visitDataRepo;
+        private readonly IGenericRepository<BreastFeedingClub, Guid> _breastFeedingClubRepo;
+        private readonly IGenericRepository<Caregiver, Guid> _caregiverRepo;
 
         private readonly string _applicationUserId;
 
@@ -49,9 +50,11 @@ namespace EcdLink.Api.CoreApi.Services
             _subDistrictRepo = _repositoryFactory.CreateGenericRepository<SubDistrict>(userContext: _applicationUserId);
             _clinicRepo = _repositoryFactory.CreateGenericRepository<Clinic>(userContext: _applicationUserId);
             _clinicTeamRepo = _repositoryFactory.CreateGenericRepository<ClinicTeamLead>(userContext: _applicationUserId);
-            _hcwRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: _applicationUserId);
+            _healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: _applicationUserId);
             _infantRepo = _repositoryFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
+            _breastFeedingClubRepo = _repositoryFactory.CreateGenericRepository<BreastFeedingClub>(userContext: _applicationUserId);
+            _caregiverRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
 
             _pointsEngineService = pointsEngineService;
 
@@ -64,7 +67,7 @@ namespace EcdLink.Api.CoreApi.Services
             var districtRecords = _districtRepo.GetAll().Include(x => x.SubDistricts).Where(x => x.IsActive).ToList();
             var clinics = _clinicRepo.GetAll().Where(x => x.IsActive && x.SubDistrictId.HasValue).ToList();
             var clinicTeamLeads = _clinicTeamRepo.GetAll().Where(x => x.IsActive).ToList();
-            var hCWs = _hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
+            var hCWs = _healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
 
             List<DistrictStatsModel> districts = new List<DistrictStatsModel>();
             foreach (var district in districtRecords)
@@ -128,7 +131,7 @@ namespace EcdLink.Api.CoreApi.Services
             var subDistrictRecords = _subDistrictRepo.GetAll().Where(x => x.IsActive).ToList();
             var clinics = _clinicRepo.GetAll().Where(x => x.IsActive && x.SubDistrictId.HasValue).ToList();
             var clinicTeamLeads = _clinicTeamRepo.GetAll().Where(x => x.IsActive).ToList();
-            var hCWs = _hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
+            var hCWs = _healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
 
             List<SubDistrictStatsModel> subDistricts = new List<SubDistrictStatsModel>();
             foreach (var subDistrict in subDistrictRecords)
@@ -333,10 +336,10 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
-        private BreastFeedingClubModel GetBreastFeedingClub(List<Guid> infantIds, DateTime startDate, DateTime endDate)
+        private BreastFeedingClubPortalModel GetBreastFeedingClub(List<Guid> infantIds, DateTime startDate, DateTime endDate)
         {
 
-            return new BreastFeedingClubModel()
+            return new BreastFeedingClubPortalModel()
             {
                 TotalClubsHeld = 0,
                 TotalCaregiversAttended = 0
@@ -474,6 +477,56 @@ namespace EcdLink.Api.CoreApi.Services
             clinic.UpdatedDate = DateTime.Now;
             clinic.UpdatedBy = _applicationUserId;
             return _clinicRepo.Update(clinic);
+        }
+
+        #endregion
+
+        #region Breast feeding clubs
+
+        public BreastFeedingClub AddBreastFeedingClub(Guid healthCareWorkId, DateTime meetingDate, bool clientsAttendedConfirmed, List<Guid> caregiversAttended)
+        {
+            var caregivers = _caregiverRepo.GetAll().Where(x => caregiversAttended.Contains(x.Id)).ToList();
+
+            var clubId = Guid.NewGuid();
+            var breastFeedingClub = new BreastFeedingClub()
+            {
+                Id = clubId,
+                HealthCareWorkerId = healthCareWorkId,
+                MeetingDate = meetingDate,
+                ClientsAttendedConfirmed = clientsAttendedConfirmed,
+                Clients = caregivers.Select(x => new BreastFeedingClubClient()
+                {
+                    //BreastFeedingClubId = clubId,
+                    Caregiver = x
+                }).ToList()
+            };
+
+            _breastFeedingClubRepo.Insert(breastFeedingClub);
+
+            return breastFeedingClub;
+        }
+
+        public List<BreastFeedingClub> GetBreastFeedingClubs(Guid clinicId)
+        {
+            var healthCareWorkerIdsForClinic = _healthCareWorkerRepo.GetAll().Where(x => x.ClinicId == clinicId).Select(x => x.Id).ToList();
+
+            var breastFeedingClubs = _breastFeedingClubRepo.GetAll().Where(x => healthCareWorkerIdsForClinic.Contains(x.HealthCareWorkerId)).ToList();
+
+            return breastFeedingClubs;
+        }
+
+        public List<Caregiver> GetAvailableCaregiversForBreastFeedingClub(Guid clinicId)
+        {
+            var healthCareWorkerIdsForClinic = _healthCareWorkerRepo.GetAll().Where(x => x.ClinicId == clinicId).Select(x => x.Id).ToList();
+
+            var twoYearsAgo = DateTime.Now.AddYears(-2);
+            var caregiversForInfantsUnderTwoYears = _infantRepo.GetAll().Where(x => 
+                x.User.DateOfBirth > twoYearsAgo
+                && x.Caregiver.HealthCareWorkerId.HasValue
+                && healthCareWorkerIdsForClinic.Contains(x.Caregiver.HealthCareWorkerId.Value))
+                .Select(x => x.Caregiver).ToList();
+
+            return caregiversForInfantsUnderTwoYears;
         }
 
         #endregion
