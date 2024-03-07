@@ -8,6 +8,7 @@ export interface UploadAllTemplateProps {
 }
 
 const acceptedFormats = ['xls'];
+const allowedFileSize = 13631488;
 
 export default function UploadAllTemplate({
   closeDialog,
@@ -64,6 +65,7 @@ export default function UploadAllTemplate({
               returnFullUrl={false}
               setValue={setValue}
               isImage={false}
+              allowedFileSize={allowedFileSize}
             />
           </div>
         </div>

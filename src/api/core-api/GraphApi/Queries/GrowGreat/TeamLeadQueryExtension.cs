@@ -46,7 +46,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                       string search = null,
                                                       string provinceSearch = null,
                                                       string clinicSearch = null,
-                                                      string visitSearch = null)
+                                                      string visitSearch = null,
+                                                      string connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var teamLeads = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
@@ -69,6 +70,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             if (!string.IsNullOrWhiteSpace(clinicSearch))
             {
                 teamLeads = teamLeads.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.Name, $"%{clinicSearch}%")));
+            }
+
+            // Pausing this filter to add bulk imports to repo
+            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
+            {
+                var today = DateTime.Now;
+                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
+                {
+
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
+                {
+
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
+                {
+
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
+                {
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
+                {
+                    teamLeads = teamLeads.Where(h => h.IsActive == false);
+                }
             }
 
             if (cancellationToken.IsCancellationRequested)
@@ -107,14 +133,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
 
-                    if (visitSearch == "High activity (at least 20 visits in past month)")
+                    if (visitSearch == Constants.PortalSettings.visit_high_activity)
                     {
                         if (totalClientsVisits >= 20)
                         {
                             visitTeamLeaders.Add(item);
                         }
                     }
-                    else if (visitSearch == "Medium activity (at least 10 visits in past month)")
+                    else if (visitSearch == Constants.PortalSettings.visit_medium_activity)
                     {
                         if (totalClientsVisits > 0 && totalClientsVisits <= 10)
                         {
@@ -190,8 +216,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string> {"Surname", "Text, (required)"},
                 new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
                 new List<string> {"Email address", "email, (optional)"},
-                new List<string>{"Clinic ID 1", "Clinic's ID, (required)" },
-                new List<string>{"Clinic ID 2", "Clinic's ID, (optional)" }
+                new List<string> {"Clinic ID 1", "Clinic's ID, (required)" },
+                new List<string> {"Clinic ID 2", "Clinic's ID, (optional)" }
             };
             
             var templateHeaderSheet = $"Team Lead Template";
