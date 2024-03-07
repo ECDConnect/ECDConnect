@@ -105,11 +105,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 }
                 else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date && x.User.LastSeen.Date <= sixMonths.GetEndOfMonth().Date).ToList();
+                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
                 }
                 else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= twelveMonths.GetStartOfMonth().Date && x.User.LastSeen.Date <= twelveMonths.GetEndOfMonth().Date).ToList();
+                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date <= twelveMonths.GetStartOfMonth().Date).ToList();
                 }
                 else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
                 {
