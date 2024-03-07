@@ -41,6 +41,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<PointsCategory, Guid> _pointsCategoryRepo;
         private readonly IGenericRepository<PointsActivity, Guid> _pointsActivityRepo;
         private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
+        private readonly IGenericRepository<PointsClinicSummary, Guid> _pointsClinicSummaryRepo;
 
         private readonly IGenericRepository<Child, Guid> _childRepo;
         private readonly IGenericRepository<Practitioner, Guid> _practitionerRepo;
@@ -94,6 +95,7 @@ namespace EcdLink.Api.CoreApi.Services
             _pointsCategoryRepo = _repositoryFactory.CreateGenericRepository<PointsCategory>(userContext: _uId);
             _pointsActivityRepo = _repositoryFactory.CreateGenericRepository<PointsActivity>(userContext: _uId);
             _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _uId);
+            _pointsClinicSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsClinicSummary>(userContext: _uId);
 
             _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
             _childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
@@ -1155,13 +1157,19 @@ namespace EcdLink.Api.CoreApi.Services
 
             var healthCareWorkerUserIds = clinic.HealthCareWorkers.Select(x => x.UserId).ToList();
 
-            // Get all points for the user for the current quarter
+            // Get all points for all users for the current quarter
             var userPoints = _pointsUserSummaryRepo.GetAll().Where(x
                 => healthCareWorkerUserIds.Contains(x.UserId)
                 && x.DateScored >= DateTimeHelper.GetCurrentGrowGreatQuarterStart()
                 && x.DateScored <= DateTimeHelper.GetCurrentGrowGreatQuarterEnd()).ToList();
 
-            var totalPoints = userPoints.Sum(x => x.PointsTotal);
+            // Get clinic points
+            var clinicPoints = _pointsClinicSummaryRepo.GetAll().Where(x => 
+                x.ClinicId == clinicId
+                && x.DateScored >= DateTimeHelper.GetCurrentGrowGreatQuarterStart()
+                && x.DateScored <= DateTimeHelper.GetCurrentGrowGreatQuarterEnd()).ToList();
+
+            var totalPoints = userPoints.Sum(x => x.PointsTotal) + clinicPoints.Sum(x => x.PointsTotal);
 
             var leagueWithRankings = GetLeagueWithClinicRankings(league.LeagueId);
             var clinicRanking = leagueWithRankings.Clinics.First(x => x.ClinicId == clinicId);
@@ -1169,11 +1177,14 @@ namespace EcdLink.Api.CoreApi.Services
             var allCategories = _pointsCategoryRepo.GetAll().ToList();
 
             // Note: for clinics, we group the activities by category before returning the total
-            var clinicPoints = new List<PointsCategoryModel>();
+            var pointCategoryModels = new List<PointsCategoryModel>();
             foreach (var category in allCategories)
             {
-                var categoryPoints = userPoints.Where(x => x.PointsActivity.PointsCategoryId == category.Id).Sum(x => x.PointsTotal);
-                clinicPoints.Add(new PointsCategoryModel()
+                var categoryPoints = 
+                    userPoints.Where(x => x.PointsActivity.PointsCategoryId == category.Id).Sum(x => x.PointsTotal)
+                    + clinicPoints.Where(x => x.PointsCategoryId == category.Id).Sum(x => x.PointsTotal);
+
+                pointCategoryModels.Add(new PointsCategoryModel()
                 {
                     PointsCategoryId = category.Id,
                     CategoryName = category.Name,
@@ -1184,7 +1195,7 @@ namespace EcdLink.Api.CoreApi.Services
             return new ClinicPointsModel()
             {
                 LeagueRanking = clinicRanking.LeagueRankingForQuarter,
-                Points = clinicPoints,
+                Points = pointCategoryModels,
                 PointsTotal = totalPoints,
                 MaxPointsTotal = league.League.LeagueType.MaxPoints,
             };
@@ -1215,18 +1226,24 @@ namespace EcdLink.Api.CoreApi.Services
                 && x.DateScored <= league.EndDate)
                 .ToList();
 
+            // Get clinic points
+            var allClinicPoints = _pointsClinicSummaryRepo.GetAll().Where(x =>
+                clinicsWithUsers.Select(x => x.ClinicId).Contains(x.ClinicId)
+                && x.DateScored >= league.StartDate
+                && x.DateScored <= league.EndDate).ToList();
+
             var quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
             var quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
 
             var clinicList = new List<LeagueClinicPointsModel>();
             foreach (var clinic in clinicsWithUsers)
             {
-                var pointsTotalForYear = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal);
-                var pointsTotalForQuarter = allUserPoints.Where(x => 
-                    clinic.UserIds.Contains(x.UserId)
-                    && x.DateScored >= quarterStart
-                    && x.DateScored <= quarterEnd)
-                    .Sum(x => x.PointsTotal);
+                var pointsTotalForYear = 
+                    allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
+
+                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal);
 
                 clinicList.Add(new LeagueClinicPointsModel()
                 {
@@ -1238,7 +1255,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Set league ranks for year, keeping highest rank for all that have equal points
-            clinicList = clinicList.OrderBy(x => x.PointsTotalForYear).ToList();
+            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForYear).ToList();
             clinicList[0].LeagueRankingForYear = 1;
             for (int i = 1; i < clinicList.Count; i++)
             {
@@ -1253,7 +1270,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Set league ranks for year, keeping highest rank for all that have equal points
-            clinicList = clinicList.OrderBy(x => x.PointsTotalForQuarter).ToList();
+            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForQuarter).ToList();
             clinicList[0].LeagueRankingForQuarter = 1;
             for (int i = 1; i < clinicList.Count; i++)
             {

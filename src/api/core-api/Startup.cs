@@ -15,6 +15,8 @@ using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using EcdLink.Api.CoreApi.Services.PointsEngine;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
@@ -166,6 +168,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IPointsService, PointsEngineService>();
+            services.AddTransient<IGrowGreatPointsCalculationsService, GrowGreatPointsCalculationService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IChildService, ChildService>();

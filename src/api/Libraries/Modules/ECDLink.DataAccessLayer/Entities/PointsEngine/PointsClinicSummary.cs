@@ -1,14 +1,10 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Leagues;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities
+namespace ECDLink.DataAccessLayer.Entities.PointsEngine
 {
     [Table(nameof(PointsClinicSummary))]
     [EntityPermission(PermissionGroups.GENERAL)]
@@ -23,6 +19,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public DateTime DateScored { get; set; }
         public int TimesScored { get; set; }
         public int PointsTotal { get; set; }
+
+        public Guid ClinicId { get; set; }
 
         public Guid PointsCategoryId { get; set; }
 

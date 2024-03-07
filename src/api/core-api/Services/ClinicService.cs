@@ -483,7 +483,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region Breast feeding clubs
 
-        public BreastFeedingClub AddBreastFeedingClub(Guid healthCareWorkId, DateTime meetingDate, bool clientsAttendedConfirmed, List<Guid> caregiversAttended)
+        public BreastFeedingClub AddBreastFeedingClub(Guid clinicId, Guid healthCareWorkId, DateTime meetingDate, bool clientsAttendedConfirmed, List<Guid> caregiversAttended)
         {
             var caregivers = _caregiverRepo.GetAll().Where(x => caregiversAttended.Contains(x.Id)).ToList();
 
@@ -491,12 +491,12 @@ namespace EcdLink.Api.CoreApi.Services
             var breastFeedingClub = new BreastFeedingClub()
             {
                 Id = clubId,
+                ClinicId = clinicId,
                 HealthCareWorkerId = healthCareWorkId,
                 MeetingDate = meetingDate,
                 ClientsAttendedConfirmed = clientsAttendedConfirmed,
                 Clients = caregivers.Select(x => new BreastFeedingClubClient()
                 {
-                    //BreastFeedingClubId = clubId,
                     Caregiver = x
                 }).ToList()
             };
@@ -508,10 +508,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<BreastFeedingClub> GetBreastFeedingClubs(Guid clinicId)
         {
-            var healthCareWorkerIdsForClinic = _healthCareWorkerRepo.GetAll().Where(x => x.ClinicId == clinicId).Select(x => x.Id).ToList();
-
             var breastFeedingClubs = _breastFeedingClubRepo.GetAll()
-                .Where(x => healthCareWorkerIdsForClinic.Contains(x.HealthCareWorkerId)
+                .Where(x => clinicId == x.ClinicId
                     && x.MeetingDate > new DateTime(DateTime.Now.Year, 1, 1))                
                 .ToList();
 

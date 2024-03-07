@@ -216,10 +216,6 @@ class CommunityService {
         'getAvailableCaregiversForBreastFeedingClub Failed - Server connection error'
       );
     }
-    console.log(
-      'response.data.data.availableCaregiversForBreastFeedingClub',
-      response
-    );
 
     return response.data.data.availableCaregiversForBreastFeedingClub;
   }
@@ -255,8 +251,6 @@ class CommunityService {
       throw new Error('getBreastFeedingClubs Failed - Server connection error');
     }
 
-    console.log('response.data.data.breastFeedingClubs', response);
-
     return response.data.data.breastFeedingClubs;
   }
 
@@ -288,7 +282,6 @@ class CommunityService {
     if (response.status !== 200) {
       throw new Error('addBreastFeedingClub failed - Server connection error');
     }
-    console.log('response.data.data.addBreastFeedingClub', response);
 
     return response.data.data.addBreastFeedingClub;
   }
