@@ -16,7 +16,7 @@ import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { CommunityRouteState } from '../community.types';
 import { useWindowSize } from '@reach/window-size';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
+import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useSelector } from 'react-redux';
@@ -106,12 +106,14 @@ export const TeamTab: React.FC = () => {
   );
 
   useEffect(() => {
-    appDispatch(
-      communityThunkActions.getClinicById({
-        clinicId: hcw?.clinicId ?? '',
-        forceReload: state?.forceReload ?? true,
-      })
-    );
+    if (!!hcw?.clinicId) {
+      appDispatch(
+        communityThunkActions.getClinicById({
+          clinicId: hcw?.clinicId,
+          forceReload: state?.forceReload ?? true,
+        })
+      );
+    }
 
     // trigger only once
     // eslint-disable-next-line react-hooks/exhaustive-deps

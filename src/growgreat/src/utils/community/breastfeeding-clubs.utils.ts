@@ -1,9 +1,15 @@
 import { BreastFeedingClubDto, MetricsColorEnum } from '@ecdlink/core';
 
-interface MonthData {
+export interface MonthData {
   year: number;
   month: number;
   data: BreastFeedingClubDto[];
+}
+
+interface PointsDetails {
+  points: number;
+  colour: MetricsColorEnum;
+  breastfeedingClubsLength: number;
 }
 
 function getMonthAndYearFromDate(dateString: string): {
@@ -48,7 +54,7 @@ export function groupBreastfeedingClubByMonth(
 
 export const getPointsDetails = (
   data: BreastFeedingClubDto[]
-): { points: number; colour: MetricsColorEnum } => {
+): PointsDetails => {
   const filteredBreastfeedingClubs = data?.filter((item) => {
     const clientsLength = item.clients.length;
     // minimum 4 and maximum 6 clients attending
@@ -58,22 +64,42 @@ export const getPointsDetails = (
   const breastfeedingClubsLength = filteredBreastfeedingClubs?.length;
 
   if (breastfeedingClubsLength === 1) {
-    return { points: 10, colour: MetricsColorEnum.Error };
+    return {
+      points: 10,
+      colour: MetricsColorEnum.Error,
+      breastfeedingClubsLength,
+    };
   }
 
   if (breastfeedingClubsLength === 2) {
-    return { points: 20, colour: MetricsColorEnum.Warning };
+    return {
+      points: 20,
+      colour: MetricsColorEnum.Warning,
+      breastfeedingClubsLength,
+    };
   }
 
   if (breastfeedingClubsLength === 3) {
-    return { points: 50, colour: MetricsColorEnum.Warning };
+    return {
+      points: 50,
+      colour: MetricsColorEnum.Warning,
+      breastfeedingClubsLength,
+    };
   }
 
   if (breastfeedingClubsLength >= 4) {
-    return { points: 200, colour: MetricsColorEnum.Success };
+    return {
+      points: 200,
+      colour: MetricsColorEnum.Success,
+      breastfeedingClubsLength,
+    };
   }
 
-  return { points: 0, colour: MetricsColorEnum.Error };
+  return {
+    points: 0,
+    colour: MetricsColorEnum.Error,
+    breastfeedingClubsLength,
+  };
 };
 
 export function createCurrentMonthBlankData(): MonthData {
