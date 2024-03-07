@@ -26,8 +26,7 @@ public class WeeklyNotificationChecks : CronJobService
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
              //run weekly attendance reminder
-            await service.WeeklyAttendancesReminderAsync();
-            await service.CoachChecksTraineeNotification(true);            
+            //await service.WeeklyAttendancesReminderAsync();
         }
     }
 }

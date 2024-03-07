@@ -94,8 +94,8 @@ namespace ECDLink.ContentManagement.Repositories
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
                 contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
-                if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
-                {
+                //if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
+                //{
                     var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
                     if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                     {
@@ -106,7 +106,7 @@ namespace ECDLink.ContentManagement.Repositories
                         //update with fulllist
                         contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                     }
-                }
+                //}
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
                     allContentValuePairs.Add(contentFieldValuePairs.ToObject());
