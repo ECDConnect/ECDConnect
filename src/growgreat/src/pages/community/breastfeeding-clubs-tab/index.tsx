@@ -1,5 +1,6 @@
 import {
   Button,
+  DialogPosition,
   Divider,
   LoadingSpinner,
   StackedList,
@@ -15,18 +16,20 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { CommunityRouteState } from '../community.types';
 import { COMMUNITY_TABS } from '../community';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAlertSeverity } from '@/utils/common/string.utils';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
+  MonthData,
   createCurrentMonthBlankData,
   getPointsDetails,
   groupBreastfeedingClubByMonth,
 } from '@/utils/community/breastfeeding-clubs.utils';
 import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useSnackbar } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
+import { MonthDetails } from './month-details';
 
 export const BreastfeedingClubsTab: React.FC = () => {
   const [isToShowAll, setIsToShowAll] = useState(false);
@@ -71,6 +74,8 @@ export const BreastfeedingClubsTab: React.FC = () => {
 
   const appDispatch = useAppDispatch();
 
+  const dialog = useDialog();
+
   const headerHeight = 120;
 
   const today = new Date();
@@ -104,6 +109,20 @@ export const BreastfeedingClubsTab: React.FC = () => {
     ? mergedBreastfeedingClubs
     : mergedBreastfeedingClubs?.slice(0, 5);
 
+  const onMonthClick = useCallback(
+    (monthData: MonthData) => {
+      dialog({
+        blocking: true,
+        position: DialogPosition.Full,
+        color: 'bg-white',
+        render(onClose) {
+          return <MonthDetails onBack={onClose} monthData={monthData} />;
+        },
+      });
+    },
+    [dialog]
+  );
+
   const pastBreastfeedingClubs: UserAlertListDataItem[] = useMemo(
     () =>
       filteredBreastfeedingClubs?.map((item) => {
@@ -121,10 +140,10 @@ export const BreastfeedingClubsTab: React.FC = () => {
           titleStyle: 'text-textDark',
           avatarColor: '',
           hideAvatar: true,
-          onActionClick: () => {},
+          onActionClick: () => onMonthClick(item),
         } as UserAlertListDataItem;
       }) ?? [],
-    [filteredBreastfeedingClubs]
+    [filteredBreastfeedingClubs, onMonthClick]
   );
 
   useEffect(() => {

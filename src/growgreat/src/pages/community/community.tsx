@@ -58,7 +58,10 @@ export const Community: React.FC = () => {
 
   // handle tab change
   useEffect(() => {
-    if (state?.activeTabIndex && previousTabIndex !== selectedTabIndex) {
+    if (
+      typeof state?.activeTabIndex === 'number' &&
+      previousTabIndex !== selectedTabIndex
+    ) {
       setSelectedTabIndex(state?.activeTabIndex || COMMUNITY_TABS.TEAM);
       history.replace(ROUTES.COMMUNITY.ROOT, {
         activeTabIndex: undefined,
