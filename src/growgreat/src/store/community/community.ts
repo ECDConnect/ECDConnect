@@ -7,6 +7,7 @@ import { CommunityState } from './community.types';
 import {
   getAllConnect,
   getAllConnectItem,
+  getBreastFeedingClubs,
   getClinicById,
   getLeagueById,
   getMoreInformation,
@@ -38,6 +39,14 @@ const communitySlice = createSlice({
     setThunkActionStatus(builder, getLeagueById);
     setThunkActionStatus(builder, getPointsActivityInfo);
     setThunkActionStatus(builder, getClinicById);
+    setThunkActionStatus(builder, getBreastFeedingClubs);
+    builder.addCase(getBreastFeedingClubs.fulfilled, (state, action) => {
+      state.breastFeedingClubs = {
+        dateLoaded: new Date().toISOString(),
+        data: action.payload,
+      };
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getClinicById.fulfilled, (state, action) => {
       state.team = state.team ?? {};
       state.team.clinic = {
