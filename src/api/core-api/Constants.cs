@@ -725,7 +725,6 @@ namespace EcdLink.Api.CoreApi
             public const string child_docs = "Child documentation";
             public const string child_road_to_health = "Road to Health Book";
         }
-
         public static class SSIntegrationSettings
         {
             //Franchisee Queries
@@ -810,7 +809,6 @@ namespace EcdLink.Api.CoreApi
             public const string Upsert = "/Upsert";
 
         }
-
         public static class PointsEngineSettings
         {
             public const string client_registration = "Client Registration";
@@ -949,6 +947,19 @@ namespace EcdLink.Api.CoreApi
 
         }
 
+
+        public static class PortalSettings
+        {
+            public const string visit_high_activity = "High activity (at least 20 visits in past month)";
+            public const string visit_medium_activity = "Medium activity (at least 10 visits in past month)";
+
+            public const string usage_invitation_active = "Invitation active";
+            public const string usage_invitation_expired = "Invitation expired";
+            public const string usage_last_online_6_months = "Last online past 6 months";
+            public const string usage_last_online_12_months = "Last online over a year ago";
+            public const string usage_removed = "Removed";
+
+        }
     }
 }
 

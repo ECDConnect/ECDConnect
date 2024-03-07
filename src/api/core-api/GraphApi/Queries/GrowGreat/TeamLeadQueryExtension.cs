@@ -39,14 +39,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [UseSorting]
         public List<PortalUsersTLModel> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
                                                       IGenericRepositoryFactory repoFactory,
-                                                      [Service] IJWTService jWTService,
-                                                      [Service] VisitManager visitManager,
                                                       CancellationToken cancellationToken,
                                                       PagedQueryInput pagingInput = null,
                                                       string search = null,
                                                       string provinceSearch = null,
                                                       string clinicSearch = null,
-                                                      string visitSearch = null)
+                                                      string visitSearch = null,
+                                                      string connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var teamLeads = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
@@ -78,7 +77,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // Get ids and tokens
             List<Guid> userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
             List<ShortenUrlEntity> invitations = shortenUrlRepo
-                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive)
+                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive && x.Clicked == 0)
                     .ToList();
 
             List<PortalUsersTLModel> teamLeaders = teamLeads.Select(item => new PortalUsersTLModel
@@ -88,6 +87,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 ClinicIds = item.Clinics.Select(x => (Guid)x.Id).ToList(),
                 InsertedDate = item.InsertedDate
             }).ToList();
+
+
+            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
+            {
+                var today = DateTime.Now;
+                var sixMonths = today.AddMonths(-6);
+                var twelveMonths = today.AddMonths(-12);
+
+                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date <= twelveMonths.GetStartOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.IsActive == false).ToList();
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(visitSearch))
             {
@@ -107,14 +135,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
 
-                    if (visitSearch == "High activity (at least 20 visits in past month)")
+                    if (visitSearch == Constants.PortalSettings.visit_high_activity)
                     {
                         if (totalClientsVisits >= 20)
                         {
                             visitTeamLeaders.Add(item);
                         }
                     }
-                    else if (visitSearch == "Medium activity (at least 10 visits in past month)")
+                    else if (visitSearch == Constants.PortalSettings.visit_medium_activity)
                     {
                         if (totalClientsVisits > 0 && totalClientsVisits <= 10)
                         {
@@ -190,8 +218,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string> {"Surname", "Text, (required)"},
                 new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
                 new List<string> {"Email address", "email, (optional)"},
-                new List<string>{"Clinic ID 1", "Clinic's ID, (required)" },
-                new List<string>{"Clinic ID 2", "Clinic's ID, (optional)" }
+                new List<string> {"Clinic ID 1", "Clinic ID 1, (required)" },
+                new List<string> {"Clinic ID 2", "Clinic ID 2, (optional)" }
             };
             
             var templateHeaderSheet = $"Team Lead Template";

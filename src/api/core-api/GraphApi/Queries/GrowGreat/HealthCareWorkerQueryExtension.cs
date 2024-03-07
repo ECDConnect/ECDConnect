@@ -45,7 +45,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                               string provinceSearch = null,
                                                               string clinicSearch = null,
                                                               string subDistrictSearch = null,
-                                                              string visitSearch = null)
+                                                              string visitSearch = null,
+                                                              string connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
@@ -76,7 +77,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // Get ids and tokens
             List<Guid> userIds = healthCareWorkers.Select(x => (Guid)x.UserId).ToList();
             List<ShortenUrlEntity> invitations = shortenUrlRepo
-                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive)
+                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive && x.Clicked == 0)
                     .ToList();
 
             List<PortalUsersHCWModel> workers = healthCareWorkers.Select(item => new PortalUsersHCWModel
@@ -86,6 +87,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 ClinicId = item.ClinicId,
                 InsertedDate = item.InsertedDate,
             }).ToList();
+
+            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
+            {
+                var today = DateTime.Now;
+                var sixMonths = today.AddMonths(-6);
+                var twelveMonths = today.AddMonths(-12);
+
+                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
+                {
+                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
+                {
+                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
+                {
+                    workers = workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
+                {
+                    workers = workers.Where(x => x.User.LastSeen.Date <= twelveMonths.GetStartOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
+                {
+                    workers = workers.Where(x => x.User.IsActive == false).ToList();
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(visitSearch))
             {
@@ -97,33 +126,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                            )
                                                            ).ToList();
                 
-            List<PortalUsersHCWModel> visitHCWs = new List<PortalUsersHCWModel>();
-            foreach (var item in workers)
-            {
-                var totalClientsVisits = visits.Where(x => x.Mother.HealthCareWorker.UserId == item.User.Id || x.Infant.Caregiver.HealthCareWorker.UserId == item.User.Id).Count();
+                List<PortalUsersHCWModel> visitHCWs = new List<PortalUsersHCWModel>();
+                foreach (var item in workers)
+                {
+                    var totalClientsVisits = visits.Where(x => x.Mother.HealthCareWorker.UserId == item.User.Id || x.Infant.Caregiver.HealthCareWorker.UserId == item.User.Id).Count();
 
-                if (visitSearch == "High activity (at least 20 visits in past month)")
-                {
-                    if (totalClientsVisits >= 20)
+                    if (visitSearch == Constants.PortalSettings.visit_high_activity)
                     {
-                        visitHCWs.Add(item);
+                        if (totalClientsVisits >= 20)
+                        {
+                            visitHCWs.Add(item);
+                        }
+                    } else if (visitSearch == Constants.PortalSettings.visit_medium_activity)
+                    {
+                        if (totalClientsVisits > 0 && totalClientsVisits <= 10)
+                        {
+                            visitHCWs.Add(item);
+                        }
                     }
-                } else if (visitSearch == "Medium activity (at least 10 visits in past month)")
-                {
-                    if (totalClientsVisits > 0 && totalClientsVisits <= 10)
+                    else // Low activity (no home visits in the past month)
                     {
-                        visitHCWs.Add(item);
+                        if (totalClientsVisits == 0)
+                        {
+                            visitHCWs.Add(item);
+                        }
                     }
                 }
-                else // Low activity (no home visits in the past month)
-                {
-                    if (totalClientsVisits == 0)
-                    {
-                        visitHCWs.Add(item);
-                    }
-                }
-            }
-            return visitHCWs;
+                return visitHCWs;
             }
 
             return workers;

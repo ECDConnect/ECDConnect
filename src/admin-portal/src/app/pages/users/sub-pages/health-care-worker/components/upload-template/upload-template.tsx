@@ -1,5 +1,5 @@
 import { useMutation } from '@apollo/client';
-import { UploadHealthCareWorkers, practitionerImport } from '@ecdlink/graphql';
+import { UploadHealthCareWorkers } from '@ecdlink/graphql';
 import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../../components/form-file-input/form-file-input';
 
@@ -8,19 +8,20 @@ export interface UploadPractitionerTemplateProps {
 }
 
 const acceptedFormats = ['xlsx'];
+const allowedFileSize = 13631488;
 
 export default function UploadPractitionerTemplate({
   closeDialog,
 }: UploadPractitionerTemplateProps) {
   const { setValue, handleSubmit } = useForm();
 
-  const [importPractitioners] = useMutation(UploadHealthCareWorkers);
+  const [uploadHealthCareWorkers] = useMutation(UploadHealthCareWorkers);
 
   const onSubmit = async (values: any) => {
     const model = { ...values };
 
     if (model.templateFile?.file) {
-      await importPractitioners({
+      await uploadHealthCareWorkers({
         variables: {
           file: model.templateFile?.file,
         },
@@ -64,6 +65,7 @@ export default function UploadPractitionerTemplate({
               returnFullUrl={false}
               setValue={setValue}
               isImage={false}
+              allowedFileSize={allowedFileSize}
             />
           </div>
         </div>

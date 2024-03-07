@@ -6,6 +6,7 @@ export const GetAllTeamLead = gql`
     $clinicSearch: String
     $provinceSearch: String
     $visitSearch: String
+    $connectUsageSearch: String
     $pagingInput: PagedQueryInput
     $order: [PortalUsersTLModelSortInput!]
   ) {
@@ -14,6 +15,7 @@ export const GetAllTeamLead = gql`
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
       visitSearch: $visitSearch
+      connectUsageSearch: $connectUsageSearch
       pagingInput: $pagingInput
       order: $order
     ) {
