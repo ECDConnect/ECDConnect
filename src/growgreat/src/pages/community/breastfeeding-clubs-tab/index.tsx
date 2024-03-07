@@ -9,7 +9,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { NoCommunityFound } from '../0-components/no-community-found';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
+import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { useWindowSize } from '@reach/window-size';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router';
@@ -147,11 +147,13 @@ export const BreastfeedingClubsTab: React.FC = () => {
   );
 
   useEffect(() => {
-    appDispatch(
-      communityThunkActions.getBreastFeedingClubs({
-        clinicId: clinic?.id ?? '',
-      })
-    );
+    if (!!clinic?.id) {
+      appDispatch(
+        communityThunkActions.getBreastFeedingClubs({
+          clinicId: clinic.id,
+        })
+      );
+    }
     // trigger only once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

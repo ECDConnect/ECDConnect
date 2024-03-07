@@ -1,5 +1,5 @@
 import ROUTES from '@/routes/routes';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
+import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import {
   ScoreCard,
   Typography,
