@@ -45,7 +45,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: clinicsData, refetch } = useQuery(GetAllClinic, {
+  const { data: clinicsData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -73,17 +73,28 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const watchFields = useWatch({ control });
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
+  const hasSubDistricts =
+    watchFields?.subDistrict &&
+    clinicsData?.GetAllClinic?.filter(
+      (item) => item?.subDistrict?.id === watchFields?.subDistrict
+    );
+  const hasName =
+    hasSubDistricts?.length > 0 &&
+    hasSubDistricts?.some((item) => item.name === watchFields?.name);
+
   const duplicatedName =
     findObjectWithString(
       clinicsData?.GetAllClinic,
       'name',
       watchFields?.name
-    ) && watchFields?.name !== props?.clinic?.name;
+    ) &&
+    watchFields?.subDistrict &&
+    hasName;
 
   useEffect(() => {
     if (duplicatedName) {
       setDuplicatedNameMessage(
-        `There is a different clinic with the same name. Please choose a different clinic name.`
+        `This clinic and sub-district combination match an existing clinic. Please choose a different clinic name or sub-district.`
       );
     }
   }, [duplicatedName]);
@@ -124,7 +135,9 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       clinicSetValue('phoneNumber', props?.clinic?.phoneNumber);
       clinicSetValue('siteAddressId', props?.clinic?.siteAddressId);
       clinicSetValue('address', props?.clinic?.siteAddress?.addressLine1);
-      clinicSetValue('subDistrict', props?.clinic?.subDistrict?.id);
+      if (props?.clinic?.subDistrict?.name !== 'Sub district name') {
+        clinicSetValue('subDistrict', props?.clinic?.subDistrict?.id);
+      }
       if (props?.clinic?.teamLeads?.[0]?.teamLead?.id) {
         clinicSetValue(
           'teamLeadOne',
@@ -145,6 +158,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     props?.clinic?.siteAddress?.addressLine1,
     props?.clinic?.siteAddressId,
     props?.clinic?.subDistrict?.id,
+    props?.clinic?.subDistrict?.name,
     props?.clinic?.teamLeads,
     props?.isEdit,
   ]);
@@ -432,7 +446,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
               'All updates made below will reflect on all linked clinics, Team Leads and CHWs.'
             }
             list={[
-              'You can only delete this sub-district if there are no clinics linked. To delete this sub-district, first delete all clinics linked with this sub-district or select a different sub-district for each clinic.',
+              'You can only remove this clinic if there are no CHWs linked. Reassign all CHWs to a different clinic before removing this clinic.',
             ]}
             type={'warning'}
           />
@@ -471,17 +485,26 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
             />
           )}
         </div>
-        <Dropdown
-          placeholder={'Click to select sub-district'}
-          className={'justify-between'}
-          label={'Sub-district *'}
-          selectedValue={watchFields?.subDistrict}
-          list={subDistricts}
-          onChange={(item) => clinicSetValue('subDistrict', item)}
-          fullWidth
-          labelColor="textMid"
-          fillColor="adminPortalBg"
-        />
+        <div>
+          <Dropdown
+            placeholder={'Click to select sub-district'}
+            className={`justify-between`}
+            label={'Sub-district *'}
+            selectedValue={watchFields?.subDistrict}
+            list={subDistricts}
+            onChange={(item) => clinicSetValue('subDistrict', item)}
+            fullWidth
+            labelColor="textMid"
+            fillColor="adminPortalBg"
+          />
+          {duplicatedName && (
+            <Typography
+              text={duplicateNameMessage}
+              type={'help'}
+              color="errorMain"
+            />
+          )}
+        </div>
         <FormInput<ClinicModel>
           register={clinicRegister}
           error={errors?.phoneNumber}
