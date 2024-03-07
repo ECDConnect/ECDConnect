@@ -33,3 +33,6 @@ export const getClinicSelector = (state: RootState) =>
 
 export const getLeagueSelector = (state: RootState) =>
   state.community?.league?.data;
+
+export const getBreastFeedingClubsSelector = (state: RootState) =>
+  state.community?.breastFeedingClubs?.data;

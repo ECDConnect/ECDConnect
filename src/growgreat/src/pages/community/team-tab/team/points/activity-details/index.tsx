@@ -73,6 +73,8 @@ export const TeamPointsActivityDetails = () => {
       slugToKey(activitySlug) as keyof typeof ActivitySectionName
     ];
 
+  const { quarterDescription } = getCommunityQuarterDescription(today);
+
   const languagesOptions = useMemo(
     () =>
       languages.map((language) => ({
@@ -145,11 +147,7 @@ export const TeamPointsActivityDetails = () => {
         text={formatStringWithFirstLetterCapitalized(activitySlug)}
         color="textDark"
       />
-      <Typography
-        type="h4"
-        color="textMid"
-        text={getCommunityQuarterDescription(today)}
-      />
+      <Typography type="h4" color="textMid" text={quarterDescription} />
       <ScoreCard
         className="my-4"
         mainText={currentPoints}

@@ -22,7 +22,7 @@ import { communitySelectors } from '@/store/community';
 import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
 import { calculateClinicLeaguePositionPercentiles } from '@/utils/community/league-position';
 import { useSnackbar } from '@ecdlink/core';
-import { NoCommunityFound } from '../components/no-community-found';
+import { NoCommunityFound } from '../0-components/no-community-found';
 
 export const LeagueTab: React.FC = () => {
   const [showAbove, setShowAbove] = useState<number>(1);
@@ -54,6 +54,8 @@ export const LeagueTab: React.FC = () => {
   const wasLoading = wasLoadingLeague || wasLoadingClinic;
   const isRejected = isRejectedLeague || isRejectedClinic;
   const error = errorLeague || errorClinic;
+
+  const { quarterDescription } = getCommunityQuarterDescription(today);
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {
@@ -97,10 +99,7 @@ export const LeagueTab: React.FC = () => {
 
   const description = isEndOfTheYear
     ? `Oct ${today.getFullYear() - 1} to Sep ${today.getFullYear()}`
-    : `Points earned so far in ${getCommunityQuarterDescription(today).replace(
-        ': ',
-        ' ('
-      )})`;
+    : `Points earned so far in ${quarterDescription.replace(': ', ' (')})`;
 
   const alertProps = useMemo((): AlertProps => {
     const message = `You ended the year in position ${userClinicPosition} in the ${league?.name} league.`;

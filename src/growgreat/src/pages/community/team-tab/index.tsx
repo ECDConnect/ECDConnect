@@ -31,7 +31,7 @@ import {
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
 
-import { NoCommunityFound } from '../components/no-community-found';
+import { NoCommunityFound } from '../0-components/no-community-found';
 import { useSnackbar } from '@ecdlink/core';
 import { TeamTabState } from './types';
 
@@ -88,6 +88,8 @@ export const TeamTab: React.FC = () => {
   const headerHeight = 122;
 
   const today = new Date();
+
+  const { quarterDescription } = getCommunityQuarterDescription(today);
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -189,11 +191,7 @@ export const TeamTab: React.FC = () => {
     >
       <div className="flex h-full flex-col">
         <Typography type="h2" text={clinicDetails?.name} />
-        <Typography
-          type="h4"
-          color="textMid"
-          text={getCommunityQuarterDescription(today)}
-        />
+        <Typography type="h4" color="textMid" text={quarterDescription} />
         <div className="mt-4 flex items-center justify-start gap-2">
           <StatusChip
             className="h-7"
