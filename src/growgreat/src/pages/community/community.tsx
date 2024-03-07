@@ -8,6 +8,7 @@ import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { TeamTab } from './team-tab';
 import { LeagueTab } from './league-tab';
+import { BreastfeedingClubsTab } from './breastfeeding-clubs-tab';
 
 export const COMMUNITY_TABS = {
   TEAM: 0,
@@ -42,7 +43,7 @@ export const Community: React.FC = () => {
     {
       title: 'Breastfeeding clubs',
       initActive: false,
-      child: 'Coming Soon!',
+      child: <BreastfeedingClubsTab />,
     },
     {
       title: 'Connect',

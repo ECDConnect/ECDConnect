@@ -10,6 +10,7 @@ export const getCommunityQuarterDescription = (date: Date) => {
 
   const month = getMonth(date);
   let quarterDescription = '';
+  let quarter = quarters[0];
 
   quarters.forEach((currentQuarter) => {
     if (
@@ -18,8 +19,9 @@ export const getCommunityQuarterDescription = (date: Date) => {
     ) {
       const year = format(date, 'yyyy');
       quarterDescription = `Quarter ${currentQuarter.quarter}: ${currentQuarter.name} ${year}`;
+      quarter = currentQuarter;
     }
   });
 
-  return quarterDescription;
+  return { quarterDescription, quarter };
 };
