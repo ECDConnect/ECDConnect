@@ -6,20 +6,24 @@ export const GetAllHealthCareWorker = gql`
     $clinicSearch: String
     $provinceSearch: String
     $subDistrictSearch: String
+    $visitSearch: String
     $pagingInput: PagedQueryInput
-    $order: [HealthCareWorkerSortInput!]
+    $order: [PortalUsersHCWModelSortInput!]
   ) {
     allHealthCareWorkers(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
       subDistrictSearch: $subDistrictSearch
+      visitSearch: $visitSearch
       pagingInput: $pagingInput
       order: $order
     ) {
       id
       insertedDate
+      clinicId
       user {
+        connectUsage
         isActive
         userName
         email
@@ -35,11 +39,6 @@ export const GetAllHealthCareWorker = gql`
         phoneNumber
         insertedDate
         lockoutEnd
-        roles {
-          id
-          name
-          __typename
-        }
         __typename
       }
       __typename
@@ -52,6 +51,7 @@ export const GetHealthCareWorkerByUserId = gql`
     GetHealthCareWorkerById(id: $userId) {
       id
       insertedDate
+      clinicId
       user {
         id
         isActive
@@ -70,32 +70,7 @@ export const GetHealthCareWorkerByUserId = gql`
         profileImageUrl
         insertedDate
         lockoutEnd
-        roles {
-          id
-          name
-          __typename
-        }
         __typename
-      }
-      teamLead {
-        clinic {
-          siteAddress {
-            id
-            province {
-              id
-              description
-              __typename
-            }
-            name
-            addressLine1
-            addressLine2
-            addressLine3
-            postalCode
-            ward
-            __typename
-          }
-          __typename
-        }
       }
     }
   }

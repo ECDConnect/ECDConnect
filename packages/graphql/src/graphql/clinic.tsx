@@ -54,7 +54,7 @@ export const GetFilterClinic = gql`
 `;
 
 export const CreateClinic = gql`
-  mutation AddClinic($input: PortalClinicModelInput) {
+  mutation AddClinic($input: PortalClinicInputModelInput) {
     addClinic(input: $input) {
       id
       name

@@ -1,11 +1,19 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
+using ECDLink.PostgresTenancy.Entities;
+using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
@@ -14,6 +22,8 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.XWPF.UserModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -27,19 +37,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
         [UseSorting]
-        public IQueryable<TeamLead> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
-         IGenericRepositoryFactory repoFactory,
-         CancellationToken cancellationToken,
-         PagedQueryInput pagingInput = null,
-         string search = null,
-         string provinceSearch = null,
-         string clinicSearch = null)
+        public List<PortalUsersTLModel> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
+                                                      IGenericRepositoryFactory repoFactory,
+                                                      [Service] IJWTService jWTService,
+                                                      [Service] VisitManager visitManager,
+                                                      CancellationToken cancellationToken,
+                                                      PagedQueryInput pagingInput = null,
+                                                      string search = null,
+                                                      string provinceSearch = null,
+                                                      string clinicSearch = null,
+                                                      string visitSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
+            var teamLeads = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
+            var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
 
             if (!string.IsNullOrWhiteSpace(search))
-                teamLeadRepo = teamLeadRepo
+                teamLeads = teamLeads
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
@@ -47,18 +63,76 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             if (!string.IsNullOrWhiteSpace(provinceSearch))
             {
-                teamLeadRepo = teamLeadRepo.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%")));
+                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%")));
             }
 
             if (!string.IsNullOrWhiteSpace(clinicSearch))
             {
-                teamLeadRepo = teamLeadRepo.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.Name, $"%{clinicSearch}%")));
+                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.Name, $"%{clinicSearch}%")));
             }
 
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
-            return teamLeadRepo;
+
+            // Get ids and tokens
+            List<Guid> userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
+            List<ShortenUrlEntity> invitations = shortenUrlRepo
+                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive)
+                    .ToList();
+
+            List<PortalUsersTLModel> teamLeaders = teamLeads.Select(item => new PortalUsersTLModel
+            {
+                Id = item.Id,
+                User = new PortalUserModel(item.User, invitations),
+                ClinicIds = item.Clinics.Select(x => (Guid)x.Id).ToList(),
+                InsertedDate = item.InsertedDate
+            }).ToList();
+
+            if (!string.IsNullOrWhiteSpace(visitSearch))
+            {
+                var clinicIds = teamLeaders.Select(x => x.ClinicIds).ToList();
+                var combinedClinicIds = clinicIds.SelectMany(x => x).ToList();
+                var hcwIds = hcwRepo.GetAll().Where(x => combinedClinicIds.Contains((Guid)x.ClinicId)).Select(x => x.UserId).ToList();
+
+                var visits = visitRepo.GetAll().Where(x => x.Attended == true &&
+                                                           x.ActualVisitDate.HasValue &&
+                                                           (x.ActualVisitDate.Value.Date >= DateTime.Now.GetStartOfMonth() && x.ActualVisitDate.Value.Date <= DateTime.Now.GetEndOfMonth()) &&
+                                                           (x.Mother.IsActive && hcwIds.Contains((Guid)x.Mother.HealthCareWorker.UserId) ||
+                                                           (x.Infant.IsActive && hcwIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.UserId)))
+                                                           ).ToList();
+
+                List<PortalUsersTLModel> visitTeamLeaders = new List<PortalUsersTLModel>();
+                foreach (var item in teamLeaders)
+                {
+                    var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
+
+                    if (visitSearch == "High activity (at least 20 visits in past month)")
+                    {
+                        if (totalClientsVisits >= 20)
+                        {
+                            visitTeamLeaders.Add(item);
+                        }
+                    }
+                    else if (visitSearch == "Medium activity (at least 10 visits in past month)")
+                    {
+                        if (totalClientsVisits > 0 && totalClientsVisits <= 10)
+                        {
+                            visitTeamLeaders.Add(item);
+                        }
+                    }
+                    else // Low activity (no home visits in the past month)
+                    {
+                        if (totalClientsVisits == 0)
+                        {
+                            visitTeamLeaders.Add(item);
+                        }
+                    }
+                }
+                return visitTeamLeaders;
+            }
+
+            return teamLeaders;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
