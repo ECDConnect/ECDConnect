@@ -90,9 +90,27 @@ export default function DistrictsSubPage() {
 
   useEffect(() => {
     if (provincesFiltered?.length > 0) {
-      setTableData(provincesFilteredArray);
+      const districtsSorted = provincesFilteredArray
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+      setTableData(districtsSorted);
     } else {
-      setTableData(data?.districtsAndStats);
+      const districtsSorted = data?.districtsAndStats
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+      setTableData(districtsSorted);
     }
   }, [data?.districtsAndStats, provincesFiltered, provincesFilteredArray]);
 

@@ -86,9 +86,26 @@ export default function ClinicsSubPage() {
 
   useEffect(() => {
     if (subDistrictsFiltered?.length > 0) {
-      setTableData(subDistrictsFilteredArray);
+      const clinicsFilteredAndSorted = subDistrictsFilteredArray
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+      setTableData(clinicsFilteredAndSorted);
     } else {
-      setTableData(data?.GetAllClinic);
+      const clinicsFilteredAndSorted = data?.GetAllClinic?.slice()?.sort(
+        (a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+      );
+      setTableData(clinicsFilteredAndSorted);
     }
   }, [data, subDistrictsFiltered, subDistrictsFilteredArray]);
 

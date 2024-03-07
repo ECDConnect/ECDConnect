@@ -115,22 +115,6 @@ export default function SubDistrictsSubPage() {
   }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
-    if (districtsFiltered?.length > 0) {
-      setTableData(districtsFilteredArray);
-    } else {
-      setTableData(data?.subDistrictsAndStats);
-    }
-  }, [data?.subDistrictsAndStats, districtsFiltered, districtsFilteredArray]);
-
-  useEffect(() => {
-    if (provincesFiltered?.length > 0) {
-      setTableData(provincesFilteredArray);
-    } else {
-      setTableData(data?.subDistrictsAndStats);
-    }
-  }, [data?.subDistrictsAndStats, provincesFiltered, provincesFilteredArray]);
-
-  useEffect(() => {
     if (data && data.subDistrictsAndStats) {
       const copyItems = data.subDistrictsAndStats?.map((item: ClinicDto) => ({
         ...item,
@@ -144,6 +128,58 @@ export default function SubDistrictsSubPage() {
       setTableData(copyItems);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (districtsFiltered?.length > 0) {
+      const subDistrictsFilteredAndSorted = districtsFilteredArray
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+      setTableData(subDistrictsFilteredAndSorted);
+    } else {
+      const subDistrictsFilteredAndSorted = data?.subDistrictsAndStats
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+      setTableData(subDistrictsFilteredAndSorted);
+    }
+  }, [data?.subDistrictsAndStats, districtsFiltered, districtsFilteredArray]);
+
+  useEffect(() => {
+    if (provincesFiltered?.length > 0) {
+      const subDistrictsFilteredAndSorted = provincesFilteredArray
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+      setTableData(subDistrictsFilteredAndSorted);
+    } else {
+      const subDistrictsFilteredAndSorted = data?.subDistrictsAndStats
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+      setTableData(subDistrictsFilteredAndSorted);
+    }
+  }, [data?.subDistrictsAndStats, provincesFiltered, provincesFilteredArray]);
 
   const panel = usePanel();
   const displayPanel = () => {
