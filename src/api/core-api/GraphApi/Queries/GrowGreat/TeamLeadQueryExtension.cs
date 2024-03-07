@@ -77,7 +77,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // Get ids and tokens
             List<Guid> userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
             List<ShortenUrlEntity> invitations = shortenUrlRepo
-                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive)
+                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive && x.Clicked == 0)
                     .ToList();
 
             List<PortalUsersTLModel> teamLeaders = teamLeads.Select(item => new PortalUsersTLModel

@@ -73,19 +73,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 
                     if (invitation != null)
                     {
-                        if (invitation.Clicked == 0)
+                        DateTime date = invitation.InsertedDate;
+                        DateTime expiredDate = date.AddDays(30);
+                        if (expiredDate > DateTime.Now)
                         {
-                            DateTime date = invitation.InsertedDate;
-                            DateTime expiredDate = date.AddDays(30);
-                            if (expiredDate > DateTime.Now)
-                            {
-                                comment = Constants.PortalSettings.usage_invitation_active;
-                            }
-                            else if (expiredDate < DateTime.Now)
-                            {
-                                comment = Constants.PortalSettings.usage_invitation_expired;
-                            }
-
+                            comment = Constants.PortalSettings.usage_invitation_active;
+                        }
+                        else if (expiredDate < DateTime.Now)
+                        {
+                            comment = Constants.PortalSettings.usage_invitation_expired;
                         }
                     }
                 } 
