@@ -79,11 +79,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
                             DateTime expiredDate = date.AddDays(30);
                             if (expiredDate > DateTime.Now)
                             {
-                                comment = "Invitation active";
+                                comment = Constants.PortalSettings.usage_invitation_active;
                             }
                             else if (expiredDate < DateTime.Now)
                             {
-                                comment = "Invitation expired";
+                                comment = Constants.PortalSettings.usage_invitation_expired;
                             }
 
                         }
@@ -99,7 +99,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public bool? VerifiedByHomeAffairs { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public DateTime? InsertedDate { get; set; }
-        public DateTime? LastSeen { get; set; }
+        public DateTime LastSeen { get; set; }
         public DateTimeOffset? LockoutEnd { get; set; }
         public Guid? GenderId { get; set; }
         public Guid? RaceId { get; set; }

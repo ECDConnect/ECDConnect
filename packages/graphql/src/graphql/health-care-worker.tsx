@@ -7,6 +7,7 @@ export const GetAllHealthCareWorker = gql`
     $provinceSearch: String
     $subDistrictSearch: String
     $visitSearch: String
+    $connectUsageSearch: String
     $pagingInput: PagedQueryInput
     $order: [PortalUsersHCWModelSortInput!]
   ) {
@@ -16,6 +17,7 @@ export const GetAllHealthCareWorker = gql`
       provinceSearch: $provinceSearch
       subDistrictSearch: $subDistrictSearch
       visitSearch: $visitSearch
+      connectUsageSearch: $connectUsageSearch
       pagingInput: $pagingInput
       order: $order
     ) {

@@ -72,31 +72,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 teamLeads = teamLeads.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.Name, $"%{clinicSearch}%")));
             }
 
-            // Pausing this filter to add bulk imports to repo
-            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
-            {
-                var today = DateTime.Now;
-                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
-                {
-
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
-                {
-
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
-                {
-
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
-                {
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
-                {
-                    teamLeads = teamLeads.Where(h => h.IsActive == false);
-                }
-            }
-
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
@@ -114,6 +89,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 ClinicIds = item.Clinics.Select(x => (Guid)x.Id).ToList(),
                 InsertedDate = item.InsertedDate
             }).ToList();
+
+
+            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
+            {
+                var today = DateTime.Now;
+                var sixMonths = today.AddMonths(-6);
+                var twelveMonths = today.AddMonths(-12);
+
+                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date && x.User.LastSeen.Date <= sixMonths.GetEndOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= twelveMonths.GetStartOfMonth().Date && x.User.LastSeen.Date <= twelveMonths.GetEndOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
+                {
+                    teamLeaders = teamLeaders.Where(x => x.User.IsActive == false).ToList();
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(visitSearch))
             {
@@ -216,8 +220,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string> {"Surname", "Text, (required)"},
                 new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
                 new List<string> {"Email address", "email, (optional)"},
-                new List<string> {"Clinic ID 1", "Clinic's ID, (required)" },
-                new List<string> {"Clinic ID 2", "Clinic's ID, (optional)" }
+                new List<string> {"Clinic ID 1", "Clinic ID 1, (required)" },
+                new List<string> {"Clinic ID 2", "Clinic ID 2, (optional)" }
             };
             
             var templateHeaderSheet = $"Team Lead Template";

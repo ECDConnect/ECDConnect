@@ -71,31 +71,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             if (!string.IsNullOrWhiteSpace(clinicSearch))
                 healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
 
-            // Pausing this filter to add bulk imports to repo
-            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
-            {
-                var today = DateTime.Now;
-                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
-                {
-
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
-                {
-
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
-                {
-
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
-                {
-                }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
-                {
-                    healthCareWorkers = healthCareWorkers.Where(h => h.IsActive == false);
-                }
-            }
-
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
@@ -112,6 +87,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 ClinicId = item.ClinicId,
                 InsertedDate = item.InsertedDate,
             }).ToList();
+
+            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
+            {
+                var today = DateTime.Now;
+                var sixMonths = today.AddMonths(-6);
+                var twelveMonths = today.AddMonths(-12);
+
+                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
+                {
+                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
+                {
+                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
+                {
+                    workers = workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date && x.User.LastSeen.Date <= sixMonths.GetEndOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
+                {
+                    workers = workers.Where(x => x.User.LastSeen.Date >= twelveMonths.GetStartOfMonth().Date && x.User.LastSeen.Date <= twelveMonths.GetEndOfMonth().Date).ToList();
+                }
+                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
+                {
+                    workers = workers.Where(x => x.User.IsActive == false).ToList();
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(visitSearch))
             {
