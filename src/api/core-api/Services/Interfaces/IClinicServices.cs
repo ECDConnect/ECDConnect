@@ -21,7 +21,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         Clinic AddClinic(PortalClinicInputModel input);
         Clinic EditClinic(PortalClinicInputModel input);
         Clinic DeleteClinicById(Guid clinicId);
-        BreastFeedingClub AddBreastFeedingClub(Guid healthCareWorkId, DateTime meetingDate, bool clientsAttendedConfirmed, List<Guid> caregiversAttended);
+        BreastFeedingClub AddBreastFeedingClub(Guid clinicId, Guid healthCareWorkId, DateTime meetingDate, bool clientsAttendedConfirmed, List<Guid> caregiversAttended);
         List<BreastFeedingClub> GetBreastFeedingClubs(Guid clinicId);
         List<Caregiver> GetAvailableCaregiversForBreastFeedingClub(Guid clinicId);
     }

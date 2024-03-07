@@ -21,6 +21,7 @@ namespace ECDLink.DataAccessLayer.Entities
     {
         public DateTime MeetingDate { get; set; }
         public bool ClientsAttendedConfirmed { get; set; }
+        public Guid ClinicId { get; set; }
 
         public Guid HealthCareWorkerId { get; set; }
 

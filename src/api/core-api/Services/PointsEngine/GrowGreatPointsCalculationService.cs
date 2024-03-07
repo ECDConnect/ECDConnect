@@ -1,26 +1,20 @@
-﻿using EcdLink.Api.CoreApi.Managers.Visits;
-using EcdLink.Api.CoreApi.Services.Interfaces;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
+﻿using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Clubs;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
-using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Services.PointsEngine
 {
@@ -29,9 +23,6 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repositoryFactory;
 
-        private readonly IGenericRepository<PointsLibrary, Guid> _pointsLibraryRepo;
-        private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
-
         private readonly IGenericRepository<Infant, Guid> _infantRepo;
         private readonly IGenericRepository<Mother, Guid> _motherRepo;
 
@@ -39,27 +30,29 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
         private readonly IGenericRepository<VisitData, Guid> _visitDataRepo;
         private readonly IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
 
+        private readonly IGenericRepository<PointsCategory, Guid> _pointsCategoryRepo;
+        private readonly IGenericRepository<PointsClinicSummary, Guid> _pointsClinicSummaryRepo;
+
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
         private IPointsEngineService _pointsEngineService;
-
+        private IClinicService _clinicService;
 
         private readonly Guid _uId;
+
 
         public GrowGreatPointsCalculationService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             HierarchyEngine hierarchyEngine,
             [Service] INotificationService notificationService,
-            [Service] IPointsEngineService pointsEngineService)
+            [Service] IPointsEngineService pointsEngineService,
+            [Service] IClinicService clinicService)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().GetValueOrDefault());
-
-            _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
-            _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _uId);
 
             _infantRepo = _repositoryFactory.CreateGenericRepository<Infant>(userContext: _uId);
             _motherRepo = _repositoryFactory.CreateGenericRepository<Mother>(userContext: _uId);
@@ -68,8 +61,12 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _uId);
             _visitDataStatusRepo = _repositoryFactory.CreateGenericRepository<VisitDataStatus>(userContext: _uId);
 
+            _pointsCategoryRepo = _repositoryFactory.CreateGenericRepository<PointsCategory>(userContext: _uId);
+            _pointsClinicSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsClinicSummary>(userContext: _uId);
+
             _notificationService = notificationService;
             _pointsEngineService = pointsEngineService;
+            _clinicService = clinicService;
         }
 
 
@@ -1093,5 +1090,63 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             return true;
         }
 
+
+        public void CalculateBreastFeedingClubPoints(Guid clinicId)
+        {
+            var breastFeedingClubsForClinic = _clinicService.GetBreastFeedingClubs(clinicId);
+
+            var qualifyingClubs = breastFeedingClubsForClinic.Where(x => 
+                x.MeetingDate >= DateTime.Now.GetStartOfMonth()
+                && x.MeetingDate <= DateTime.Now.GetEndOfMonth()
+                && x.Clients.Count() >= 4
+                && x.Clients.Count() <= 6)
+                .Count();
+
+            var pointsForMonth = 0;
+
+            if (qualifyingClubs == 1) 
+            {
+                pointsForMonth = 10;
+            }
+            else if (qualifyingClubs == 2)
+            {
+                pointsForMonth = 20;
+            }
+            else if (qualifyingClubs == 3)
+            {
+                pointsForMonth = 50;
+            }
+            else if (qualifyingClubs >= 4)
+            {
+                pointsForMonth = 200;
+            }
+
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+            var currentPoints = _pointsClinicSummaryRepo.GetAll().Where(x => 
+                x.ClinicId == clinicId &&
+                x.DateScored >= monthStart
+                && x.DateScored <= monthEnd)
+                .FirstOrDefault();
+
+            if (currentPoints == null)
+            {
+                _pointsClinicSummaryRepo.Insert(new PointsClinicSummary
+                {
+                    DateScored = DateTime.Now.GetStartOfMonth(),
+                    ClinicId = clinicId,
+                    PointsCategoryId = PointsCategoryConstants.BreastFeedingClubCategoryId,
+                    TimesScored = qualifyingClubs,
+                    PointsTotal = pointsForMonth,
+                });
+            }
+            else
+            {
+                currentPoints.TimesScored = qualifyingClubs;
+                currentPoints.PointsTotal = pointsForMonth;
+
+                _pointsClinicSummaryRepo.Update(currentPoints);
+            }
+        }
     }
 }

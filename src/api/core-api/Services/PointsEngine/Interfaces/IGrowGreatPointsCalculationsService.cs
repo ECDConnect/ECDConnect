@@ -8,5 +8,6 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces
         bool CalculateInfantClientRegistration(string userId, DateTime today);
         bool CalculatePregnantMomVisits(string userId, DateTime today);
         bool CalculateInfantVisits(string userId, DateTime today);
+        void CalculateBreastFeedingClubPoints(Guid clinicId);
     }
 }

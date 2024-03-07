@@ -187,6 +187,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Points library
         public DbSet<PointsLibrary> PointsLibrary { get; set; }
         public DbSet<PointsUserSummary> PointsUserSummary { get; set; }
+        public DbSet<PointsClinicSummary> PointsClinicSummary { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

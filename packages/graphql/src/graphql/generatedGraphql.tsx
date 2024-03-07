@@ -275,6 +275,7 @@ export type ActivityMeetRegularDetail = {
 export type AddBreastFeedingClubInputModelInput = {
   clients?: InputMaybe<Array<Scalars['UUID']>>;
   clientsAttendedConfirmed: Scalars['Boolean'];
+  clinicId: Scalars['UUID'];
   healthCareWorkerId: Scalars['UUID'];
   meetingDate: Scalars['DateTime'];
 };
@@ -716,6 +717,7 @@ export type BreastFeedingClub = {
   __typename?: 'BreastFeedingClub';
   clients?: Maybe<Array<Maybe<BreastFeedingClubClient>>>;
   clientsAttendedConfirmed: Scalars['Boolean'];
+  clinicId: Scalars['UUID'];
   healthCareWorker?: Maybe<HealthCareWorker>;
   healthCareWorkerId: Scalars['UUID'];
   id: Scalars['UUID'];
@@ -779,6 +781,7 @@ export type BreastFeedingClubFilterInput = {
   and?: InputMaybe<Array<BreastFeedingClubFilterInput>>;
   clients?: InputMaybe<ListFilterInputTypeOfBreastFeedingClubClientFilterInput>;
   clientsAttendedConfirmed?: InputMaybe<BooleanOperationFilterInput>;
+  clinicId?: InputMaybe<ComparableGuidOperationFilterInput>;
   healthCareWorker?: InputMaybe<HealthCareWorkerFilterInput>;
   healthCareWorkerId?: InputMaybe<ComparableGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -793,6 +796,7 @@ export type BreastFeedingClubFilterInput = {
 export type BreastFeedingClubInput = {
   Clients?: InputMaybe<Array<InputMaybe<BreastFeedingClubClientInput>>>;
   ClientsAttendedConfirmed: Scalars['Boolean'];
+  ClinicId: Scalars['UUID'];
   HealthCareWorker?: InputMaybe<HealthCareWorkerInput>;
   HealthCareWorkerId: Scalars['UUID'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -817,6 +821,7 @@ export type BreastFeedingClubPortalModel = {
 
 export type BreastFeedingClubSortInput = {
   clientsAttendedConfirmed?: InputMaybe<SortEnumType>;
+  clinicId?: InputMaybe<SortEnumType>;
   healthCareWorker?: InputMaybe<HealthCareWorkerSortInput>;
   healthCareWorkerId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -6054,6 +6059,7 @@ export type Mutation = {
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
   addBeCreativeActivity: Scalars['Boolean'];
+  addBreastFeedingClub?: Maybe<BreastFeedingClubModel>;
   addCaregiverReportBackMeeting: Scalars['Boolean'];
   addChildRegistrationPoints: Scalars['Boolean'];
   addClinic?: Maybe<Clinic>;
@@ -6722,6 +6728,10 @@ export type MutationAddAdditionalVisitForMotherArgs = {
 
 export type MutationAddBeCreativeActivityArgs = {
   input?: InputMaybe<BeCreativeUploadInput>;
+};
+
+export type MutationAddBreastFeedingClubArgs = {
+  input?: InputMaybe<AddBreastFeedingClubInputModelInput>;
 };
 
 export type MutationAddCaregiverReportBackMeetingArgs = {
@@ -10323,6 +10333,7 @@ export type PointsCategorySortInput = {
 
 export type PointsClinicSummary = {
   __typename?: 'PointsClinicSummary';
+  clinicId: Scalars['UUID'];
   dateScored: Scalars['DateTime'];
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -10337,6 +10348,7 @@ export type PointsClinicSummary = {
 
 export type PointsClinicSummaryFilterInput = {
   and?: InputMaybe<Array<PointsClinicSummaryFilterInput>>;
+  clinicId?: InputMaybe<ComparableGuidOperationFilterInput>;
   dateScored?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -10351,6 +10363,7 @@ export type PointsClinicSummaryFilterInput = {
 };
 
 export type PointsClinicSummaryInput = {
+  ClinicId: Scalars['UUID'];
   DateScored: Scalars['DateTime'];
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -10362,6 +10375,7 @@ export type PointsClinicSummaryInput = {
 };
 
 export type PointsClinicSummarySortInput = {
+  clinicId?: InputMaybe<SortEnumType>;
   dateScored?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -12014,7 +12028,6 @@ export type Query = {
   activityHostFamilyDetails?: Maybe<ActivityHostFamilyDays>;
   activityLeaveNoOneBehindDetails?: Maybe<ActivityLeaveNoOneBehind>;
   activityMeetRegularDetails?: Maybe<ActivityMeetRegular>;
-  addBreastFeedingClub?: Maybe<BreastFeedingClubModel>;
   allCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiverByPractitioner?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiversForHCW?: Maybe<Array<Maybe<Caregiver>>>;
@@ -13781,10 +13794,6 @@ export type QueryActivityMeetRegularDetailsArgs = {
   clubId: Scalars['UUID'];
   month: Scalars['Int'];
   year: Scalars['Int'];
-};
-
-export type QueryAddBreastFeedingClubArgs = {
-  input?: InputMaybe<AddBreastFeedingClubInputModelInput>;
 };
 
 export type QueryAllCaregiverByPractitionerArgs = {
