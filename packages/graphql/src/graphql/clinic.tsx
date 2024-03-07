@@ -65,7 +65,7 @@ export const GetFilterClinic = gql`
 `;
 
 export const CreateClinic = gql`
-  mutation AddClinic($input: PortalClinicModelInput) {
+  mutation AddClinic($input: PortalClinicInputModelInput) {
     addClinic(input: $input) {
       id
       name
@@ -151,6 +151,16 @@ export const EditClinic = gql`
 export const DeleteClinic = gql`
   mutation DeleteClinic($clinicId: UUID!) {
     deleteClinic(clinicId: $clinicId) {
+      id
+      name
+      isActive
+    }
+  }
+`;
+
+export const DeleteClinicById = gql`
+  mutation DeleteClinicById($clinicId: UUID!) {
+    deleteClinicById(clinicId: $clinicId) {
       id
       name
       isActive

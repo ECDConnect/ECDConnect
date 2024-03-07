@@ -90,8 +90,8 @@ class CommunityService {
             clinicId
             clinicName
             leagueRankingForYear
-            pointsTotalForYear
             leagueRankingForQuarter
+            pointsTotalForYear
             pointsTotalForQuarter
           }
         }

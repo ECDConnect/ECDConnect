@@ -20,6 +20,7 @@ export interface ClinicModel {
   subDistrict: string;
   phoneNumber: string;
   address: string;
+  siteAddressId: string;
   teamLeadOne: string;
   teamLeadTwo: string;
 }
@@ -29,6 +30,7 @@ export const clinicInitialValues = {
   subDistrict: '',
   phoneNumber: '',
   address: '',
+  siteAddressId: '',
   teamLeadOne: '',
   teamLeadTwo: '',
 };
@@ -44,6 +46,7 @@ export const clinicSchema = Yup.object().shape({
     .required('Phone number is required')
     .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
   address: Yup.string().required('Address is required'),
+  siteAddressId: Yup.string(),
   teamLeadOne: Yup.string().required('Team lead is required'),
   teamLeadTwo: Yup.string(),
 });

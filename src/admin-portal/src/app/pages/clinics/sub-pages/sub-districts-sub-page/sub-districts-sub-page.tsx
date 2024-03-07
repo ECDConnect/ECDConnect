@@ -24,7 +24,7 @@ export default function SubDistrictsSubPage() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: provincetData } = useQuery(GetAllProvince, {
+  const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -90,23 +90,32 @@ export default function SubDistrictsSubPage() {
   }, [districtData?.districtsAndStats]);
 
   useEffect(() => {
-    if (provincetData?.GetAllProvince?.length > 0) {
+    if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
       setProvinces(
-        provincetData?.GetAllProvince?.filter(
-          (prov) => prov?.description !== 'N/A'
-        )?.map((item) => {
-          return {
-            value: item?.id,
-            label: item?.description,
-            id: item?.id,
-          };
-        })
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+              id: item?.id,
+            };
+          })
       );
     }
-  }, [provincetData?.GetAllProvince]);
+  }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
-    if (districtsFiltered && districtsFilteredArray?.length > 0) {
+    if (districtsFiltered?.length > 0) {
       setTableData(districtsFilteredArray);
     } else {
       setTableData(data?.subDistrictsAndStats);
@@ -114,7 +123,7 @@ export default function SubDistrictsSubPage() {
   }, [data?.subDistrictsAndStats, districtsFiltered, districtsFilteredArray]);
 
   useEffect(() => {
-    if (provincesFiltered && provincesFilteredArray.length > 0) {
+    if (provincesFiltered?.length > 0) {
       setTableData(provincesFilteredArray);
     } else {
       setTableData(data?.subDistrictsAndStats);
@@ -214,7 +223,7 @@ export default function SubDistrictsSubPage() {
                       <div className=" w-6/12">
                         <SearchDropDown<string>
                           displayMenuOverlay={true}
-                          className={'mr-1'}
+                          className={'overflowx-scroll mr-1 truncate'}
                           menuItemClassName={
                             'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
                           }
@@ -246,7 +255,7 @@ export default function SubDistrictsSubPage() {
                       </div>
                     </div>
 
-                    <div className="justify-self col-end-3 ">
+                    <div className="justify-self z-20 col-end-3">
                       <button
                         onClick={clearFilters}
                         type="button"

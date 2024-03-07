@@ -1,5 +1,4 @@
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import { communitySelectors } from '@/store/community';
 import {
@@ -10,7 +9,9 @@ import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformationPage } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
+import { TeamTabState } from '../../types';
+import ROUTES from '@/routes/routes';
 
 export const TeamTabInfoPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
@@ -19,6 +20,8 @@ export const TeamTabInfoPage = () => {
   const info = useSelector(
     communitySelectors.getMoreInformationSelector(selectedLanguage)
   );
+
+  const { state } = useLocation<TeamTabState>();
 
   const { isLoading } = useThunkFetchCall(
     'community',
@@ -45,6 +48,15 @@ export const TeamTabInfoPage = () => {
     setSelectedLanguage(language);
   };
 
+  const onClose = () => {
+    history.push(
+      state?.isFromTeamTab
+        ? ROUTES.COMMUNITY.ROOT
+        : ROUTES.COMMUNITY.TEAM.POINTS.ROOT,
+      { forceReload: false } as TeamTabState
+    );
+  };
+
   useEffect(() => {
     appDispatch(getMoreInformation({ locale: 'en-za', section, tab: 'team' }));
 
@@ -58,7 +70,7 @@ export const TeamTabInfoPage = () => {
       isLoading={isLoading}
       languages={languagesOptions}
       moreInformation={info}
-      onClose={() => history.push(ROUTES.COMMUNITY.ROOT)}
+      onClose={onClose}
       selectedLanguage={selectedLanguage}
       setSelectedLanguage={handleLanguageChange}
     />

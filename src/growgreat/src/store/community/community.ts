@@ -122,7 +122,10 @@ const communitySlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getLeagueById.fulfilled, (state, action) => {
-      state.league = action.payload;
+      state.league = {
+        dateLoaded: new Date().toISOString(),
+        data: action.payload,
+      };
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(

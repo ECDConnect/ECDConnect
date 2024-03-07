@@ -20,6 +20,7 @@ import {
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
 import { ActivityDetailsState } from './activity-details/index.types';
+import { TeamTabState } from '../../types';
 
 export const TeamPoints = () => {
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
@@ -72,8 +73,12 @@ export const TeamPoints = () => {
       subTitle={clinicDetails?.name}
       renderBorder
       displayHelp
-      onHelp={() => {}}
-      onBack={() => history.push(ROUTES.COMMUNITY.ROOT)}
+      onHelp={() => history.push(ROUTES.COMMUNITY.TEAM.INFO_PAGE)}
+      onBack={() =>
+        history.push(ROUTES.COMMUNITY.ROOT, {
+          forceReload: false,
+        } as TeamTabState)
+      }
       className="p-4 pt-6"
     >
       <Typography

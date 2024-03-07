@@ -1,5 +1,5 @@
-export function findObjectWithString(array, key, searchString, isEdit) {
+export function findObjectWithString(array, key, searchString) {
   return array?.find(
-    (obj) => obj[key]?.toLowerCase() === searchString?.toLowerCase() && !isEdit
+    (obj) => obj[key]?.toLowerCase() === searchString?.toLowerCase()
   );
 }

@@ -10,9 +10,16 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
+import { TeamTabState } from '../../types';
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { userSelectors } from '@/store/user';
 
 export const TeamMembers = () => {
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorker
+  );
+  const user = useSelector(userSelectors.getUser);
 
   const history = useHistory();
 
@@ -37,30 +44,40 @@ export const TeamMembers = () => {
     })) ?? [];
 
   const members: UserAlertListDataItem[] =
-    clinicDetails?.clinicMembers?.map((member) => ({
-      title: `${member.firstName ?? ''} ${member.surname ?? ''}`,
-      titleStyle: 'text-textDark',
-      subTitle: member?.welcomeMessage ?? '',
-      subTitleStyle: 'text-infoDark',
-      profileDataUrl: '',
-      profileText: `${member.firstName.charAt(0)}${member.surname.charAt(0)}`,
-      avatarColor: 'var(--primaryAccent2)',
-      alertSeverity: 'none',
-      hideAlertSeverity: true,
-      onActionClick: () =>
-        history.push(
-          ROUTES.COMMUNITY.TEAM.MEMBERS.MEMBER_PROFILE.replace(
-            ':memberHealthCareWorkerId',
-            member.healthCareWorkerId
-          )
-        ),
-    })) ?? [];
+    clinicDetails?.clinicMembers?.map((member) => {
+      const isOwnProfile = member?.healthCareWorkerId === healthCareWorker?.id;
+
+      return {
+        title: `${member.firstName ?? ''} ${member.surname ?? ''}`,
+        titleStyle: 'text-textDark',
+        subTitle: member?.welcomeMessage ?? '',
+        subTitleStyle: 'text-infoDark',
+        profileDataUrl: isOwnProfile
+          ? user?.profileImageUrl
+          : member?.profileImageUrl ?? '',
+        profileText: `${member.firstName.charAt(0)}${member.surname.charAt(0)}`,
+        avatarColor: 'var(--primaryAccent2)',
+        alertSeverity: 'none',
+        hideAlertSeverity: true,
+        onActionClick: () =>
+          history.push(
+            ROUTES.COMMUNITY.TEAM.MEMBERS.MEMBER_PROFILE.replace(
+              ':memberHealthCareWorkerId',
+              member.healthCareWorkerId
+            )
+          ),
+      };
+    }) ?? [];
 
   return (
     <BannerWrapper
       size="small"
       title={`${clinicDetails?.name} team members`}
-      onBack={() => history.push(ROUTES.COMMUNITY.ROOT)}
+      onBack={() =>
+        history.push(ROUTES.COMMUNITY.ROOT, {
+          forceReload: false,
+        } as TeamTabState)
+      }
       className="flex h-full flex-col p-4 pt-6"
     >
       <Typography type="h2" text={`${clinicDetails?.name} team members`} />

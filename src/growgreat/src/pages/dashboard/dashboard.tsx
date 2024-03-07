@@ -39,6 +39,7 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { communitySelectors } from '@/store/community';
 import {
+  calculateClinicLeaguePositionPercentiles,
   getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
@@ -65,6 +66,7 @@ export const Dashboard: React.FC = () => {
     healthCareWorkerSelectors?.getHealthCareWorker
   );
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const league = useSelector(communitySelectors.getLeagueSelector);
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -76,10 +78,12 @@ export const Dashboard: React.FC = () => {
   const { startService } = useNotificationService();
 
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
-  // TODO: get the length of the league
-  const isTop25PercentInTheLeague = false;
-  // TODO: get the length of the league
-  const isMiddle50PercentInTheLeague = false;
+
+  const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
+    calculateClinicLeaguePositionPercentiles(
+      league?.clinics ?? [],
+      clinicDetails?.points?.leagueRanking ?? 0
+    );
 
   const leaguePointsColours = getLeaguePointsColours(
     isTop25PercentInTheLeague,
@@ -300,7 +304,7 @@ export const Dashboard: React.FC = () => {
             : ROUTES.COMMUNITY.ROOT
         ),
     }),
-    []
+    [clinicDetails, league]
   );
 
   useEffect(() => {
@@ -387,38 +391,34 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!clinicDetails && (
-          <>
-            {!!clinicDetails?.league ? (
-              <ScoreCard
-                className="mt-30 h-20 w-full"
-                mainText={communityCard.mainText}
-                hint={communityCard.hint}
-                hintClassName={communityCard.hintClassName}
-                textPosition="left"
-                currentPoints={communityCard.currentPoints}
-                maxPoints={communityCard.maxPoints}
-                onClick={communityCard.onClick}
-                barBgColour={communityCard.barBgColour}
-                barColour={communityCard.barColour}
-                bgColour={communityCard.bgColour}
-                image={communityCard.image}
-                textColour={communityCard.textColour}
-                onClickClassName="text-textLight"
-                statusChip={communityCard.statusChip}
-              />
-            ) : (
-              <TitleListItem
-                item={{
-                  title: communityCard.hint,
-                  onActionClick: communityCard.onClick!,
-                  titleIcon: 'UserGroupIcon',
-                  titleIconClassName: 'bg-tertiary text-white',
-                  classNames: 'bg-uiBg w-full mt-30',
-                }}
-              />
-            )}
-          </>
+        {!!clinicDetails?.league ? (
+          <ScoreCard
+            className="mt-30 h-20 w-full"
+            mainText={communityCard.mainText}
+            hint={communityCard.hint}
+            hintClassName={communityCard.hintClassName}
+            textPosition="left"
+            currentPoints={communityCard.currentPoints}
+            maxPoints={communityCard.maxPoints}
+            onClick={communityCard.onClick}
+            barBgColour={communityCard.barBgColour}
+            barColour={communityCard.barColour}
+            bgColour={communityCard.bgColour}
+            image={communityCard.image}
+            textColour={communityCard.textColour}
+            onClickClassName="text-textLight"
+            statusChip={communityCard.statusChip}
+          />
+        ) : (
+          <TitleListItem
+            item={{
+              title: communityCard.hint,
+              onActionClick: communityCard.onClick!,
+              titleIcon: 'UserGroupIcon',
+              titleIconClassName: 'bg-tertiary text-white',
+              classNames: 'bg-uiBg w-full mt-30',
+            }}
+          />
         )}
       </div>
     </BannerWrapper>

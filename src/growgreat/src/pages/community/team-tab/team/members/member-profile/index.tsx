@@ -24,6 +24,7 @@ import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWork
 import { useEffect, useState } from 'react';
 import { AboutYourselfDialog } from '../components/about-yourself-dialog';
 import { ShareContactDialog } from '../components/share-contact-dialog';
+import { userSelectors } from '@/store/user';
 
 export const TeamMemberProfile = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -44,6 +45,7 @@ export const TeamMemberProfile = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors.getHealthCareWorker
   );
+  const user = useSelector(userSelectors.getUser);
 
   const { memberHealthCareWorkerId } = useParams<MemberProfileParams>();
 
@@ -67,7 +69,9 @@ export const TeamMemberProfile = () => {
 
   const headerHeight = 254;
 
-  const profileImageUrl = member?.profileImageUrl;
+  const profileImageUrl = isOwnProfile
+    ? user?.profileImageUrl
+    : member?.profileImageUrl;
   const phoneNumber = member?.phoneNumber;
   const whatsAppNumber = member?.whatsAppNumber;
   const name = `${member?.firstName} ${member?.surname}`;
@@ -147,6 +151,9 @@ export const TeamMemberProfile = () => {
           hasConsent={true}
           canChangeImage={false}
           dataUrl={profileImageUrl}
+          userAvatarText={`${member?.firstName?.charAt(0) ?? ''}${
+            member?.surname?.charAt(0) ?? ''
+          }`}
           size={'header'}
         />
         <Typography className="mt-4" type="h4" text={welcomeMessage} />

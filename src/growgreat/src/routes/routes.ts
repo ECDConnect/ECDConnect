@@ -30,8 +30,8 @@ const ROUTES = {
         ACTIVITY_DETAILS: '/activity-details/:activitySlug',
       }),
       MEMBERS: addPrefix('/members', {
-        LEADER_PROFILE: '/:leaderId',
-        MEMBER_PROFILE: '/:memberHealthCareWorkerId',
+        LEADER_PROFILE: 'leader/:leaderId',
+        MEMBER_PROFILE: 'member/:memberHealthCareWorkerId',
       }),
     }),
   }),
