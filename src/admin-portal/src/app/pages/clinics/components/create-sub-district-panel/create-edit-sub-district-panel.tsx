@@ -16,7 +16,7 @@ import {
   subDistrictInitialValues,
   subDistrictSchema,
 } from '../../clinics.types';
-import { FieldError, useForm, useWatch } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';

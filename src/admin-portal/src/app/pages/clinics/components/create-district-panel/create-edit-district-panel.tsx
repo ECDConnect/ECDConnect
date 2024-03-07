@@ -1,5 +1,6 @@
 import {
   ActionModal,
+  Alert,
   Dialog,
   DialogPosition,
   Divider,
@@ -253,6 +254,27 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
         </div>
       )}
       <Divider dividerType="dashed" className="py-8" />
+      {props?.isEdit && (
+        <>
+          <Alert
+            className={'my-4 rounded-xl'}
+            title={
+              'All updates made below will reflect on all linked sub-districts, clinics, Team Leads and CHWs.'
+            }
+            list={[
+              'You can only delete this district if there are no sub-districts linked. To delete this district, first delete all linked sub-districts or move them to a different district.',
+            ]}
+            type={'warning'}
+          />
+
+          <Typography
+            type={'h3'}
+            text={watchFields?.districtName}
+            color={'textDark'}
+            className="my-4"
+          />
+        </>
+      )}
       <div className="flex flex-col gap-4">
         <div>
           <FormInput<DistrictModel>
