@@ -167,6 +167,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<SubDistrict> SubDistrict { get; set; }
         public DbSet<ClinicLeague> ClinicLeague { get; set; }
         public DbSet<ClinicTeamLead> ClinicTeamLead { get; set; }
+        public DbSet<BreastFeedingClub> BreastFeedingClubs { get; set; }
 
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }
@@ -186,6 +187,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Points library
         public DbSet<PointsLibrary> PointsLibrary { get; set; }
         public DbSet<PointsUserSummary> PointsUserSummary { get; set; }
+        public DbSet<PointsClinicSummary> PointsClinicSummary { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

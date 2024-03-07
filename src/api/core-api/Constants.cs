@@ -860,6 +860,11 @@ namespace EcdLink.Api.CoreApi
             public const int monthly_points_max_principal_or_admin = 150;
         }
 
+        public static class PointsCategoryConstants
+        {
+            public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
+        }
+
         public static class CoachingCircleSettings
         {
             public const string no_circle_meetings_held = "No coaching circles held yet ";

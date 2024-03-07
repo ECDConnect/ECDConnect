@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using EcdLink.Api.CoreApi.GraphApi.Models;
+using System.Collections.Generic;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -54,6 +58,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var clinicPoints = pointsEngineService.GetPointsDetailsForClinic(clinicId);
 
             return new ClinicModel(clinic, clinicPoints);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<CaregiverBaseModel> GetAvailableCaregiversForBreastFeedingClub(
+            [Service] IClinicService clinicService,
+            Guid clinicId)
+        {
+            var caregivers = clinicService.GetAvailableCaregiversForBreastFeedingClub(clinicId);
+
+            return caregivers.Select(x => new CaregiverBaseModel(x)).ToList();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<BreastFeedingClubModel> GetBreastFeedingClubs(
+            [Service] IClinicService clinicService,
+            Guid clinicId)
+        {
+            var breastFeedingClubs = clinicService.GetBreastFeedingClubs(clinicId);
+
+            return breastFeedingClubs.Select(x => new BreastFeedingClubModel(x)).ToList();
         }
     }
 }

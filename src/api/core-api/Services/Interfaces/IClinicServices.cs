@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
 
@@ -7,19 +8,21 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
 {
     public interface IClinicService
     {
-        public List<DistrictStatsModel> GetDistrictsAndStats();
-        public District AddDistrict(DistrictInputModel input);
-        public District EditDistrict(DistrictInputModel input);
-        public District DeleteDistrict(Guid districtId);
-        public List<SubDistrictStatsModel> GetSubDistrictsAndStats();
-        public SubDistrict AddSubDistrict(SubDistrictInputModel input);
-        public SubDistrict EditSubDistrict(SubDistrictInputModel input);
-        public SubDistrict DeleteSubDistrict(Guid subDistrictId);
-        public ClinicReportModel GetClinicPointsData(Guid clinicId);
-        public ClinicVisitReportModel GetClinicVisitReportData(Guid clinicId, DateTime startDate, DateTime endDate);
-        public Clinic AddClinic(PortalClinicInputModel input);
-        public Clinic EditClinic(PortalClinicInputModel input);
-        public Clinic DeleteClinicById(Guid clinicId);
-
+        List<DistrictStatsModel> GetDistrictsAndStats();
+        District AddDistrict(DistrictInputModel input);
+        District EditDistrict(DistrictInputModel input);
+        District DeleteDistrict(Guid districtId);
+        List<SubDistrictStatsModel> GetSubDistrictsAndStats();
+        SubDistrict AddSubDistrict(SubDistrictInputModel input);
+        SubDistrict EditSubDistrict(SubDistrictInputModel input);
+        SubDistrict DeleteSubDistrict(Guid subDistrictId);
+        ClinicReportModel GetClinicPointsData(Guid clinicId);
+        ClinicVisitReportModel GetClinicVisitReportData(Guid clinicId, DateTime startDate, DateTime endDate);
+        Clinic AddClinic(PortalClinicInputModel input);
+        Clinic EditClinic(PortalClinicInputModel input);
+        Clinic DeleteClinicById(Guid clinicId);
+        BreastFeedingClub AddBreastFeedingClub(Guid clinicId, Guid healthCareWorkId, DateTime meetingDate, bool clientsAttendedConfirmed, List<Guid> caregiversAttended);
+        List<BreastFeedingClub> GetBreastFeedingClubs(Guid clinicId);
+        List<Caregiver> GetAvailableCaregiversForBreastFeedingClub(Guid clinicId);
     }
 }
