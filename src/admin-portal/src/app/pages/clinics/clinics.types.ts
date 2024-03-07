@@ -1,5 +1,5 @@
 import { ClinicDto } from '@ecdlink/core';
-import { SA_CELL_REGEX } from '@ecdlink/ui';
+import { ZA_PHONE_NUMBER_REGEX } from '@ecdlink/ui';
 import * as Yup from 'yup';
 
 export interface ClinicsRouteState {
@@ -44,7 +44,7 @@ export const clinicSchema = Yup.object().shape({
     .max(160, 'Distric name too long'),
   phoneNumber: Yup.string()
     .required('Phone number is required')
-    .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
+    .matches(ZA_PHONE_NUMBER_REGEX, 'Please enter a valid phone number'),
   address: Yup.string().required('Address is required'),
   siteAddressId: Yup.string(),
   teamLeadOne: Yup.string().required('Team lead is required'),
