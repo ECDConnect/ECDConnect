@@ -39,8 +39,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [UseSorting]
         public List<PortalUsersTLModel> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
                                                       IGenericRepositoryFactory repoFactory,
-                                                      [Service] IJWTService jWTService,
-                                                      [Service] VisitManager visitManager,
                                                       CancellationToken cancellationToken,
                                                       PagedQueryInput pagingInput = null,
                                                       string search = null,
