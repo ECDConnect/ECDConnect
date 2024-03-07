@@ -5,19 +5,22 @@ export const GetAllTeamLead = gql`
     $search: String
     $clinicSearch: String
     $provinceSearch: String
+    $visitSearch: String
     $pagingInput: PagedQueryInput
-    $order: [TeamLeadSortInput!]
+    $order: [PortalUsersTLModelSortInput!]
   ) {
     allTeamLeads(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
+      visitSearch: $visitSearch
       pagingInput: $pagingInput
       order: $order
     ) {
       id
       insertedDate
       user {
+        connectUsage
         isActive
         userName
         email
@@ -32,10 +35,6 @@ export const GetAllTeamLead = gql`
         genderId
         phoneNumber
         lockoutEnd
-        roles {
-          id
-          name
-        }
       }
     }
   }
@@ -64,15 +63,6 @@ export const GetAllTeamLeadAdminList = gql`
         email
         idNumber
         fullName
-      }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
       }
     }
   }
@@ -145,15 +135,6 @@ export const GetTeamLead = gql`
         roles @include(if: $fetchRoles) {
           id
           name
-        }
-      }
-
-      clinic @include(if: $fetchClinic) {
-        name
-        siteAddress {
-          province {
-            description
-          }
         }
       }
     }
