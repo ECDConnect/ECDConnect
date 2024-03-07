@@ -13,6 +13,8 @@ export interface LeagueWithClinicRankingsDto {
 export interface LeagueClinicPointsDto {
   clinicId: string;
   clinicName: string;
-  leagueRanking: number;
-  pointsTotal: number;
+  leagueRankingForYear: number;
+  pointsTotalForYear: number;
+  leagueRankingForQuarter: number;
+  pointsTotalForQuarter: number;
 }

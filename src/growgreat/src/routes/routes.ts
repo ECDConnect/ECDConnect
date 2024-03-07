@@ -29,7 +29,10 @@ const ROUTES = {
       POINTS: addPrefix('/points', {
         ACTIVITY_DETAILS: '/activity-details/:activitySlug',
       }),
-      MEMBERS: addPrefix('/members', {}),
+      MEMBERS: addPrefix('/members', {
+        LEADER_PROFILE: 'leader/:leaderId',
+        MEMBER_PROFILE: 'member/:memberHealthCareWorkerId',
+      }),
     }),
   }),
   DASHBOARD: '/dashboard',

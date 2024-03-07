@@ -39,6 +39,7 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { communitySelectors } from '@/store/community';
 import {
+  calculateClinicLeaguePositionPercentiles,
   getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
@@ -65,6 +66,7 @@ export const Dashboard: React.FC = () => {
     healthCareWorkerSelectors?.getHealthCareWorker
   );
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const league = useSelector(communitySelectors.getLeagueSelector);
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -76,10 +78,12 @@ export const Dashboard: React.FC = () => {
   const { startService } = useNotificationService();
 
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
-  // TODO: get the length of the league
-  const isTop25PercentInTheLeague = false;
-  // TODO: get the length of the league
-  const isMiddle50PercentInTheLeague = false;
+
+  const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
+    calculateClinicLeaguePositionPercentiles(
+      league?.clinics ?? [],
+      clinicDetails?.points?.leagueRanking ?? 0
+    );
 
   const leaguePointsColours = getLeaguePointsColours(
     isTop25PercentInTheLeague,
@@ -203,15 +207,19 @@ export const Dashboard: React.FC = () => {
       current: false,
       showDivider: true,
     },
-    {
-      name: NavigationTypes.Community,
-      href: isFirstTimeCommunitySection
-        ? ROUTES.COMMUNITY.WELCOME
-        : ROUTES.COMMUNITY.ROOT,
-      icon: 'BookOpenIcon',
-      current: false,
-      showDivider: true,
-    },
+    ...(clinicDetails
+      ? [
+          {
+            name: NavigationTypes.Community,
+            href: isFirstTimeCommunitySection
+              ? ROUTES.COMMUNITY.WELCOME
+              : ROUTES.COMMUNITY.ROOT,
+            icon: 'UserGroupIcon',
+            current: false,
+            showDivider: true,
+          },
+        ]
+      : []),
     {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,
@@ -296,7 +304,7 @@ export const Dashboard: React.FC = () => {
             : ROUTES.COMMUNITY.ROOT
         ),
     }),
-    []
+    [clinicDetails, league]
   );
 
   useEffect(() => {

@@ -6,8 +6,8 @@ import {
   GetDistrictsAndStats,
   GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
-import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -24,7 +24,7 @@ export default function SubDistrictsSubPage() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: provincetData } = useQuery(GetAllProvince, {
+  const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -37,14 +37,41 @@ export default function SubDistrictsSubPage() {
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
+  const [provincesFiltered, setProvincesFiltered] =
+    useState<SearchDropDownOption<string>[]>();
 
-  const [district, setDistrict] = useState('');
-  const [province, setProvince] = useState('');
+  const filteredProvinces = useMemo(
+    () => provincesFiltered?.map((item) => item?.id),
+    [provincesFiltered]
+  );
+
+  const provincesFilteredArray = useMemo(
+    () =>
+      data?.subDistrictsAndStats?.filter((el) => {
+        return filteredProvinces?.some((prov) => {
+          return prov === el?.district?.province?.id;
+        });
+      }),
+    [data?.subDistrictsAndStats, filteredProvinces]
+  );
+
+  const [districtsFiltered, setdistrictsFiltered] =
+    useState<SearchDropDownOption<string>[]>();
 
   const clearFilters = () => {
-    setDistrict('');
-    setProvince('');
+    setdistrictsFiltered([]);
+    setProvincesFiltered([]);
   };
+
+  const districtsFilteredArray = useMemo(
+    () =>
+      data?.subDistrictsAndStats?.filter((el) => {
+        return districtsFiltered?.some((dis) => {
+          return dis?.id === el?.district?.id;
+        });
+      }),
+    [data?.subDistrictsAndStats, districtsFiltered]
+  );
 
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -55,6 +82,7 @@ export default function SubDistrictsSubPage() {
           return {
             value: item?.id,
             label: item?.name,
+            id: item?.id,
           };
         })
       );
@@ -62,49 +90,45 @@ export default function SubDistrictsSubPage() {
   }, [districtData?.districtsAndStats]);
 
   useEffect(() => {
-    if (provincetData?.GetAllProvince?.length > 0) {
+    if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
       setProvinces(
-        provincetData?.GetAllProvince?.map((item) => {
-          return {
-            value: item?.id,
-            label: item?.description,
-          };
-        })
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+              id: item?.id,
+            };
+          })
       );
     }
-  }, [provincetData?.GetAllProvince]);
+  }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
-    if (district && districtData?.districtsAndStats?.length > 0) {
-      setTableData(
-        data?.subDistrictsAndStats?.filter(
-          (item) => item?.district?.id === district
-        )
-      );
+    if (districtsFiltered?.length > 0) {
+      setTableData(districtsFilteredArray);
     } else {
       setTableData(data?.subDistrictsAndStats);
     }
-  }, [
-    district,
-    data?.subDistrictsAndStats,
-    districtData?.districtsAndStats?.length,
-  ]);
+  }, [data?.subDistrictsAndStats, districtsFiltered, districtsFilteredArray]);
 
   useEffect(() => {
-    if (province && provincetData?.GetAllProvince?.length > 0) {
-      setTableData(
-        data?.subDistrictsAndStats?.filter(
-          (item) => item?.district?.province?.id === province
-        )
-      );
+    if (provincesFiltered?.length > 0) {
+      setTableData(provincesFilteredArray);
     } else {
       setTableData(data?.subDistrictsAndStats);
     }
-  }, [
-    data?.subDistrictsAndStats,
-    province,
-    provincetData?.GetAllProvince?.length,
-  ]);
+  }, [data?.subDistrictsAndStats, provincesFiltered, provincesFilteredArray]);
 
   useEffect(() => {
     if (data && data.subDistrictsAndStats) {
@@ -167,6 +191,13 @@ export default function SubDistrictsSubPage() {
     setSearchValue(e.target.value || '');
   }, 150);
 
+  const filterByValue = useCallback((array, value) => {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+    );
+  }, []);
+
   if (tableData) {
     return (
       <div>
@@ -188,39 +219,43 @@ export default function SubDistrictsSubPage() {
                 </div>
                 {showFilter && (
                   <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
-                    <div className=" w-6/12">
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="District"
-                        labelColor="white"
-                        selectedValue={district}
-                        list={districts}
-                        onChange={(item) => {
-                          setDistrict(item);
-                        }}
-                        className="p-2"
-                      />
+                    <div className="flex gap-2">
+                      <div className=" w-6/12">
+                        <SearchDropDown<string>
+                          displayMenuOverlay={true}
+                          className={'overflowx-scroll mr-1 truncate'}
+                          menuItemClassName={
+                            'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                          }
+                          overlayTopOffset={'120'}
+                          options={districts}
+                          selectedOptions={districtsFiltered}
+                          onChange={setdistrictsFiltered}
+                          placeholder={'District'}
+                          multiple={true}
+                          color={'secondary'}
+                        />
+                      </div>
+
+                      <div className=" w-6/12">
+                        <SearchDropDown<string>
+                          displayMenuOverlay={true}
+                          className={'mr-1'}
+                          menuItemClassName={
+                            'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                          }
+                          overlayTopOffset={'120'}
+                          options={provinces}
+                          selectedOptions={provincesFiltered}
+                          onChange={setProvincesFiltered}
+                          placeholder={'Province'}
+                          multiple={true}
+                          color={'secondary'}
+                        />
+                      </div>
                     </div>
 
-                    <div className=" w-6/12">
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="Province"
-                        labelColor="white"
-                        // selectedValue={province}
-                        list={provinces}
-                        onChange={(item) => {
-                          setProvince(item);
-                        }}
-                        className="p-2"
-                      />
-                    </div>
-
-                    <div className="justify-self col-end-3 ">
+                    <div className="justify-self z-20 col-end-3">
                       <button
                         onClick={clearFilters}
                         type="button"
@@ -279,18 +314,20 @@ export default function SubDistrictsSubPage() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'id', use: 'Unique ID' },
                     { field: 'name', use: 'Sub-district' },
                     { field: 'district', use: 'District' },
                     { field: `district`, use: 'Province' },
-                    { field: 'insertedDate', use: 'Inserted date' },
+                    { field: 'insertedDate', use: 'Date added' },
                   ]}
-                  rows={tableData}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
                   }
-                  searchInput={searchValue}
                   noBulkSelection={true}
                 />
               </div>

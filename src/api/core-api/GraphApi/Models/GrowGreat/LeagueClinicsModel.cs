@@ -18,7 +18,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     {
         public Guid ClinicId { get; set; }
         public string ClinicName { get; set; }
-        public int LeagueRanking { get; set; }
-        public int PointsTotal { get; set; }
+        public int LeagueRankingForYear { get; set; }
+        public int PointsTotalForYear { get; set; }
+        public int LeagueRankingForQuarter { get; set; }
+        public int PointsTotalForQuarter { get; set; }
     }
 }

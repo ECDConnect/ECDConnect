@@ -16,21 +16,27 @@ import {
   subDistrictInitialValues,
   subDistrictSchema,
 } from '../../clinics.types';
-import { useForm, useWatch } from 'react-hook-form';
+import { FieldError, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
-import { SaveIcon, TrashIcon } from '@heroicons/react/solid';
+import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import {
   AddSubDistrict,
   DeleteSubDistrict,
   EditSubDistrict,
   GetDistrictsAndStats,
+  GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { findObjectWithString } from '../../../../utils/string-utils/string-utils';
 
 export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const { data: districtData } = useQuery(GetDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -49,7 +55,18 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
     mode: 'onChange',
   });
 
-  const { errors } = subDistrictFormState;
+  const { errors, isDirty } = subDistrictFormState;
+
+  const [formIsDirty, setFormIsDirty] = useState(false);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+
+  useEffect(() => {
+    if (isDirty) {
+      setFormIsDirty(true);
+    } else {
+      setFormIsDirty(false);
+    }
+  }, [isDirty]);
 
   const [districts, setDistricts] = useState<SearchDropDownOption<string>[]>(
     []
@@ -59,11 +76,22 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const watchFields = useWatch({ control });
   const disableButton = !watchFields?.subDistrictName || !watchFields?.district;
   const [handleDeleteModal, setHandleDeleteModal] = useState(false);
+  const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
-  // TO DO: Try a double distric logic
-  // const existingSubDistrict = subDistrictData?.subDistrictsAndStats?.find(
-  //   (item) => item?.name?.includes(String(watchFields?.subDistrictName))
-  // );
+  const duplicatedName =
+    findObjectWithString(
+      subDistrictData?.subDistrictsAndStats,
+      'name',
+      watchFields?.subDistrictName
+    ) && watchFields?.subDistrictName !== props?.subDistrict?.name;
+
+  useEffect(() => {
+    if (duplicatedName) {
+      setDuplicatedNameMessage(
+        `There is a different sub-district within this district with the same name. Please choose a different sub-district name.`
+      );
+    }
+  }, [duplicatedName]);
 
   const addDistrict = useCallback(async () => {
     const districtInputModel = {
@@ -82,10 +110,13 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     watchFields?.subDistrictName,
     watchFields?.district,
     addSubDistrictMutation,
+    props,
     setNotification,
   ]);
 
@@ -107,9 +138,11 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     editSubDistrictMutation,
-    props?.subDistrict?.id,
+    props,
     setNotification,
     watchFields?.district,
     watchFields?.subDistrictName,
@@ -167,6 +200,17 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   return (
     <div className="h-screen">
+      {formIsDirty && (
+        <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+          <button
+            className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+            onClick={() => setDisplayFormIsDirty(true)}
+          >
+            <span className="sr-only">Close panel</span>
+            <XIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+      )}
       {props?.isEdit && (
         <div className="flex">
           <StatusChip
@@ -215,27 +259,34 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
         </>
       )}
       <div className="flex flex-col gap-4">
-        <FormInput<subDistrictModel>
-          register={subDistrictRegister}
-          error={errors?.subDistrictName}
-          nameProp={'subDistrictName'}
-          placeholder="Sub-district name"
-          label="Sub-district name *"
-          type={'text'}
-          maxCharacters={50}
-          maxLength={50}
-          isAdminPortalField={true}
-          // disabled={isView}
-          // value={messageTitle}
-          onChange={(event) => {
-            subDistrictSetValue('subDistrictName', event.target.value);
-          }}
-        />
+        <div>
+          <FormInput<subDistrictModel>
+            register={subDistrictRegister}
+            error={errors?.subDistrictName || (duplicatedName as any)}
+            nameProp={'subDistrictName'}
+            placeholder="Sub-district name"
+            label="Sub-district name *"
+            type={'text'}
+            maxCharacters={50}
+            maxLength={50}
+            isAdminPortalField={true}
+            value={watchFields?.subDistrictName}
+            onChange={(event) => {
+              subDistrictSetValue('subDistrictName', event.target.value);
+            }}
+          />
+          {duplicatedName && (
+            <Typography
+              text={duplicateNameMessage}
+              type={'help'}
+              color="errorMain"
+            />
+          )}
+        </div>
         <Dropdown
           placeholder={'Click to select district'}
           className={'justify-between'}
           label={'District *'}
-          // disabled={loading}
           selectedValue={watchFields?.district}
           list={districts}
           onChange={(item) => subDistrictSetValue('district', item)}
@@ -250,15 +301,15 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
           type="submit"
           onClick={handleSaveData}
           className={`bg-secondary ${
-            disableButton ? 'opacity-25' : ''
+            disableButton || duplicatedName ? 'opacity-25' : ''
           } focus:outline-none mt-3 flex inline-flex w-full items-center justify-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-          disabled={disableButton}
+          disabled={disableButton || duplicatedName}
         >
           <SaveIcon width="22px" className="mr-2" />
           Save
         </button>
       </div>
-      {props?.isEdit && (
+      {props?.isEdit && props?.subDistrict?.totalClinics === 0 && (
         <div className="mt-2 flex flex-row">
           <button
             type="submit"
@@ -292,7 +343,6 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
               colour: 'secondary',
               type: 'outlined',
               onClick: () => {
-                // submit();
                 deleteSubDistrict();
               },
               leadingIcon: 'PencilIcon',
@@ -303,6 +353,41 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
               colour: 'secondary',
               type: 'filled',
               onClick: () => setHandleDeleteModal(false),
+              leadingIcon: 'TrashIcon',
+            },
+          ]}
+        />
+      </Dialog>
+      <Dialog
+        className="right-50 absolute w-6/12"
+        stretch
+        visible={displayFormIsDirty}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Discard unsaved changes?`}
+          detailText={'If you leave now, you will lose all of your changes.'}
+          buttonClass="rounded-2xl"
+          actionButtons={[
+            {
+              text: 'Keep editing',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => setDisplayFormIsDirty(false),
+              leadingIcon: 'XIcon',
+            },
+            {
+              text: 'Discard changes',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => {
+                props.closeDialog(true);
+              },
               leadingIcon: 'TrashIcon',
             },
           ]}

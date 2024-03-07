@@ -124,12 +124,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Child>();
 
             List<Child> children = new List<Child>();
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners.Where(x => x.CoachHierarchy == Guid.Parse(userId)).ToList();
+            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue && x.CoachHierarchy == Guid.Parse(userId)).ToList();
             foreach (var practioner in practitioners)
             {
                 List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();

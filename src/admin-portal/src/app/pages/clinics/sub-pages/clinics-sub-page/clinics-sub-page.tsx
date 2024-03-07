@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client';
 import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
 import { GetAllClinic, GetSubDistrictsAndStats } from '@ecdlink/graphql';
-import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
+import { SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -29,12 +29,29 @@ export default function ClinicsSubPage() {
     SearchDropDownOption<string>[]
   >([]);
 
+  const [tableData, setTableData] = useState<any[]>([]);
+
+  const [subDistrictsFiltered, setSubDistrictsFiltered] =
+    useState<SearchDropDownOption<string>[]>();
+
   const clearFilters = () => {
-    setSubDistrict('');
+    setSubDistrictsFiltered([]);
   };
 
-  const [tableData, setTableData] = useState<any[]>([]);
-  const [subDistrict, setSubDistrict] = useState('');
+  const filteredSubDistricts = useMemo(
+    () => subDistrictsFiltered?.map((item) => item?.id),
+    [subDistrictsFiltered]
+  );
+
+  const subDistrictsFilteredArray = useMemo(
+    () =>
+      data?.GetAllClinic?.filter((el) => {
+        return filteredSubDistricts?.some((f) => {
+          return f === el?.subDistrict?.id;
+        });
+      }),
+    [data?.GetAllClinic, filteredSubDistricts]
+  );
 
   useEffect(() => {
     if (data && data.GetAllClinic) {
@@ -60,6 +77,7 @@ export default function ClinicsSubPage() {
           return {
             value: item?.id,
             label: item?.name,
+            id: item?.id,
           };
         })
       );
@@ -67,16 +85,12 @@ export default function ClinicsSubPage() {
   }, [subDistrictsData?.subDistrictsAndStats]);
 
   useEffect(() => {
-    if (subDistrict && subDistrictsData?.subDistrictsAndStats?.length > 0) {
-      setTableData(
-        data?.GetAllClinic?.filter(
-          (item) => item?.subDistrict?.id === subDistrict
-        )
-      );
+    if (subDistrictsFiltered?.length > 0) {
+      setTableData(subDistrictsFilteredArray);
     } else {
       setTableData(data?.GetAllClinic);
     }
-  }, [data, subDistrict, subDistrictsData?.subDistrictsAndStats?.length]);
+  }, [data, subDistrictsFiltered, subDistrictsFilteredArray]);
 
   const panel = usePanel();
   const displayPanel = () => {
@@ -97,6 +111,13 @@ export default function ClinicsSubPage() {
       ),
     });
   };
+
+  const filterByValue = useCallback((array, value) => {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+    );
+  }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -137,22 +158,23 @@ export default function ClinicsSubPage() {
                 {showFilter && (
                   <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
                     <div className=" w-6/12">
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="Sub-district"
-                        labelColor="white"
-                        selectedValue={subDistrict}
-                        list={subDistricts}
-                        onChange={(item) => {
-                          setSubDistrict(item);
-                        }}
-                        className="p-2"
+                      <SearchDropDown<string>
+                        displayMenuOverlay={true}
+                        className={'mr-1'}
+                        menuItemClassName={
+                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                        }
+                        overlayTopOffset={'120'}
+                        options={subDistricts}
+                        selectedOptions={subDistrictsFiltered}
+                        onChange={setSubDistrictsFiltered}
+                        placeholder={'Sub-district'}
+                        multiple={true}
+                        color={'secondary'}
                       />
                     </div>
 
-                    <div className="justify-self col-end-3 ">
+                    <div className="justify-self z-20 col-end-3">
                       <button
                         onClick={clearFilters}
                         type="button"
@@ -217,12 +239,15 @@ export default function ClinicsSubPage() {
                     { field: 'subDistrict', use: 'Sub-district' },
                     { field: 'insertedDate', use: 'Date added' },
                   ]}
-                  rows={tableData}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   viewRow={
                     hasPermission(PermissionEnum.update_user) &&
                     handleViewClinic
                   }
-                  searchInput={searchValue}
                   noBulkSelection={true}
                 />
               </div>

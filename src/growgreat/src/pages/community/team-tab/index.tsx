@@ -12,7 +12,7 @@ import {
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useEffect, useMemo } from 'react';
 
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { CommunityRouteState } from '../community.types';
 import { useWindowSize } from '@reach/window-size';
@@ -24,15 +24,21 @@ import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
+  calculateClinicLeaguePositionPercentiles,
   calculateTierPercentages,
   getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
 
+import { NoCommunityFound } from '../components/no-community-found';
+import { useSnackbar } from '@ecdlink/core';
+import { TeamTabState } from './types';
+
 export const TeamTab: React.FC = () => {
   const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const league = useSelector(communitySelectors.getLeagueSelector);
 
   const history = useHistory();
 
@@ -40,17 +46,44 @@ export const TeamTab: React.FC = () => {
 
   const appDispatch = useAppDispatch();
 
-  const { isLoading } = useThunkFetchCall(
-    'community',
-    CommunityActions.GET_CLINIC_BY_ID
-  );
+  const { showMessage } = useSnackbar();
+
+  const { state } = useLocation<TeamTabState>();
+
+  const {
+    isLoading: isLoadingClinic,
+    wasLoading: wasLoadingClinic,
+    isRejected: isRejectedClinic,
+    error: errorClinic,
+  } = useThunkFetchCall('community', CommunityActions.GET_CLINIC_BY_ID);
+  const {
+    isLoading: isLoadingLeague,
+    wasLoading: wasLoadingLeague,
+    isRejected: isRejectedLeague,
+    error: errorLeague,
+  } = useThunkFetchCall('community', CommunityActions.GET_LEAGUE_BY_ID);
+
+  const isLoading = isLoadingClinic || (!league && isLoadingLeague);
+  const wasLoading = wasLoadingLeague || wasLoadingClinic;
+  const isRejected = isRejectedLeague || isRejectedClinic;
+  const error = errorLeague || errorClinic;
+
+  useEffect(() => {
+    if (wasLoading && !isLoading && isRejected) {
+      showMessage({
+        message: error,
+        type: 'error',
+      });
+    }
+  }, [error, isLoading, isRejected, showMessage, wasLoading]);
 
   const memberCount = clinicDetails?.clinicMembers?.length ?? 0;
 
-  // TODO: get the length of the league
-  const isTop25PercentInTheLeague = false;
-  // TODO: get the length of the league
-  const isMiddle50PercentInTheLeague = false;
+  const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
+    calculateClinicLeaguePositionPercentiles(
+      league?.clinics ?? [],
+      clinicDetails?.points?.leagueRanking ?? 0
+    );
 
   const headerHeight = 122;
 
@@ -74,7 +107,7 @@ export const TeamTab: React.FC = () => {
     appDispatch(
       communityThunkActions.getClinicById({
         clinicId: hcw?.clinicId ?? '',
-        forceReload: true,
+        forceReload: state?.forceReload ?? true,
       })
     );
 
@@ -91,7 +124,14 @@ export const TeamTab: React.FC = () => {
       avatarColor: 'var(--primaryAccent2)',
       alertSeverity: 'none',
       hideAlertSeverity: true,
-      onActionClick: () => {},
+      onActionClick: () =>
+        history.push(
+          ROUTES.COMMUNITY.TEAM.MEMBERS.LEADER_PROFILE.replace(
+            ':leaderId',
+            leader.id
+          ),
+          { isFromTeamTab: true } as TeamTabState
+        ),
     })) ?? [];
 
   const leagueCard: MenuListDataItem = useMemo(
@@ -138,6 +178,10 @@ export const TeamTab: React.FC = () => {
     );
   }
 
+  if (!clinicDetails) {
+    return <NoCommunityFound />;
+  }
+
   return (
     <div
       className="overflow-auto p-4 pt-6"
@@ -170,9 +214,9 @@ export const TeamTab: React.FC = () => {
           />
         </div>
         {!!clinicDetails?.league && (
-          <div className="mt-7 mb-5">
+          <div className="my-7">
             <Typography
-              className="mb-2"
+              className="mb-5"
               type="h3"
               text="League position & points"
             />
@@ -207,25 +251,30 @@ export const TeamTab: React.FC = () => {
             />
           </div>
         )}
-        <Typography
-          className="mb-2 mt-6"
-          type="h3"
-          text={`Team leader${leaders.length > 1 ? 's' : ''}`}
-        />
-        <div className="mb-4">
-          <StackedList
-            isFullHeight={false}
-            type={'UserAlertList' as StackedListType}
-            listItems={leaders}
-          />
-        </div>
+        {!!leaders.length && (
+          <>
+            <Typography
+              className="mb-5"
+              type="h3"
+              text={`Team leader${leaders.length > 1 ? 's' : ''}`}
+            />
+            <div className="mb-4">
+              <StackedList
+                className="flex flex-col gap-2"
+                isFullHeight={false}
+                type={'UserAlertList' as StackedListType}
+                listItems={leaders}
+              />
+            </div>
+          </>
+        )}
         <div className={`mt-auto flex flex-col gap-4`}>
           <Button
             icon="UserGroupIcon"
             type="filled"
             textColor="white"
             color="primary"
-            text="See club members"
+            text="See team members"
             onClick={() => history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT)}
           />
           <Button
@@ -235,7 +284,11 @@ export const TeamTab: React.FC = () => {
             textColor="primary"
             color="primary"
             text="How to earn points"
-            onClick={() => history.push(ROUTES.COMMUNITY.TEAM.INFO_PAGE)}
+            onClick={() =>
+              history.push(ROUTES.COMMUNITY.TEAM.INFO_PAGE, {
+                isFromTeamTab: true,
+              } as TeamTabState)
+            }
           />
         </div>
       </div>

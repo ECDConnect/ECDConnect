@@ -233,7 +233,7 @@ export const MoreInformationPage = ({
       >
         {childrenPosition === 'top' && children}
         {languageSelectorPosition === 'bottom' && (
-          <div className="border-primary border border-l-0 border-r-0 border-dashed pb-1">
+          <div className="border-primary mb-4 border border-l-0 border-r-0 border-dashed pb-1">
             {renderLanguageSelector}
           </div>
         )}

@@ -39,6 +39,17 @@ export const GetAllClinic = gql`
           }
         }
       }
+      leagues {
+        league {
+          id
+          startDate
+          endDate
+          leagueType {
+            id
+            name
+          }
+        }
+      }
       isActive
     }
   }
@@ -140,6 +151,16 @@ export const EditClinic = gql`
 export const DeleteClinic = gql`
   mutation DeleteClinic($clinicId: UUID!) {
     deleteClinic(clinicId: $clinicId) {
+      id
+      name
+      isActive
+    }
+  }
+`;
+
+export const DeleteClinicById = gql`
+  mutation DeleteClinicById($clinicId: UUID!) {
+    deleteClinicById(clinicId: $clinicId) {
       id
       name
       isActive

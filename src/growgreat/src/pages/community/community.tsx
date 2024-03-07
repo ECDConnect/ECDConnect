@@ -7,6 +7,7 @@ import { CommunityRouteState } from './community.types';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { TeamTab } from './team-tab';
+import { LeagueTab } from './league-tab';
 
 export const COMMUNITY_TABS = {
   TEAM: 0,
@@ -36,7 +37,7 @@ export const Community: React.FC = () => {
     {
       title: 'League',
       initActive: false,
-      child: 'Coming Soon!',
+      child: <LeagueTab />,
     },
     {
       title: 'Breastfeeding clubs',
@@ -73,12 +74,13 @@ export const Community: React.FC = () => {
       subTitle={date}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
-      displayHelp
+      displayHelp={selectedTabIndex === COMMUNITY_TABS.TEAM}
       onHelp={() => {}}
       displayOffline={!isOnline}
     >
       <TabList
         className="bg-uiBg"
+        tabClassName="min-w-0 mr-8"
         tabItems={tabItems}
         setSelectedIndex={selectedTabIndex}
         tabSelected={(tab: TabItem, tabIndex: number) =>

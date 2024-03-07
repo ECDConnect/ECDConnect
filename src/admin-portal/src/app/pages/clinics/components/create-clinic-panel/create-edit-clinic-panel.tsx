@@ -7,6 +7,7 @@ import {
   Dropdown,
   FormInput,
   SearchDropDownOption,
+  StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import {
@@ -21,14 +22,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import {
   CreateClinic,
-  DeleteClinic,
+  CreateSiteAddress,
+  DeleteClinicById,
   EditClinic,
+  GetAllClinic,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
+  SiteAddressInput,
+  UpdateSiteAddress,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { useHistory } from 'react-router';
+import { findObjectWithString } from '../../../../utils/string-utils/string-utils';
 
 export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
@@ -39,9 +45,15 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: clinicsData, refetch } = useQuery(GetAllClinic, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const [addClinictMutation] = useMutation(CreateClinic);
   const [editClinictMutation] = useMutation(EditClinic);
-  const [deleteClinicMutation] = useMutation(DeleteClinic);
+  const [deleteClinicMutation] = useMutation(DeleteClinicById);
+  const [createSiteAddress] = useMutation(CreateSiteAddress);
+  const [updateSiteAddress] = useMutation(UpdateSiteAddress);
 
   const {
     register: clinicRegister,
@@ -59,6 +71,23 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const history = useHistory();
 
   const watchFields = useWatch({ control });
+  const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
+
+  const duplicatedName =
+    findObjectWithString(
+      clinicsData?.GetAllClinic,
+      'name',
+      watchFields?.name
+    ) && watchFields?.name !== props?.clinic?.name;
+
+  useEffect(() => {
+    if (duplicatedName) {
+      setDuplicatedNameMessage(
+        `There is a different clinic with the same name. Please choose a different clinic name.`
+      );
+    }
+  }, [duplicatedName]);
+
   const disableButton =
     !watchFields?.name ||
     !watchFields?.address ||
@@ -93,22 +122,28 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     if (props?.isEdit) {
       clinicSetValue('name', props?.clinic?.name);
       clinicSetValue('phoneNumber', props?.clinic?.phoneNumber);
+      clinicSetValue('siteAddressId', props?.clinic?.siteAddressId);
       clinicSetValue('address', props?.clinic?.siteAddress?.addressLine1);
       clinicSetValue('subDistrict', props?.clinic?.subDistrict?.id);
-      clinicSetValue(
-        'teamLeadOne',
-        String(props?.clinic?.teamLeads?.[0]?.teamLead?.id)
-      );
-      clinicSetValue(
-        'teamLeadTwo',
-        String(props?.clinic?.teamLeads?.[1]?.teamLead?.id)
-      );
+      if (props?.clinic?.teamLeads?.[0]?.teamLead?.id) {
+        clinicSetValue(
+          'teamLeadOne',
+          String(props?.clinic?.teamLeads?.[0]?.teamLead?.id)
+        );
+      }
+      if (props?.clinic?.teamLeads?.[1]?.teamLead?.id) {
+        clinicSetValue(
+          'teamLeadTwo',
+          String(props?.clinic?.teamLeads?.[1]?.teamLead?.id)
+        );
+      }
     }
   }, [
     clinicSetValue,
     props?.clinic?.name,
     props?.clinic?.phoneNumber,
-    props?.clinic?.siteAddress,
+    props?.clinic?.siteAddress?.addressLine1,
+    props?.clinic?.siteAddressId,
     props?.clinic?.subDistrict?.id,
     props?.clinic?.teamLeads,
     props?.isEdit,
@@ -165,17 +200,58 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   }, [teamLeadtData, watchFields?.teamLeadOne]);
 
   const addClinic = useCallback(async () => {
+    const newSiteAddressInputModel: SiteAddressInput = {
+      AddressLine1: watchFields.address,
+      IsActive: true,
+    };
+
+    const siteAddressInputModel: SiteAddressInput = {
+      Id: watchFields.siteAddressId,
+      AddressLine1: watchFields.address,
+      IsActive: true,
+    };
+
+    let siteAddressId = '';
+    if (props?.clinic?.siteAddressId) {
+      await updateSiteAddress({
+        variables: {
+          id: watchFields.siteAddressId,
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = watchFields?.siteAddressId;
+    } else {
+      const returnSiteAddress = await createSiteAddress({
+        variables: {
+          input: { ...newSiteAddressInputModel },
+        },
+      });
+      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+    }
+
+    const clinicInputModeWithTeamLead2 = {
+      name: watchFields?.name,
+      phoneNumber: watchFields?.phoneNumber,
+      subDistrictId: watchFields?.subDistrict,
+      siteAddressId: watchFields?.siteAddressId || siteAddressId,
+      teamLead1Id: watchFields?.teamLeadOne,
+      teamLead2Id:
+        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
+    };
+
     const clinicInputModel = {
       name: watchFields?.name,
       phoneNumber: watchFields?.phoneNumber,
       subDistrictId: watchFields?.subDistrict,
-      siteAddressId: watchFields?.address,
+      siteAddressId: watchFields?.siteAddressId || siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
-      teamLead2Id: watchFields?.teamLeadTwo,
     };
+
     const response = await addClinictMutation({
       variables: {
-        input: { ...clinicInputModel },
+        input: watchFields?.teamLeadTwo
+          ? { ...clinicInputModeWithTeamLead2 }
+          : { ...clinicInputModel },
       },
     });
 
@@ -185,30 +261,77 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
+
+    history.push({
+      pathname: '/clinics/clinics',
+    });
   }, [
     addClinictMutation,
+    createSiteAddress,
+    history,
+    props,
     setNotification,
-    watchFields?.address,
+    updateSiteAddress,
+    watchFields.address,
     watchFields?.name,
     watchFields?.phoneNumber,
+    watchFields.siteAddressId,
     watchFields?.subDistrict,
     watchFields?.teamLeadOne,
     watchFields?.teamLeadTwo,
   ]);
 
   const editClinic = useCallback(async () => {
+    const siteAddressInputModel: SiteAddressInput = {
+      Id: watchFields.siteAddressId,
+      AddressLine1: watchFields.address,
+      IsActive: true,
+    };
+
+    let siteAddressId = '';
+    if (props?.clinic?.siteAddressId) {
+      await updateSiteAddress({
+        variables: {
+          id: watchFields.siteAddressId,
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = watchFields?.siteAddressId;
+    } else {
+      const returnSiteAddress = await createSiteAddress({
+        variables: {
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+    }
+
     const districtInputModel = {
       id: props?.clinic?.id,
       name: watchFields?.name,
       phoneNumber: watchFields?.phoneNumber,
       subDistrictId: watchFields?.subDistrict,
-      siteAddressId: props?.clinic?.siteAddressId,
+      siteAddressId: props?.clinic?.siteAddressId || siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
-      teamLead2Id: watchFields?.teamLeadTwo,
+    };
+
+    const clinicInputModeWithTeamLead2 = {
+      id: props?.clinic?.id,
+      name: watchFields?.name,
+      phoneNumber: watchFields?.phoneNumber,
+      subDistrictId: watchFields?.subDistrict,
+      siteAddressId: props?.clinic?.siteAddressId || siteAddressId,
+      teamLead1Id: watchFields?.teamLeadOne,
+      teamLead2Id:
+        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
     };
     const response = await editClinictMutation({
       variables: {
-        input: { ...districtInputModel },
+        input: watchFields?.teamLeadTwo
+          ? { ...clinicInputModeWithTeamLead2 }
+          : { ...districtInputModel },
       },
     });
 
@@ -219,17 +342,22 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       });
     }
 
+    props.closeDialog(true);
+
     history.push({
       pathname: '/clinics/clinics',
     });
   }, [
+    createSiteAddress,
     editClinictMutation,
     history,
-    props?.clinic?.id,
-    props?.clinic?.siteAddressId,
+    props,
     setNotification,
+    updateSiteAddress,
+    watchFields.address,
     watchFields?.name,
     watchFields?.phoneNumber,
+    watchFields.siteAddressId,
     watchFields?.subDistrict,
     watchFields?.teamLeadOne,
     watchFields?.teamLeadTwo,
@@ -248,7 +376,11 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.ALERT,
       });
     }
-  }, [deleteClinicMutation, props, setNotification]);
+
+    history.push({
+      pathname: '/clinics/clinics',
+    });
+  }, [deleteClinicMutation, history, props, setNotification]);
 
   const handleSaveData = useCallback(() => {
     if (props?.isEdit) {
@@ -271,6 +403,24 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
             <span className="sr-only">Close panel</span>
             <XIcon className="h-6 w-6" aria-hidden="true" />
           </button>
+        </div>
+      )}
+      {props?.isEdit && (
+        <div className="flex">
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${props?.clinic?.teamLeads?.length} Team Leads`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={`${0} CHWs`}
+            textColour={'white'}
+            className={'mr-2 px-6 py-1.5'}
+          />
         </div>
       )}
       <Divider dividerType="dashed" className="py-8" />
@@ -296,21 +446,31 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         </>
       )}
       <div className="flex flex-col gap-4">
-        <FormInput<ClinicModel>
-          register={clinicRegister}
-          error={errors?.name}
-          nameProp={'name'}
-          placeholder="Clinic name"
-          label="Clinic name *"
-          subLabel="The combination of clinic name & sub-district must be unique."
-          type={'text'}
-          maxCharacters={50}
-          maxLength={50}
-          isAdminPortalField={true}
-          onChange={(event) => {
-            clinicSetValue('name', event.target.value);
-          }}
-        />
+        <div>
+          <FormInput<ClinicModel>
+            register={clinicRegister}
+            error={errors?.name || (duplicatedName as any)}
+            value={watchFields?.name}
+            nameProp={'name'}
+            placeholder="Clinic name"
+            label="Clinic name *"
+            subLabel="The combination of clinic name & sub-district must be unique."
+            type={'text'}
+            maxCharacters={50}
+            maxLength={50}
+            isAdminPortalField={true}
+            onChange={(event) => {
+              clinicSetValue('name', event.target.value);
+            }}
+          />
+          {duplicatedName && (
+            <Typography
+              text={duplicateNameMessage}
+              type={'help'}
+              color="errorMain"
+            />
+          )}
+        </div>
         <Dropdown
           placeholder={'Click to select sub-district'}
           className={'justify-between'}
@@ -329,7 +489,6 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           placeholder="Phone number"
           label="Phone number *"
           type={'text'}
-          maxCharacters={50}
           maxLength={50}
           isAdminPortalField={true}
           onChange={(event) => {
@@ -340,6 +499,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           register={clinicRegister}
           error={errors?.name}
           nameProp={'address'}
+          value={watchFields?.address}
           placeholder="Address"
           label="Address *"
           type={'text'}
@@ -368,7 +528,13 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           label={'Team Lead'}
           subLabel="Optional"
           selectedValue={watchFields?.teamLeadTwo}
-          list={optionalTeamLeads}
+          list={[
+            {
+              value: '1',
+              label: 'None',
+            },
+            ...optionalTeamLeads,
+          ]}
           onChange={(item) => clinicSetValue('teamLeadTwo', item)}
           fullWidth
           labelColor="textMid"
@@ -380,9 +546,9 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
         <button
           type="submit"
           className={`bg-secondary ${
-            disableButton ? 'opacity-25' : ''
+            disableButton || duplicatedName ? 'opacity-25' : ''
           } focus:outline-none mt-3 flex inline-flex w-full items-center justify-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-          disabled={disableButton}
+          disabled={disableButton || duplicatedName}
           onClick={handleSaveData}
         >
           <SaveIcon width="22px" className="mr-2" />

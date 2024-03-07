@@ -1,4 +1,4 @@
-import { Button, Typography } from '@ecdlink/ui';
+import { Button, ScoreCard, StatusChip, Typography } from '@ecdlink/ui';
 import { useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
@@ -130,7 +130,7 @@ export const ViewClinicReport = () => {
             type="h4"
             weight="bold"
             color="textMid"
-            text={`Adress:`}
+            text={`Address:`}
           />
           <Typography
             className="truncate"
@@ -145,7 +145,7 @@ export const ViewClinicReport = () => {
             type="h4"
             weight="bold"
             color="textMid"
-            text={`Subd-district:`}
+            text={`Sub-district:`}
           />
           <Typography
             className="truncate"
@@ -214,6 +214,7 @@ export const ViewClinicReport = () => {
           dataFromClinicPointsData={dataFromClinicPointsData}
         />
       </div>
+
       <div className="bg-adminPortalBg mt-8 w-full">
         <div>
           <Typography

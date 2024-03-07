@@ -7,6 +7,7 @@ import {
   FormInput,
   SearchDropDownOption,
   StatusChip,
+  Typography,
 } from '@ecdlink/ui';
 import {
   ClinicPanelCreateProps,
@@ -17,20 +18,27 @@ import {
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
-import { SaveIcon, TrashIcon } from '@heroicons/react/solid';
+import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import {
   AddDistrict,
   DeleteDistrict,
   EditDistrict,
   GetAllProvince,
+  GetDistrictsAndStats,
 } from '@ecdlink/graphql';
 import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { findObjectWithString } from '../../../../utils/string-utils/string-utils';
 
 export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
-  const { data: provinceData, refetch } = useQuery(GetAllProvince, {
+  const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: districtData } = useQuery(GetDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const [addDistrictMutation] = useMutation(AddDistrict);
   const [editDistrictMutation] = useMutation(EditDistrict);
   const [deleteDistrictMutation] = useMutation(DeleteDistrict);
@@ -46,13 +54,40 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
     mode: 'onBlur',
   });
 
-  const { errors, isValid: isDistrictValid, isDirty } = districtFormState;
+  const { errors, isDirty } = districtFormState;
+  const watchFields = useWatch({ control });
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
 
+  const [formIsDirty, setFormIsDirty] = useState(false);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+  const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
+
+  const duplicatedName =
+    findObjectWithString(
+      districtData?.districtsAndStats,
+      'name',
+      watchFields?.districtName
+    ) && watchFields?.districtName !== props?.district?.name;
+
+  useEffect(() => {
+    if (duplicatedName) {
+      setDuplicatedNameMessage(
+        `There is a different district the same name. Please choose a different district name.`
+      );
+    }
+  }, [duplicatedName]);
+
+  useEffect(() => {
+    if (isDirty) {
+      setFormIsDirty(true);
+    } else {
+      setFormIsDirty(false);
+    }
+  }, [isDirty]);
+
   const { setNotification } = useNotifications();
-  const watchFields = useWatch({ control });
   const disableButton = !watchFields?.districtName || !watchFields?.province;
   const [handleDeleteModal, setHandleDeleteModal] = useState(false);
 
@@ -73,8 +108,11 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     addDistrictMutation,
+    props,
     setNotification,
     watchFields?.districtName,
     watchFields?.province,
@@ -98,9 +136,11 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
         variant: NOTIFICATION.SUCCESS,
       });
     }
+
+    props.closeDialog(true);
   }, [
     editDistrictMutation,
-    props?.district?.id,
+    props,
     setNotification,
     watchFields?.districtName,
     watchFields?.province,
@@ -133,13 +173,24 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   useEffect(() => {
     if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
       setProvinces(
-        provinceData?.GetAllProvince?.map((item) => {
-          return {
-            value: item?.id,
-            label: item?.description,
-          };
-        })
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+            };
+          })
       );
     }
   }, [provinceData]);
@@ -158,6 +209,17 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   return (
     <div className="h-screen">
+      {formIsDirty && (
+        <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+          <button
+            className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+            onClick={() => setDisplayFormIsDirty(true)}
+          >
+            <span className="sr-only">Close panel</span>
+            <XIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+      )}
       {props?.isEdit && (
         <div className="flex">
           <StatusChip
@@ -192,21 +254,31 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
       )}
       <Divider dividerType="dashed" className="py-8" />
       <div className="flex flex-col gap-4">
-        <FormInput<DistrictModel>
-          register={districtRegister}
-          error={errors?.districtName}
-          nameProp={'districtName'}
-          placeholder="District name"
-          label="District name *"
-          subLabel="The combination of clinic name & sub-district must be unique."
-          type={'text'}
-          maxCharacters={50}
-          maxLength={50}
-          isAdminPortalField={true}
-          onChange={(event) => {
-            districtSetValue('districtName', event.target.value);
-          }}
-        />
+        <div>
+          <FormInput<DistrictModel>
+            register={districtRegister}
+            error={errors?.districtName || (duplicatedName as any)}
+            nameProp={'districtName'}
+            placeholder="District name"
+            label="District name *"
+            subLabel="The combination of clinic name & sub-district must be unique."
+            type={'text'}
+            maxCharacters={50}
+            value={watchFields?.districtName}
+            maxLength={50}
+            isAdminPortalField={true}
+            onChange={(event) => {
+              districtSetValue('districtName', event.target.value);
+            }}
+          />
+          {duplicatedName && (
+            <Typography
+              text={duplicateNameMessage}
+              type={'help'}
+              color="errorMain"
+            />
+          )}
+        </div>
         <Dropdown
           placeholder={'Click to select Province'}
           className={'justify-between'}
@@ -225,15 +297,15 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
           type="submit"
           onClick={handleSaveData}
           className={`bg-secondary ${
-            disableButton ? 'opacity-25' : ''
+            disableButton || duplicatedName ? 'opacity-25' : ''
           } focus:outline-none mt-3 flex inline-flex w-full items-center justify-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
-          disabled={disableButton}
+          disabled={disableButton || duplicatedName}
         >
           <SaveIcon width="22px" className="mr-2" />
           Save & publish
         </button>
       </div>
-      {props?.isEdit && (
+      {props?.isEdit && props?.district?.subDistricts?.length === 0 && (
         <div className="mt-2 flex flex-row">
           <button
             type="submit"
@@ -267,7 +339,6 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
               colour: 'secondary',
               type: 'outlined',
               onClick: () => {
-                // submit();
                 deleteDistrict();
               },
               leadingIcon: 'PencilIcon',
@@ -278,6 +349,41 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
               colour: 'secondary',
               type: 'filled',
               onClick: () => setHandleDeleteModal(false),
+              leadingIcon: 'TrashIcon',
+            },
+          ]}
+        />
+      </Dialog>
+      <Dialog
+        className="right-50 absolute w-6/12"
+        stretch
+        visible={displayFormIsDirty}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Discard unsaved changes?`}
+          detailText={'If you leave now, you will lose all of your changes.'}
+          buttonClass="rounded-2xl"
+          actionButtons={[
+            {
+              text: 'Keep editing',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => setDisplayFormIsDirty(false),
+              leadingIcon: 'XIcon',
+            },
+            {
+              text: 'Discard changes',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => {
+                props.closeDialog(true);
+              },
               leadingIcon: 'TrashIcon',
             },
           ]}
