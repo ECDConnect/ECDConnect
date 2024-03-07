@@ -1,11 +1,20 @@
-import { Connect, ConnectItem, MoreInformation } from '@ecdlink/graphql';
+import {
+  AddBreastFeedingClubInputModelInput,
+  Connect,
+  ConnectItem,
+  MoreInformation,
+} from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
 import InfoService from '@/services/InfoService/InfoService';
 import { differenceInDays } from 'date-fns';
-import { ClinicDto, LeagueWithClinicRankingsDto } from '@ecdlink/core';
-import { ClinicService } from '@/services/Clinic';
+import {
+  BreastFeedingClubDto,
+  CaregiverBaseDto,
+  ClinicDto,
+  LeagueWithClinicRankingsDto,
+} from '@ecdlink/core';
 
 export const CommunityActions = {
   GET_ALL_CONNECT: 'getAllConnect',
@@ -14,6 +23,10 @@ export const CommunityActions = {
   GET_LEAGUE_BY_ID: 'getLeagueById',
   GET_POINTS_ACTIVITY_INFO: 'getPointsActivityInfo',
   GET_CLINIC_BY_ID: 'getClinicById',
+  GET_AVAILABLE_CAREGIVERS_FOR_BREAST_FEEDING_CLUB:
+    'getAvailableCaregiversForBreastFeedingClub',
+  GET_BREAST_FEEDING_CLUBS: 'getBreastFeedingClubs',
+  ADD_BREAST_FEEDING_CLUB: 'addBreastFeedingClub',
 };
 
 export const getAllConnect = createAsyncThunk<
@@ -175,7 +188,7 @@ export const getClinicById = createAsyncThunk<
           }
         }
 
-        return await new ClinicService(
+        return await new CommunityService(
           userAuth?.auth_token ?? ''
         ).getClinicById(clinicId);
       } else {
@@ -215,6 +228,88 @@ export const getLeagueById = createAsyncThunk<
         return await new CommunityService(
           userAuth?.auth_token ?? ''
         ).getLeagueById(leagueId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAvailableCaregiversForBreastFeedingClub = createAsyncThunk<
+  CaregiverBaseDto[],
+  { clinicId: string },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.GET_AVAILABLE_CAREGIVERS_FOR_BREAST_FEEDING_CLUB,
+  async ({ clinicId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let caregivers: CaregiverBaseDto[] | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        caregivers = await new CommunityService(
+          userAuth?.auth_token ?? ''
+        ).getAvailableCaregiversForBreastFeedingClub(clinicId);
+
+        return caregivers;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getBreastFeedingClubs = createAsyncThunk<
+  BreastFeedingClubDto[],
+  { clinicId: string },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.GET_BREAST_FEEDING_CLUBS,
+  async ({ clinicId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let clubs: BreastFeedingClubDto[] | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        clubs = await new CommunityService(
+          userAuth?.auth_token ?? ''
+        ).getBreastFeedingClubs(clinicId);
+
+        return clubs;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addBreastFeedingClub = createAsyncThunk<
+  BreastFeedingClubDto,
+  AddBreastFeedingClubInputModelInput,
+  ThunkApiType<RootState>
+>(
+  CommunityActions.ADD_BREAST_FEEDING_CLUB,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (userAuth?.auth_token) {
+        return await new CommunityService(
+          userAuth?.auth_token
+        ).addBreastFeedingClub(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
