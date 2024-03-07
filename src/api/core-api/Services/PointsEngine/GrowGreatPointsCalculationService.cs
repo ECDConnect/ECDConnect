@@ -30,8 +30,9 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
         private readonly IGenericRepository<VisitData, Guid> _visitDataRepo;
         private readonly IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
 
-        private readonly IGenericRepository<PointsCategory, Guid> _pointsCategoryRepo;
+        private readonly IGenericRepository<PointsActivity, Guid> _pointsActivityRepo;
         private readonly IGenericRepository<PointsClinicSummary, Guid> _pointsClinicSummaryRepo;
+        private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
 
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
@@ -61,8 +62,9 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _uId);
             _visitDataStatusRepo = _repositoryFactory.CreateGenericRepository<VisitDataStatus>(userContext: _uId);
 
-            _pointsCategoryRepo = _repositoryFactory.CreateGenericRepository<PointsCategory>(userContext: _uId);
+            _pointsActivityRepo = _repositoryFactory.CreateGenericRepository<PointsActivity>(userContext: _uId);
             _pointsClinicSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsClinicSummary>(userContext: _uId);
+            _pointsUserSummaryRepo  = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _uId);
 
             _notificationService = notificationService;
             _pointsEngineService = pointsEngineService;
@@ -81,148 +83,117 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             }
         }
 
-        public bool CalculatePregnantMomClientRegistration(string userId, DateTime today)
+        private void AddOrUpdatePoints(Guid activityId, Guid userId, int timesScored, int pointsTotal)
         {
-            List<PointsLibrary> pointsLibraries = _pointsEngineService.GetPointsLibraryForActivity(Constants.PointsEngineSettings.client_registration);
-            PointsLibrary activity2 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac2).FirstOrDefault();
-            PointsLibrary activity3 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac3).FirstOrDefault();
-            PointsLibrary activity4 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac4).FirstOrDefault();
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+            var currentPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                x.UserId == userId 
+                && x.PointsActivityId == activityId 
+                && x.DateScored >= monthStart
+                && x.DateScored <= monthEnd)
+                .FirstOrDefault();
 
-            var mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == userId &&
-                                          x.IsActive == true &&
-                                          x.InsertedDate.Year == today.Year &&
-                                          x.InsertedDate.Month == today.Month &&
-                                          x.ExpectedDateOfDelivery != null).ToList();
-            if (mothers.Count > 0)
+            if (currentPoints == null)
             {
-
-                // Complete client registration flow for 2 or more pregnant women
-                if (mothers.Count >= 2)
+                _pointsUserSummaryRepo.Insert(new PointsUserSummary
                 {
-                    //int activity2_records = GetIndividualUserPoints(activity2.Id, userId, today.Month, today.Year).Count;
-
-                    //if (activity2_records == 0)
-                    //{
-                    // var result =   InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity2.Points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity2.Id,
-                    //            Comment = "Total: " + mothers.Count
-                    //        }
-                    //    );
-                    //}
-                }
-
-                // (NOTE: CHW can get either 0, 50, or 200 points should be awarded for this item)
-                var lessThan20Weeks = 0;
-                foreach (Mother item in mothers)
-                {
-                    var diff = (DateTime)item.ExpectedDateOfDelivery - item.InsertedDate;
-                    var weeks = diff.TotalDays / 7;
-
-                    if (weeks < 20)
-                    {
-                        lessThan20Weeks++;
-                    }
-
-                }
-                // Complete the client registration flow for 1 - 2 pregnant clients who are less than 20 weeks into pregnancy.
-                if (lessThan20Weeks <= 2)
-                {
-                    //int activity3_records = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).Count;
-                    //if (activity3_records == 0) {
-                    //    InsertIndividualUserPoints(
-                    //    new PointsUser
-                    //    {
-                    //        Id = Guid.NewGuid(),
-                    //        IsActive = true,
-                    //        InsertedDate = DateTime.Now,
-                    //        UpdatedBy = _uId.ToString(),
-                    //        Month = today.Month,
-                    //        Year = today.Year,
-                    //        Points = activity3.Points,
-                    //        UserId = new Guid(userId),
-                    //        PointsLibraryId = activity3.Id,
-                    //        Comment = "Total: " + lessThan20Weeks
-                    //    }
-                    //    );
-                    //}
-                }
-                // Complete the client registration flow for 3 or more pregnant clients who are less than 20 weeks into pregnancy.
-                if (lessThan20Weeks >= 3)
-                {
-                    //int activity4_records = GetIndividualUserPoints(activity4.Id, userId, today.Month, today.Year).Count;
-                    //if (activity4_records == 0)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //    new PointsUser
-                    //    {
-                    //        Id = Guid.NewGuid(),
-                    //        IsActive = true,
-                    //        InsertedDate = DateTime.Now,
-                    //        UpdatedBy = _uId.ToString(),
-                    //        Month = today.Month,
-                    //        Year = today.Year,
-                    //        Points = activity4.Points,
-                    //        UserId = new Guid(userId),
-                    //        PointsLibraryId = activity4.Id,
-                    //        Comment = "Total: " + lessThan20Weeks
-                    //    }
-                    //    );
-                    //}
-                }
-                UpdateUserSummaryPoints(userId, today);
+                    DateScored = DateTime.Now.GetStartOfMonth(),
+                    UserId = userId,
+                    PointsActivityId = activityId,
+                    TimesScored = timesScored,
+                    PointsTotal = pointsTotal,                    
+                });
             }
-            return true;
+            else
+            {
+                currentPoints.TimesScored = timesScored;
+                currentPoints.PointsTotal = pointsTotal;
+
+                _pointsUserSummaryRepo.Update(currentPoints);
+            }
         }
 
-        public bool CalculateInfantClientRegistration(string userId, DateTime today)
+        public void CalculatePregnantMomClientRegistration(Guid userId)
         {
-            List<PointsLibrary> pointsLibraries = _pointsEngineService.GetPointsLibraryForActivity(Constants.PointsEngineSettings.client_registration);
-            PointsLibrary activity1 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac1).FirstOrDefault();
+            var activities =  _pointsActivityRepo.GetAll().Where(x => 
+                x.Id == PointsActivityConstants.PregnantMomFolderOpenedActivityId
+                || x.Id == PointsActivityConstants.EarlyPregnacyIdentificationActivityId).ToList();
 
-            // Complete the client registration flow for 5 or more children under the age of 2 years old
-            var childData = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.User.Id == Guid.Parse(userId) &&
-                                               x.IsActive == true &&
-                                               x.InsertedDate.Year == today.Year &&
-                                               x.InsertedDate.Month == today.Month).ToList();
+            var newMothersActivity = activities.Single(x => x.Id == PointsActivityConstants.PregnantMomFolderOpenedActivityId);
 
-            var childrenCount = childData.Where(x => x.User.Age > 0 && x.User.Age <= 2).Select(x => x.Id).Distinct().Count();
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+            var mothers = _motherRepo.GetAll()
+                .Where(x => x.HealthCareWorker.UserId == userId 
+                    && x.IsActive == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd 
+                    && x.ExpectedDateOfDelivery != null).ToList();
 
-            if (childrenCount >= 5)
+            // Register pregnant mothers
+            AddOrUpdatePoints(
+                PointsActivityConstants.PregnantMomFolderOpenedActivityId,
+                userId,
+                mothers.Count,
+                mothers.Count >= 2 ? newMothersActivity.Points : 0);
+
+            // Early pregnancy identification
+            if (mothers.Count > 0)
             {
-                // Get user records for userId
-                //int activity1_records = GetIndividualUserPoints(activity1.Id, userId, today.Month, today.Year).Count;
-                //if (activity1_records == 0)
-                //{
-                //    InsertIndividualUserPoints(
-                //        new PointsUser
-                //        {
-                //            Id = Guid.NewGuid(),
-                //            IsActive = true,
-                //            InsertedDate = DateTime.Now,
-                //            UpdatedBy = _uId.ToString(),
-                //            Month = today.Month,
-                //            Year = today.Year,
-                //            Points = activity1.Points,
-                //            UserId = new Guid(userId),
-                //            PointsLibraryId = activity1.Id,
-                //            Comment = "Total: " + childrenCount
-                //        }
-                //    );
-                //}
-                UpdateUserSummaryPoints(userId, today);
-            }
+                var earlyIdentificationActivity = activities.Single(x => x.Id == PointsActivityConstants.EarlyPregnacyIdentificationActivityId);
 
-            return true;
+                // Mother with more than 20 of 40 weeks remaining from today to expected delivery
+                var motherssLessThat20WeeksPregnant = mothers.Where(x => (x.ExpectedDateOfDelivery - DateTime.Now).Value.TotalDays > 120).Count();
+
+                var pointsTotal = 0;
+
+                // (NOTE: CHW can get either 0, 50, or 200 points should be awarded for this item)
+
+                // Registered 1 - 2 pregnant clients who are less than 20 weeks into pregnancy (50 points)
+                // Register 3 or more pregnant clients who are less than 20 weeks into pregnancy (200 points)
+                if (motherssLessThat20WeeksPregnant <= 2)
+                {
+                    pointsTotal = 50;
+                }
+                else if (motherssLessThat20WeeksPregnant >= 3)
+                {
+                    pointsTotal = 200;
+                }
+
+                AddOrUpdatePoints(
+                   PointsActivityConstants.EarlyPregnacyIdentificationActivityId,
+                   userId,
+                   motherssLessThat20WeeksPregnant,
+                   pointsTotal);
+            }
+        }
+
+        /// <summary>
+        /// Complete the client registration flow for 5 or more children under the age of 2 years old
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public void CalculateInfantClientRegistration(Guid userId)
+        {
+            var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildFoldersOpenedActivityId);
+
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+            var twoYearsAgo = DateTime.Now.AddYears(-2);
+
+            var newInfantsCount = _infantRepo.GetAll()
+                .Where(x => x.Caregiver.HealthCareWorker.User.Id == userId 
+                    && x.IsActive == true 
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd
+                    && x.User.DateOfBirth > twoYearsAgo).Count();
+
+            AddOrUpdatePoints(
+                PointsActivityConstants.ChildFoldersOpenedActivityId,
+                userId,
+                newInfantsCount,
+                newInfantsCount >= 5 ? activity.Points : 0);
         }
 
         public bool CalculatePregnantMomVisits(string userId, DateTime today)
@@ -1124,8 +1095,9 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             var monthStart = DateTime.Now.GetStartOfMonth();
             var monthEnd = DateTime.Now.GetEndOfMonth();
             var currentPoints = _pointsClinicSummaryRepo.GetAll().Where(x => 
-                x.ClinicId == clinicId &&
-                x.DateScored >= monthStart
+                x.ClinicId == clinicId 
+                && x.PointsCategoryId == PointsCategoryConstants.BreastFeedingClubCategoryId
+                && x.DateScored >= monthStart
                 && x.DateScored <= monthEnd)
                 .FirstOrDefault();
 

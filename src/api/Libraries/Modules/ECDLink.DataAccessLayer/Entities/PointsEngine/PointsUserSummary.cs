@@ -10,7 +10,10 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
     {
     }
 
-    public class PointsUserSummary<TKey> : EntityBase<TKey>, ApplicationUserJoin, PointsLibraryJoin<TKey>
+    public class PointsUserSummary<TKey> : EntityBase<TKey>, 
+        ApplicationUserJoin, 
+        PointsLibraryJoin<Guid?>,
+        PointsActivityJoin<Guid>
          where TKey : IEquatable<TKey>
     {        
         public int TimesScored { get; set; }
@@ -27,11 +30,11 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
         public Guid? UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public TKey PointsLibraryId { get; set; }
+        public Guid? PointsLibraryId { get; set; }
 
         [ForeignKey(nameof(PointsLibraryId))]
         public virtual PointsLibrary PointsLibrary { get; set; }
-        public TKey PointsActivityId { get; set; }
+        public Guid PointsActivityId { get; set; }
 
         [ForeignKey(nameof(PointsActivityId))]
         public virtual PointsActivity PointsActivity { get; set; }

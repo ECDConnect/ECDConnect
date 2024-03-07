@@ -223,7 +223,7 @@ export const InfantRegisterForm: React.FC = () => {
           firstChild?.relationshipId ||
           details?.relationshipId ||
           '',
-        healthCareWorkerId: user?.id,
+        healthCareWorkerId: user?.id, // Pretty sure this should not be a userId, but the healthCareWorkerId
       };
 
       setRelationshipId(

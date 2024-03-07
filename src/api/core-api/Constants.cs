@@ -862,7 +862,13 @@ namespace EcdLink.Api.CoreApi
         {
             public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
         }
-
+        public static class PointsActivityConstants
+        {
+            public static readonly Guid ChildFoldersOpenedActivityId = new Guid("92c06990-7428-4a8f-8cfe-e1dfca83fb3e");
+            public static readonly Guid PregnantMomFolderOpenedActivityId = new Guid("f20f0917-b497-440c-836e-aa54cf2d10f0");
+            public static readonly Guid EarlyPregnacyIdentificationActivityId = new Guid("f5a72c31-5aa6-4852-9903-c9685420ab4b");
+        }
+        
         public static class CoachingCircleSettings
         {
             public const string no_circle_meetings_held = "No coaching circles held yet ";

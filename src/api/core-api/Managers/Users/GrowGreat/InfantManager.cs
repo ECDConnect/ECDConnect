@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -12,6 +13,7 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,7 +29,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitManager _visitManager;
         private VisitDataManager _visitDataManager;
         private VisitDataStatusManager _visitDataStatusManager;
-        private IPointsEngineService _pointsEngineService;
+        private IGrowGreatPointsCalculationsService _pointsCalculationService;
 
         private Guid? _applicationUserId;
         private IGenericRepository<Infant, Guid> _infantRepo;
@@ -44,7 +46,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
             VisitDataManager visitDataManager,
-            [Service] IPointsEngineService pointsEngineService)
+            [Service] IGrowGreatPointsCalculationsService pointsCalculationService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -52,7 +54,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataManager = visitDataManager;
-            _pointsEngineService = pointsEngineService;
+            _pointsCalculationService = pointsCalculationService;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -79,9 +81,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
                             + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
 
-            // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
-            Caregiver caregiver = input.CaregiverId.HasValue ? _caregiverRepo.GetById(input.CaregiverId.Value) : null;
-            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == input.CaregiverId).OrderBy(x => x.Id).FirstOrDefault();
+            // Either load the caregiver or map from input
+            var caregiver = input.CaregiverId.HasValue ? _caregiverRepo.GetById(input.CaregiverId.Value) : null;
+            var mother = _motherRepo.GetAll().Where(x => x.UserId == input.CaregiverId).OrderBy(x => x.Id).FirstOrDefault();
 
             // if both are null we create a new caregiver from request data
             if (caregiver == null && mother == null)
@@ -164,10 +166,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             if (createdInfant != null)
             {
                 AddVisits(infant.Id, infant.User.DateOfBirth);
+                _pointsCalculationService.CalculateInfantClientRegistration(_applicationUserId.Value);
             }
-
-            // Call points engine for hcw TODO
-            //_pointsEngineService.CalculateInfantClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
 
             return createdInfant;
         }

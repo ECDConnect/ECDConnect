@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -27,7 +28,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private InfantManager _infantManager;
         private VisitManager _visitManager;
         private VisitDataStatusManager _visitDataStatusManager;
-        private IPointsEngineService _pointsEngineService;
+        private IGrowGreatPointsCalculationsService _pointsCalculationService;
 
         private Guid? _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
@@ -41,7 +42,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             InfantManager infantManager,
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
-            [Service] IPointsEngineService pointsEngineService
+            [Service] IGrowGreatPointsCalculationsService pointsCalculationService
             )
         {
             _contextAccessor = contextAccessor;
@@ -50,7 +51,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _infantManager = infantManager;
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
-            _pointsEngineService = pointsEngineService;
+            _pointsCalculationService = pointsCalculationService;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
@@ -80,8 +81,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
             }
 
-            // Call points engine for hcw TODO
-            //_pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
+            // Call points engine for hcw
+            _pointsCalculationService.CalculatePregnantMomClientRegistration(_applicationUserId.Value);
+
             return createdMom;
         }
 
@@ -95,9 +97,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
                 AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
 
-                // Call points engine for hcw TODO
-                //_pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId.ToStringOrNull(), DateTime.UtcNow);
-                
+                // Call points engine for hcw
+                _pointsCalculationService.CalculatePregnantMomClientRegistration(_applicationUserId.Value);
+
                 return _motherRepo.Update(entityToUpdate);
             }
             return null;
