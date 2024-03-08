@@ -39,6 +39,10 @@ class InfoService {
             showDividerC
             type
             visit
+            availableLanguages {
+              id
+              description
+            }
           }
         }    
         `,
