@@ -89,7 +89,8 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       watchFields?.name
     ) &&
     watchFields?.subDistrict &&
-    hasName;
+    hasName &&
+    watchFields?.name !== props?.clinic?.name;
 
   useEffect(() => {
     if (duplicatedName) {
