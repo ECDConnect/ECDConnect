@@ -13,6 +13,7 @@ export interface AttendanceListItemProps extends ComponentBaseProps {
   item: AttendanceListDataItem;
   onBadgeClick?: (item: AttendanceListDataItem) => void;
   walkthrough?: boolean;
+  type?: 'default' | 'light';
 }
 
 export const AttendanceListItem = ({
@@ -20,6 +21,7 @@ export const AttendanceListItem = ({
   onBadgeClick,
   className,
   walkthrough,
+  type,
 }: React.PropsWithChildren<AttendanceListItemProps>) => {
   const [attendanceItem, setAttendanceItem] =
     useState<AttendanceListDataItem>(item);
@@ -80,7 +82,7 @@ export const AttendanceListItem = ({
       className={classNames(
         className,
         attendanceItem?.className,
-        styles.menulistItemContainer(attendanceItem.status)
+        styles.menulistItemContainer(attendanceItem.status, type)
       )}
       onClick={() => {
         onBadgeClicked();
@@ -99,7 +101,10 @@ export const AttendanceListItem = ({
             ) : (
               <UserAvatar
                 size={'md'}
-                avatarColor={item.avatarColor}
+                avatarColor={
+                  item.avatarColor ||
+                  styles.avatarColor(attendanceItem.status, type)
+                }
                 text={attendanceItem.profileText ?? ''}
                 displayBorder
               />
@@ -124,7 +129,7 @@ export const AttendanceListItem = ({
         <div>
           {renderIcon(
             getBadgeIcon(attendanceItem.status),
-            styles.getColourByStatus(attendanceItem.status)
+            styles.getColourByStatus(attendanceItem.status, type)
           )}
         </div>
       </div>
