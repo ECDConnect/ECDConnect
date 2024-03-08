@@ -6,7 +6,6 @@ import {
   Typography,
   SA_CELL_REGEX,
   SA_ID_REGEX,
-  Dropdown,
   AlertType,
   Avatar,
   ProfileAvatar,
@@ -44,7 +43,6 @@ import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
-  UpdateHealthCareWorker,
   GetHealthCareWorkerHighlights,
   GetTenantContext,
   GetUserById,

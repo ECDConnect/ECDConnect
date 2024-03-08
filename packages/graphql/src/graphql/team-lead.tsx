@@ -78,14 +78,6 @@ export const CreateTeamLead = gql`
   }
 `;
 
-export const UpdateTeamLead = gql`
-  mutation updateTeamLead($input: TeamLeadModelInput, $id: UUID) {
-    updateTeamLead(id: $id, input: $input) {
-      id
-    }
-  }
-`;
-
 export const UploadTeamLeads = gql`
   mutation ($file: String) {
     importTeamLeads(file: $file) {
