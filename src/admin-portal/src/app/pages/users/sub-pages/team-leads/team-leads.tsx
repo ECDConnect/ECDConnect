@@ -11,9 +11,8 @@ import {
   SortEnumType,
   TeamLeadSortInput,
 } from '@ecdlink/graphql';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 
 import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
@@ -21,6 +20,7 @@ import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { Menu } from '@headlessui/react';
 import { useHistory } from 'react-router';
+import UiTable from './components/ui-table';
 
 export default function TeamLeads() {
   const [tableData, setTableData] = useState<any[]>([]);
@@ -41,7 +41,14 @@ export default function TeamLeads() {
   );
   const [provincesFiltered, setProvincesFiltered] =
     useState<SearchDropDownOption<string>[]>();
+  const filteredProvinces = useMemo(
+    () => provincesFiltered?.map((item) => item?.id),
+    [provincesFiltered]
+  );
 
+  console.log({ filteredProvinces });
+
+  console.log({ provincesFiltered });
   const history = useHistory();
   const { data: teamCountData } = useQuery(getTeamLeadCount, {
     fetchPolicy: 'cache-and-network',
@@ -97,12 +104,15 @@ export default function TeamLeads() {
 
   const { data, refetch } = useQuery(GetAllTeamLead, {
     variables: {
-      search: [],
+      search: '',
       clinicSearch: [],
-      provinceSearch: [],
+      provinceSearch: filteredProvinces,
       visitSearch: [],
       connectUsageSearch: [],
-      pagingInput: [],
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
       order: [
         {
           insertedDate: 'DESC',
@@ -111,7 +121,7 @@ export default function TeamLeads() {
     },
     fetchPolicy: 'network-only',
   });
-  console.log({ data });
+
   // useEffect(() => {
   //   console.log(teamCountData);
   //   GetAllTeamLeads({
@@ -154,6 +164,7 @@ export default function TeamLeads() {
   });
 
   const clearFilters = () => {
+    setProvincesFiltered([]);
     setStatusFilter('');
     setClinicFilter('');
     setProvinceFilter('');
@@ -196,6 +207,13 @@ export default function TeamLeads() {
       setTableData(copyItems);
     }
   }, [data]);
+
+  const filterByValue = useCallback((array, value) => {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+    );
+  }, []);
 
   if (tableData) {
     return (
@@ -351,11 +369,15 @@ export default function TeamLeads() {
                     columns={[
                       { field: 'idNumber', use: 'id / Passport' },
                       { field: 'fullName', use: 'name' },
+                      // {field: 'connectUsage', use: 'CHW Connect uage'},
                       { field: 'insertedDate', use: 'Date Invited' },
                       { field: 'isActive', use: 'Active' },
                     ]}
-                    rows={tableData}
-                    searchInput={searchValue}
+                    rows={
+                      searchValue !== 'Search by title or content...'
+                        ? filterByValue(tableData, searchValue)
+                        : tableData
+                    }
                     component="team-leads"
                     viewRow={viewSelectedRow}
                   />
