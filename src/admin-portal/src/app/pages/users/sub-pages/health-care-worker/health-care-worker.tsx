@@ -342,7 +342,7 @@ export default function HealthCareWorkers() {
           {showFilter && (
             <div className="mb-0 flex w-full flex-row flex-wrap items-center">
               <div className="relative inline-block pr-2 text-left">
-                <Dropdown
+                {/* <Dropdown
                   showSearch
                   fillType="outlined"
                   fillColor="secondary"
@@ -353,7 +353,7 @@ export default function HealthCareWorkers() {
                     setProvinceFilter(item);
                     refetch();
                   }}
-                />
+                /> */}
               </div>
               <div className="relative inline-block pr-2 text-left">
                 <Dropdown

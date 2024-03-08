@@ -1,22 +1,39 @@
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { useLazyQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
-import {
-  NOTIFICATION,
-  PermissionEnum,
-  useDialog,
-  useNotifications,
-  usePanel,
-  UserDto,
-} from '@ecdlink/core';
+import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
 import { SortEnumType, UserList } from '@ecdlink/graphql';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import UserPanelCreate from '../../components/user-panel-create/user-panel-create';
-import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
-import { Dropdown } from '@ecdlink/ui';
+import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
+import ReactDatePicker from 'react-datepicker';
+import { format } from 'date-fns';
+import { AdminTypes, Status } from './applications-admins.types';
+
+export const sortByTypeOptions: SearchDropDownOption<string>[] = [
+  AdminTypes?.ContentManager,
+  AdminTypes?.SuperAdmin,
+  AdminTypes?.DesignManager,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
+  Status?.ACTIVE,
+  Status?.INACTIVE,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+console.log({ sortByTypeOptions });
 
 export default function ApplicationAdmins() {
   const [nameFilter, setNameFilter] = useState(true);
@@ -35,12 +52,47 @@ export default function ApplicationAdmins() {
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [types, setTypes] = useState<SearchDropDownOption<string>[]>();
+  const [clientStatusValues, setClientStatusValues] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
+  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const onChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  const dateDropdownValue = useMemo(
+    () =>
+      startDate && endDate
+        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
+        : '',
+    [endDate, startDate]
+  );
+
+  const handleSetDateFilter = useCallback(() => {
+    setFilterDateAdded(!filterDateAdded);
+  }, [filterDateAdded]);
+
+  useEffect(() => {
+    if (endDate) {
+      handleSetDateFilter();
+    }
+  }, [endDate]);
 
   let userStatus = statusFilter === 'active' ? true : false;
 
   const clearFilters = () => {
     setStatusFilter('');
     setNameFilter(false);
+    setTypes([]);
+    setEndDate(null);
+    setStartDate(null);
+    setClientStatusValues([]);
   };
 
   const getCountVariables = (search: string) => {
@@ -210,8 +262,8 @@ export default function ApplicationAdmins() {
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <div className="text-body w-8/12 sm:flex  sm:justify-around">
-              <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
+            <div className="text-body w-11/12 sm:flex  sm:justify-around">
+              <div className="text-body w1/12 flex-col sm:flex sm:justify-around">
                 <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
@@ -226,22 +278,72 @@ export default function ApplicationAdmins() {
                 </div>
                 {showFilter && (
                   <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
-                    <div className=" w-6/12">
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="Filter By Name"
-                        labelColor="white"
-                        selectedValue={nameFilter}
-                        list={[
-                          { label: 'Ascending', value: false },
-                          { label: 'Descending', value: true },
-                        ]}
-                        onChange={(item) => {
-                          setNameFilter(item);
+                    <div className="mr-2 flex items-center gap-2">
+                      <SearchDropDown<string>
+                        displayMenuOverlay={true}
+                        className={'mr-1 rounded-lg'}
+                        menuItemClassName={
+                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                        }
+                        overlayTopOffset={'120'}
+                        options={sortByTypeOptions}
+                        selectedOptions={types}
+                        onChange={setTypes}
+                        placeholder={'Admin type'}
+                        multiple={true}
+                        color={'secondary'}
+                        info={{
+                          name: `Admin type:`,
                         }}
-                        className="p-2"
+                      />
+                    </div>
+                    {!filterDateAdded && (
+                      <div
+                        className="min-w mr-2 flex items-center gap-2"
+                        onClick={() => setFilterDateAdded(!filterDateAdded)}
+                      >
+                        <Dropdown
+                          fillType="filled"
+                          textColor={'textLight'}
+                          fillColor={endDate ? 'secondary' : 'white'}
+                          placeholder={dateDropdownValue || 'Date invited'}
+                          labelColor={endDate ? 'white' : 'textLight'}
+                          list={[]}
+                          onChange={(item) => {}}
+                          className="w-56 text-sm text-white"
+                        />
+                      </div>
+                    )}
+
+                    {filterDateAdded && (
+                      <ReactDatePicker
+                        selected={startDate}
+                        onChange={onChange}
+                        startDate={startDate}
+                        endDate={endDate}
+                        selectsRange={true}
+                        inline
+                        shouldCloseOnSelect={true}
+                      />
+                    )}
+
+                    <div className="mr-2 flex items-center gap-2">
+                      <SearchDropDown<string>
+                        displayMenuOverlay={true}
+                        className={'mr-1'}
+                        menuItemClassName={
+                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                        }
+                        overlayTopOffset={'120'}
+                        options={sortByClientStatusOptions}
+                        selectedOptions={clientStatusValues}
+                        onChange={setClientStatusValues}
+                        placeholder={'Client Status'}
+                        multiple={true}
+                        color={'secondary'}
+                        info={{
+                          name: `Client Status:`,
+                        }}
                       />
                     </div>
 
@@ -321,7 +423,7 @@ export default function ApplicationAdmins() {
                       </div>
                     </div>
 
-                    <div className="justify-self col-end-3 ">
+                    <div className="justify-self z-20 col-end-3 ml-2">
                       <button
                         onClick={clearFilters}
                         type="button"

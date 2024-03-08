@@ -5,6 +5,7 @@ import { usePanel } from '@ecdlink/core/lib/services/panel/PanelService';
 import {
   GetAllClinic,
   GetAllProvince,
+  GetAllTeamLead,
   GetAllTeamLeadAdminList,
   getTeamLeadCount,
   SortEnumType,
@@ -16,7 +17,7 @@ import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 
 import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
-import { Dropdown } from '@ecdlink/ui';
+import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { Menu } from '@headlessui/react';
 import { useHistory } from 'react-router';
@@ -34,6 +35,12 @@ export default function TeamLeads() {
   const [sortDescending, setSortDescending] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+  const [provincesFiltered, setProvincesFiltered] =
+    useState<SearchDropDownOption<string>[]>();
 
   const history = useHistory();
   const { data: teamCountData } = useQuery(getTeamLeadCount, {
@@ -59,66 +66,73 @@ export default function TeamLeads() {
     });
   };
 
-  const getVariables = (
-    search: string,
-    province: string,
-    clinic: string,
-    sortDescending: boolean,
-    currentPage: number,
-    pageSize: number
-  ) => {
-    return {
-      provinceSearch: province,
-      clinicSearch: clinic,
-      search: search,
+  // const getVariables = (
+  //   search: string,
+  //   clinicSearch: [string],
+  //   provinceSearch: [string],
+  //   visitSearch: [string],
+  //   currentPage: number,
+  //   pageSize: number,
+  //   order: [
+  //     {
+  //       "insertedDate": "DESC"
+  //     }
+  //   ]
+  // ) => {
+  //   return {
+  //     provinceSearch: province,
+  //     clinicSearch: clinic,
+  //     search: search,
+  //     order: [
+  //       {
+  //         insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc,
+  //       } as TeamLeadSortInput,
+  //     ],
+  //     pagingInput: {
+  //       pageNumber: currentPage,
+  //       pageSize: pageSize,
+  //     },
+  //   };
+  // };
+
+  const { data, refetch } = useQuery(GetAllTeamLead, {
+    variables: {
+      search: [],
+      clinicSearch: [],
+      provinceSearch: [],
+      visitSearch: [],
+      connectUsageSearch: [],
+      pagingInput: [],
       order: [
         {
-          insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc,
-        } as TeamLeadSortInput,
+          insertedDate: 'DESC',
+        },
       ],
-      pagingInput: {
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      },
-    };
-  };
-
-  const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(
-    GetAllTeamLeadAdminList,
-    {
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        sortDescending,
-        currentPage,
-        pageSize
-      ),
-      fetchPolicy: 'network-only',
-    }
-  );
-
-  useEffect(() => {
-    console.log(teamCountData);
-    GetAllTeamLeads({
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        sortDescending,
-        currentPage,
-        teamCountData?.countTeamLeads
-      ),
-    });
-  }, [
-    provinceFilter,
-    searchValue,
-    clinicFilter,
-    sortDescending,
-    currentPage,
-    pageSize,
-    teamCountData,
-  ]);
+    },
+    fetchPolicy: 'network-only',
+  });
+  console.log({ data });
+  // useEffect(() => {
+  //   console.log(teamCountData);
+  //   GetAllTeamLeads({
+  //     variables: getVariables(
+  //       searchValue,
+  //       provinceFilter,
+  //       clinicFilter,
+  //       sortDescending,
+  //       currentPage,
+  //       teamCountData?.countTeamLeads
+  //     ),
+  //   });
+  // }, [
+  //   provinceFilter,
+  //   searchValue,
+  //   clinicFilter,
+  //   sortDescending,
+  //   currentPage,
+  //   pageSize,
+  //   teamCountData,
+  // ]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -139,18 +153,36 @@ export default function TeamLeads() {
     };
   });
 
-  const provinces = provinceData?.GetAllProvince.map((x: ProvinceDto) => {
-    return {
-      label: x.description,
-      value: x.description,
-    };
-  });
-
   const clearFilters = () => {
     setStatusFilter('');
     setClinicFilter('');
     setProvinceFilter('');
   };
+
+  useEffect(() => {
+    if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
+      setProvinces(
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+              id: item?.id,
+            };
+          })
+      );
+    }
+  }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
     if (data && data.allTeamLeads) {
@@ -240,7 +272,7 @@ export default function TeamLeads() {
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
-              <div className="relative inline-block pr-2 text-left">
+              {/* <div className="relative inline-block pr-2 text-left">
                 <Dropdown
                   showSearch
                   fillType="outlined"
@@ -249,6 +281,22 @@ export default function TeamLeads() {
                   selectedValue={provinceFilter}
                   list={provinces}
                   onChange={(item) => setProvinceFilter(item)}
+                />
+              </div> */}
+              <div className=" w-6/12">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={provinces}
+                  selectedOptions={provincesFiltered}
+                  onChange={setProvincesFiltered}
+                  placeholder={'Province'}
+                  multiple={true}
+                  color={'secondary'}
                 />
               </div>
               <div className="relative inline-block pr-2 text-left">
