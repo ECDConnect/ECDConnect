@@ -83,7 +83,9 @@ namespace EcdLink.Api.CoreApi.Services
                 // }
 
                 var healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: adminId);
-                var offlineHcws = healthCareWorkerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
+                var offlineHcws = healthCareWorkerRepo.GetAll()
+                   .Include(u => u.User)
+                   .Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
 
                 _logger.LogInformation("DailyUserOfflineNotification offline HCWS: " + offlineHcws.Count());
 
