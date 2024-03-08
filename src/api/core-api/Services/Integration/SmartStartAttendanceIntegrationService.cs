@@ -148,7 +148,7 @@ namespace EcdLink.Api.CoreApi.Services
                     // Loop through unique children for this class, since they can potentially have multiple learner records for the same day/week and we don't want duplicate records
                     foreach (var childUserId in learnersForClassroomGroup.Select(x => x.UserId).Distinct())
                     {
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId.ToString(), childUserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault(); 
+                        var mappedChild = _mappedEntities.Where(x => x.UserId == childUserId && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault(); 
                         
                         var childLearnerRecordsForClassroomGroup = learnersForClassroomGroup.Where(learner => learner.UserId == childUserId);
 

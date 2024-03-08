@@ -177,7 +177,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             Type type = typeof(T);
-            if (type.GetProperty("UserId") != null)
+            if (type.GetProperty("UserId") != null && !string.IsNullOrEmpty(id))
             {
 
                 var record = base.GetByUserId(id);
@@ -225,7 +225,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             Type type = typeof(T);
-            if (type.GetProperty("UserId") != null)
+            if (type.GetProperty("UserId") != null && !string.IsNullOrEmpty(id))
             {
 
                 var record = base.GetListByUserId(id);
