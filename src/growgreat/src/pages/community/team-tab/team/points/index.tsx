@@ -1,5 +1,5 @@
 import ROUTES from '@/routes/routes';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quartes.utils';
+import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import {
   Alert,
   BannerWrapper,
@@ -28,6 +28,8 @@ export const TeamPoints = () => {
   const history = useHistory();
 
   const today = new Date();
+
+  const { quarterDescription } = getCommunityQuarterDescription(today);
 
   const { tierName, tierColor, pointsToNextTier, nextTier } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -86,11 +88,7 @@ export const TeamPoints = () => {
         text={`${clinicDetails?.name} - points earned`}
         color="textDark"
       />
-      <Typography
-        type="h4"
-        color="textMid"
-        text={getCommunityQuarterDescription(today)}
-      />
+      <Typography type="h4" color="textMid" text={quarterDescription} />
       <ScoreCard
         className="my-4"
         mainText={String(clinicDetails?.points?.pointsTotal ?? 0)}

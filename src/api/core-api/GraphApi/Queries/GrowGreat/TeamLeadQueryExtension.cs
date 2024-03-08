@@ -1,5 +1,4 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
@@ -12,8 +11,6 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.PostgresTenancy.Entities;
-using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
@@ -22,7 +19,6 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,10 +38,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                       CancellationToken cancellationToken,
                                                       PagedQueryInput pagingInput = null,
                                                       string search = null,
-                                                      string provinceSearch = null,
-                                                      string clinicSearch = null,
-                                                      string visitSearch = null,
-                                                      string connectUsageSearch = null)
+                                                      List<string> provinceSearch = null,
+                                                      List<string> clinicSearch = null,
+                                                      List<string> visitSearch = null,
+                                                      List<string> connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var teamLeads = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
@@ -60,16 +56,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
-            if (!string.IsNullOrWhiteSpace(provinceSearch))
-            {
-                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%")));
-            }
+            if (provinceSearch.Count != 0)
+                teamLeads = teamLeads = teamLeads.Where(h => h.Clinics.Any(c => provinceSearch.Contains(c.Clinic.SiteAddress.Province.Description)));
 
-            if (!string.IsNullOrWhiteSpace(clinicSearch))
-            {
-                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => EF.Functions.ILike(c.Clinic.Name, $"%{clinicSearch}%")));
-            }
-
+            if (clinicSearch.Count != 0)
+                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => clinicSearch.Contains(c.Clinic.Name)));
+           
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
@@ -89,35 +81,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }).ToList();
 
 
-            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
+            if (connectUsageSearch.Count != 0)
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
                 var twelveMonths = today.AddMonths(-12);
 
-                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
                 {
                     teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
                 {
                     teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_6_months))
                 {
                     teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_12_months))
                 {
                     teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date <= twelveMonths.GetStartOfMonth().Date).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
                 {
                     teamLeaders = teamLeaders.Where(x => x.User.IsActive == false).ToList();
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(visitSearch))
+            if (visitSearch.Count != 0)
             {
                 var clinicIds = teamLeaders.Select(x => x.ClinicIds).ToList();
                 var combinedClinicIds = clinicIds.SelectMany(x => x).ToList();
@@ -135,14 +127,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
 
-                    if (visitSearch == Constants.PortalSettings.visit_high_activity)
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
                     {
                         if (totalClientsVisits >= 20)
                         {
                             visitTeamLeaders.Add(item);
                         }
                     }
-                    else if (visitSearch == Constants.PortalSettings.visit_medium_activity)
+                    else if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
                     {
                         if (totalClientsVisits > 0 && totalClientsVisits <= 10)
                         {

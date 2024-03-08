@@ -88,7 +88,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual T GetByUserId(string id)
         {
             Type type = typeof(T);
-            if (type.GetProperty("UserId") != null)
+            if (type.GetProperty("UserId") != null && !string.IsNullOrEmpty(id))
             {
                 var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + _tenantId + "'").FirstOrDefault();
                 return qq;
@@ -110,7 +110,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual List<T> GetListByUserId(string id)
         {
             Type type = typeof(T);
-            if (type.GetProperty("UserId") != null)
+            if (type.GetProperty("UserId") != null && !string.IsNullOrEmpty(id))
             {
                 var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + _tenantId + "'").ToList();////.OrderByDescending(y => y.InsertedDate);
                 return qq;

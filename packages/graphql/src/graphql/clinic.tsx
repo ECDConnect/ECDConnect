@@ -2,7 +2,18 @@ import { gql } from '@apollo/client';
 
 export const GetAllClinic = gql`
   query GetAllClinic($isActive: Boolean = true) {
-    GetAllClinic(where: { isActive: { eq: $isActive } }) {
+    GetAllClinic(
+      where: {
+        and: [
+          {
+            isActive: { eq: $isActive }
+            subDistrict: { isActive: { eq: $isActive } }
+            teamLeads: { all: { teamLead: { isActive: { eq: $isActive } } } }
+            leagues: { all: { league: { isActive: { eq: $isActive } } } }
+          }
+        ]
+      }
+    ) {
       id
       name
       phoneNumber

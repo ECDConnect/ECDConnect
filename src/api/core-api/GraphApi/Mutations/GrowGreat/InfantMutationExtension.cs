@@ -45,7 +45,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         public Infant UpdateInfantCaregiver([Service] InfantManager infantManager, string infantId, InfantModel input)
         {
             return infantManager.UpdateInfantCaregiver(Guid.Parse(infantId), input);
-        }
-        
+        }        
     }
 }

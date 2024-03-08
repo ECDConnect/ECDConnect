@@ -18,23 +18,22 @@ namespace ECDLink.Core.Helpers
         {
             switch (DateTime.Now.Month)
             {
+                case 10:
                 case 11:
                 case 12:
-                    return new DateTime(DateTime.Now.Year, 11, 1);
+                    return new DateTime(DateTime.Now.Year - 1, 10, 1);
                 case 1:
-                    return new DateTime(DateTime.Now.Year - 1, 11, 1);
                 case 2:
                 case 3:
+                    return new DateTime(DateTime.Now.Year, 1, 1);
                 case 4:
-                    return new DateTime(DateTime.Now.Year, 2, 1);
                 case 5:
                 case 6:
+                    return new DateTime(DateTime.Now.Year, 4, 1);
                 case 7:
-                    return new DateTime(DateTime.Now.Year, 5, 1);
                 case 8:
                 case 9:
-                case 10:
-                    return new DateTime(DateTime.Now.Year, 8, 1);
+                    return new DateTime(DateTime.Now.Year, 7, 1);
                 default:
                     throw new ArgumentException();
             }
@@ -44,23 +43,22 @@ namespace ECDLink.Core.Helpers
         {
             switch (DateTime.Now.Month)
             {
+                case 10:
                 case 11:
                 case 12:
-                    return new DateTime(DateTime.Now.Year + 1, 2, 1).GetEndOfMonth(); // End of month to handle leap years
+                    return new DateTime(DateTime.Now.Year - 1, 12, 31, 11, 59, 59);
                 case 1:
-                    return new DateTime(DateTime.Now.Year, 2, 1).GetEndOfMonth();
                 case 2:
                 case 3:
+                    return new DateTime(DateTime.Now.Year, 3, 31, 11, 59, 59);
                 case 4:
-                    return new DateTime(DateTime.Now.Year, 4, 30);
                 case 5:
                 case 6:
+                    return new DateTime(DateTime.Now.Year, 6, 30, 11, 59, 59);
                 case 7:
-                    return new DateTime(DateTime.Now.Year, 7, 31);
                 case 8:
                 case 9:
-                case 10:
-                    return new DateTime(DateTime.Now.Year, 10, 31);
+                    return new DateTime(DateTime.Now.Year, 9, 30, 11, 59, 59);
                 default:
                     throw new ArgumentException();
             }

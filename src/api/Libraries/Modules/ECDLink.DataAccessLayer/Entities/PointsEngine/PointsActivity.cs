@@ -16,8 +16,8 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
     {
         public string Name { get; set; }
         public int Points { get; set; }
-        public int MaxPointsIndividualMonthly { get; set; }
-        public int MaxPointsIndividualYearly { get; set; }
+        public int? MaxPointsIndividualMonthly { get; set; }
+        public int? MaxPointsIndividualYearly { get; set; }
         public Guid? PointsCategoryId { get; set; }
         public virtual PointsCategory PointsCategory { get; set; }
     }

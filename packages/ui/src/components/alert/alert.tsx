@@ -48,7 +48,11 @@ export const Alert: React.FC<AlertProps> = ({
             text={leftChip}
           />
         )}
-        <div className={styles.contentWrapper}>
+        <div
+          className={styles.contentWrapper(
+            !!title && !message && !list?.length
+          )}
+        >
           <div className={styles.messageWrapper}>
             {title && (
               <Typography

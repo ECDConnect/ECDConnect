@@ -3,10 +3,10 @@ import { gql } from '@apollo/client';
 export const GetAllTeamLead = gql`
   query (
     $search: String
-    $clinicSearch: String
-    $provinceSearch: String
-    $visitSearch: String
-    $connectUsageSearch: String
+    $clinicSearch: [String]
+    $provinceSearch: [String]
+    $visitSearch: [String]
+    $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
     $order: [PortalUsersTLModelSortInput!]
   ) {
@@ -73,14 +73,6 @@ export const GetAllTeamLeadAdminList = gql`
 export const CreateTeamLead = gql`
   mutation addTeamLead($input: TeamLeadModelInput) {
     addTeamLead(input: $input) {
-      id
-    }
-  }
-`;
-
-export const UpdateTeamLead = gql`
-  mutation updateTeamLead($input: TeamLeadModelInput, $id: UUID) {
-    updateTeamLead(id: $id, input: $input) {
       id
     }
   }

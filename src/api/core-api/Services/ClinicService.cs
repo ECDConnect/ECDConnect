@@ -64,7 +64,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<DistrictStatsModel> GetDistrictsAndStats()
         {
-            var districtRecords = _districtRepo.GetAll().Include(x => x.SubDistricts).Where(x => x.IsActive).ToList();
+            var districtRecords = _districtRepo.GetAll().Include(x => x.SubDistricts.Where(x => x.IsActive)).Where(x => x.IsActive).ToList();
             var clinics = _clinicRepo.GetAll().Where(x => x.IsActive && x.SubDistrictId.HasValue).ToList();
             var clinicTeamLeads = _clinicTeamRepo.GetAll().Where(x => x.IsActive).ToList();
             var hCWs = _healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
