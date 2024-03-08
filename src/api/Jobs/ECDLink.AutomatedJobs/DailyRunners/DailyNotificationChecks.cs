@@ -25,7 +25,7 @@ public class DailyNotificationChecks : CronJobService
   {
         using (var scope = _scopeFactory.CreateScope())
         {
-            TenancyContext.SetTenantContext(scope);
+            TenancyContext.SetTenantContext(scope, "39077d0e-e443-4076-aaf2-978dc6805aa0");
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
             await service.DailyUserOfflineNotification();
