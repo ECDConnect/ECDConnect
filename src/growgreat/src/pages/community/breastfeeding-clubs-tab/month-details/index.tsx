@@ -72,15 +72,15 @@ const Component = ({ monthData, onBack }: MonthDetailsProps) => {
             'To earn 200 points, make sure 4 to 6 clients attend each club.',
           ]}
         />
-        {!!sortedData.length && <Divider dividerType="dashed" />}
-        {sortedData.map((item, index) => {
+        {!!sortedData?.length && <Divider dividerType="dashed" />}
+        {sortedData?.map((item, index) => {
           const { title, type } = getBreastFeedingClubFeedback(item);
 
           return (
             <div
               key={item.id}
               className={`mt-6 ${
-                monthData.data.length - 1 === index ? 'mb-6' : ''
+                sortedData.length - 1 === index ? 'mb-6' : ''
               }`}
             >
               <Typography
