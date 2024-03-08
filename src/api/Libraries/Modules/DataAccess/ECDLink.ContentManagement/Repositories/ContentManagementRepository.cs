@@ -255,20 +255,38 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogWarning(errorMessage, contentType.ToString(), key, value);
             }
 
-            var dynamicContentList = new List<object>();
+            var allContentValuePairs = new List<object>();
 
             foreach (var item in content)
             {
-                var objDict = item.ContentValues
-                              .Where(x => x.LocaleId == localeId)
-                              .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+                var contentValues = item.ContentValues
+                    .Where(x => x.LocaleId == localeId
+                            && x.ContentTypeField.IsActive == true
+                            && (x.TenantId == TenantExecutionContext.Tenant.Id || x.TenantId == null))
+                    .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                    .ToList();
 
-                objDict.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
-
-                dynamicContentList.Add(objDict.ToObject());
+                var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+                contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
+                contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
+                {
+                    //add list if non existent
+                    contentFieldValuePairs.Add("availableLanguages", string.Join(",", langsList));
+                } else
+                {
+                   //update with fulllist
+                   contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
+                }
+             
+                if (contentFieldValuePairs?.Any() ?? false)
+                {
+                    allContentValuePairs.Add(contentFieldValuePairs.ToObject());
+                }
             }
 
-            return dynamicContentList;
+            return allContentValuePairs;
         }
 
         public int Create(int contentTypeId, Guid localeId, IDictionary<string, object> input)

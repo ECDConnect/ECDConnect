@@ -28,24 +28,11 @@ public class MonthlyNotificationChecks : CronJobService
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
             if (DateTime.Now.Day == 1)
             { //only run on 1st of month
-                await service.MonthlyStatementsReminderAsync();
                 await service.MonthlyTopPointsEarnerNotification();
-                //specific months checks
-                if (DateTime.Now.Month == 7)
-                {
-                    await service.ProgressReportsReminderAsync();
-                }
                 if (DateTime.Now.Month == 12)
                 {
-                    await service.ProgressReportsReminderAsync();
                     await service.YearlyPointsSummaryNotification();
                 }
-            }
-
-            //if the first sunday in the month, run weekly attendance PDFs
-            if (DateTime.Now.DayOfWeek == DayOfWeek.Sunday && DateTime.Now.Day <= 7)
-            {
-                await service.MonthlyAttendanceSLSyncAsync();
             }
         }
     }
