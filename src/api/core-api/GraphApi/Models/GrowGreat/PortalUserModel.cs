@@ -1,6 +1,7 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public PortalUserModel User { get; set; }
         public Guid? ClinicId { get; set; }
         public string ConnectUsage { get; set; }
+
+    }
+
+    public class PortalUserHCWModel
+    {
+        public Guid Id { get; set; }
+        public Guid? ClinicId { get; set; }
+        public Guid? UserId { get; set; }
+
+        public PortalUserHCWModel(HealthCareWorker entity)
+        {
+            Id = entity.Id;
+            ClinicId = entity.ClinicId;
+            UserId = entity.UserId;
+        }
     }
 
     public class PortalUsersTLModel
@@ -23,6 +39,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public PortalUserModel User { get; set; }
         public List<Guid> ClinicIds { get; set; }
         public string ConnectUsage { get; set; }
+    }
+
+    public class PortalUserTLModel
+    {
+        public Guid Id { get; set; }
+        public Guid? UserId { get; set; }
+
+        public PortalUserTLModel(TeamLead entity)
+        {
+            Id = entity.Id;
+            UserId = entity.UserId;
+        }
     }
 
     public class PortalUserModel

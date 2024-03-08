@@ -33,8 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = applicationUserId.ToString(),
                 UserId = input.UserId,
-                LanguageId = input.LanguageId,
-                //TeamLeadId = input.TeamLeadId, Needs to change to clinic id
+                ClinicId = input.ClinicId,
                 ClickedVisitTab = false,
                 ClickedProgressTab = false,
                 ClickedReferralsTab = false,
@@ -48,6 +47,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var newHealthCareWorker = healthCareWorkerRepo.Insert(healthCareWorker);
 
             return new HealthCareWorkerModel(newHealthCareWorker);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public PortalUserHCWModel UpdateHealthCareWorkerClinic(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid userId,
+            Guid clinicId)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetByUserId(userId);
+
+            healthCareWorkerToUpdate.ClinicId = clinicId;
+            healthCareWorkerToUpdate.UpdatedDate = DateTime.Now;
+            healthCareWorkerToUpdate.UpdatedBy = applicationUserId.ToString();
+
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+            return new PortalUserHCWModel(updatedHealthCareWorker);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]

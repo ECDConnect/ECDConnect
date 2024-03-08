@@ -79,17 +79,22 @@ export const GetHealthCareWorkerByUserId = gql`
 `;
 
 export const CreateHealthCareWorker = gql`
-  mutation addHealthCareWorker($input: HealthCareWorkerModelInput) {
+  mutation AddHealthCareWorker($input: AddHealthCareWorkerInputModelInput) {
     addHealthCareWorker(input: $input) {
       id
+      userId
+      clinicId
+      __typename
     }
   }
 `;
 
-export const UpdateHealthCareWorker = gql`
-  mutation updateHealthCareWorker($input: UserModelInput, $id: String) {
-    updateUser(id: $id, input: $input) {
+export const UpdateHealthCareWorkerClinic = gql`
+  mutation UpdateHealthCareWorkerClinic($userId: UUID!, $clinicId: UUID!) {
+    updateHealthCareWorkerClinic(userId: $userId, clinicId: $clinicId) {
       id
+      userId
+      clinicId
       __typename
     }
   }
