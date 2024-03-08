@@ -42,11 +42,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                               CancellationToken cancellationToken, 
                                                               PagedQueryInput pagingInput = null,
                                                               string search = null,
-                                                              string provinceSearch = null,
-                                                              string clinicSearch = null,
-                                                              string subDistrictSearch = null,
-                                                              string visitSearch = null,
-                                                              string connectUsageSearch = null)
+                                                              List<string> provinceSearch = null,
+                                                              List<string> clinicSearch = null,
+                                                              List<string> subDistrictSearch = null,
+                                                              List<string> visitSearch = null,
+                                                              List<string> connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
@@ -62,14 +62,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
-            if (!string.IsNullOrWhiteSpace(subDistrictSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.SubDistrict.Name, $"%{subDistrictSearch}%"));
+            if (provinceSearch.Count != 0)
+                healthCareWorkers = healthCareWorkers.Where(h => provinceSearch.Contains(h.Clinic.SubDistrict.District.Province.Description));
+            
+            if (clinicSearch.Count != 0)
+                healthCareWorkers = healthCareWorkers.Where(h => clinicSearch.Contains(h.Clinic.Name));
 
-            if (!string.IsNullOrWhiteSpace(provinceSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.SubDistrict.District.Province.Description, $"%{provinceSearch}%"));
-
-            if (!string.IsNullOrWhiteSpace(clinicSearch))
-                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
+            if (subDistrictSearch.Count != 0)
+                healthCareWorkers = healthCareWorkers.Where(h => subDistrictSearch.Contains(h.Clinic.SubDistrict.Name));
 
             if (cancellationToken.IsCancellationRequested)
                 return null;
@@ -88,35 +88,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 InsertedDate = item.InsertedDate,
             }).ToList();
 
-            if (!string.IsNullOrWhiteSpace(connectUsageSearch))
+            if (connectUsageSearch.Count != 0)
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
                 var twelveMonths = today.AddMonths(-12);
 
-                if (connectUsageSearch == Constants.PortalSettings.usage_invitation_active)
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
                 {
                     workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_invitation_expired)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
                 {
                     workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_6_months)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_6_months))
                 {
                     workers = workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_last_online_12_months)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_12_months))
                 {
                     workers = workers.Where(x => x.User.LastSeen.Date <= twelveMonths.GetStartOfMonth().Date).ToList();
                 }
-                else if (connectUsageSearch == Constants.PortalSettings.usage_removed)
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
                 {
                     workers = workers.Where(x => x.User.IsActive == false).ToList();
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(visitSearch))
+            if (visitSearch.Count != 0)
             {
                var visits = visitRepo.GetAll().Where(x => x.Attended == true &&
                                                            x.ActualVisitDate.HasValue &&
@@ -131,13 +131,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     var totalClientsVisits = visits.Where(x => x.Mother.HealthCareWorker.UserId == item.User.Id || x.Infant.Caregiver.HealthCareWorker.UserId == item.User.Id).Count();
 
-                    if (visitSearch == Constants.PortalSettings.visit_high_activity)
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
                     {
                         if (totalClientsVisits >= 20)
                         {
                             visitHCWs.Add(item);
                         }
-                    } else if (visitSearch == Constants.PortalSettings.visit_medium_activity)
+                    } else if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
                     {
                         if (totalClientsVisits > 0 && totalClientsVisits <= 10)
                         {

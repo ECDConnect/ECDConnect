@@ -3,10 +3,10 @@ import { gql } from '@apollo/client';
 export const GetAllTeamLead = gql`
   query (
     $search: String
-    $clinicSearch: String
-    $provinceSearch: String
-    $visitSearch: String
-    $connectUsageSearch: String
+    $clinicSearch: [String]
+    $provinceSearch: [String]
+    $visitSearch: [String]
+    $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
     $order: [PortalUsersTLModelSortInput!]
   ) {
