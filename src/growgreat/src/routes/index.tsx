@@ -52,6 +52,7 @@ import { TeamPointsActivityDetails } from '@/pages/community/team-tab/team/point
 import { TeamMembers } from '@/pages/community/team-tab/team/members';
 import { TeamMemberProfile } from '@/pages/community/team-tab/team/members/member-profile';
 import { TeamLeaderProfile } from '@/pages/community/team-tab/team/members/leader-profile';
+import { AddBreastfeedingClub } from '@/pages/community/breastfeeding-clubs-tab/add-breastfeeding-club';
 
 function PublicRoutes() {
   return (
@@ -299,6 +300,11 @@ function AuthRoutes() {
       <Route
         path={ROUTES.COMMUNITY.TEAM.MEMBERS.LEADER_PROFILE}
         component={TeamLeaderProfile}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD}
+        component={AddBreastfeedingClub}
         exact
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />

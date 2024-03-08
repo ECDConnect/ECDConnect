@@ -154,6 +154,10 @@ export const BreastfeedingClubsTab: React.FC = () => {
         })
       );
     }
+
+    history.replace(ROUTES.COMMUNITY.ROOT, {
+      activeTabIndex: undefined,
+    });
     // trigger only once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -212,8 +216,9 @@ export const BreastfeedingClubsTab: React.FC = () => {
             textColor="white"
             color="primary"
             text="Add a breastfeeding club"
-            // TODO: Add onClick
-            onClick={() => {}}
+            onClick={() =>
+              history.push(ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD)
+            }
           />
           <Button
             className="mb-4"

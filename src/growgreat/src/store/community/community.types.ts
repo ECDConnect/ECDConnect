@@ -1,5 +1,6 @@
 import {
   BreastFeedingClubDto,
+  CaregiverBaseDto,
   ClinicDto,
   LeagueWithClinicRankingsDto,
 } from '@ecdlink/core';
@@ -33,7 +34,8 @@ export interface CommunityState {
     data: LeagueWithClinicRankingsDto;
   };
   breastFeedingClubs?: {
-    dateLoaded: string;
-    data: BreastFeedingClubDto[];
+    dateLoaded?: string;
+    data?: BreastFeedingClubDto[];
+    availableCaregiversForBreastFeedingClub?: CaregiverBaseDto[];
   };
 }

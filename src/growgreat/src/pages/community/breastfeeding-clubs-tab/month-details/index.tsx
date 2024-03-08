@@ -2,7 +2,7 @@ import {
   MonthData,
   getPointsDetails,
 } from '@/utils/community/breastfeeding-clubs.utils';
-import { BreastFeedingClubDto } from '@ecdlink/core';
+import { BreastFeedingClubDto, withScrollToTop } from '@ecdlink/core';
 import {
   Alert,
   AlertProps,
@@ -17,12 +17,17 @@ interface MonthDetailsProps {
   monthData: MonthData;
   onBack: () => void;
 }
-export const MonthDetails = ({ monthData, onBack }: MonthDetailsProps) => {
+const Component = ({ monthData, onBack }: MonthDetailsProps) => {
   const date = new Date(monthData.year, monthData.month, 1);
 
   const month = format(date, 'MMMM');
 
   const titleMonth = `${month} breastfeeding clubs`;
+
+  const sortedData = monthData?.data?.sort(
+    (a, b) =>
+      new Date(b.meetingDate).getTime() - new Date(a.meetingDate).getTime()
+  );
 
   const { points, colour, breastfeedingClubsLength } = getPointsDetails(
     monthData.data
@@ -48,7 +53,7 @@ export const MonthDetails = ({ monthData, onBack }: MonthDetailsProps) => {
       onBack={onBack}
       renderBorder
       renderOverflow
-      className="p-4 pt-6"
+      className="px-4 pt-6 pb-0"
     >
       <div className="flex h-full flex-col ">
         <Typography type="h2" text={titleMonth} className="mb-5" />
@@ -67,8 +72,8 @@ export const MonthDetails = ({ monthData, onBack }: MonthDetailsProps) => {
             'To earn 200 points, make sure 4 to 6 clients attend each club.',
           ]}
         />
-        {!!monthData.data.length && <Divider dividerType="dashed" />}
-        {monthData.data.map((item, index) => {
+        {!!sortedData.length && <Divider dividerType="dashed" />}
+        {sortedData.map((item, index) => {
           const { title, type } = getBreastFeedingClubFeedback(item);
 
           return (
@@ -95,7 +100,7 @@ export const MonthDetails = ({ monthData, onBack }: MonthDetailsProps) => {
             </div>
           );
         })}
-        <div className="mt-auto w-full pb-4">
+        <div className="mt-auto w-full">
           <Button
             className="w-full"
             type="outlined"
@@ -110,3 +115,5 @@ export const MonthDetails = ({ monthData, onBack }: MonthDetailsProps) => {
     </BannerWrapper>
   );
 };
+
+export const MonthDetails = withScrollToTop(Component);
