@@ -34,12 +34,14 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly ApplicationUserManager _userManager;
         private readonly INotificationService _notificationService;
         private readonly IPointsEngineService _pointsService;
+        private ILogger<NotificationTasksService> _logger;
 
         public NotificationTasksService(
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
-            HierarchyEngine hierarchyEngine, 
+            [Service] ILogger<NotificationTasksService> logger,
+            HierarchyEngine hierarchyEngine,
             IPointsEngineService pointsService)
         {
             _repositoryFactory = repositoryFactory;
@@ -47,48 +49,67 @@ namespace EcdLink.Api.CoreApi.Services
             _notificationService = notificationService;
             _userManager = userManager;
             _pointsService = pointsService;
+            _logger = logger;
         }
 
         public async Task DailyUserOfflineNotification()
         {
-            var adminId = _hierarchyEngine.GetAdminUserId();
-            // var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            _logger.LogInformation("DailyUserOfflineNotification started at " + DateTime.Now);
 
-            // var offlinePractitioners = practitionerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
-
-            // foreach (var prac in offlinePractitioners)
-            // {
-            //     TimeSpan daysToCheck = (DateTime.Now - prac.User.LastSeen);
-            //     if (daysToCheck.Days > 0)
-            //     {
-            //         if (daysToCheck.Days >= 21 && daysToCheck.Days <30)
-            //         {
-            //             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
-            //         }
-            //         else if (daysToCheck.Days >= 30)
-            //         {
-            //             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
-            //         }
-            //     }
-            // }
-
-            var healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: adminId);
-            var offlineHcws = healthCareWorkerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
-             foreach (var hcw in offlineHcws)
+            try
             {
-                TimeSpan daysToCheck = DateTime.Now - hcw.User.LastSeen;
-                if (daysToCheck.Days > 0)
+                var adminId = _hierarchyEngine.GetAdminUserId();
+
+                _logger.LogInformation("DailyUserOfflineNotification adminId: " + adminId);
+
+                // var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+
+                // var offlinePractitioners = practitionerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
+
+                // foreach (var prac in offlinePractitioners)
+                // {
+                //     TimeSpan daysToCheck = (DateTime.Now - prac.User.LastSeen);
+                //     if (daysToCheck.Days > 0)
+                //     {
+                //         if (daysToCheck.Days >= 21 && daysToCheck.Days <30)
+                //         {
+                //             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
+                //         }
+                //         else if (daysToCheck.Days >= 30)
+                //         {
+                //             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
+                //         }
+                //     }
+                // }
+
+                var healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: adminId);
+                var offlineHcws = healthCareWorkerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
+
+                _logger.LogInformation("DailyUserOfflineNotification offline HCWS: " + offlineHcws.Count());
+
+                foreach (var hcw in offlineHcws)
                 {
-                    if (daysToCheck.Days >= 21 && daysToCheck.Days <30)
+                    TimeSpan daysToCheck = DateTime.Now - hcw.User.LastSeen;
+                    if (daysToCheck.Days > 0)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
-                    }
-                    else if (daysToCheck.Days >= 30)
-                    {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
+                        if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
+                        {
+                            _logger.LogInformation("DailyUserOfflineNotification send 3 week: " + hcw.User.Id);
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
+                        }
+                        else if (daysToCheck.Days >= 30)
+                        {
+                            _logger.LogInformation("DailyUserOfflineNotification send 4 week: " + hcw.User.Id);
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
+                        }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError("Issue with attendance tracking in DailyUserOfflineNotification" + ex.Message, ex);
+            }
+            _logger.LogInformation("DailyUserOfflineNotification stopped at " + DateTime.Now);
         }
 
         public async Task MonthlyPointsgReminderAsync()
