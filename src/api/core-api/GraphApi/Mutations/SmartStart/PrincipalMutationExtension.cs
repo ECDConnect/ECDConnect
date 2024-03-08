@@ -178,7 +178,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).Where(y => y.PrincipalHierarchy.Equals(principalId)).OrderBy(x => x.Id).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).Where(y => y.PrincipalHierarchy.HasValue && y.PrincipalHierarchy.Value == Guid.Parse(principalId)).OrderBy(x => x.Id).FirstOrDefault();
             {
                 practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;

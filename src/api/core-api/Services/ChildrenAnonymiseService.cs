@@ -99,7 +99,7 @@ namespace EcdLink.Api.CoreApi.Services
             var expiryTime = DateTime.UtcNow.AddDays(-30);
 
             // Remove child where caregiver has not yet completed all data and they were inserted within the last 30 days
-            return _context.Children.Where(c => c.IsActive && c.CaregiverId.Equals(null)
+            return _context.Children.Where(c => c.IsActive && c.CaregiverId.HasValue
                                    && c.InsertedDate <= expiryTime).Include(c => c.User).ToList();
 
         }

@@ -2300,13 +2300,20 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             }
                         }
 
-                        if (userExists)
+                        if (!userExists)
                         {
-
-                        }
-                        else
-                        {
-                            await _userManager.CreateAsync(newUser);
+                            var userCreatedResult = await _userManager.CreateAsync(newUser);
+                            if (userCreatedResult.Succeeded)
+                            {
+                                _logger.LogInformation("User create success {0}", newUser.Id);
+                                userExists = true;
+                            }
+                            else
+                            {
+                                var errors = "\n" + string.Join("\n", userCreatedResult.Errors.Select(x => string.Format("Error: {0} {1}", x.Code, x.Description)));
+                                _logger.LogInformation("User create failed {0} {1}", newUser.Id, errors);
+                                throw new Exception(string.Format("Unable to create User object\n{0}", errors));
+                            }
                         }
                         //Create siteaddress
                         bool insertedAddress = false;
@@ -2916,6 +2923,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     ////basic checks to allow trainee to be imported
                     if (entity.IdNumber != null && entity.FirstName != null && entity.Surname != null)
                     {
+                        string validUserName = entity.IdNumber.Replace(" ", "-");//do not allow spaces in usernames
                         Guid userId = (existingPractitioner == null ? new Guid(entity.Guid) : existingPractitioner.UserId.Value);
                         //Guid traineePracId = Guid.NewGuid();
 
@@ -3018,7 +3026,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             //if phone number cant be used, ignore it
                         }
 
-                        ApplicationUser newUser = await _userManager.FindByNameAsync(entity.IdNumber);
+                        ApplicationUser newUser = await _userManager.FindByNameAsync(validUserName);
                         if (newUser == null)
                         {
                             if (existingPractitioner == null)
@@ -3027,7 +3035,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 {
                                     Id = userId,
                                     PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : whatsappNumberToImport),
-                                    UserName = entity.IdNumber,
+                                    UserName = validUserName,
                                     IdNumber = entity.IdNumber,
                                     //Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
                                     //IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
@@ -3075,24 +3083,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                         newTrainee.HighestEducationLevel = education.Id.ToString();
                                     }
                                 }
-                                //    //check gender
-                                //    if (entity.Gender != null)
-                                //    {
-                                //        var gender = _staticGenderRepo.GetAll().Where(x => x.Description == entity.Gender).OrderBy(x => x.Id).FirstOrDefault();
-                                //        if (gender != null)
-                                //        {
-                                //            newUser.GenderId = gender.Id;
-                                //        }
-                                //    }
-                                //    //check race
-                                //    if (entity.EthnicGroup != null)
-                                //    {
-                                //        var race = _staticRaceRepo.GetAll().Where(x => x.Description == entity.EthnicGroup).OrderBy(x => x.Id).FirstOrDefault();
-                                //        if (race != null)
-                                //        {
-                                //            newUser.RaceId = race.Id;
-                                //        }
-                                //    }
 
                                 var userCreatedResult = await _userManager.CreateAsync(newUser);
                                 if (userCreatedResult.Succeeded)
@@ -3110,7 +3100,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 }
                                 else
                                 {
+                                    var errors = "\n" + string.Join("\n", userCreatedResult.Errors.Select(x => string.Format("Error: {0} {1}", x.Code, x.Description)));
+                                    _logger.LogInformation("User create failed {0} {1}", newUser.Id, errors);
                                     pracCreated = false;
+                                    throw new Exception(string.Format("Unable to create User object\n{0}", errors));
                                 }
                             }
                             else
