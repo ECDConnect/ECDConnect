@@ -34,6 +34,9 @@ const ROUTES = {
         MEMBER_PROFILE: 'member/:memberHealthCareWorkerId',
       }),
     }),
+    BREASTFEEDING_CLUBS: addPrefix('/breastfeeding-clubs', {
+      ADD: '/add',
+    }),
   }),
   DASHBOARD: '/dashboard',
   CLIENTS: addPrefix('/clients', {

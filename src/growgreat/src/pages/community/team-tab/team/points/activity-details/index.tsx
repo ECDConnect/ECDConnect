@@ -9,10 +9,7 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { ActivityDetailsParams, ActivityDetailsState } from './index.types';
-import {
-  formatStringWithFirstLetterCapitalized,
-  useSnackbar,
-} from '@ecdlink/core';
+import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';
@@ -25,6 +22,7 @@ import { communitySelectors } from '@/store/community';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ActivitySectionName } from '@/constants/Community';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
+import { AddBreastFeedingClubRouteState } from '@/pages/community/breastfeeding-clubs-tab/add-breastfeeding-club/types';
 
 export const TeamPointsActivityDetails = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
@@ -50,8 +48,6 @@ export const TeamPointsActivityDetails = () => {
   const appDispatch = useAppDispatch();
 
   const history = useHistory();
-
-  const { showMessage } = useSnackbar();
 
   const today = new Date();
 
@@ -187,10 +183,9 @@ export const TeamPointsActivityDetails = () => {
           icon="PlusCircleIcon"
           className="mb-4"
           onClick={() =>
-            showMessage({
-              message: 'This feature is not yet available, (EC-2260)',
-              type: 'warning',
-            })
+            history.push(ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD, {
+              isFromPointsScreen: true,
+            } as AddBreastFeedingClubRouteState)
           }
         />
       )}
