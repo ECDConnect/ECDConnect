@@ -3,11 +3,11 @@ import { gql } from '@apollo/client';
 export const GetAllHealthCareWorker = gql`
   query (
     $search: String
-    $clinicSearch: String
-    $provinceSearch: String
-    $subDistrictSearch: String
-    $visitSearch: String
-    $connectUsageSearch: String
+    $clinicSearch: [String]
+    $provinceSearch: [String]
+    $subDistrictSearch: [String]
+    $visitSearch: [String]
+    $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
     $order: [PortalUsersHCWModelSortInput!]
   ) {
