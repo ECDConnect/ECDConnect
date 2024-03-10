@@ -113,13 +113,13 @@ export default function ApplicationUsers() {
   useEffect(() => {
     getAllUsers({
       variables: getVariables(
-        searchValue,
+        '',
         sortDescending,
         selectedPage,
         selectedPageSize
       ),
     });
-  }, [searchValue, nameFilter, sortDescending, selectedPage]);
+  }, [getAllUsers, selectedPage, selectedPageSize, sortDescending]);
 
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -214,6 +214,14 @@ export default function ApplicationUsers() {
     }
   }, [endDate]);
 
+  const filterByValue = useCallback((array, value) => {
+    return array?.filter(
+      (data) =>
+        JSON?.stringify(data)?.toLowerCase()?.indexOf(value?.toLowerCase()) !==
+        -1
+    );
+  }, []);
+
   if (tableData) {
     return (
       <div>
@@ -229,7 +237,7 @@ export default function ApplicationUsers() {
                   </span>
                   <input
                     className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="      Search by email, id number or name..."
+                    placeholder="      Search by name, ID or cellphone..."
                     onChange={search}
                   />
                 </div>
@@ -274,11 +282,11 @@ export default function ApplicationUsers() {
                         options={sortByClientStatusOptions}
                         selectedOptions={statusFilter}
                         onChange={setStatusFilter}
-                        placeholder={'Client Status'}
+                        placeholder={'Status'}
                         multiple={true}
                         color={'secondary'}
                         info={{
-                          name: `Client Status:`,
+                          name: `Status:`,
                         }}
                       />
                     </div>
@@ -343,7 +351,11 @@ export default function ApplicationUsers() {
                     { field: 'insertedDate', use: 'date Invited' },
                     { field: 'isActive', use: 'Status' },
                   ]}
-                  rows={tableData}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   component={'administrators'}
                   viewRow={viewSelectedRow}
                 />

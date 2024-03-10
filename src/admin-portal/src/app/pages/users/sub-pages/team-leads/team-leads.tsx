@@ -1,40 +1,53 @@
-import { useLazyQuery, useQuery } from '@apollo/client';
-import { ClinicDto, PermissionEnum, ProvinceDto } from '@ecdlink/core';
+import { useQuery } from '@apollo/client';
+import { PermissionEnum } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
-import { usePanel } from '@ecdlink/core/lib/services/panel/PanelService';
 import {
   GetAllClinic,
   GetAllProvince,
   GetAllTeamLead,
-  GetAllTeamLeadAdminList,
+  GetSubDistrictsAndStats,
   getTeamLeadCount,
-  SortEnumType,
-  TeamLeadSortInput,
 } from '@ecdlink/graphql';
+import ReactDatePicker from 'react-datepicker';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import { useUser } from '../../../../hooks/useUser';
 
-import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
+import { SearchIcon, UploadIcon } from '@heroicons/react/solid';
 import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
-import { Menu } from '@headlessui/react';
 import { useHistory } from 'react-router';
 import UiTable from './components/ui-table';
+import { ConenctUsage } from './team-leads.types';
+import { format } from 'date-fns';
+import { Status } from '../application-admins/applications-admins.types';
+
+export const sortByConnectUsage: SearchDropDownOption<string>[] = [
+  ConenctUsage?.InvitationActive,
+  ConenctUsage?.InvitationExpired,
+  ConenctUsage?.LastOnlineOver6Months,
+  ConenctUsage?.LastOnlineWithinPast6Months,
+  ConenctUsage?.Removed,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
+  Status?.ACTIVE,
+  Status?.INACTIVE,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export default function TeamLeads() {
   const [tableData, setTableData] = useState<any[]>([]);
-  const panel = usePanel();
   const { hasPermission } = useUser();
-  const [statusFilter, setStatusFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('');
-
-  const [sortDescending, setSortDescending] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
@@ -46,9 +59,45 @@ export default function TeamLeads() {
     [provincesFiltered]
   );
 
-  console.log({ filteredProvinces });
+  const [clinics, setClinics] = useState<SearchDropDownOption<string>[]>([]);
+  const [clinicsFiltered, setClinicsFiltered] =
+    useState<SearchDropDownOption<string>[]>();
+  const filteredClinics = useMemo(
+    () => clinicsFiltered?.map((item) => item?.label),
+    [clinicsFiltered]
+  );
 
-  console.log({ provincesFiltered });
+  const [subDistricts, setSubDistricts] =
+    useState<SearchDropDownOption<string>[]>();
+  const [subDistrictsFiltered, setSubDistrictsFiltered] =
+    useState<SearchDropDownOption<string>[]>();
+  const filteredSubDistricts = useMemo(
+    () => subDistrictsFiltered?.map((item) => item?.id),
+    [subDistrictsFiltered]
+  );
+
+  const [statusFilter, setStatusFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
+  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  const onChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  const [connectUsageFilter, setConnectUsageFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredConnectUsage = useMemo(
+    () => connectUsageFilter?.map((item) => item?.id),
+    [connectUsageFilter]
+  );
+
   const history = useHistory();
   const { data: teamCountData } = useQuery(getTeamLeadCount, {
     fetchPolicy: 'cache-and-network',
@@ -73,42 +122,13 @@ export default function TeamLeads() {
     });
   };
 
-  // const getVariables = (
-  //   search: string,
-  //   clinicSearch: [string],
-  //   provinceSearch: [string],
-  //   visitSearch: [string],
-  //   currentPage: number,
-  //   pageSize: number,
-  //   order: [
-  //     {
-  //       "insertedDate": "DESC"
-  //     }
-  //   ]
-  // ) => {
-  //   return {
-  //     provinceSearch: province,
-  //     clinicSearch: clinic,
-  //     search: search,
-  //     order: [
-  //       {
-  //         insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc,
-  //       } as TeamLeadSortInput,
-  //     ],
-  //     pagingInput: {
-  //       pageNumber: currentPage,
-  //       pageSize: pageSize,
-  //     },
-  //   };
-  // };
-
   const { data, refetch } = useQuery(GetAllTeamLead, {
     variables: {
       search: '',
-      clinicSearch: [],
+      clinicSearch: filteredClinics,
       provinceSearch: filteredProvinces,
       visitSearch: [],
-      connectUsageSearch: [],
+      connectUsageSearch: filteredConnectUsage,
       pagingInput: {
         pageNumber: 1,
         pageSize: null,
@@ -122,28 +142,6 @@ export default function TeamLeads() {
     fetchPolicy: 'network-only',
   });
 
-  // useEffect(() => {
-  //   console.log(teamCountData);
-  //   GetAllTeamLeads({
-  //     variables: getVariables(
-  //       searchValue,
-  //       provinceFilter,
-  //       clinicFilter,
-  //       sortDescending,
-  //       currentPage,
-  //       teamCountData?.countTeamLeads
-  //     ),
-  //   });
-  // }, [
-  //   provinceFilter,
-  //   searchValue,
-  //   clinicFilter,
-  //   sortDescending,
-  //   currentPage,
-  //   pageSize,
-  //   teamCountData,
-  // ]);
-
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
@@ -156,19 +154,54 @@ export default function TeamLeads() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
-    return {
-      label: x.name,
-      value: x.name,
-    };
+  const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
   });
 
   const clearFilters = () => {
     setProvincesFiltered([]);
-    setStatusFilter('');
-    setClinicFilter('');
-    setProvinceFilter('');
+    setStatusFilter([]);
+    setClinicsFiltered([]);
+    setConnectUsageFilter([]);
+    setSubDistrictsFiltered([]);
+    setStartDate('');
+    setEndDate('');
   };
+
+  useEffect(() => {
+    if (clinicData?.GetAllClinic?.length > 0) {
+      const clinicsSorted = clinicData?.GetAllClinic?.slice()?.sort((a, b) =>
+        a.name < b.name ? -1 : a.name > b.name ? 1 : 0
+      );
+
+      setClinics(
+        clinicsSorted?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+            id: item?.id,
+          };
+        })
+      );
+    }
+  }, [clinicData?.GetAllClinic]);
+
+  useEffect(() => {
+    if (subDistrictData?.subDistrictsAndStats?.length > 0) {
+      const subDistrictSorted = subDistrictData?.subDistrictsAndStats
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+      setSubDistricts(
+        subDistrictSorted?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+            id: item?.id,
+          };
+        })
+      );
+    }
+  }, [subDistrictData]);
 
   useEffect(() => {
     if (provinceData?.GetAllProvince?.length > 0) {
@@ -202,18 +235,84 @@ export default function TeamLeads() {
         fullName: `${item.user?.fullName}`,
         isActive: item.user?.isActive,
         idNumber: item.user?.idNumber,
+        connectUsage: item?.user?.connectUsage,
         _url: undefined,
       }));
+
+      const filteredByDateData = copyItems?.filter((d) => {
+        return (
+          new Date(d?.insertedDate).getTime() >=
+            new Date(startDate)?.getTime() &&
+          new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
+        );
+      });
+
+      if (startDate && endDate) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = filteredByDateData?.filter(
+              (item) => item?.isActive
+            );
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = filteredByDateData?.filter(
+              (item) => !item?.isActive
+            );
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+        setTableData(filteredByDateData);
+        return;
+      }
+
+      if (statusFilter) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = copyItems?.filter(
+              (item) => item?.isActive
+            );
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = copyItems?.filter(
+              (item) => !item?.isActive
+            );
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+      }
       setTableData(copyItems);
     }
-  }, [data]);
+  }, [data, endDate, startDate, statusFilter]);
 
   const filterByValue = useCallback((array, value) => {
-    return array.filter(
+    return array?.filter(
       (data) =>
-        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+        JSON?.stringify(data)?.toLowerCase()?.indexOf(value?.toLowerCase()) !==
+        -1
     );
   }, []);
+
+  const dateDropdownValue = useMemo(
+    () =>
+      startDate && endDate
+        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
+        : '',
+    [endDate, startDate]
+  );
+
+  const handleSetDateFilter = useCallback(() => {
+    setFilterDateAdded(!filterDateAdded);
+  }, [filterDateAdded]);
+
+  useEffect(() => {
+    if (endDate) {
+      handleSetDateFilter();
+    }
+  }, [endDate]);
 
   if (tableData) {
     return (
@@ -229,7 +328,7 @@ export default function TeamLeads() {
                     )}
                   </span>
                   <input
-                    className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                     placeholder="      Search by id number or name..."
                     onChange={search}
                   />
@@ -290,21 +389,58 @@ export default function TeamLeads() {
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
-              {/* <div className="relative inline-block pr-2 text-left">
-                <Dropdown
-                  showSearch
-                  fillType="outlined"
-                  fillColor="secondary"
-                  placeholder="Province"
-                  selectedValue={provinceFilter}
-                  list={provinces}
-                  onChange={(item) => setProvinceFilter(item)}
-                />
-              </div> */}
-              <div className=" w-6/12">
+              <div className="flex items-center gap-2">
                 <SearchDropDown<string>
                   displayMenuOverlay={true}
-                  className={'mr-1'}
+                  className={'mr-0.5'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByConnectUsage}
+                  selectedOptions={connectUsageFilter}
+                  onChange={setConnectUsageFilter}
+                  placeholder={'CHW Connect usage'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `CHW Connect usage:`,
+                  }}
+                />
+              </div>
+              {!filterDateAdded && (
+                <div
+                  className="mr-1 flex items-center"
+                  onClick={() => setFilterDateAdded(!filterDateAdded)}
+                >
+                  <Dropdown
+                    fillType="filled"
+                    textColor={'textLight'}
+                    fillColor={endDate ? 'secondary' : 'white'}
+                    placeholder={dateDropdownValue || 'Date invited'}
+                    labelColor={endDate ? 'white' : 'textLight'}
+                    list={[]}
+                    onChange={(item) => {}}
+                    className="w-56 text-sm text-white"
+                  />
+                </div>
+              )}
+
+              {filterDateAdded && (
+                <ReactDatePicker
+                  selected={startDate}
+                  onChange={onChange}
+                  startDate={startDate}
+                  endDate={endDate}
+                  selectsRange={true}
+                  inline
+                  shouldCloseOnSelect={true}
+                />
+              )}
+              <div className="w-6/12">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
                   menuItemClassName={
                     'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
                   }
@@ -317,36 +453,57 @@ export default function TeamLeads() {
                   color={'secondary'}
                 />
               </div>
-              <div className="relative inline-block pr-2 text-left">
-                <Dropdown
-                  showSearch
-                  fillType="outlined"
-                  fillColor="secondary"
-                  placeholder="Clinic"
-                  selectedValue={clinicFilter}
-                  list={clinics}
-                  onChange={(item) => setClinicFilter(item)}
+              <div className="w-6/12">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={clinics}
+                  selectedOptions={clinicsFiltered}
+                  onChange={setClinicsFiltered}
+                  placeholder={'Clinic'}
+                  multiple={true}
+                  color={'secondary'}
                 />
               </div>
-              <div>
-                <Dropdown
-                  fillType="filled"
-                  textColor="white"
-                  fillColor="secondary"
-                  placeholder="Filter"
-                  labelColor="white"
-                  selectedValue={statusFilter}
-                  list={[
-                    { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'inactive' },
-                  ]}
-                  onChange={(item) => {
-                    setStatusFilter(item);
+              <div className="w-6/12">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={subDistricts}
+                  selectedOptions={subDistrictsFiltered}
+                  onChange={setSubDistrictsFiltered}
+                  placeholder={'Sub-district'}
+                  multiple={true}
+                  color={'secondary'}
+                />
+              </div>
+              <div className="mr-2 flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByClientStatusOptions}
+                  selectedOptions={statusFilter}
+                  onChange={setStatusFilter}
+                  placeholder={'Status'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `Status:`,
                   }}
-                  className="p-2"
                 />
               </div>
-
               <div className="flex w-full justify-end">
                 <div className="">
                   <button
@@ -369,7 +526,7 @@ export default function TeamLeads() {
                     columns={[
                       { field: 'idNumber', use: 'id / Passport' },
                       { field: 'fullName', use: 'name' },
-                      // {field: 'connectUsage', use: 'CHW Connect uage'},
+                      { field: 'connectUsage', use: 'CHW Connect uage' },
                       { field: 'insertedDate', use: 'Date Invited' },
                       { field: 'isActive', use: 'Active' },
                     ]}

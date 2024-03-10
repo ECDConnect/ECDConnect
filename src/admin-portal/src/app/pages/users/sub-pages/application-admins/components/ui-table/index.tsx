@@ -23,10 +23,10 @@ import {
 } from '@ecdlink/graphql';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
-import { UiTableProps } from './type';
 import { ContentTypes } from '../../../../../../constants/content-management';
-import { StoryActivitiesTypes } from '../../../../../content-management/content-management-models';
+import { UiTableProps } from './type';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import { StoryActivitiesTypes } from '../../../../../content-management/content-management-models';
 
 export default function UiTable({
   columns = [],
@@ -308,22 +308,6 @@ export default function UiTable({
           )}
         </div>
       );
-    } else if (display_value === 'RoadToHealthBook') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
-    } else if (display_value === 'MaternalCaseRecord') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
     } else if (
       column.field.match(/created|createdAt|updated|insertedDate|updatedAt/) &&
       column.field !== 'createdByName'
@@ -337,114 +321,6 @@ export default function UiTable({
         >
           {formatDate(display_value)}
         </span>
-      );
-    } else if (display_value === 'Small group') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
-    } else if (display_value === 'Large group') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
-    } else if (
-      column.field === 'subType' &&
-      (display_value
-        .toString()
-        .toLowerCase()
-        .indexOf(StoryActivitiesTypes.Storybook.toLowerCase()) !== -1 ||
-        display_value
-          .toString()
-          .toLowerCase()
-          .indexOf(StoryActivitiesTypes.ReadAloud.toLowerCase()) !== -1 ||
-        display_value
-          .toString()
-          .toLowerCase()
-          .indexOf(StoryActivitiesTypes.Other.toLowerCase()) !== -1)
-    ) {
-      // remove duplicates and trim
-      var arr = display_value.split(',');
-      display_value = arr
-        .filter(function (value, index, self) {
-          return self.indexOf(value.trim()) === index;
-        })
-        .join(',');
-
-      const splitValues = display_value?.split(',');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item, index) => {
-            return (
-              <div
-                key={'sb_' + index}
-                className={`${
-                  item.toString().toLowerCase() ===
-                  StoryActivitiesTypes.Storybook.toLowerCase()
-                    ? 'bg-secondary'
-                    : item.toString().toLowerCase() ===
-                      StoryActivitiesTypes.ReadAloud.toLowerCase()
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.toString().charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else if (
-      column.field === 'subCategories' &&
-      (column?.use === 'GT - Skills' || column?.use === 'Skills')
-    ) {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          {display_value?.map((item: any, index: number) => (
-            <div key={`cat_` + index} className="ml-1 flex cursor-pointer">
-              <div
-                className={`${
-                  item?.imageHexColor ? '' : 'bg-tertiary'
-                } flex h-9 w-9 items-center justify-center rounded-full`}
-                style={{
-                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
-                }}
-              >
-                <img
-                  alt="skill"
-                  src={item?.imageUrl}
-                  className="h-6 w-6 object-contain"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    } else if (
-      column?.field === 'subCategories' ||
-      column?.field === 'subDistricts'
-    ) {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          {display_value?.map((item: any, index: number) => (
-            <div
-              key={`subCategories_` + item?.id}
-              className={' text-textMid m-1 rounded-full py-1 text-xs'}
-            >
-              {index === display_value?.length - 1
-                ? `${item?.name}`
-                : `${item?.name};`}
-            </div>
-          ))}
-        </div>
       );
     } else if (column.field === 'teamLeads') {
       rowValue = (
@@ -517,33 +393,35 @@ export default function UiTable({
     } else if (column.field === 'roles') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer items-center">
-          {display_value?.map((item: any) => {
-            const chipColor = (role?: string) => {
-              switch (role) {
-                case 'Administrator':
-                  return 'bg-infoMain';
-                case 'Practitioner':
-                  return 'bg-secondary';
-                case 'Community Health Worker':
-                  return 'bg-secondary';
-                default:
-                  return 'bg-primary';
-              }
-            };
-            return (
-              <div
-                key={`role_` + item?.id}
-                className={
-                  `${chipColor(item[column.displayProperty])}` +
-                  ' m-1 rounded-full py-1 px-3 text-xs text-white'
+          {display_value
+            ?.filter((value) => value?.name !== 'Community Health Worker')
+            ?.map((item: any) => {
+              const chipColor = (role?: string) => {
+                switch (role) {
+                  case 'Administrator':
+                    return 'bg-infoMain';
+                  case 'SuperAdmin':
+                    return 'bg-infoMain';
+                  case 'ContentManager':
+                    return 'bg-tertiary';
+                  case 'DesignManager':
+                    return 'bg-secondary';
+                  default:
+                    return 'bg-primary';
                 }
-              >
-                {item[column?.displayProperty] === 'Community Health Worker'
-                  ? 'CHW'
-                  : item[column?.displayProperty]}
-              </div>
-            );
-          })}
+              };
+              return (
+                <div
+                  key={`role_` + item?.id}
+                  className={
+                    `${chipColor(item?.name)}` +
+                    ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                  }
+                >
+                  {item?.name}
+                </div>
+              );
+            })}
         </div>
       );
     } else if (column.type === 'workflowStatus') {

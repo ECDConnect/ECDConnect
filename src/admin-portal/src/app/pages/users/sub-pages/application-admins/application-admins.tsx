@@ -4,7 +4,6 @@ import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
 import { SortEnumType, UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import UserPanelCreate from '../../components/user-panel-create/user-panel-create';
 import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
@@ -13,6 +12,7 @@ import { useHistory } from 'react-router';
 import ReactDatePicker from 'react-datepicker';
 import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
+import UiTable from './components/ui-table';
 
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   AdminTypes?.ContentManager,
@@ -33,8 +33,6 @@ export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
   value: item,
 }));
 
-console.log({ sortByTypeOptions });
-
 export default function ApplicationAdmins() {
   const [nameFilter, setNameFilter] = useState(true);
 
@@ -43,9 +41,10 @@ export default function ApplicationAdmins() {
   const [searchValue, setSearchValue] = useState('');
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
   const panel = usePanel();
-  const [statusFilter, setStatusFilter] = useState('active');
+  const [statusFilter, setStatusFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
   const [showFilter, setShowFilter] = useState(false);
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
@@ -53,9 +52,6 @@ export default function ApplicationAdmins() {
   const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [types, setTypes] = useState<SearchDropDownOption<string>[]>();
-  const [clientStatusValues, setClientStatusValues] = useState<
-    SearchDropDownOption<string>[]
-  >([]);
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
@@ -84,30 +80,12 @@ export default function ApplicationAdmins() {
     }
   }, [endDate]);
 
-  let userStatus = statusFilter === 'active' ? true : false;
-
   const clearFilters = () => {
-    setStatusFilter('');
     setNameFilter(false);
     setTypes([]);
     setEndDate(null);
     setStartDate(null);
-    setClientStatusValues([]);
-  };
-
-  const getCountVariables = (search: string) => {
-    return {
-      search: search,
-      pagingInput: {
-        filterBy: [
-          {
-            fieldName: 'ADMINISTRATOR',
-            filterType: 'EQUALS',
-            value: 'true',
-          },
-        ],
-      },
-    };
+    setStatusFilter([]);
   };
 
   const getVariables = (
@@ -175,9 +153,9 @@ export default function ApplicationAdmins() {
 
   useEffect(() => {
     if (data?.users) {
-      const copyItems = data.users;
-      const modifiedData = copyItems.map(
-        (obj: { [x: string]: any; __typename: any; roles: any }) => {
+      const copyItems = data?.users;
+      const modifiedData = copyItems
+        .map((obj: { [x: string]: any; __typename: any; roles: any }) => {
           const newUserData = {
             ...obj,
             displayColumnIdPassportEmail:
@@ -191,25 +169,66 @@ export default function ApplicationAdmins() {
             }
           );
           return { ...rest, roles: modifiedRoles };
-        }
-      );
-      const finalTableData = modifiedData
-        .map(({ roles, ...rest }) => rest)
-        .filter((v: any) => v.isActive === userStatus)
+        })
+        ?.slice()
+        ?.sort((a, b) =>
+          a.insertedDate > b.insertedDate
+            ? -1
+            : a.insertedDate < b.insertedDate
+            ? 1
+            : 0
+        );
+
+      const filteredByDateData = modifiedData
+        ?.filter((d) => {
+          return (
+            new Date(d?.insertedDate).getTime() >=
+              new Date(startDate)?.getTime() &&
+            new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
+          );
+        })
         .map(mapUserTableItem);
-      setTableData(finalTableData);
+
+      if (startDate && endDate) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = filteredByDateData
+              ?.filter((item) => item?.isActive)
+              .map(mapUserTableItem);
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = filteredByDateData
+              ?.filter((item) => !item?.isActive)
+              .map(mapUserTableItem);
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+        setTableData(filteredByDateData);
+        return;
+      }
+
+      if (statusFilter) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = modifiedData?.filter(
+              (item) => item?.isActive
+            );
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = modifiedData?.filter(
+              (item) => !item?.isActive
+            );
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+      }
+      setTableData(modifiedData);
     }
-  }, [data]);
-
-  useEffect(() => {
-    if (!data?.users) return;
-
-    let allUsers: UserDto[] = [...data.users];
-    setTableData(
-      allUsers.filter((v) => v.isActive === userStatus).map(mapUserTableItem)
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [data?.users, endDate, startDate, statusFilter]);
 
   const displayUserPanel = () => {
     panel({
@@ -257,13 +276,21 @@ export default function ApplicationAdmins() {
     setSearchValue(e.target.value || '');
   }, 150);
 
+  const filterByValue = useCallback((array, value) => {
+    return array?.filter(
+      (data) =>
+        JSON?.stringify(data)?.toLowerCase()?.indexOf(value?.toLowerCase()) !==
+        -1
+    );
+  }, []);
+
   if (tableData) {
     return (
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <div className="text-body w-11/12 sm:flex  sm:justify-around">
-              <div className="text-body w1/12 flex-col sm:flex sm:justify-around">
+              <div className="text-body w-11/12 flex-col sm:flex sm:justify-around">
                 <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
@@ -271,7 +298,7 @@ export default function ApplicationAdmins() {
                     )}
                   </span>
                   <input
-                    className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                     placeholder="      Search by email or name..."
                     onChange={search}
                   />
@@ -336,91 +363,15 @@ export default function ApplicationAdmins() {
                         }
                         overlayTopOffset={'120'}
                         options={sortByClientStatusOptions}
-                        selectedOptions={clientStatusValues}
-                        onChange={setClientStatusValues}
-                        placeholder={'Client Status'}
+                        selectedOptions={statusFilter}
+                        onChange={setStatusFilter}
+                        placeholder={'Status'}
                         multiple={true}
                         color={'secondary'}
                         info={{
-                          name: `Client Status:`,
+                          name: `Status:`,
                         }}
                       />
-                    </div>
-
-                    <div>
-                      <div className="relative inline-block text-left">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowDropDownFilter(!showDropDownFilter)
-                            }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                              !showDropDownFilter
-                                ? 'bg-secondary text-white'
-                                : 'text-secondary border-secondary border-2 bg-white'
-                            } hover:text-secondary hover:bg-white `}
-                            id="menu-button"
-                            aria-expanded={showDropDownFilter}
-                            aria-haspopup={showDropDownFilter}
-                          >
-                            {statusFilter === ''
-                              ? 'Filter by status'
-                              : statusFilter}
-                            <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${
-                                !showDropDownFilter
-                                  ? 'hover:text-secondary text-white'
-                                  : 'text-secondary hover:text-white'
-                              }`}
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        {/*  */}
-                        {showDropDownFilter && (
-                          <div
-                            className="focus:outline-none absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                            role="menu"
-                            aria-orientation="horizontal"
-                            aria-labelledby="menu-button"
-                          >
-                            <div className="py-1" role="none">
-                              {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('active');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className=" focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-0"
-                              >
-                                Active
-                              </a>
-                              <a
-                                onClick={() => {
-                                  setStatusFilter('inactive');
-                                  setShowDropDownFilter(!showDropDownFilter);
-                                }}
-                                className="focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                                role="menuitem"
-                                id="menu-item-1"
-                              >
-                                Inactive
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                     <div className="justify-self z-20 col-end-3 ml-2">
@@ -489,11 +440,16 @@ export default function ApplicationAdmins() {
                       use: 'Email/Username/Id',
                     },
                     { field: 'fullName', use: 'name' },
+                    { field: 'roles', use: 'Admin type' },
                     { field: 'insertedDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
                   viewRow={viewSelectedRow}
-                  rows={tableData}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   sendRow={true}
                   searchInput={searchValue}
                   options={{
