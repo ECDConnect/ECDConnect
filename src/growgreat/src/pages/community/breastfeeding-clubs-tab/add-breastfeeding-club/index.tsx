@@ -197,7 +197,9 @@ export const AddBreastfeedingClub: React.FC = () => {
         </div>
         <Checkbox
           className="my-4"
-          description={`I confirm that ${count} client attended`}
+          description={`I confirm that ${count} client${
+            count > 1 ? 's' : ''
+          } attended`}
           checked={checkboxChecked}
           onCheckboxChange={() => setCheckboxChecked(!checkboxChecked)}
         />
