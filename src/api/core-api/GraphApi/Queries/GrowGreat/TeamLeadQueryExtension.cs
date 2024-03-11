@@ -41,7 +41,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                       List<string> provinceSearch = null,
                                                       List<string> clinicSearch = null,
                                                       List<string> visitSearch = null,
-                                                      List<string> connectUsageSearch = null)
+                                                      List<string> connectUsageSearch = null,
+                                                      List<string> subDistrictSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var teamLeads = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
@@ -61,7 +62,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             if (clinicSearch.Count != 0)
                 teamLeads = teamLeads.Where(h => h.Clinics.Any(c => clinicSearch.Contains(c.Clinic.Name)));
-           
+
+            if (subDistrictSearch.Count != 0)
+                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => clinicSearch.Contains(c.Clinic.SubDistrict.Name)));
+
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
