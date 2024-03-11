@@ -14,14 +14,14 @@ import {
 import { useWindowSize } from '@reach/window-size';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
-import { LeaderProfileParams } from './types';
+import { LeaderProfileRouteParams, LeaderProfileRouteState } from './types';
 import { TeamTabState } from '../../../types';
 
 export const TeamLeaderProfile = () => {
   const { isOnline } = useOnlineStatus();
 
   const history = useHistory();
-  const { state } = useLocation<TeamTabState>();
+  const { state } = useLocation<TeamTabState & LeaderProfileRouteState>();
 
   const { theme } = useTheme();
 
@@ -31,7 +31,7 @@ export const TeamLeaderProfile = () => {
 
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
-  const { leaderId } = useParams<LeaderProfileParams>();
+  const { leaderId } = useParams<LeaderProfileRouteParams>();
 
   const leader = clinicDetails?.teamLeads?.find(
     (leader) => leader.id === leaderId
@@ -66,6 +66,20 @@ export const TeamLeaderProfile = () => {
     });
   };
 
+  const onBack = () => {
+    if (state?.isFromTeamTab) {
+      return history.push(ROUTES.COMMUNITY.ROOT, {
+        forceReload: false,
+      } as TeamTabState);
+    }
+
+    if (state?.isFromAboutPage) {
+      return history.push(ROUTES.PRACTITIONER.ABOUT);
+    }
+
+    history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT);
+  };
+
   return (
     <BannerWrapper
       displayOffline={!isOnline}
@@ -75,14 +89,7 @@ export const TeamLeaderProfile = () => {
       className="z-10"
       size="small"
       title={name}
-      onBack={() =>
-        history.push(
-          state?.isFromTeamTab
-            ? ROUTES.COMMUNITY.ROOT
-            : ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT,
-          { forceReload: false } as TeamTabState
-        )
-      }
+      onBack={onBack}
     >
       <div className="inline-flex w-full flex-col items-center justify-center pt-8">
         <ProfileAvatar

@@ -30,8 +30,8 @@ const ROUTES = {
         ACTIVITY_DETAILS: '/activity-details/:activitySlug',
       }),
       MEMBERS: addPrefix('/members', {
-        LEADER_PROFILE: 'leader/:leaderId',
-        MEMBER_PROFILE: 'member/:memberHealthCareWorkerId',
+        LEADER_PROFILE: '/leader/:leaderId',
+        MEMBER_PROFILE: '/member/:memberHealthCareWorkerId',
       }),
     }),
     BREASTFEEDING_CLUBS: addPrefix('/breastfeeding-clubs', {

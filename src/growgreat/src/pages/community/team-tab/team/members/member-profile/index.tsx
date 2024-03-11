@@ -12,8 +12,8 @@ import {
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
 import { useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router';
-import { MemberProfileParams } from './types';
+import { useHistory, useLocation, useParams } from 'react-router';
+import { MemberProfileRouteParams, MemberProfileRouteState } from './types';
 import { useAppDispatch } from '@/store';
 import {
   healthCareWorkerSelectors,
@@ -47,7 +47,9 @@ export const TeamMemberProfile = () => {
   );
   const user = useSelector(userSelectors.getUser);
 
-  const { memberHealthCareWorkerId } = useParams<MemberProfileParams>();
+  const { memberHealthCareWorkerId } = useParams<MemberProfileRouteParams>();
+
+  const { state } = useLocation<MemberProfileRouteState>();
 
   const appDispatch = useAppDispatch();
 
@@ -144,7 +146,13 @@ export const TeamMemberProfile = () => {
       className="z-10"
       size="small"
       title={name}
-      onBack={() => history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT)}
+      onBack={() =>
+        history.push(
+          state?.isFromAboutPage
+            ? ROUTES.PRACTITIONER.ABOUT
+            : ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT
+        )
+      }
     >
       <div className="inline-flex w-full flex-col items-center justify-center pt-8">
         <ProfileAvatar

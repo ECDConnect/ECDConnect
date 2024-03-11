@@ -5,6 +5,10 @@ import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
 import { UserResetPasswrodParams } from './user.types';
 
+export const UserActions = {
+  UPDATE_USER: 'updateUser',
+};
+
 export const getUser = createAsyncThunk<
   UserDto,
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -152,7 +156,7 @@ export const updateUser = createAsyncThunk<
   boolean[],
   {},
   ThunkApiType<RootState>
->('updateUser', async (_, { getState, rejectWithValue }) => {
+>(UserActions.UPDATE_USER, async (_, { getState, rejectWithValue }) => {
   const {
     auth: { userAuth },
     user: { user },
