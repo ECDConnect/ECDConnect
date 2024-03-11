@@ -21,11 +21,18 @@ import {
   deleteMultipleUsers,
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
-import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  PaperAirplaneIcon,
+  TrashIcon,
+  XCircleIcon,
+} from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
-import { ContentTypes } from '../../../../../../constants/content-management';
 import { UiTableProps } from './type';
+import { ContentTypes } from '../../../../../../constants/content-management';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import { ConnectUsage } from '../../health-care-worker.types';
 
 export default function UiTable({
   columns = [],
@@ -321,38 +328,90 @@ export default function UiTable({
           {formatDate(display_value)}
         </span>
       );
+    } else if (column.field === 'teamLeads') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div
+              key={`teamLeads_` + item?.id + Math.random()}
+              className={' text-textMid m-1 rounded-full py-1 text-xs'}
+            >
+              {`${item?.teamLead?.user?.firstName}, `}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (column.field === 'connectUsage') {
+      const columnColor = (value?: string) => {
+        const firstWord = value?.split(' ')[0];
+        const isRemoved = firstWord === 'Removed:';
+
+        switch (value) {
+          case ConnectUsage?.InvitationActive:
+            return (
+              <div className="flex items-center gap-0.5">
+                <ClockIcon className="text-infoMain h-5 w-5" />
+                <span className="text-infoMain">{display_value}</span>
+              </div>
+            );
+          // case firstWord
+          case ConnectUsage?.InvitationExpired:
+            return (
+              <div className="flex items-center gap-0.5">
+                <XCircleIcon className="text-alertMain h-5 w-5" />
+                <span className="text-alertMain">{display_value}</span>
+              </div>
+            );
+          default:
+            return isRemoved ? (
+              <div className="flex items-center gap-0.5">
+                <XCircleIcon className="text-alertMain h-5 w-5" />
+                <span className="text-alertMain">{display_value}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-0.5">
+                <CheckCircleIcon className="text-successMain h-5 w-5" />
+                <span className="text-successMain">{display_value}</span>
+              </div>
+            );
+        }
+      };
+
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <span>{columnColor(display_value)}</span>
+        </div>
+      );
     } else if (column.field === 'roles') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer items-center">
-          {display_value
-            ?.filter((value) => value?.name !== 'Community Health Worker')
-            ?.map((item: any) => {
-              const chipColor = (role?: string) => {
-                switch (role) {
-                  case 'Administrator':
-                    return 'bg-infoMain';
-                  case 'SuperAdmin':
-                    return 'bg-infoMain';
-                  case 'ContentManager':
-                    return 'bg-tertiary';
-                  case 'DesignManager':
-                    return 'bg-secondary';
-                  default:
-                    return 'bg-primary';
+          {display_value?.map((item: any) => {
+            const chipColor = (role?: string) => {
+              switch (role) {
+                case 'Administrator':
+                  return 'bg-infoMain';
+                case 'Practitioner':
+                  return 'bg-secondary';
+                case 'Community Health Worker':
+                  return 'bg-secondary';
+                default:
+                  return 'bg-primary';
+              }
+            };
+            return (
+              <div
+                key={`role_` + item?.id}
+                className={
+                  `${chipColor(item[column.displayProperty])}` +
+                  ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
-              };
-              return (
-                <div
-                  key={`role_` + item?.id}
-                  className={
-                    `${chipColor(item?.name)}` +
-                    ' m-1 rounded-full py-1 px-3 text-xs text-white'
-                  }
-                >
-                  {item?.name}
-                </div>
-              );
-            })}
+              >
+                {item[column?.displayProperty] === 'Community Health Worker'
+                  ? 'CHW'
+                  : item[column?.displayProperty]}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (column.type === 'workflowStatus') {

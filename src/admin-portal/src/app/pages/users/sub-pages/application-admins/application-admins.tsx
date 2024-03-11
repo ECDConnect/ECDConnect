@@ -1,4 +1,4 @@
-import { useLazyQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
 import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
 import { SortEnumType, UserList } from '@ecdlink/graphql';
@@ -6,13 +6,19 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import { useUser } from '../../../../hooks/useUser';
 import UserPanelCreate from '../../components/user-panel-create/user-panel-create';
-import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusIcon,
+  SearchIcon,
+} from '@heroicons/react/solid';
 import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import ReactDatePicker from 'react-datepicker';
 import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
 import UiTable from './components/ui-table';
+import { filterByValue } from '../../../../utils/string-utils/string-utils';
 
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   AdminTypes?.ContentManager,
@@ -34,8 +40,6 @@ export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
 }));
 
 export default function ApplicationAdmins() {
-  const [nameFilter, setNameFilter] = useState(true);
-
   const { hasPermission } = useUser();
 
   const [searchValue, setSearchValue] = useState('');
@@ -46,11 +50,9 @@ export default function ApplicationAdmins() {
     SearchDropDownOption<string>[]
   >([]);
   const [showFilter, setShowFilter] = useState(false);
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
-  const [formIsDirty, setFormIsDirty] = useState(false);
   const [types, setTypes] = useState<SearchDropDownOption<string>[]>();
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
@@ -81,40 +83,13 @@ export default function ApplicationAdmins() {
   }, [endDate]);
 
   const clearFilters = () => {
-    setNameFilter(false);
     setTypes([]);
     setEndDate(null);
     setStartDate(null);
     setStatusFilter([]);
   };
 
-  const getVariables = (
-    search: string,
-    sortDescending: boolean,
-    currentPage: number,
-    pageSize: number
-  ) => {
-    return {
-      search: search,
-      order: [
-        { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-        { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-      ],
-      pagingInput: {
-        pageNumber: currentPage,
-        pageSize: pageSize,
-        filterBy: [
-          {
-            fieldName: 'ADMINISTRATOR',
-            filterType: 'EQUALS',
-            value: 'true',
-          },
-        ],
-      },
-    };
-  };
-
-  const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
+  const { data, refetch } = useQuery(UserList, {
     variables: {
       search: '',
       order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
@@ -132,24 +107,6 @@ export default function ApplicationAdmins() {
     },
     fetchPolicy: 'network-only',
   });
-
-  useEffect(() => {
-    // TODO: Use nameFilter
-    const getUserQueryVariables = getVariables(
-      searchValue,
-      nameFilter,
-      selectedPage,
-      selectedPageSize
-    );
-    getAllUsers({
-      variables: getUserQueryVariables,
-    });
-    // TODO: Use actual pagination when table component supports it.
-    // const getUserCountQueryVariables = getCountVariables(searchValue);
-    // getCountUsers({
-    //   variables: getUserCountQueryVariables
-    // });
-  }, [searchValue, nameFilter]);
 
   useEffect(() => {
     if (data?.users) {
@@ -276,14 +233,6 @@ export default function ApplicationAdmins() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const filterByValue = useCallback((array, value) => {
-    return array?.filter(
-      (data) =>
-        JSON?.stringify(data)?.toLowerCase()?.indexOf(value?.toLowerCase()) !==
-        -1
-    );
-  }, []);
-
   if (tableData) {
     return (
       <div>
@@ -395,22 +344,18 @@ export default function ApplicationAdmins() {
                     className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
                     type="button"
                   >
-                    Filter
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      aria-hidden="true"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
+                    <div className="flex gap-1">
+                      Filter
+                      {!showFilter ? (
+                        <span>
+                          <ChevronDownIcon className="h-6 w-6 text-white" />
+                        </span>
+                      ) : (
+                        <span>
+                          <ChevronUpIcon className="h-6 w-6 text-white" />
+                        </span>
+                      )}
+                    </div>
                   </button>
                 </span>
               </div>

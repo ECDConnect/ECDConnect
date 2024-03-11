@@ -20,6 +20,7 @@ import { useHistory } from 'react-router';
 import { format } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import { Status } from '../application-admins/applications-admins.types';
+import { filterByValue } from '../../../../utils/string-utils/string-utils';
 
 export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
   Status?.ACTIVE,
@@ -213,14 +214,6 @@ export default function ApplicationUsers() {
       handleSetDateFilter();
     }
   }, [endDate]);
-
-  const filterByValue = useCallback((array, value) => {
-    return array?.filter(
-      (data) =>
-        JSON?.stringify(data)?.toLowerCase()?.indexOf(value?.toLowerCase()) !==
-        -1
-    );
-  }, []);
 
   if (tableData) {
     return (

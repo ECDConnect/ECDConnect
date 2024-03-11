@@ -13,7 +13,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import { useUser } from '../../../../hooks/useUser';
 
-import { SearchIcon, UploadIcon } from '@heroicons/react/solid';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  SearchIcon,
+  UploadIcon,
+} from '@heroicons/react/solid';
 import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { useHistory } from 'react-router';
@@ -21,6 +26,7 @@ import UiTable from './components/ui-table';
 import { ConenctUsage } from './team-leads.types';
 import { format } from 'date-fns';
 import { Status } from '../application-admins/applications-admins.types';
+import { filterByValue } from '../../../../utils/string-utils/string-utils';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -102,14 +108,6 @@ export default function TeamLeads() {
   );
 
   const history = useHistory();
-  const { data: teamCountData } = useQuery(getTeamLeadCount, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      search: '',
-      clinicSearch: '',
-      provinceSearch: '',
-    },
-  });
 
   const viewSelectedRow = (selectedRow: any) => {
     localStorage.setItem(
@@ -124,8 +122,8 @@ export default function TeamLeads() {
       },
     });
   };
-  console.log({ filteredSubDistricts });
-  const { data, refetch } = useQuery(GetAllTeamLead, {
+
+  const { data } = useQuery(GetAllTeamLead, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
@@ -292,14 +290,6 @@ export default function TeamLeads() {
     }
   }, [data, endDate, startDate, statusFilter]);
 
-  const filterByValue = useCallback((array, value) => {
-    return array?.filter(
-      (data) =>
-        JSON?.stringify(data)?.toLowerCase()?.indexOf(value?.toLowerCase()) !==
-        -1
-    );
-  }, []);
-
   const dateDropdownValue = useMemo(
     () =>
       startDate && endDate
@@ -349,22 +339,18 @@ export default function TeamLeads() {
                     className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
                     type="button"
                   >
-                    Filter
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      aria-hidden="true"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
+                    <div className="flex gap-1">
+                      Filter
+                      {!showFilter ? (
+                        <span>
+                          <ChevronDownIcon className="h-6 w-6 text-white" />
+                        </span>
+                      ) : (
+                        <span>
+                          <ChevronUpIcon className="h-6 w-6 text-white" />
+                        </span>
+                      )}
+                    </div>
                   </button>
                 </span>
               </div>
