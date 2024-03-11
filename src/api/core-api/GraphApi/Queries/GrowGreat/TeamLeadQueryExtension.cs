@@ -114,21 +114,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             if (visitSearch.Count != 0)
             {
-                var clinicIds = teamLeaders.Select(x => x.ClinicIds).ToList();
-                var combinedClinicIds = clinicIds.SelectMany(x => x).ToList();
-                var hcwIds = hcwRepo.GetAll().Where(x => combinedClinicIds.Contains((Guid)x.ClinicId)).Select(x => x.UserId).ToList();
+                var startOfMonth = DateTime.Now.GetStartOfMonth();
+                var endOfMonth = DateTime.Now.GetEndOfMonth();
+                var clinicIds = teamLeaders.Select(x => x.ClinicIds).Distinct().ToList();
+                var combinedClinicIds = clinicIds.SelectMany(x => x).Distinct().ToList();
+                var hcwIds = hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId != null && combinedClinicIds.Contains((Guid)x.ClinicId)).Select(x => x.UserId).ToList();
 
                 var visits = visitRepo.GetAll().Where(x => x.Attended == true &&
                                                            x.ActualVisitDate.HasValue &&
-                                                           (x.ActualVisitDate.Value.Date >= DateTime.Now.GetStartOfMonth() && x.ActualVisitDate.Value.Date <= DateTime.Now.GetEndOfMonth()) &&
-                                                           (x.Mother.IsActive && hcwIds.Contains((Guid)x.Mother.HealthCareWorker.UserId) ||
-                                                           (x.Infant.IsActive && hcwIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.UserId)))
+                                                           (x.ActualVisitDate.Value.Date >= startOfMonth.Date && x.ActualVisitDate.Value.Date <= endOfMonth.Date) &&
+                                                           (x.Mother.IsActive && hcwIds.Contains((Guid)x.Mother.HealthCareWorker.User.Id) ||
+                                                           (x.Infant.IsActive && hcwIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.User.Id)))
                                                            ).ToList();
 
                 List<PortalUsersTLModel> visitTeamLeaders = new List<PortalUsersTLModel>();
                 foreach (var item in teamLeaders)
                 {
                     var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
+
 
                     if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
                     {
