@@ -80,6 +80,10 @@ export const Dashboard: React.FC = () => {
 
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
 
+  const communityHref = isFirstTimeCommunitySection
+    ? ROUTES.COMMUNITY.WELCOME
+    : ROUTES.COMMUNITY.ROOT;
+
   const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
     calculateClinicLeaguePositionPercentiles(
       league?.clinics ?? [],
@@ -181,27 +185,25 @@ export const Dashboard: React.FC = () => {
       ? [
           {
             name: NavigationTypes.Community,
-            href: isFirstTimeCommunitySection
-              ? ROUTES.COMMUNITY.WELCOME
-              : ROUTES.COMMUNITY.ROOT,
+            href: communityHref,
             icon: 'UserGroupIcon',
             current: false,
             nestedChildren: [
               {
                 name: COMMUNITY_TABS.TEAM.TITLE,
-                href: ROUTES.COMMUNITY.ROOT,
+                href: communityHref,
                 params: { activeTabIndex: COMMUNITY_TABS.TEAM.INDEX },
                 current: false,
               },
               {
                 name: COMMUNITY_TABS.LEAGUE.TITLE,
-                href: ROUTES.COMMUNITY.ROOT,
+                href: communityHref,
                 params: { activeTabIndex: COMMUNITY_TABS.LEAGUE.INDEX },
                 current: false,
               },
               {
                 name: COMMUNITY_TABS.BREASTFEEDING_CLUBS.TITLE,
-                href: ROUTES.COMMUNITY.ROOT,
+                href: communityHref,
                 params: {
                   activeTabIndex: COMMUNITY_TABS.BREASTFEEDING_CLUBS.INDEX,
                 },
@@ -209,7 +211,7 @@ export const Dashboard: React.FC = () => {
               },
               {
                 name: COMMUNITY_TABS.CONNECT.TITLE,
-                href: ROUTES.COMMUNITY.ROOT,
+                href: communityHref,
                 params: { activeTabIndex: COMMUNITY_TABS.CONNECT.INDEX },
                 current: false,
               },
