@@ -1,25 +1,39 @@
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import { ClinicDetailsProps } from './clinic-details.types';
-import {
-  BannerWrapper,
-  Button,
-  Typography,
-  renderIcon,
-  Divider,
-} from '@ecdlink/ui';
-import { PhoneIcon } from '@heroicons/react/solid';
+import { BannerWrapper, Button, Typography, Divider, Alert } from '@ecdlink/ui';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import * as styles from './clinic-details.styles';
 import WhatsLogo from '../../../../../assets/whatsgg.svg';
+import { useSelector } from 'react-redux';
+import { communitySelectors } from '@/store/community';
+import { formatPhoneNumber, useSnackbar } from '@ecdlink/core';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CommunityActions } from '@/store/community/community.actions';
+import { NoCommunityFound } from '@/pages/community/0-components/no-community-found';
+import { MemberProfileRouteState } from '@/pages/community/team-tab/team/members/member-profile/types';
 
 export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
-  healthCareWorker,
   setClinicDetails,
 }) => {
   const { isOnline } = useOnlineStatus();
 
-  const { addressLine1, addressLine3, postalCode } =
-    healthCareWorker?.teamLead?.clinic?.siteAddress || {};
+  const { showMessage } = useSnackbar();
+
+  const history = useHistory();
+
+  const { isLoading: isLoadingClinic } = useThunkFetchCall(
+    'community',
+    CommunityActions.GET_CLINIC_BY_ID
+  );
+
+  const clinic = useSelector(communitySelectors.getClinicSelector);
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorker
+  );
+
+  const { addressLine1, addressLine3, postalCode } = clinic?.siteAddress || {};
 
   const healthCareWorkerAddress = useMemo(
     () =>
@@ -29,193 +43,180 @@ export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
     [addressLine1, addressLine3, postalCode]
   );
 
-  const call = (phoneNumber: string) => {
+  const call = (phoneNumber?: string) => {
+    if (!phoneNumber) {
+      return showMessage({
+        message: 'Phone number is not available',
+        type: 'error',
+      });
+    }
+
     window.open(`tel:${phoneNumber}`);
   };
 
-  const whatsapp = () => {
-    window.open(`https://wa.me/${healthCareWorker?.user?.phoneNumber}`);
+  const whatsapp = (number?: string) => {
+    if (!number) {
+      return showMessage({
+        message: 'WhatsApp number is not available',
+        type: 'error',
+      });
+    }
+
+    window.open(`https://wa.me/${number}`);
   };
 
+  if (!clinic && !isLoadingClinic) {
+    return <NoCommunityFound />;
+  }
+
   return (
-    <div className={styles.contentWrapper}>
-      <BannerWrapper
-        title={`Your clinic`}
-        color={'primary'}
-        size="small"
-        renderOverflow={false}
-        onBack={() => setClinicDetails(false)}
-        displayOffline={!isOnline}
-        backgroundImageColour={'primary'}
-      ></BannerWrapper>
-      <div className="ml-4">
-        <div>
+    <BannerWrapper
+      title="Your clinic"
+      color={'primary'}
+      size="small"
+      renderOverflow
+      renderBorder
+      onBack={() => setClinicDetails(false)}
+      displayOffline={!isOnline}
+      className="flex flex-col p-4 pt-6"
+      isLoading={isLoadingClinic}
+    >
+      <Typography text={clinic?.name} type="h1" color="textDark" />
+      {!!clinic?.siteAddress && (
+        <>
           <Typography
-            text={`${healthCareWorker?.teamLead?.clinic?.name}`}
-            type="h1"
+            text={`Clinic address:`}
+            type="h3"
             color="textDark"
             className={'mt-4'}
           />
-        </div>
-        {!!healthCareWorkerAddress && (
-          <div>
-            <div>
-              <Typography
-                text={`Clinic address:`}
-                type="h3"
-                color="textDark"
-                className={'mt-4'}
-              />
-              <Typography
-                text={!!healthCareWorkerAddress ? healthCareWorkerAddress : ''}
-                type="h3"
-                color="textMid"
-                className={'mt-2'}
-              />
-            </div>
-            <Button
-              size="small"
-              shape="normal"
-              color="primary"
-              type="outlined"
-              className="mt-2"
-              onClick={() => {
-                navigator.clipboard.writeText(healthCareWorkerAddress);
-              }}
-            >
-              <Typography type="help" color="primary" text="Copy address" />
-              {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
-            </Button>
-          </div>
-        )}
-        <div>
-          <div>
-            <Typography
-              text={`Clinic phone number:`}
-              type="h3"
-              color="textDark"
-              className={'mt-4'}
-            />
-            <Typography
-              text={
-                healthCareWorker?.teamLead?.clinic?.phoneNumber
-                  ? `${healthCareWorker?.teamLead?.clinic?.phoneNumber}`
-                  : ''
-              }
-              type="h2"
-              color="secondary"
-              className={'mt-2'}
-            />
-          </div>
+          <Typography
+            text={healthCareWorkerAddress}
+            type="body"
+            color="textMid"
+          />
           <Button
             size="small"
             shape="normal"
             color="primary"
             type="outlined"
-            className="mt-4"
-            onClick={() =>
-              call(healthCareWorker?.teamLead?.clinic?.phoneNumber!)
-            }
-          >
-            {renderIcon('PhoneIcon', styles.buttonIcon)}
-            <Typography type="help" color="primary" text="Call clinic" />
-          </Button>
-        </div>
-        <div className="flex justify-center">
-          <Divider
-            className="text-primaryAccent1 mt-8 w-11/12"
-            dividerType="dashed"
+            className="mt-3"
+            text="Copy address"
+            icon="DocumentDuplicateIcon"
+            textColor="primary"
+            onClick={() => {
+              navigator.clipboard.writeText(healthCareWorkerAddress);
+            }}
           />
-        </div>
-        <div className="">
-          <div>
-            <Typography
-              text={`${healthCareWorker?.teamLead?.user?.firstName} ${healthCareWorker?.teamLead?.user?.surname}`}
-              type="h1"
-              color="textDark"
-              className={''}
-            />
-            <Typography
-              text={`${healthCareWorker?.teamLead?.clinic?.name} ${healthCareWorker?.teamLead?.jobTitle}`}
-              type="h3"
-              color="textMid"
-              className={''}
-            />
-          </div>
-          <div className="mt-2">
-            <Typography
-              text={`${healthCareWorker?.teamLead?.user?.firstName}'s phone number:`}
-              type="h3"
-              color="textDark"
-              className={'mt-4'}
-            />
-            <Typography
-              text={
-                healthCareWorker?.teamLead?.user?.phoneNumber
-                  ? `${healthCareWorker?.teamLead?.user?.phoneNumber}`
-                  : ''
-              }
-              type="h2"
-              color="secondary"
-              className={'mt-2'}
-            />
-          </div>
-          <div>
-            <Typography
-              text={``}
-              type="h2"
-              weight="skinny"
+        </>
+      )}
+      <Typography
+        text="Clinic phone number:"
+        type="h3"
+        color="textDark"
+        className={'mt-4'}
+      />
+      <Typography
+        text={formatPhoneNumber(clinic?.phoneNumber ?? '0000000000')}
+        type="body"
+        color="secondary"
+      />
+      <Button
+        size="small"
+        shape="normal"
+        color="primary"
+        type="outlined"
+        className="mt-3"
+        text="Call clinic"
+        textColor="primary"
+        icon="PhoneIcon"
+        onClick={() => call(clinic?.phoneNumber)}
+      />
+      <Divider className="my-8" dividerType="dashed" />
+      {clinic?.teamLeads?.map((teamLeader) => (
+        <Fragment key={teamLeader.id}>
+          <Typography
+            text={`${teamLeader?.firstName ?? ''} ${teamLeader?.surname ?? ''}`}
+            type="h1"
+            color="textDark"
+          />
+          <Typography
+            text={`${clinic?.name ?? ''} ${
+              teamLeader?.jobTitle ?? 'Team Leader'
+            }`}
+            type="h3"
+            color="textMid"
+            className={''}
+          />
+          <Typography
+            text={`${teamLeader?.firstName ?? 'Team Leader'}'s phone number:`}
+            type="h3"
+            color="textDark"
+            className="mt-4"
+          />
+          <Typography
+            text={formatPhoneNumber(
+              teamLeader?.phoneNumber ||
+                teamLeader?.whatsAppNumber ||
+                '0000000000'
+            )}
+            type="h2"
+            color="secondary"
+            className={'mb-4'}
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button
               color="primary"
-              className={'ml-4 mt-2'}
-            />
-          </div>
-        </div>
-        <div>
-          <div className={styles.contactButtons}>
-            <Button
-              color={'primary'}
-              type={'outlined'}
-              className={'mr-4 rounded-xl'}
-              size={'normal'}
-              onClick={whatsapp}
+              type="outlined"
+              size="small"
+              onClick={() => whatsapp(teamLeader?.whatsAppNumber)}
             >
               <div className="flex items-center justify-center">
-                <img
-                  src={WhatsLogo}
-                  alt="whatsapp"
-                  className={styles.buttonIconStyle}
-                />
+                <img src={WhatsLogo} alt="whatsapp" className="mr-2" />
                 <Typography
-                  text={`Whatsapp ${healthCareWorker?.teamLead?.user?.firstName}`}
-                  type="button"
-                  weight="skinny"
-                  color="primaryAccent1"
-                />
-              </div>
-            </Button>
-            <Button
-              color={'primary'}
-              type={'outlined'}
-              className={'mr-4 rounded-xl'}
-              size={'small'}
-              onClick={() => call(healthCareWorker?.user?.phoneNumber!)}
-            >
-              <div className="flex items-center justify-center">
-                <PhoneIcon
-                  className="text-primary h-7 w-6"
-                  aria-hidden="true"
-                />
-                <Typography
-                  text={`Call ${healthCareWorker?.teamLead?.user?.firstName}`}
+                  text={`Whatsapp ${teamLeader?.firstName ?? ''}`}
                   type="button"
                   weight="skinny"
                   color="primary"
                 />
               </div>
             </Button>
+            <Button
+              color={'primary'}
+              type={'outlined'}
+              size="small"
+              text={`Call ${teamLeader?.firstName ?? ''}`}
+              textColor="primary"
+              icon="PhoneIcon"
+              onClick={() => call(teamLeader?.phoneNumber)}
+            />
           </div>
-        </div>
-      </div>
-    </div>
+        </Fragment>
+      ))}
+      <Alert
+        className={!!clinic?.teamLeads?.length ? 'mt-8' : ''}
+        type="info"
+        title="You can see & update the information you share with your team in the Community section."
+        button={
+          <Button
+            color="primary"
+            type="filled"
+            size="small"
+            text="Edit my team profile"
+            icon="PencilIcon"
+            textColor="white"
+            onClick={() =>
+              history.push(
+                ROUTES.COMMUNITY.TEAM.MEMBERS.MEMBER_PROFILE.replace(
+                  ':memberHealthCareWorkerId',
+                  healthCareWorker?.id!
+                ),
+                { isFromAboutPage: true } as MemberProfileRouteState
+              )
+            }
+          />
+        }
+      />
+    </BannerWrapper>
   );
 };

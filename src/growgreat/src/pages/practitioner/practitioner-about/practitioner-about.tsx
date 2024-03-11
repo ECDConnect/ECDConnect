@@ -43,7 +43,6 @@ import * as styles from '@/pages/practitioner/practitioner-about/practitioner-ab
 import ROUTES from '@/routes/routes';
 import { staticDataSelectors } from '@/store/static-data';
 import {
-  healthCareWorkerActions,
   healthCareWorkerSelectors,
   healthCareWorkerThunkActions,
 } from '@/store/healthCareWorker';
@@ -51,6 +50,8 @@ import { ClinicDetails } from './components/clinicDetails/clinic-details';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
 import { PractitionerAboutRouteState } from './practitioner-about.types';
 import { BackToCommunityDialog } from './components/back-to-community-modal';
+import { communitySelectors } from '@/store/community';
+import { LeaderProfileRouteState } from '@/pages/community/team-tab/team/members/leader-profile/types';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -77,8 +78,8 @@ export const PractitionerAbout: React.FC = () => {
     healthCareWorkerSelectors?.getHealthCareWorker
   );
 
-  // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
+  const clinic = useSelector(communitySelectors.getClinicSelector);
 
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
@@ -162,23 +163,42 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Your clinic & GGC team',
-        subTitle: healthCareWorker?.teamLead?.clinic?.name || '',
+        subTitle: clinic?.name || '',
         switchTextStyles: true,
         actionName: 'View',
         actionIcon: 'EyeIcon',
-        buttonType: healthCareWorker?.teamLead?.clinic?.name
-          ? 'outlined'
-          : 'filled',
+        buttonType: 'filled',
         onActionClick: () => {
           setClinicDetails(true);
         },
       },
-      {
-        title: 'Your Team Leader',
-        subTitle: healthCareWorker?.teamLead?.user?.firstName || '',
-        switchTextStyles: true,
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
-      },
+      ...(!!clinic?.teamLeads?.length
+        ? clinic?.teamLeads?.map(
+            (leader, index) =>
+              ({
+                title: `Your Team Leader ${index + 1}`,
+                subTitle: `${leader?.firstName ?? ''} ${leader?.surname}`,
+                switchTextStyles: true,
+                actionName: 'View',
+                actionIcon: 'EyeIcon',
+                buttonType: 'filled',
+                onActionClick: () =>
+                  history.push(
+                    ROUTES.COMMUNITY.TEAM.MEMBERS.LEADER_PROFILE.replace(
+                      ':leaderId',
+                      leader?.id!
+                    ),
+                    { isFromAboutPage: true } as LeaderProfileRouteState
+                  ),
+              } as ActionListDataItem)
+          )
+        : [
+            {
+              title: 'Your Team Leader',
+              subTitle: 'None',
+              switchTextStyles: true,
+            } as ActionListDataItem,
+          ]),
       {
         title: 'Preferred language on app',
         subTitle: selectedLanguage?.description || 'Add a language',
@@ -358,10 +378,7 @@ export const PractitionerAbout: React.FC = () => {
   return (
     <div className={styles.container}>
       <Dialog fullScreen visible={clinicDetails} position={DialogPosition.Top}>
-        <ClinicDetails
-          healthCareWorker={healthCareWorker}
-          setClinicDetails={setClinicDetails}
-        />
+        <ClinicDetails setClinicDetails={setClinicDetails} />
       </Dialog>
       <Dialog
         fullScreen
@@ -378,7 +395,6 @@ export const PractitionerAbout: React.FC = () => {
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         title={'About me'}
-        color={'primary'}
         size="medium"
         renderBorder={true}
         renderOverflow={false}
