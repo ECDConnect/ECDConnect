@@ -21,11 +21,14 @@ import {
   deleteMultipleUsers,
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
-import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
+import {
+  ClockIcon,
+  PaperAirplaneIcon,
+  TrashIcon,
+} from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { UiTableProps } from './type';
 import { ContentTypes } from '../../../../../../constants/content-management';
-import { StoryActivitiesTypes } from '../../../../../content-management/content-management-models';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 
 export default function UiTable({
@@ -283,7 +286,8 @@ export default function UiTable({
       return column.field === columns[0].field ? display_value : <></>;
     }
     let rowValue: any;
-
+    console.log({ display_value });
+    console.log({ column });
     const checkboxCell = (
       <input
         type="checkbox"
@@ -308,22 +312,6 @@ export default function UiTable({
           )}
         </div>
       );
-    } else if (display_value === 'RoadToHealthBook') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
-    } else if (display_value === 'MaternalCaseRecord') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
     } else if (
       column.field.match(/created|createdAt|updated|insertedDate|updatedAt/) &&
       column.field !== 'createdByName'
@@ -338,114 +326,6 @@ export default function UiTable({
           {formatDate(display_value)}
         </span>
       );
-    } else if (display_value === 'Small group') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
-    } else if (display_value === 'Large group') {
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer">
-          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
-            <span>{display_value}</span>
-          </div>
-        </div>
-      );
-    } else if (
-      column.field === 'subType' &&
-      (display_value
-        .toString()
-        .toLowerCase()
-        .indexOf(StoryActivitiesTypes.Storybook.toLowerCase()) !== -1 ||
-        display_value
-          .toString()
-          .toLowerCase()
-          .indexOf(StoryActivitiesTypes.ReadAloud.toLowerCase()) !== -1 ||
-        display_value
-          .toString()
-          .toLowerCase()
-          .indexOf(StoryActivitiesTypes.Other.toLowerCase()) !== -1)
-    ) {
-      // remove duplicates and trim
-      var arr = display_value.split(',');
-      display_value = arr
-        .filter(function (value, index, self) {
-          return self.indexOf(value.trim()) === index;
-        })
-        .join(',');
-
-      const splitValues = display_value?.split(',');
-      rowValue = (
-        <div className="ml-1 flex cursor-pointer gap-1">
-          {splitValues?.map((item, index) => {
-            return (
-              <div
-                key={'sb_' + index}
-                className={`${
-                  item.toString().toLowerCase() ===
-                  StoryActivitiesTypes.Storybook.toLowerCase()
-                    ? 'bg-secondary'
-                    : item.toString().toLowerCase() ===
-                      StoryActivitiesTypes.ReadAloud.toLowerCase()
-                    ? 'bg-darkBlue'
-                    : 'bg-successMain'
-                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
-              >
-                <span className="text-xs">
-                  {item.toString().charAt(0).toUpperCase() + item.slice(1)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else if (
-      column.field === 'subCategories' &&
-      (column?.use === 'GT - Skills' || column?.use === 'Skills')
-    ) {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          {display_value?.map((item: any, index: number) => (
-            <div key={`cat_` + index} className="ml-1 flex cursor-pointer">
-              <div
-                className={`${
-                  item?.imageHexColor ? '' : 'bg-tertiary'
-                } flex h-9 w-9 items-center justify-center rounded-full`}
-                style={{
-                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
-                }}
-              >
-                <img
-                  alt="skill"
-                  src={item?.imageUrl}
-                  className="h-6 w-6 object-contain"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    } else if (
-      column?.field === 'subCategories' ||
-      column?.field === 'subDistricts'
-    ) {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          {display_value?.map((item: any, index: number) => (
-            <div
-              key={`subCategories_` + item?.id}
-              className={' text-textMid m-1 rounded-full py-1 text-xs'}
-            >
-              {index === display_value?.length - 1
-                ? `${item?.name}`
-                : `${item?.name};`}
-            </div>
-          ))}
-        </div>
-      );
     } else if (column.field === 'teamLeads') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
@@ -457,6 +337,38 @@ export default function UiTable({
               {`${item?.teamLead?.user?.firstName}, `}
             </div>
           ))}
+        </div>
+      );
+    } else if (column.field === 'connectUsage') {
+      const columnColor = (value?: string) => {
+        switch (value) {
+          case 'Invitation active':
+            return (
+              <div className="flex items-center gap-0.5">
+                <ClockIcon className="text-infoMain h-5 w-5" />
+                <span className="text-infoMain">{display_value}</span>
+              </div>
+            );
+          case 'Invitation expired':
+            return (
+              <div className="flex items-center gap-0.5">
+                <ClockIcon className="text-alertMain h-5 w-5" />
+                <span className="text-alertMain">{display_value}</span>
+              </div>
+            );
+          default:
+            return (
+              <div className="flex items-center gap-0.5">
+                <ClockIcon className="text-successMain h-5 w-5" />
+                <span className="text-successMain">{display_value}</span>
+              </div>
+            );
+        }
+      };
+
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <span>{columnColor(display_value)}</span>
         </div>
       );
     } else if (column.field === 'province' && column?.use === 'Province') {
@@ -492,26 +404,6 @@ export default function UiTable({
           <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
             {display_value?.province?.description}
           </div>
-        </div>
-      );
-    } else if (column.field === 'availableLanguages') {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          {display_value?.map((item: any, index: number) => {
-            const language = languages?.find(
-              (language) => language?.id === item?.id
-            );
-            return (
-              <div
-                key={`language_` + item?.id}
-                className={' text-textMid m-1 rounded-full py-1 text-xs'}
-              >
-                {index === display_value?.length - 1
-                  ? `${language?.locale}`
-                  : `${language?.locale};`}
-              </div>
-            );
-          })}
         </div>
       );
     } else if (column.field === 'roles') {

@@ -52,16 +52,18 @@ export default function TeamLeads() {
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
-  const [provincesFiltered, setProvincesFiltered] =
-    useState<SearchDropDownOption<string>[]>();
+  const [provincesFiltered, setProvincesFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
   const filteredProvinces = useMemo(
     () => provincesFiltered?.map((item) => item?.id),
     [provincesFiltered]
   );
 
   const [clinics, setClinics] = useState<SearchDropDownOption<string>[]>([]);
-  const [clinicsFiltered, setClinicsFiltered] =
-    useState<SearchDropDownOption<string>[]>();
+  const [clinicsFiltered, setClinicsFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
   const filteredClinics = useMemo(
     () => clinicsFiltered?.map((item) => item?.label),
     [clinicsFiltered]
@@ -69,8 +71,9 @@ export default function TeamLeads() {
 
   const [subDistricts, setSubDistricts] =
     useState<SearchDropDownOption<string>[]>();
-  const [subDistrictsFiltered, setSubDistrictsFiltered] =
-    useState<SearchDropDownOption<string>[]>();
+  const [subDistrictsFiltered, setSubDistrictsFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
   const filteredSubDistricts = useMemo(
     () => subDistrictsFiltered?.map((item) => item?.id),
     [subDistrictsFiltered]
@@ -121,12 +124,13 @@ export default function TeamLeads() {
       },
     });
   };
-
+  console.log({ filteredSubDistricts });
   const { data, refetch } = useQuery(GetAllTeamLead, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
       provinceSearch: filteredProvinces,
+      subDistrictSearch: filteredSubDistricts,
       visitSearch: [],
       connectUsageSearch: filteredConnectUsage,
       pagingInput: {

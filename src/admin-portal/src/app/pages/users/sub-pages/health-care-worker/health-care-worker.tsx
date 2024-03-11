@@ -115,45 +115,51 @@ export default function HealthCareWorkers() {
   const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
     GetAllHealthCareWorker,
     {
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        subDistrictFilter,
-        visitFilter,
-        sortDescending,
-        currentPage,
-        null
-      ),
+      variables: {
+        search: '',
+        clinicSearch: [],
+        provinceSearch: [],
+        visitSearch: [],
+        connectUsageSearch: [],
+        pagingInput: {
+          pageNumber: 1,
+          pageSize: null,
+        },
+        order: [
+          {
+            insertedDate: 'DESC',
+          },
+        ],
+      },
       fetchPolicy: 'network-only',
     }
   );
 
-  useEffect(() => {
-    getAllHealthCareWorkers({
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        subDistrictFilter,
-        visitFilter,
-        sortDescending,
-        currentPage,
-        pageSize
-      ),
-      fetchPolicy: 'network-only',
-    });
-  }, [
-    provinceFilter,
-    searchValue,
-    clinicFilter,
-    currentPage,
-    pageSize,
-    sortDescending,
-    getAllHealthCareWorkers,
-    subDistrictFilter,
-    visitFilter,
-  ]);
+  // useEffect(() => {
+  //   getAllHealthCareWorkers({
+  //     variables: getVariables(
+  //       searchValue,
+  //       provinceFilter,
+  //       clinicFilter,
+  //       subDistrictFilter,
+  //       visitFilter,
+  //       sortDescending,
+  //       currentPage,
+  //       pageSize
+  //     ),
+  //     fetchPolicy: 'network-only',
+  //   });
+  // }, [
+  //   provinceFilter,
+  //   searchValue,
+  //   clinicFilter,
+  //   currentPage,
+  //   pageSize,
+  //   sortDescending,
+  //   getAllHealthCareWorkers,
+  //   subDistrictFilter,
+  //   visitFilter,
+  // ]);
 
   const { data: clinicData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
