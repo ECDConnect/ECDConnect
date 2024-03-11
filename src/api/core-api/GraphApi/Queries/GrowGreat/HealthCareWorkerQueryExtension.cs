@@ -117,9 +117,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             if (visitSearch.Count != 0)
             {
-               var visits = visitRepo.GetAll().Where(x => x.Attended == true &&
+                var startOfMonth = DateTime.Now.GetStartOfMonth();
+                var endOfMonth = DateTime.Now.GetEndOfMonth();
+
+                var visits = visitRepo.GetAll().Where(x => x.Attended == true && 
                                                            x.ActualVisitDate.HasValue &&
-                                                           (x.ActualVisitDate.Value.Date >= DateTime.Now.GetStartOfMonth() && x.ActualVisitDate.Value.Date <= DateTime.Now.GetEndOfMonth()) &&
+                                                           (x.ActualVisitDate.Value.Date >= startOfMonth.Date && x.ActualVisitDate.Value.Date <= endOfMonth.Date) &&
                                                            (x.Mother.IsActive && userIds.Contains((Guid)x.Mother.HealthCareWorker.UserId) ||
                                                            (x.Infant.IsActive && userIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.UserId))
                                                            )
@@ -128,7 +131,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 List<PortalUsersHCWModel> visitHCWs = new List<PortalUsersHCWModel>();
                 foreach (var item in workers)
                 {
-                    var totalClientsVisits = visits.Where(x => x.Mother.HealthCareWorker.UserId == item.User.Id || x.Infant.Caregiver.HealthCareWorker.UserId == item.User.Id).Count();
+                    var totalClientsVisits = visits.Where(x => (x.Mother != null && x.Mother.HealthCareWorker.User.Id == item.User.Id) || (x.Infant != null && x.Infant.Caregiver.HealthCareWorker.User.Id == item.User.Id)).Count();
 
                     if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
                     {
