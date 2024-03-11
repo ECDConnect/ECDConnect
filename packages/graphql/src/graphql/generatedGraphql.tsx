@@ -3273,20 +3273,24 @@ export type ConnectItemInput = {
 
 export type Consent = {
   __typename?: 'Consent';
+  availableLanguages?: Maybe<Array<Maybe<Language>>>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
 };
 
 export type ConsentInput = {
+  availableLanguages?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
 };
 
 export type Content = {
@@ -4862,7 +4866,7 @@ export type IntegrationEntityMapping = {
   remoteId?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
-  userId: Scalars['UUID'];
+  userId?: Maybe<Scalars['UUID']>;
 };
 
 export type IntegrationEntityMappingFilterInput = {
@@ -4887,7 +4891,7 @@ export type IntegrationEntityMappingFilterInput = {
   remoteId?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  userId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
 };
 
 export type IntegrationEntityMappingInput = {
@@ -4908,7 +4912,7 @@ export type IntegrationEntityMappingInput = {
   RemoteEntity?: InputMaybe<Scalars['String']>;
   RemoteId?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
-  UserId: Scalars['UUID'];
+  UserId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type IntegrationEntityMappingSortInput = {
@@ -5908,6 +5912,7 @@ export type MoreInformation = {
   showDividerB?: Maybe<Scalars['String']>;
   showDividerC?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
   visit?: Maybe<Scalars['String']>;
 };
 
@@ -5939,6 +5944,7 @@ export type MoreInformationInput = {
   showDividerB?: InputMaybe<Scalars['String']>;
   showDividerC?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
   visit?: InputMaybe<Scalars['String']>;
 };
 
@@ -14014,6 +14020,7 @@ export type QueryAllTeamLeadsArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   provinceSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
+  subDistrictSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   visitSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   where?: InputMaybe<PortalUsersTlModelFilterInput>;
 };
