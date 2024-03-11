@@ -78,8 +78,8 @@ namespace EcdLink.Api.CoreApi.Services
                     Name = district.Name,
                     InsertedDate = district.InsertedDate,
                     Province = district.Province,
-                    SubDistricts = district.SubDistricts,
-                    TotalSubDistricts = district.SubDistricts.Count(),
+                    SubDistricts = district.SubDistricts.Where(x => x.IsActive).ToList(),
+                    TotalSubDistricts = district.SubDistricts.Where(x => x.IsActive).Count(),
                     TotalClinics = clinics.Where(x => x.SubDistrict.DistrictId == district.Id).Distinct().Count(),
                     TotalTeamLeads = clinicTeamLeads.Where(x => x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count(),
                     TotalHCWs = hCWs.Where(x => x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count()

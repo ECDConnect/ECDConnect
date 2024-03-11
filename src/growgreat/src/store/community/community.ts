@@ -5,8 +5,10 @@ import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 import { CommunityState } from './community.types';
 import {
+  addBreastFeedingClub,
   getAllConnect,
   getAllConnectItem,
+  getAvailableCaregiversForBreastFeedingClub,
   getBreastFeedingClubs,
   getClinicById,
   getLeagueById,
@@ -40,8 +42,29 @@ const communitySlice = createSlice({
     setThunkActionStatus(builder, getPointsActivityInfo);
     setThunkActionStatus(builder, getClinicById);
     setThunkActionStatus(builder, getBreastFeedingClubs);
+    setThunkActionStatus(builder, getAvailableCaregiversForBreastFeedingClub);
+    setThunkActionStatus(builder, addBreastFeedingClub);
+    builder.addCase(addBreastFeedingClub.fulfilled, (state, action) => {
+      state.breastFeedingClubs = {
+        ...state?.breastFeedingClubs,
+        data: [...(state?.breastFeedingClubs?.data ?? []), action.payload],
+      };
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(
+      getAvailableCaregiversForBreastFeedingClub.fulfilled,
+      (state, action) => {
+        state.breastFeedingClubs = {
+          ...state?.breastFeedingClubs,
+          availableCaregiversForBreastFeedingClub: action.payload,
+        };
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
     builder.addCase(getBreastFeedingClubs.fulfilled, (state, action) => {
       state.breastFeedingClubs = {
+        ...state?.breastFeedingClubs,
         dateLoaded: new Date().toISOString(),
         data: action.payload,
       };
