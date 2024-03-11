@@ -89,7 +89,7 @@ const Component = ({ monthData, onBack }: MonthDetailsProps) => {
                 text={`${format(
                   new Date(item.meetingDate),
                   'dd MMMM yyyy'
-                )} client attended`}
+                )} client attendance`}
               />
               <Alert
                 type={type}
