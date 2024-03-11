@@ -9,10 +9,6 @@ import OpenBook from '@/assets/openBook.svg';
 import { ConnectItem } from '@ecdlink/graphql';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 
-export const COMMUNITY_TABS = {
-  CONNECT: 0,
-};
-
 const HEADER_HEIGHT = 222;
 
 export interface iConnectItem {

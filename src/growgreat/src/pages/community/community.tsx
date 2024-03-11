@@ -3,19 +3,12 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { Connect } from './connect-tab/connect';
 import { useEffect, useState } from 'react';
-import { CommunityRouteState } from './community.types';
+import { COMMUNITY_TABS, CommunityRouteState } from './community.types';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { TeamTab } from './team-tab';
 import { LeagueTab } from './league-tab';
 import { BreastfeedingClubsTab } from './breastfeeding-clubs-tab';
-
-export const COMMUNITY_TABS = {
-  TEAM: 0,
-  LEAGUE: 1,
-  BREASTFEEDING_CLUBS: 2,
-  CONNECT: 3,
-};
 
 export const Community: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -31,22 +24,22 @@ export const Community: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: 'Team',
+      title: COMMUNITY_TABS.TEAM.TITLE,
       initActive: true,
       child: <TeamTab />,
     },
     {
-      title: 'League',
+      title: COMMUNITY_TABS.LEAGUE.TITLE,
       initActive: false,
       child: <LeagueTab />,
     },
     {
-      title: 'Breastfeeding clubs',
+      title: COMMUNITY_TABS.BREASTFEEDING_CLUBS.TITLE,
       initActive: false,
       child: <BreastfeedingClubsTab />,
     },
     {
-      title: 'Connect',
+      title: COMMUNITY_TABS.CONNECT.TITLE,
       initActive: false,
       child: <Connect />,
     },
@@ -62,7 +55,7 @@ export const Community: React.FC = () => {
       typeof state?.activeTabIndex === 'number' &&
       previousTabIndex !== selectedTabIndex
     ) {
-      setSelectedTabIndex(state?.activeTabIndex || COMMUNITY_TABS.TEAM);
+      setSelectedTabIndex(state?.activeTabIndex || COMMUNITY_TABS.TEAM.INDEX);
       history.replace(ROUTES.COMMUNITY.ROOT, {
         activeTabIndex: undefined,
       });
@@ -78,7 +71,7 @@ export const Community: React.FC = () => {
       subTitle={date}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
-      displayHelp={selectedTabIndex === COMMUNITY_TABS.TEAM}
+      displayHelp={selectedTabIndex === COMMUNITY_TABS.TEAM.INDEX}
       onHelp={() => {}}
       displayOffline={!isOnline}
     >
