@@ -85,7 +85,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
-                var twelveMonths = today.AddMonths(-12);
 
                 if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
                 {
@@ -95,13 +94,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_6_months))
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                 {
                     teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_12_months))
+                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date <= twelveMonths.GetStartOfMonth().Date).ToList();
+                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList();
                 }
                 else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
                 {
