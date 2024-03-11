@@ -65,24 +65,18 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const onAllStepsComplete = async () => {
     const input: UpdateHealthCareWorkerInputModelInput = {
-      languageId: language,
       isRegistered: true,
+      languageId: language,
     };
 
     await appDispatch(healthCareWorkerActions.updateHealthCareWorker(input));
-    await appDispatch(
-      healthCareWorkerThunkActions.updateHealthCareWorker({
-        userId: user?.id!,
-        input: input,
-      })
-    );
-
     if (isOnline) {
-      //   await healthCareWorkerThunkActions?.updateHealthCareWorkerById({
-      // id: user?.id!, input: copy}
-      //   )
-    } else {
-      showOnlineOnly();
+      await appDispatch(
+        healthCareWorkerThunkActions.updateHealthCareWorker({
+          userId: user?.id!,
+          input: input,
+        })
+      );
     }
     history.push(ROUTES.ROOT);
   };

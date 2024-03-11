@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useParams, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
@@ -87,11 +87,18 @@ export const INFANT_PROFILE_TABS = {
 
 export const currentActivityKey = 'selectedOption';
 
+export interface ActivityListRouteState {
+  displayHelp?: boolean;
+}
+
 export const ActivityList: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
-  const [displayHelp, setDisplayHelp] = useState(false);
+  const location = useLocation<ActivityListRouteState>();
+  const [displayHelp, setDisplayHelp] = useState(
+    location.state?.displayHelp || false
+  );
   const relations = useSelector(staticDataSelectors.getRelations);
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
   const previousSelectedOption = usePrevious(selectedOption) as
@@ -102,9 +109,7 @@ export const ActivityList: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const { width } = useWindowSize();
-
   const history = useHistory();
-
   const { visitId, id: infantId } = useParams<InfantProfileParams>();
 
   const { isLoading: isLoadingPreviousVisit } = useThunkFetchCall(
@@ -588,7 +593,10 @@ export const ActivityList: React.FC = () => {
     if (isStartVisit) {
       return setIsStartVisit(false);
     }
-    return history.push(`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}`);
+    if (infantId) {
+      return history.push(`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}`);
+    }
+    return history.push(`${ROUTES.CLIENTS.ROOT}`);
   }, [history, infantId, isStartVisit]);
 
   const onFormBack = () => {
