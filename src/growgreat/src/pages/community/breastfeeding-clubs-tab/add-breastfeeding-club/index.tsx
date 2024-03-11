@@ -12,7 +12,7 @@ import {
 import { format } from 'date-fns';
 import { useHistory, useLocation } from 'react-router';
 import { AddBreastFeedingClubRouteState } from './types';
-import { COMMUNITY_TABS } from '../../community';
+import { COMMUNITY_TABS } from '../../community.types';
 import { CommunityRouteState } from '../../community.types';
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -119,7 +119,7 @@ export const AddBreastfeedingClub: React.FC = () => {
     }
 
     return history.push(ROUTES.COMMUNITY.ROOT, {
-      activeTabIndex: COMMUNITY_TABS.BREASTFEEDING_CLUBS,
+      activeTabIndex: COMMUNITY_TABS.BREASTFEEDING_CLUBS.INDEX,
     } as CommunityRouteState);
   };
 
@@ -139,7 +139,7 @@ export const AddBreastfeedingClub: React.FC = () => {
         type: 'success',
       });
       history.push(ROUTES.COMMUNITY.ROOT, {
-        activeTabIndex: COMMUNITY_TABS.BREASTFEEDING_CLUBS,
+        activeTabIndex: COMMUNITY_TABS.BREASTFEEDING_CLUBS.INDEX,
       } as CommunityRouteState);
     }
   }, [isLoading, isRejected, history, showMessage, wasAddingBreastfeedingClub]);
