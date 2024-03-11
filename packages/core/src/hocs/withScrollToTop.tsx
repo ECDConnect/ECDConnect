@@ -18,7 +18,7 @@ export function withScrollToTop<P>(WrappedComponent: ComponentType<P>) {
 
     return (
       <div ref={componentRef} style={{ overflowY: 'auto', maxHeight: '100%' }}>
-        <WrappedComponent {...props} />;
+        <WrappedComponent {...props} />
       </div>
     );
   };
