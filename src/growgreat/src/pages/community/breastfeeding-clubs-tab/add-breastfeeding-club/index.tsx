@@ -71,10 +71,17 @@ export const AddBreastfeedingClub: React.FC = () => {
   const month = format(today, 'MMMM');
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const uniqueCaregivers = availableCaregivers?.filter(
-    (caregiver, index, self) =>
-      index === self.findIndex((t) => t.caregiverId === caregiver.caregiverId)
-  );
+  const uniqueCaregivers = availableCaregivers
+    ?.filter(
+      (caregiver, index, self) =>
+        index === self.findIndex((t) => t.caregiverId === caregiver.caregiverId)
+    )
+    ?.sort((a, b) =>
+      `${a.firstName}${b.firstName}`?.toLowerCase() >
+      `${b.firstName}${b.surname}`?.toLowerCase()
+        ? 1
+        : -1
+    );
 
   const count = attendance?.filter(
     (item) => item.status === AttendanceStatus.Present
