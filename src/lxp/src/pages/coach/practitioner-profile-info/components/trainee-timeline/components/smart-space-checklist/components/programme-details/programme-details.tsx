@@ -14,12 +14,11 @@ import {
   DialogPosition,
   FormInput,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from './programme-details.styles';
-import { ProgrammeDetailsProps, yesNoOptions } from './programme-details.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import Article from '@/components/article/article';
 import {
@@ -27,20 +26,24 @@ import {
   ProgrammeDetailsSchema,
 } from '@/schemas/trainee/programme-details';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklisstStepsSteps,
+  SmartSpaceChecklistProps,
+  yesNoOptions,
+} from '../../smart-space-checklist.types';
 import { traineeSelectors } from '@/store/trainee';
 import { AddressMap } from '../map/map';
 import tool_R4c_form from '@/assets/tool_R4c_form.pdf';
 import tool_R4b_form from '@/assets/tool_R4b_form.pdf';
 import tool_R4a_form from '@/assets/tool_R4a_form.pdf';
 
-export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
-  setSectionQuestions,
-  setShowProgrammeDetails,
-  setVisitSection,
+export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
   setActiveStep,
   handleNextSection,
+  visitId,
 }) => {
+  const visitSection = 'Programme details';
+
   const {
     getValues: getProgrammeFormValues,
     setValue: setProgrammeFormValue,
@@ -72,7 +75,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const acceptedFormats = ['jpg, bmp'];
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(traineeSelectors.getTraineeVisitData(visitId));
   const [showMap, setShowMap] = useState(false);
   const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] =
     useState<boolean>(false);
@@ -132,7 +135,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
       answer: '',
     },
   ]);
-  const visitSection = 'Programme details';
 
   const checkedquestion = (question: string) => {
     const isChecked = visitData?.find((item) => item?.question === question);
@@ -146,31 +148,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     setPresentArticle(true);
     setArticleTitle(title);
   };
-
-  const onOptionSelected = useCallback(
-    (value, index) => {
-      const currentQuestion = questions[index];
-
-      const updatedQuestions = questions.map((question) => {
-        if (question.question === currentQuestion.question) {
-          return {
-            ...question,
-            answer: value,
-          };
-        }
-        return question;
-      });
-
-      setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
-    },
-    [questions, setSectionQuestions]
-  );
 
   const setPhotoUrl = (imageUrl: string) => {
     setProgrammeFormValue('r4bPhoto', imageUrl);
@@ -187,96 +164,94 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   };
 
   useEffect(() => {
-    if (checkedquestion(questions?.[0].question)?.questionAnswer) {
+    if (checkedquestion(questions[0].question)?.questionAnswer) {
       setProgrammeFormValue('haveReadTheSmartStarterInformation', true);
     }
 
-    if (checkedquestion(questions?.[1].question)?.questionAnswer) {
+    if (checkedquestion(questions[1].question)?.questionAnswer) {
       setProgrammeFormValue(
         'programmeName',
-        checkedquestion(questions?.[1].question)?.questionAnswer!
+        checkedquestion(questions[1].question)?.questionAnswer!
       );
     }
 
-    if (checkedquestion(questions?.[2].question)?.questionAnswer) {
+    if (checkedquestion(questions[2].question)?.questionAnswer) {
       setProgrammeFormValue(
         'programmeType',
-        checkedquestion(questions?.[2].question)?.questionAnswer!
+        checkedquestion(questions[2].question)?.questionAnswer!
       );
     }
 
-    if (checkedquestion(questions?.[3].question)?.questionAnswer) {
+    if (checkedquestion(questions[3].question)?.questionAnswer) {
       setProgrammeFormValue(
         'programmeAddress',
-        checkedquestion(questions?.[3].question)?.questionAnswer!
+        checkedquestion(questions[3].question)?.questionAnswer!
       );
     }
 
-    if (checkedquestion(questions?.[4].question)?.questionAnswer) {
+    if (checkedquestion(questions[4].question)?.questionAnswer) {
       const answer =
-        checkedquestion(questions?.[4].question)?.questionAnswer === 'false'
+        checkedquestion(questions[4].question)?.questionAnswer === 'false'
           ? false
           : true;
       setProgrammeFormValue('ownTheProperty', answer);
     }
 
-    if (checkedquestion(questions?.[5]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[5]?.question)?.questionAnswer) {
       const answer =
-        checkedquestion(questions?.[5].question)?.questionAnswer === 'false'
+        checkedquestion(questions[5].question)?.questionAnswer === 'false'
           ? false
           : true;
       setProgrammeFormValue('haveTheTitleDeeds', answer);
     }
 
-    if (checkedquestion(questions?.[6]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[6]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'unproclaimedLand',
-        Boolean(checkedquestion(questions?.[6].question)?.questionAnswer)
+        Boolean(checkedquestion(questions[6].question)?.questionAnswer)
       );
     }
 
-    if (checkedquestion(questions?.[7]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[7]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[7]?.question)?.questionAnswer!
+        checkedquestion(questions[7]?.question)?.questionAnswer!
       );
 
-      setR4bPhotoUrl(
-        checkedquestion(questions?.[7]?.question)?.questionAnswer!
-      );
+      setR4bPhotoUrl(checkedquestion(questions[7]?.question)?.questionAnswer!);
     }
 
-    if (checkedquestion(questions?.[8]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[8]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[8]?.question)?.questionAnswer!
+        checkedquestion(questions[8]?.question)?.questionAnswer!
       );
     }
 
-    if (checkedquestion(questions?.[9]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[9]?.question)?.questionAnswer) {
       const answer =
-        checkedquestion(questions?.[9].question)?.questionAnswer === 'false'
+        checkedquestion(questions[9].question)?.questionAnswer === 'false'
           ? false
           : true;
       setProgrammeFormValue('liveAtTheProperty', answer);
     }
-    if (checkedquestion(questions?.[10]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[10]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[10].question)?.questionAnswer!
+        checkedquestion(questions[10].question)?.questionAnswer!
       );
     }
-    if (checkedquestion(questions?.[11]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[11]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[11]?.question)?.questionAnswer!
+        checkedquestion(questions[11]?.question)?.questionAnswer!
       );
     }
 
-    if (checkedquestion(questions?.[12]?.question)?.questionAnswer) {
+    if (checkedquestion(questions[12]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[12].question)?.questionAnswer!
+        checkedquestion(questions[12].question)?.questionAnswer!
       );
     }
   }, []);
@@ -369,11 +344,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                       !getProgrammeFormValues()
                         .haveReadTheSmartStarterInformation
                     );
-                    onOptionSelected(
-                      !getProgrammeFormValues()
-                        .haveReadTheSmartStarterInformation,
-                      0
-                    );
                   }}
                 >
                   <Checkbox<ProgrammeDetailsModel>
@@ -386,13 +356,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     }
                     register={programmeFormRegister}
                     nameProp={'haveReadTheSmartStarterInformation'}
-                    onCheckboxChange={() =>
-                      onOptionSelected(
-                        !getProgrammeFormValues()
-                          .haveReadTheSmartStarterInformation,
-                        0
-                      )
-                    }
+                    onCheckboxChange={() => {}}
                     value={
                       String(
                         getProgrammeFormValues()
@@ -433,9 +397,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 nameProp={'programmeName'}
                 placeholder={'E.g. Little Lambs Preschool'}
                 type={'text'}
-                onChange={(e) =>
-                  onOptionSelected((e.target as HTMLInputElement).value, 1)
-                }
+                onChange={(e) => {}}
                 disabled={Boolean(checkedquestion(questions?.[1].question))}
               ></FormInput>
 
@@ -466,7 +428,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                         multiple={false}
                         onOptionSelected={(e) => {
                           setProgrammeFormValue('programmeType', e as string);
-                          onOptionSelected(e, 2);
                         }}
                         selectedOptions={value}
                         color="secondary"
@@ -484,10 +445,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 nameProp={'programmeAddress'}
                 placeholder={'Tap to add address'}
                 type={'text'}
-                onChange={(e) =>
-                  onOptionSelected((e.target as HTMLInputElement).value, 3)
-                }
-                // onClick={() => setShowMap(true)}
+                onChange={(e) => {}}
                 disabled={
                   Boolean(checkedquestion(questions?.[3].question)) || showMap
                 }
@@ -517,7 +475,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                           shouldValidate: true,
                         }
                       );
-                      onOptionSelected(value, 4);
                     }}
                     selectedOptions={[getProgrammeFormValues().ownTheProperty]}
                     color="secondary"
@@ -549,7 +506,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                             shouldValidate: true,
                           }
                         );
-                        onOptionSelected(value, 5);
                       }}
                       selectedOptions={[
                         getProgrammeFormValues().haveTheTitleDeeds,
@@ -583,7 +539,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                             shouldValidate: true,
                           }
                         );
-                        onOptionSelected(value, 9);
                       }}
                       selectedOptions={[
                         getProgrammeFormValues().liveAtTheProperty,
@@ -701,7 +656,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                               shouldValidate: true,
                             }
                           );
-                          onOptionSelected(value, 6);
                         }}
                         selectedOptions={value}
                         color="secondary"
@@ -811,7 +765,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           onClose={() => setShowMap?.(false)}
           onSubmit={(address) => {
             setProgrammeFormValue('programmeAddress', address);
-            onOptionSelected(address, 3);
           }}
         />
       </Dialog>
@@ -832,7 +785,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => {
               setPhotoUrl(imageUrl);
-              onOptionSelected(imageUrl, 7);
             }}
             onDelete={() => deleteBirthDocumentPhoto()}
           ></PhotoPrompt>

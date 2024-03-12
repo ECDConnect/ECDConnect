@@ -1,18 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
-  ActionModal,
   Avatar,
-  BannerWrapper,
   DialogPosition,
   IconBadge,
   NavigationRouteItem,
   NavigationDropdown,
   Typography,
   UserAvatar,
+  ScoreCard,
+  RoundIcon,
+  TitleListItem,
+  BannerWrapper,
 } from '@ecdlink/ui';
 
 import { useDocuments } from '@/hooks/useDocuments';
@@ -29,23 +31,20 @@ import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
 import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
-import { DashboardRouteState } from './dashboard.types';
+import { DashboardRouteState, NavigationTypes } from './dashboard.types';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { CLIENT_TABS } from '../client/client-dashboard/class-dashboard';
-
-export enum NavigationTypes {
-  Home = 'Home',
-  ClientFolders = 'Client folders',
-  Clients = 'Clients',
-  Visits = 'Visits',
-  Highlights = 'Highlights',
-  Calendar = 'Calendar',
-  Profile = 'Profile',
-  Messages = 'Messages',
-  Training = 'Training',
-  Community = 'Community',
-  Logout = 'Log out',
-}
+import { MenuModal } from './components/menu-modal';
+import { NewFolderModal } from './components/new-folder-modal';
+import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { communitySelectors } from '@/store/community';
+import {
+  calculateClinicLeaguePositionPercentiles,
+  getLeaguePointsColours,
+  getTierDetails,
+} from '@/utils/community/league-position';
+import { LeagueType } from '@/constants/Community';
+import { COMMUNITY_TABS } from '../community/community.types';
 
 export const Dashboard: React.FC = () => {
   const history = useHistory();
@@ -67,10 +66,34 @@ export const Dashboard: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
+  const league = useSelector(communitySelectors.getLeagueSelector);
+
+  const { tierName, tierColor } = getTierDetails(
+    (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
+    clinicDetails?.points?.pointsTotal ?? 0
+  );
 
   const { userProfilePicture } = useDocuments();
 
   const { startService } = useNotificationService();
+
+  const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
+
+  const communityHref = isFirstTimeCommunitySection
+    ? ROUTES.COMMUNITY.WELCOME
+    : ROUTES.COMMUNITY.ROOT;
+
+  const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
+    calculateClinicLeaguePositionPercentiles(
+      league?.clinics ?? [],
+      clinicDetails?.points?.leagueRanking ?? 0
+    );
+
+  const leaguePointsColours = getLeaguePointsColours(
+    isTop25PercentInTheLeague,
+    isMiddle50PercentInTheLeague
+  );
 
   function goToProfile() {
     history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
@@ -99,37 +122,8 @@ export const Dashboard: React.FC = () => {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Open a new folder"
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Pregnant mom',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'UserAddIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.MOM_REGISTER);
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Child',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'UserGroupIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.INFANT_REGISTER);
-                },
-              },
-            ]}
-          />
-        );
+      render: (onClose) => {
+        return <NewFolderModal onClose={onClose} />;
       },
     });
   }
@@ -138,76 +132,11 @@ export const Dashboard: React.FC = () => {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
-      render: (onSubmit) => {
+      render: (onClose) => {
         return (
-          <ActionModal
-            className="z-50"
-            title="What do you want to do?"
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Visit clients',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'HomeIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.VISIT,
-                  });
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Find a client folder',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'FolderOpenIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.CLIENT,
-                    isFindClient: true,
-                  });
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Open a new folder',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'FolderAddIcon',
-                onClick: () => {
-                  onSubmit();
-                  showNewFolderDialog();
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'See my highlights',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'PresentationChartLineIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.HIGHLIGHTS,
-                  });
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Something else',
-                textColour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.CLIENTS.ROOT, {
-                    activeTabIndex: CLIENT_TABS.CLIENT,
-                  });
-                },
-              },
-            ]}
+          <MenuModal
+            onClose={onClose}
+            showNewFolderDialog={showNewFolderDialog}
           />
         );
       },
@@ -223,14 +152,13 @@ export const Dashboard: React.FC = () => {
         })
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
     {
       name: NavigationTypes.ClientFolders,
-      icon: 'UserGroupIcon',
+      icon: 'FolderOpenIcon',
       current: false,
       nestedChildren: [
         {
@@ -253,6 +181,44 @@ export const Dashboard: React.FC = () => {
         },
       ],
     },
+    ...(clinicDetails
+      ? [
+          {
+            name: NavigationTypes.Community,
+            href: communityHref,
+            icon: 'UserGroupIcon',
+            current: false,
+            nestedChildren: [
+              {
+                name: COMMUNITY_TABS.TEAM.TITLE,
+                href: communityHref,
+                params: { activeTabIndex: COMMUNITY_TABS.TEAM.INDEX },
+                current: false,
+              },
+              {
+                name: COMMUNITY_TABS.LEAGUE.TITLE,
+                href: communityHref,
+                params: { activeTabIndex: COMMUNITY_TABS.LEAGUE.INDEX },
+                current: false,
+              },
+              {
+                name: COMMUNITY_TABS.BREASTFEEDING_CLUBS.TITLE,
+                href: communityHref,
+                params: {
+                  activeTabIndex: COMMUNITY_TABS.BREASTFEEDING_CLUBS.INDEX,
+                },
+                current: false,
+              },
+              {
+                name: COMMUNITY_TABS.CONNECT.TITLE,
+                href: communityHref,
+                params: { activeTabIndex: COMMUNITY_TABS.CONNECT.INDEX },
+                current: false,
+              },
+            ],
+          },
+        ]
+      : []),
     {
       name: NavigationTypes.Calendar,
       href: ROUTES.CALENDAR,
@@ -280,17 +246,11 @@ export const Dashboard: React.FC = () => {
     {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
-      icon: 'BellIcon',
+      icon: 'BriefcaseIcon',
       current: false,
       showDivider: true,
     },
-    {
-      name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
-      icon: 'BookOpenIcon',
-      current: false,
-      showDivider: true,
-    },
+
     {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,
@@ -299,6 +259,84 @@ export const Dashboard: React.FC = () => {
       showDivider: true,
     },
   ];
+
+  const dashboardItems = [
+    {
+      title: 'Client folders',
+      titleIcon: 'UserGroupIcon',
+      titleIconClassName: styles.classRoomIcon,
+      onActionClick: () => {
+        showMenuDialog();
+      },
+      classNames: 'bg-secondaryAccent2',
+    },
+    {
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.classRoomIcon,
+      onActionClick: () => {
+        history.push(ROUTES.CALENDAR);
+      },
+      classNames: 'bg-secondaryAccent2',
+    },
+    {
+      title: 'Training',
+      titleIcon: 'BriefcaseIcon',
+      titleIconClassName: styles.businessIcon,
+      onActionClick: () => {
+        history.push(ROUTES.TRAINING);
+      },
+      classNames: 'bg-uiBg',
+    },
+  ];
+
+  const communityCard = useMemo(
+    (): ScoreCardProps => ({
+      image: !!clinicDetails?.points?.leagueRanking ? (
+        <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
+          <Badge
+            className="absolute z-0 h-12 w-12"
+            fill={`var(--${leaguePointsColours.mainColour})`}
+          />
+          <Typography
+            className="relative z-10"
+            color="white"
+            type="h1"
+            text={String(clinicDetails?.points?.leagueRanking ?? '')}
+          />
+        </div>
+      ) : (
+        <RoundIcon
+          backgroundColor="tertiary"
+          className="mr-4 h-12 w-12"
+          icon="UserGroupIcon"
+        />
+      ),
+      currentPoints: clinicDetails?.points?.pointsTotal ?? 0,
+      maxPoints: clinicDetails?.points?.maxPointsTotal ?? 0,
+      barBgColour: 'white',
+      barColour: leaguePointsColours.mainColour,
+      hint: clinicDetails?.name ?? 'Community',
+      mainText: '',
+      hintClassName: 'mt-10',
+      bgColour: leaguePointsColours.backgroundColour,
+      textColour: 'textDark',
+      statusChip: {
+        backgroundColour: tierColor,
+        borderColour: tierColor,
+        textColour: 'white',
+        text: tierName,
+        textWeight: 'normal',
+      },
+      onClick: () =>
+        history.push(
+          isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT
+        ),
+    }),
+    [clinicDetails, league]
+  );
 
   useEffect(() => {
     if (shouldUserSync) {
@@ -381,37 +419,38 @@ export const Dashboard: React.FC = () => {
 
       <div className={`${styles.wrapper}`}>
         <DashboardItems
-          listItems={[
-            {
-              title: 'Client folders',
-              titleIcon: 'UserGroupIcon',
-              titleIconClassName: styles.classRoomIcon,
-              onActionClick: () => {
-                showMenuDialog();
-              },
-              classNames: 'bg-secondaryAccent2',
-            },
-            {
-              title: 'Calendar',
-              titleIcon: 'CalendarIcon',
-              titleIconClassName: styles.classRoomIcon,
-              onActionClick: () => {
-                history.push(ROUTES.CALENDAR);
-              },
-              classNames: 'bg-secondaryAccent2',
-            },
-            {
-              title: 'Training',
-              titleIcon: 'BriefcaseIcon',
-              titleIconClassName: styles.businessIcon,
-              onActionClick: () => {
-                history.push(ROUTES.TRAINING);
-              },
-              classNames: 'bg-uiBg',
-            },
-          ]}
+          listItems={dashboardItems}
           notification={dashboardNotification}
         />
+        {!!clinicDetails?.league ? (
+          <ScoreCard
+            className="mt-30 h-20 w-full"
+            mainText={communityCard.mainText}
+            hint={communityCard.hint}
+            hintClassName={communityCard.hintClassName}
+            textPosition="left"
+            currentPoints={communityCard.currentPoints}
+            maxPoints={communityCard.maxPoints}
+            onClick={communityCard.onClick}
+            barBgColour={communityCard.barBgColour}
+            barColour={communityCard.barColour}
+            bgColour={communityCard.bgColour}
+            image={communityCard.image}
+            textColour={communityCard.textColour}
+            onClickClassName="text-textLight"
+            statusChip={communityCard.statusChip}
+          />
+        ) : (
+          <TitleListItem
+            item={{
+              title: communityCard.hint,
+              onActionClick: communityCard.onClick!,
+              titleIcon: 'UserGroupIcon',
+              titleIconClassName: 'bg-tertiary text-white',
+              classNames: 'bg-uiBg w-full mt-30',
+            }}
+          />
+        )}
       </div>
     </BannerWrapper>
   );

@@ -3,21 +3,26 @@ import { gql } from '@apollo/client';
 export const GetAllTeamLead = gql`
   query (
     $search: String
-    $clinicSearch: String
-    $provinceSearch: String
+    $clinicSearch: [String]
+    $provinceSearch: [String]
+    $visitSearch: [String]
+    $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
-    $order: [TeamLeadSortInput!]
+    $order: [PortalUsersTLModelSortInput!]
   ) {
     allTeamLeads(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
+      visitSearch: $visitSearch
+      connectUsageSearch: $connectUsageSearch
       pagingInput: $pagingInput
       order: $order
     ) {
       id
       insertedDate
       user {
+        connectUsage
         isActive
         userName
         email
@@ -32,19 +37,6 @@ export const GetAllTeamLead = gql`
         genderId
         phoneNumber
         lockoutEnd
-        roles {
-          id
-          name
-        }
-      }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
       }
     }
   }
@@ -74,15 +66,6 @@ export const GetAllTeamLeadAdminList = gql`
         idNumber
         fullName
       }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
-      }
     }
   }
 `;
@@ -90,14 +73,6 @@ export const GetAllTeamLeadAdminList = gql`
 export const CreateTeamLead = gql`
   mutation addTeamLead($input: TeamLeadModelInput) {
     addTeamLead(input: $input) {
-      id
-    }
-  }
-`;
-
-export const UpdateTeamLead = gql`
-  mutation updateTeamLead($input: TeamLeadModelInput, $id: UUID) {
-    updateTeamLead(id: $id, input: $input) {
       id
     }
   }
@@ -154,15 +129,6 @@ export const GetTeamLead = gql`
         roles @include(if: $fetchRoles) {
           id
           name
-        }
-      }
-
-      clinic @include(if: $fetchClinic) {
-        name
-        siteAddress {
-          province {
-            description
-          }
         }
       }
     }

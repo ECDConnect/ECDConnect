@@ -72,7 +72,7 @@ namespace ECDLink.SmartStart.Reports
                             foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                             {
                                 //var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
-                                var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, learner.UserId)
+                                var daysOfClass = attendanceForPeriod.Where(x => x.UserId == learner.UserId
                                              && x.ClassroomProgrammeId == programme.Id
                                              && x.MonthOfYear == dt.Month
                                              && x.Year == dt.Year);
@@ -80,7 +80,7 @@ namespace ECDLink.SmartStart.Reports
                                 if (daysOfClass.Count() > 0)
                                 {
                                     var attendedClasses = attendanceForPeriod
-                                                            .Where(x => string.Equals(x.UserId, learner.UserId)
+                                                            .Where(x => x.UserId == learner.UserId
                                                             && x.ClassroomProgrammeId == programme.Id
                                                             && x.MonthOfYear == dt.Month
                                                             && x.Year == dt.Year
@@ -130,10 +130,10 @@ namespace ECDLink.SmartStart.Reports
                                     totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
-                                if (classReports.Where(x => x.ChildUserId.Equals(learner.UserId)).FirstOrDefault() != null)
+                                if (classReports.Where(x => x.ChildUserId == learner.UserId.ToString()).FirstOrDefault() != null)
                                 {
                                     //append to existing report and not add if child already exists in report list based on different classes child may be in
-                                    var existingReport = classReports.Where(x => x.ChildUserId.Equals(learner.UserId) && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
+                                    var existingReport = classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
                                     
                                     existingReport.TotalActualAttendance = existingReport.TotalActualAttendance + report.ActualAttendance;
                                     existingReport.TotalExpectedAttendance = existingReport.TotalExpectedAttendance + report.ExpectedAttendance;
@@ -164,7 +164,7 @@ namespace ECDLink.SmartStart.Reports
 
                                     classReports.Add(new ClassroomGroupChildAttendanceReportModel()
                                     {
-                                        ChildUserId = learner.UserId,
+                                        ChildUserId = learner.UserId.ToString(),
                                         ClassgroupId = classroomGroup.Id,
                                         ChildFullName = learner.User.FirstName + " " + learner.User.Surname,
                                         ChildIdNumber = learner.User.IdNumber,

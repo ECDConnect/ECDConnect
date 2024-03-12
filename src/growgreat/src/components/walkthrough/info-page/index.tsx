@@ -162,7 +162,7 @@ export const WalkthroughInfoPage = ({
   return (
     <>
       <div className="bg-uiBg px-4 pb-2 pt-1">
-        <LanguageSelector selectLanguage={setLanguage} />
+        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
       </div>
       <div
         className="flex flex-col p-4"

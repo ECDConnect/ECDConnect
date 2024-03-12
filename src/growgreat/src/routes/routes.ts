@@ -22,7 +22,22 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   CALENDAR: '/calendar',
-  COMMUNITY: '/community',
+  COMMUNITY: addPrefix('/community', {
+    WELCOME: '/welcome',
+    TEAM: addPrefix('/team', {
+      INFO_PAGE: '/info-page',
+      POINTS: addPrefix('/points', {
+        ACTIVITY_DETAILS: '/activity-details/:activitySlug',
+      }),
+      MEMBERS: addPrefix('/members', {
+        LEADER_PROFILE: '/leader/:leaderId',
+        MEMBER_PROFILE: '/member/:memberHealthCareWorkerId',
+      }),
+    }),
+    BREASTFEEDING_CLUBS: addPrefix('/breastfeeding-clubs', {
+      ADD: '/add',
+    }),
+  }),
   DASHBOARD: '/dashboard',
   CLIENTS: addPrefix('/clients', {
     ROOT: '/',

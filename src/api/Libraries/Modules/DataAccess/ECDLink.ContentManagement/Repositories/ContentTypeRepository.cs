@@ -3,8 +3,6 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using Org.BouncyCastle.Bcpg;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,9 +23,9 @@ namespace ECDLink.ContentManagement.Repositories
         {
             // Can probably inject Id and fields
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return _context.ContentTypes.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId))
-              .Include(x => x.Content)
-                .ThenInclude(x => x.ContentValues)
+            return _context.ContentTypes.Where(e => e.TenantId == null || e.TenantId == tenantId)
+              .Include(x => x.Content.Where(f => f.TenantId == tenantId))
+                .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
                   .ThenInclude(x => x.ContentTypeField)
               .Include(x => x.Fields)
                 .ThenInclude(x => x.FieldType);
@@ -45,7 +43,7 @@ namespace ECDLink.ContentManagement.Repositories
             var languagesLookup = _context.ContentValues
                 .Include(x => x.Content)
                 .Where(e => contentTypes.Contains(e.Content.ContentTypeId)
-                && e.TenantId == null || e.TenantId.Equals(tenantId))
+                && e.TenantId == null || e.TenantId == tenantId)
                 .Select(x => new { x.Content.ContentTypeId, x.LocaleId })
                 .Distinct()
                 .GroupBy(x => x.ContentTypeId)
@@ -120,8 +118,8 @@ namespace ECDLink.ContentManagement.Repositories
             else
             {
                 result = _context.ContentTypes
-                    .Include(x => x.Content)
-                        .ThenInclude(x => x.ContentValues)
+                    .Include(x => x.Content.Where(f => f.TenantId == tenantId))
+                        .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
                             .ThenInclude(x => x.ContentTypeField)
                     .Include(x => x.Fields)
                         .ThenInclude(x => x.FieldType)

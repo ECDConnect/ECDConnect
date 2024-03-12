@@ -43,14 +43,14 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     // Create the pdf
                     // Just pass in the default Guid, it then ends up fetching the class based on the userId or their principal. TODO: Make it a nullable parameter
-                    var document = await _attendancePdfService.GetClassroomAttendanceReportPDFFile(mappedPractitioner.UserId, new Guid(), startDate, endDate);
+                    var document = await _attendancePdfService.GetClassroomAttendanceReportPDFFile(mappedPractitioner.UserId.ToString(), new Guid(), startDate, endDate);
 
                     if (document == null) 
                     {
                         await _logManager.IntegrationLog(
                             $"Log: No attendance data/document for user",
                             null,
-                            mappedPractitioner.UserId,
+                            mappedPractitioner.UserId.ToString(),
                             LogRelatedType.Log,
                             "PushMonthlyAttendancePdf");
 
@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.Services
                             foreach (var auditLog in auditLogs)
                             {
                                 auditLog.UpdatedDate = DateTime.Now;
-                                auditLog.UpdatedBy = _uId;
+                                auditLog.UpdatedBy = _uId.ToString();
                                 auditLog.Submitted = DateTime.Now;
 
                                 _auditRepo.Update(auditLog);
@@ -80,7 +80,7 @@ namespace EcdLink.Api.CoreApi.Services
                             await _logManager.IntegrationLog(
                                 $"Log: Attendance document sent for user",
                                 null,
-                                mappedPractitioner.UserId,
+                                mappedPractitioner.UserId.ToString(),
                                 LogRelatedType.Log,
                                 "PushMonthlyAttendancePdf");
                         }
@@ -91,7 +91,7 @@ namespace EcdLink.Api.CoreApi.Services
                     await _logManager.IntegrationLog(
                         $"Error: {e.Message}", 
                         e.InnerException != null ? e.InnerException.ToString() : null, 
-                        mappedPractitioner.UserId,
+                        mappedPractitioner.UserId.ToString(),
                         LogRelatedType.Error, 
                         "PushMonthlyAttendancePdf");
                 }                
@@ -134,9 +134,9 @@ namespace EcdLink.Api.CoreApi.Services
                 var allClassDataSent = true;
 
                 // TODO - This should not be calling a query extension, logic needs to move to a service
-                var weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, mappedPractitioner.UserId, trackingWeekDate.Year, null, trackingWeekOfYear);
+                var weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, mappedPractitioner.UserId.ToString(), trackingWeekDate.Year, null, trackingWeekOfYear);
 
-                foreach (var classroomGroup in _attendanceService.GetUserClassroomGroups(mappedPractitioner.UserId))
+                foreach (var classroomGroup in _attendanceService.GetUserClassroomGroups(mappedPractitioner.UserId.ToString()))
                 {
                     var attendanceData = new List<AttendanceList>();
                     var learnersForClassroomGroup = _attendanceService.GetLearnersActiveDuringTimePeriod(classroomGroup.Id, trackingWeekDate, followingWeekDate);
@@ -148,7 +148,7 @@ namespace EcdLink.Api.CoreApi.Services
                     // Loop through unique children for this class, since they can potentially have multiple learner records for the same day/week and we don't want duplicate records
                     foreach (var childUserId in learnersForClassroomGroup.Select(x => x.UserId).Distinct())
                     {
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, childUserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault(); 
+                        var mappedChild = _mappedEntities.Where(x => x.UserId == childUserId && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault(); 
                         
                         var childLearnerRecordsForClassroomGroup = learnersForClassroomGroup.Where(learner => learner.UserId == childUserId);
 
@@ -299,6 +299,8 @@ namespace EcdLink.Api.CoreApi.Services
                     jsonAttendanceString.AppendLine("},");
                 }
             }
+            // Remove newline and trailing comma
+            jsonAttendanceString = jsonAttendanceString.Remove(jsonAttendanceString.Length - 3, 1);
             jsonAttendanceString.AppendLine("]");
 
             return jsonAttendanceString.ToString();

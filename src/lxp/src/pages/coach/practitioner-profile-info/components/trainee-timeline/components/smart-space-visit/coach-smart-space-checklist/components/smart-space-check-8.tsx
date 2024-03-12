@@ -2,6 +2,7 @@ import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms
 import { authSelectors } from '@/store/auth';
 import { coachSelectors } from '@/store/coach';
 import { traineeSelectors } from '@/store/trainee';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 import { PractitionerDto } from '@ecdlink/core';
 import {
   Alert,
@@ -16,11 +17,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 interface SmartSpaceCheck1Props {
+  coachSmartSpaceVisitId: string;
   practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -36,128 +39,67 @@ export const getGroupColor = (count: number): Colours => {
 };
 
 export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
+  coachSmartSpaceVisitId,
   practitioner,
-  programmeName,
-  setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitSection = 'Confirm';
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(authSelectors.getAuthUser);
   const isCoach = coach?.user?.id === user?.id;
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection,
       question: `I gave ${practitioner?.user?.firstName} a playkit and admin file and explained the contents of the file.`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `I reminded and showed ${practitioner?.user?.firstName} how to keep child attendance (on paper and on Funda App).`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: `I have checked that all of ${practitioner?.user?.firstName}'s personal information is correct on the Funda App system.`,
-      answer: false,
+      questionAnswer: 'false',
     },
   ]);
 
-  const visitSection = 'Confirm';
-
   const trueAnswers = useMemo(() => {
-    const answers = questions?.every((item) => item?.answer === true);
+    const answers = questions?.every((item) => item.questionAnswer === 'true');
     return answers;
   }, [questions]);
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   useEffect(() => {
-    if (!isCoach) {
-      const previousData = questions.map((item) => {
-        const previousAnswer = visitData?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        });
-
-        const previousHasTrueAnswer =
-          Boolean(previousAnswer?.questionAnswer) === true ||
-          previousAnswer?.questionAnswer === 'true';
-
-        if (previousAnswer) {
-          return {
-            ...item,
-            answer: previousHasTrueAnswer!,
-          };
-        }
-
-        return item;
-      });
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: previousData,
-        },
-      ]);
-
-      setAnswers(previousData);
-      return;
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
     }
-
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.some(
-        (item: any) => item?.answer === 'true' || Boolean(item?.answer) === true
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer!,
-        };
-      }
-
-      return item;
-    });
-
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
   }, []);
 
   return (
@@ -191,10 +133,16 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
           description={item.question}
           checked={questions?.some(
             (option) =>
-              option.question === item.question && option?.answer === true
+              option.question === item.question &&
+              option?.questionAnswer === 'true'
           )}
           value={item.question}
-          onChange={() => onOptionSelected(!item.answer, index)}
+          onChange={() =>
+            onOptionSelected(
+              item.questionAnswer === 'true' ? 'false' : 'true',
+              index
+            )
+          }
           className="mb-1"
           disabled={!isCoach}
         />
@@ -208,8 +156,8 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
+                saveSmartSpaceCheckData(questions, visitSection);
                 handleNextSection();
-                saveSmartSpaceCheckData();
               }}
               disabled={!trueAnswers && isCoach}
             >

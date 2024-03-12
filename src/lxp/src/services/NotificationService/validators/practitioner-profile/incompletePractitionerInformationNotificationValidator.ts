@@ -70,7 +70,10 @@ export class IncompletePractitionerInformationNotificationValidator
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
-        const timeline = traineeState?.traineeOnboardTimeline;
+        const timeline =
+          traineeState?.traineeOnboardTimeline[
+            practitionerState.practitioner.userId || ''
+          ];
         const steps = timelineSteps(
           timeline!,
           () => {},
@@ -105,53 +108,14 @@ export class IncompletePractitionerInformationNotificationValidator
           ) as StepItem<{ date: Date }>[];
 
         if (overdueSteps?.length > 0) {
-          const overdueDate = overdueSteps[0].extraData?.date || new Date();
-          return [
-            {
-              reference: `trainee-profile`,
-              title: 'Onboarding tasks overdue',
-              message: `You have overdue onboarding tasks. Tasks were due by ${format(
-                overdueDate,
-                'd MMM yyyy'
-              )}. If you do not complete these tasks, your coach will be asked to remove you from the programme.`,
-              dateCreated: new Date().toISOString(),
-              priority: NotificationPriority.highest,
-              viewOnDashboard: true,
-              area: 'practitioner',
-              icon: 'SwitchVerticalIcon',
-              color: 'primary',
-              actionText: 'See onboarding tasks',
-              viewType: 'Hub',
-              routeConfig: {
-                route: ROUTES.TRAINEE.TRAINEE_ONBOARDING,
-              },
-            },
-          ];
+          return [];
         }
 
         if (
           (isOnStipend && completedSteps?.length < 8) ||
           (!isOnStipend && completedSteps?.length < 7)
         ) {
-          return [
-            {
-              reference: `trainee-profile`,
-              title: 'Start your trainee journey!',
-              message:
-                'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',
-              dateCreated: new Date().toISOString(),
-              priority: NotificationPriority.highest,
-              viewOnDashboard: true,
-              area: 'practitioner',
-              icon: 'SwitchVerticalIcon',
-              color: 'primary',
-              actionText: 'Get started',
-              viewType: 'Hub',
-              routeConfig: {
-                route: ROUTES.TRAINEE.SETUP_TRAINEE,
-              },
-            },
-          ];
+          return [];
         }
       }
 

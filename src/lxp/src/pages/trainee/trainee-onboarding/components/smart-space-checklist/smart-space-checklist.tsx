@@ -22,12 +22,14 @@ import {
   SsChecklistVisitModelInput,
 } from '@ecdlink/graphql';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
-import { SectionQuestions } from './components/programme-details/programme-details.types';
 import { TraineeService } from '@/services/TraineeService';
 import { practitionerSelectors } from '@/store/practitioner';
-import { SmartSpaceChecklisstStepsSteps } from './smart-space-checklist.types';
+import {
+  SectionQuestions,
+  SmartSpaceChecklistStepsSteps,
+} from './smart-space-checklist.types';
 import { HealthSanitationSafety } from './components/health-sanitation-safety/health-sanitation-safety';
-import { HealthStructureArea } from './components/safety-structure-area/health-strutcture-area.';
+import { HealthStructureArea } from './components/safety-structure-area/health-strutcture-area';
 import { SpaceEmergencyPlanning } from './components/space-emergency-planning/space-emergency-planning';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useAppDispatch } from '@/store';
@@ -46,17 +48,21 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const [sectionQuestions, setSectionQuestions] =
-    useState<SectionQuestions[]>();
+  const [sectionQuestions, setSectionQuestions] = useState<SectionQuestions[]>(
+    []
+  );
   const [visitSection, setVisitSection] = useState('');
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [activeStep, setActiveStep] = useState(
-    SmartSpaceChecklisstStepsSteps.INITIAL
+    SmartSpaceChecklistStepsSteps.INITIAL
   );
   const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
   );
-  const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const checklistVisitId = traineeTimeline?.traineeVisits?.[0]?.id || '';
+  const traineeVisitData = useSelector(
+    traineeSelectors.getTraineeVisitData(checklistVisitId)
+  );
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
@@ -216,7 +222,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         visitDateInput
       );
 
-      setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
+      setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL);
       return;
     } else {
       const visitDateInput: SsChecklistVisitModelInput = {
@@ -236,7 +242,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         visitDateInput
       );
 
-      setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
+      setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL);
     }
   };
 
@@ -267,7 +273,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         return;
       }
 
-      setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
+      setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL);
       return;
     } else {
       const visitDateInput: SsChecklistVisitModelInput = {
@@ -291,13 +297,13 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(activeStep + 1);
         return;
       }
-      setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
+      setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL);
     }
   };
 
-  const steps = (step: SmartSpaceChecklisstStepsSteps) => {
+  const steps = (step: SmartSpaceChecklistStepsSteps) => {
     switch (step) {
-      case SmartSpaceChecklisstStepsSteps.PROGRAMME_DETAILS:
+      case SmartSpaceChecklistStepsSteps.PROGRAMME_DETAILS:
         return (
           <ProgrammeDetails
             setSectionQuestions={setSectionQuestions}
@@ -305,10 +311,11 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             onSubmit={onSubmit}
             onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
+            checklistVisitId={checklistVisitId}
           />
         );
 
-      case SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY:
+      case SmartSpaceChecklistStepsSteps.HEALTH_SANITATION_SAFETY:
         return (
           <HealthSanitationSafety
             setSectionQuestions={setSectionQuestions}
@@ -316,9 +323,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             onSubmit={onSubmit}
             onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
+            checklistVisitId={checklistVisitId}
           />
         );
-      case SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA:
+      case SmartSpaceChecklistStepsSteps.SAFETY_STRUCTURE_AREA:
         return (
           <HealthStructureArea
             setSectionQuestions={setSectionQuestions}
@@ -326,9 +334,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             onSubmit={onSubmit}
             onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
+            checklistVisitId={checklistVisitId}
           />
         );
-      case SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING:
+      case SmartSpaceChecklistStepsSteps.SPACE_EMERGENCY_PLANNING:
         return (
           <SpaceEmergencyPlanning
             setSectionQuestions={setSectionQuestions}
@@ -336,6 +345,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             onSubmit={onSubmit}
             onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
+            checklistVisitId={checklistVisitId}
           />
         );
       default:
@@ -364,7 +374,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.PROGRAMME_DETAILS),
+        setActiveStep(SmartSpaceChecklistStepsSteps.PROGRAMME_DETAILS),
     });
   } else {
     const completedSectionItems = completedItems('Programme details');
@@ -384,7 +394,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.PROGRAMME_DETAILS),
+        setActiveStep(SmartSpaceChecklistStepsSteps.PROGRAMME_DETAILS),
     });
   }
 
@@ -408,7 +418,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY),
+        setActiveStep(SmartSpaceChecklistStepsSteps.HEALTH_SANITATION_SAFETY),
     });
   } else {
     notificationsCompleted.push({
@@ -423,7 +433,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY),
+        setActiveStep(SmartSpaceChecklistStepsSteps.HEALTH_SANITATION_SAFETY),
     });
   }
 
@@ -446,7 +456,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA),
+        setActiveStep(SmartSpaceChecklistStepsSteps.SAFETY_STRUCTURE_AREA),
     });
   } else {
     notificationsCompleted.push({
@@ -461,7 +471,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA),
+        setActiveStep(SmartSpaceChecklistStepsSteps.SAFETY_STRUCTURE_AREA),
     });
   }
 
@@ -484,7 +494,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING),
+        setActiveStep(SmartSpaceChecklistStepsSteps.SPACE_EMERGENCY_PLANNING),
     });
   } else {
     notificationsCompleted.push({
@@ -499,7 +509,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
       onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING),
+        setActiveStep(SmartSpaceChecklistStepsSteps.SPACE_EMERGENCY_PLANNING),
     });
   }
 
@@ -508,7 +518,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     [notificationItems?.length, traineeCurrentVisit?.id]
   );
 
-  return activeStep !== SmartSpaceChecklisstStepsSteps.INITIAL ? (
+  return activeStep !== SmartSpaceChecklistStepsSteps.INITIAL ? (
     <div className="h-screen">{steps(activeStep)}</div>
   ) : isLoading ? (
     <div className="absolute bottom-auto left-auto h-screen w-full">

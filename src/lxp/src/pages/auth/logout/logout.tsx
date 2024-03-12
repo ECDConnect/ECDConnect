@@ -7,8 +7,11 @@ import { useAppDispatch } from '@/store';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { settingActions } from '@/store/settings';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const Logout: React.FC = () => {
+  const { isOnline } = useOnlineStatus();
+
   const { resetAuth, resetAppStore } = useStoreSetup();
   const history = useHistory();
   const dispatch = useAppDispatch();
@@ -19,12 +22,24 @@ export const Logout: React.FC = () => {
     } else {
       await dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }
-    await dispatch(settingActions.setLastDataSync());
+
+    dispatch(settingActions.setLastDataSync());
+  };
+
+  const handleSync = async () => {
+    if (isOnline) {
+      await sync();
+      await resetAppStore();
+      await resetAuth();
+      history.push('/');
+    } else {
+      history.push(ROUTES.LOGIN);
+    }
   };
 
   return (
     <Dialog
-      visible={true}
+      visible
       position={DialogPosition.Middle}
       fullScreen
       className="overflow-auto"
@@ -40,12 +55,7 @@ export const Logout: React.FC = () => {
           {
             text: 'Yes, log out',
             colour: 'primary',
-            onClick: async () => {
-              await sync();
-              await resetAppStore();
-              await resetAuth();
-              history.push('/');
-            },
+            onClick: handleSync,
             type: 'filled',
             textColour: 'white',
             leadingIcon: 'CheckCircleIcon',

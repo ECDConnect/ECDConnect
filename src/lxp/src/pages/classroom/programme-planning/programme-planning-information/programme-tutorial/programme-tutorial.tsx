@@ -1,4 +1,3 @@
-import { ContentConsentTypeEnum } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -6,24 +5,29 @@ import {
   StackedList,
   StackedListItemType,
   Typography,
+  DialogPosition,
+  Dialog,
   MenuListDataItem,
   Alert,
   renderIcon,
   classNames,
+  MoreInformationPage,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import Article from '../../../../../components/article/article';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './programme-tutorial.styles';
 import ROUTES from '@routes/routes';
 import ProgressReport from '../../components/progress-report/progress-report';
 import { useSelector } from 'react-redux';
+import { staticDataSelectors } from '@/store/static-data';
 import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
 import { useAppDispatch } from '@/store';
+import { MoreInformation } from '@ecdlink/graphql';
+import InfoService from '@/services/InfoService/InfoService';
 const { usePDF } = require('react-to-pdf');
 
 interface ProgrammeTutorialProps extends ComponentBaseProps {
@@ -41,8 +45,11 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
     history.push(route);
   };
   const appDispatch = useAppDispatch();
-
+  const [data, setData] = useState<MoreInformation[]>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  const [selectedLanguage, setSelectedLanguage] = useState('en-za');
   const [showReport, setShowReport] = useState(false);
   const [notifications] = useState<MenuListDataItem[]>([
     {
@@ -98,6 +105,17 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
     }
   }, [progressSummary, fetchData]);
 
+  useEffect(() => {
+    setIsLoading(true);
+    new InfoService()
+      .getMoreInformation('Programme', selectedLanguage)
+      .then((info) => {
+        setData(info);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, [selectedLanguage]);
+
   const { toPDF, targetRef } = usePDF({
     filename: 'practitioner-progress-summary-report.pdf',
   });
@@ -107,6 +125,28 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
     setTimeout(() => toPDF(), 600);
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
+
+  if (presentArticle) {
+    return (
+      <Dialog
+        fullScreen={true}
+        visible={presentArticle}
+        position={DialogPosition.Full}
+      >
+        <MoreInformationPage
+          isLoading={isLoading}
+          languages={languages.map((x) => ({
+            value: x.locale,
+            label: x.description,
+          }))}
+          moreInformation={!!data ? data[0] : {}}
+          title={'Learning through play'}
+          onClose={() => history.goBack()}
+          setSelectedLanguage={setSelectedLanguage}
+        />
+      </Dialog>
+    );
+  }
 
   return (
     <BannerWrapper
@@ -165,14 +205,6 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
           />
         </Button>
       </div>
-
-      <Article
-        consentEnumType={ContentConsentTypeEnum.LearningThroughPlay}
-        visible={presentArticle}
-        title={'Learning through play'}
-        onClose={() => setPresentArticle(false)}
-        showClose={false}
-      />
 
       {showReport && (
         <div className="mt-10 h-screen overflow-y-scroll">

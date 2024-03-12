@@ -1,3 +1,5 @@
+using Azure.Storage.Blobs.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System;
 
@@ -719,13 +721,12 @@ namespace EcdLink.Api.CoreApi
             public const string caregiverHasChanged = "caregiver_has_changed";
 
             //sections
-            public const string maternal_distress_screening = "Maternal distress screening";
-            public const string mother_growth = "Mother growth monitoring (Mid-upper arm circumference)";
+            public const string MaternalDistressScreening = "Maternal distress screening";
+            public const string MotherNutritionMUACMeasurement = "Mother growth monitoring (Mid-upper arm circumference)";
             public const string alcohol_use = "Alcohol use";
             public const string child_docs = "Child documentation";
             public const string child_road_to_health = "Road to Health Book";
         }
-
         public static class SSIntegrationSettings
         {
             //Franchisee Queries
@@ -810,7 +811,6 @@ namespace EcdLink.Api.CoreApi
             public const string Upsert = "/Upsert";
 
         }
-
         public static class PointsEngineSettings
         {
             public const string client_registration = "Client Registration";
@@ -858,6 +858,28 @@ namespace EcdLink.Api.CoreApi
 
             public const int monthly_points_max_practitioner = 100;
             public const int monthly_points_max_principal_or_admin = 150;
+        }
+
+        public static class PointsCategoryConstants
+        {
+            public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
+        }
+
+        public static class PointsActivityConstants
+        {
+            public static readonly Guid ChildFoldersOpenedActivityId = new Guid("92c06990-7428-4a8f-8cfe-e1dfca83fb3e");
+            public static readonly Guid PregnantMomFolderOpenedActivityId = new Guid("f20f0917-b497-440c-836e-aa54cf2d10f0");
+            public static readonly Guid EarlyPregnacyIdentificationActivityId = new Guid("f5a72c31-5aa6-4852-9903-c9685420ab4b");
+            public static readonly Guid PregnantMotherReferralForMaternalDistressActivityId = new Guid("868743ae-a750-420b-94df-c00945c56367");
+            public static readonly Guid PregnantMotherReferralForMaternalMalnutritionActivityId = new Guid("3e4d346d-8190-439f-b000-a54d2b19f852");
+        }
+        
+        public static class StatusColours
+        {
+            public static readonly string Green = MetricsColorEnum.Success.ToString();
+            public static readonly string Amber = MetricsColorEnum.Warning.ToString();
+            public static readonly string Red = MetricsColorEnum.Error.ToString();
+            public static readonly string None = MetricsColorEnum.None.ToString();
         }
 
         public static class CoachingCircleSettings
@@ -944,6 +966,19 @@ namespace EcdLink.Api.CoreApi
 
         }
 
+
+        public static class PortalSettings
+        {
+            public const string visit_high_activity = "High activity (at least 20 visits in past month)";
+            public const string visit_medium_activity = "Medium activity (at least 10 visits in past month)";
+
+            public const string usage_invitation_active = "Invitation active";
+            public const string usage_invitation_expired = "Invitation expired";
+            public const string usage_last_online_past_6_months = "Last online within past 6 months";
+            public const string usage_last_online_over_months = "Last online over 6 months ago";
+            public const string usage_removed = "Removed (users who have been removed from CHW Connect)";
+
+        }
     }
 }
 

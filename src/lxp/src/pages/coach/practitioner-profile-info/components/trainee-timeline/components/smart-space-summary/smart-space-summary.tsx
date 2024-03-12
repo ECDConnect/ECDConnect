@@ -40,60 +40,79 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner.userId || '')
+  );
   const smartSpaceVisitId = timeline?.sSCoachVisitId;
-  const visitNotes = useSelector(traineeSelectors.getCoachVisitDataNextSteps);
+  const visitNotes = useSelector(
+    traineeSelectors.getCoachVisitDataNextSteps(smartSpaceVisitId)
+  );
   const assistantsNumber = useSelector(
-    traineeSelectors.getTraineeVisitDataAssitantsNumber
+    traineeSelectors.getVisitDataAssitantsNumber(smartSpaceVisitId)
   );
 
   const visitProgrammeCapacityData = useSelector(
-    traineeSelectors.getCoachVisitCapacity
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      smartSpaceVisitId,
+      'Calculate programme capacity'
+    )
   );
 
-  const smartSpaceCapacity = visitProgrammeCapacityData?.[2]?.questionAnswer;
+  const smartSpaceCapacity = visitProgrammeCapacityData?.[2]?.questionAnswer; // TODO - this should probably use find and not just index
   const totalMetresSquaredAvailable =
     ((Number(visitProgrammeCapacityData?.[0]?.questionAnswer) / 100) *
       Number(visitProgrammeCapacityData?.[1]?.questionAnswer)) /
     100;
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
-    traineeSelectors.getTraineeProgrammeType
+    traineeSelectors.getTraineeProgrammeType(smartSpaceVisitId)
   );
   const traineeProgrammeTypeObject = programData?.find(
     (item) => item?.id === traineeProgrammeType
   );
   const visitSmartSpaceAnswers = useSelector(
-    traineeSelectors.getCoachSmartSpaceStandardsAnswers
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      smartSpaceVisitId,
+      'SmartSpace check'
+    )
   );
-  const visitSmartSpaceFalseAnswers = visitSmartSpaceAnswers?.filter(
+  const visitSmartSpaceFalseAnswers = visitSmartSpaceAnswers.filter(
     (item) => item?.questionAnswer === 'false'
   );
 
   const visitProgrammeCovidStandards = useSelector(
-    traineeSelectors.getCoachVisitDataCovidStandards
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      smartSpaceVisitId,
+      'COVID safety checklist (CC14)'
+    )
   );
 
   const visitProgrammeCovidStandardsFalseAnswers =
-    visitProgrammeCovidStandards?.filter(
+    visitProgrammeCovidStandards.filter(
       (item) => item?.questionAnswer === 'false'
     );
 
   const visitProgrammeStandardsChecklist = useSelector(
-    traineeSelectors.getCoachVisitDataStandardsChecklist
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      smartSpaceVisitId,
+      'Standards checklist'
+    )
   );
 
   const visitProgrammeStandardsChecklistTrueAnswers =
-    visitProgrammeStandardsChecklist?.filter(
+    visitProgrammeStandardsChecklist.filter(
       (item) => item?.questionAnswer === 'true'
     );
 
   const visitProgrammeStandardsChecklistFalseAnswers =
-    visitProgrammeStandardsChecklist?.filter(
+    visitProgrammeStandardsChecklist.filter(
       (item) => item?.questionAnswer === 'false'
     );
   const visitProgrammeAdditionalStandardsChecklist = useSelector(
-    traineeSelectors.getCoachSmartSpaceAdditionalStandardsAnswers
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      smartSpaceVisitId,
+      'Additional standards'
+    )
   );
 
   const visitAdditionalStandardsChecklistFalseAnswers =
@@ -103,7 +122,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
 
   const programmeNotRunning = useMemo(
     () =>
-      visitProgrammeStandardsChecklist?.every(
+      visitProgrammeStandardsChecklist.every(
         (item) => item.questionAnswer === 'false'
       ),
     [visitProgrammeStandardsChecklist]
@@ -253,7 +272,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   }, [
     practitioner?.user?.firstName,
     programmeNotRunning,
-    visitProgrammeStandardsChecklist?.length,
+    visitProgrammeStandardsChecklist.length,
     visitProgrammeStandardsChecklistFalseAnswers,
     visitProgrammeStandardsChecklistTrueAnswers?.length,
   ]);

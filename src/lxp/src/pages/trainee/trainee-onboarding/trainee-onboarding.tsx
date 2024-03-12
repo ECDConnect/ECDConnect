@@ -74,6 +74,7 @@ export const TraineeOnboarding = () => {
           <SmartSpaceDetails
             setShowCoachVisit={setShowCoachVisit}
             setNotificationStep={setNotificationStep}
+            practitionerUserId={practitioner?.userId || ''}
           />
         );
       case 'SmartSpace Licence not received':
@@ -81,6 +82,7 @@ export const TraineeOnboarding = () => {
           <SmartSpaceDetails
             setShowCoachVisit={setShowCoachVisit}
             setNotificationStep={setNotificationStep}
+            practitionerUserId={practitioner?.userId || ''}
           />
         );
       case 'Coach SmartSpace checklist':

@@ -3,8 +3,13 @@ using System;
 
 namespace ECDLink.Core.Models
 {
-    public class ApplicationIdentityUser : IdentityUser
+    public class ApplicationIdentityUser : IdentityUser<Guid>
     {
+        public ApplicationIdentityUser()
+        {
+            Id = Guid.NewGuid();
+            SecurityStamp = Guid.NewGuid().ToString();
+        }
         public bool IsSouthAfricanCitizen { get; set; }
 
         public string IdNumber { get; set; }

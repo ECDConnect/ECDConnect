@@ -45,7 +45,7 @@ export const Connect: React.FC = () => {
         communityThunkActions.getAllConnectItem({
           locale: 'en-za',
         })
-      );
+      ).unwrap();
     }
   }, [isOnline, appDispatch, connectItemData]);
 

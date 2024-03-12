@@ -14,7 +14,7 @@ namespace ECDLink.AutomatedJobs.Util
             var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
 
             var tenant = tenancyRepo.GetAllTenants()
-                .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant && x.Id.Equals(Guid.Parse(tenantGuid)))
+                .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant && x.Id == Guid.Parse(tenantGuid))
                 .OrderBy(x => x.Id)
                 .FirstOrDefault();
 

@@ -2,6 +2,8 @@ import {
   LanguageDto,
   LocalStorageKeys,
   UserDto,
+  useDialog,
+  usePrevious,
   useTheme,
 } from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
@@ -17,12 +19,13 @@ import {
   StackedList,
   Typography,
   Dropdown,
+  Avatar,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -40,14 +43,18 @@ import * as styles from '@/pages/practitioner/practitioner-about/practitioner-ab
 import ROUTES from '@/routes/routes';
 import { staticDataSelectors } from '@/store/static-data';
 import {
-  healthCareWorkerActions,
   healthCareWorkerSelectors,
   healthCareWorkerThunkActions,
 } from '@/store/healthCareWorker';
 import { ClinicDetails } from './components/clinicDetails/clinic-details';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
+import { PractitionerAboutRouteState } from './practitioner-about.types';
+import { BackToCommunityDialog } from './components/back-to-community-modal';
+import { communitySelectors } from '@/store/community';
+import { LeaderProfileRouteState } from '@/pages/community/team-tab/team/members/leader-profile/types';
 
 export const PractitionerAbout: React.FC = () => {
+  const location = useLocation<PractitionerAboutRouteState>();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -71,12 +78,21 @@ export const PractitionerAbout: React.FC = () => {
     healthCareWorkerSelectors?.getHealthCareWorker
   );
 
-  // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
+  const clinic = useSelector(communitySelectors.getClinicSelector);
 
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [clinicDetails, setClinicDetails] = useState(false);
+
+  const dialog = useDialog();
+  const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
+  const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
+
+  const avatar =
+    userProfilePicture?.file ||
+    user?.profileImageUrl ||
+    userProfilePicture?.reference;
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -147,23 +163,42 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Your clinic & GGC team',
-        subTitle: healthCareWorker?.teamLead?.clinic?.name || '',
+        subTitle: clinic?.name || '',
         switchTextStyles: true,
         actionName: 'View',
         actionIcon: 'EyeIcon',
-        buttonType: healthCareWorker?.teamLead?.clinic?.name
-          ? 'outlined'
-          : 'filled',
+        buttonType: 'filled',
         onActionClick: () => {
           setClinicDetails(true);
         },
       },
-      {
-        title: 'Your Team Leader',
-        subTitle: healthCareWorker?.teamLead?.user?.firstName || '',
-        switchTextStyles: true,
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
-      },
+      ...(!!clinic?.teamLeads?.length
+        ? clinic?.teamLeads?.map(
+            (leader, index) =>
+              ({
+                title: `Your Team Leader ${index + 1}`,
+                subTitle: `${leader?.firstName ?? ''} ${leader?.surname}`,
+                switchTextStyles: true,
+                actionName: 'View',
+                actionIcon: 'EyeIcon',
+                buttonType: 'filled',
+                onActionClick: () =>
+                  history.push(
+                    ROUTES.COMMUNITY.TEAM.MEMBERS.LEADER_PROFILE.replace(
+                      ':leaderId',
+                      leader?.id!
+                    ),
+                    { isFromAboutPage: true } as LeaderProfileRouteState
+                  ),
+              } as ActionListDataItem)
+          )
+        : [
+            {
+              title: 'Your Team Leader',
+              subTitle: 'None',
+              switchTextStyles: true,
+            } as ActionListDataItem,
+          ]),
       {
         title: 'Preferred language on app',
         subTitle: selectedLanguage?.description || 'Add a language',
@@ -206,8 +241,41 @@ export const PractitionerAbout: React.FC = () => {
     }
   };
 
-  const displayProfilePicturePrompt = () => {
+  const displayProfilePicturePrompt = useCallback(() => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
+  }, [editProfilePictureVisible]);
+
+  const handlePicturePromptOnClose = () => {
+    if (isFromCommunityWelcome) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <BackToCommunityDialog
+              hideTitle={!avatar}
+              avatar={
+                avatar ? (
+                  <Avatar dataUrl={avatar} size="header" className="mb-4" />
+                ) : undefined
+              }
+              onSubmit={() => {
+                history.push(ROUTES.COMMUNITY.ROOT, {
+                  isFromCommunityWelcome: false,
+                } as PractitionerAboutRouteState);
+                onClose();
+              }}
+              onClose={() => {
+                displayProfilePicturePrompt();
+                onClose();
+              }}
+            />
+          );
+        },
+      });
+    }
+
+    displayProfilePicturePrompt();
   };
 
   const closeEditField = () => {
@@ -224,7 +292,9 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userActions.updateUser(copy));
     }
 
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+    if (!isFromCommunityWelcome) {
+      setEditProfilePictureVisible(!editProfilePictureVisible);
+    }
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -263,17 +333,11 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
       appDispatch(
-        healthCareWorkerActions.updateHealthCareWorker({
-          ...healthCareWorker,
-          languageId: copy.languageId,
-        })
-      );
-      appDispatch(
-        healthCareWorkerThunkActions.updateHealthCareWorkerById({
+        healthCareWorkerThunkActions.updateHealthCareWorker({
           userId: user?.id!,
           input: {
-            languageId: copy.languageId,
-            isRegistered: healthCareWorker?.isRegistered,
+            languageId: practitionerForm.languageId,
+            isRegistered: healthCareWorker?.isRegistered!,
           },
         })
       );
@@ -281,6 +345,16 @@ export const PractitionerAbout: React.FC = () => {
       setNewStackListItems(copy);
     }
   };
+
+  useEffect(() => {
+    if (isFromCommunityWelcome && !wasFromCommunityWelcome) {
+      displayProfilePicturePrompt();
+    }
+  }, [
+    displayProfilePicturePrompt,
+    isFromCommunityWelcome,
+    wasFromCommunityWelcome,
+  ]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -304,10 +378,7 @@ export const PractitionerAbout: React.FC = () => {
   return (
     <div className={styles.container}>
       <Dialog fullScreen visible={clinicDetails} position={DialogPosition.Top}>
-        <ClinicDetails
-          healthCareWorker={healthCareWorker}
-          setClinicDetails={setClinicDetails}
-        />
+        <ClinicDetails setClinicDetails={setClinicDetails} />
       </Dialog>
       <Dialog
         fullScreen
@@ -324,7 +395,6 @@ export const PractitionerAbout: React.FC = () => {
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         title={'About me'}
-        color={'primary'}
         size="medium"
         renderBorder={true}
         renderOverflow={false}
@@ -479,7 +549,7 @@ export const PractitionerAbout: React.FC = () => {
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"
-            onClose={displayProfilePicturePrompt}
+            onClose={handlePicturePromptOnClose}
             onAction={picturePromtOnAction}
             onDelete={userProfilePicture ? deleteProfilePicture : undefined}
           />

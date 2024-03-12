@@ -1,5 +1,4 @@
 import { coachSelectors } from '@/store/coach';
-import { ClubDto } from '@ecdlink/core';
 import { ClubMeetingModelInput } from '@ecdlink/graphql';
 import {
   Button,

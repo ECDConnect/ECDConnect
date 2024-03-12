@@ -16,6 +16,7 @@ export interface UiTableProps {
   isLoading?: boolean;
   onBulkActionCallback?: (status: BulkActionStatus) => void;
   languages?: LanguageDto[];
+  noBulkSelection?: boolean;
 }
 
 interface Iprop {

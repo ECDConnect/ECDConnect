@@ -732,7 +732,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       <Dialog fullScreen visible={isLearnMore} position={DialogPosition.Full}>
         <InfoPage
           title="Ideas for making a profit"
-          section="ideas-for-making-a-profit"
+          section="Business - Money tab, Learn more"
           childrenPosition="bottom"
           onClose={() => setIsLearnMore(false)}
         >

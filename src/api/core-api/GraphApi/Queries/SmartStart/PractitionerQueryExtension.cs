@@ -12,6 +12,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -66,7 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public PractitionerUserAndNote GetPractitionerByIdNumber(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
@@ -78,7 +79,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             //retrieve principal, check that the coach lines match, that the user to be searched for is not a principal or an FAA
 
-            var principal = dbRepo.GetByUserId(uId);
+            var principal = dbRepo.GetByUserId(uId.Value);
             if (principal != null)
             {
                 var practionerUser = userManager.FindByNameAsync(idNumber).Result;
@@ -113,7 +114,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public ApplicationUser GetPractitionerByIdNumberInternal(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
@@ -264,8 +265,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public async Task<List<Child>> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<ApplicationIdentityRole> roleManager,
+            [Service] ApplicationUserManager userManager,
+            [Service] ApplicationRoleManager roleManager,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService practiManager,
             string userId)
@@ -306,7 +307,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             Practitioner practi = practiRepo.GetByUserId(userId);
             if (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true)
             {
-                List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)).ToList();
+                List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy == practi.PrincipalHierarchy : x.IsPrincipal == true ? x.UserId == Guid.Parse(userId) : x.UserId == Guid.Parse(userId)).ToList();
                 //also add principal
                 if (practi.IsPrincipal == true)
                 {
@@ -363,21 +364,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
+            return shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
         public string GetLastPractitionerInviteDate(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetLastMessageDateForUser(userId, TemplateTypeConstants.Invitation);
+            return shortUrlManager.GetLastMessageDateForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
         public List<System.DateTime> GetAllPractitionerInvites(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            return shortUrlManager.GetAllMessageInvitesForUser(userId, TemplateTypeConstants.Invitation);
+            return shortUrlManager.GetAllMessageInvitesForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
         }
 
         public List<Visit> GetPractitionerVisits([Service] VisitManager visitManager, string userId)
@@ -427,7 +428,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
             var result = removalRepo.GetAll()
-                .Where(x => x.IsActive && userIds.Contains(x.UserId))
+                .Where(x => x.IsActive && userIds.Contains(x.UserId.ToString()))
                 .ToList();
 
             return result;

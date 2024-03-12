@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import DynamicSelector from '../../../../components/dynamic-selector/dynamic-selector';
 import DynamicStaticSelector from '../../../../components/dynamic-static-selector/dynamic-static-selector';
 import FormColorField from '../../../../components/form-color-field/form-color-field';
 import FormField from '../../../../components/form-field/form-field';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
-import { videoExtensions } from '../../../../utils/constants';
 import {
   ActivitiesTitles,
   ContentManagementView,
@@ -15,6 +14,7 @@ import {
 } from '../../content-management-models';
 import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
+import { ContentForms } from '../../../../constants/content-management';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
@@ -99,6 +99,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         ?.toString()
     );
     setDisableActivitiesInputs(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentView?.content]);
+
+  const setContentInputValues = useCallback(() => {
+    onStateChange('image', contentView?.content?.['image']);
+    setDisableActivitiesInputs(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentView?.content]);
 
   useEffect(() => {
@@ -114,6 +121,23 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     isSmallLargeGroup,
     template?.fields,
     contentView?.content,
+    setStoriesGeneralInputsValues,
+  ]);
+
+  useEffect(() => {
+    if (
+      template.title === ContentForms.CONSENT_FORM &&
+      template?.fields?.[0]?.selectedLanguageId !== defaultLanguageId &&
+      contentView?.content
+    ) {
+      setContentInputValues();
+    }
+  }, [
+    contentView?.content,
+    defaultLanguageId,
+    setContentInputValues,
+    template?.fields,
+    template.title,
   ]);
 
   useEffect(() => {
@@ -154,7 +178,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           if (
             propName === 'type' &&
             isSmallLargeGroup &&
-            template?.title === 'Activity Form'
+            template?.title === ContentForms.ACTIVITY_FROM
           ) {
             return (
               <div key={propName} className={contentWrapper}>
@@ -208,7 +232,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           }
           if (
             propName === 'type' &&
-            template?.title === 'Activity Form' &&
+            template?.title === ContentForms.ACTIVITY_FROM &&
             template?.fields?.find((item) => item?.propName === 'name')
               ?.contentValue !== undefined
           ) {
@@ -279,21 +303,15 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Image:
-          if (
-            propName === 'image' &&
-            isSmallLargeGroup &&
-            template?.title === 'Activity Form'
-          ) {
+          if (propName === 'image' && disableActivitiesInputs) {
             return (
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
-                  {disableActivitiesInputs && (
-                    <Alert
-                      className="mt-2 mb-4 rounded-md"
-                      message={`To edit this field, go to the English version.`}
-                      type="warning"
-                    />
-                  )}
+                  <Alert
+                    className="mt-2 mb-4 rounded-md"
+                    message={`To edit this field, go to the English version.`}
+                    type="warning"
+                  />
                   <div
                     className={`${disableActivitiesInputs ? 'opacity-25' : ''}`}
                   ></div>

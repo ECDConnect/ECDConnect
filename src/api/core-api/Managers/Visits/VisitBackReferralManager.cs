@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
         private IGenericRepository<VisitBackReferral, Guid> _visitBackReferralRepo;
 
-        private string _applicationUserId;
+        private Guid _applicationUserId;
 
         public VisitBackReferralManager(
             IHttpContextAccessor contextAccessor,
@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
@@ -43,12 +43,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public VisitBackReferral AddVisitBackReferral(VisitBackReferralModel input)
         {
-            var referral = GetVisitBackReferralFromInputModel(input, _applicationUserId);
+            var referral = GetVisitBackReferralFromInputModel(input, _applicationUserId.ToString());
 
             // update the status record
             var entityToUpdate = _visitDataStatusRepo.GetById(Guid.Parse(input.VisitDataStatusId));
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.UpdatedBy = _applicationUserId.ToString();
             entityToUpdate.BackReferralCompleted = true;
             entityToUpdate.BackReferralDateCompleted = DateTime.Now;
             _visitDataStatusRepo.Update(entityToUpdate);
@@ -68,7 +68,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 Id = Guid.NewGuid(),
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 Question = input.Question,
                 Answer = input.Answer,
                 Comment = input.Comment,
@@ -76,7 +76,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             };
         }
 
-        public List<VisitBackReferral> GetBackReferralDataForClient(string id, string clientType, bool referralCompleted, bool backReferralCompleted) {
+        public List<VisitBackReferral> GetBackReferralDataForClient(string id, string clientType, bool referralCompleted, bool backReferralCompleted) 
+        {
             // This data is for the past 6 months
             List<VisitBackReferral> allReferrals = new List<VisitBackReferral>();
             DateTime today = DateTime.Today;
@@ -84,7 +85,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == referralCompleted && x.BackReferralCompleted == backReferralCompleted && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
                     join visitBackReferralData in _visitBackReferralRepo.GetAll() on visitStatusData.Id equals visitBackReferralData.VisitDataStatusId
@@ -93,7 +94,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == referralCompleted && x.BackReferralCompleted == backReferralCompleted && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
                     join visitBackReferralData in _visitBackReferralRepo.GetAll() on visitStatusData.Id equals visitBackReferralData.VisitDataStatusId

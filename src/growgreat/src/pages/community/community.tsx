@@ -2,13 +2,13 @@ import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { Connect } from './connect-tab/connect';
-import { useState } from 'react';
-import { CommunityRouteState } from './community.types';
+import { useEffect, useState } from 'react';
+import { COMMUNITY_TABS, CommunityRouteState } from './community.types';
 import format from 'date-fns/format';
-
-export const COMMUNITY_TABS = {
-  CONNECT: 0,
-};
+import ROUTES from '@/routes/routes';
+import { TeamTab } from './team-tab';
+import { LeagueTab } from './league-tab';
+import { BreastfeedingClubsTab } from './breastfeeding-clubs-tab';
 
 export const Community: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -16,57 +16,68 @@ export const Community: React.FC = () => {
   const { state } = useLocation<CommunityRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
 
+  const previousTabIndex = state?.activeTabIndex;
+
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
-  const [currentTab, setCurrentTab] = useState<TabItem>();
 
   const tabItems: TabItem[] = [
     {
-      title: 'League',
-      initActive: false,
-      child: 'Coming Soon!',
-    },
-    {
-      title: 'Breastfeeding clubs',
-      initActive: false,
-      child: 'Coming Soon!',
-    },
-    {
-      title: 'Connect',
+      title: COMMUNITY_TABS.TEAM.TITLE,
       initActive: true,
+      child: <TeamTab />,
+    },
+    {
+      title: COMMUNITY_TABS.LEAGUE.TITLE,
+      initActive: false,
+      child: <LeagueTab />,
+    },
+    {
+      title: COMMUNITY_TABS.BREASTFEEDING_CLUBS.TITLE,
+      initActive: false,
+      child: <BreastfeedingClubsTab />,
+    },
+    {
+      title: COMMUNITY_TABS.CONNECT.TITLE,
+      initActive: false,
       child: <Connect />,
     },
   ];
 
-  function setTabSelected(tab: TabItem, tabIndex: number) {
+  const setTabSelected = (tab: TabItem, tabIndex: number) => {
     setSelectedTabIndex(tabIndex);
-  }
+  };
 
-  function displayTutorial(type?: string) {
-    // TODO: add walkthrough
-    switch (type) {
-      default:
-        // showTutorial();
-        break;
+  // handle tab change
+  useEffect(() => {
+    if (
+      typeof state?.activeTabIndex === 'number' &&
+      previousTabIndex !== selectedTabIndex
+    ) {
+      setSelectedTabIndex(state?.activeTabIndex || COMMUNITY_TABS.TEAM.INDEX);
+      history.replace(ROUTES.COMMUNITY.ROOT, {
+        activeTabIndex: undefined,
+      });
     }
-  }
+  }, [history, previousTabIndex, selectedTabIndex, state?.activeTabIndex]);
 
   return (
     <BannerWrapper
       showBackground={false}
       size="medium"
-      renderBorder={true}
-      title={'Community'}
+      renderBorder
+      title="Community"
       subTitle={date}
       color={'primary'}
-      onBack={() => history.goBack()}
-      displayHelp
-      onHelp={() => displayTutorial(currentTab?.title)}
+      onBack={() => history.push(ROUTES.ROOT)}
+      displayHelp={selectedTabIndex === COMMUNITY_TABS.TEAM.INDEX}
+      onHelp={() => {}}
       displayOffline={!isOnline}
     >
       <TabList
         className="bg-uiBg"
+        tabClassName="min-w-0 mr-8"
         tabItems={tabItems}
         setSelectedIndex={selectedTabIndex}
         tabSelected={(tab: TabItem, tabIndex: number) =>

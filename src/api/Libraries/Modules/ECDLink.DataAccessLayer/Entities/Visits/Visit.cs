@@ -51,7 +51,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public string Rating { get; set; }
         public virtual PQARating PQARating { get; set; }
         public DateTime? IntegrationSubmitDate {  get; set; }
-        public virtual ICollection<VisitData> VisitAnswers { get; set; }
+        public virtual ICollection<VisitData> VisitData { get; set; }
     }
 
     public interface VisitJoin<TKey>

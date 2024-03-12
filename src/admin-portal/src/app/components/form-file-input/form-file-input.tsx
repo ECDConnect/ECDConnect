@@ -219,7 +219,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             setLoading(false);
             return;
           }
-          setError('Invalid File type');
+          setError('Invalid File size');
           setLoading(false);
         }
       } else {

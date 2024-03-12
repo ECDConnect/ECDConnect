@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -36,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name == Constants.GGSettings.additional_visits).OrderBy(x => x.NormalizedName).FirstOrDefault();
-            Mother mother = motherRepo.GetAll().Where(x => x.UserId == input.MotherId.ToString()).FirstOrDefault();
+            Mother mother = motherRepo.GetAll().Where(x => x.UserId.ToString() == input.MotherId.ToString()).FirstOrDefault();
 
             input.VisitType = visitType;
             input.Attended = false;
@@ -63,7 +65,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name == Constants.GGSettings.additional_visits).OrderBy(x => x.NormalizedName).FirstOrDefault();
-            Infant infant = infantRepo.GetAll().Where(x => x.UserId == input.InfantId.ToString()).FirstOrDefault();
+            Infant infant = infantRepo.GetAll().Where(x => x.UserId.ToString() == input.InfantId.ToString()).FirstOrDefault();
 
 
             input.VisitType = visitType;
@@ -103,7 +105,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
             }
 
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.ToString() == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
             var visitModel = new VisitModel();
@@ -143,7 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
 
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.ToString() == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
             var visitModel = new VisitModel();
@@ -187,7 +189,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.ToString() == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
             var visitModel = new VisitModel();
@@ -230,7 +232,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.ToString() == input.PractitionerId.ToString()).FirstOrDefault();
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
 
             // Add Visit
@@ -278,7 +280,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type == Constants.SSSettings.client_practitioner && x.Name == Constants.SSSettings.visitType_self_assessment).FirstOrDefault();
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.ToString() == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
             var visitModel = new VisitModel();
@@ -325,6 +327,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
+            [Service] ApplicationUserManager userManager,
+            [Service] INotificationService notificationService,
             SSChecklistVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
@@ -332,7 +336,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: applicationUserId);
 
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_trainee) && x.Name == Constants.SSSettings.visitType_smart_space_checklist).FirstOrDefault();
-            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
+            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId.ToString() == input.TraineeId.ToString()).FirstOrDefault();
 
             // Add Visit
             var visitModel = new VisitModel();
@@ -353,6 +357,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.ChecklistData.TraineeId = trainee.Id.ToString();
             visitDataManager.AddTraineeVisitData(input.ChecklistData);
 
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "SupportDate",
+                ReplacementValue = trainee.InsertedDate.AddDays(21).ToShortDateString(),
+            });
+
+            var userToSend = userManager.FindByIdAsync(trainee.UserId).Result;
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), false,true,null, trainee.UserId.ToString());
+
+
             return visit;
         }
 
@@ -369,7 +384,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: applicationUserId);
 
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_trainee) && x.Name == Constants.SSSettings.visitType_startup_support_agreement).FirstOrDefault();
-            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
+            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId.ToString() == input.TraineeId.ToString()).FirstOrDefault();
 
             // Add Visit
             var visitModel = new VisitModel();
@@ -411,8 +426,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: applicationUserId);
 
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
-            Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
-            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
+            Coach coach = coachRepo.GetAll().Where(x => x.UserId.ToString() == input.CoachId.ToString()).FirstOrDefault();
+            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId.ToString() == input.TraineeId.ToString()).FirstOrDefault();
 
             if (input.CoachId == null || input.TraineeId == null)
             {
@@ -457,8 +472,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: applicationUserId);
 
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_coach_franchisee_agreement).FirstOrDefault();
-            Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
-            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
+            Coach coach = coachRepo.GetAll().Where(x => x.UserId.ToString() == input.CoachId.ToString()).FirstOrDefault();
+            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId.ToString() == input.TraineeId.ToString()).FirstOrDefault();
 
             if (input.CoachId == null || input.TraineeId == null)
             {
@@ -468,8 +483,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var visitModel = new VisitModel();
             visitModel.VisitType = visitType;
             visitModel.LinkedVisitId = null;
-            visitModel.CoachId = coach.Id;
-            visitModel.TraineeId = trainee.Id;
+            visitModel.CoachId = coach.UserId;
+            visitModel.TraineeId = trainee.UserId;
             visitModel.PlannedVisitDate = DateTime.Now;
             visitModel.DueDate = DateTime.Now;
             visitModel.ActualVisitDate = DateTime.Now;
@@ -513,7 +528,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             Coach coach = coachRepo.GetAll().Where(x => x.Id == input.CoachId).FirstOrDefault();
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.ToString() == input.PractitionerId.ToString()).FirstOrDefault();
 
             if (coach == null || practitioner == null)
             {
@@ -522,19 +537,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             input.VisitType = visitType;
             input.Attended = false;
-            input.CoachId = coach.Id;
-            input.PractitionerId = practitioner.Id;
+            input.CoachId = coach.UserId;
+            input.PractitionerId = practitioner.UserId;
             input.LinkedVisitId = input.LinkedVisitId;
             input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             input.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "PractitionerFirstName",
-                ReplacementValue = practitioner.User.FirstName + " " + practitioner.User.Surname
-            });
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitRequested, DateTime.Now, coach.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-
             return visitManager.AddVisitForCoach(input);
         }
 

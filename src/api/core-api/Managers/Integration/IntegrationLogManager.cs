@@ -1,8 +1,10 @@
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -16,7 +18,8 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repositoryFactory;
-        private string _uId;
+        private readonly HierarchyEngine _hierarchyEngine;
+        private Guid _uId;
         private IGenericRepository<IntegrationLog, Guid> _logRepo;
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
         private IGenericRepository<IntegrationAudit, Guid> _auditRepo;
@@ -25,10 +28,13 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
 
         public IntegrationLogManager(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repositoryFactory)
+            IGenericRepositoryFactory repositoryFactory,
+            HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
+            _hierarchyEngine = hierarchyEngine;
+            _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
             _logRepo = _repositoryFactory.CreateGenericRepository<IntegrationLog>(userContext: _uId);
             _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
             _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
@@ -73,7 +79,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
                     if (auditRow != null)
                     {
                         auditRow.UpdatedDate = DateTime.Now;
-                        auditRow.UpdatedBy = _uId;
+                        auditRow.UpdatedBy = _uId.ToString();
                         auditRow.Submitted = DateTime.Now;
 
                         _auditRepo.Update(auditRow);

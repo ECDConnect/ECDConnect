@@ -117,9 +117,8 @@ export function ContentManagement() {
           id: 4,
         },
         {
-          name: ContentManagementTabs.COMMUNITY.name,
-          href: 'CommunitySectionGG',
-          id: 5,
+          name: ContentManagementTabs.GGCOMMUNITY.name,
+          id: ContentManagementTabs.GGCOMMUNITY.id,
         },
       ];
     } else {
@@ -276,42 +275,72 @@ export function ContentManagement() {
     }
 
     if (specialType === ContentManagementTabs.COMMUNITY.name) {
-      return setSubTabs([
-        {
-          title: 'Coaching circle topics',
-          description: 'Add, edit, delete topics for coaches',
-          titleIcon: 'DuplicateIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) =>
-                type.name === ContentTypes.COACHING_CIRCLE_TOPICS
-            );
-            showGroupContentTypes(selectedTypeObject);
+      if (
+        data &&
+        data.tenantContext &&
+        data.tenantContext.applicationName !== 'GrowGreat'
+      ) {
+        return setSubTabs([
+          {
+            title: 'Coaching circle topics',
+            description: 'Add, edit, delete topics for coaches',
+            titleIcon: 'DuplicateIcon',
+            titleIconClassName: 'bg-secondary text-white',
+            onActionClick: () => {
+              setSpecialType('');
+              const selectedTypeObject = dataTypes?.contentTypes.find(
+                (type: ContentTypeDto) =>
+                  type.name === ContentTypes.COACHING_CIRCLE_TOPICS
+              );
+              showGroupContentTypes(selectedTypeObject);
+            },
+            classNames: 'bg-white',
           },
-          classNames: 'bg-white',
-        },
-        {
-          title: 'Connect tab',
-          description:
-            'Add or edit the links shared with practitioners and coaches',
-          titleIcon: 'PuzzleIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
-            );
+          {
+            title: 'Connect tab',
+            description:
+              'Add or edit the links shared with practitioners and coaches',
+            titleIcon: 'PuzzleIcon',
+            titleIconClassName: 'bg-secondary text-white',
+            onActionClick: () => {
+              setSpecialType('');
+              const selectedTypeObject = dataTypes?.contentTypes.find(
+                (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
+              );
 
-            const selectedSubTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
-            );
-            showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
+              const selectedSubTypeObject = dataTypes?.contentTypes.find(
+                (type: ContentTypeDto) =>
+                  type.name === ContentTypes.CONNECT_ITEM
+              );
+              showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
+            },
+            classNames: 'bg-white',
           },
-          classNames: 'bg-white',
-        },
-      ]);
+        ]);
+      } else {
+        return setSubTabs([
+          {
+            title: 'Connect tab',
+            description:
+              'Add or edit the links shared with practitioners and coaches',
+            titleIcon: 'PuzzleIcon',
+            titleIconClassName: 'bg-secondary text-white',
+            onActionClick: () => {
+              setSpecialType('');
+              const selectedTypeObject = dataTypes?.contentTypes.find(
+                (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
+              );
+
+              const selectedSubTypeObject = dataTypes?.contentTypes.find(
+                (type: ContentTypeDto) =>
+                  type.name === ContentTypes.CONNECT_ITEM
+              );
+              showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
+            },
+            classNames: 'bg-white',
+          },
+        ]);
+      }
     }
 
     if (specialType === ContentManagementTabs.PROGRAMMES.name) {

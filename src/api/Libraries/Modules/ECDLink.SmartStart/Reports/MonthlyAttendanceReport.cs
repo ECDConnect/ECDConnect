@@ -61,7 +61,7 @@ namespace ECDLink.SmartStart.Reports
                         {
                             // TODO - I think this needs to check the year as well
                             var attendedClasses = attendanceForPeriod
-                                              .Where(x => string.Equals(x.UserId, userId)
+                                              .Where(x => x.UserId == Guid.Parse(userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
                                               && x.MonthOfYear == dt.Month);

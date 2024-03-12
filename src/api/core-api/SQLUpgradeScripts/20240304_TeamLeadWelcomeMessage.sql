@@ -1,0 +1,1 @@
+ALTER TABLE public."ClinicTeamLead" add "WelcomeMessage" text null;

@@ -39,14 +39,15 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
     public class TestSeed
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
-        private string _userId;
-        private string _practitionerId;
+        private Guid _userId;
+        private Guid _practitionerId;
 
         public TestSeed(IServiceProvider serviceProvider)
         {
+            /*
             _repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
 
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+            var userManager = serviceProvider.GetService<ApplicationUserManager>();
 
             var user = userManager.Users.FirstOrDefault();
             Guid coachId = Guid.NewGuid();
@@ -84,9 +85,11 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 SeedChildAttendance(serviceProvider);
             }
             catch (Exception e) { }
+            */
         }
 
-        private Guid AddFranchisorCoach(UserManager<ApplicationUser> userManager)
+        /*
+        private Guid AddFranchisorCoach(ApplicationUserManager userManager)
         {
             var fraRepo = _repositoryFactory.CreateRepository<Franchisor>(userContext: _userId);
             var coaRepo = _repositoryFactory.CreateRepository<Coach>(userContext: _userId);
@@ -111,7 +114,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             fraRepo.Insert(new Franchisor
             {
                 Id = Guid.NewGuid(),
-                UserId = _practitionerId,
+                UserId = new Guid(_practitionerId),
                 AreaOfOperation = "Office"
             });
 
@@ -135,7 +138,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             coaRepo.Insert(new Coach
             {
                 Id = Guid.NewGuid(),
-                UserId = pUserCoach.Id,
+                UserId = new Guid(pUserCoach.Id),
                 AreaOfOperation = "Office",
                 FranchisorId = Guid.Parse(franchisorId)
             });
@@ -143,7 +146,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             return Guid.Parse(coachId);
         }
 
-        private void AddPractitioners(UserManager<ApplicationUser> userManager, Guid siteAddressId, string coachId)
+        private void AddPractitioners(ApplicationUserManager userManager, Guid siteAddressId, string coachId)
         {
             var pracRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _userId);
 
@@ -168,7 +171,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             {
                 MaxChildren = 4,
                 Id = Guid.NewGuid(),
-                UserId = _practitionerId,
+                UserId = new Guid(_practitionerId),
                 SiteAddressId = siteAddressId,
                 IsPrincipal = true,
                 IsFundaAppAdmin = false,
@@ -196,7 +199,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             {
                 MaxChildren = 4,
                 Id = Guid.NewGuid(),
-                UserId = pUser2.Id,
+                UserId = new Guid(pUser2.Id),
                 SiteAddressId = siteAddressId,
                 PrincipalHierarchy = Guid.Parse(pUser2.Id),
                 IsPrincipal = false,
@@ -214,7 +217,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 
             var child = repo.GetAll().FirstOrDefault();
 
-            SeedAttendance(serviceProvider, child.UserId);
+            SeedAttendance(serviceProvider, child.UserId.ToString());
         }
         private void SeedChildren(IServiceProvider serviceProvider)
         {
@@ -329,7 +332,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 
         private void SeedChild(ApplicationUser user, Guid classroomGroupId, Guid statusId, IServiceProvider serviceProvider)
         {
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+            var userManager = serviceProvider.GetService<ApplicationUserManager>();
             userManager.CreateAsync(user);
             var currentChild = userManager.FindByIdAsync(user.Id).Result;
 
@@ -340,7 +343,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 
             var newChild = repo.Insert(new Child
             {
-                UserId = user.Id,
+                UserId = new Guid(user.Id),
                 Allergies = "None",
                 LanguageId = LanguageSeedConstants.English,
                 InsertedDate = DateTime.Now,
@@ -372,7 +375,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeOne,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -389,7 +392,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeTwo,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -406,7 +409,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeThree,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -423,7 +426,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeOne,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -440,7 +443,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeTwo,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -457,7 +460,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeThree,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -474,7 +477,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeOne,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -491,7 +494,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeTwo,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -508,7 +511,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 {
                     ClassroomProgrammeId = TestSeedId.ProgrammeThree,
                     ParentRecordId = _practitionerId,
-                    UserId = userId,
+                    UserId = new Guid(userId),
                     WeekOfYear = day.GetWeekOfYear(),
                     MonthOfYear = day.Month,
                     AttendanceDate = day,
@@ -628,5 +631,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 
             return siteAddress.Id;
         }
+        */
     }
 }

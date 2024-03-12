@@ -39,6 +39,7 @@ export default function UiTable({
   isLoading,
   onBulkActionCallback,
   languages,
+  noBulkSelection,
 }: UiTableProps) {
   const [inviteRows, setInviteRows] = useState<boolean>(false);
   const { setNotification } = useNotifications();
@@ -218,6 +219,10 @@ export default function UiTable({
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
+
+    if (noBulkSelection) {
+      return columns;
+    }
     if (component === 'cms' || component === 'roles') {
       return [...columns];
     }
@@ -423,7 +428,10 @@ export default function UiTable({
           ))}
         </div>
       );
-    } else if (column.field === 'subCategories') {
+    } else if (
+      column?.field === 'subCategories' ||
+      column?.field === 'subDistricts'
+    ) {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
@@ -436,6 +444,54 @@ export default function UiTable({
                 : `${item?.name};`}
             </div>
           ))}
+        </div>
+      );
+    } else if (column.field === 'teamLeads') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div
+              key={`teamLeads_` + item?.id + Math.random()}
+              className={' text-textMid m-1 rounded-full py-1 text-xs'}
+            >
+              {`${item?.teamLead?.user?.firstName}, `}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (column.field === 'province' && column?.use === 'Province') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.description}
+          </div>
+        </div>
+      );
+    } else if (column.field === 'district' && column?.use === 'District') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.name}
+          </div>
+        </div>
+      );
+    } else if (
+      column.field === 'subDistrict' &&
+      column?.use === 'Sub-district'
+    ) {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.name}
+          </div>
+        </div>
+      );
+    } else if (column.field === 'district' && column?.use === 'Province') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.province?.description}
+          </div>
         </div>
       );
     } else if (column.field === 'availableLanguages') {
@@ -460,23 +516,34 @@ export default function UiTable({
       );
     } else if (column.field === 'roles') {
       rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
-          {display_value?.map((item: any) => (
-            <div
-              key={`role_` + item?.id}
-              className={
-                `${
-                  item[column.displayProperty] === 'Administrator'
-                    ? 'bg-tertiary'
-                    : item[column.displayProperty] === 'Practitioner'
-                    ? 'bg-secondary'
-                    : 'bg-primary'
-                }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
+        <div className="ml-0 flex cursor-pointer items-center">
+          {display_value?.map((item: any) => {
+            const chipColor = (role?: string) => {
+              switch (role) {
+                case 'Administrator':
+                  return 'bg-infoMain';
+                case 'Practitioner':
+                  return 'bg-secondary';
+                case 'Community Health Worker':
+                  return 'bg-secondary';
+                default:
+                  return 'bg-primary';
               }
-            >
-              {item[column?.displayProperty]}
-            </div>
-          ))}
+            };
+            return (
+              <div
+                key={`role_` + item?.id}
+                className={
+                  `${chipColor(item[column.displayProperty])}` +
+                  ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                }
+              >
+                {item[column?.displayProperty] === 'Community Health Worker'
+                  ? 'CHW'
+                  : item[column?.displayProperty]}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (column.type === 'workflowStatus') {

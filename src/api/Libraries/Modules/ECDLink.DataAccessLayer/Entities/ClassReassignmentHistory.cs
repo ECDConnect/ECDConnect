@@ -20,13 +20,16 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
         public string Reason { get; set; }
-        public string LoggedBy { get; set; }
+        [ForeignKey(nameof(LoggedBy))] 
+        public Guid? LoggedBy { get; set; }
 
-        public string ReassignedToUser { get; set; }
+        [ForeignKey(nameof(ReassignedToUser))]
+        public Guid? ReassignedToUser { get; set; }
         public DateTime ReassignedToDate { get; set; }
-        public string ReassignedBackToUserId { get; set; }
+        [ForeignKey(nameof(ReassignedBackToUserId))]
+        public Guid? ReassignedBackToUserId { get; set; }
         public DateTime? ReassignedBackToDate { get; set; }
 
         public string HierarchyToUser { get; set; }

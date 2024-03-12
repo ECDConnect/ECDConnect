@@ -1,5 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -26,10 +25,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         [ForeignKey(nameof(CaregiverId))]
-        public virtual Caregiver.Caregiver Caregiver { get; set; }
+        public virtual Caregiver Caregiver { get; set; }
         public Guid? CaregiverId { get; set; }
 
         [ForeignKey(nameof(MotherCaregiverId))]

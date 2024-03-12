@@ -18,7 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
         public string ValueBefore { get; set; }
         public string ValueAfter { get; set; }
         public string ChangeType { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public string RelatedId { get; set; }
     }
 

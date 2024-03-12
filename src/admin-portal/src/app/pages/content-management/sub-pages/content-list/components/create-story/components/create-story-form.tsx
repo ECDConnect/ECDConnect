@@ -38,6 +38,7 @@ export interface CreateStoryFormProps {
   handleform: any;
   setValue: any;
   defaultLanguageId: string;
+  selectedLanguageId: string;
   acceptedFileFormats?: string[];
   setFilteredStoryBookParts?: (item?: StoryBookPartDto[]) => void;
   setFilteredStoryBookPartsQuestions?: (item?: StoryBookQuestionDto[]) => void;
@@ -56,6 +57,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   handleform,
   setValue,
   defaultLanguageId,
+  selectedLanguageId,
   acceptedFileFormats,
   setFilteredStoryBookParts,
   setFilteredStoryBookPartsQuestions,
@@ -71,7 +73,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   const storyBookTypeOptions = [
     { text: 'Story book', value: 'Story book' },
     { text: 'Read aloud', value: 'Read aloud' },
-    { text: 'other', value: 'Other' },
+    { text: 'Other', value: 'Other' },
   ];
 
   const onStateChange = (name: string, state: any) => {
@@ -99,7 +101,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
         case FieldType.Text:
           if (
             propName === 'type' &&
-            template?.fields?.find((item) => item?.propName === 'name')
+            template?.fields?.find((item) => item?.propName === 'type')
               ?.contentValue === undefined
           ) {
             return (
@@ -137,7 +139,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           }
           if (
             propName === 'type' &&
-            template?.fields?.find((item) => item?.propName === 'name')
+            template?.fields?.find((item) => item?.propName === 'type')
               ?.contentValue !== undefined
           ) {
             return null;
@@ -254,35 +256,25 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           );
         case FieldType.Link: {
           if (propName === 'storyBookParts') {
-            if (
-              formType === StoryBookTypes.storyBook ||
-              formType === StoryBookTypes.readAloud
-            ) {
-              return (
-                <div key={propName} className={contentWrapper}>
-                  <div className="sm:col-span-12">
-                    <StoryContentForm
-                      title={field.title}
-                      isReview={false}
-                      contentValue={field.contentValue}
-                      languageId={defaultLanguageId}
-                      optionDefinition={field.optionDefinition}
-                      setSelectedItems={(value) =>
-                        onStateChange(propName, value)
-                      }
-                      setFilteredStoryBookParts={setFilteredStoryBookParts}
-                      setFilteredStoryBookPartsQuestions={
-                        setFilteredStoryBookPartsQuestions
-                      }
-                      formType={formType}
-                    />
-                  </div>
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <StoryContentForm
+                    title={field.title}
+                    isReview={false}
+                    contentValue={field.contentValue}
+                    languageId={selectedLanguageId}
+                    optionDefinition={field.optionDefinition}
+                    setSelectedItems={(value) => onStateChange(propName, value)}
+                    setFilteredStoryBookParts={setFilteredStoryBookParts}
+                    setFilteredStoryBookPartsQuestions={
+                      setFilteredStoryBookPartsQuestions
+                    }
+                    formType={formType}
+                  />
                 </div>
-              );
-            }
-            if (formType === StoryBookTypes.other) {
-              return null;
-            }
+              </div>
+            );
           }
           if (title === 'G T -  Skills' || title === 'Skills') {
             return (

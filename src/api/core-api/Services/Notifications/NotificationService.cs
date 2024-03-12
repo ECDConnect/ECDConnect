@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using DotLiquid;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
@@ -7,13 +8,13 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +31,8 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<MessageLog, Guid> _messageRepo;
         private IGenericRepository<MessageTemplate, Guid> _templateRepo;
         private IHttpContextAccessor _contextAccessor;
-        private string _uId;
-        private UserManager<ApplicationUser> _userManager;
+        private Guid _uId;
+        private ApplicationUserManager _userManager;
 
         /*
          1 - function is invoked and called with a template type, the template type defines the protocol, singular or multiple
@@ -44,15 +45,14 @@ namespace EcdLink.Api.CoreApi.Services
             IHttpContextAccessor contextAccessor, 
             IGenericRepositoryFactory repositoryFactory, 
             HierarchyEngine hierarchyEngine, 
-            
-            [Service] UserManager<ApplicationUser> userManager)
+            [Service] ApplicationUserManager userManager)
         {
             _contextAccessor = contextAccessor;
             _notificationProviderFactory = notificationProviderFactory;
             _options = optionAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
-            _uId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId();
+            _uId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _templateRepo = _repositoryFactory.CreateGenericRepository<MessageTemplate>(userContext: _uId);
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _uId);
             _userManager = userManager;
@@ -63,7 +63,7 @@ namespace EcdLink.Api.CoreApi.Services
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).OrderBy(x => x.Protocol).ToList();
         }
 
-        public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false)
+        public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null)
         {
             if (!excludeDates)
             {
@@ -71,8 +71,12 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
                     string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
                     string.Equals(x.To, notification.To) &&
+                    string.Equals(x.IsActive, true) &&
+                    string.Equals(x.Action, notification.Action) &&
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
-                    x.MessageDate.Value.Date == notification.MessageDate.Value.Date && x.IsActive == true
+                    string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
+                      (!string.IsNullOrEmpty(searchCriteria) ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
+                    x.MessageDate.Value.Date == notification.MessageDate.Value.Date
                 ).Any();
             } else
             {
@@ -80,13 +84,18 @@ namespace EcdLink.Api.CoreApi.Services
                     string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
                     string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
                     string.Equals(x.To, notification.To) &&
-                    string.Equals(x.MessageProtocol, notification.MessageProtocol) && x.IsActive == true
+                    string.Equals(x.IsActive, true) &&
+                    string.Equals(x.Action, notification.Action) &&
+                    (!string.IsNullOrEmpty(searchCriteria) ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
+                    string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
+                    string.Equals(x.MessageProtocol, notification.MessageProtocol)
+
                 ).Any();
             }
             //check if any exact templates for exact person for exact same date and protocol exists
         }
 
-        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false)
+        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false, string searchCriteria = null, string relatedToUserId = null)
         {
             try
             {                
@@ -98,7 +107,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         //expire older messages of the same type when new ones are sent
                         if (expireOldMessagesOfType && user != null) {
-                            await this.ExpireNotificationsTypesForUser(user.Id, item.TemplateType);
+                            await this.ExpireNotificationsTypesForUser(user.Id.ToString(), item.TemplateType, null, item.Protocol);
                         }
 
                         //remap all field
@@ -110,22 +119,23 @@ namespace EcdLink.Api.CoreApi.Services
                             MessageProtocol = item.Protocol,
                             Message = !string.IsNullOrWhiteSpace(message) ? message : templateItem.Message,
                             Subject = templateItem.Subject,
-                            MessageDate = messageDate,
-                            FromUserId = Guid.Parse(_uId),
+                            MessageDate = messageDate.Date,
+                            FromUserId = _uId,
                             MessageTemplateType = item.TemplateType,
                             MessageTemplate = item,
-                            To = (user != null ? user.Id : userType),
+                            To = (user != null ? user.Id.ToString() : userType),
                             Status = status,
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
-                            Action = templateItem.Action
+                            Action = templateItem.Action,
+                            RelatedToUserId = relatedToUserId,
                         };
                         if (messageEndDate != null)
                         {
-                            notification.MessageEndDate = messageEndDate;
+                            notification.MessageEndDate = messageEndDate.Value.AddDays(1).Date;
                         }
                         //skip if the enotification exists already for same date and person and template and protocol
-                        if (!await NotificationExists(notification, dontSendIfExists))
+                        if (!await NotificationExists(notification, dontSendIfExists, searchCriteria))
                         {
                             switch (item.Protocol)
                             {
@@ -204,14 +214,15 @@ namespace EcdLink.Api.CoreApi.Services
                         MessageTemplateType = notification.MessageTemplate.TemplateType,
                         Message = notification.Message,
                         Subject = notification.Subject,
-                        MessageDate = notification.MessageDate,
-                        MessageEndDate = notification.MessageEndDate,
+                        MessageDate = notification.MessageDate.Value,
+                        MessageEndDate = (notification.MessageEndDate.HasValue ? notification.MessageEndDate : notification.MessageDate.Value.AddDays(1).Date), //midnight the next day
                         Status = notification.Status,
                         SentByUserId = notification.FromUserId,
                         CTA = notification.CTA,
                         CTAText = notification.CTAText,
                         ToGroups = notification.ToGroups,
-                        Action = notification.Action                        
+                        Action = notification.Action,
+                        RelatedToUserId = notification.RelatedToUserId,
                     });
                 } else return null;
            } catch (Exception ex)
@@ -231,7 +242,7 @@ namespace EcdLink.Api.CoreApi.Services
                 Subject = subject,
                 MessageDate = sendDate,
                 MessageEndDate = messageEndDate,
-                FromUserId = Guid.Parse(_uId),
+                FromUserId = _uId,
                 MessageTemplate = template,
                 MessageProtocol = template.Protocol,
                 Status = MessageStatusConstants.Blue
@@ -265,16 +276,43 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null)
+        public async Task<bool> DeleteAllNotificationsForUser(string userId)
+        {
+            if (userId != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(x => x.To.Equals(userId)).ToList();
+                foreach (var notification in notifications)
+                {
+                    _messageRepo.Delete(notification.Id);
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> DeleteAllNotificationsRelatedToUser(string userId)
+        {
+            if (userId != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(x => x.RelatedToUserId == userId).ToList();
+                foreach (var notification in notifications)
+                {
+                    _messageRepo.Delete(notification.Id);
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null, string relatedToUserId = null)
         {
             if (userId != null && templateType != null)
             {
-                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType && (searchCriteria != null ? n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) : n.IsActive == true)).ToList();
+                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType && (searchCriteria != null ? n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) : n.IsActive == true) && (relatedToUserId != null ? n.RelatedToUserId.Contains(relatedToUserId) : n.IsActive == true)).ToList();
                 if (notifications.Any())
                 {
                     foreach (var notification in notifications)
                     {
-                        await DisableNotification(notification.Id.ToString());
+                        if (protocol == null || (protocol != null && notification.MessageProtocol == protocol))                        
+                            await DisableNotification(notification.Id.ToString());
                     }
                 }
             }
@@ -306,6 +344,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            var loginLink = TenantExecutionContext.Tenant.SiteAddress ;
             if (user != null)
             {
                 string firstName = user.FirstName;
@@ -319,6 +358,8 @@ namespace EcdLink.Api.CoreApi.Services
 
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.ApplicationName, ReplacementValue = applicationName });
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.OrganisationName, ReplacementValue = organisationName });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.LoginLink, ReplacementValue = loginLink + "/login" });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.LoginLinkShort, ReplacementValue = loginLink + "/login" });
             //add all basic tags here
 
             foreach (var replacement in replacements)

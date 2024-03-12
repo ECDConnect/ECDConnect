@@ -6,7 +6,6 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries

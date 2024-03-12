@@ -28,7 +28,7 @@ namespace ECDLink.DataAccessLayer.Entities.Calendar
         public virtual ICollection<CalendarEventParticipant> Participants { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
         public virtual Visit Visit { get; set; }
 	}
 

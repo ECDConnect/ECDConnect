@@ -15,7 +15,6 @@ export const Screen1 = ({ infantName, caregiverName, className }: Step) => {
           />
           <div className="w-2/4">
             <ProgressBar
-              className="h-2"
               label="7/7"
               subLabel="score"
               value={100}

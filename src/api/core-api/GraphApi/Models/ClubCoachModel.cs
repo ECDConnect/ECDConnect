@@ -16,7 +16,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public ClubCoachModel(Coach coach)
         {
-            UserId = coach.User.Id;
+            UserId = coach.User.Id.ToString();
             FirstName = coach.User.FirstName;
             Surname = coach.User.Surname;
             PhoneNumber = coach.User.PhoneNumber;

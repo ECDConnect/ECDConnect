@@ -37,7 +37,7 @@ export const ReferralsStep = ({
 
   const groupedData = useMemo(() => {
     const groupedData = referrals?.reduce(
-      (acc: { [key: string]: any }, currentValue) => {
+      (acc: { [key: string]: VisitDataStatus[] }, currentValue) => {
         const section = toCamelCase(currentValue?.section || '');
         if (!section) return acc;
         if (!acc[section]) {

@@ -6,14 +6,14 @@ import {
   WorkflowStatusDto,
 } from '@ecdlink/core';
 import { GetAllWorkflowStatus, PersonalRecordsList } from '@ecdlink/graphql';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
 import UiTable from '../../components/ui-table';
 import { useUser } from '../../hooks/useUser';
 import DocumentPanel from './components/document-panel/document-panel';
 import { SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
-import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
+import { Dropdown, LoadingSpinner, SearchDropDownOption } from '@ecdlink/ui';
 
 import DatePicker from 'react-datepicker';
 import SearchDropDown from '../../components/dropdown/search-dropdown/search-dropdown';
@@ -70,7 +70,11 @@ export default function Documents() {
   const { data: workflowStatuses } = useQuery(GetAllWorkflowStatus, {
     fetchPolicy: 'cache-and-network',
   });
-  const { data: newData, refetch } = useQuery(PersonalRecordsList, {
+  const {
+    data: newData,
+    refetch,
+    loading: newDataLoading,
+  } = useQuery(PersonalRecordsList, {
     variables: {
       showOnlyTypes:
         typesMapped?.length > 0
@@ -132,29 +136,32 @@ export default function Documents() {
   }, [newData]);
 
   const panel = usePanel();
-  const displayPanel = (item: DocumentDto) => {
-    const filteredStatuses = workflowStatuses.GetAllWorkflowStatus.filter(
-      (x: WorkflowStatusDto) =>
-        x.workflowStatusType.id === item.workflowStatus?.workflowStatusTypeId
-    );
-    panel({
-      noPadding: true,
-      title: 'View document',
-      render: (onSubmit: any) => (
-        <DocumentPanel
-          item={item}
-          workflowStatus={filteredStatuses}
-          closeDialog={(result: boolean) => {
-            if (result) {
-              refetch();
-            }
+  const displayPanel = useCallback(
+    (item: DocumentDto) => {
+      const filteredStatuses = workflowStatuses.GetAllWorkflowStatus.filter(
+        (x: WorkflowStatusDto) =>
+          x.workflowStatusType.id === item.workflowStatus?.workflowStatusTypeId
+      );
+      panel({
+        noPadding: true,
+        title: 'View document',
+        render: (onSubmit: any) => (
+          <DocumentPanel
+            item={item}
+            workflowStatus={filteredStatuses}
+            closeDialog={(result: boolean) => {
+              if (result) {
+                refetch();
+              }
 
-            onSubmit();
-          }}
-        />
-      ),
-    });
-  };
+              onSubmit();
+            }}
+          />
+        ),
+      });
+    },
+    [panel, refetch, workflowStatuses.GetAllWorkflowStatus]
+  );
 
   const clearFilters = () => {
     setTypes([]);
@@ -173,6 +180,46 @@ export default function Documents() {
       setFilterDateAdded(!filterDateAdded);
     }
   }, [endDate]);
+
+  const renderData = useMemo(
+    () =>
+      newDataLoading ? (
+        <LoadingSpinner
+          size="big"
+          className="mt-24"
+          spinnerColor="secondary"
+          backgroundColor="uiLight"
+        />
+      ) : (
+        <div className="flex flex-col">
+          <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+                <UiTable
+                  columns={[
+                    { field: 'clientName', use: 'Client' },
+                    { field: 'createdByName', use: 'CHW' },
+                    { field: 'type', use: 'type' },
+                    { field: 'insertedDate', use: 'Date added' },
+                    { field: 'clientStatus', use: 'Client status' },
+                  ]}
+                  rows={tableData}
+                  editRow={
+                    hasPermission(PermissionEnum.update_documents) &&
+                    displayDocument
+                  }
+                  viewRow={
+                    hasPermission(PermissionEnum.view_documents) && displayPanel
+                  }
+                  component={'cms'}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    [displayPanel, hasPermission, newDataLoading, tableData]
+  );
 
   if (tableData) {
     return (
@@ -299,32 +346,7 @@ export default function Documents() {
             </div>
           </div>
         )}
-        <div className="flex flex-col">
-          <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                <UiTable
-                  columns={[
-                    { field: 'clientName', use: 'Client' },
-                    { field: 'createdByName', use: 'CHW' },
-                    { field: 'type', use: 'type' },
-                    { field: 'insertedDate', use: 'Date added' },
-                    { field: 'clientStatus', use: 'Client status' },
-                  ]}
-                  rows={tableData}
-                  editRow={
-                    hasPermission(PermissionEnum.update_documents) &&
-                    displayDocument
-                  }
-                  viewRow={
-                    hasPermission(PermissionEnum.view_documents) && displayPanel
-                  }
-                  component={'cms'}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        {renderData}
       </div>
     );
   } else {

@@ -17,7 +17,6 @@ import { ContentLoader } from '../../../../components/content-loader/content-loa
 import CreateStory from '../content-list/components/create-story/create-story';
 import CreateTheme from './components/create-theme/create-theme';
 import EditCategory from './components/edit-category/edit-category';
-import EditSkillsForm from './components/edit-skills/components/edit-skills-form/edit-skills-form';
 import EditSkills from './components/edit-skills/edit-skills';
 
 export interface ContentWorkflowProps {
@@ -163,7 +162,7 @@ export default function ContentWorkflow({
                         contentType={contentType}
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
-                        defaultLanguageId={defaultLanguageId}
+                        defaultLanguageId={selectedLanguageId}
                         cancelCompare={() => setIsCompareMode(!isEdit)}
                       />
                     </div>

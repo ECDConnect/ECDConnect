@@ -27,7 +27,9 @@ import { practitionerSelectors } from '@/store/practitioner';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsState>();
-  const { returnRoute } = location.state;
+  const routeReturn = location?.state?.returnRoute
+    ? location?.state?.returnRoute
+    : null;
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
   const [activePlaygroupIndex, setActivePlaygroupIndex] = useState<number>(0);
@@ -155,8 +157,8 @@ export const EditPlaygroups: React.FC = () => {
 
     await saveEditedPlayGroups(playgroups);
 
-    if (returnRoute) {
-      history.push(returnRoute);
+    if (routeReturn) {
+      history.push(routeReturn);
     } else {
       history.goBack();
     }
@@ -306,7 +308,7 @@ export const EditPlaygroups: React.FC = () => {
   };
 
   const onClose = () => {
-    returnRoute ? history.push(returnRoute) : history.goBack();
+    routeReturn ? history.push(routeReturn) : history.goBack();
   };
 
   const exitPrompt = () => {

@@ -315,7 +315,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
 
           <div className="mt-4 overflow-scroll border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&
-              tableData.map((item: any) => {
+              tableData.map((item: any, idx: number) => {
                 const maximumItemsChecked = tableData.filter((x) =>
                   currentIds?.includes(x.id?.toString())
                 );
@@ -326,7 +326,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                   <CheckboxGroup
                     checkboxColor="primary"
                     id={item?.title}
-                    key={item?.title}
+                    key={item?.title + '_' + idx}
                     image={item?.imageUrl}
                     title={item?.name}
                     description={item?.description}
@@ -370,7 +370,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
           {tableData &&
             tableData.map((item: any, idx: number) => (
               <>
-                <div className="flex items-center justify-center">
+                <div
+                  className="flex items-center justify-center"
+                  key={'theme_' + idx}
+                >
                   <Typography
                     type={'body'}
                     text={`Day ${idx + 1}`}
@@ -392,17 +395,23 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={smallGroupOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'smallGroupActivity' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'smallGroupActivity' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textLight"
                         fullWidth
-                        className="textDark h-full w-48"
+                        className={`textDark h-full w-48 px-0`}
                         selectedValue={
                           smallGroupOptions?.filter(
                             (option) =>
@@ -447,13 +456,19 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={largeGroupOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'largeGroupActivity' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'largeGroupActivity' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textDark"
                         fullWidth
@@ -502,13 +517,19 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={storyBookOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'storyBook' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'storyBook' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textDark"
                         fullWidth
@@ -555,13 +576,19 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       <Dropdown<any>
                         placeholder={'Type to search...'}
                         list={storyTimeOptions}
-                        fillType="filled"
+                        fillType={
+                          themeDaysArr &&
+                          themeDaysArr?.[idx]?.idx === idx &&
+                          'storyActivity' in themeDaysArr?.[idx]
+                            ? 'filled'
+                            : 'outlined'
+                        }
                         fillColor={
                           themeDaysArr &&
                           themeDaysArr?.[idx]?.idx === idx &&
                           'storyActivity' in themeDaysArr?.[idx]
-                            ? 'uiLight'
-                            : 'adminPortalBg'
+                            ? 'adminPortalBg'
+                            : 'errorMain'
                         }
                         textColor="textDark"
                         fullWidth

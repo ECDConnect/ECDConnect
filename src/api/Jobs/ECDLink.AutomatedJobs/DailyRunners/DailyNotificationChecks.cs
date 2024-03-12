@@ -21,33 +21,14 @@ public class DailyNotificationChecks : CronJobService
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
-    {
+
+  {
         using (var scope = _scopeFactory.CreateScope())
         {
-            TenancyContext.SetTenantContext(scope);
+            TenancyContext.SetTenantContext(scope, "39077d0e-e443-4076-aaf2-978dc6805aa0");
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
-            //await service.DailyAttendanceNotTrackedNotification(); //moved to FE function
-
-            await service.DailyUnassignedClassesNotification();
-            await service.DailyChildrenRegistrationsIncompleteNotification();
-            await service.DailyChildrenNotAssignedToClassNotification();
-            await service.DailyUnassignedProgrammesNotification();
-            await service.SelfAssessmentReminderAsync();
-            await service.DailyCoachChecksNotification();
-
-            //await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
-
-            //specific day checks in year/month
-            if (DateTime.Now.Day == 15 && DateTime.Now.Month == 1) //15 Jan each year only
-            {
-                await service.YearlyPreschoolFeeReminderAsync();
-            }
-
-            if (DateTime.Now.Day == (DateTime.Now.GetEndOfMonth().Day - 10))
-            {
-                await service.MonthlyEarnMorePointsNotification();
-            }
+            await service.DailyUserOfflineNotification();
         }
     }
 }

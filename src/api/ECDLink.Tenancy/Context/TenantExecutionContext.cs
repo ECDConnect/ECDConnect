@@ -37,7 +37,7 @@ namespace ECDLink.Tenancy.Context
                 return;
             }
 
-            if (string.Equals(currentTenant.Id.ToString(), value.Id.ToString(), StringComparison.InvariantCulture))
+            if (currentTenant.Id == value.Id)
             {
                 // If trying to readd the same tenant, do nothing
                 return;

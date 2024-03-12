@@ -21,8 +21,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
-        public Guid PractitionerId { get; set; }
+        public Guid? UserId { get; set; }
+        [NotMapped]
         public virtual Practitioner Practitioner { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? ConsolidationMeetingDate { get; set; }
@@ -54,7 +54,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? SmartSpaceLicenceDate { get; set; }
         public DateTime? StarterLicenceDate { get; set; }
         public string StipendType { get; set; }
-        public bool? IsOnStipend { get; set; }
+        public bool? IsOnStipend { get; set; }        
+        public Guid PractitionerId { get; set; }
 
         public Guid? CoachHierarchy { get; set; }
     }

@@ -336,141 +336,142 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
         )}
 
         <div className={'bg-uiBg flex w-full flex-col px-4'}>
-          {currentStoryBook?.type === StoryBookTypes.other && (
-            <div className={'flex flex-col items-start justify-start'}>
-              <Typography
-                text={'Ideas for finding story books for this week’s theme:'}
-                type={'unspecified'}
-              />
-              <ul className={'ml-4 mt-4 list-disc'}>
-                <li>
-                  <Typography
-                    text={'Visit your local library'}
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Join a book club or ask your club or community to share books'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-              </ul>
+          {currentStoryBook?.type === StoryBookTypes.other &&
+            !currentStoryBookParts && (
+              <div className={'flex flex-col items-start justify-start'}>
+                <Typography
+                  text={'Ideas for finding story books for this week’s theme:'}
+                  type={'unspecified'}
+                />
+                <ul className={'ml-4 mt-4 list-disc'}>
+                  <li>
+                    <Typography
+                      text={'Visit your local library'}
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Join a book club or ask your club or community to share books'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                </ul>
 
-              <Typography
-                className={'mt-2'}
-                text={'Use an online resource'}
-                type={'unspecified'}
-              />
+                <Typography
+                  className={'mt-2'}
+                  text={'Use an online resource'}
+                  type={'unspecified'}
+                />
 
-              <Typography
-                className={'mt-4'}
-                text={'SmartStart ->'}
-                color={'primary'}
-                fontSize={'12'}
-                type={'unspecified'}
-                onClick={() => {
-                  window.open('www.google.com', '_blank');
-                }}
-              />
-              <Typography
-                className={'mt-4'}
-                text={'Bookdash ->'}
-                color={'primary'}
-                fontSize={'12'}
-                type={'unspecified'}
-                onClick={() => {
-                  window.open('www.google.com', '_blank');
-                }}
-              />
-              <Typography
-                className={'mt-4'}
-                text={"Nal'ibali ->"}
-                color={'primary'}
-                fontSize={'12'}
-                type={'unspecified'}
-                onClick={() => {
-                  window.open('www.google.com', '_blank');
-                }}
-              />
-
-              <Button
-                className={'mt-4'}
-                color={'primary'}
-                type={'outlined'}
-                size={'small'}
-                onClick={() => {}}
-              >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  className={'text-primary mr-1 h-5 w-5'}
-                  alt="whatsapp"
+                <Typography
+                  className={'mt-4'}
+                  text={'SmartStart ->'}
+                  color={'primary'}
+                  fontSize={'12'}
+                  type={'unspecified'}
+                  onClick={() => {
+                    window.open('www.google.com', '_blank');
+                  }}
                 />
                 <Typography
+                  className={'mt-4'}
+                  text={'Bookdash ->'}
                   color={'primary'}
-                  type={'small'}
-                  text={`Get Nal’ibali stories on Whatsapp`}
+                  fontSize={'12'}
+                  type={'unspecified'}
+                  onClick={() => {
+                    window.open('www.google.com', '_blank');
+                  }}
                 />
-              </Button>
+                <Typography
+                  className={'mt-4'}
+                  text={"Nal'ibali ->"}
+                  color={'primary'}
+                  fontSize={'12'}
+                  type={'unspecified'}
+                  onClick={() => {
+                    window.open('www.google.com', '_blank');
+                  }}
+                />
 
-              <Alert
-                className={'my-4'}
-                type={'info'}
-                message={
-                  'WhatsApps will be charged at your standard carrier rates.'
-                }
-              />
+                <Button
+                  className={'mt-4'}
+                  color={'primary'}
+                  type={'outlined'}
+                  size={'small'}
+                  onClick={() => {}}
+                >
+                  <img
+                    src={getLogo(LogoSvgs.whatsapp)}
+                    className={'text-primary mr-1 h-5 w-5'}
+                    alt="whatsapp"
+                  />
+                  <Typography
+                    color={'primary'}
+                    type={'small'}
+                    text={`Get Nal’ibali stories on Whatsapp`}
+                  />
+                </Button>
 
-              <Typography
-                text={'Ideas for making your own stories:'}
-                type={'unspecified'}
-              />
-              <ul className={'ml-4 mt-4 list-disc'}>
-                <li>
-                  <Typography
-                    text={`Find pictures of this week's theme in a magazine and make your own book for the children`}
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Use your imagination to make up your own story and use expressions'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Use objects or toys such as puppets, dolls, or items related to this week’s theme'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Ask children for ideas to make a story - ask them for characters, what happens in the story and use these ideas to plan a story for the following day'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-              </ul>
-            </div>
-          )}
+                <Alert
+                  className={'my-4'}
+                  type={'info'}
+                  message={
+                    'WhatsApps will be charged at your standard carrier rates.'
+                  }
+                />
+
+                <Typography
+                  text={'Ideas for making your own stories:'}
+                  type={'unspecified'}
+                />
+                <ul className={'ml-4 mt-4 list-disc'}>
+                  <li>
+                    <Typography
+                      text={`Find pictures of this week's theme in a magazine and make your own book for the children`}
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Use your imagination to make up your own story and use expressions'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Use objects or toys such as puppets, dolls, or items related to this week’s theme'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Ask children for ideas to make a story - ask them for characters, what happens in the story and use these ideas to plan a story for the following day'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                </ul>
+              </div>
+            )}
 
           {currentStoryBook &&
-            currentStoryBook.type !== StoryBookTypes.other &&
             currentStoryBookParts &&
+            currentStoryBookParts.sort((a, b) => a.id - b.id) &&
             currentStoryBookParts?.map((bookPart) => (
               <div
                 key={bookPart.id}
@@ -482,7 +483,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   <div className={'mr-4 flex w-1/12 flex-row justify-center'}>
                     <div
                       className={
-                        'flex h-9 w-9 flex-shrink-0 flex-col items-center justify-center rounded-full'
+                        'flex h-10 w-14 flex-shrink-0 flex-col items-center justify-center rounded-full'
                       }
                       style={{ backgroundColor: getAvatarColor() }}
                     >

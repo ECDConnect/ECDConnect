@@ -79,3 +79,15 @@ export function formatStringWithFirstLetterCapitalized(input: string): string {
 
   return formattedString;
 }
+
+export function formatTextToSlug(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, '-');
+}
+
+export function addPhoneNumberMask(phoneNumber: string): string {
+  const part1 = phoneNumber?.slice(0, 3);
+  const part2 = phoneNumber?.slice(3, 6);
+  const part3 = phoneNumber?.slice(6);
+
+  return `${part1} ${part2} ${part3}`;
+}

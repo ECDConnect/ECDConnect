@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -30,15 +31,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public async Task<IEnumerable<Programme>> GetUserProgrammes(
           IGenericRepositoryFactory repoFactory,
           HierarchyEngine hierarchyEngine,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           [Service] IHttpContextAccessor httpContextAccessor)
         {
-            var requestingUser = httpContextAccessor.HttpContext.GetUser();
+            var requestingUser = httpContextAccessor.HttpContext.GetUser().Id;
 
-            if (string.IsNullOrWhiteSpace(requestingUser?.Id))
-                return Enumerable.Empty<Programme>();
+            //if (string.IsNullOrWhiteSpace(requestingUser?.Id))
+            //    return Enumerable.Empty<Programme>();
 
-            var user = await userManager.FindByIdAsync(requestingUser.Id);
+            var user = await userManager.FindByIdAsync(requestingUser.ToString());
             var roles = await userManager.GetRolesAsync(user);
 
             var programmes = new List<Programme>();
@@ -49,22 +50,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 return programmes;
             }
 
-            var requestingUserHierarchy = hierarchyEngine.GetUserHierarchy(requestingUser.Id);
+            var requestingUserHierarchy = hierarchyEngine.GetUserHierarchy(requestingUser);
 
             // Get `Practitioner`
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: requestingUser.Id);
-            var targetPractitioner = practitionerRepo.GetByUserId(requestingUser.Id);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: requestingUser);
+            var targetPractitioner = practitionerRepo.GetByUserId(requestingUser);
 
             if (targetPractitioner is null)
                 return programmes;
 
-            var programmeRepo = repoFactory.CreateGenericRepository<Programme>(userContext: requestingUser.Id);
+            var programmeRepo = repoFactory.CreateGenericRepository<Programme>(userContext: requestingUser);
 
             return programmeRepo
                 .GetAll()
                 .Where(p => p.IsActive
                     && p.ClassroomGroupId != null
-                    && p.ClassroomGroup.UserId == Guid.ParseExact(targetPractitioner.UserId, "D"))
+                    && p.ClassroomGroup.UserId == targetPractitioner.UserId)
                 .Include(c => c.DailyProgrammes)
                 .Include(p => p.ClassroomGroup)
                 .OrderBy(c => c.StartDate)

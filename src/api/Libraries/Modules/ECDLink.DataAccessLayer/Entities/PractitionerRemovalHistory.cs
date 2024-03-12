@@ -21,10 +21,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
         public Guid ClassroomId { get; set; }
         public DateTime DateOfRemoval { get; set; }
-        public string RemovedByUserId { get; set; }
+        public Guid RemovedByUserId { get; set; }
         public Guid ReasonForPractitionerLeavingProgrammeId { get; set; }
         public string ReasonDetails { get; set; }
         public virtual ICollection<Absentees> ClassReassignments { get; set; }

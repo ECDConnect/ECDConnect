@@ -6,9 +6,7 @@ import {
   Typography,
   SA_CELL_REGEX,
   SA_ID_REGEX,
-  Dropdown,
   AlertType,
-  Avatar,
   ProfileAvatar,
   classNames,
 } from '@ecdlink/ui';
@@ -44,17 +42,13 @@ import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
-  UpdateHealthCareWorker,
-  GetHealthCareWorkerHighlights,
   GetTenantContext,
   GetUserById,
   ResetUserPassword,
   UpdateUser,
   UserModelInput,
-  healthCareWorkerVisitStatus,
   SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
-  GetAllTeamLead,
   GetTeamLead,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -147,7 +141,7 @@ export function ViewUser(props: any) {
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
-      userId: '',
+      userId: props.location.state.userId ?? userId,
     },
     fetchPolicy: 'cache-and-network',
   });

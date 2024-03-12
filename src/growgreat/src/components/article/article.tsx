@@ -133,6 +133,7 @@ export const Article = ({
           >
             <div className={styles.localeDropDownWrapper}>
               <LanguageSelector
+                showOfflineAlert
                 currentLocale="en-za"
                 selectLanguage={(data) => changeLanguage(data)}
               />

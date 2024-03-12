@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
@@ -6,6 +7,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -39,10 +41,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           string file)
         {
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
+
+            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
+            var clinicIds = clinicRepo.GetAll().Select(c => c.Id.ToString()).ToList();
 
             if (file is null || currentUserId is null)
             {
@@ -59,11 +64,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var userImportList = new List<ApplicationUser>();
             var hcwUsers = new Dictionary<string, HealthCareWorker>();
             var createdUsers = new List<string>();
-            var hcwToTeamLeadMap = new Dictionary<string, string>();
+            var hcwToClinicMap = new Dictionary<string, string>();
 
             var validationErrors = new List<InputValidationError>();
 
-            // TODO: Addd async enumerator for this?
             var bytes = Convert.FromBase64String(file);
             using MemoryStream fileStream = new MemoryStream(bytes);
             var workbook = WorkbookFactory.Create(fileStream);
@@ -71,7 +75,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
 
-            // TODO: is lastrownum the last row number?
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
@@ -87,8 +90,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
                 var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                 var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
-                var teamLeadIdNum = UserHelper.CoerceValidSAID(
-                    ExcelHelper.GetCellValue(currentRow.GetCell(6)));
+                var clinicId = ExcelHelper.GetCellValue(currentRow.GetCell(6));
 
                 if (idOrPassport is null
                     && id is null
@@ -96,10 +98,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && firstName is null
                     && surname is null
                     && cellphone is null
-                    && teamLeadIdNum is null)
+                    && clinicId is null)
                     continue;
 
-                var rowErrors = GetCHWValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, teamLeadIdNum);
+                var rowErrors = GetCHWValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, clinicId, clinicIds);
 
                 // Collect all row errors.
                 // Could be on a row with no errors, but previous rows had errors.
@@ -113,8 +115,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     continue;
                 }
                 var insertedDate = DateTime.UtcNow;
+                var userId = Guid.NewGuid();
                 var user = new ApplicationUser()
                 {
+                    Id = userId,
                     IdNumber = id,
                     UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     FirstName = firstName,
@@ -127,12 +131,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = insertedDate,
-                    IsActive = true
+                    IsActive = true,
                 };
                 userImportList.Add(user);
 
                 // Add usernames to dictionary, will return false on duplicate.
-                if (!hcwToTeamLeadMap.TryAdd(user.UserName, teamLeadIdNum))
+                if (!hcwToClinicMap.TryAdd(user.UserName, clinicId))
                     validationErrors.Add(new InputValidationError(row, new List<string> { }, $"Duplicate user: {user.UserName}."));
 
                 // Add new community health worker.
@@ -143,7 +147,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         IsRegistered = false, //TODO: Registered by default?
                         ConsentForPhoto = false,
                         InsertedDate = insertedDate,
-                        // TeamLeadId = ? // Team lead needs to be fetched from clinic?
+                        ClinicId = new Guid(clinicId),
                         TenantId = tenantId,
                         IsActive = true,
                         ClickedVisitTab = false,
@@ -161,17 +165,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     ValidationErrors = validationErrors
                 };
-
-            var teamLeadIdNumbers = hcwToTeamLeadMap
-                .Select(uc => uc.Value)
-                .Distinct()
-                .ToList();
-
-            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: currentUserId);
-            var teamLeadSaIdToIdsMap = teamLeadRepo.GetAll()
-                .Include(t => t.User)
-                .Where(t => teamLeadIdNumbers.Contains(t.User.IdNumber))
-                .ToDictionary(t => t.Id, t => t.User.IdNumber);
 
             var communityHealthWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: currentUserId);
 
@@ -228,9 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 try
                 {
-                    var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
                     var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
-                    hcw.TeamLeadId = teamLeadSaIdToIdsMap.First(teamLead => teamLead.Value == teamLeadSAIdNum).Key;
                     hcw.UserId = user.Id;
 
                     communityHealthWorkerRepo.Insert(hcw);
@@ -278,7 +269,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 string firstName,
                 string surname,
                 string cellphone,
-                string teamLeadId)
+                string clinicId,
+                List<string> clinicIds)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -307,10 +299,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
 
-
-                if (teamLeadId is null || teamLeadId.Length == 0)
+                if (clinicId is null || clinicId.Length == 0)
                 {
-                    errors.Add("Team Lead Id is empty.");
+                    errors.Add("Clinic Id is empty.");
+                } else
+                {
+                    if (!clinicIds.Contains(clinicId))
+                    {
+                        errors.Add("Invalid clinic Id.");
+                    }
                 }
 
                 return errors;
@@ -324,11 +321,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           IGenericRepositoryFactory repoFactory,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           string file)
         {
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+
+            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
+            var clinicIds = clinicRepo.GetAll().Select(c => c.Id.ToString()).ToList();
 
             if (file is null || currentUserId is null)
             {
@@ -343,7 +343,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var userImportList = new List<ApplicationUser>();
             var teamLeadUsers = new Dictionary<string, TeamLead>();
             var createdUsers = new List<string>();
-            var userClinicNames = new Dictionary<string, string>();
+            var teamLeadClinics = new List<AddBulkTeamLeadInputModel>();
 
             var validationErrors = new List<InputValidationError>();
 
@@ -354,7 +354,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
 
-            // TODO: is lastrownum the last row number?
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
@@ -370,19 +369,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                     var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
                     var email = ExcelHelper.GetCellValue(currentRow.GetCell(6));
-                    var clinicName = ExcelHelper.GetCellValue(currentRow.GetCell(7));
+                    var clinicId1 = ExcelHelper.GetCellValue(currentRow.GetCell(7));
+                    var clinicId2 = ExcelHelper.GetCellValue(currentRow.GetCell(8));
 
                     if (idOrPassport is null
-                    && id is null
-                    && passport is null
-                    && firstName is null
-                    && surname is null
-                    && cellphone is null
-                    && email is null
-                    && clinicName is null)
+                        && id is null
+                        && passport is null
+                        && firstName is null
+                        && surname is null
+                        && cellphone is null
+                        && email is null
+                        && clinicId1 is null
+                        && clinicId2 is null)
                         continue;
 
-                    var rowErrors = GetValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email, clinicName);
+                    var rowErrors = GetTeamLeadValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email, clinicId1, clinicId2, clinicIds);
 
                     // Collect all row errors.
                     // Could be on a row with no errors, but previous rows had errors.
@@ -398,8 +399,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     
                     var insertedDate = DateTime.UtcNow;
 
+                    var userId = Guid.NewGuid();
                     var user = new ApplicationUser()
                     {
+                        Id = userId,
                         IdNumber = id,
                         UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                         FirstName = firstName,
@@ -413,12 +416,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ContactPreference = MessageTypeConstants.SMS,
                         TenantId = tenantId,
                         InsertedDate = insertedDate,
-                        IsActive = true
+                        IsActive = true,
                     };
                     userImportList.Add(user);
 
-                    // Record Clinic Name
-                    userClinicNames.TryAdd(user.UserName, clinicName);
+                    // Record Clinic Ids
+                    teamLeadClinics.Add(new AddBulkTeamLeadInputModel() { Username = user.UserName, ClinicId = clinicId1 });
+                    if (clinicId2 != null) {
+                        teamLeadClinics.Add(new AddBulkTeamLeadInputModel() { Username = user.UserName, ClinicId = clinicId2 });
+                    }
 
                     // Add new community health worker.
                     teamLeadUsers.Add(user.UserName,
@@ -427,8 +433,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             User = user,
                             JobTitle = RolesGG.TEAM_LEAD,
                             TenantId = tenantId,
-                            // Clinics to be added.
-                            ClinicId = null,
                             InsertedDate = insertedDate,
                             IsActive = true
                         });
@@ -456,24 +460,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (validationErrors.Any())
                 return new UserImportModel() { ValidationErrors = validationErrors };
 
-
-            // Get Clinics
-            var userClinicNameList = userClinicNames.Select(uc => uc.Value).Distinct().ToList();
-
-            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
-            var clinics = clinicRepo.GetAll().Where(c => userClinicNameList.Contains(c.Name)).ToList();
-            var foundClinicNames = clinics.Select(c => c.Name);
-
-            var missingClinicIds = userClinicNameList.Except(foundClinicNames).ToList();
-
-            if (missingClinicIds.Any())
-            {
-                validationErrors.Add(new InputValidationError(0, missingClinicIds, "These clinic Id's could not be found."));
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-            }
 
             // Create Team Leads
             var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: currentUserId);
@@ -521,15 +507,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     // Get the current tl's user.
                     var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
+                    var userClinics = teamLeadClinics.Where(x => x.Username == user.UserName).ToList();
 
                     // Assign newly created user
                     newTl.UserId = user.Id;
-
-                    if (userClinicNames.TryGetValue(user.UserName, out string clinicName))
+                    List<ClinicTeamLead> clinics = new List<ClinicTeamLead>();
+                    foreach (var item in userClinics)
                     {
-                        var clinic = clinics.First(c => c.Name == clinicName);
-                        newTl.ClinicId = clinic.Id;
+                        clinics.Add(
+                            new ClinicTeamLead
+                            {
+                                Id = new Guid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                TeamLeadId = newTl.Id,
+                                ClinicId = new Guid(item.ClinicId)
+                            }
+                        );
                     }
+                    newTl.Clinics = clinics;
 
                     try
                     {
@@ -573,7 +569,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             // Local function
-            static IEnumerable<string> GetValidationErrors(string idOrPassport, string id, string passport, string firstName, string surname, string cellphone, string email, string clinicName)
+            static IEnumerable<string> GetTeamLeadValidationErrors(
+                string idOrPassport, 
+                string id, 
+                string passport, 
+                string firstName, 
+                string surname, 
+                string cellphone, 
+                string email, 
+                string clinicId1,
+                string clinicId2,
+                List<string> clinicIds)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -607,8 +613,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && !UserHelper.IsEmailValid(email))
                     errors.Add("Email is invalid");
 
-                if (string.IsNullOrWhiteSpace(clinicName) || clinicName?.Length < 1)
-                    errors.Add("Clinic Name is invalid");
+                if (clinicId1 is null || clinicId1.Length == 0)
+                {
+                    errors.Add("Clinic id 1 is empty.");
+                }
+                else
+                {
+                    if (!clinicIds.Contains(clinicId1))
+                    {
+                        errors.Add("Invalid clinic id for clinic 1.");
+                    }
+                }
+
+                if (clinicId2 is not null || clinicId2.Length == 0)
+                {
+                    if (!clinicIds.Contains(clinicId2))
+                    {
+                        errors.Add("Invalid clinic id for clinic 2.");
+                    }
+                }
+
+                if (clinicId1 is not null && clinicId2 is not null && clinicId1 == clinicId2)
+                {
+                    errors.Add("Clinic id 1 and clinic id 2 cannot be the same");
+                }
 
                 return errors;
             }

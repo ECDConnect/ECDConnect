@@ -6,7 +6,7 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -20,8 +20,16 @@ import {
   initialEditPractitionerValues,
 } from '@/schemas/practitioner/edit-cellphone-number';
 import { useAppDispatch } from '@store';
-import { useHistory } from 'react-router-dom';
-import { userActions, userThunkActions } from '@store/user';
+import { userActions, userThunkActions } from '@/store/user';
+import {
+  healthCareWorkerSelectors,
+  healthCareWorkerThunkActions,
+} from '@/store/healthCareWorker';
+import { useSelector } from 'react-redux';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
+import { UserActions } from '@/store/user/user.actions';
+import { useSnackbar } from '@ecdlink/core';
 
 export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   setEditiCellPhoneNumber,
@@ -29,8 +37,53 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const history = useHistory();
+
   const [isWhatsappNumber, setIsWhatsappNumber] = useState(true);
+
+  const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
+
+  const { showMessage } = useSnackbar();
+
+  const {
+    isLoading: isLoadingContactInfo,
+    wasLoading: wasLoadingContactInfo,
+    isRejected: isRejectedContactInfo,
+    error: errorContactInfo,
+  } = useThunkFetchCall(
+    'healthCareWorker',
+    HealthCareWorkerActions.UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE
+  );
+  const {
+    isLoading: isUpdatingUser,
+    wasLoading: wasUpdatingUser,
+    isRejected: isRejectedUpdateUser,
+    error: errorUpdateUser,
+  } = useThunkFetchCall('user', UserActions.UPDATE_USER);
+
+  const isLoading = isLoadingContactInfo || isUpdatingUser;
+  const wasLoading = wasLoadingContactInfo || wasUpdatingUser;
+  const isRejected = isRejectedContactInfo || isRejectedUpdateUser;
+  const error = errorContactInfo || errorUpdateUser;
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      if (isRejected) {
+        showMessage({
+          message: error,
+          type: 'error',
+        });
+      } else {
+        setEditiCellPhoneNumber(false);
+      }
+    }
+  }, [
+    error,
+    isLoading,
+    isRejected,
+    setEditiCellPhoneNumber,
+    showMessage,
+    wasLoading,
+  ]);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -49,20 +102,26 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
   const {
     getValues: getPractitionerInfoFormValues,
+    setValue: setPractitionerInfoFormValue,
     register: practitionerInfoFormRegister,
     control: practitionerInfoFormControl,
+    formState: practitionerInfoFormState,
   } = useForm({
     resolver: yupResolver(editCelphoneNumberSchema),
     defaultValues: getDefaultFormvalues(),
-    mode: 'onBlur',
-    reValidateMode: 'onChange',
+    mode: 'onChange',
+    reValidateMode: 'onBlur',
   });
-  const { whatsapp } = useWatch({
+
+  const { errors } = practitionerInfoFormState;
+
+  const { whatsapp, shareContactInfo } = useWatch({
     control: practitionerInfoFormControl,
   });
 
-  const savePractitionerUserData = () => {
-    const practitionerForm = getPractitionerInfoFormValues();
+  const practitionerForm = getPractitionerInfoFormValues();
+
+  const savePractitionerUserData = async () => {
     const copy = Object.assign({}, user);
     if (copy) {
       copy.firstName = practitionerForm.name;
@@ -74,93 +133,124 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       }
 
       appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+      const promises = [
+        appDispatch(userThunkActions.updateUser(copy)),
+        appDispatch(
+          healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
+            healthCareWorkerId: hcw?.id!,
+            welcomeMessage: hcw?.welcomeMessage || '',
+            shareContactInfo: shareContactInfo as boolean,
+          })
+        ),
+      ];
+
+      await Promise.all(promises);
+    }
+
+    if (!isOnline) {
+      setEditiCellPhoneNumber(false);
     }
   };
 
+  useLayoutEffect(() => {
+    if (
+      hcw?.shareContactInfo !== null &&
+      practitionerForm?.shareContactInfo === undefined
+    ) {
+      setPractitionerInfoFormValue('shareContactInfo', hcw?.shareContactInfo);
+    }
+  }, [
+    hcw?.shareContactInfo,
+    practitionerForm.shareContactInfo,
+    setPractitionerInfoFormValue,
+  ]);
+
   return (
-    <div>
-      <BannerWrapper
-        size={'normal'}
-        renderBorder={true}
-        showBackground={false}
-        color={'primary'}
-        title={'Edit cellphone number'}
-        backgroundColour={'uiBg'}
-        displayOffline={!isOnline}
-        onBack={() => history.goBack()}
-      ></BannerWrapper>
-      <div className="w-12/12 wrapper-with-sticky-button px-4">
-        <div className="flex w-full justify-center">
-          <div className="flex flex-wrap justify-center">
-            <div className="w-full">
-              <Typography
-                type="h2"
-                text="Cellphone number"
-                color={'textDark'}
-                className="mt-4 w-11/12"
-              />
-            </div>
-            <div className="mt-2 flex w-full flex-col justify-center gap-4">
-              <FormInput<EditCellphoneModel>
-                label={'Cellphone number'}
-                visible={true}
-                nameProp={'cellphone'}
-                placeholder="073 527 9059"
-                className="w-full"
-                register={practitionerInfoFormRegister}
-              />
-              <div className="mt-4 w-11/12">
-                <Typography
-                  type="h4"
-                  color={'textMid'}
-                  text={'Do you use this cellphone number for WhatsApp?'}
-                  className="z-50 w-11/12 pt-2"
-                />
-              </div>
-              <div>
-                <ButtonGroup<boolean>
-                  options={yesNoOptions}
-                  onOptionSelected={(value: boolean | boolean[]) => {
-                    setIsWhatsappNumber(value as boolean);
-                  }}
-                  color="secondary"
-                  type={ButtonGroupTypes.Button}
-                  className={'w-full'}
-                  // selectedOptions={multipleChildren}
-                />
-              </div>
-              {!isWhatsappNumber && (
-                <FormInput<EditCellphoneModel>
-                  label={'What phone number do you use for WhatsApp?'}
-                  hint={'Optional. Leave blank if you do not use WhatsApp.'}
-                  placeholder="073 527 9059"
-                  visible={true}
-                  nameProp={'whatsapp'}
-                  className="w-full"
-                  register={practitionerInfoFormRegister}
-                />
-              )}
-            </div>
-            <div className="mt-4 -mb-4 h-full w-full self-end">
-              <Button
-                size="normal"
-                className="mb-4 w-full"
-                type="filled"
-                color="primary"
-                text="Save"
-                textColor="white"
-                icon="SaveIcon"
-                onClick={() => {
-                  // handleChangePractitionerInfo();
-                  savePractitionerUserData();
-                  setEditiCellPhoneNumber(false);
-                }}
-              />
-            </div>
-          </div>
-        </div>
+    <BannerWrapper
+      size="normal"
+      renderBorder
+      showBackground={false}
+      color="primary"
+      title="Edit cellphone number"
+      displayOffline={!isOnline}
+      onBack={() => setEditiCellPhoneNumber(false)}
+      className="flex flex-col p-4 pt-6"
+    >
+      <Typography
+        type="h2"
+        text="Cellphone number"
+        color="textDark"
+        className="mb-4"
+      />
+      <FormInput<EditCellphoneModel>
+        label="Cellphone number"
+        visible
+        nameProp="cellphone"
+        placeholder="073 527 9059"
+        className="mb-4"
+        register={practitionerInfoFormRegister}
+        error={errors?.cellphone}
+      />
+      <Typography
+        type="h4"
+        color="textDark"
+        text="Do you use this cellphone number for WhatsApp?"
+      />
+      <Typography type="help" color="textMid" text="Optional" />
+      <ButtonGroup<boolean>
+        options={yesNoOptions}
+        onOptionSelected={(value: boolean | boolean[]) => {
+          setIsWhatsappNumber(value as boolean);
+        }}
+        color="secondary"
+        type={ButtonGroupTypes.Button}
+        className="mb-4 mt-2"
+      />
+      {!isWhatsappNumber && (
+        <FormInput<EditCellphoneModel>
+          label="What phone number do you use for WhatsApp?"
+          hint="Optional. Leave blank if you do not use WhatsApp."
+          placeholder="073 527 9059"
+          visible={true}
+          nameProp="whatsapp"
+          className="mb-4"
+          register={practitionerInfoFormRegister}
+        />
+      )}
+      <Typography
+        type="h4"
+        color="textDark"
+        text="Would you like to share your phone & WhatsApp number with your team?"
+      />
+      <ButtonGroup<boolean>
+        options={yesNoOptions}
+        selectedOptions={shareContactInfo}
+        onOptionSelected={(value: boolean | boolean[]) => {
+          setPractitionerInfoFormValue('shareContactInfo', value as boolean);
+        }}
+        color="secondary"
+        type={ButtonGroupTypes.Button}
+        className="mb-4 mt-2"
+      />
+      <div className="mt-auto">
+        <Button
+          size="normal"
+          className="w-full"
+          type="filled"
+          color="primary"
+          text="Save"
+          textColor="white"
+          icon="SaveIcon"
+          isLoading={isLoading}
+          disabled={
+            isLoading ||
+            !practitionerForm?.cellphone ||
+            typeof practitionerForm?.shareContactInfo !== 'boolean' ||
+            !!errors?.cellphone
+          }
+          onClick={savePractitionerUserData}
+        />
       </div>
-    </div>
+    </BannerWrapper>
   );
 };

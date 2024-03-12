@@ -128,7 +128,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           }
         })
         .catch(() => {
-          console.log('catch');
           setDisplayError(true);
           setIsLoading(false);
         });

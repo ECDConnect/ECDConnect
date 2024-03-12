@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
         private readonly ISystemSetting<IntegrationApiOptions> _options;
         private IntegrationLogManager _logManager;
         private IntegrationAPIManager _apiManager;
-        private string _uId;
+        private Guid _uId;
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
         private IGenericRepository<IntegrationAudit, Guid> _auditRepo;
         private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
@@ -39,7 +39,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
         public IntegrationHelperManager(
             IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, IntegrationLogManager logManager, ISystemSetting<IntegrationApiOptions> options, IntegrationAPIManager apiManager, HierarchyEngine hierarchyEngine)
         {
-            _uId = hierarchyEngine.GetIntegrationUserId();
+            _uId = hierarchyEngine.GetIntegrationUserId().Value;
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _logManager = logManager;
@@ -60,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
 
         public async Task<IntegrationEntityMapping> GetMappedEntity(string localUserId, string entityType)
         {
-            return _mapperRepo.GetAll().Where(x => string.Equals(x.UserId, localUserId) && string.Equals(x.LocalEntity, entityType)).FirstOrDefault();
+            return _mapperRepo.GetAll().Where(x => x.UserId == Guid.Parse(localUserId) && string.Equals(x.LocalEntity, entityType)).FirstOrDefault();
         }
 
         public async Task<List<IntegrationColumnMapping>> GetMappedColumnsForUpdate(string entityType)

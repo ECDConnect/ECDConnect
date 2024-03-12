@@ -15,15 +15,18 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { Notification, notificationActions } from '@/store/notifications';
 
 interface CaregiverMeetingProps {
   isToShowWellDoneMessage: boolean;
+  notification?: Notification;
   onClose: () => void;
 }
 
 export const CaregiverMeeting = ({
   onClose,
   isToShowWellDoneMessage,
+  notification,
 }: CaregiverMeetingProps) => {
   const [isLogCaregiverMeeting, setIsLogCaregiverMeeting] = useState<boolean>();
 
@@ -50,6 +53,11 @@ export const CaregiverMeeting = ({
     const input = { clubId: club?.id!, userId: user?.id! };
 
     appDispatch(clubActions.addCaregiverReportBackMeeting(input));
+    appDispatch(
+      notificationActions.markNotificationRead({
+        reference: notification?.message?.reference ?? '',
+      })
+    );
 
     if (isOnline) {
       appDispatch(addCaregiverReportBackMeeting(input));
@@ -59,7 +67,14 @@ export const CaregiverMeeting = ({
         type: 'success',
       });
     }
-  }, [club?.id, user?.id, appDispatch, isOnline, showMessage]);
+  }, [
+    club?.id,
+    user?.id,
+    appDispatch,
+    notification?.message?.reference,
+    isOnline,
+    showMessage,
+  ]);
 
   useEffect(() => {
     if (wasLoading && !isLoading) {
@@ -98,7 +113,14 @@ export const CaregiverMeeting = ({
         primaryButtonText: 'Yes I did!',
         primaryButtonOnClick: onSubmitCaregiverReportBack,
         secondaryButtonText: 'Not yet',
-        secondaryButtonOnClick: () => setIsLogCaregiverMeeting(false),
+        secondaryButtonOnClick: () => {
+          appDispatch(
+            notificationActions.markNotificationRead({
+              reference: notification?.message?.reference ?? '',
+            })
+          );
+          setIsLogCaregiverMeeting(false);
+        },
       };
     }
 
@@ -121,12 +143,14 @@ export const CaregiverMeeting = ({
       secondaryButtonOnClick: onClose,
     };
   }, [
+    appDispatch,
     club?.clubCoach?.userId,
     clubId,
     history,
     isAfterJuly,
     isLogCaregiverMeeting,
     isToShowWellDoneMessage,
+    notification?.message?.reference,
     onClose,
     onSubmitCaregiverReportBack,
   ]);

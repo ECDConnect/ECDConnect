@@ -76,8 +76,11 @@ export const getStepDate = (date?: string) =>
   !!date ? `By ${new Date(date).toLocaleDateString('en-ZA', dateOptions)}` : '';
 
 const state = store.getState();
-const { trainee: traineDataState } = state;
-const traineeTimelineData = traineDataState?.traineeOnboardTimeline;
+const { trainee: traineDataState, practitioner: practitionerState } = state;
+const practitioner = practitionerState.practitioner;
+const traineeTimelineData =
+  traineDataState.traineeOnboardTimeline[practitioner?.userId || ''];
+
 export const setStep = (
   status?: Maybe<string>,
   date?: string,

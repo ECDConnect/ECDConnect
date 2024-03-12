@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ComponentBaseProps } from '../../models';
 import { classNames } from '../../utils/style-class.utils';
-import AttendanceListItem from './components/attendance-list-item/attendance-list-item';
+import AttendanceListItem, {
+  AttendanceListItemProps,
+} from './components/attendance-list-item/attendance-list-item';
 import { AttendanceListDataItem } from './models/AttendanceListDataItem';
 
 export interface AttendanceStackedListProps extends ComponentBaseProps {
+  type?: AttendanceListItemProps['type'];
   listItems: AttendanceListDataItem[];
   scroll?: boolean;
   onScroll?: (scrollTop: number) => void;
@@ -17,6 +20,7 @@ export const AttendanceStackedList = ({
   onChange,
   scroll = true,
   onScroll,
+  type,
 }: React.PropsWithChildren<AttendanceStackedListProps>) => {
   const [renderList, setRenderList] =
     useState<AttendanceListDataItem[]>(listItems);
@@ -64,6 +68,7 @@ export const AttendanceStackedList = ({
       {renderList.map((item, index) => (
         <div key={'attendance-stackedList-listItem-' + index}>
           <AttendanceListItem
+            type={type}
             item={item as AttendanceListDataItem}
             onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
               updateItemAttendance(currentAttendanceItem)

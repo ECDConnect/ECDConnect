@@ -4,7 +4,6 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +46,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (topEarners.Count() == 1)
                 {
                     var userToSend = await _userManager.FindByIdAsync(topEarners.First().Key);
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TopSmartStarterPoints, DateTime.Now, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TopSmartStarterPoints, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                 }
             }
         }
@@ -84,7 +83,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (i <= midPosition)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now, practitioner.User, "", MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
                     }
                     else
                     {
@@ -96,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 ReplacementValue = userPoints[i].Value.ToString(),
                             }
                         };
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now, practitioner.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                     }
                 }
             }
@@ -112,7 +111,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach (var user in practitionerUsers)
             {
-                var points = userPoints.FirstOrDefault(x => x.Key == user.Id).Value;
+                var points = userPoints.FirstOrDefault(x => x.Key == user.Id.ToString()).Value;
 
                 var replacements = new List<TagsReplacements>
                 {
@@ -123,8 +122,9 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 };
 
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.EndofyearPointsEarned, DateTime.Now, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.EndofyearPointsEarned, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
             }
         }
+            
     }
 }
