@@ -38,7 +38,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
 
-  const [isWhatsappNumber, setIsWhatsappNumber] = useState(true);
+  const [isWhatsappNumber, setIsWhatsappNumber] = useState<boolean>();
 
   const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
 
@@ -93,6 +93,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         cellphone: user.phoneNumber || '',
         email: user?.email! || '',
         whatsapp: user?.whatsappNumber || '',
+        shareContactInfo: hcw?.shareContactInfo ?? undefined,
       };
       return tempPractitioner;
     } else {
@@ -115,11 +116,23 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
   const { errors } = practitionerInfoFormState;
 
-  const { whatsapp, shareContactInfo } = useWatch({
+  const { shareContactInfo } = useWatch({
     control: practitionerInfoFormControl,
   });
 
   const practitionerForm = getPractitionerInfoFormValues();
+
+  const hasCellphone = !!practitionerForm?.cellphone;
+  const hasValidShareContactInfo = typeof shareContactInfo === 'boolean';
+  const hasCellphoneError = !!errors?.cellphone;
+  const hasWhatsappError = isWhatsappNumber === false && !!errors?.whatsapp;
+
+  const isDisabled =
+    isLoading ||
+    !hasCellphone ||
+    !hasValidShareContactInfo ||
+    hasCellphoneError ||
+    hasWhatsappError;
 
   const savePractitionerUserData = async () => {
     const copy = Object.assign({}, user);
@@ -128,8 +141,10 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       copy.surname = practitionerForm.surname;
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
-      if (whatsapp) {
-        copy.whatsappNumber = practitionerForm?.whatsapp;
+      if (isWhatsappNumber !== undefined) {
+        copy.whatsappNumber = isWhatsappNumber
+          ? practitionerForm.cellphone
+          : practitionerForm?.whatsapp;
       }
 
       appDispatch(userActions.updateUser(copy));
@@ -153,17 +168,12 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   };
 
   useLayoutEffect(() => {
-    if (
-      hcw?.shareContactInfo !== null &&
-      practitionerForm?.shareContactInfo === undefined
-    ) {
-      setPractitionerInfoFormValue('shareContactInfo', hcw?.shareContactInfo);
+    if (isWhatsappNumber === undefined && user?.whatsappNumber) {
+      setIsWhatsappNumber(
+        user?.phoneNumber?.includes(user?.whatsappNumber || '')
+      );
     }
-  }, [
-    hcw?.shareContactInfo,
-    practitionerForm.shareContactInfo,
-    setPractitionerInfoFormValue,
-  ]);
+  }, [isWhatsappNumber, user?.phoneNumber, user?.whatsappNumber]);
 
   return (
     <BannerWrapper
@@ -199,6 +209,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       <Typography type="help" color="textMid" text="Optional" />
       <ButtonGroup<boolean>
         options={yesNoOptions}
+        selectedOptions={isWhatsappNumber}
         onOptionSelected={(value: boolean | boolean[]) => {
           setIsWhatsappNumber(value as boolean);
         }}
@@ -206,15 +217,16 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         type={ButtonGroupTypes.Button}
         className="mb-4 mt-2"
       />
-      {!isWhatsappNumber && (
+      {isWhatsappNumber === false && (
         <FormInput<EditCellphoneModel>
           label="What phone number do you use for WhatsApp?"
           hint="Optional. Leave blank if you do not use WhatsApp."
           placeholder="073 527 9059"
-          visible={true}
+          visible
           nameProp="whatsapp"
           className="mb-4"
           register={practitionerInfoFormRegister}
+          error={errors?.whatsapp}
         />
       )}
       <Typography
@@ -242,12 +254,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
           textColor="white"
           icon="SaveIcon"
           isLoading={isLoading}
-          disabled={
-            isLoading ||
-            !practitionerForm?.cellphone ||
-            typeof practitionerForm?.shareContactInfo !== 'boolean' ||
-            !!errors?.cellphone
-          }
+          disabled={isDisabled}
           onClick={savePractitionerUserData}
         />
       </div>

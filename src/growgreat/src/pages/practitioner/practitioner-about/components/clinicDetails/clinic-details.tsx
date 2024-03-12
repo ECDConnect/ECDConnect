@@ -133,17 +133,15 @@ export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
         onClick={() => call(clinic?.phoneNumber)}
       />
       <Divider className="my-8" dividerType="dashed" />
-      {clinic?.teamLeads?.map((teamLeader) => (
-        <Fragment key={teamLeader.id}>
+      {clinic?.teamLeads?.map((teamLeader, index) => (
+        <div className={index > 0 ? 'mt-4' : ''} key={teamLeader.id}>
           <Typography
             text={`${teamLeader?.firstName ?? ''} ${teamLeader?.surname ?? ''}`}
             type="h1"
             color="textDark"
           />
           <Typography
-            text={`${clinic?.name ?? ''} ${
-              teamLeader?.jobTitle ?? 'Team Leader'
-            }`}
+            text={`${clinic?.name ?? ''} Team Leader`}
             type="h3"
             color="textMid"
             className={''}
@@ -191,7 +189,7 @@ export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
               onClick={() => call(teamLeader?.phoneNumber)}
             />
           </div>
-        </Fragment>
+        </div>
       ))}
       <Alert
         className={!!clinic?.teamLeads?.length ? 'mt-8' : ''}
