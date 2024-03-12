@@ -15,6 +15,7 @@ using ECDLink.Security.Extensions;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace ECDLink.Api.CoreApi.Services
 {
@@ -23,7 +24,7 @@ namespace ECDLink.Api.CoreApi.Services
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly IReassignmentService _reassignmentService;
         private readonly INotificationService _notificationService;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
         private readonly HierarchyEngine _hierarchyEngine;
         private string _applicationUserId;
         private IGenericRepository<Absentees, Guid> _absenteeRepo;
@@ -33,7 +34,7 @@ namespace ECDLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             HierarchyEngine hierarchyEngine)
         {
             _repositoryFactory = repositoryFactory;
@@ -41,7 +42,7 @@ namespace ECDLink.Api.CoreApi.Services
             _notificationService = notificationService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
+            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id.ToString();
             _absenteeRepo = repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
         }
 
@@ -62,7 +63,7 @@ namespace ECDLink.Api.CoreApi.Services
             reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
             var absentee = new Absentees
             {
-                UserId = practitionerId,
+                UserId = Guid.Parse(practitionerId),
                 Reason = reason,
                 AbsentDate = absentDate,
                 AbsentDateEnd = absentDateEnd,
@@ -106,43 +107,53 @@ namespace ECDLink.Api.CoreApi.Services
                 //Log to the history table for reassignment back to owner user after absentee end date and pass on the role selectiosn to for future use with assigned absenteeid
                 _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, absentee.Id.ToString());
 
-                //send notifications a) Absentee, b) long leave
-                var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                var parentUser = _userManager.FindByIdAsync(absentee.LoggedBy).Result;
-                if (parentUser != null)
+                //send notifications a) Absentee, b) long leave // dont send if user is removed completely, the logic is shared here for complete removal and absentees
+                if (reason != "Practitioner removed from programme")
                 {
-                    var parentToSend = _userManager.FindByIdAsync(parentUser.Id).Result;
+                    var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
+                    List<TagsReplacements> replacements = new List<TagsReplacements>();
+                    string parentUserId = absentee.LoggedBy;
 
+                    if (userToSend.practitionerObjectData != null && userToSend.practitionerObjectData.PrincipalHierarchy.HasValue)
+                    {
+                        parentUserId = userToSend.practitionerObjectData.PrincipalHierarchy.Value.ToString();
+                    }
+                    var parentUser = _userManager.FindByIdAsync(parentUserId).Result;
+                    if (parentUser != null)
+                    {
+                        var parentToSend = _userManager.FindByIdAsync(parentUser.Id).Result;
+
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "PrincipalName",
+                            ReplacementValue = parentToSend.FirstName
+                        });
+                    }
+                    else
+                    {
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "PrincipalName",
+                            ReplacementValue = "Principal"
+                        });
+                    }
                     replacements.Add(new TagsReplacements()
                     {
-                        FindValue = "PrincipalName",
-                        ReplacementValue = parentToSend.FirstName
+                        FindValue = "AbsentStartDate",
+                        ReplacementValue = absentDate.ToLongDateString(),
                     });
-                }
-                else {
                     replacements.Add(new TagsReplacements()
                     {
-                        FindValue = "PrincipalName",
-                        ReplacementValue = "Principal"
+                        FindValue = "AbsentEndDate",
+                        ReplacementValue = (absentDateEnd.HasValue ? absentDateEnd.Value.ToLongDateString() : absentDate.AddDays(1).ToLongDateString()),
                     });
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "PractitionerUserId",
+                        ReplacementValue = parentUser.Id.ToString()
+                    });
+                    _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
                 }
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "AbsentStartDate",
-                    ReplacementValue = absentDate.ToLongDateString(),
-                });
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "AbsentEndDate",
-                    ReplacementValue = (absentDateEnd.HasValue ? absentDateEnd.Value.ToLongDateString() : absentDate.AddDays(1).ToLongDateString()),
-                });
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "PractitionerUserId",
-                    ReplacementValue = parentUser.Id
-                });
-                _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PractitionerMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate.AddDays(1)));
             }
 
             return createdAbsentee;
@@ -201,7 +212,7 @@ namespace ECDLink.Api.CoreApi.Services
                             absentee.Reason = reason;
                     }
                     _absenteeRepo.Update(absentee);
-                    _reassignmentService.EditReassignment(absentee.UserId, reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
+                    _reassignmentService.EditReassignment(absentee.UserId.ToString(), reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
                     return absentee;
                 }
             }
@@ -213,7 +224,7 @@ namespace ECDLink.Api.CoreApi.Services
             var classRoomRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             List<AbsenteeDetail> absenteeDetails = new List<AbsenteeDetail>();
 
-            var absentees = _absenteeRepo.GetAll().Where(a => a.UserId.Equals(userId) && a.IsActive == true).ToList();
+            var absentees = _absenteeRepo.GetAll().Where(a => a.UserId.ToString() == userId && a.IsActive == true).ToList();
             if (startDate != null)
             {
                 absentees = absentees.Where(a => a.AbsentDate >= startDate).ToList();
@@ -281,7 +292,7 @@ namespace ECDLink.Api.CoreApi.Services
             var startCount = DateTime.Now.GetStartOfPreviousMonth();
             var endCount = DateTime.Now.GetStartOfMonth();
             var absentees = _absenteeRepo.GetAll()
-                .Where(a => a.UserId.Equals(userId))
+                .Where(a => a.UserId == Guid.Parse(userId))
                 .Where(a => a.AbsentDate < endCount && a.AbsentDate >= startCount)
                 .Where(a => a.AbsentDateEnd.HasValue == false || (a.AbsentDateEnd.HasValue && (a.AbsentDate.Date == a.AbsentDateEnd.Value.Date)))
                 .ToList();

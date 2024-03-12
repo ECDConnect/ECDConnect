@@ -1,4 +1,4 @@
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { Login } from '@auth-p/login/login';
 import { NewPassword } from '@auth-p/new-password/new-password';
 import PasswordReset from '@auth-p/password-reset/password-reset';
@@ -84,7 +84,7 @@ import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-on
 import Calendar from '@/pages/calendar/calendar-home';
 import RemovePractitionerFromProgramme from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/remove-practitioner-from-programme';
 import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
-import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { FranchiseeAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/franchisee-agreement/franchisee-agreement';
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
 import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
@@ -129,6 +129,9 @@ import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-
 import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
 import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
 import { MissingMeetingRegisters } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { usePrevious } from '@ecdlink/core';
+import { Location } from 'history';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -166,8 +169,19 @@ const PublicRoutes: React.FC = () => {
 };
 
 const AuthRoutes: React.FC = () => {
+  const { isOnline } = useOnlineStatus();
+  const location = useLocation();
+  const previousLocation = usePrevious(location) as
+    | Location<unknown>
+    | undefined;
+
   return (
     <Switch>
+      {(!isOnline ||
+        (location.pathname === ROUTES.LOGIN &&
+          previousLocation?.pathname === ROUTES.LOGIN)) && (
+        <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+      )}
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
@@ -587,7 +601,7 @@ const AuthRoutes: React.FC = () => {
       <Route
         exact
         path={ROUTES.COACH_FRANCHISE_AGREEMENT}
-        component={CoachTraineeFranchisorAgreement}
+        component={FranchiseeAgreement}
       />
       <Route
         exact

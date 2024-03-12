@@ -30,3 +30,9 @@ export interface CaregiverDto extends EntityBase {
   isOnline?: boolean;
   isAllowedCustody?: boolean;
 }
+
+export interface CaregiverBaseDto {
+  caregiverId: string;
+  firstName: string;
+  surname: string;
+}

@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -11,15 +12,16 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
+{
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class HealthCareWorkerMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public HealthCareWorker AddHealthCareWorker(
+        public HealthCareWorkerModel AddHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HealthCareWorkerModel input)
+            AddHealthCareWorkerInputModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
 
@@ -29,10 +31,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = applicationUserId.ToString(),
                 UserId = input.UserId,
-                LanguageId = input.LanguageId,
-                TeamLeadId = input.TeamLeadId,
+                ClinicId = input.ClinicId,
                 ClickedVisitTab = false,
                 ClickedProgressTab = false,
                 ClickedReferralsTab = false,
@@ -43,15 +44,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
             };
 
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
-            return healthCareWorkerRepo.Insert(healthCareWorker);
+            var newHealthCareWorker = healthCareWorkerRepo.Insert(healthCareWorker);
+
+            return new HealthCareWorkerModel(newHealthCareWorker);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public HealthCareWorker UpdateHealthCareWorker(
+        public PortalUserHCWModel UpdateHealthCareWorkerClinic(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid userId,
+            Guid clinicId)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetByUserId(userId);
+
+            healthCareWorkerToUpdate.ClinicId = clinicId;
+            healthCareWorkerToUpdate.UpdatedDate = DateTime.Now;
+            healthCareWorkerToUpdate.UpdatedBy = applicationUserId.ToString();
+
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+            return new PortalUserHCWModel(updatedHealthCareWorker);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public HealthCareWorkerModel UpdateHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId,
-            HealthCareWorkerModel input)
+            UpdateHealthCareWorkerInputModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
@@ -67,31 +89,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 healthCareWorkerToUpdate.LanguageId = input.LanguageId;
             }
 
-            if (input.TeamLeadId != null)
-            {
-                healthCareWorkerToUpdate.TeamLeadId = input.TeamLeadId;
-            }
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
 
-            if (input.User?.PhoneNumber != null)
-            {
-                healthCareWorkerToUpdate.User.PhoneNumber = input.User.PhoneNumber;
-            }
-
-            if (input.User?.Email != null)
-            {
-                healthCareWorkerToUpdate.User.Email = input.User.Email;
-            }
-
-            return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+            return new HealthCareWorkerModel(updatedHealthCareWorker);
         }
-
-
-        
+                
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public HealthCareWorker UpdateHealthCareWorkerTabs(
+        public HealthCareWorkerModel UpdateHealthCareWorkerTabs(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HealthCareWorkerModel input,
+            UpdateHealthCareWorkerTabsInputModel input,
             string userId)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
@@ -100,34 +107,62 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
 
             if (input.ClickedVisitTab != null)
             {
-                healthCareWorkerToUpdate.ClickedVisitTab = input.ClickedVisitTab;
+                healthCareWorkerToUpdate.ClickedVisitTab = input.ClickedVisitTab.Value;
             }
             if (input.ClickedProgressTab != null)
             {
-                healthCareWorkerToUpdate.ClickedProgressTab = input.ClickedProgressTab;
+                healthCareWorkerToUpdate.ClickedProgressTab = input.ClickedProgressTab.Value;
             }
             if (input.ClickedReferralsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
+                healthCareWorkerToUpdate.ClickedReferralsTab = input.ClickedReferralsTab.Value;
             }
             if (input.ClickedContactTab != null)
             {
-                healthCareWorkerToUpdate.ClickedContactTab = input.ClickedContactTab;
+                healthCareWorkerToUpdate.ClickedContactTab = input.ClickedContactTab.Value;
             }
             if (input.ClickedDashboardClientsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedDashboardClientsTab = input.ClickedDashboardClientsTab;
+                healthCareWorkerToUpdate.ClickedDashboardClientsTab = input.ClickedDashboardClientsTab.Value;
             }
             if (input.ClickedDashboardVisitsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedDashboardVisitsTab = input.ClickedDashboardVisitsTab;
+                healthCareWorkerToUpdate.ClickedDashboardVisitsTab = input.ClickedDashboardVisitsTab.Value;
             }
             if (input.ClickedDashboardHighlightsTab != null)
             {
-                healthCareWorkerToUpdate.ClickedDashboardHighlightsTab = input.ClickedDashboardHighlightsTab;
+                healthCareWorkerToUpdate.ClickedDashboardHighlightsTab = input.ClickedDashboardHighlightsTab.Value;
             }
 
-            return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public HealthCareWorkerModel UpdateHealthCareWorkerWelcomeMessage(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid healthcareWorkerId,
+            string welcomeMessage,
+            bool shareContactInfo)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetById(healthcareWorkerId);
+
+            if (healthCareWorkerToUpdate == null)
+            {
+                throw new ArgumentException("Invalid healthCareWorkerId, HCW not found");
+            }
+
+            healthCareWorkerToUpdate.WelcomeMessage = welcomeMessage;
+            healthCareWorkerToUpdate.IsNewAtClinic = false;
+            healthCareWorkerToUpdate.ShareContactInfo = shareContactInfo;
+
+            var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker);
         }
     }
 }

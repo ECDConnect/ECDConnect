@@ -1,7 +1,6 @@
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
 import { staticDataSelectors } from '@/store/static-data';
 import { traineeSelectors } from '@/store/trainee';
-import { PractitionerDto } from '@ecdlink/core';
 import {
   Button,
   Colours,
@@ -12,16 +11,18 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { QuestionAnswersProps } from './smart-space-check-3';
 import { coachSelectors } from '@/store/coach';
 import { authSelectors } from '@/store/auth';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 interface SmartSpaceCheck1Props {
-  practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  coachSmartSpaceVisitId: string;
+  traineeChecklistVisitId: string;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -37,124 +38,65 @@ export const getGroupColor = (count: number): Colours => {
 };
 
 export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
-  practitioner,
-  programmeName,
-  setSectionQuestions,
+  coachSmartSpaceVisitId,
+  traineeChecklistVisitId,
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitSection = `Programme details`;
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(authSelectors.getAuthUser);
   const isCoach = coach?.user?.id === user?.id;
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
-    traineeSelectors.getTraineeProgrammeType
+    traineeSelectors.getTraineeProgrammeType(traineeChecklistVisitId)
   );
   const traineeProgrammeTypeObject = programData?.find(
     (item) => item?.id === traineeProgrammeType
   );
   const [enableButton, setEnableButton] = useState(false);
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection,
       question: 'How many assistants will attend every session?',
-      answer: '',
+      questionAnswer: '',
     },
   ]);
 
-  const visitSection = `Programme details`;
-
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
 
-      if (updatedQuestions.every((item) => item.answer !== '')) {
-        return setEnableButton?.(true);
+      if (updatedQuestions.every((item) => item.questionAnswer !== '')) {
+        return setEnableButton(true);
       }
       setEnableButton(false);
     },
-    [questions, setSectionQuestions, visitSection]
+    [questions]
   );
 
   useEffect(() => {
-    if (!isCoach) {
-      const previousData = questions.map((item) => {
-        const previousAnswer = visitData?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        });
-
-        if (previousAnswer) {
-          return {
-            ...item,
-            answer: previousAnswer?.questionAnswer!,
-          };
-        }
-
-        return item;
-      });
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: previousData,
-        },
-      ]);
-
-      setAnswers(previousData as QuestionAnswersProps[]);
-      return;
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
     }
-
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.find(
-        (item: any) =>
-          item?.answer !== '' || Boolean(item?.answer) !== undefined
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer?.answer,
-        };
-      }
-      return item;
-    });
-
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
   }, []);
 
   return (
@@ -180,7 +122,7 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
           label={item?.question}
           placeholder={'e.g. 2'}
           type="number"
-          value={item.answer}
+          value={item.questionAnswer}
           subLabel="Any programme with more than 10 children must have an assistant."
           onChange={(e) => onOptionSelected(e.target.value, index)}
           onKeyDown={(e) => e.code !== '69'}
@@ -197,10 +139,12 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
+                saveSmartSpaceCheckData(questions, visitSection);
                 handleNextSection();
-                saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton && questions[0]?.answer === '' && isCoach}
+              disabled={
+                !enableButton && questions[0].questionAnswer === '' && isCoach
+              }
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

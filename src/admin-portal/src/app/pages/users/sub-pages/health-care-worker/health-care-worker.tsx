@@ -3,9 +3,6 @@ import {
   ClinicDto,
   NOTIFICATION,
   PermissionEnum,
-  TeamLeadDto,
-  UserDto,
-  b64toBlob,
   useDialog,
   useNotifications,
   usePanel,
@@ -16,7 +13,6 @@ import { HealthCareWorkerDto } from '@ecdlink/core/lib/models/dto/Users/health-c
 import {
   SendInviteToApplication,
   GetAllHealthCareWorker,
-  GetAllTeamLead,
   GetAllClinic,
   GetAllProvince,
   HealthCareWorkerTemplate,
@@ -52,12 +48,13 @@ export default function HealthCareWorkers() {
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
   const [statusFilter, setStatusFilter] = useState('active');
-  const [teamLeadFilter, setTeamLeadFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
   const [clinicFilter, setClinicFilter] = useState('');
+  const [subDistrictFilter, setSubDistrictFilter] = useState('');
+  const [visitFilter, setVisitFilter] = useState('');
   const [sortDescending, setSortDescending] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(null);
@@ -79,8 +76,9 @@ export default function HealthCareWorkers() {
   const getVariables = (
     search: string,
     province: string,
-    teamLead: string,
     clinic: string,
+    subDistrict: string,
+    visit: string,
     sortDescending: boolean,
     currentPage: number,
     pageSize: number | null
@@ -88,7 +86,8 @@ export default function HealthCareWorkers() {
     return {
       provinceSearch: province,
       clinicSearch: clinic,
-      teamLeadSearch: teamLead,
+      // @Bira, this search replace the team lead search
+      subDistrictSearch: '',
       search: search,
       order: [
         {
@@ -120,7 +119,8 @@ export default function HealthCareWorkers() {
         searchValue,
         provinceFilter,
         clinicFilter,
-        teamLeadFilter,
+        subDistrictFilter,
+        visitFilter,
         sortDescending,
         currentPage,
         null
@@ -135,7 +135,8 @@ export default function HealthCareWorkers() {
         searchValue,
         provinceFilter,
         clinicFilter,
-        teamLeadFilter,
+        subDistrictFilter,
+        visitFilter,
         sortDescending,
         currentPage,
         pageSize
@@ -146,15 +147,14 @@ export default function HealthCareWorkers() {
     provinceFilter,
     searchValue,
     clinicFilter,
-    teamLeadFilter,
     currentPage,
     pageSize,
     sortDescending,
+    getAllHealthCareWorkers,
+    subDistrictFilter,
+    visitFilter,
   ]);
 
-  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
-    fetchPolicy: 'cache-and-network',
-  });
   const { data: clinicData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
@@ -165,13 +165,6 @@ export default function HealthCareWorkers() {
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
-
-  const teamLeads = teamLeadData?.allTeamLeads.map((x: TeamLeadDto) => {
-    return {
-      value: x.user.fullName,
-      label: x.user.fullName,
-    };
-  });
 
   const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
     return {
@@ -265,7 +258,8 @@ export default function HealthCareWorkers() {
     setStatusFilter('');
     setClinicFilter('');
     setProvinceFilter('');
-    setTeamLeadFilter('');
+    setVisitFilter('');
+    setSubDistrictFilter('');
   };
 
   if (tableData) {
@@ -373,7 +367,7 @@ export default function HealthCareWorkers() {
                 />
               </div>
               <div className="relative inline-block pr-2 text-left">
-                <Dropdown
+                {/* <Dropdown
                   showSearch
                   fillType="outlined"
                   textColor="white"
@@ -382,7 +376,7 @@ export default function HealthCareWorkers() {
                   selectedValue={teamLeadFilter}
                   list={teamLeads || []}
                   onChange={(item) => setTeamLeadFilter(item)}
-                />
+                /> */}
               </div>
 
               <div>

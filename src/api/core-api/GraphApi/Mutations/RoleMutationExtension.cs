@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
@@ -17,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public ApplicationIdentityRole AddRole(
-            [Service] RoleManager<ApplicationIdentityRole> roleManager,
+            [Service] ApplicationRoleManager roleManager,
              string name,
              string normalizedName)
         {
@@ -42,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public ApplicationIdentityRole UpdateRole(
-            [Service] RoleManager<ApplicationIdentityRole> roleManager,
+            [Service] ApplicationRoleManager roleManager,
              string id,
              string name,
              string normalizedName)
@@ -69,7 +70,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public bool DeleteRole(
-            [Service] RoleManager<ApplicationIdentityRole> roleManager,
+            [Service] ApplicationRoleManager roleManager,
             string id)
         {
             var roleToDelete = roleManager.FindByIdAsync(id).Result;

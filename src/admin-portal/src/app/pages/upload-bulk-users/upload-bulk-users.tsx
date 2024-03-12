@@ -20,6 +20,7 @@ import { useHistory } from 'react-router';
 import { Alert, Button } from '@ecdlink/ui';
 
 const acceptedFormats = ['xls', 'xlsx'];
+const allowedFileSize = 13631488;
 
 export default function UploadBulkUser(props: any) {
   const { setValue, handleSubmit } = useForm();
@@ -242,6 +243,7 @@ export default function UploadBulkUser(props: any) {
                   returnFullUrl={false}
                   setValue={setValue}
                   isImage={false}
+                  allowedFileSize={allowedFileSize}
                 />
               </div>
             </div>

@@ -3,7 +3,6 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
@@ -30,10 +29,11 @@ using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security.JwtSecurity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace ECDLink.DataAccessLayer.Context
 {
-    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, string>
+    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>  //IdentityDbContext<ApplicationUser>
     {
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
@@ -120,10 +120,6 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<IntegrationAudit> IntegrationAudits { get; set; }
         public DbSet<IntegrationLog> IntegrationLogs { get; set; }
 
-
-        // Service Scheduling
-        public DbSet<ServiceScheduler> ServiceScheduler { get; set; }
-
         // Income Statements
         public DbSet<StatementsContributionType> StatementsContributionTypes { get; set; }
         public DbSet<StatementsExpenses> StatementsExpenses { get; set; }
@@ -166,6 +162,13 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ClubActivityUpload> ClubActivityUpload { get; set; }
         public DbSet<ClubActivityUploadType> ClubActivityUploadType { get; set; }
 
+        // Clinics, Districts, SubDistricts
+        public DbSet<District> District { get; set; }
+        public DbSet<SubDistrict> SubDistrict { get; set; }
+        public DbSet<ClinicLeague> ClinicLeague { get; set; }
+        public DbSet<ClinicTeamLead> ClinicTeamLead { get; set; }
+        public DbSet<BreastFeedingClub> BreastFeedingClubs { get; set; }
+
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }
         public DbSet<League> League { get; set; }
@@ -183,8 +186,8 @@ namespace ECDLink.DataAccessLayer.Context
 
         // Points library
         public DbSet<PointsLibrary> PointsLibrary { get; set; }
-        public DbSet<PointsUser> PointsUser { get; set; }
         public DbSet<PointsUserSummary> PointsUserSummary { get; set; }
+        public DbSet<PointsClinicSummary> PointsClinicSummary { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
@@ -207,60 +210,53 @@ namespace ECDLink.DataAccessLayer.Context
                           v => UserHelper.NormalizePhoneNumber(v),
                           v => v);
             });
-
-            builder.Entity<RolePermission>(x =>
-            {
-                x.HasKey(c => new { c.PermissionId, c.RoleId });
-            });
-
-            builder.Entity<NavigationPermission>(x =>
-            {
-                x.HasKey(c => new { c.PermissionId, c.NavigationId });
-            });
-
-            builder.Entity<Permission>(entity =>
-            {
-                entity.Property(x => x.InsertedDate).HasDefaultValueSql("(now())");
-            });
-
-            builder.Entity<UserGrant>(x =>
-            {
-                x.HasKey(e => new { e.GrantId, e.UserId });
-            });
-
-            builder.Entity<UserConsent>(x =>
-            {
-                x.HasKey(e => new { e.ConsentId, e.UserId });
-            });
-
-            builder.Entity<CareGiverGrant>(x =>
-            {
-                x.HasKey(e => new { e.GrantId, e.Id });
-            });
-
             builder.Entity<Attendance>(x =>
             {
                 x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear });
             });
-
             builder.Entity<AuditLog>(x =>
             {
                 x.HasNoKey();
             });
-
-            builder.Entity<Learner>(x =>
+            builder.Entity<CareGiverGrant>(x =>
             {
-                x.HasKey(e => new { e.ClassroomGroupId, e.UserId, e.Id });
+                x.HasKey(e => new { e.GrantId, e.Id });
             });
-
             builder.Entity<ChildProgressReport>(x =>
             {
                 x.HasKey(e => new { e.Id });
             });
-
+            builder.Entity<Learner>(x =>
+            {
+                x.HasKey(e => new { e.ClassroomGroupId, e.UserId, e.Id });
+            });
+            builder.Entity<NavigationPermission>(x =>
+            {
+                x.HasKey(c => new { c.PermissionId, c.NavigationId });
+            });
+            builder.Entity<NavigationPermission>(x =>
+            {
+                x.HasKey(c => new { c.PermissionId, c.NavigationId });
+            });
+            builder.Entity<Permission>(x =>
+            {
+                x.Property(p => p.InsertedDate).HasDefaultValueSql("(now())");
+            });
+            builder.Entity<Practitioner>(x =>
+            {
+                x.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).HasPrincipalKey(x => x.Id).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<RolePermission>(x =>
+            {
+                x.HasKey(c => new { c.PermissionId, c.RoleId });
+            });
             builder.Entity<TenantEntity>(x =>
             {
                 x.HasKey(e => new { e.Id, e.SiteAddress });
+            });
+            builder.Entity<UserGrant>(x =>
+            {
+                x.HasKey(e => new { e.GrantId, e.UserId });
             });
         }
     }

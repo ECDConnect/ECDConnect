@@ -45,6 +45,7 @@ export const CoachCircles = () => {
   const quarterLastDayDate = lastDayOfQuarter(new Date());
   const quarterLastDay = format(lastDayOfQuarter(date), 'd MMM');
   const coachCircleData = useSelector(coachSelectors.getCoachCircles);
+  const circleTopics = useSelector(coachSelectors.getCircleTopics);
   const clubsWithoutMeetings = coachCircleData?.clubsWithNoLinkedMeetings;
   const clubsWithMeetings = coachCircleData?.clubsWithLinkedMeetings;
   const [clubsWithoutMeetingsList, setClubsWithoutMeetingsList] =
@@ -146,6 +147,20 @@ export const CoachCircles = () => {
       setShowAddCircles(true);
     }
   }, []);
+
+  const getContent = useCallback(async () => {
+    if (!circleTopics || circleTopics?.length === 0) {
+      dispatch(
+        coachThunkActions.getCoachingCircleTopics({
+          locale: 'en-za',
+        })
+      ).unwrap();
+    }
+  }, [dispatch, circleTopics]);
+
+  useEffect(() => {
+    getContent();
+  }, [getContent]);
 
   return (
     <div className="mb-4 h-screen p-4">

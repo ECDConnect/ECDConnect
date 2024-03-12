@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -23,10 +24,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> AddUsersToRoleAsync(
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] HierarchyEngine engine,
           [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] RoleManager<ApplicationIdentityRole> roleManager,
+          [Service] ApplicationRoleManager roleManager,
           string userId,
           List<string> roleNames)
         {
@@ -53,9 +54,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // If user is being added as an admin, add them to the hierarchy.
             if (distinctRoleNamesToBeAdded.Contains(Roles.ADMINISTRATOR))
             {
-                if (string.IsNullOrEmpty(engine.GetUserHierarchy(userId)))
+                if (string.IsNullOrEmpty(engine.GetUserHierarchy(Guid.Parse(userId))))
                 {
-                    engine.AddHierarchyEntity<ApplicationUser>(userId, userId);
+                    engine.AddHierarchyEntity<ApplicationUser>(Guid.Parse(userId), Guid.Parse(userId));
                 }
             }
 
@@ -65,7 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         // TODO: Refactor
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> RemoveUserFromRolesAsync(
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] ILogger<UserMutationExtension> _logger,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] HierarchyEngine engine,
@@ -92,7 +93,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 userIsAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
                 // If user having its roles removed is an admin, remove them only if requesting user is an admin
-                var currentUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = currentUserId }, Roles.ADMINISTRATOR);
+                var currentUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = currentUserId.Value }, Roles.ADMINISTRATOR);
                 if (currentUserIsAdmin)
                 {
                     _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserRoleMutationExtension.RemoveUserFromRolesAsync(1)]", string.Join(',',distinctRoleNames), user.Id, currentUserId);
@@ -110,10 +111,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             bool hierarchySuccess = true;
             if (distinctRoleNames.Contains(Roles.ADMINISTRATOR)
-                && !string.IsNullOrEmpty(engine.GetUserHierarchy(userId)))
+                && !string.IsNullOrEmpty(engine.GetUserHierarchy(Guid.Parse(userId))))
             {
                 // Make false or return would be false if not admin
-                hierarchySuccess = !engine.RemoveHierarchy(userId);
+                hierarchySuccess = !engine.RemoveHierarchy(Guid.Parse(userId));
             }
 
             return (result?.Succeeded ?? false) && hierarchySuccess;

@@ -32,7 +32,7 @@ import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
 import { useSelector } from 'react-redux';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
-import { HealthCareWorkerModelInput } from '@ecdlink/graphql';
+import { UpdateHealthCareWorkerTabsInputModelInput } from '@ecdlink/graphql';
 import { updateHealthCareWorkerTabs } from '@/store/healthCareWorker/healthCareWorker.actions';
 import { SuccessCard } from '@/components/success-card/success-card';
 import Joyride, { Step } from 'react-joyride';
@@ -174,16 +174,8 @@ export const ClassDashboard: React.FC = () => {
   }, [history, isInfoPage]);
 
   const updateClickedTab = useCallback(() => {
-    var input: HealthCareWorkerModelInput = {
-      clickedDashboardClientsTab: healthCareWorker?.clickedDashboardClientsTab,
-      clickedDashboardHighlightsTab:
-        healthCareWorker?.clickedDashboardHighlightsTab,
-      clickedDashboardVisitsTab: healthCareWorker?.clickedDashboardVisitsTab,
-      clickedVisitTab: healthCareWorker?.clickedVisitTab,
-      clickedProgressTab: healthCareWorker?.clickedProgressTab,
-      clickedReferralsTab: healthCareWorker?.clickedReferralsTab,
-      clickedContactTab: healthCareWorker?.clickedContactTab,
-      isRegistered: true,
+    var input: UpdateHealthCareWorkerTabsInputModelInput = {
+      //isRegistered: true, The tabs endpoint does not and never updated this field. If it needs to be saved, we need a second call, or a new endpoints
     };
 
     switch (state?.activeTabIndex) {

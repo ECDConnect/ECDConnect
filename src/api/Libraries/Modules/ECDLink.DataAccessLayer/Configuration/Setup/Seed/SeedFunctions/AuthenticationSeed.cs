@@ -1,11 +1,13 @@
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
@@ -37,7 +39,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
         private void SeedUsers()
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+            var userManager = serviceProvider.GetService<ApplicationUserManager>();
 
             var newUser = new ApplicationUser
             {
@@ -61,7 +63,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 
         private void SeedRoles()
         {
-            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+            var roleManager = serviceProvider.GetService<ApplicationRoleManager> ();
 
             string[] roles =
             {
@@ -81,7 +83,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 
                 if (!roleExists)
                 {
-                    roleManager.CreateAsync(new IdentityRole(role));
+                    roleManager.CreateAsync(new ApplicationIdentityRole(role));
                 }
             }
         }
@@ -141,9 +143,9 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 
         private void SeedUserRoles()
         {
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+            var userManager = serviceProvider.GetService<ApplicationUserManager>();
 
-            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+            var roleManager = serviceProvider.GetService<ApplicationRoleManager>();
 
             var allRoles = roleManager.Roles.Select(x => x.Name).ToList();
 

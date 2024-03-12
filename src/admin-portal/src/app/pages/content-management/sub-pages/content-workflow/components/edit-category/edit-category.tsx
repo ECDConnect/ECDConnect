@@ -117,12 +117,13 @@ export default function EditCategory({
 
     dialog({
       position: DialogPosition.Middle,
+      color: 'bg-white',
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Are you sure you want to delete this content?"
-          message={` You will not be able to recover this content if you delete it now.`}
+          message={`You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.`}
           onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'Keep editing']}
+          btnText={['Delete', 'Keep editing']}
           isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
@@ -135,7 +136,7 @@ export default function EditCategory({
               .then(() => {
                 cancelEdit();
                 setNotification({
-                  title: 'Successfully Deleted Content!',
+                  title: 'Content',
                   variant: NOTIFICATION.SUCCESS,
                 });
               })
@@ -276,17 +277,17 @@ export default function EditCategory({
       }
     }
 
-    setNotification({
-      title: 'Successfully Updated Content!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-
     if (filteredSubcategories?.length > 0) {
       for (let item of filteredSubcategories) {
         if (!item?.id) {
           savedContent();
 
           setLoading(false);
+
+          setNotification({
+            title: 'Changes published',
+            variant: NOTIFICATION.SUCCESS,
+          });
           return;
         }
 
@@ -299,7 +300,7 @@ export default function EditCategory({
             ?.map((skill) => skill?.id)
             ?.toString();
 
-          const updateThemeDayResponse = await updateSubcategoryContent({
+          await updateSubcategoryContent({
             variables: {
               id: item?.id.toString(),
               input: {
@@ -327,18 +328,15 @@ export default function EditCategory({
               console.log(error);
             });
           }
-
-          if (updateThemeDayResponse) {
-            setNotification({
-              title: `Changes saved!`,
-              variant: NOTIFICATION.SUCCESS,
-            });
-          }
         }
       }
 
-      savedContent();
+      setNotification({
+        title: 'Changes published',
+        variant: NOTIFICATION.SUCCESS,
+      });
 
+      savedContent();
       setLoading(false);
       cancelEdit();
     }
@@ -356,8 +354,14 @@ export default function EditCategory({
       !initialValues[item?.propName]
   );
 
+  const disableButtonSubCats = filteredSubcategories?.filter(
+    (item) => item?.name === '' || item?.description === ''
+  );
+
   const disbleButtonStyles = `bg-secondary ${
-    disableButton?.length > 0 ? 'opacity-25' : ''
+    disableButton?.length > 0 || disableButtonSubCats.length > 0
+      ? 'opacity-25'
+      : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
@@ -378,7 +382,7 @@ export default function EditCategory({
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+              {/* {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -387,7 +391,7 @@ export default function EditCategory({
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
                 </button>
-              )}
+              )} */}
 
               {!!cancelEdit && (
                 <button
@@ -429,7 +433,7 @@ export default function EditCategory({
               template={template}
               handleform={handleform}
               setValue={setValue}
-              defaultLanguageId={defaultLanguageId}
+              defaultLanguageId={selectedLanguageId}
               setFilteredSubcategories={setFilteredSubcategories}
               allowedFileSize={allowedFileSize}
               formType={formType}
@@ -443,19 +447,14 @@ export default function EditCategory({
             <button
               type="submit"
               className={disbleButtonStyles}
-              disabled={disableButton?.length > 0}
+              disabled={
+                disableButton?.length > 0 || disableButtonSubCats?.length > 0
+              }
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
 
-            {/* <button
-              type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-            >
-              <SaveIcon width="22px" className="mr-2" />
-              Save & publish
-            </button> */}
             {/* Let code commented, to allow delete categories if needed. */}
             {/* {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
               <button

@@ -43,6 +43,9 @@ import {
   initialRemovePractionerFromProgrammeValues,
   removePractitionerFromProgrammeModelSchema,
 } from '@/schemas/practitioner/remove-practioner-from-programme';
+import { notificationsSelectors } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { PractitionerNotRegistered } from '../../practitioner-not-registered/practitioner-not-registered';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
@@ -89,6 +92,27 @@ export const RemovePractitionerFromProgramme: React.FC<
 
   const [reasonDetailsVisible, setReasonDetailsVisible] =
     useState<boolean>(false);
+
+  const removalNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes('[[RemovePractitioner]]') &&
+      practitioner?.id &&
+      item?.message?.action?.includes(practitioner.id)
+  );
+
+  const removeNotifications = async () => {
+    if (removalNotifications && removalNotifications?.length > 0) {
+      removalNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
+  };
 
   const {
     getValues: getRemovePractionerFormValues,
@@ -259,236 +283,255 @@ export const RemovePractitionerFromProgramme: React.FC<
 
   return (
     <>
-      <BannerWrapper
-        size={'small'}
-        backgroundColour={'uiBg'}
-        renderBorder={true}
-        title={`Remove ${practitioner?.user?.firstName}`}
-        color={'primary'}
-        displayOffline={!isOnline}
-        onBack={() => history.goBack()}
-      >
-        <div className="py-4' px-4">
-          <Typography
-            type={'h1'}
-            text={`Why is ${practitioner?.user?.firstName} leaving ${classroom?.name}?`}
-            color={'primary'}
-            className={'pt-1'}
-          />
-
-          <label className={classNames(styles.label, 'mt-4')}>
-            {'Reason for leaving'}
-          </label>
-          <Dropdown<string>
-            placeholder={'Choose reason'}
-            fullWidth
-            fillType="clear"
-            list={
-              (reasonsForLeavingProgramme &&
-                reasonsForLeavingProgramme.map((x: ReasonForLeavingDto) => {
-                  return { label: x.description, value: x.id || '' };
-                })) ||
-              []
-            }
-            selectedValue={getRemovePractionerFormValues().removeReasonId}
-            onChange={(item) => {
-              setRemovePractionerFormValues('removeReasonId', item);
-              triggerRemovePractionerForm();
-              setReasonDetailsVisible(
-                item === ReasonsForPractitionerLeavingProgramme.OTHER
-              );
-            }}
-          />
-          {reasonDetailsVisible && (
-            <FormInput<RemovePractionerFromProgrammeModel>
-              label={'Please add details'}
-              className={'mt-3'}
-              textInputType="textarea"
-              register={removePractionerFormRegister}
-              nameProp={'reasonDetail'}
-              hint={'Optional'}
-              placeholder={'E.g. Found the daily routine too difficult'}
-              error={errors.reasonDetail}
-            />
-          )}
-          <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
-            {`When would you like ${practitioner?.user?.firstName} to be removed?`}
-          </label>
-          <div className="mb-3 flex w-full flex-wrap justify-center">
-            <DatePicker
-              placeholderText={'Please select a date'}
-              wrapperClassName="text-center"
-              className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
-              selected={removalDate ? new Date(removalDate) : undefined}
-              onChange={(date: Date) => {
-                setRemovePractionerFormValues(
-                  'removalDate',
-                  date ? date.toString() : ''
-                );
-                triggerRemovePractionerForm();
-              }}
-              minDate={tomorrow}
-              dateFormat="EEE, dd MMM yyyy"
-            />
-          </div>
-          {!!practitionerClassroomGroups &&
-            !!practitionerClassroomGroups.length &&
-            practitionersList &&
-            practitionersList.length && (
-              <div>
-                <Divider dividerType="dashed" className="my-4" />
-                <Typography
-                  type={'h1'}
-                  text={`Reassign ${practitioner?.user?.firstName} classes`}
-                  color={'primary'}
-                  className={'pt-1'}
-                />
-                <label className={classNames(styles.label, 'mt-4')}>
-                  {`${practitioner?.user?.firstName} is still assigned to ${
-                    practitionerClassroomGroups.length
-                  } ${
-                    practitionerClassroomGroups.length > 1 ? 'classes' : 'class'
-                  }`}
-                </label>
-                <ul>
-                  {practitionerClassroomGroups.map(function (
-                    classroomGroup: ClassroomGroupDto
-                  ) {
-                    return (
-                      <li key={classroomGroup.id}>
-                        <Dropdown
-                          selectedValue={
-                            existingRemovalReassignments?.find(
-                              (x) => x?.reassignedClass === classroomGroup.id
-                            )?.reassignedToPractitioner
-                          }
-                          placeholder={'Select practitioner'}
-                          list={practitionersList || []}
-                          fillType="clear"
-                          label={`Which practitioner will teach ${classroomGroup.name}?`}
-                          fullWidth
-                          className={'mt-3 w-11/12'}
-                          onChange={(item: any) => {
-                            const existingReassignments =
-                              getRemovePractionerFormValues()
-                                .reassignedClassrooms || {};
-                            const newData = {
-                              ...existingReassignments,
-                              [classroomGroup.id as string]: {
-                                ...existingReassignments[
-                                  classroomGroup.id as string
-                                ],
-                                practitionerUserId: item,
-                              },
-                            };
-                            setRemovePractionerFormValues(
-                              'reassignedClassrooms',
-                              newData
-                            );
-
-                            const index = (
-                              existingRemovalReassignments || []
-                            ).findIndex(
-                              (x) => x?.reassignedClass === classroomGroup.id
-                            );
-                            const updatedReassignments =
-                              index === -1
-                                ? (existingRemovalReassignments || []).concat({
-                                    id: undefined,
-                                    reassignedToPractitioner: item,
-                                    reassignedClass: classroomGroup.id,
-                                  })
-                                : [
-                                    ...existingRemovalReassignments!.slice(
-                                      0,
-                                      index
-                                    ),
-                                    {
-                                      ...existingRemovalReassignments?.[index],
-                                      reassignedToPractitioner: item,
-                                    },
-                                    ...existingRemovalReassignments!.slice(
-                                      index + 1
-                                    ),
-                                  ];
-
-                            setExistingRemovalReassignments(
-                              updatedReassignments
-                            );
-                            triggerRemovePractionerForm();
-                          }}
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          <div className="flex w-full justify-center">
-            <Alert
-              className="mt-10 w-11/12 rounded-xl"
-              type={'error'}
-              title={`${practitioner?.user?.firstName} will be removed from the programme on this date`}
-              list={[
-                `${practitioner?.user?.firstName} will no longer be able to see child information.`,
-              ]}
-            />
-          </div>
-          <div className={'py-4'}>
-            <Divider></Divider>
-          </div>
-          <Button
-            onClick={() => setRemovePractionerPromptVisible(true)}
-            className="w-full"
-            size="small"
-            color="errorMain"
-            type="filled"
-            disabled={!isValid}
-          >
-            {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
-            <Typography
-              type="h6"
-              className="ml-2"
-              text={'Remove Practitioner'}
-              color="white"
-            />
-          </Button>
-          <Button
-            onClick={() => history.goBack()}
-            className="mt-4 w-full"
-            size="small"
-            color="primary"
-            type="outlined"
-          >
-            {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
-            <Typography
-              type="h6"
-              className="ml-2"
-              text="Cancel"
-              color="primary"
-            />
-          </Button>
-        </div>
-      </BannerWrapper>
-      <Dialog
-        className={'mb-16 px-4'}
-        stretch={true}
-        visible={removePractionerPromptVisible}
-        position={DialogPosition.Middle}
-      >
-        <RemovePractitionerFromProgrammePrompt
+      {practitioner?.isRegistered === null ||
+      practitioner?.isRegistered === false ? (
+        <PractitionerNotRegistered
           practitioner={practitioner}
-          onProceed={() => {
-            handleFormSubmit(getRemovePractionerFormValues());
-            setRemovePractionerPromptVisible(false);
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
-            showMessage({
-              message: `${practitioner?.user?.firstName} removed`,
-            });
-          }}
-          onClose={() => setRemovePractionerPromptVisible(false)}
+          classroom={classroom}
         />
-      </Dialog>
+      ) : (
+        <>
+          <BannerWrapper
+            size={'small'}
+            backgroundColour={'uiBg'}
+            renderBorder={true}
+            title={`Remove ${practitioner?.user?.firstName}`}
+            color={'primary'}
+            displayOffline={!isOnline}
+            onBack={() => history.goBack()}
+          >
+            <div className="py-4' px-4">
+              <Typography
+                type={'h1'}
+                text={`Why is ${practitioner?.user?.firstName} leaving ${classroom?.name}?`}
+                color={'primary'}
+                className={'pt-1'}
+              />
+
+              <label className={classNames(styles.label, 'mt-4')}>
+                {'Reason for leaving'}
+              </label>
+              <Dropdown<string>
+                placeholder={'Choose reason'}
+                fullWidth
+                fillType="clear"
+                list={
+                  (reasonsForLeavingProgramme &&
+                    reasonsForLeavingProgramme.map((x: ReasonForLeavingDto) => {
+                      return { label: x.description, value: x.id || '' };
+                    })) ||
+                  []
+                }
+                selectedValue={getRemovePractionerFormValues().removeReasonId}
+                onChange={(item) => {
+                  setRemovePractionerFormValues('removeReasonId', item);
+                  triggerRemovePractionerForm();
+                  setReasonDetailsVisible(
+                    item === ReasonsForPractitionerLeavingProgramme.OTHER
+                  );
+                }}
+              />
+              {reasonDetailsVisible && (
+                <FormInput<RemovePractionerFromProgrammeModel>
+                  label={'Please add details'}
+                  className={'mt-3'}
+                  textInputType="textarea"
+                  register={removePractionerFormRegister}
+                  nameProp={'reasonDetail'}
+                  hint={'Optional'}
+                  placeholder={'E.g. Found the daily routine too difficult'}
+                  error={errors.reasonDetail}
+                />
+              )}
+              <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
+                {`When would you like ${practitioner?.user?.firstName} to be removed?`}
+              </label>
+              <div className="mb-3 flex w-full flex-wrap justify-center">
+                <DatePicker
+                  placeholderText={'Please select a date'}
+                  wrapperClassName="text-center"
+                  className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
+                  selected={removalDate ? new Date(removalDate) : undefined}
+                  onChange={(date: Date) => {
+                    setRemovePractionerFormValues(
+                      'removalDate',
+                      date ? date.toString() : ''
+                    );
+                    triggerRemovePractionerForm();
+                  }}
+                  minDate={tomorrow}
+                  dateFormat="EEE, dd MMM yyyy"
+                />
+              </div>
+              {!!practitionerClassroomGroups &&
+                !!practitionerClassroomGroups.length &&
+                practitionersList &&
+                practitionersList.length && (
+                  <div>
+                    <Divider dividerType="dashed" className="my-4" />
+                    <Typography
+                      type={'h1'}
+                      text={`Reassign ${practitioner?.user?.firstName} classes`}
+                      color={'primary'}
+                      className={'pt-1'}
+                    />
+                    <label className={classNames(styles.label, 'mt-4')}>
+                      {`${practitioner?.user?.firstName} is still assigned to ${
+                        practitionerClassroomGroups.length
+                      } ${
+                        practitionerClassroomGroups.length > 1
+                          ? 'classes'
+                          : 'class'
+                      }`}
+                    </label>
+                    <ul>
+                      {practitionerClassroomGroups.map(function (
+                        classroomGroup: ClassroomGroupDto
+                      ) {
+                        return (
+                          <li key={classroomGroup.id}>
+                            <Dropdown
+                              selectedValue={
+                                existingRemovalReassignments?.find(
+                                  (x) =>
+                                    x?.reassignedClass === classroomGroup.id
+                                )?.reassignedToPractitioner
+                              }
+                              placeholder={'Select practitioner'}
+                              list={practitionersList || []}
+                              fillType="clear"
+                              label={`Which practitioner will teach ${classroomGroup.name}?`}
+                              fullWidth
+                              className={'mt-3 w-11/12'}
+                              onChange={(item: any) => {
+                                const existingReassignments =
+                                  getRemovePractionerFormValues()
+                                    .reassignedClassrooms || {};
+                                const newData = {
+                                  ...existingReassignments,
+                                  [classroomGroup.id as string]: {
+                                    ...existingReassignments[
+                                      classroomGroup.id as string
+                                    ],
+                                    practitionerUserId: item,
+                                  },
+                                };
+                                setRemovePractionerFormValues(
+                                  'reassignedClassrooms',
+                                  newData
+                                );
+
+                                const index = (
+                                  existingRemovalReassignments || []
+                                ).findIndex(
+                                  (x) =>
+                                    x?.reassignedClass === classroomGroup.id
+                                );
+                                const updatedReassignments =
+                                  index === -1
+                                    ? (
+                                        existingRemovalReassignments || []
+                                      ).concat({
+                                        id: undefined,
+                                        reassignedToPractitioner: item,
+                                        reassignedClass: classroomGroup.id,
+                                      })
+                                    : [
+                                        ...existingRemovalReassignments!.slice(
+                                          0,
+                                          index
+                                        ),
+                                        {
+                                          ...existingRemovalReassignments?.[
+                                            index
+                                          ],
+                                          reassignedToPractitioner: item,
+                                        },
+                                        ...existingRemovalReassignments!.slice(
+                                          index + 1
+                                        ),
+                                      ];
+
+                                setExistingRemovalReassignments(
+                                  updatedReassignments
+                                );
+                                triggerRemovePractionerForm();
+                              }}
+                            />
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              <div className="flex w-full justify-center">
+                <Alert
+                  className="mt-10 w-11/12 rounded-xl"
+                  type={'error'}
+                  title={`${practitioner?.user?.firstName} will be removed from the programme on this date`}
+                  list={[
+                    `${practitioner?.user?.firstName} will no longer be able to see child information.`,
+                  ]}
+                />
+              </div>
+              <div className={'py-4'}>
+                <Divider></Divider>
+              </div>
+              <Button
+                onClick={() => setRemovePractionerPromptVisible(true)}
+                className="w-full"
+                size="small"
+                color="errorMain"
+                type="filled"
+                disabled={!isValid}
+              >
+                {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text={'Remove Practitioner'}
+                  color="white"
+                />
+              </Button>
+              <Button
+                onClick={() => history.goBack()}
+                className="mt-4 w-full"
+                size="small"
+                color="primary"
+                type="outlined"
+              >
+                {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text="Cancel"
+                  color="primary"
+                />
+              </Button>
+            </div>
+          </BannerWrapper>
+          <Dialog
+            className={'mb-16 px-4'}
+            stretch={true}
+            visible={removePractionerPromptVisible}
+            position={DialogPosition.Middle}
+          >
+            <RemovePractitionerFromProgrammePrompt
+              practitioner={practitioner}
+              onProceed={() => {
+                removeNotifications();
+                handleFormSubmit(getRemovePractionerFormValues());
+                setRemovePractionerPromptVisible(false);
+                history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+                showMessage({
+                  message: `${practitioner?.user?.firstName} removed`,
+                });
+              }}
+              onClose={() => setRemovePractionerPromptVisible(false)}
+            />
+          </Dialog>
+        </>
+      )}
     </>
   );
 };

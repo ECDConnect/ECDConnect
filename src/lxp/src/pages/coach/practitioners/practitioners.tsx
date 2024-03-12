@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StackedList,
   BannerWrapper,
@@ -11,15 +11,12 @@ import {
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '../../../components/search-header/search-header';
 import { format } from 'date-fns';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import * as styles from './practitioners.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { userSelectors } from '@store/user';
@@ -28,6 +25,7 @@ import { useAppDispatch } from '@/store';
 import { getClubsForCoach } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
+import { PractitionersRouteState } from './practitioners-types';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
@@ -72,6 +70,8 @@ export const Practitioners: React.FC = () => {
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const location = useLocation<PractitionersRouteState>();
+  const stateFilter = location.state?.filter;
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
@@ -79,7 +79,7 @@ export const Practitioners: React.FC = () => {
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
-  const practitionersMetrics = useSelector(
+  const practitionersMessages = useSelector(
     practitionerSelectors.getPractitionersMetrics
   );
 
@@ -136,7 +136,7 @@ export const Practitioners: React.FC = () => {
     if (
       (isOnline &&
         !!practitionersList?.length &&
-        !!practitionersMetrics?.length) ||
+        !!practitionersMessages?.length) ||
       (!isOnline && !!practitionersList?.length)
     ) {
       const practitionerListItem: ListDataItem[] = [];
@@ -151,21 +151,18 @@ export const Practitioners: React.FC = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersList?.length, practitionersMetrics]);
-
-  const practitionersDetailsFor = useCallback(async () => {
-    if (isOnline) {
-      await appDispatch(
-        practitionerThunkActions.getPractitionerDisplayMetrics({
-          userType: isCoach ? 'coach' : 'practitioner',
-        })
-      );
-    }
-  }, [appDispatch, isCoach, isOnline]);
+  }, [practitionersList?.length, practitionersMessages]);
 
   useEffect(() => {
-    practitionersDetailsFor();
-  }, [practitionersDetailsFor]);
+    applyFilter();
+  }, [taskFilterOptions]);
+
+  const applyFilter = () => {
+    if (stateFilter && taskFilterOptions.length > 0) {
+      const newFilter = taskFilterOptions.filter((o) => o.id == stateFilter);
+      setFilterByTask(newFilter);
+    }
+  };
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -190,7 +187,7 @@ export const Practitioners: React.FC = () => {
       (x) => x.userId === practitionerRecord.userId
     );
 
-    const currentPractitionerMessage = practitionersMetrics?.find((item) => {
+    const currentPractitionerMessage = practitionersMessages?.find((item) => {
       return item?.userId === practitionerRecord?.userId;
     });
 

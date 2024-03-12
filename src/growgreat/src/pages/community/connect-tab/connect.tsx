@@ -9,10 +9,6 @@ import OpenBook from '@/assets/openBook.svg';
 import { ConnectItem } from '@ecdlink/graphql';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 
-export const COMMUNITY_TABS = {
-  CONNECT: 0,
-};
-
 const HEADER_HEIGHT = 222;
 
 export interface iConnectItem {
@@ -74,7 +70,8 @@ export const Connect: React.FC = () => {
   }, [connectData, connectItemData]);
 
   const onLinkClicked = (link: string) => {
-    window.open(link, '_blank');
+    const newWindow = window.open(link, '_blank', 'noopener,noreferrer');
+    if (newWindow) newWindow.opener = null;
   };
 
   return (
@@ -125,6 +122,8 @@ export const Connect: React.FC = () => {
                         onClick={() => {
                           onLinkClicked(child?.link || '');
                         }}
+                        target="_blank"
+                        rel="noreferrer"
                       >
                         <img className={''} src={OpenLink} alt="" />
                       </a>

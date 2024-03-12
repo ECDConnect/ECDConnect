@@ -1,4 +1,6 @@
 import { AttendanceStatus } from '../../models/AttendanceItemStatus';
+import { AttendanceListItemProps } from './attendance-list-item';
+
 export const contentWrapper =
   'flex items-center justify-between px-4 py-4 sm:px-6 ';
 export const menuItemIconContainer =
@@ -10,16 +12,38 @@ export const menuSubTitle = 'flex pl-0.5 items-center text-sm text-textLight';
 // export const attendanceIconBase = 'h-6 w-6 text-textLight';
 export const attendanceIconPresent = 'h-6 w-6 text-successMain';
 export const attendanceIconAbsent = 'h-6 w-6 text-errorMain';
+export const attendanceIconAbsentLight = 'h-6 w-6 text-primaryAccent2';
 export const presentListItemContainer =
   'block bg-successBg cursor-pointer rounded-10';
 export const absentListItemContainer =
   'block bg-errorBg cursor-pointer rounded-10';
+export const absentListItemContainerLight =
+  'block bg-uiBg cursor-pointer rounded-10';
 
-export const menulistItemContainer = (status?: AttendanceStatus) => {
+export const avatarColor = (
+  status?: AttendanceStatus,
+  type?: AttendanceListItemProps['type']
+) => {
+  switch (status) {
+    case AttendanceStatus.Absent:
+      return type === 'light' ? 'var(--primaryAccent2)' : 'var(--errorMain)';
+    case AttendanceStatus.Present:
+      return 'var(--successMain)';
+    default:
+      return 'var(--successMain)';
+  }
+};
+
+export const menulistItemContainer = (
+  status?: AttendanceStatus,
+  type?: AttendanceListItemProps['type']
+) => {
   if (status) {
     switch (status) {
       case AttendanceStatus.Absent:
-        return absentListItemContainer;
+        return type === 'light'
+          ? absentListItemContainerLight
+          : absentListItemContainer;
       case AttendanceStatus.Present:
         return presentListItemContainer;
       default:
@@ -30,11 +54,16 @@ export const menulistItemContainer = (status?: AttendanceStatus) => {
   }
 };
 
-export const getColourByStatus = (status?: AttendanceStatus) => {
+export const getColourByStatus = (
+  status?: AttendanceStatus,
+  type?: AttendanceListItemProps['type']
+) => {
   if (status) {
     switch (status) {
       case AttendanceStatus.Absent:
-        return attendanceIconAbsent;
+        return type === 'light'
+          ? attendanceIconAbsentLight
+          : attendanceIconAbsent;
       case AttendanceStatus.Present:
         return attendanceIconPresent;
       default:

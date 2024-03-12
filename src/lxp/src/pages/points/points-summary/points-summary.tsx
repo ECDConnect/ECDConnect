@@ -143,7 +143,7 @@ export const PointsSummary: React.FC = () => {
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
             primaryTextColour="alertMain"
             backgroundColour="alertBg"
-            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points! Earn more points to join them.`}
+            secondaryMessage={`Most of the SmartStarters in your club have more than ${pointsTotalForYear} points! Earn more points to join them.`}
             secondaryTextColour="black"
           />
         );

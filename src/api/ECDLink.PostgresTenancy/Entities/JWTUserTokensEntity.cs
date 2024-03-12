@@ -8,7 +8,7 @@ namespace ECDLink.PostgresTenancy.Entities
     public class JWTUserTokensEntity
     {
         [Key]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public string TokenKey { get; set; }
         public string Token { get; set; }
         public string Role { get; set; }

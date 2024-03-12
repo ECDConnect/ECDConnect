@@ -3,6 +3,7 @@ import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
+  ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
   NOTIFICATION,
@@ -10,22 +11,18 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { MouseEvent, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
 import { Alert, DialogPosition } from '@ecdlink/ui';
-import {
-  BookOpenIcon,
-  SaveIcon,
-  TrashIcon,
-  XIcon,
-} from '@heroicons/react/solid';
+import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import EditSkillsForm from './components/edit-skills-form/edit-skills-form';
 import { ContentTypes } from '../../../../../../constants/content-management';
+import { UpdateSubCategorySkills } from '@ecdlink/graphql';
 
 export interface ContentViewProps {
   content: any;
@@ -55,7 +52,8 @@ export default function EditSkills({
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [showDeleteButton, setShowDeleteButton] = useState<boolean>(true);
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
@@ -63,54 +61,13 @@ export default function EditSkills({
     control: control,
   };
 
+  const { type: formType } = useWatch({ control });
+
   const deleteMutationName = `delete${contentType?.name}`;
   const deleteMutation = gql` 
     mutation ${deleteMutationName} ($id: String!, $localeId: String!) {
       ${deleteMutationName} (id: $id, localeId: $localeId) 
       }
-  `;
-
-  const updateProgressTrackingSkill = gql`
-    mutation updateProgressTrackingSkill(
-      $input: ProgressTrackingSkillInput!
-      $id: String!
-      $localeId: String!
-    ) {
-      updateProgressTrackingSkill(input: $input, id: $id, localeId: $localeId) {
-        id
-      }
-    }
-  `;
-
-  const createProgressTrackingSkill = gql`
-    mutation createProgressTrackingSkill(
-      $input: ProgressTrackingSkillInput!
-      $localeId: String!
-    ) {
-      createProgressTrackingSkill(input: $input, localeId: $localeId)
-    }
-  `;
-
-  const deleteProgressTrackingSkill = gql`
-    mutation deleteProgressTrackingSkill($id: String!) {
-      deleteProgressTrackingSkill(id: $id)
-    }
-  `;
-
-  const updateProgressTrackingSubCategory = gql`
-    mutation updateProgressTrackingSubCategory(
-      $input: ProgressTrackingSubCategoryInput!
-      $id: String!
-      $localeId: String!
-    ) {
-      updateProgressTrackingSubCategory(
-        input: $input
-        id: $id
-        localeId: $localeId
-      ) {
-        id
-      }
-    }
   `;
 
   const subcategoriesQuery = gql`
@@ -140,12 +97,13 @@ export default function EditSkills({
 
     dialog({
       position: DialogPosition.Middle,
+      color: 'bg-white',
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Are you sure you want to delete this content?"
-          message={` You will not be able to recover this content if you delete it now.`}
+          message={`You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.`}
           onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'Keep editing']}
+          btnText={['Delete', 'Keep editing']}
           isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
@@ -158,7 +116,7 @@ export default function EditSkills({
               .then(() => {
                 cancelEdit();
                 setNotification({
-                  title: 'Successfully Deleted Content!',
+                  title: 'Content deleted',
                   variant: NOTIFICATION.SUCCESS,
                 });
               })
@@ -190,13 +148,6 @@ export default function EditSkills({
     });
   };
 
-  const [updateSkillContent] = useMutation(updateProgressTrackingSkill);
-  const [createSkillContent] = useMutation(createProgressTrackingSkill);
-  const [deleteSkillContent] = useMutation(deleteProgressTrackingSkill);
-  const [updateSubcategoryContent] = useMutation(
-    updateProgressTrackingSubCategory
-  );
-
   const {
     data: subcategoriesContentData,
     // refetch: refetchSubcategoriesContent,
@@ -213,13 +164,13 @@ export default function EditSkills({
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [disableButton, setDisableButton] = useState<boolean>(false);
+  const [disableButton, setDisableButton] = useState<boolean>(true);
   const [changedCategory, setChangedCategory] = useState([]);
 
   useEffect(() => {
     if (changedCategory) {
-      setDisableButton(false);
       if (changedCategory?.length > 0) {
+        setDisableButton(false);
         for (let cat of changedCategory) {
           if (cat?.subCategories?.length > 0) {
             for (let subCat of cat?.subCategories) {
@@ -319,126 +270,48 @@ export default function EditSkills({
 
   const onSubmit = async (values: any) => {
     setLoading(true);
-    let categorySKillsIds = [];
 
     if (!content?.id) {
       return null;
     } else {
       if (changedCategory?.length > 0) {
+        const uniqueSubCats = [];
         for (let cat of changedCategory) {
           if (cat?.subCategories?.length > 0) {
             for (let subCat of cat?.subCategories) {
-              if (subCat?.skills.length > 0) {
-                for (let skill of subCat?.skills) {
-                  if (skill?.id && skill?.name !== '') {
-                    const skillModelInput = {
-                      name: skill?.name,
-                      level: skill?.level?.[0]?.id.toString(),
-                    };
-                    await updateSkillContent({
-                      variables: {
+              if (
+                uniqueSubCats.findIndex(
+                  (item) => item.subCatId === subCat.id
+                ) === -1
+              ) {
+                uniqueSubCats.push({
+                  subCatId: subCat.id,
+                  name: subCat.name,
+                  skills: [],
+                });
+              }
+            }
+          }
+        }
+
+        for (let cat of changedCategory) {
+          if (cat?.subCategories?.length > 0) {
+            for (let subCat of cat?.subCategories) {
+              let catObject = uniqueSubCats.find(
+                (item) => item.subCatId === subCat.id
+              );
+              if (catObject) {
+                if (subCat?.skills.length > 0) {
+                  for (let skill of subCat?.skills) {
+                    if (skill?.name !== '') {
+                      catObject.skills.push({
                         id: skill?.id.toString(),
-                        input: { ...skillModelInput },
-                        localeId: selectedLanguageId.toString(),
-                      },
-                    }).catch(() => {
-                      setLoading(false);
-                    });
-                  }
-
-                  if (!skill?.id && skill?.name) {
-                    const newSkillModelInput = {
-                      name: skill?.name,
-                      level: cat?.level?.toString(),
-                    };
-
-                    const createSkillResponse = await createSkillContent({
-                      variables: {
-                        input: { ...newSkillModelInput },
-                        localeId: selectedLanguageId.toString(),
-                      },
-                    }).catch(() => {
-                      setLoading(false);
-                    });
-                    if (createSkillResponse) {
-                      const subCatToUpdate = subCategories?.find(
-                        (sub) => sub?.id === subCat?.id
-                      );
-                      let subCatToUpdateSkills = subCatToUpdate?.skills?.map(
-                        (item) => item?.id
-                      );
-                      subCatToUpdateSkills?.push(
-                        Number(
-                          createSkillResponse?.data?.createProgressTrackingSkill
-                        )
-                      );
-
-                      categorySKillsIds = [
-                        ...categorySKillsIds,
-                        createSkillResponse?.data?.createProgressTrackingSkill,
-                      ];
-
-                      let skillStringArray = subCatToUpdateSkills?.map(String);
-                      const skillsArrayFormatted = skillStringArray?.toString();
-
-                      const subCatInput = {
-                        imageUrl: subCatToUpdate?.imageUrl,
-                        name: subCatToUpdate?.name,
-                        skills:
-                          skillsArrayFormatted +
-                          ',' +
-                          categorySKillsIds.toString(),
-                      };
-
-                      await updateSubcategoryContent({
-                        variables: {
-                          id: subCatToUpdate?.id?.toString(),
-                          input: { ...subCatInput },
-                          localeId: selectedLanguageId.toString(),
-                        },
-                      }).catch(() => {
-                        setLoading(false);
-                      });
-                    }
-                  }
-
-                  if (
-                    skill?.id &&
-                    (skill?.name === '' || skill?.name === undefined)
-                  ) {
-                    const deleteResponse = deleteSkillContent({
-                      variables: {
-                        id: skill?.id.toString(),
-                        localeId: selectedLanguageId.toString(),
-                      },
-                    });
-                    if (deleteResponse) {
-                      const subCatToUpdate = subCategories?.find(
-                        (sub) => sub?.id === subCat?.id
-                      );
-                      let subCatToUpdateSkills = subCatToUpdate?.skills?.map(
-                        (item) => item?.id
-                      );
-                      subCatToUpdateSkills?.filter(
-                        (item) => item !== skill?.id
-                      );
-                      let skillStringArray = subCatToUpdateSkills?.map(String);
-                      const skillsArrayFormatted = skillStringArray?.toString();
-
-                      const subCatInput = {
-                        imageUrl: subCatToUpdate?.imageUrl,
-                        name: subCatToUpdate?.name,
-                        skills: skillsArrayFormatted,
-                      };
-
-                      await updateSubcategoryContent({
-                        variables: {
-                          id: subCatToUpdate?.id?.toString(),
-                          input: { ...subCatInput },
-                          localeId: selectedLanguageId.toString(),
-                        },
-                      }).catch(() => {
-                        setLoading(false);
+                        name: skill?.name,
+                        level:
+                          skill?.level?.[0]?.id === ''
+                            ? cat.level.toString()
+                            : skill?.level?.[0]?.id.toString(),
+                        contentTypeId: ContentTypeEnum.ProgressTrackingSkill,
                       });
                     }
                   }
@@ -447,11 +320,18 @@ export default function EditSkills({
             }
           }
         }
+
+        await updateSubCategorySkills({
+          variables: {
+            subCategories: uniqueSubCats,
+            localeId: selectedLanguageId,
+          },
+        });
       }
     }
 
     setNotification({
-      title: 'Successfully Updated Content!',
+      title: 'Changes published',
       variant: NOTIFICATION.SUCCESS,
     });
 
@@ -459,6 +339,8 @@ export default function EditSkills({
     setLoading(false);
     cancelEdit();
   };
+
+  const [updateSubCategorySkills] = useMutation(UpdateSubCategorySkills);
 
   if (
     contentType &&
@@ -527,11 +409,13 @@ export default function EditSkills({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              selectedLanguageId={selectedLanguageId}
               acceptedFileFormats={acceptedFileFormats}
               contentId={content?.id}
               setChangedCategory={setChangedCategory}
               changedCategory={changedCategory}
               setSelectedLanguageId={setSelectedLanguageId}
+              formType={formType}
               cancelEdit={cancelEdit}
             />
           </div>

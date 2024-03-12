@@ -10,7 +10,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { MouseEvent, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import {
   DynamicFormTemplate,
@@ -45,12 +45,16 @@ export default function CreateTheme({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit } = useForm();
+  const { register, formState, setValue, handleSubmit, getValues, control } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
+    control: control,
   };
+
+  const { type: formType } = useWatch({ control });
 
   const mutationName = `update${contentType?.name}`;
 
@@ -163,13 +167,15 @@ export default function CreateTheme({
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
   const [filteredThemeDays, setFilteredThemeDays] = useState([]);
-  const validation = filteredThemeDays.every(
-    (item) =>
-      item.smallGroupActivity &&
-      item.largeGroupActivity &&
-      item.storyBook &&
-      item.storyActivity
-  );
+  const validation =
+    filteredThemeDays &&
+    filteredThemeDays.every(
+      (item) =>
+        item.smallGroupActivity &&
+        item.largeGroupActivity &&
+        item.storyBook &&
+        item.storyActivity
+    );
   const allowedFileSize = 13631488;
 
   useEffect(() => {
@@ -219,8 +225,8 @@ export default function CreateTheme({
       type: field?.fieldType.dataType ?? '',
       title: camelCaseToSentanceCase(field?.displayName ?? ''),
       required: {
-        value: false,
-        message: '',
+        value: field.isRequired,
+        message: field.isRequired ? 'Required field' : '',
       },
       contentValue: item,
       optionDefinition: optionDefinition,
@@ -373,17 +379,29 @@ export default function CreateTheme({
       }
 
       savedContent();
-
       setLoading(false);
       cancelEdit();
     }
 
     setLoading(false);
-
     savedContent();
-
     setLoading(false);
   };
+
+  const initialValues = getValues();
+  const disableButton = template?.fields?.filter(
+    (item) =>
+      item.propName !== 'themeDays' &&
+      item?.required.value &&
+      initialValues?.hasOwnProperty(item?.propName) &&
+      !initialValues[item?.propName]
+  );
+
+  const disableButtonDays = filteredThemeDays?.length < 16;
+
+  const disbleButtonStyles = `bg-secondary ${
+    disableButton?.length > 0 || disableButtonDays ? 'opacity-25' : ''
+  } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
     contentType &&
@@ -445,18 +463,15 @@ export default function CreateTheme({
               defaultLanguageId={defaultLanguageId}
               setFilteredThemeDays={setFilteredThemeDays}
               allowedFileSize={allowedFileSize}
+              formType={formType}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              disabled={filteredThemeDays?.length < 16 || !validation}
-              className={`${
-                filteredThemeDays?.length < 16 || !validation
-                  ? 'opacity-25'
-                  : ''
-              } bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
+              disabled={disableButton?.length > 0 || disableButtonDays}
+              className={disbleButtonStyles}
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish

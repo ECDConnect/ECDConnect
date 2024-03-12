@@ -7,7 +7,6 @@ import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from './add-programme-form.styles';
-
 import {
   EditProgrammeModel,
   editProgrammeSchema,
@@ -41,11 +40,17 @@ export const AddProgrammeForm: React.FC<{
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const appDispatch = useAppDispatch();
-  const classroom = useSelector(classroomsSelectors?.getClassroom);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(
     classroomsSelectors?.getAllClassroomGroups
   );
-  const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
+
+  const traineeTimeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
+  const traineeVisitData = useSelector(
+    traineeSelectors.getTraineeVisitData(traineeTimeline?.sSCoachVisitId)
+  );
 
   const {
     getValues: getProgrammeFormValues,
@@ -73,7 +78,6 @@ export const AddProgrammeForm: React.FC<{
   });
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
-
   const isSmartLinkImported = user?.isImported;
   const isTrainee = practitioner?.isTrainee;
 

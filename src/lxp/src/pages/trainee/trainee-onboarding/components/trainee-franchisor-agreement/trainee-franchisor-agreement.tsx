@@ -5,6 +5,7 @@ import { ReadAndAcceptAgreement } from './components/read-and-accept-agreement';
 import { ProgrammeTypeAgreement } from './components/programme-type-agreement/programme-type-agreement';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
+import { practitionerSelectors } from '@/store/practitioner';
 
 interface TraineeFranchisorAgreementProps {
   setNotificationStep: any;
@@ -16,7 +17,10 @@ export const TraineeFranchisorAgreement: React.FC<
   const { isOnline } = useOnlineStatus();
   const [agreementStep, setAgreementStep] = useState('');
   const [agreementStepCount, setAgreementStepCount] = useState('Step 1 of 2');
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
 
   const franchisorAgreementSigned =
     timeline?.signFranchiseeAgreementStatus === 'Franchisee agreement signed';

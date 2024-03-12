@@ -26,9 +26,9 @@ public class Visits : CronJobService
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
             if (service != null && service.Enabled)
             {
-                await service.PushSmartSpaceVisitsData();
-                await service.PushPQAData();
-                await service.PushReAccreditationData();
+               // await service.PushSmartSpaceVisitsData();
+               // await service.PushPQAData();
+               // await service.PushReAccreditationData();
             }
         }
     }

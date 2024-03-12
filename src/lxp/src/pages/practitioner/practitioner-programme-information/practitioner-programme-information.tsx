@@ -302,7 +302,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         actionName: isPrincipal ? 'Edit' : 'View',
         actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
         },
       });
     }

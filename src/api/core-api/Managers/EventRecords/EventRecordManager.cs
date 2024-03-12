@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<EventRecordType>(userContext: applicationUserId);
-            var eventRecordType = GetEventRecordTypeFromInputModel(input, applicationUserId);
+            var eventRecordType = GetEventRecordTypeFromInputModel(input, applicationUserId.ToString());
 
             return repository.Insert(eventRecordType);
         }
@@ -47,7 +47,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             var entityToUpdate = repository.GetById(Guid.Parse(id));
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = applicationUserId;
+            entityToUpdate.UpdatedBy = applicationUserId.ToString();
             entityToUpdate.Name = input.Name;
             entityToUpdate.NormalizedName = input.NormalizedName;
             entityToUpdate.Description = input.Description;
@@ -70,7 +70,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = applicationUserId.ToString(),
                 Name = input.Name,
                 NormalizedName = input.NormalizedName,
                 Description = input.Description,
@@ -87,7 +87,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<EventRecord>(userContext: applicationUserId);
-            var eventRecord = GetEventRecordFromInputModel(input, applicationUserId);
+            var eventRecord = GetEventRecordFromInputModel(input, applicationUserId.ToString());
             var eventRecordTypeRepo = _repoFactory.CreateGenericRepository<EventRecordType>(userContext: applicationUserId);
             var eventRec = eventRecordTypeRepo.GetById(Guid.Parse(input.EventRecordTypeId.ToString()));
 
@@ -115,7 +115,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             var entityToUpdate = repository.GetById(Guid.Parse(id));
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = applicationUserId;
+            entityToUpdate.UpdatedBy = applicationUserId.ToString();
             entityToUpdate.Notes = input.Notes;
             entityToUpdate.MotherId = input.MotherId;
             entityToUpdate.InfantId = input.InfantId;
@@ -142,7 +142,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
 
             if (input.InfantId != null)
             {
-                var infantId = _infantManger.GetInfantIdByUserId(input.InfantId.ToString());
+                var infantId = _infantManger.GetInfantIdByUserId(input.InfantId.Value);
 
                 if (infantId != null)
                 {
@@ -152,7 +152,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             if (input.MotherId != null)
             {
                 var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-                Mother mother = repository.GetAll().Where(x => x.UserId.Equals(input.MotherId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
+                Mother mother = repository.GetAll().Where(x => x.UserId == input.MotherId).OrderBy(x => x.Id).FirstOrDefault();
                 input.MotherId = mother?.Id;
             }
 

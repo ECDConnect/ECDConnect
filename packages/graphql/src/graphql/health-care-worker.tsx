@@ -3,23 +3,29 @@ import { gql } from '@apollo/client';
 export const GetAllHealthCareWorker = gql`
   query (
     $search: String
-    $clinicSearch: String
-    $provinceSearch: String
-    $teamLeadSearch: String
+    $clinicSearch: [String]
+    $provinceSearch: [String]
+    $subDistrictSearch: [String]
+    $visitSearch: [String]
+    $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
-    $order: [HealthCareWorkerSortInput!]
+    $order: [PortalUsersHCWModelSortInput!]
   ) {
     allHealthCareWorkers(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
-      teamLeadSearch: $teamLeadSearch
+      subDistrictSearch: $subDistrictSearch
+      visitSearch: $visitSearch
+      connectUsageSearch: $connectUsageSearch
       pagingInput: $pagingInput
       order: $order
     ) {
       id
       insertedDate
+      clinicId
       user {
+        connectUsage
         isActive
         userName
         email
@@ -35,25 +41,6 @@ export const GetAllHealthCareWorker = gql`
         phoneNumber
         insertedDate
         lockoutEnd
-        roles {
-          id
-          name
-          __typename
-        }
-        __typename
-      }
-      teamLead {
-        clinic {
-          name
-          siteAddress {
-            province {
-              description
-              __typename
-            }
-            __typename
-          }
-          __typename
-        }
         __typename
       }
       __typename
@@ -66,6 +53,7 @@ export const GetHealthCareWorkerByUserId = gql`
     GetHealthCareWorkerById(id: $userId) {
       id
       insertedDate
+      clinicId
       user {
         id
         isActive
@@ -84,49 +72,29 @@ export const GetHealthCareWorkerByUserId = gql`
         profileImageUrl
         insertedDate
         lockoutEnd
-        roles {
-          id
-          name
-          __typename
-        }
         __typename
-      }
-      teamLead {
-        clinic {
-          siteAddress {
-            id
-            province {
-              id
-              description
-              __typename
-            }
-            name
-            addressLine1
-            addressLine2
-            addressLine3
-            postalCode
-            ward
-            __typename
-          }
-          __typename
-        }
       }
     }
   }
 `;
 
 export const CreateHealthCareWorker = gql`
-  mutation addHealthCareWorker($input: HealthCareWorkerModelInput) {
+  mutation AddHealthCareWorker($input: AddHealthCareWorkerInputModelInput) {
     addHealthCareWorker(input: $input) {
       id
+      userId
+      clinicId
+      __typename
     }
   }
 `;
 
-export const UpdateHealthCareWorker = gql`
-  mutation updateHealthCareWorker($input: UserModelInput, $id: String) {
-    updateUser(id: $id, input: $input) {
+export const UpdateHealthCareWorkerClinic = gql`
+  mutation UpdateHealthCareWorkerClinic($userId: UUID!, $clinicId: UUID!) {
+    updateHealthCareWorkerClinic(userId: $userId, clinicId: $clinicId) {
       id
+      userId
+      clinicId
       __typename
     }
   }

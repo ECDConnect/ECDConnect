@@ -2,11 +2,12 @@ import { MoreInformationPage } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { ActivityHelpRouteState } from './index.types';
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { MoreInformation } from '@ecdlink/graphql';
 import { authSelectors } from '@/store/auth';
 import { staticDataSelectors } from '@/store/static-data';
 import InfoService from '@/services/InfoService/InfoService';
+import { clubSelectors } from '@/store/club';
 
 export type HelpSection =
   | 'Be Creative'
@@ -17,6 +18,7 @@ export type HelpSection =
   | 'Leave No One Behind - Purple'
   | 'Meet Regularly'
   | 'Coach'
+  | 'Practitioner'
   | 'Club Leader Agreement';
 
 export const ActivityHelp: React.FC = () => {
@@ -27,13 +29,31 @@ export const ActivityHelp: React.FC = () => {
 
   const userAuth = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
+  const league = useSelector(clubSelectors.getLeagueForPractitionerSelector);
 
   const history = useHistory();
 
   const { helpSection } = useParams<ActivityHelpRouteState>();
 
+  const leagueType = league?.leagueTypeName.includes('Purple')
+    ? league?.leagueTypeName
+    : 'Stars';
+
+  const getTitle = useMemo(() => {
+    if (helpSection === 'Practitioner' || helpSection === 'Coach') {
+      if (leagueType.includes('Purple')) {
+        return 'Purple Clubs';
+      }
+      if (leagueType.includes('Stars')) {
+        return 'League of Stars';
+      }
+      return helpSection;
+    }
+    return helpSection;
+  }, [helpSection, league?.leagueTypeName]);
+
   const section =
-    helpSection === 'Coach'
+    helpSection === 'Coach' || helpSection === 'Practitioner'
       ? `Community - League - ${helpSection}`
       : `Community - Club - ${helpSection}`;
 
@@ -42,11 +62,26 @@ export const ActivityHelp: React.FC = () => {
     new InfoService()
       .getMoreInformation(section, selectedLanguage)
       .then((info) => {
-        setData(info);
+        if (helpSection === 'Practitioner') {
+          setData(
+            info.filter((item: MoreInformation) => {
+              return item.visit?.includes(leagueType || '');
+            })
+          );
+        } else {
+          setData(info);
+        }
         setIsLoading(false);
       })
       .catch(() => setIsLoading(false));
-  }, [section, selectedLanguage, userAuth]);
+  }, [
+    helpSection,
+    league?.leagueTypeName,
+    leagueType,
+    section,
+    selectedLanguage,
+    userAuth,
+  ]);
 
   return (
     <MoreInformationPage
@@ -56,7 +91,7 @@ export const ActivityHelp: React.FC = () => {
         label: x.description,
       }))}
       moreInformation={!!data ? data[0] : {}}
-      title={helpSection}
+      title={getTitle}
       onClose={() => history.goBack()}
       setSelectedLanguage={setSelectedLanguage}
     />

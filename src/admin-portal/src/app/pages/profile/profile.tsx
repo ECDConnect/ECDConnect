@@ -11,14 +11,11 @@ import { Button, ProfileAvatar, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import zxcvbn from 'zxcvbn-typescript';
 import {
   GetUserById,
   ResetUserPassword,
   UpdateUser,
   UserModelInput,
-  FileUpload,
-  FileTypeEnum,
 } from '@ecdlink/graphql';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { useUser } from '../../hooks/useUser';

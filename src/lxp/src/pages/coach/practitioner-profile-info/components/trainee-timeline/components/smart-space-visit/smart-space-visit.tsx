@@ -31,10 +31,6 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
   const visitEventId: string = options?.visitEventId || '';
   const plannedVisitDate: string = options?.plannedVisitDate || '';
 
-  useEffect(() => {
-    appDispatch(traineeActions?.resetCoachSmartSpaceVisitData());
-  }, [appDispatch]);
-
   const onSchedule = () => {
     setVisible(false);
 

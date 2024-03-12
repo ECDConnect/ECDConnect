@@ -4,7 +4,6 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -39,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             if (practitioner?.IsPrincipal == true)
             {
                 List<Caregiver> caregivers = new List<Caregiver>();
-                var practitioners = personnelManager.GetPractitionerPeers(practitioner.UserId);
+                var practitioners = personnelManager.GetPractitionerPeers(practitioner.UserId.ToString());
                 if (practitioners != null)
                 {
                     foreach (var practi in practitioners)
@@ -93,7 +92,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId)).ToList();
 
             if (practitioners.Count > 0)
             {
@@ -132,10 +131,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             if (healthCareWorkerIdGuid != null)
             {
                 // get all caregivers linked to HCW
-                caregivers = careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healthCareWorkerIdGuid)).ToList();
+                caregivers = careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId == healthCareWorkerIdGuid).ToList();
 
                 // get all mothers linked to HCW that is also registered as caregivers
-                mother_caregivers = motherRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healthCareWorkerIdGuid) && x.LinkedCaregiverId.HasValue).ToList();
+                mother_caregivers = motherRepo.GetAll().Where(x => x.HealthCareWorkerId == healthCareWorkerIdGuid && x.LinkedCaregiverId.HasValue).ToList();
 
                 // loop through both lists and mark the caregiver as a mother
                 foreach (var caregiver in caregivers)
@@ -157,7 +156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] AuthenticationDbContext context,
             Guid careGiverId)
         {
-            return context.UserGrants.Where(x => x.UserId == careGiverId.ToString()).ToList();
+            return context.UserGrants.Where(x => x.UserId == careGiverId).ToList();
         }
 
 
@@ -168,8 +167,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // so if a pregnant mom is also a caregiver to a child. the child & the pregnant mom are two linked clients. If there is more than one child linked to the same caregiver.all those child clients are linked.
 
             CaregiverClients clients = new CaregiverClients();
-            clients.Infants = infantManager.GetAllInfantsForCaregiver(caregiverId);
-            clients.Mother = motherManager.GetMotherForCaregiver(caregiverId);
+            clients.Infants = infantManager.GetAllInfantsForCaregiver(Guid.Parse(caregiverId));
+            clients.Mother = motherManager.GetMotherForCaregiver(Guid.Parse(caregiverId));
 
             return clients;
         }

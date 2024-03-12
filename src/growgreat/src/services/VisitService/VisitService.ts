@@ -107,6 +107,10 @@ class Visit {
           showDividerC
           type
           visit
+          availableLanguages {
+            id
+            description
+          }
         }
       }    
       `,

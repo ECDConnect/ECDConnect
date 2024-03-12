@@ -1,4 +1,5 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -17,29 +18,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     public class TeamLeadMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public TeamLead AddTeamLead(
+        public PortalUserTLModel AddTeamLead(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            TeamLeadModel input)
+            AddTeamLeadInputModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: applicationUserId);
 
-            var teamLead = new TeamLead()
+            var teamLead = teamLeadRepo.Insert(new TeamLead()
             {
                 Id = new Guid(),
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = applicationUserId.ToString(),
                 UserId = input.UserId,
-                ClinicId = input.ClinicId,
-                JobTitle = input.JobTitle
-            };
+                JobTitle = RolesGG.TEAM_LEAD
+            });
 
-            var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: applicationUserId);
-            return teamLeadRepo.Insert(teamLead);
-
+            return new PortalUserTLModel(teamLead);
         }
-
     }
 }

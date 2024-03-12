@@ -2,6 +2,7 @@ export const ContentManagementTabs = {
   PROCESS: { id: 2, name: 'Progress' },
   PROGRAMMES: { id: 3, name: 'Programme' },
   COMMUNITY: { id: 4, name: 'Community' },
+  GGCOMMUNITY: { id: 5, name: 'Community' },
 };
 
 export const ContentTypes = {
@@ -11,6 +12,12 @@ export const ContentTypes = {
   PROGRESS_TRACKING_SKILL: 'ProgressTrackingSkill',
   CONSENT: 'Consent',
   MORE_INFORMATION: 'MoreInformation',
+  INFO_PAGES: 'Info Pages',
+};
+
+export const ContentForms = {
+  CONSENT_FORM: 'Consent Form',
+  ACTIVITY_FROM: 'Activity Form',
 };
 
 export const CoachingCircleText = {

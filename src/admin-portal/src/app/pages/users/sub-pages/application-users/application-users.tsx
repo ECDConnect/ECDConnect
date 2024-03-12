@@ -134,11 +134,12 @@ export default function ApplicationUsers() {
           const { __typename: __, ...roleRest } = role;
           return roleRest;
         });
-
         return { ...rest, roles: modifiedRoles };
       });
-      const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
-      setTableData(finalTableData);
+
+      // const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
+
+      setTableData(modifiedData);
     }
   }, [data]);
 

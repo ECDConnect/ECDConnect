@@ -6,6 +6,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -29,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> SendCoachInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IHttpContextAccessor accessor,
           string userId)
         {
@@ -126,7 +127,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId));
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = Guid.Parse(coachId);
@@ -147,7 +148,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(practitionerId));
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = null;
@@ -210,7 +211,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 coach.AboutInfo = aboutInfo;
                 coach.UpdatedDate = DateTime.UtcNow;
-                coach.UpdatedBy = uId;
+                coach.UpdatedBy = uId.ToString();
                 dbRepo.Update(coach);
 
                 return coach;
@@ -230,7 +231,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 coach.ClickedClubTab = true;
                 coach.UpdatedDate = DateTime.UtcNow;
-                coach.UpdatedBy = uId;
+                coach.UpdatedBy = uId.ToString();
                 coachRepo.Update(coach);
 
             }

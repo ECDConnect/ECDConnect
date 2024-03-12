@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -6,6 +7,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using GreenDonut;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -21,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool UpdateVisitDataStatus(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusReferral input)
         {
@@ -31,8 +34,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 var entityToUpdate = visitDataStatusRepo.GetAll().Where(x => x.Id.ToString() == inputItem.Id).OrderBy(x => x.Id).FirstOrDefault();
                 entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = applicationUserId;
-                entityToUpdate.IsCompleted = (bool)inputItem.IsCompleted;
+                entityToUpdate.UpdatedBy = applicationUserId.ToString();
+                entityToUpdate.IsCompleted = (bool)inputItem.IsCompleted;// If we require this value to be passed in, then it should not be nullable on the input
                 entityToUpdate.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
                 visitDataStatusRepo.Update(entityToUpdate);
 
@@ -44,13 +47,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (entityToUpdateG4 != null)
                 {
                     entityToUpdateG4.UpdatedDate = DateTime.Now;
-                    entityToUpdateG4.UpdatedBy = applicationUserId;
+                    entityToUpdateG4.UpdatedBy = applicationUserId.ToString();
                     entityToUpdateG4.IsCompleted = (bool)inputItem.IsCompleted;
                     entityToUpdateG4.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
                     visitDataStatusRepo.Update(entityToUpdateG4);
                 }
             }
 
+             pointsCalculationService.CalculatePregnantMotherReferralPoints(applicationUserId);
+            // TODO -> Add child referral points calculation
+            
             return true;
         }
     }

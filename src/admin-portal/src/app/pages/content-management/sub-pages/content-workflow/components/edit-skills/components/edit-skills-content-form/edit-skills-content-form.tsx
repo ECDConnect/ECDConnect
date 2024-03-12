@@ -20,6 +20,7 @@ import {
 export interface DynamicSelectorProps {
   contentValue?: ContentValueDto;
   languageId?: string;
+  selectedLanguageId: string;
   title?: string;
   optionDefinition?: ContentDefinitionModelDto;
   isReview: boolean;
@@ -36,6 +37,7 @@ export interface DynamicSelectorProps {
 const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   contentValue,
   languageId,
+  selectedLanguageId,
   title,
   optionDefinition,
   isReview,
@@ -137,14 +139,14 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   const { data: contentData } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
-      localeId: languageId?.toString(),
+      localeId: selectedLanguageId,
     },
   });
 
   const { data: levelsContentData } = useQuery(levelsQuery, {
     fetchPolicy: 'cache-and-network',
     variables: {
-      localeId: languageId,
+      localeId: selectedLanguageId,
     },
   });
 
@@ -158,7 +160,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   const { data: subcategoriesContentData } = useQuery(subcategoriesQuery, {
     fetchPolicy: 'network-only',
     variables: {
-      localeId: template?.fields?.[0]?.selectedLanguageId,
+      localeId: selectedLanguageId,
     },
   });
 
@@ -202,6 +204,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   const handleNumberOfInputs = (sub) => {
     // eslint-disable-next-line array-callback-return
     sub?.map((item) => {
+      if (item.skills === undefined) {
+        item.skills = [];
+      }
       while (item?.skills?.length < 5) {
         item?.skills?.push({
           id: '',

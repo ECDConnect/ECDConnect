@@ -1,13 +1,12 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.Caregiver
+namespace ECDLink.DataAccessLayer.Entities.Users
 {
     [Table(nameof(Caregiver))]
     [EntityPermission(PermissionGroups.USER)]
@@ -15,7 +14,11 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
     {
     }
 
-    public class Caregiver<TKey> : EntityBase<TKey>, SiteAddressJoin<Guid?>, RelationJoin<Guid?>, EducationJoin<Guid?>, HealthCareWorkerJoin<Guid?>, ITrackableType
+    public class Caregiver<TKey> : EntityBase<TKey>, 
+        SiteAddressJoin<Guid?>, 
+        RelationJoin<Guid?>, 
+        EducationJoin<Guid?>, 
+        HealthCareWorkerJoin<Guid?>, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public string IdNumber { get; set; }

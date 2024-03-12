@@ -24,6 +24,7 @@ const initialState: PractitionerState = {
   practitioner: undefined,
   practitioners: undefined,
   principalPractitioners: undefined,
+  practitionersMetrics: undefined,
 };
 
 const practitionerSlice = createSlice({

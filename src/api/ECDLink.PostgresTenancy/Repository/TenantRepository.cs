@@ -35,7 +35,7 @@ namespace ECDLink.PostgresTenancy.Repository
                 return false;
             }
 
-            return entities.Any(e => string.Equals(e.Id, id));
+            return entities.Any(e => e.Id == Guid.Parse(id));
         }
 
         public IQueryable<TenantEntity> GetAll()
@@ -46,7 +46,7 @@ namespace ECDLink.PostgresTenancy.Repository
         public virtual TenantEntity GetById(string id)
         {
             return entities
-                    .Where(e => string.Equals(e.Id, id))
+                    .Where(e => e.Id == Guid.Parse(id))
                     .OrderBy(x => x.Id)
                     .FirstOrDefault();
         }

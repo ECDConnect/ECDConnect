@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
             using var context = dbFactory.CreateDbContext();
 
             var grants = context.UserGrants
-              .Where(x => string.Equals(x.UserId, user.UserId))
+              .Where(x => x.UserId == Guid.Parse(user.UserId))
               .Select(x => x.Grant)
               .ToList();
 
@@ -41,12 +41,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
             var grantsToAdd = grantIds.Select(x => new UserGrant
             {
                 GrantId = x,
-                UserId = parent.UserId
+                UserId = Guid.Parse(parent.UserId)
             });
 
             var existingGrants = context.UserGrants
-              .Where(x => string.Equals(x.UserId, parent.UserId));
-
+              .Where(x => x.UserId == Guid.Parse(parent.UserId));
             // Added safety from removing items from the list should the insertion of new items fail
             try
             {
@@ -71,8 +70,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
             foreach (var grant in grants)
             {
                 var existingGrants = context.UserGrants
-                  .Where(x => string.Equals(x.UserId, grant.UserId));
-
+                  .Where(x => x.UserId == grant.UserId);
                 // Added safety from removing items from the list should the insertion of new items fail
                 try
                 {

@@ -7,11 +7,11 @@ import { SmartSpaceChecklist } from './components/smart-space-checklist/smart-sp
 import { SmartSpaceVisit } from './components/smart-space-visit/smart-space-visit';
 import { SmartSpaceSummary } from './components/smart-space-summary/smart-space-summary';
 import { TraineeAddSignature } from '../../../../trainee/trainee-onboarding/components/trainee-add-signature/trainee-add-signature';
-import { CoachTraineeFranchisorAgreement } from './components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { FranchiseeAgreement } from './components/smart-space-visit/franchisee-agreement/franchisee-agreement';
 
 interface TraineeOnboardingProps {
   practitioner: PractitionerDto | undefined;
-  setShowTraineeDashboard: any;
+  setShowTraineeDashboard: (value: boolean) => void;
 }
 
 export interface TraineeOnboardingRouteState {
@@ -42,7 +42,7 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
           return <TraineeAddSignature />;
         }
         return (
-          <CoachTraineeFranchisorAgreement
+          <FranchiseeAgreement
             practitioner={practitioner || practitionerState}
             setNotificationStep={setNotificationStep}
           />
@@ -56,7 +56,12 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
         );
       case 'Fill in the SmartSpace checklist':
         return (
-          <SmartSpaceChecklist setNotificationStep={setNotificationStep} />
+          <SmartSpaceChecklist
+            setNotificationStep={setNotificationStep}
+            practitionerUserId={
+              practitioner?.userId || practitionerState.userId || ''
+            }
+          />
         );
       case 'Get community support':
         return null;

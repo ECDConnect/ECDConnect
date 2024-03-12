@@ -21,9 +21,9 @@ import { DateFormats } from '../../../../../constants/Dates';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: (notificationStep: string, options?: any) => void;
-  setIsSmartChecklist?: any;
-  practitioner?: PractitionerDto;
-  setShowTraineeDashboard: any;
+  setIsSmartChecklist: (value: boolean) => void;
+  practitioner: PractitionerDto; // TODO why is this nullable...
+  setShowTraineeDashboard: (value: boolean) => void;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
@@ -39,7 +39,9 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const { width } = useWindowSize();
 
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner.userId || '')
+  );
   const [showSteps, setShowSteps] = useState(true);
   const [showOverdueSteps, setShowOverdueSteps] = useState(false);
   const [showOnboardingNotCompleted, setShowOnboardingNotCompleted] =
@@ -91,7 +93,9 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title === 'Consolidation meeting attended'
   );
 
-  const onboardingNotCompleted = completedSteps?.length < 8;
+  const onboardingNotCompleted =
+    (practitioner?.isOnStipend && completedSteps?.length < 8) ||
+    (practitioner?.isOnStipend !== true && completedSteps?.length < 7);
   const twoWeeksAgo = addDays(new Date(), -14);
   const fourWeeksAgo = addDays(new Date(), -28);
   const starterLicenseDate = timeline?.starterLicenseDate
@@ -187,8 +191,8 @@ export const OnboardingTraineeDashboard: React.FC<
       renderBorder={true}
       title={'Trainee Onboarding'}
       subTitle={
-        practitioner?.user?.fullName ||
-        `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
+        practitioner.user?.fullName ||
+        `${practitioner.user?.firstName} ${practitioner.user?.surname}`
       }
       color={'primary'}
       onBack={() => setShowTraineeDashboard(false)}
@@ -209,19 +213,21 @@ export const OnboardingTraineeDashboard: React.FC<
         )}
         {showSteps && (
           <>
-            {nextStep && overdueSteps?.length <= 0 && (
-              <StackedList
-                isFullHeight={false}
-                className={'flex flex-col gap-2'}
-                listItems={notificationItem}
-                type={'MenuList'}
-                onClickItem={
-                  notificationItem.length > 0
-                    ? notificationItem[0].onActionClick
-                    : undefined
-                }
-              />
-            )}
+            {nextStep &&
+              overdueSteps?.length <= 0 &&
+              !onboardingIncompleted && (
+                <StackedList
+                  isFullHeight={false}
+                  className={'flex flex-col gap-2'}
+                  listItems={notificationItem}
+                  type={'MenuList'}
+                  onClickItem={
+                    notificationItem.length > 0
+                      ? notificationItem[0].onActionClick
+                      : undefined
+                  }
+                />
+              )}
 
             {timeline && (
               <Steps

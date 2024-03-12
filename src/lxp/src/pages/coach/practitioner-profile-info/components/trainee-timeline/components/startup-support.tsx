@@ -18,10 +18,12 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
   const { isOnline } = useOnlineStatus();
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
   );
 
-  const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const traineeVisitData = useSelector(
+    traineeSelectors.getTraineeVisitData(traineeTimeline?.sSCoachVisitId)
+  );
 
   const programmeTypeQuestionObject = traineeVisitData?.find(
     (item) =>

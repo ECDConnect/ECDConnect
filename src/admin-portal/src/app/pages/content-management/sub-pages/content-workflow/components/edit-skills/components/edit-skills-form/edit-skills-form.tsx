@@ -12,11 +12,13 @@ export interface EditSkillsFormProps {
   handleform: any;
   setValue: any;
   defaultLanguageId: string;
+  selectedLanguageId: string;
   acceptedFileFormats?: string[];
   contentId?: number;
   setChangedCategory?: (item: any[]) => void;
   changedCategory?: any[];
   setSelectedLanguageId?: (item: string) => void;
+  formType?: string;
   cancelEdit?: () => void;
 }
 
@@ -27,11 +29,13 @@ const EditSkillsForm: React.FC<EditSkillsFormProps> = ({
   handleform,
   setValue,
   defaultLanguageId,
+  selectedLanguageId,
   acceptedFileFormats,
   contentId,
   setChangedCategory,
   changedCategory,
   setSelectedLanguageId,
+  formType,
   cancelEdit,
 }) => {
   const { register } = handleform;
@@ -83,6 +87,7 @@ const EditSkillsForm: React.FC<EditSkillsFormProps> = ({
                   isReview={false}
                   contentValue={field.contentValue}
                   languageId={defaultLanguageId}
+                  selectedLanguageId={selectedLanguageId}
                   optionDefinition={field.optionDefinition}
                   setSelectedItems={(value) => onStateChange(propName, value)}
                   contentId={contentId}

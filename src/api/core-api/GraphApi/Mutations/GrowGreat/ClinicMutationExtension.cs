@@ -1,14 +1,14 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
@@ -17,30 +17,48 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     public class ClinicMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Clinic AddClinic(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            ClinicModel input)
+        public Clinic AddClinic([Service] IClinicService clinicService, PortalClinicInputModel input)
         {
-            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            return clinicService.AddClinic(input);
+        }
 
-            var clinic = new Clinic()
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Clinic EditClinic([Service] IClinicService clinicService, PortalClinicInputModel input)
+        {
+            return clinicService.EditClinic(input);
+        }
+
+        public Clinic DeleteClinicById([Service] IClinicService clinicService, Guid clinicId)
+        {
+            return clinicService.DeleteClinicById(clinicId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public BreastFeedingClubModel AddBreastFeedingClub(
+            [Service] IClinicService clinicService,
+            [Service] IGrowGreatPointsCalculationsService pointsService,
+            AddBreastFeedingClubInputModel input)
+        {
+            if (input == null) 
+            { 
+                throw new ArgumentNullException("input");
+            }
+
+            if (input.Clients == null || input.Clients.Count == 0)
             {
-                Id = new Guid(),
-                IsActive = true,
-                InsertedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
-                Name = input.Name,
-                PhoneNumber = input.PhoneNumber,
-                SiteAddressId = input.SiteAddressId,
-                EmergencyContactPerson = input.EmergencyContactPerson,
-                EmergencyContactNumber = input.EmergencyContactNumber
-            };
+                throw new ArgumentException("Must contain at least one client");
+            }
 
-            var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: applicationUserId);
-            return clinicRepo.Insert(clinic);
+            if (input.MeetingDate.Month != DateTime.Now.Month)
+            {
+                throw new ArgumentException("Must be for current month");
+            }
 
+            var newBreastFeedingClub = clinicService.AddBreastFeedingClub(input.ClinicId, input.HealthCareWorkerId, input.MeetingDate, input.ClientsAttendedConfirmed, input.Clients);
+
+            pointsService.CalculateBreastFeedingClubPoints(input.ClinicId);
+
+            return new BreastFeedingClubModel(newBreastFeedingClub);
         }
 
     }

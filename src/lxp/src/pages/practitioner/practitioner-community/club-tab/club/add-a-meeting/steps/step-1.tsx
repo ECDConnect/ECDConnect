@@ -178,13 +178,12 @@ export const Step1 = ({
 
   useEffect(() => {
     if (date && hasMeetingHappened !== undefined) {
-      // Format the date into UTC, so it doesn't get shifted back two hours to the previous day when saving
-      const formattedDate = `${date.getFullYear()}-${
-        date.getMonth() + 1
-      }-${date.getDate()}T00:00:00Z`;
+      // Add 2 hours to SA date, so it doesn't get shifted back two hours to the previous day when saving as UTC
+      const formattedDate = date;
+      formattedDate.setHours(formattedDate.getHours() + 1);
       setStep1?.({
         hasMeetingHappened,
-        date: formattedDate ?? '',
+        date: formattedDate.toISOString() ?? '',
       });
     }
   }, [date, hasMeetingHappened, setStep1]);

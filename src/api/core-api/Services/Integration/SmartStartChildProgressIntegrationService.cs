@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             _mappedEntities = await this.GetMappedEntities();
             var mappedPractitionersDictionary =
-                _mappedEntities.Where(x => x.LocalEntity == Constants.SSIntegrationSettings.SSPractitioner && !string.IsNullOrEmpty(x.UserId))
+                _mappedEntities.Where(x => x.LocalEntity == Constants.SSIntegrationSettings.SSPractitioner)
                 .Select(x => new { x.UserId, x.RemoteId })
                 .ToDictionary(x => x.UserId, x => x.RemoteId);
 
@@ -55,13 +55,13 @@ namespace EcdLink.Api.CoreApi.Services
 
                     var practitionerUserId = hierarchy[report.Hierarchy];
 
-                    if (!mappedPractitionersDictionary.ContainsKey(practitionerUserId))
+                    if (!mappedPractitionersDictionary.ContainsKey(practitionerUserId.Value))
                     {
-                        await _logManager.IntegrationLog($"Practitioner not mapped", practitionerUserId, null, LogRelatedType.Log, "PushChildProgressReports > GetAPIHandlerResponse");
+                        await _logManager.IntegrationLog($"Practitioner not mapped", practitionerUserId.ToString(), null, LogRelatedType.Log, "PushChildProgressReports > GetAPIHandlerResponse");
                         continue;
                     }
 
-                    var practitionerRemoteId = mappedPractitionersDictionary[practitionerUserId];
+                    var practitionerRemoteId = mappedPractitionersDictionary[practitionerUserId.Value];
 
                     if (!mappedChildrenDictionary.ContainsKey(report.ChildId.ToString()))
                     {

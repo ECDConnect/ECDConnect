@@ -1,5 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Workflow;
@@ -31,14 +30,14 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
 
         [ForeignKey(nameof(CaregiverId))]
-        public virtual Caregiver.Caregiver Caregiver { get; set; }
+        public virtual Caregiver Caregiver { get; set; }
         public Guid? CaregiverId { get; set; }
 
         public string Allergies { get; set; }

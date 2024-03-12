@@ -32,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: uId);
             //TODO: add more logic here as learners of principal may have changed for example but that affects this current user - so reverse lookup
-            var changes = dbRepo.GetAll().Where(x => (string.Equals(x.UserId, uId) || string.Equals(x.RelatedId, uId)) && x.InsertedDate >= lastUpdated.AddMinutes(-5)).ToList();
+            var changes = dbRepo.GetAll().Where(x => (x.UserId == uId || x.RelatedId == uId.ToString()) && x.InsertedDate >= lastUpdated.AddMinutes(-5)).ToList();
 
             return (changes.Count > 0);
         }
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: uId);
 
-            var changes = dbRepo.GetAll().Where(x => (string.Equals(x.UserId, uId) || string.Equals(x.RelatedId, uId)) && x.InsertedDate >= lastUpdated.AddMinutes(-5)).ToList();
+            var changes = dbRepo.GetAll().Where(x => (x.UserId == uId || x.RelatedId == uId.ToString()) && x.InsertedDate >= lastUpdated.AddMinutes(-5)).ToList();
 
             return changes.Select(x => x.Entity).ToList();
         }

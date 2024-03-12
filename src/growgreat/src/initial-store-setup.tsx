@@ -25,6 +25,7 @@ import {
 import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { subMonths } from 'date-fns';
+import { communitySelectors, communityThunkActions } from './store/community';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -53,6 +54,7 @@ function InitialStoreSetup(props: Props) {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors.getHealthCareWorker
   );
+  const userClinic = useSelector(communitySelectors.getClinicSelector);
 
   const clearSiteData = useClearSiteData();
 
@@ -75,14 +77,35 @@ function InitialStoreSetup(props: Props) {
 
   useEffect(() => {
     if (healthCareWorker) {
+      (async () => {
+        const promises = [
+          appDispatch(
+            communityThunkActions.getClinicById({
+              clinicId: healthCareWorker?.clinicId || '',
+            })
+          ).unwrap(),
+          appDispatch(
+            caregiverThunkActions.getCaregiversForHealthCareWorker({
+              id: healthCareWorker?.id || '',
+            })
+          ).unwrap(),
+        ];
+
+        await Promise.all(promises);
+      })();
+    }
+  }, [appDispatch, healthCareWorker]);
+
+  useEffect(() => {
+    if (userClinic) {
       (async () =>
         await appDispatch(
-          caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id || '',
+          communityThunkActions.getLeagueById({
+            leagueId: userClinic?.league?.id || '',
           })
         ).unwrap())();
     }
-  }, [appDispatch, healthCareWorker]);
+  }, [appDispatch, userClinic]);
 
   const values = {
     initloading,

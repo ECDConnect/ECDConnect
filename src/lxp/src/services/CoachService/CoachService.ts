@@ -373,36 +373,6 @@ class CoachService {
     return response.data.data.GetAllCoachingCircleTopics;
   }
 
-  async declineSmartSpaceLicenseForTrainee(
-    userId: string,
-    dateDeclined: Date,
-    nextStepsComments: string
-  ): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      errors?: {};
-    }>(``, {
-      query: `
-      mutation declineSmartSpaceLicenseForTrainee( $userId: String!, $dateDeclined: DateTime!, $nextStepsComments: String!) { 
-        declineSmartSpaceLicenseForTrainee(userId: $userId, dateDeclined: $dateDeclined, nextStepsComments: $nextStepsComments) { 
-            userId       
-          }    
-        }
-      `,
-      variables: {
-        userId,
-        dateDeclined,
-        nextStepsComments,
-      },
-    });
-
-    if (response.status !== 200 || !!response.data.errors) {
-      throw new Error('Updating Coach failed - Server connection error');
-    }
-
-    return true;
-  }
-
   async getChildProgressReportsStatusForUser(
     userId: string
   ): Promise<ChildProgressReportsStatus> {

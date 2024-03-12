@@ -15,6 +15,7 @@ export * from '../domain/calendar';
 export * from './dto/Calendar';
 export * from './dto/Classroom';
 export * from './dto/CoachCircles';
+export * from './dto/Community';
 export * from './dto/Content';
 export * from './dto/Documents';
 export * from './dto/Note';

@@ -19,6 +19,7 @@ export const InfoPage = ({
   section,
   children,
   onClose,
+  childrenPosition,
 }: InfoPageProps) => {
   const [data, setData] = useState<MoreInformation[]>();
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
@@ -51,6 +52,7 @@ export const InfoPage = ({
       title={title}
       onClose={onClose}
       setSelectedLanguage={setSelectedLanguage}
+      childrenPosition={childrenPosition}
     >
       {children}
     </MoreInformationPage>

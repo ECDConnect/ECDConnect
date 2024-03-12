@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string roleId,
           List<Guid> permissionIds)
         {
-            await permissionRepository.AddPermissionsToRole(roleId, permissionIds);
+            await permissionRepository.AddPermissionsToRole(Guid.Parse(roleId), permissionIds);
 
             return true;
         }
@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string roleId,
             List<Guid> permissionIds)
         {
-            await permissionRepository.RemovePemissionsFromRole(roleId, permissionIds);
+            await permissionRepository.RemovePemissionsFromRole(Guid.Parse(roleId), permissionIds);
 
             return true;
         }

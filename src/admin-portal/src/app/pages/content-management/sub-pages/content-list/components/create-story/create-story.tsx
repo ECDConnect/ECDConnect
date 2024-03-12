@@ -3,6 +3,7 @@ import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
+  ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
   NOTIFICATION,
@@ -18,7 +19,7 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
-import { Alert, DialogPosition, Typography } from '@ecdlink/ui';
+import { Alert, DialogPosition } from '@ecdlink/ui';
 import {
   BookOpenIcon,
   SaveIcon,
@@ -27,6 +28,8 @@ import {
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateStoryForm from './components/create-story-form';
+import { LanguageId } from '../../../../../../constants/language';
+import { UpdateStoryBookAndParts } from '@ecdlink/graphql';
 
 export interface ContentViewProps {
   content: any;
@@ -94,96 +97,31 @@ export default function CreateStory({
     }
 `;
 
-  const updateStoryBookPart = gql`
-    mutation updateStoryBookParts(
-      $id: String!
-      $input: StoryBookPartsInput!
-      $localeId: String!
-    ) {
-      updateStoryBookParts(id: $id, input: $input, localeId: $localeId) {
-        id
-      }
-    }
-  `;
-
-  const createStoryBookPart = gql`
-    mutation createStoryBookParts(
-      $input: StoryBookPartsInput!
-      $localeId: String!
-    ) {
-      createStoryBookParts(input: $input, localeId: $localeId)
-    }
-  `;
-
-  const deleteStoryBookPart = gql`
-    mutation deleteStoryBookParts($id: String!, $localeId: String!) {
-      deleteStoryBookParts(id: $id, localeId: $localeId)
-    }
-  `;
-
-  const createStoryBookPartQuestion = gql`
-    mutation createStoryBookPartQuestion(
-      $input: StoryBookPartQuestionInput!
-      $localeId: String!
-    ) {
-      createStoryBookPartQuestion(input: $input, localeId: $localeId)
-    }
-  `;
-
-  const updateStoryBookPartQuestion = gql`
-    mutation updateStoryBookPartQuestion(
-      $id: String!
-      $input: StoryBookPartQuestionInput!
-      $localeId: String!
-    ) {
-      updateStoryBookPartQuestion(id: $id, input: $input, localeId: $localeId) {
-        id
-      }
-    }
-  `;
-
-  const deleteStoryBookPartQuestion = gql`
-    mutation deleteStoryBookPartQuestion($id: String!, $localeId: String!) {
-      deleteStoryBookPartQuestion(id: $id, localeId: $localeId)
-    }
-  `;
-
   const dialog = useDialog();
-
   const [deleteContent, { loading: isLoadingDeleteContent }] =
     useMutation(deleteMutation);
+  const [updateStoryBookAndParts] = useMutation(UpdateStoryBookAndParts);
 
-  const [updateStoryBookPartContent] = useMutation(updateStoryBookPart);
-
-  const [createStoryBookPartContent] = useMutation(createStoryBookPart);
-
-  const [deleteStoryBookPartContent] = useMutation(deleteStoryBookPart);
-
-  const [createStoryBookPartQuestionContent] = useMutation(
-    createStoryBookPartQuestion
+  // Get story book default values
+  const englishDefaultValues = contentValues.filter(
+    (n) =>
+      n.contentTypeField.fieldName === 'type' ||
+      n.contentTypeField.fieldName === 'author' ||
+      n.contentTypeField.fieldName === 'illustrator'
   );
-
-  const [updateStoryBookPartQuestionContent] = useMutation(
-    updateStoryBookPartQuestion
-  );
-
-  const [deleteStoryBookPartQuestionContent] = useMutation(
-    deleteStoryBookPartQuestion
-  );
-
-  const [storybookPartsIds, setStorybookPartsIds] = useState([]);
 
   const deleteAndRefresh = async (event: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
 
     dialog({
+      color: 'bg-white',
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Are you sure you want to delete this content?"
-          message={` You will not be able to recover this content if you delete it now.`}
+          message={`You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.`}
           onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'Keep editing']}
+          btnText={['Delete', 'Keep editing']}
           isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
@@ -196,7 +134,7 @@ export default function CreateStory({
               .then(() => {
                 cancelEdit();
                 setNotification({
-                  title: 'Successfully Deleted Content!',
+                  title: 'Content deleted!',
                   variant: NOTIFICATION.SUCCESS,
                 });
               })
@@ -278,6 +216,18 @@ export default function CreateStory({
         }
       });
 
+      // populate type from english when language is not english
+      if (selectedLanguageId !== LanguageId.enZa) {
+        const propType = t.fields.find((item) => item.propName === 'type');
+        if (propType.contentValue === undefined) {
+          const defaultType = englishDefaultValues.find(
+            (item) => item.contentTypeField.fieldName === 'type'
+          );
+          propType.contentValue = defaultType;
+          // set the answer for validation
+          setValue('type', defaultType.value);
+        }
+      }
       setTemplate(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -322,20 +272,16 @@ export default function CreateStory({
   const onSubmit = async (values: any) => {
     setLoading(true);
 
-    let newCurrentStorybookPartsIds = [];
-    var createdBookPartId: any = {};
-    let newStoryBook = '';
-
     const model = { ...values };
+
     if (!content?.id) {
-      const createResponse = await crateContent({
+      await crateContent({
         variables: {
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
       });
       setLoading(false);
-      newStoryBook = createResponse?.data?.createStoryBook;
       savedContent();
       cancelEdit();
     } else {
@@ -348,270 +294,61 @@ export default function CreateStory({
       }).catch(() => {
         setLoading(false);
       });
-      setLoading(false);
-      savedContent();
-      cancelEdit();
     }
 
+    const storyBookParts = [];
     for (let item of filteredStoryBookParts) {
-      if (!item?.id && item?.partText === '') {
-        return;
-      }
-
-      if (item?.id && item?.partText !== '') {
-        const updateStoryBookPartResponse = await updateStoryBookPartContent({
-          variables: {
-            id: item?.id.toString(),
-            input: {
-              name: item?.name,
-              part: item?.part.toString(),
-              partText: item?.partText,
-              storyBookPartQuestions:
-                item?.storyBookPartQuestions?.[0]?.id.toString(),
-            },
-            localeId: selectedLanguageId.toString(),
-          },
+      let mappedQuestion =
+        filteredStoryBookPartsQuestions &&
+        filteredStoryBookPartsQuestions.find((q) => q.idx === item.idx);
+      if (mappedQuestion) {
+        storyBookParts.push({
+          id: item.id.toString(),
+          name: item.name,
+          part: item.part,
+          partText: item.partText,
+          partContentTypeId: ContentTypeEnum.StoryBookParts,
+          questionId: mappedQuestion.id.toString(),
+          questionName: mappedQuestion.name,
+          questionText: mappedQuestion.question,
+          questionContentTypeId: ContentTypeEnum.StoryBookPartQuestion,
+          questionChange: true,
         });
-        if (updateStoryBookPartResponse) {
-          setNotification({
-            title: `Changes saved!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-          setLoading(false);
-
-          if (filteredStoryBookPartsQuestions?.length > 0) {
-            const indexHasChanges = filteredStoryBookPartsQuestions?.find(
-              (quest) => {
-                return quest?.idx === item?.idx;
-              }
-            );
-            if (indexHasChanges) {
-              if (indexHasChanges?.id && indexHasChanges?.question === '') {
-                const deleteQuestionResponse =
-                  await deleteStoryBookPartQuestionContent({
-                    variables: {
-                      id: indexHasChanges?.id.toString(),
-                      localeId: selectedLanguageId.toString(),
-                    },
-                  });
-
-                if (deleteQuestionResponse) {
-                  setNotification({
-                    title: 'Successfully Updated Content!',
-                    variant: NOTIFICATION.SUCCESS,
-                  });
-                }
-              }
-            }
-            if (indexHasChanges?.question) {
-              if (!indexHasChanges?.id && indexHasChanges?.question !== '') {
-                const createQuestionResponse =
-                  await createStoryBookPartQuestionContent({
-                    variables: {
-                      input: {
-                        name: indexHasChanges?.question,
-                        question: indexHasChanges?.question,
-                      },
-                      localeId: selectedLanguageId.toString(),
-                    },
-                  });
-
-                if (createQuestionResponse) {
-                  await updateStoryBookPartContent({
-                    variables: {
-                      id: item?.id.toString(),
-                      input: {
-                        name: item?.name,
-                        part: item?.part.toString(),
-                        partText: item?.partText,
-                        storyBookPartQuestions:
-                          createQuestionResponse.data?.createStoryBookPartQuestion?.toString(),
-                      },
-                      localeId: selectedLanguageId.toString(),
-                    },
-                  });
-                }
-              }
-
-              if (indexHasChanges?.id && indexHasChanges?.question !== '') {
-                const createQuestionResponse =
-                  await updateStoryBookPartQuestionContent({
-                    variables: {
-                      id: indexHasChanges?.id.toString(),
-                      input: {
-                        name: indexHasChanges?.question,
-                        question: indexHasChanges?.question,
-                      },
-                      localeId: selectedLanguageId.toString(),
-                    },
-                  });
-              }
-            }
+      } else {
+        if (item.name !== '') {
+          let qId = '';
+          if (item.storyBookPartQuestions.length !== 0) {
+            qId = item.storyBookPartQuestions[0].id.toString();
           }
-        }
-
-        const model = { ...values };
-
-        await updateContent({
-          variables: {
-            id: content.id.toString(),
-            input: { ...model },
-            localeId: selectedLanguageId.toString(),
-          },
-        }).catch(() => {
-          setLoading(false);
-        });
-
-        setNotification({
-          title: 'Successfully Updated Content!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-
-        savedContent();
-
-        setLoading(false);
-      }
-
-      if (item?.id && item?.partText === '') {
-        const response = deleteStoryBookPartContent({
-          variables: {
-            id: item?.id.toString(),
-            localeId: selectedLanguageId.toString(),
-          },
-        });
-
-        if (response) {
-          setNotification({
-            title: `Changes saved`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-          const currentStorybookParts = values?.storyBookParts || '';
-          let currentStorybookPartsArray = currentStorybookParts?.split(',');
-          const filteredcurrentStorybookPartsArray =
-            currentStorybookPartsArray?.filter((currentItem) => {
-              return Number(currentItem) !== item?.id;
-            });
-          const newData = filteredcurrentStorybookPartsArray?.join(',');
-          const model = {
-            ...values,
-            storyBookParts: newData,
-          };
-          updateContent({
-            variables: {
-              id: content.id.toString(),
-              input: { ...model },
-              localeId: selectedLanguageId.toString(),
-            },
+          storyBookParts.push({
+            id: item.id.toString(),
+            name: item.name,
+            part: item.part,
+            partText: item.partText,
+            partContentTypeId: ContentTypeEnum.StoryBookParts,
+            questionId: qId,
+            questionName: '',
+            questionText: '',
+            questionChange: false,
+            questionContentTypeId: ContentTypeEnum.StoryBookPartQuestion,
           });
         }
-        setLoading(false);
-
-        savedContent();
-        cancelEdit();
-        return;
       }
-      if (!item?.id && item?.partText !== '') {
-        const createBookPartresponse = await createStoryBookPartContent({
-          variables: {
-            input: {
-              name: item?.name,
-              part: item?.part.toString(),
-              partText: item?.partText,
-              storyBookPartQuestions: '',
-            },
-            localeId: selectedLanguageId.toString(),
-          },
-        });
+    }
 
-        if (createBookPartresponse && createBookPartresponse.data) {
-          setNotification({
-            title: `Changes saved`,
-            variant: NOTIFICATION.SUCCESS,
-          });
+    await updateStoryBookAndParts({
+      variables: {
+        storyBookParts: storyBookParts,
+        storyBookContentId: content.id,
+        localeId: selectedLanguageId,
+        currentBookPartsIds: model.storyBookParts ? model.storyBookParts : '',
+      },
+    });
 
-          if (filteredStoryBookPartsQuestions?.length > 0) {
-            const indexHasChanges = filteredStoryBookPartsQuestions?.find(
-              (quest) => {
-                return quest?.idx === item?.idx;
-              }
-            );
-            if (indexHasChanges?.question) {
-              if (!indexHasChanges?.id && indexHasChanges?.question !== '') {
-                const createQuestionResponse =
-                  await createStoryBookPartQuestionContent({
-                    variables: {
-                      input: {
-                        name: indexHasChanges?.question,
-                        question: indexHasChanges?.question,
-                      },
-                      localeId: selectedLanguageId.toString(),
-                    },
-                  });
-
-                if (createBookPartresponse) {
-                  await updateStoryBookPartContent({
-                    variables: {
-                      id: createBookPartresponse.data?.createStoryBookParts?.toString(),
-                      input: {
-                        name: item?.name,
-                        part: item?.part.toString(),
-                        partText: item?.partText,
-                        storyBookPartQuestions:
-                          createQuestionResponse.data?.createStoryBookPartQuestion?.toString(),
-                      },
-                      localeId: selectedLanguageId.toString(),
-                    },
-                  });
-                }
-                if (indexHasChanges?.id && indexHasChanges?.question !== '') {
-                  const createQuestionResponse =
-                    await updateStoryBookPartQuestionContent({
-                      variables: {
-                        id: indexHasChanges?.id,
-                        input: {
-                          name: indexHasChanges?.question,
-                          question: indexHasChanges?.question,
-                        },
-                        localeId: selectedLanguageId.toString(),
-                      },
-                    });
-                }
-              }
-            }
-          }
-
-          createdBookPartId =
-            createBookPartresponse?.data?.createStoryBookParts;
-          setStorybookPartsIds([...storybookPartsIds, createdBookPartId]);
-          newCurrentStorybookPartsIds = [
-            ...newCurrentStorybookPartsIds,
-            createdBookPartId,
-          ];
-          const currentStorybookParts = values?.storyBookParts || '';
-          let currentStorybookPartsArray = currentStorybookParts?.split(',');
-          currentStorybookPartsArray?.push(createdBookPartId);
-        }
-
-        const newModel = {
-          ...model,
-          storyBookParts:
-            model?.storyBookParts +
-            ',' +
-            newCurrentStorybookPartsIds.toString(),
-        };
-
-        await updateContent({
-          variables: {
-            id: content?.id ? content?.id?.toString() : newStoryBook,
-            input: { ...newModel },
-            localeId: selectedLanguageId.toString(),
-          },
-        });
-        setLoading(false);
-
-        savedContent();
-        cancelEdit();
-      }
+    setLoading(false);
+    savedContent();
+    if (cancelEdit) {
+      cancelEdit();
     }
     return;
   };
@@ -628,16 +365,16 @@ export default function CreateStory({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              <h3 className="text-xl font-semibold leading-6 text-gray-900">
+              {/* <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 Story
-              </h3>
+              </h3> */}
               <div className="mt-1 flex items-center gap-1">
-                <Typography type={'h3'} text={'Type:'} color={'textDark'} />
-                <div>{content?.type}</div>
+                {/* <Typography type={'h3'} text={'Add'} color={'textDark'} />
+                <div>{content?.type}</div> */}
               </div>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+              {/* {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -646,7 +383,7 @@ export default function CreateStory({
                   Compare Languages
                   <BookOpenIcon width="20px" className="pl-1" />
                 </button>
-              )}
+              )} */}
 
               {!!cancelEdit && (
                 <button
@@ -686,6 +423,7 @@ export default function CreateStory({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              selectedLanguageId={selectedLanguageId}
               setFilteredStoryBookParts={setFilteredStoryBookParts}
               setFilteredStoryBookPartsQuestions={
                 setFilteredStoryBookPartsQuestions

@@ -13,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public string Message { get; set; }
         public string Notes { get; set; }
         public string GroupingName { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         public string UserType { get; set; }
 
         //TODO: CB Map userId to display
