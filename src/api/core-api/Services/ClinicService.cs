@@ -299,7 +299,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             return new PregnantMomsModel()
             {
-                TotalMaternalDistress = visitData.Where(x => x.VisitSection == Constants.GGSettings.maternal_distress_screening).Select(x => x.Visit.MotherId).Distinct().Count(),
+                TotalMaternalDistress = visitData.Where(x => x.VisitSection == Constants.GGSettings.MaternalDistressScreening).Select(x => x.Visit.MotherId).Distinct().Count(),
                 TotalMaternalMalnutrition = visitData.Where(x => x.Visit.VisitType.Name == Constants.GGSettings.visit1).Select(x => x.Visit.MotherId).Distinct().Count(),
                 TotalAlcoholAbuse = visitData.Where(x => x.VisitSection == Constants.GGSettings.alcohol_use).Select(x => x.Visit.MotherId).Distinct().Count()
             };

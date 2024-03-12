@@ -76,7 +76,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             };
         }
 
-        public List<VisitBackReferral> GetBackReferralDataForClient(string id, string clientType, bool referralCompleted, bool backReferralCompleted) {
+        public List<VisitBackReferral> GetBackReferralDataForClient(string id, string clientType, bool referralCompleted, bool backReferralCompleted) 
+        {
             // This data is for the past 6 months
             List<VisitBackReferral> allReferrals = new List<VisitBackReferral>();
             DateTime today = DateTime.Today;

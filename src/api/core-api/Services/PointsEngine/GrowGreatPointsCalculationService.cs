@@ -11,8 +11,10 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
 
@@ -83,7 +85,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             }
         }
 
-        private void AddOrUpdatePoints(Guid activityId, Guid userId, int timesScored, int pointsTotal)
+        private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null)
         {
             var monthStart = DateTime.Now.GetStartOfMonth();
             var monthEnd = DateTime.Now.GetEndOfMonth();
@@ -101,13 +103,13 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     DateScored = DateTime.Now.GetStartOfMonth(),
                     UserId = userId,
                     PointsActivityId = activityId,
-                    TimesScored = timesScored,
+                    TimesScored = timesScored ?? 1,
                     PointsTotal = pointsTotal,                    
                 });
             }
             else
             {
-                currentPoints.TimesScored = timesScored;
+                currentPoints.TimesScored = timesScored ?? currentPoints.TimesScored + 1;
                 currentPoints.PointsTotal = pointsTotal;
 
                 _pointsUserSummaryRepo.Update(currentPoints);
@@ -135,8 +137,8 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             AddOrUpdatePoints(
                 PointsActivityConstants.PregnantMomFolderOpenedActivityId,
                 userId,
-                mothers.Count,
-                mothers.Count >= 2 ? newMothersActivity.Points : 0);
+                mothers.Count >= 2 ? newMothersActivity.Points : 0,
+                mothers.Count);
 
             // Early pregnancy identification
             if (mothers.Count > 0)
@@ -164,8 +166,8 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                 AddOrUpdatePoints(
                    PointsActivityConstants.EarlyPregnacyIdentificationActivityId,
                    userId,
-                   motherssLessThat20WeeksPregnant,
-                   pointsTotal);
+                   pointsTotal,
+                   motherssLessThat20WeeksPregnant);
             }
         }
 
@@ -192,8 +194,73 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             AddOrUpdatePoints(
                 PointsActivityConstants.ChildFoldersOpenedActivityId,
                 userId,
-                newInfantsCount,
-                newInfantsCount >= 5 ? activity.Points : 0);
+                newInfantsCount >= 5 ? activity.Points : 0,
+                newInfantsCount);
+        }
+
+        /// <summary>
+        /// Calculates points scored immediately for visits (DOES NOT INCLUDE MONTH END POINTS)
+        /// 1. Referral made for self harm or maternal distress
+        /// 2. Referral made for low MUAC score
+        /// </summary>
+        /// <param name="userId">User Id of CHW to calculate points for</param>
+        public void CalculatePregnantMotherReferralPoints(Guid userId)
+        {
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+
+            //"If one of the following referral boxes were checked for at least 1 client:
+            //-Lethabo had thoughts and plans to harm herself or commit suicide
+            //-Lethabo was experiencing maternal distress user earns 20 points." - flag
+            // "Monthly total (capped at 20) Points added as soon as goal reached within the month"
+            var distressReferralCount = _visitDataStatusRepo.GetAll()
+                .Where(x => 
+                    x.VisitData.Visit.Mother.HealthCareWorker.UserId == userId 
+                    && x.VisitData.VisitSection == GGSettings.MaternalDistressScreening 
+                    && x.Type == GGSettings.visit_data_client_referral 
+                    && x.IsCompleted
+                    && x.InsertedDate >= monthStart 
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.Id)
+                .Distinct()
+                .Count();
+
+            if (distressReferralCount > 0)
+            {
+                var distressReferralActivity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.PregnantMotherReferralForMaternalDistressActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.PregnantMotherReferralForMaternalDistressActivityId,
+                    userId,
+                    distressReferralActivity.Points,
+                    distressReferralCount);
+            }
+
+
+            //"If a referral is made (ie, referral box checked) for MUAC under 22cm for at least 1 client then user earns 20 points.
+            // That is, the following referral box is checked within the current month:
+            // -May be underweight -MUAC less than 22cm"
+            //"Monthly total (capped at 20) Points added as soon as goal reached within the month"
+            var malnutritionReferralCount = _visitDataStatusRepo.GetAll()
+                .Where(x => 
+                    x.VisitData.Visit.Mother.HealthCareWorker.UserId == userId 
+                    && x.VisitData.VisitSection == GGSettings.MotherNutritionMUACMeasurement 
+                    && x.Type == GGSettings.visit_data_client_referral
+                    && x.IsCompleted
+                    && x.InsertedDate >= monthStart 
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.Id)
+                .Distinct()
+                .Count();
+
+            if (malnutritionReferralCount > 0)
+            {
+                var malnutritionReferralActivity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.PregnantMotherReferralForMaternalMalnutritionActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.PregnantMotherReferralForMaternalMalnutritionActivityId,
+                    userId,
+                    malnutritionReferralActivity.Points,
+                    malnutritionReferralCount);
+            }
         }
 
         public bool CalculatePregnantMomVisits(string userId, DateTime today)
@@ -244,40 +311,6 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     }
                 }
 
-                // 2
-                //"If one of the following referral boxes were checked for at least 1 client:
-                //-Lethabo had thoughts and plans to harm herself or commit suicide
-                //-Lethabo was experiencing maternal distress user earns 20 points." - flag
-                // "Monthly total (capped at 20) Points added as soon as goal reached within the month"
-                int maternal_referrals = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
-                                                                    x.VisitData.VisitSection == Constants.GGSettings.maternal_distress_screening &&
-                                                                    x.Type == Constants.GGSettings.visit_data_client_referral &&
-                                                                    x.InsertedDate.Year == today.Year &&
-                                                                    x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
-
-                if (maternal_referrals > 0)
-                {
-                    //int activity2_records = GetIndividualUserPoints(activity2.Id, userId, today.Month, today.Year).Count;
-                    //if (activity2_records == 0 )
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity2.Points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity2.Id,
-                    //            Comment = "Total: " + maternal_referrals
-                    //        }
-                    //    );
-                    //}
-                }
-
 
                 // 3
                 //"If no ""Visit 1""s for pregnant moms are overdue or have been missed by the end of the month, user earns 50 points.
@@ -312,40 +345,6 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                         //    );
                         //}
                     }
-                }
-
-                // 4
-                //"If a referral is made (ie, referral box checked) for MUAC under 22cm for at least 1 client then user earns 20 points.
-                // That is, the following referral box is checked within the current month:
-                // -May be underweight -MUAC less than 22cm"
-                //"Monthly total (capped at 20) Points added as soon as goal reached within the month"
-
-                int muac_referrals = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
-                                                                    x.VisitData.VisitSection == Constants.GGSettings.mother_growth &&
-                                                                    x.Type == Constants.GGSettings.visit_data_client_referral &&
-                                                                    x.InsertedDate.Year == today.Year &&
-                                                                    x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
-                if (muac_referrals > 0)
-                {
-                    //int activity4_records = GetIndividualUserPoints(activity4.Id, userId, today.Month, today.Year).Count;
-                    //if (activity4_records == 0)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity4.Points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity4.Id,
-                    //            Comment = "Total: " + muac_referrals
-                    //        }
-                    //    );
-                    //}
                 }
 
                 // 5
@@ -1060,7 +1059,6 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             }
             return true;
         }
-
 
         public void CalculateBreastFeedingClubPoints(Guid clinicId)
         {
