@@ -231,7 +231,7 @@ export default function Shell() {
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
                 {navigation?.map((item) => (
-                  <div>
+                  <div key={`${item} + ${Math.random()}`}>
                     <MenuItem
                       key={`${item.name}-${new Date().getTime()}`}
                       item={item}

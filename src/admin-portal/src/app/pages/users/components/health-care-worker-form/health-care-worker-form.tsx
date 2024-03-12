@@ -1,26 +1,24 @@
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { LanguageDto, TeamLeadDto } from '@ecdlink/core';
-import { GetAllClinic, GetAllLanguage, GetAllTeamLead } from '@ecdlink/graphql';
+import { ClinicDto } from '@ecdlink/core';
+import { GetAllClinic } from '@ecdlink/graphql';
 import { UseFormRegister } from 'react-hook-form';
-import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
+import { Typography } from '@ecdlink/ui';
 
 export interface HealthCareWorkerFormProps {
   formKey: string;
   errors: any;
   register: UseFormRegister<any>;
+  clinicId: string;
 }
 
 const HealthCareWorkerForm: React.FC<HealthCareWorkerFormProps> = ({
   formKey,
   errors,
   register,
+  clinicId,
 }) => {
-  const { data } = useQuery(GetAllLanguage, {
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
+  const { data: clinicsData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -29,22 +27,23 @@ const HealthCareWorkerForm: React.FC<HealthCareWorkerFormProps> = ({
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 ">
           <div className="flex flex-row sm:col-span-3">
-            <div className="w-6/12 pr-4 sm:col-span-3">
+            <div className="w-full pr-4 sm:col-span-3">
+              <Typography text={'Clinic *'} type={'body'} color={'textMid'} />
               <FormSelectorField
-                label="Team Lead"
-                nameProp={'teamLeadId'}
+                label=""
+                nameProp={'clinicId'}
                 register={register}
                 options={
-                  teamLeadData &&
-                  teamLeadData.allTeamLeads &&
-                  teamLeadData.allTeamLeads.map((x: TeamLeadDto) => {
+                  clinicsData &&
+                  clinicsData.GetAllClinic &&
+                  clinicsData.GetAllClinic.map((x: ClinicDto) => {
                     return {
                       key: x.id,
-                      value: x.user.fullName,
+                      value: x.name,
                     };
                   })
                 }
-                error={errors.teamLeadId?.message}
+                error={!clinicId && errors?.clinicId?.message}
               />
             </div>
           </div>

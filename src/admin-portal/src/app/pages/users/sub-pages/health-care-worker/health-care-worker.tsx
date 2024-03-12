@@ -173,6 +173,7 @@ export default function HealthCareWorkers() {
       state: {
         component: 'chw',
         userId: selectedRow?.userId,
+        clinicId: selectedRow?.clinicId,
       },
     });
   };

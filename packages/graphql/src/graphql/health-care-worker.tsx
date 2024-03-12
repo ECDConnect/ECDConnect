@@ -25,6 +25,7 @@ export const GetAllHealthCareWorker = gql`
       insertedDate
       clinicId
       user {
+        id
         connectUsage
         isActive
         userName
