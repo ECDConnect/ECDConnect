@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     public class HealthCareWorkerMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public HealthCareWorkerModel AddHealthCareWorker(
+        public PortalUserHCWModel AddHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             AddHealthCareWorkerInputModel input)
@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
             var newHealthCareWorker = healthCareWorkerRepo.Insert(healthCareWorker);
 
-            return new HealthCareWorkerModel(newHealthCareWorker);
+            return new PortalUserHCWModel(newHealthCareWorker);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
