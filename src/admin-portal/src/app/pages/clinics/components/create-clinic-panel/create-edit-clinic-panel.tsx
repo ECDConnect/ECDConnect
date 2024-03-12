@@ -43,6 +43,23 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   const { data: teamLeadtData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
+    variables: {
+      search: '',
+      clinicSearch: [],
+      provinceSearch: [],
+      subDistrictSearch: [],
+      visitSearch: [],
+      connectUsageSearch: [],
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    },
   });
 
   const { data: clinicsData } = useQuery(GetAllClinic, {
