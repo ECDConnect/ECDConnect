@@ -1,6 +1,4 @@
-﻿using DotLiquid.Tags;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
-using ECDLink.Api.CoreApi.Services.Interfaces;
+﻿using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -12,10 +10,8 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
 
@@ -28,6 +24,8 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
 
         private readonly IGenericRepository<Infant, Guid> _infantRepo;
         private readonly IGenericRepository<Mother, Guid> _motherRepo;
+
+        private readonly IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
 
         private readonly IGenericRepository<Visit, Guid> _visitRepo;
         private readonly IGenericRepository<VisitData, Guid> _visitDataRepo;
@@ -61,6 +59,8 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             _infantRepo = _repositoryFactory.CreateGenericRepository<Infant>(userContext: _uId);
             _motherRepo = _repositoryFactory.CreateGenericRepository<Mother>(userContext: _uId);
 
+            _healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: _uId);
+
             _visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _uId);
             _visitDataStatusRepo = _repositoryFactory.CreateGenericRepository<VisitDataStatus>(userContext: _uId);
@@ -86,10 +86,10 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             }
         }
 
-        private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null)
+        private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null, DateTime? dateScored = null)
         {
-            var monthStart = DateTime.Now.GetStartOfMonth();
-            var monthEnd = DateTime.Now.GetEndOfMonth();
+            var monthStart = (dateScored ?? DateTime.Now).GetStartOfMonth();
+            var monthEnd = (dateScored ?? DateTime.Now).GetEndOfMonth();
             var currentPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
                 x.UserId == userId 
                 && x.PointsActivityId == activityId 
@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             {
                 _pointsUserSummaryRepo.Insert(new PointsUserSummary
                 {
-                    DateScored = DateTime.Now.GetStartOfMonth(),
+                    DateScored = dateScored ?? DateTime.Now.GetStartOfMonth(),
                     UserId = userId,
                     PointsActivityId = activityId,
                     TimesScored = timesScored ?? 1,
@@ -466,126 +466,71 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             #endregion
         }
 
-        public bool CalculatePregnantMomVisits(string userId, DateTime today)
+        /// <summary>
+        /// Calculates points for all CHWs for completing required monthly visits for mothers
+        /// </summary>
+        /// <returns></returns>
+        public void CalculatePregnantMotherVisitsCompletedPoints()
         {
-            bool hasMothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == userId && x.IsActive == true).Count() != 0;
+            // Calculate for previous month
+            var monthStart = DateTime.Now.GetStartOfPreviousMonth();
+            var monthEnd = DateTime.Now.GetEndOfPreviousMonth();
 
-            if (hasMothers)
+            var healthCareWorkerUserIds = _healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.User.IsActive).Select(x => x.UserId).ToList();
+
+            var maternalDistressVisitsActivity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.MotherMaternalStressVisitsUpToDateActivityId);
+            var malnutritionVisitsActivity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.MotherMalnutritionVisitsUpToDateActivityId);
+            var alchoholAbuseVisitsActivity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.MotherAlcoholAbuseVisitsUpToDateActivityId);
+
+            foreach (var userId in healthCareWorkerUserIds)
             {
-                List<PointsLibrary> pointsLibraries = _pointsEngineService.GetPointsLibraryForActivity(Constants.PointsEngineSettings.pregnant_mom_clients);
-                PointsLibrary activity1 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.pregnant_mom_clients_ac1).FirstOrDefault();
-                PointsLibrary activity2 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.pregnant_mom_clients_ac2).FirstOrDefault();
-                PointsLibrary activity3 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.pregnant_mom_clients_ac3).FirstOrDefault();
-                PointsLibrary activity4 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.pregnant_mom_clients_ac4).FirstOrDefault();
-                PointsLibrary activity5 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.pregnant_mom_clients_ac5).FirstOrDefault();
-
-                // 1
-                // If no visits overdue or missing for pregnant mom clients by the end of the month, user earns 50 points.
-                //"Monthly total (capped at 50) Calculated at the end of the month."
-                if (today.Date == today.GetEndOfMonth().Date)
+                if (!_motherRepo.GetAll().Any(x => x.HealthCareWorker.UserId == userId && x.IsActive == true))
                 {
-                    int monthVisits = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.Attended == false &&
-                                                                x.DueDate.HasValue &&
-                                                                x.DueDate.Value.Year == today.Year &&
-                                                                x.DueDate.Value.Month == today.Month).Select(x => x.Id).Distinct().Count();
-
-                    if (monthVisits == 0)
-                    {
-                        //int activity1_records = GetIndividualUserPoints(activity1.Id, userId, today.Month, today.Year).Count;
-                        //if (activity1_records == 0)
-                        //{
-                        //    InsertIndividualUserPoints(
-                        //        new PointsUser
-                        //        {
-                        //            Id = Guid.NewGuid(),
-                        //            IsActive = true,
-                        //            InsertedDate = DateTime.Now,
-                        //            UpdatedBy = _uId.ToString(),
-                        //            Month = today.Month,
-                        //            Year = today.Year,
-                        //            Points = activity1.Points,
-                        //            UserId = new Guid(userId),
-                        //            PointsLibraryId = activity1.Id,
-                        //            Comment = "Total: " + monthVisits
-                        //        }
-                        //    );
-                        //}
-                    }
+                    continue;
                 }
 
+                var allMonthlyVisits = _visitRepo.GetAll()
+                    .Where(x => 
+                        x.Mother.HealthCareWorker.UserId == userId
+                        && x.DueDate.HasValue
+                        && x.InsertedDate >= monthStart
+                        && x.InsertedDate <= monthEnd)
+                    .Select(x => new { Id = x.Id, Type = x.VisitType.Name, x.Attended })
+                    .ToList();
 
-                // 3
-                //"If no ""Visit 1""s for pregnant moms are overdue or have been missed by the end of the month, user earns 50 points.
-                //(This means the question on G6.2.1 is answered for all new clients; any ideas of how to make this easier to calculate ?) "
-                //"Monthly total (capped at 50)  Calculated at the end of the month."
-                if (today.Date == today.GetEndOfMonth().Date)
+                var totalVisits = allMonthlyVisits.Count();
+                var missedVisits = allMonthlyVisits.Where(x => x.Attended == false).Count();
+
+                if (missedVisits == 0)
                 {
-                    int visit1_count = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.Visit.Attended == false &&
-                                                                x.Visit.VisitType.Name == Constants.GGSettings.visit1 &&
-                                                                x.InsertedDate.Year == today.Year &&
-                                                                x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
-                    if (visit1_count == 0)
-                    {
-                        //int activity3_records = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).Count;
-                        //if (activity3_records == 0)
-                        //{
-                        //    InsertIndividualUserPoints(
-                        //        new PointsUser
-                        //        {
-                        //            Id = Guid.NewGuid(),
-                        //            IsActive = true,
-                        //            InsertedDate = DateTime.Now,
-                        //            UpdatedBy = _uId.ToString(),
-                        //            Month = today.Month,
-                        //            Year = today.Year,
-                        //            Points = activity3.Points,
-                        //            UserId = new Guid(userId),
-                        //            PointsLibraryId = activity3.Id,
-                        //            Comment = "Total: " + visit1_count
-                        //        }
-                        //    );
-                        //}
-                    }
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.MotherMaternalStressVisitsUpToDateActivityId,
+                        userId.Value,
+                        maternalDistressVisitsActivity.Points,
+                        totalVisits,
+                        monthStart);
+
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.MotherAlcoholAbuseVisitsUpToDateActivityId,
+                        userId.Value,
+                        alchoholAbuseVisitsActivity.Points,
+                        totalVisits,
+                        monthStart);
                 }
 
-                // 5
-                // Screening for substance abuse "up to date"
-                // If no visits overdue or missing for pregnant mom clients by the end of the month, user earns 50 points.
-                // "Monthly total (capped at 50) Calculated at the end of the month."
-                if (today.Date == today.GetEndOfMonth().Date)
+                var totalVisit1s = allMonthlyVisits.Where(x => x.Type == GGSettings.visit1).Count();
+                var missedVisit1s = allMonthlyVisits.Where(x => x.Type == GGSettings.visit1 && x.Attended == false).Count();
+
+                if (missedVisit1s == 0)
                 {
-                    int abuseVisits = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.Visit.DueDate.HasValue &&
-                                                                x.Visit.DueDate.Value.Year == today.Year &&
-                                                                x.Visit.DueDate.Value.Month == today.Month).Select(x => x.Id).Distinct().Count();
-                    if (abuseVisits == 0)
-                    {
-                        //int activity5_records = GetIndividualUserPoints(activity5.Id, userId, today.Month, today.Year).Count;
-                        //if (activity5_records == 0)
-                        //{
-                        //    InsertIndividualUserPoints(
-                        //        new PointsUser
-                        //        {
-                        //            Id = Guid.NewGuid(),
-                        //            IsActive = true,
-                        //            InsertedDate = DateTime.Now,
-                        //            UpdatedBy = _uId.ToString(),
-                        //            Month = today.Month,
-                        //            Year = today.Year,
-                        //            Points = activity5.Points,
-                        //            UserId = new Guid(userId),
-                        //            PointsLibraryId = activity5.Id,
-                        //            Comment = "Total: " + abuseVisits
-                        //        }
-                        //    );
-                        //}
-                    }
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.MotherMalnutritionVisitsUpToDateActivityId,
+                        userId.Value,
+                        malnutritionVisitsActivity.Points,
+                        totalVisit1s,
+                        monthStart);
                 }
-                UpdateUserSummaryPoints(userId, today);
             }
-            return true;
         }
 
         public bool CalculateInfantVisits(string userId, DateTime today)
@@ -784,47 +729,8 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                 }
 
 
-                // 8 
-                // Measuring childrens' growth weight - referral required
-                // no cap
-                List<VisitDataStatus> ac8 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.QuestionWeight &&
-                                                                x.Comment == Constants.GGSettings.severely_underweight &&
-                                                                x.Comment == Constants.GGSettings.growth_faltering &&
-                                                                x.Comment == Constants.GGSettings.underweight3 &&
-                                                                x.Comment == Constants.GGSettings.overweight &&
-                                                                x.Comment == Constants.GGSettings.obese &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                                (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-                if (ac8.Count > 0)
-                {
-                    var activity8_points = ac8.Count * activity8.Points;
-                    var names = ac8.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac8.Count + " - " + string.Join(",", names);
+               
 
-                }
-
-
-                // 11
-                // Measuring childrens' growth MUAC - referral required
-                // no cap
-                List<VisitDataStatus> ac11 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.QuestionMUAC &&
-                                                                x.Comment == Constants.GGSettings.severe_acute_malnutrition &&
-                                                                x.Comment == Constants.GGSettings.moderate_acute_malnutrition &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-
-                if (ac11.Count > 0)
-                {
-                    var activity11_points = ac11.Count * activity11.Points;
-                    var names = ac11.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac11.Count + " - " + string.Join(",", names);
-
-                }
 
                 // 12
                 // Vitamin A

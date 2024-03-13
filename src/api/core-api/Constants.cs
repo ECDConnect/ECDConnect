@@ -880,6 +880,10 @@ namespace EcdLink.Api.CoreApi
             public static readonly Guid ChildLengthMeasuredActionTakenOrNotRequiredActivityId = new Guid("7ae6cfcb-85a3-4962-af8e-39901dc19848");
             public static readonly Guid ChildMuacMeasuredActivityId = new Guid("78ed5347-3877-49f2-bf00-a6673df363a3");
             public static readonly Guid ChildMuacMeasuredActionTakenOrNotRequiredActivityId = new Guid("1b0c8486-99e5-4670-a162-a4586d4a4c46");
+
+            public static readonly Guid MotherMaternalStressVisitsUpToDateActivityId = new Guid("05ffdb20-d420-458d-af15-8706ed8c8084");
+            public static readonly Guid MotherAlcoholAbuseVisitsUpToDateActivityId = new Guid("bd5bd8c7-0fda-464c-8f9d-2ed8f51ef69f");
+            public static readonly Guid MotherMalnutritionVisitsUpToDateActivityId = new Guid("91c0eeda-3acd-463d-90b8-808703d9b5c8");            
         }
         
         public static class StatusColours

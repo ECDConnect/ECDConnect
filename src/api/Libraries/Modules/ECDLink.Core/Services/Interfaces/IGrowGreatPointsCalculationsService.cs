@@ -1,7 +1,6 @@
-﻿using ECDLink.DataAccessLayer.Entities.Visits;
-using System;
+﻿using System;
 
-namespace EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces
+namespace ECDLink.Core.Services.Interfaces
 {
     public interface IGrowGreatPointsCalculationsService
     {
@@ -9,9 +8,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces
         void CalculateInfantClientRegistration(Guid userId);
         void CalculatePregnantMotherReferralPoints(Guid userId);
         void CalculateInfantVisitAndReferralPoints(Guid userId);
-
-        //bool CalculatePregnantMomVisits(string userId, DateTime today);
-        //bool CalculateInfantVisits(string userId, DateTime today);
+        void CalculatePregnantMotherVisitsCompletedPoints();
         void CalculateBreastFeedingClubPoints(Guid clinicId);
     }
 }
