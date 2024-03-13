@@ -9,11 +9,16 @@ import {
   AlertType,
   ProfileAvatar,
   classNames,
+  Dropdown,
+  Dialog,
+  ActionModal,
 } from '@ecdlink/ui';
 import {
   JSXElementConstructor,
   ReactElement,
+  useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { useForm } from 'react-hook-form';
@@ -50,6 +55,8 @@ import {
   SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLead,
+  GetAllClinic,
+  UpdateHealthCareWorkerClinic,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -57,7 +64,7 @@ import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
-import { startOfMonth, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -116,6 +123,10 @@ export function ViewUser(props: any) {
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
+  const [clinic, setClinic] = useState('');
+  const [clinics, setClinics] = useState([]);
+  const [hasClinicChange, setHasClinicChange] = useState(false);
+  const [handleClinicChange, setHandleClinicChange] = useState(false);
 
   let userId = localStorage.getItem('selectedUser');
   const [resetUserPassword] = useMutation(ResetUserPassword);
@@ -132,6 +143,7 @@ export function ViewUser(props: any) {
       fetchPolicy: 'cache-and-network',
     }
   );
+
   const [getAllTeamLead, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
     variables: {
       userId: '',
@@ -139,12 +151,18 @@ export function ViewUser(props: any) {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
+  const { data: userData, refetch } = useQuery(GetUserById, {
     variables: {
       userId: props.location.state.userId ?? userId,
     },
     fetchPolicy: 'cache-and-network',
   });
+  const userObject = useMemo(() => userData?.userById, [userData?.userById]);
+
+  const { data: clinicsData } = useQuery(GetAllClinic, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
 
   const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
     useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
@@ -172,10 +190,10 @@ export function ViewUser(props: any) {
   }, [selectedRange]);
 
   useEffect(() => {
-    props.location.state?.component === 'administrators' &&
-      getUserById({
-        variables: { userId: props.location.state.userId ?? userId },
-      });
+    // props.location.state?.component === 'administrators' &&
+    //   getUserById({
+    //     variables: { userId: props.location.state.userId ?? userId },
+    //   });
 
     props.location.state?.component === 'chw' &&
       getChwById({
@@ -368,6 +386,32 @@ export function ViewUser(props: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData, chwData]);
 
+  useEffect(() => {
+    if (clinicsData?.GetAllClinic?.length > 0) {
+      setClinics(
+        clinicsData?.GetAllClinic?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+          };
+        })
+      );
+    }
+  }, [clinicsData?.GetAllClinic]);
+
+  const updateHealthCareWorkerClinic = useCallback(async () => {
+    const response = await updateHCWClinic({
+      variables: {
+        userId: userObject?.id,
+        clinicId: clinic,
+      },
+    });
+
+    if (response) {
+      setEditActive(!editActive);
+    }
+  }, [clinic, editActive, updateHCWClinic, userObject?.id]);
+
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const adminDataForm = adminDetailGetValues();
@@ -422,11 +466,16 @@ export function ViewUser(props: any) {
   };
 
   const onSave = async () => {
+    if (hasClinicChange) {
+      updateHealthCareWorkerClinic();
+      setHandleClinicChange(false);
+    }
     let passwordChange = false;
     if (passwordForm.password.length > 0) {
       passwordChange = true;
     }
     await saveUser(passwordChange);
+    setEditActive(!editActive);
   };
 
   //check password strength
@@ -585,16 +634,36 @@ export function ViewUser(props: any) {
                         </div>
                       )}
 
-                      <div className="my-0 w-6/12 sm:col-span-2">
-                        <PasswordInput
-                          label={'Password'}
-                          nameProp={'password'}
-                          sufficIconColor="black"
-                          value={passwordForm.password}
-                          register={passwordRegister}
-                          strengthMeterVisible={true}
-                          className="mb-9 "
-                        />
+                      <div>
+                        {isCHW && (
+                          <Dropdown
+                            placeholder={'Click to select a clinic'}
+                            className={'justify-between'}
+                            label={'Clinic *'}
+                            list={clinics}
+                            onChange={(item) => {
+                              setClinic(item);
+                              setHasClinicChange(true);
+                            }}
+                            fullWidth
+                            labelColor="textMid"
+                            fillColor="adminPortalBg"
+                            selectedValue={
+                              clinic || props.location.state?.clinicId
+                            }
+                          />
+                        )}
+                        <div className="my-0 w-6/12 sm:col-span-2">
+                          <PasswordInput
+                            label={'Password'}
+                            nameProp={'password'}
+                            sufficIconColor="black"
+                            value={passwordForm.password}
+                            register={passwordRegister}
+                            strengthMeterVisible={true}
+                            className="mb-9 "
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -605,7 +674,11 @@ export function ViewUser(props: any) {
                       isLoading={loading}
                       color="secondary"
                       disabled={!isChwDetailValid}
-                      onClick={handleSubmitChwDetails(onSave)}
+                      onClick={
+                        hasClinicChange
+                          ? () => setHandleClinicChange(true)
+                          : handleSubmitChwDetails(onSave)
+                      }
                     >
                       <SaveIcon color="white" className="mr-6 h-6 w-6">
                         {' '}
@@ -685,6 +758,39 @@ export function ViewUser(props: any) {
               </button>
             )}
           </div>
+          <Dialog
+            className="absolute left-40 bottom-80 w-6/12"
+            visible={handleClinicChange}
+            position={DialogPosition.Middle}
+          >
+            <ActionModal
+              className="z-80"
+              icon={'InformationCircleIcon'}
+              iconColor="alertMain"
+              iconBorderColor="alertBg"
+              importantText={`Are you sure you want to change ${userObject?.firstName} clinic?`}
+              detailText={`This change will reflect on the app for ${userObject?.firstName} immediately.`}
+              actionButtons={[
+                {
+                  text: 'Yes, confirm',
+                  textColour: 'white',
+                  colour: 'secondary',
+                  type: 'filled',
+                  onClick: handleSubmitChwDetails(onSave),
+
+                  leadingIcon: 'BadgeCheckIcon',
+                },
+                {
+                  text: 'No, cancel',
+                  textColour: 'secondary',
+                  colour: 'secondary',
+                  type: 'outlined',
+                  onClick: () => setHandleClinicChange(false),
+                  leadingIcon: 'XIcon',
+                },
+              ]}
+            />
+          </Dialog>
         </div>
 
         {(isCHW || props.location.state?.component === 'chw') &&
