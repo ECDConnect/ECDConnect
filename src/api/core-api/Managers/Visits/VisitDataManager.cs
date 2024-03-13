@@ -1,7 +1,6 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -72,65 +71,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _practitionerRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
         }
 
-        public Boolean AddChildVisitData(CMSVisitDataInputModel input)
+        public bool AddChildVisitData(CMSVisitDataInputModel input)
         {
-            if (input.VisitData.Sections == null)
+            var visit = AddVisitData(input);
+                        
+            _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
+
+            if (visit.VisitType.Name != Constants.GGSettings.CareForBaby)
             {
-                var _section = new CMSVisitSection();
-                _section.VisitSection = "";
-                if (input.VisitData.VisitName == Constants.GGSettings.pillar3_db)
-                {
-                    _section.VisitSection = Constants.GGSettings.pillar3_section;
-                }
-                _section.Questions = new List<CMSQuestion>();
-                var _question = new CMSQuestion();
-                _question.Question = "";
-                _question.Answer = "";
-                _section.Questions.Add(_question);
-                input.VisitData.Sections = new CMSVisitSection[] { _section };
+                _pointsCalculationService.CalculateInfantVisitAndReferralPoints(_applicationUserId);
             }
 
-
-            // first add all your questions and answers
-            foreach (CMSVisitSection section in input.VisitData.Sections) {
-                foreach (CMSQuestion question in section.Questions) {
-                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
-                    if (ValidateInsertRecord(visitData))
-                    {
-                        _visitDataRepo.Insert(visitData);
-                    }
-                }
-            }
-
-            // update the visit record to show attended/completed when all 7 questionnaires are completed
-            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
-            if (count != 0)
-            {
-                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
-                entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId.ToString();
-                entityToUpdate.Attended = true;
-                entityToUpdate.ActualVisitDate = DateTime.Now;
-                _visitRepo.Update(entityToUpdate);
-            }
-
-            // then handle status data
-            bool result = _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
-
-            // call points engine for hcw TODO
-            //if (result)
-            //{
-            //    _pointsEngineService.CalculateInfantVisits(_applicationUserId.ToString(), DateTime.UtcNow);
-            //}
             return true;
         }
         public bool AddAntenatalVisitData(CMSVisitDataInputModel input)
         {
-            if (input.VisitData.Sections == null)
-            {
-                throw new ArgumentNullException("VisitData.Section, data not provided");
-            }
+            AddVisitData(input);
 
+            // then handle status data - TODO I think we can clean this up and prevent it needing to reload the data from the DB again. 
+            // Can we just pass in the full visit we have just updated and calculate from there?
+            bool result = _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Adds data to a visit and marks it as attended
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public Visit AddVisitData(CMSVisitDataInputModel input)
+        {
             var visit = _visitRepo.GetAll().Where(x => x.Id == Guid.Parse(input.VisitId)).SingleOrDefault();
 
             if (visit == null)
@@ -138,11 +109,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 throw new ArgumentNullException("VisitId, no matching visit found");
             }
 
+            if (input.VisitData.Sections == null)
+            {
+                // No data to save
+                return visit;
+            }
+
             // Add visit data
             var visitDataItems = new List<VisitData>();
-            foreach (CMSVisitSection section in input.VisitData.Sections) 
+            foreach (CMSVisitSection section in input.VisitData.Sections)
             {
-                foreach (CMSQuestion question in section.Questions) 
+                foreach (CMSQuestion question in section.Questions)
                 {
                     var visitData = GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
                     if (!visit.VisitData.Any(x =>
@@ -156,7 +133,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            if(visitDataItems.Any())
+            if (visitDataItems.Any())
             {
                 _visitDataRepo.InsertMany(visitDataItems);
             }
@@ -166,13 +143,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             visit.UpdatedBy = _applicationUserId.ToString();
             visit.Attended = true;
             visit.ActualVisitDate = DateTime.Now;
-            _visitRepo.Update(visit);
 
-            // then handle status data - TODO I think we can clean this up and prevent it needing to reload the data from the DB again. 
-            // Can we just pass in the full visit we have just updated and calculate from there?
-            bool result = _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
-
-            return true;
+            return _visitRepo.Update(visit);
         }
 
         public Visit AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)
@@ -489,7 +461,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public List<VisitData> GetGrowthDataForInfant(string id) {
 
             return _visitDataRepo.GetAll().Where(x => x.Visit.Infant.UserId.ToString() == id && x.QuestionAnswer != "undefined" &&
-                                                (x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_muac))
+                                                (x.Question == Constants.GGSettings.QuestionWeight || x.Question == Constants.GGSettings.QuestionLength || x.Question == Constants.GGSettings.QuestionMUAC))
                 .OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
         public int GetTotalGrowthInfantsForWeek(string id, Boolean currentWeek)
@@ -509,7 +481,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return (
                 from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == id)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || y.Question == Constants.GGSettings.q_length || y.Question == Constants.GGSettings.q_muac && y.InsertedDate.Date >= monday.Date && y.InsertedDate.Date <= next7Days.Date) on visit.Id equals visitData.VisitId
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.QuestionWeight || y.Question == Constants.GGSettings.QuestionLength || y.Question == Constants.GGSettings.QuestionMUAC && y.InsertedDate.Date >= monday.Date && y.InsertedDate.Date <= next7Days.Date) on visit.Id equals visitData.VisitId
                 select visit.InfantId
             ).Distinct().Count();
 

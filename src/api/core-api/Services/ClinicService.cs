@@ -320,7 +320,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var totalSupportGrant = visitData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving &&
                                                          x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_muac) &&
+            var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.QuestionLength || x.Question == Constants.GGSettings.QuestionWeight || x.Question == Constants.GGSettings.QuestionMUAC) &&
                                                             x.VisitSection != Constants.GGSettings.child_road_to_health &&
                                                             x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.q_immunisation &&

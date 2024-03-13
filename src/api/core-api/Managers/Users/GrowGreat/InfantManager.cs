@@ -1,7 +1,6 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -15,10 +14,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat

@@ -24,6 +24,7 @@ export const GetAllTeamLead = gql`
       id
       insertedDate
       user {
+        id
         connectUsage
         isActive
         userName
@@ -146,6 +147,7 @@ export const GetTeamLead = gql`
     GetAllTeamLead(where: { id: { eq: $teamLeadId } }) {
       id
       user {
+        id
         isActive
         userName
         email

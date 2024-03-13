@@ -1,36 +1,37 @@
 import { useMutation, useQuery } from '@apollo/client';
 import {
-  initialHealthCareWorkerValues,
-  initialSiteAddressValues,
   initialUserDetailsValues,
   NOTIFICATION,
   RoleDto,
-  siteAddressSchema,
   useNotifications,
 } from '@ecdlink/core';
 import {
+  AddHealthCareWorkerInputModelInput,
   AddUsersToRole,
   CreateHealthCareWorker,
-  CreateSiteAddress,
   CreateUser,
-  HealthCareWorkerInput,
   RoleList,
   SendInviteToApplication,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
 import { UserPanelCreateProps } from '../../../../components/users';
 import {
+  ActionModal,
+  Alert,
   Button,
+  Dialog,
+  DialogPosition,
+  SA_CELL_REGEX,
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
   Typography,
 } from '@ecdlink/ui';
-import { SaveIcon } from '@heroicons/react/solid';
+import { SaveIcon, XIcon } from '@heroicons/react/solid';
 import FormField from '../../../../../../components/form-field/form-field';
 import * as yup from 'yup';
 
@@ -38,6 +39,10 @@ export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
+  phoneNumber: yup
+    .string()
+    .matches(SA_CELL_REGEX, 'Phone number is not valid')
+    .required('Cellphone number is required'),
   idNumber: yup
     .string()
     .test('idNumber', 'ID number or passport is not valid', function (value) {
@@ -57,6 +62,16 @@ export const userSchema = yup.object().shape({
     })
     .required('ID number or passport is required'),
 });
+
+export const hcwSchema = yup.object().shape({
+  userId: yup.string(),
+  clinicId: yup.string().required('Clinic is required'),
+});
+
+const hcwInitialvalues: AddHealthCareWorkerInputModelInput = {
+  clinicId: '',
+  userId: '',
+};
 
 export default function HealthCareWorkerPanelCreate(
   props: UserPanelCreateProps
@@ -94,21 +109,37 @@ export default function HealthCareWorkerPanelCreate(
     mode: 'onChange',
   });
 
-  const { errors, isValid } = formState;
+  const { errors, isValid, isDirty } = formState;
+  const [formIsDirty, setFormIsDirty] = useState(false);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+
+  useEffect(() => {
+    if (isDirty) {
+      setFormIsDirty(true);
+    } else {
+      setFormIsDirty(false);
+    }
+  }, [isDirty]);
 
   // COMMUNITY HEALTH WORKER FORMS
   const {
     register: healthCareWorkerRegister,
     formState: healthCareWorkerFormState,
     getValues: healthCareWorkerGetValues,
+    control: hcwControl,
   } = useForm({
-    defaultValues: { ...initialHealthCareWorkerValues },
+    defaultValues: { ...hcwInitialvalues },
     mode: 'onBlur',
+    resolver: yupResolver(hcwSchema),
   });
   const {
     errors: healthCareWorkerFormErrors,
     isValid: isHealthCareWorkerValid,
   } = healthCareWorkerFormState;
+
+  const { clinicId } = useWatch({
+    control: hcwControl,
+  });
 
   const onSave = async () => {
     await saveUser();
@@ -117,8 +148,6 @@ export default function HealthCareWorkerPanelCreate(
 
   const saveUser = async () => {
     const userDetailForm = getValues();
-
-    console.log(userDetailForm);
 
     const userInputModel: UserModelInput = {
       id: newGuid(),
@@ -146,47 +175,45 @@ export default function HealthCareWorkerPanelCreate(
 
   const saveHealthCareWorker = async (userId: string) => {
     // comment this out to ensure FE builds for BE - revert changes
-    // const healthCareWorkerForm = healthCareWorkerGetValues();
-    // const healthCareWorkModel: HealthCareWorkerInput = {
-    //   UserId: userId,
-    //   teamLeadId: healthCareWorkerForm?.teamLeadId,
-    //   languageId: null,
-    //   isRegistered: false,
-    // };
-    // await createHealthCareWorker({
-    //   variables: {
-    //     input: { ...healthCareWorkModel },
-    //   },
-    // })
-    //   .then(() => {
-    //     setNotification({
-    //       title: 'Successfully Created CHW!',
-    //       variant: NOTIFICATION.SUCCESS,
-    //     });
-    //   })
-    //   .catch((err) => {
-    //     setNotification({
-    //       title: 'Failed to Create CHW!',
-    //       variant: NOTIFICATION.ERROR,
-    //     });
-    //   });
-    // if (userId) {
-    //   await sendInviteToApplication({
-    //     variables: {
-    //       userId: userId,
-    //       inviteToPortal: false,
-    //     },
-    //   }).catch((err) => [
-    //     setNotification({
-    //       title: 'Failed to send CHW Invite!',
-    //       variant: NOTIFICATION.SUCCESS,
-    //     }),
-    //   ]);
-    //   setNotification({
-    //     title: 'Successfully Sent CHW Invite!',
-    //     variant: NOTIFICATION.SUCCESS,
-    //   });
-    // }
+    const healthCareWorkModel: AddHealthCareWorkerInputModelInput = {
+      userId: userId,
+      clinicId: clinicId,
+    };
+
+    await createHealthCareWorker({
+      variables: {
+        input: { ...healthCareWorkModel },
+      },
+    })
+      .then(() => {
+        setNotification({
+          title: 'Successfully Created CHW!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to Create CHW!',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+    if (userId) {
+      await sendInviteToApplication({
+        variables: {
+          userId: userId,
+          inviteToPortal: false,
+        },
+      }).catch((err) => [
+        setNotification({
+          title: 'Failed to send CHW Invite!',
+          variant: NOTIFICATION.SUCCESS,
+        }),
+      ]);
+      setNotification({
+        title: 'Successfully Sent CHW Invite!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }
   };
 
   const saveRoles = async (userId: string) => {
@@ -217,6 +244,17 @@ export default function HealthCareWorkerPanelCreate(
     return (
       <>
         <div className="pb-2">
+          {formIsDirty && (
+            <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+              <button
+                className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+                onClick={() => setDisplayFormIsDirty(true)}
+              >
+                <span className="sr-only">Close panel</span>
+                <XIcon className="h-6 w-6" aria-hidden="true" />
+              </button>
+            </div>
+          )}
           <h1 className="text-uiMidDark text-xl font-medium leading-6">
             Create Community Health Worker
           </h1>
@@ -258,15 +296,23 @@ export default function HealthCareWorkerPanelCreate(
                     formKey={`createhealthcareworker-${new Date().getTime()}`}
                     register={healthCareWorkerRegister}
                     errors={healthCareWorkerFormErrors}
+                    clinicId={clinicId}
                   />
                 </div>
 
                 <div className="my-4 sm:col-span-3">
+                  <Typography
+                    text={
+                      'Which kind of identification do you have for the CHW? *'
+                    }
+                    type={'body'}
+                    color={'textMid'}
+                  />
                   <div className=" mb-4 flex flex-row">
                     <Button
                       className={'mt-3 mr-1 w-full rounded-md '}
-                      type={idType === 'idNumber' ? 'filled' : 'outlined'}
-                      color="tertiary"
+                      type={'filled'}
+                      color={idType === 'idNumber' ? 'tertiary' : 'errorBg'}
                       onClick={() => setIdType('idNumber')}
                     >
                       <Typography
@@ -277,9 +323,9 @@ export default function HealthCareWorkerPanelCreate(
                     </Button>
 
                     <Button
-                      className="mt-3 w-full rounded-md"
-                      type={idType === 'Passport' ? 'filled' : 'outlined'}
-                      color="tertiary"
+                      className={'mt-3 mr-1 w-full rounded-md '}
+                      type={'filled'}
+                      color={idType === 'idNumber' ? 'errorBg' : 'tertiary'}
                       onClick={() => setIdType('Passport')}
                     >
                       <Typography
@@ -301,13 +347,52 @@ export default function HealthCareWorkerPanelCreate(
                     }
                   />
                 </div>
+                <Alert
+                  className="mt-2 rounded-md"
+                  title="An invitation will be sent to the new user when you click save."
+                  type="info"
+                />
               </div>
             </div>
           </form>
-          <div></div>
+          <Dialog
+            className="right-50 absolute w-6/12"
+            stretch
+            visible={displayFormIsDirty}
+            position={DialogPosition.Middle}
+          >
+            <ActionModal
+              icon={'InformationCircleIcon'}
+              iconColor="alertMain"
+              iconBorderColor="alertBg"
+              importantText={`Discard unsaved changes?`}
+              detailText={
+                'If you leave now, you will lose all of your changes.'
+              }
+              buttonClass="rounded-2xl"
+              actionButtons={[
+                {
+                  text: 'Keep editing',
+                  textColour: 'secondary',
+                  colour: 'secondary',
+                  type: 'outlined',
+                  onClick: () => setDisplayFormIsDirty(false),
+                  leadingIcon: 'XIcon',
+                },
+                {
+                  text: 'Discard changes',
+                  textColour: 'white',
+                  colour: 'secondary',
+                  type: 'filled',
+                  onClick: () => {
+                    props.closeDialog(true);
+                  },
+                  leadingIcon: 'TrashIcon',
+                },
+              ]}
+            />
+          </Dialog>
         </div>
-
-        <div className="  rounded-lg border-b border-gray-200 px-4 pb-6"></div>
       </>
     );
   };
@@ -319,7 +404,7 @@ export default function HealthCareWorkerPanelCreate(
         className="mt-3 mr-6 w-full rounded"
         type="filled"
         color="secondary"
-        disabled={!isValid}
+        disabled={!isValid || !clinicId}
         isLoading={loading}
         onClick={handleSubmit(onSave)}
       >
