@@ -16,8 +16,6 @@ using System;
 using System.Linq;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using System.Collections.Generic;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
