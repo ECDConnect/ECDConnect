@@ -1,3 +1,5 @@
+using Azure.Storage.Blobs.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System;
 
@@ -719,8 +721,8 @@ namespace EcdLink.Api.CoreApi
             public const string caregiverHasChanged = "caregiver_has_changed";
 
             //sections
-            public const string maternal_distress_screening = "Maternal distress screening";
-            public const string mother_growth = "Mother growth monitoring (Mid-upper arm circumference)";
+            public const string MaternalDistressScreening = "Maternal distress screening";
+            public const string MotherNutritionMUACMeasurement = "Mother growth monitoring (Mid-upper arm circumference)";
             public const string alcohol_use = "Alcohol use";
             public const string child_docs = "Child documentation";
             public const string child_road_to_health = "Road to Health Book";
@@ -862,13 +864,24 @@ namespace EcdLink.Api.CoreApi
         {
             public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
         }
+
         public static class PointsActivityConstants
         {
             public static readonly Guid ChildFoldersOpenedActivityId = new Guid("92c06990-7428-4a8f-8cfe-e1dfca83fb3e");
             public static readonly Guid PregnantMomFolderOpenedActivityId = new Guid("f20f0917-b497-440c-836e-aa54cf2d10f0");
             public static readonly Guid EarlyPregnacyIdentificationActivityId = new Guid("f5a72c31-5aa6-4852-9903-c9685420ab4b");
+            public static readonly Guid PregnantMotherReferralForMaternalDistressActivityId = new Guid("868743ae-a750-420b-94df-c00945c56367");
+            public static readonly Guid PregnantMotherReferralForMaternalMalnutritionActivityId = new Guid("3e4d346d-8190-439f-b000-a54d2b19f852");
         }
         
+        public static class StatusColours
+        {
+            public static readonly string Green = MetricsColorEnum.Success.ToString();
+            public static readonly string Amber = MetricsColorEnum.Warning.ToString();
+            public static readonly string Red = MetricsColorEnum.Error.ToString();
+            public static readonly string None = MetricsColorEnum.None.ToString();
+        }
+
         public static class CoachingCircleSettings
         {
             public const string no_circle_meetings_held = "No coaching circles held yet ";

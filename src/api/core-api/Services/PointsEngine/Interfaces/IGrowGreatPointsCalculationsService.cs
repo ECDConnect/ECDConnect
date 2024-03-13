@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECDLink.DataAccessLayer.Entities.Visits;
+using System;
 
 namespace EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces
 {
@@ -6,8 +7,9 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces
     {
         void CalculatePregnantMomClientRegistration(Guid userId);
         void CalculateInfantClientRegistration(Guid userId);
-        bool CalculatePregnantMomVisits(string userId, DateTime today);
-        bool CalculateInfantVisits(string userId, DateTime today);
+        void CalculatePregnantMotherReferralPoints(Guid userId);
+        //bool CalculatePregnantMomVisits(string userId, DateTime today);
+        //bool CalculateInfantVisits(string userId, DateTime today);
         void CalculateBreastFeedingClubPoints(Guid clinicId);
     }
 }

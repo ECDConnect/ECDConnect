@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -25,15 +26,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
-
-
-        private string _green;
-        private string _amber;
-        private string _red;
-        private string _none;
-
-        private string _visitId;
-
+        
         public VisitDataStatusManager_Practitioner(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -42,24 +35,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-
-            _green = MetricsColorEnum.Success.ToString();
-            _amber = MetricsColorEnum.Warning.ToString();
-            _red = MetricsColorEnum.Error.ToString();
-            _none = MetricsColorEnum.None.ToString();
-
         }
 
-        public Boolean ManageVisitDataStatus(string id, string visitId) {
-
-            _visitId = visitId;
-
+        public bool ManageVisitDataStatus(string id, string visitId) 
+        {
             Visit visitRecord = _visitRepo.GetById(new Guid(visitId));
             List<VisitData> allVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId).ToList();
 
@@ -323,30 +308,30 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var step12 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step12).FirstOrDefault();
                 if (step12_score == 17)
                 {
-                    color = _green;
+                    color = StatusColours.Green;
                 }
                 else if (step12_score >= 1 && step12_score < 17)
                 {
-                    color = _amber;
+                    color = StatusColours.Amber;
                 }
                 else if (step12_score == 0)
                 {
-                    color = _red;
+                    color = StatusColours.Red;
                 }
                 AddVisitDataStatus(step12, step12_score.ToString(), color, type, step12.VisitSection, false);
 
                 var step13 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step13).FirstOrDefault();
                 if (step13_score == 5)
                 {
-                    color = _green;
+                    color = StatusColours.Green;
                 }
                 else if (step13_score >= 1 && step13_score < 5)
                 {
-                    color = _amber;
+                    color = StatusColours.Amber;
                 }
                 else if (step13_score == 0)
                 {
-                    color = _red;
+                    color = StatusColours.Red;
                 }
                 AddVisitDataStatus(step13, step13_score.ToString(), color, type, step13.VisitSection, false);
 
@@ -366,50 +351,50 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                         string comments = FormatBulletList(list.ToArray());
 
-                        AddVisitDataStatus(step14, comments, _none, type, step14.VisitSection, false);
+                        AddVisitDataStatus(step14, comments, StatusColours.None, type, step14.VisitSection, false);
                     }
                     // scenario 2
                     if (step12_score == 17 && step13_score == 5)
                     {
                         string comment = Constants.SSSettings.step14_success.Replace("{client}", firstName);
-                        AddVisitDataStatus(step14, comment, _green, type, step14.VisitSection, false);
+                        AddVisitDataStatus(step14, comment, StatusColours.Green, type, step14.VisitSection, false);
                     }
                     // scenario 3
                     if (step12_score < 12)
                     {
                         string comment = Constants.SSSettings.step14_not_reissue.Replace("{client}", firstName);
-                        AddVisitDataStatus(step14, comment, _red, type, step14.VisitSection, false);
+                        AddVisitDataStatus(step14, comment, StatusColours.Red, type, step14.VisitSection, false);
                     }
                     // scenario 4
                     if (step12_score >= 12)
                     {
                         string comment = Constants.SSSettings.step14_not_meet.Replace("{client}", firstName);
-                        AddVisitDataStatus(step14, comment, _amber, type, step14.VisitSection, false);
+                        AddVisitDataStatus(step14, comment, StatusColours.Amber, type, step14.VisitSection, false);
                     }
                 }
                 else
                 {
                     // red flag
-                    AddVisitDataStatus(step14, Constants.SSSettings.step14_not_reissue.Replace("{client}", firstName), _red, type, step14.VisitSection, false);
+                    AddVisitDataStatus(step14, Constants.SSSettings.step14_not_reissue.Replace("{client}", firstName), StatusColours.Red, type, step14.VisitSection, false);
                 }
             }
 
             var step16a = allVisitData.Where(x => x.Question == Constants.SSSettings.step16_q1).FirstOrDefault();
             if (step16_score == 1)
             {
-                AddVisitDataStatus(step16a, step16a.QuestionAnswer, _red, type, step16a.VisitSection, false);
+                AddVisitDataStatus(step16a, step16a.QuestionAnswer, StatusColours.Red, type, step16a.VisitSection, false);
             }
 
             var step16b = allVisitData.Where(x => x.Question == Constants.SSSettings.step16_q2).FirstOrDefault();
             if (step16b.QuestionAnswer == Constants.SSSettings.answer_no)
             {
-                AddVisitDataStatus(step16b, step16b.QuestionAnswer, _amber, type, step16b.VisitSection, false);
+                AddVisitDataStatus(step16b, step16b.QuestionAnswer, StatusColours.Amber, type, step16b.VisitSection, false);
             }
 
             var step16c = allVisitData.Where(x => x.Question == Constants.SSSettings.step16_q3).FirstOrDefault();
             if (step16c.QuestionAnswer == Constants.SSSettings.answer_yes)
             {
-                AddVisitDataStatus(step16c, step16c.QuestionAnswer, _amber, type, step16c.VisitSection, false);
+                AddVisitDataStatus(step16c, step16c.QuestionAnswer, StatusColours.Amber, type, step16c.VisitSection, false);
             }
 
             return true;
@@ -474,15 +459,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (finalScore <= 25)
             {
-                color = _red;
+                color = StatusColours.Red;
             }
             else if (finalScore >= 26 && finalScore <= 69)
             {
-                color = _amber;
+                color = StatusColours.Amber;
             }
             else if (finalScore > 69)
             {
-                color = _green;
+                color = StatusColours.Green;
             }
 
             return color;
@@ -492,15 +477,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             string color = "";
             if (finalScore == 0)
             {
-                color = _red;
+                color = StatusColours.Red;
             }
             else if (finalScore == 1)
             {
-                color = _amber;
+                color = StatusColours.Amber;
             }
             else if (finalScore == 2)
             {
-                color = _green;
+                color = StatusColours.Green;
             }
 
             return color;

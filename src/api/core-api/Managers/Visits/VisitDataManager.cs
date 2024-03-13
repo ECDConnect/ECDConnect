@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -27,7 +28,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         private VisitDataStatusManager _visitDataStatusManager;
         private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
-        private IPointsEngineService _pointsEngineService;
+        private IGrowGreatPointsCalculationsService _pointsCalculationService;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
@@ -48,7 +49,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner,
             UserLicenseManager userLicenseManager,
             VisitManager visitManager,
-            [Service] IPointsEngineService pointsEngineService,
+            [Service] IGrowGreatPointsCalculationsService pointsCalculationsService,
             HierarchyEngine hierarchyEngine, 
             [Service] INotificationService notificationService)
         {
@@ -56,13 +57,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataStatusManager_practitioner = visitDataStatusManager_Practitioner;
-            _pointsEngineService = pointsEngineService;
+            _pointsCalculationService = pointsCalculationsService;
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
             _visitManager = visitManager;
             _notificationService = notificationService;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
@@ -73,7 +74,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
         {
-
             if (input.VisitData.Sections == null)
             {
                 var _section = new CMSVisitSection();
@@ -124,55 +124,57 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             //}
             return true;
         }
-        public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
+        public bool AddAntenatalVisitData(CMSVisitDataInputModel input)
         {
-
             if (input.VisitData.Sections == null)
             {
-                var _section = new CMSVisitSection();
-                _section.VisitSection = "";
-                _section.Questions = new List<CMSQuestion>();
-               
-                var _question = new CMSQuestion();
-                _question.Question = "";
-                _question.Answer = "";
-                _section.Questions.Add(_question);
-                input.VisitData.Sections = new CMSVisitSection[] { _section };
+                throw new ArgumentNullException("VisitData.Section, data not provided");
             }
 
-            // first add all your questions and answers
-            foreach (CMSVisitSection section in input.VisitData.Sections) {
-                foreach (CMSQuestion question in section.Questions) {
-                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
-                    if (ValidateInsertRecord(visitData))
+            var visit = _visitRepo.GetAll().Where(x => x.Id == Guid.Parse(input.VisitId)).SingleOrDefault();
+
+            if (visit == null)
+            {
+                throw new ArgumentNullException("VisitId, no matching visit found");
+            }
+
+            // Add visit data
+            var visitDataItems = new List<VisitData>();
+            foreach (CMSVisitSection section in input.VisitData.Sections) 
+            {
+                foreach (CMSQuestion question in section.Questions) 
+                {
+                    var visitData = GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    if (!visit.VisitData.Any(x =>
+                        x.VisitName == visitData.VisitName &&
+                        x.VisitSection == visitData.VisitSection &&
+                        x.Question == visitData.Question &&
+                        x.QuestionAnswer == visitData.QuestionAnswer))
                     {
-                        _visitDataRepo.Insert(visitData);
+                        visitDataItems.Add(visitData);
                     }
                 }
             }
 
-            // update the visit record to show attended when follow up is done
-            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
-            if (count != 0)
+            if(visitDataItems.Any())
             {
-                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
-                entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId.ToString();
-                entityToUpdate.Attended = true;
-                entityToUpdate.ActualVisitDate = DateTime.Now;
-                _visitRepo.Update(entityToUpdate);
+                _visitDataRepo.InsertMany(visitDataItems);
             }
 
-            // then handle status data
+            // update the visit record to show attended when follow up is done
+            visit.UpdatedDate = DateTime.Now;
+            visit.UpdatedBy = _applicationUserId.ToString();
+            visit.Attended = true;
+            visit.ActualVisitDate = DateTime.Now;
+            _visitRepo.Update(visit);
+
+            // then handle status data - TODO I think we can clean this up and prevent it needing to reload the data from the DB again. 
+            // Can we just pass in the full visit we have just updated and calculate from there?
             bool result = _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
 
-            // call points engine for hcw TODO
-            //if (result)
-            //{
-            //    _pointsEngineService.CalculatePregnantMomVisits(_applicationUserId.ToString(), DateTime.UtcNow);
-            //}
             return true;
         }
+
         public Visit AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)
         {
             Visit visit = _visitRepo.GetById(new Guid(input.VisitId));

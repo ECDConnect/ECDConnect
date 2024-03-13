@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
@@ -76,7 +76,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             };
         }
 
-        public List<VisitBackReferral> GetBackReferralDataForClient(string id, string clientType, bool referralCompleted, bool backReferralCompleted) {
+        public List<VisitBackReferral> GetBackReferralDataForClient(string id, string clientType, bool referralCompleted, bool backReferralCompleted) 
+        {
             // This data is for the past 6 months
             List<VisitBackReferral> allReferrals = new List<VisitBackReferral>();
             DateTime today = DateTime.Today;

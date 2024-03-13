@@ -165,16 +165,11 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
-            services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IPointsService, PointsEngineService>();
             services.AddTransient<IGrowGreatPointsCalculationsService, GrowGreatPointsCalculationService>();
-            services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IChildService, ChildService>();
-            services.AddTransient<IntegrationAPIManager>();
-            services.AddTransient<IntegrationLogManager>();
-            services.AddTransient<IntegrationHelperManager>();
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
