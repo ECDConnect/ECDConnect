@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
     public class PortalUsersHCWModel
     {
@@ -86,13 +86,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         private string GetConnectUsage(ApplicationUser user, List<ShortenUrlEntity> invitations)
         {
             var comment = "";
-           
-           if (user.IsActive == false)
-           {
+
+            if (user.IsActive == false)
+            {
                 comment = "Removed: " + user.UpdatedDate?.ToString("dd/MM/yyyy");
-           } 
-           else
-           {
+            }
+            else
+            {
                 comment = "Online: " + user.LastSeen.ToString("dd/MM/yyyy");
 
                 if (invitations.Count != 0)
@@ -112,8 +112,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
                             comment = Constants.PortalSettings.usage_invitation_expired;
                         }
                     }
-                } 
-           }
+                }
+            }
             return comment;
         }
 
@@ -136,6 +136,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string Email { get; set; }
         public string WhatsAppNumber { get; set; }
         public bool IsActive { get; set; } = false;
-        public string ConnectUsage {  get; set; }
+        public string ConnectUsage { get; set; }
     }
 }

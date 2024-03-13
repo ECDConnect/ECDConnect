@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
     public class PortalClinicInputModel
     {
