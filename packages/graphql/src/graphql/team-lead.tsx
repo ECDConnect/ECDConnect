@@ -94,6 +94,16 @@ export const UploadTeamLeads = gql`
   }
 `;
 
+export const DeactivateTeamLead = gql`
+  mutation DeactivateTeamLead($teamLeadId: UUID!) {
+    deactivateTeamLead(teamLeadId: $teamLeadId) {
+      id
+      userId
+      isActive
+    }
+  }
+`;
+
 export const TeamLeadsTemplate = gql`
   query {
     teamLeadTemplateGenerator {

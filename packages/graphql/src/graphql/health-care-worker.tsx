@@ -114,6 +114,16 @@ export const UploadHealthCareWorkers = gql`
   }
 `;
 
+export const DeactivateHealthCareWorker = gql`
+  mutation DeactivateHealthCareWorker($hcwId: UUID!) {
+    deactivateHealthCareWorker(hcwId: $hcwId) {
+      id
+      userId
+      isActive
+    }
+  }
+`;
+
 export const HealthCareWorkerTemplate = gql`
   query {
     healthCareWorkerTemplateGenerator {

@@ -23,12 +23,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public Guid Id { get; set; }
         public Guid? ClinicId { get; set; }
         public Guid? UserId { get; set; }
+        public bool IsActive { get; set; }
 
         public PortalUserHCWModel(HealthCareWorker entity)
         {
             Id = entity.Id;
             ClinicId = entity.ClinicId;
             UserId = entity.UserId;
+            IsActive = entity.IsActive;
         }
     }
 
@@ -45,11 +47,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
     {
         public Guid Id { get; set; }
         public Guid? UserId { get; set; }
+        public bool IsActive { get; set; }
 
         public PortalUserTLModel(TeamLead entity)
         {
             Id = entity.Id;
             UserId = entity.UserId;
+            IsActive = entity.IsActive;
         }
     }
 
