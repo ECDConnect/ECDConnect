@@ -43,12 +43,12 @@ namespace ECDLink.Tenancy.Context
                 return;
             }
 
-            if (tenant.Value.TenantType == Enums.TenantType.Host)
-            {
-                // Unique tenant context swap when admin needs to create a DB
-                tenant.Value = value;
-                return;
-            }
+            //if (tenant.Value.TenantType == Enums.TenantType.Host)
+            //{
+            //    // Unique tenant context swap when admin needs to create a DB
+            //    tenant.Value = value;
+            //    return;
+            //}
 
             // If tenant is already assigned, we cannot change
             throw new InvalidOperationException($"Tried assign the Tenant to '{value.ApplicationName}', but it is already set to {currentTenant.ApplicationName}");
