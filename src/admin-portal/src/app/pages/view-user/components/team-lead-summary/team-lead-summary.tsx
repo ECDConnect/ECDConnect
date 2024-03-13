@@ -1,17 +1,17 @@
-import { HealthCareWorkerSummaryForPeriodDto } from '@ecdlink/core';
-import { Typography } from '@ecdlink/ui';
+import { TeamLeadSummaryDto } from '@ecdlink/core';
+import { Button, Typography } from '@ecdlink/ui';
 
 interface TeamLeadSummaryReportProps {
-  summaryData: HealthCareWorkerSummaryForPeriodDto;
+  teamLeadReportData: TeamLeadSummaryDto;
 }
 
 export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
-  summaryData,
+  teamLeadReportData,
 }) => {
   return (
     <div>
-      <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-        <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+      <div className="border-l-secondary  border-secondary m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+        <div className="h-full py-2 px-4 sm:px-6 lg:px-8">
           {/* Start main area*/}
           <div className="flex flex-row border-b-4 border-dashed pb-0">
             <Typography
@@ -26,7 +26,7 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
               <Typography
                 type={'h1'}
                 fontSize="48"
-                text={'2'}
+                text={`${teamLeadReportData?.totalClinics}`}
                 color={'textMid'}
                 className="my-4"
               />
@@ -41,7 +41,7 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
               <Typography
                 type={'h1'}
                 fontSize="48"
-                text={'6'}
+                text={`${teamLeadReportData?.totalPregnantMoms}`}
                 color={'textMid'}
                 className="my-4"
               />
@@ -56,7 +56,7 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
               <Typography
                 type={'h1'}
                 fontSize="48"
-                text={'6'}
+                text={`${teamLeadReportData?.totalChildren}`}
                 color={'textMid'}
                 className="my-4"
               />
@@ -71,7 +71,7 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
               <Typography
                 type={'h1'}
                 fontSize="48"
-                text={'6'}
+                text={`${teamLeadReportData?.totalInFieldVisitsCompleted}`}
                 color={'textMid'}
                 className="my-4"
               />
@@ -83,6 +83,17 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
               />
             </div>
           </div>
+        </div>
+        <div className="flex w-full justify-end p-4">
+          <Button
+            icon="UsersIcon"
+            type="filled"
+            color="secondary"
+            text="See CHW's"
+            textColor="white"
+            onClick={() => {}}
+            className="rounded-xl p-2"
+          />
         </div>
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
   Dropdown,
   Dialog,
   ActionModal,
+  StatusChip,
 } from '@ecdlink/ui';
 import {
   JSXElementConstructor,
@@ -58,6 +59,7 @@ import {
   GetTeamLead,
   GetAllClinic,
   UpdateHealthCareWorkerClinic,
+  GetTeamLeadSummary,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -66,9 +68,14 @@ import * as yup from 'yup';
 import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
 import { subDays } from 'date-fns';
-import { UsersRouteRedirectTypeEnum } from './view-user.types';
+import {
+  UsersRolesTypeEnum,
+  UsersRouteRedirectTypeEnum,
+} from './view-user.types';
 import { TeamLeadSummary } from './components/team-lead-summary/team-lead-summary';
 import { TeamLeadMeetingReport } from './components/team-lead-meeting-reports/team-lead-meeting-reports';
+import { ConenctUsage } from '../users/sub-pages/team-leads/team-leads.types';
+import { SendInvite } from './components/send-invite/send-invite';
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -114,7 +121,10 @@ export function ViewUser(props: any) {
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
   const endDate = currentDate;
-
+  const connectUsage = props?.location?.state?.connectUsage;
+  const teamLeadId = props?.location?.state?.teamLeadId;
+  const isTeamLead =
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const [successNotification, setSucessNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
     startDate,
@@ -155,12 +165,13 @@ export function ViewUser(props: any) {
   //   fetchPolicy: 'cache-and-network',
   // });
 
-  const { data: userData, refetch } = useQuery(GetUserById, {
+  const { data: userData, refetch: refetchUserData } = useQuery(GetUserById, {
     variables: {
       userId: props.location.state.userId ?? userId,
     },
     fetchPolicy: 'cache-and-network',
   });
+
   const userObject = useMemo(() => userData?.userById, [userData?.userById]);
 
   const { data: clinicsData } = useQuery(GetAllClinic, {
@@ -193,6 +204,27 @@ export function ViewUser(props: any) {
     });
   }, [selectedRange]);
 
+  const [getTeamLeadSummary, { data: teamLeadSummary }] = useLazyQuery(
+    GetTeamLeadSummary,
+    {
+      variables: {
+        teamLeadId: props.location.state?.teamLeadId,
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
+  useEffect(() => {
+    if (props.location.state?.teamLeadId) {
+      getTeamLeadSummary();
+    }
+  }, [getTeamLeadSummary, props.location.state?.teamLeadId]);
+
+  const teamLeadReportData = useMemo(
+    () => teamLeadSummary?.teamLeadSummary,
+    [teamLeadSummary?.teamLeadSummary]
+  );
+
   useEffect(() => {
     // props.location.state?.component === 'administrators' &&
     //   getUserById({
@@ -219,6 +251,8 @@ export function ViewUser(props: any) {
     if (!user) return true;
     return !user?.lockoutEnd || user?.lockoutEnd < new Date();
   };
+
+  console.log(userData?.userById);
 
   const deactivateUser = async () => {
     dialog({
@@ -254,51 +288,6 @@ export function ViewUser(props: any) {
               .catch((error) => {
                 setNotification({
                   title: 'Failed to Delete User!',
-                  variant: NOTIFICATION.ERROR,
-                });
-              });
-          }}
-        />
-      ),
-    });
-  };
-
-  let isAdminUser = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
-  );
-
-  const sendInvite = async () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData?.GetHealthCareWorkerById?.user?.fullName ??
-            userData?.userById?.fullName
-          }`}
-          btnText={['Yes, Resend Invitation', 'No, Cancel']}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            sendInviteToApplication({
-              variables: {
-                userId:
-                  userData?.userById?.id ??
-                  chwData.GetHealthCareWorkerById.user.id,
-                inviteToPortal: isAdminUser,
-              },
-            })
-              .then(() => {
-                refetch();
-                setNotification({
-                  title: 'Successfully Sent Invite!',
-                  variant: NOTIFICATION.SUCCESS,
-                });
-              })
-              .catch((err) => {
-                setNotification({
-                  title: 'Failed to Send Invite!',
                   variant: NOTIFICATION.ERROR,
                 });
               });
@@ -416,7 +405,6 @@ export function ViewUser(props: any) {
     }
   }, [clinic, editActive, updateHCWClinic, userObject?.id]);
 
-  console.log({ summaryData });
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const adminDataForm = adminDetailGetValues();
@@ -435,7 +423,7 @@ export function ViewUser(props: any) {
       },
     })
       .then(() => {
-        if (userData?.phoneNumber) refetch();
+        if (userData?.phoneNumber) refetchUserData();
 
         if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
           refetchCHW();
@@ -462,7 +450,7 @@ export function ViewUser(props: any) {
         },
       }).then(() => {
         setEditActive(!editActive);
-        refetch();
+        refetchUserData();
       });
     }
   };
@@ -477,6 +465,7 @@ export function ViewUser(props: any) {
       passwordChange = true;
     }
     await saveUser(passwordChange);
+    refetchUserData();
     setEditActive(!editActive);
   };
 
@@ -484,7 +473,112 @@ export function ViewUser(props: any) {
   const password = watch('password');
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-  console.log(props.location.state?.component);
+
+  const getRoleStatusChip = (status: string) => {
+    switch (status) {
+      case UsersRouteRedirectTypeEnum?.chw:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="tertiary"
+              backgroundColour="tertiary"
+              textColour="white"
+              text={UsersRolesTypeEnum?.chw}
+            />
+          </div>
+        );
+      case UsersRouteRedirectTypeEnum?.teamLeads:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="darkBlue"
+              backgroundColour="darkBlue"
+              textColour="white"
+              text={UsersRolesTypeEnum?.teamLeads}
+            />
+          </div>
+        );
+      default:
+        return (
+          <div>
+            <StatusChip
+              className="self-cente py-2r ml-auto"
+              borderColour="infoDark"
+              backgroundColour="infoDark"
+              textColour="white"
+              text={UsersRolesTypeEnum?.user}
+            />
+          </div>
+        );
+    }
+  };
+  console.log({ connectUsage });
+  const getConnectUsageChip = (value: string) => {
+    switch (value) {
+      case ConenctUsage?.InvitationActive:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="infoMain"
+              backgroundColour="infoMain"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      case ConenctUsage?.InvitationExpired:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="errorMain"
+              backgroundColour="errorMain"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      case ConenctUsage?.LastOnlineOver6Months:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="darkBlue"
+              backgroundColour="darkBlue"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      case ConenctUsage?.LastOnlineWithinPast6Months:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="darkBlue"
+              backgroundColour="darkBlue"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      default:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="errorMain"
+              backgroundColour="errorMain"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
@@ -535,22 +629,10 @@ export function ViewUser(props: any) {
                       chwData?.GetHealthCareWorkerById?.user?.fullName}
                   </p>
                   <div className="flex flex-row pt-2">
-                    {userData &&
-                      userData?.userById?.roles?.map(
-                        (i: any, index: number) => {
-                          return (
-                            <div
-                              key={i.id}
-                              className={classNames(
-                                'bg-tertiary',
-                                ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
-                              )}
-                            >
-                              <p className="text-16"> {i.name}</p>
-                            </div>
-                          );
-                        }
-                      )}
+                    <div className="flex items-center gap-2">
+                      {getRoleStatusChip(props.location.state?.component)}
+                      {getConnectUsageChip(connectUsage)}
+                    </div>
                     {chwData &&
                       chwData?.GetHealthCareWorkerById?.user?.roles?.map(
                         (i: any, index: number) => {
@@ -606,17 +688,18 @@ export function ViewUser(props: any) {
                 <>
                   <div className="space-y-0">
                     <div className="grid grid-cols-1 ">
-                      {props.location.state?.component ===
-                      UsersRouteRedirectTypeEnum?.chw ? (
+                      {userData && (
                         <>
-                          <div className="my-4 w-6/12 sm:col-span-3">
-                            <FormField
-                              label={'ID number *'}
-                              nameProp={'idNumber'}
-                              register={registerCHW}
-                              error={chwDetailFormErrors.idNumber?.message}
-                            />
-                          </div>
+                          {!isTeamLead && (
+                            <div className="my-4 w-6/12 sm:col-span-3">
+                              <FormField
+                                label={'ID number *'}
+                                nameProp={'idNumber'}
+                                register={registerCHW}
+                                error={chwDetailFormErrors.idNumber?.message}
+                              />
+                            </div>
+                          )}
                           <div className="my-4 w-6/12 sm:col-span-3">
                             <FormField
                               label={'Cellphone number *'}
@@ -626,15 +709,6 @@ export function ViewUser(props: any) {
                             />
                           </div>
                         </>
-                      ) : (
-                        <div className="my-4 w-6/12 sm:col-span-3">
-                          <FormField
-                            label={'Email *'}
-                            nameProp={'email'}
-                            register={register}
-                            error={adminDetailFormErrors.email?.message}
-                          />
-                        </div>
                       )}
 
                       <div>
@@ -703,9 +777,7 @@ export function ViewUser(props: any) {
                       disabled={!isAdminDetailValid}
                       onClick={handleSubmitAdminDetails(onSave)}
                     >
-                      <SaveIcon color="white" className="mr-6 h-6 w-6">
-                        {' '}
-                      </SaveIcon>
+                      <SaveIcon color="white" className="mr-6 h-6 w-6" />
                       <Typography
                         type="help"
                         color="white"
@@ -714,9 +786,7 @@ export function ViewUser(props: any) {
                     </Button>
                   )}
                 </>
-              ) : isCHW ||
-                props.location.state?.component ===
-                  UsersRouteRedirectTypeEnum?.chw ? (
+              ) : userData ? (
                 <div className="flex flex-row justify-start pt-4 text-current">
                   <p className="px-4 text-xl">
                     ID:{' '}
@@ -1005,12 +1075,8 @@ export function ViewUser(props: any) {
           props.location.state?.component ===
             UsersRouteRedirectTypeEnum?.teamLeads) && (
           <>
-            <TeamLeadSummary
-              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-            />
-            <TeamLeadMeetingReport
-              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-            />
+            <TeamLeadSummary teamLeadReportData={teamLeadReportData} />
+            <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
           </>
         )}
 
@@ -1040,22 +1106,11 @@ export function ViewUser(props: any) {
             {isNotLockedOut(
               userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
             ) && (
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="filled"
-                // isLoading={isLoading}
-                color="secondary"
-                onClick={sendInvite}
-              >
-                <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
-                  {' '}
-                </PaperAirplaneIcon>
-                <Typography
-                  type="help"
-                  color="white"
-                  text={'Resend Invitation'}
-                ></Typography>
-              </Button>
+              <SendInvite
+                userData={userData?.userById}
+                chwData={chwData?.GetHealthCareWorkerById}
+                refetchUserData={refetchUserData}
+              />
             )}
           </div>
 
