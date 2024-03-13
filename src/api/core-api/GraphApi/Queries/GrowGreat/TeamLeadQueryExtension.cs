@@ -81,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             {
                 Id = item.Id,
                 User = new PortalUserModel(item.User, invitations),
-                ClinicIds = item.Clinics.Select(x => (Guid)x.ClinicId).ToList(),
+                ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => (Guid)x.ClinicId).Distinct().ToList(),
                 InsertedDate = item.InsertedDate
             }).ToList();
 
