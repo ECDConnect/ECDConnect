@@ -11,6 +11,7 @@ import { visitThunkActions } from '@/store/visit';
 import { useSelector } from 'react-redux';
 import { getMoreInformationSelector } from '@/store/visit/visit.selectors';
 import { replaceBraces } from '@ecdlink/core';
+import { useTranslation } from 'react-i18next';
 
 const HEADER_HEIGHT = 120;
 
@@ -18,6 +19,7 @@ export interface WalkthroughInfoPageProps {
   sectionName: string;
   onHelp: () => void;
   onClose: () => void;
+  disableContentFromPortal?: boolean;
   extraElement?: ReactElement;
 }
 
@@ -26,6 +28,7 @@ export const WalkthroughInfoPage = ({
   onHelp,
   onClose,
   extraElement,
+  disableContentFromPortal,
 }: WalkthroughInfoPageProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
 
@@ -34,6 +37,8 @@ export const WalkthroughInfoPage = ({
   const { height } = useWindowSize();
 
   const appDispatch = useAppDispatch();
+
+  const { t, i18n } = useTranslation();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -70,7 +75,8 @@ export const WalkthroughInfoPage = ({
             {
               textClassName: 'text-white',
               colour: 'primary',
-              text: moreInformation?.infoBoxDescription || 'Start walkthrough',
+              text:
+                moreInformation?.infoBoxDescription || t('Start walkthrough'),
               textType: 'markdown',
               textColour: 'white',
               type: 'filled',
@@ -131,10 +137,11 @@ export const WalkthroughInfoPage = ({
     onClose,
     onHelp,
     sectionName,
+    t,
   ]);
 
   const getContent = useCallback(async () => {
-    if (!isOnline) return;
+    if (!isOnline || disableContentFromPortal) return;
 
     appDispatch(
       visitThunkActions.getMoreInformation({
@@ -142,7 +149,13 @@ export const WalkthroughInfoPage = ({
         locale: language.locale,
       })
     );
-  }, [appDispatch, isOnline, language.locale, sectionName]);
+  }, [
+    appDispatch,
+    isOnline,
+    language.locale,
+    sectionName,
+    disableContentFromPortal,
+  ]);
 
   useEffect(() => {
     getContent();
@@ -162,7 +175,13 @@ export const WalkthroughInfoPage = ({
   return (
     <>
       <div className="bg-uiBg px-4 pb-2 pt-1">
-        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
+        <LanguageSelector
+          showOfflineAlert
+          selectLanguage={(language) => {
+            i18n.changeLanguage(language.locale);
+            setLanguage(language);
+          }}
+        />
       </div>
       <div
         className="flex flex-col p-4"

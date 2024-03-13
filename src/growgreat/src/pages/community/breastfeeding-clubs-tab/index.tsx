@@ -28,8 +28,17 @@ import {
 } from '@/utils/community/breastfeeding-clubs.utils';
 import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useDialog, useSnackbar } from '@ecdlink/core';
+import {
+  getStringFromClassNameOrId,
+  useDialog,
+  useSnackbar,
+} from '@ecdlink/core';
 import { MonthDetails } from './month-details';
+import {
+  COMMUNITY_WALKTHROUGH_STEPS,
+  communityWalkthroughSteps,
+} from '../walkthrough/steps';
+import { useWalkthrough } from '@/context/walkthroughContext';
 
 export const BreastfeedingClubsTab: React.FC = () => {
   const [isToShowAll, setIsToShowAll] = useState(false);
@@ -40,6 +49,8 @@ export const BreastfeedingClubsTab: React.FC = () => {
   );
 
   const { showMessage } = useSnackbar();
+
+  const { walkthroughState } = useWalkthrough();
 
   const {
     isLoading: isLoadingBreastFeedingClubs,
@@ -162,7 +173,7 @@ export const BreastfeedingClubsTab: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (isLoading) {
+  if (isLoading && !walkthroughState?.isTourActive) {
     return (
       <LoadingSpinner
         className="mt-6"
@@ -180,9 +191,21 @@ export const BreastfeedingClubsTab: React.FC = () => {
   return (
     <div
       className="overflow-auto p-4 pt-6"
-      style={{ height: height - headerHeight }}
+      style={{
+        height: walkthroughState?.isTourActive ? height : height - headerHeight,
+      }}
     >
-      <div className="flex h-full flex-col">
+      <div
+        id={getStringFromClassNameOrId(
+          communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.EIGHT].target
+        )}
+        className="flex flex-col"
+        style={
+          walkthroughState?.isTourActive
+            ? { height: 'fit-content' }
+            : { height: '100%' }
+        }
+      >
         <Typography type="h2" text={title} />
         <Typography
           type="h3"
@@ -195,7 +218,11 @@ export const BreastfeedingClubsTab: React.FC = () => {
             isFullHeight={false}
             className="flex flex-col gap-2"
             type={'UserAlertList' as StackedListType}
-            listItems={pastBreastfeedingClubs}
+            listItems={
+              walkthroughState?.isTourActive
+                ? pastBreastfeedingClubs.slice(0, 2)
+                : pastBreastfeedingClubs
+            }
           />
         </div>
         {mergedBreastfeedingClubs.length > 5 && (

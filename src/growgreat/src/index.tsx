@@ -4,6 +4,7 @@ import { ConfigProvider } from '@ecdlink/core';
 import reportWebVitals from '@/reportWebVitals';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import * as serviceWorkerRegistration from '@/serviceWorkerRegistration';
+import './i18n';
 
 if (
   process.env.NODE_ENV === 'development' &&

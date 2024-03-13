@@ -12,6 +12,7 @@ export interface TabProps extends ComponentBaseProps {
 }
 
 export function Tab({
+  id,
   title,
   tabIndex,
   activeIndex,
@@ -43,6 +44,7 @@ export function Tab({
 
   return (
     <div
+      id={id}
       data-tab-index={tabIndex}
       key={`${title}-tab-` + tabIndex}
       className={styles.getTabClass(
