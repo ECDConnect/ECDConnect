@@ -26,7 +26,7 @@ namespace ECDLink.Api.CoreApi.Services
         private readonly INotificationService _notificationService;
         private readonly ApplicationUserManager _userManager;
         private readonly HierarchyEngine _hierarchyEngine;
-        private string _applicationUserId;
+        private readonly Guid _applicationUserId;
         private IGenericRepository<Absentees, Guid> _absenteeRepo;
 
         public AbsenteeService(
@@ -42,7 +42,7 @@ namespace ECDLink.Api.CoreApi.Services
             _notificationService = notificationService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id.ToString();
+            _applicationUserId = contextAccessor.HttpContext != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _absenteeRepo = repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
         }
 

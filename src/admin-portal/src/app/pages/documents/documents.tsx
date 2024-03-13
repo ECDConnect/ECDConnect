@@ -138,9 +138,10 @@ export default function Documents() {
   const panel = usePanel();
   const displayPanel = useCallback(
     (item: DocumentDto) => {
-      const filteredStatuses = workflowStatuses.GetAllWorkflowStatus.filter(
+      const filteredStatuses = workflowStatuses?.GetAllWorkflowStatus?.filter(
         (x: WorkflowStatusDto) =>
-          x.workflowStatusType.id === item.workflowStatus?.workflowStatusTypeId
+          x?.workflowStatusType?.id ===
+          item?.workflowStatus?.workflowStatusTypeId
       );
       panel({
         noPadding: true,
