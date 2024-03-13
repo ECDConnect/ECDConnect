@@ -25,6 +25,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual ICollection<ClinicTeamLead> Clinics { get; set; }
 
         public string JobTitle { get; set; }
+        public bool IsRegistered { get; set; }
     }
 
     public interface TeamLeadJoin<TKey>

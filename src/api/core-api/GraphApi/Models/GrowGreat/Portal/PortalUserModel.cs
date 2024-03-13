@@ -15,7 +15,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public PortalUserModel User { get; set; }
         public Guid? ClinicId { get; set; }
         public string ConnectUsage { get; set; }
-
+        public bool IsRegistered { get; set; }
     }
 
     public class PortalUserHCWModel
@@ -24,6 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public Guid? ClinicId { get; set; }
         public Guid? UserId { get; set; }
         public bool IsActive { get; set; }
+        public bool IsRegistered { get; set; }
 
         public PortalUserHCWModel(HealthCareWorker entity)
         {
@@ -31,6 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             ClinicId = entity.ClinicId;
             UserId = entity.UserId;
             IsActive = entity.IsActive;
+            IsRegistered = entity.IsRegistered;
         }
     }
 
@@ -41,6 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public PortalUserModel User { get; set; }
         public List<Guid> ClinicIds { get; set; }
         public string ConnectUsage { get; set; }
+        public bool IsRegistered { get; set; }
     }
 
     public class PortalUserTLModel
@@ -48,12 +51,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public Guid Id { get; set; }
         public Guid? UserId { get; set; }
         public bool IsActive { get; set; }
+        public bool IsRegistered { get; set; }
 
         public PortalUserTLModel(TeamLead entity)
         {
             Id = entity.Id;
             UserId = entity.UserId;
-            IsActive = entity.IsActive;
+            IsRegistered = entity.IsRegistered;
         }
     }
 
