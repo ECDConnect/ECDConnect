@@ -87,6 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 User = new PortalUserModel(item.User, invitations),
                 ClinicId = item.ClinicId,
                 InsertedDate = item.InsertedDate,
+                IsRegistered = item.IsRegistered
             }).ToList();
 
             if (connectUsageSearch != null && connectUsageSearch.Count != 0)
