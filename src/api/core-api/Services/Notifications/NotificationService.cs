@@ -205,11 +205,8 @@ namespace EcdLink.Api.CoreApi.Services
             var notificationProvider = _notificationProviderFactory.Create(user);
 
             await notificationProvider
-              .SetMessageTemplate(templateType)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
-              .SendMessageAsync();
+                .SetMessageMapped(templateType, notification.Subject, notification.Message)
+                .SendMessageAsync();
         }
 
         private async Task SendHubMessageAsync(Notification notification, ApplicationUser user, MessageTemplate template)
