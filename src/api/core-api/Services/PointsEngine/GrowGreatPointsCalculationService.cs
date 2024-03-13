@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
+﻿using DotLiquid.Tags;
+using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -199,8 +200,8 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
         }
 
         /// <summary>
-        /// Calculates points scored immediately for visits (DOES NOT INCLUDE MONTH END POINTS)
-        /// 1. Referral made for self harm or maternal distress
+        /// Calculates points scored for completing referrals that have been recommended after a visit to a pregnant mother
+        /// 1. Referral made for maternal distress
         /// 2. Referral made for low MUAC score
         /// </summary>
         /// <param name="userId">User Id of CHW to calculate points for</param>
@@ -261,6 +262,208 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     malnutritionReferralActivity.Points,
                     malnutritionReferralCount);
             }
+        }
+
+        /// <summary>
+        /// Calculates points scored for actions during a visit to an infant or after completing referrals
+        /// </summary>
+        /// <param name="userId">User Id of CHW to calculate points for</param>
+        public void CalculateInfantVisitAndReferralPoints(Guid userId)
+        {
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+                                    
+            #region Measure childs growth length
+
+            var lengthMeasurementsMade = _visitDataRepo.GetAll()
+               .Where(x =>
+                   x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                   && x.Question == GGSettings.QuestionLength
+                   && x.VisitSection != GGSettings.child_road_to_health // Not a growth measurement, just the initial baby measurement
+                   && x.InsertedDate >= monthStart
+                   && x.InsertedDate <= monthEnd)
+               .Select(x => x.VisitId)
+               .Distinct()
+               .Count();
+
+            if (lengthMeasurementsMade > 0)
+            {
+                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildLengthMeasuredActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.ChildLengthMeasuredActivityId,
+                    userId,
+                    activity.Points * lengthMeasurementsMade,
+                    lengthMeasurementsMade);
+            }
+
+            #endregion
+
+            #region Measuring childrens' growth length - Action not required
+
+            var lengthMeasuredNoAction = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                    && x.VisitData.Question == GGSettings.QuestionLength
+                    && x.VisitData.VisitSection != GGSettings.child_road_to_health // Not a growth measurement, just the initial baby measurement
+                    && x.Comment == GGSettings.NormalComment
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.VisitData.VisitId)
+                .Distinct()
+                .Count();
+
+            var lengthMeasuredReferralMade = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                    && x.VisitData.Question == GGSettings.QuestionLength
+                    && (x.Section == GGSettings.refer_to_clinic || x.Section == GGSettings.refer_to_clinic_urgently)
+                    && x.IsCompleted == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.VisitData.VisitId)
+                .Distinct()
+                .Count();
+
+            var lengthTotal = lengthMeasuredNoAction + lengthMeasuredReferralMade;
+            if (lengthTotal > 0)
+            {
+                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildLengthMeasuredActionTakenOrNotRequiredActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.ChildLengthMeasuredActionTakenOrNotRequiredActivityId,
+                    userId,
+                    activity.Points * lengthTotal,
+                    lengthTotal);
+            }
+
+            #endregion
+
+            #region Measuring childrens' growth weight
+
+            var weightMeasurementsMade = _visitDataRepo.GetAll()
+               .Where(x =>
+                   x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                   && x.Question == GGSettings.QuestionWeight
+                   && x.VisitSection != GGSettings.child_road_to_health // Not a growth measurement, just the initial baby measurement
+                   && x.InsertedDate >= monthStart
+                   && x.InsertedDate <= monthEnd)
+               .Select(x => x.VisitId)
+               .Distinct()
+               .Count();
+
+            if (weightMeasurementsMade > 0)
+            {
+                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildWeightMeasuredActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.ChildWeightMeasuredActivityId,
+                    userId,
+                    activity.Points * weightMeasurementsMade,
+                    weightMeasurementsMade);
+            }
+
+            #endregion
+
+            #region Measuring childrens' growth length - Action not required
+
+            var weightMeasuredNoAction = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                    && x.VisitData.Question == GGSettings.QuestionWeight
+                    && x.VisitData.VisitSection != GGSettings.child_road_to_health // Not a growth measurement, just the initial baby measurement
+                    && x.Comment == GGSettings.NormalComment
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.VisitData.VisitId)
+                .Distinct()
+                .Count();
+
+            var weightMeasuredReferralMade = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                    && x.VisitData.Question == GGSettings.QuestionWeight
+                    && (x.Section == GGSettings.refer_to_clinic || x.Section == GGSettings.refer_to_clinic_urgently)
+                    && x.IsCompleted == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.VisitData.VisitId)
+                .Distinct()
+                .Count();
+
+            var weightTotal = weightMeasuredNoAction + weightMeasuredReferralMade;
+            if (weightTotal > 0)
+            {
+                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildWeightMeasuredActionTakenOrNotRequiredActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.ChildWeightMeasuredActionTakenOrNotRequiredActivityId,
+                    userId,
+                    activity.Points * weightTotal,
+                    weightTotal);
+            }
+
+            #endregion
+
+            #region Measuring childrens' MUAC
+
+            var muacMeasurementsMade = _visitDataRepo.GetAll()
+               .Where(x =>
+                   x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                   && x.Question == GGSettings.QuestionMUAC
+                   && x.VisitSection != GGSettings.child_road_to_health // Not a growth measurement, just the initial baby measurement
+                   && x.InsertedDate >= monthStart
+                   && x.InsertedDate <= monthEnd)
+               .Select(x => x.VisitId)
+               .Distinct()
+               .Count();
+
+            if (muacMeasurementsMade > 0)
+            {
+                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildMuacMeasuredActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.ChildMuacMeasuredActivityId,
+                    userId,
+                    activity.Points * muacMeasurementsMade,
+                    muacMeasurementsMade);
+            }
+
+            #endregion
+
+            #region Measuring childrens' MUAC - Action not required
+
+            var muacMeasuredNoAction = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                    && x.VisitData.Question == GGSettings.QuestionMUAC
+                    && x.VisitData.VisitSection != GGSettings.child_road_to_health // Not a growth measurement, just the initial baby measurement
+                    && x.Comment == GGSettings.NormalComment
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.VisitData.VisitId)
+                .Distinct()
+                .Count();
+
+            var muacMeasuredReferralMade = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId
+                    && x.VisitData.Question == GGSettings.QuestionMUAC
+                    && (x.Section == GGSettings.refer_to_clinic || x.Section == GGSettings.refer_to_clinic_urgently)
+                    && x.IsCompleted == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => x.VisitData.VisitId)
+                .Distinct()
+                .Count();
+
+            var muacTotal = muacMeasuredNoAction + muacMeasuredReferralMade;
+            if (muacTotal > 0)
+            {
+                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildMuacMeasuredActionTakenOrNotRequiredActivityId);
+                AddOrUpdatePoints(
+                    PointsActivityConstants.ChildMuacMeasuredActionTakenOrNotRequiredActivityId,
+                    userId,
+                    activity.Points * muacTotal,
+                    muacTotal);
+            }
+
+            #endregion
         }
 
         public bool CalculatePregnantMomVisits(string userId, DateTime today)
@@ -528,105 +731,15 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     }
                 }
 
-                // 3 
-                // Measuring childrens' growth length - normal measure count for month
-                // no cap
+                
 
-                List<VisitDataStatus> ac3 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_length &&
-                                                                x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                                x.Comment == Constants.GGSettings.normal_comment &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-
-                if (ac3.Count > 0)
-                {
-                    var activity3_points = ac3.Count * activity3.Points;
-                    var names = ac3.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac3.Count + " - " + string.Join(",", names);
-
-                    //PointsUser activity3_record = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity3_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity3_points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity3.Id,
-                    //            Comment = comment
-                    //        }
-                    //    );
-                    //} else
-                    //{
-                    //    activity3_record.Points = activity3_points;
-                    //    activity3_record.UpdatedDate = DateTime.Now;
-                    //    activity3_record.UpdatedBy = _uId.ToString();
-                    //    activity3_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity3_record);
-                    //}
-                }
-
-                // 4 
-                // Measuring childrens' growth length - referral not required
-                // no cap
-                List<VisitDataStatus> ac4 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_length &&
-                                                                x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                                x.Comment != Constants.GGSettings.stunted &&
-                                                                x.Comment != Constants.GGSettings.severely_stunted &&
-                                                                x.Section != Constants.GGSettings.refer_to_clinic &&
-                                                                x.Section != Constants.GGSettings.refer_to_clinic_urgently &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-                if (ac4.Count > 0)
-                {
-                    var activity4_points = ac4.Count * activity4.Points;
-                    var names = ac4.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac4.Count + " - " + string.Join(",", names);
-
-                    //PointsUser activity4_record = GetIndividualUserPoints(activity4.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity4_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity4_points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity4.Id,
-                    //            Comment = comment
-                    //        }
-                    //    );
-                    //}
-                    //else
-                    //{
-                    //    activity4_record.Points = activity4_points;
-                    //    activity4_record.UpdatedDate = DateTime.Now;
-                    //    activity4_record.UpdatedBy = _uId.ToString()            ;
-                    //    activity4_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity4_record);
-                    //}
-                }
+                
 
                 // 5
                 // Measuring childrens' growth length - referral required
                 // no cap
                 List<VisitDataStatus> ac5 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_length &&
+                                                                x.VisitData.Question == Constants.GGSettings.QuestionLength &&
                                                                 x.Comment == Constants.GGSettings.stunted &&
                                                                 x.Comment == Constants.GGSettings.severely_stunted &&
                                                                 x.Section == Constants.GGSettings.refer_to_clinic &&
@@ -670,106 +783,12 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     //}
                 }
 
-                // 6
-                // Measuring childrens' growth weight - normal measure count for month
-                // no cap
-                List<VisitDataStatus> ac6 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_weight &&
-                                                                x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                                x.Comment == Constants.GGSettings.normal_comment &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-
-                if (ac6.Count > 0)
-                {
-                    var activity6_points = ac6.Count * activity6.Points;
-                    var names = ac6.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac6.Count + " - " + string.Join(",", names);
-
-                    //PointsUser activity6_record = GetIndividualUserPoints(activity6.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity6_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity6_points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity6.Id,
-                    //            Comment = comment
-                    //        }
-                    //    );
-                    //}
-                    //else
-                    //{
-                    //    activity6_record.Points = activity6_points;
-                    //    activity6_record.UpdatedDate = DateTime.Now;
-                    //    activity6_record.UpdatedBy = _uId.ToString();
-                    //    activity6_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity6_record);
-                    //}
-                }
-
-                // 7 
-                // Measuring childrens' growth weight - referral not required
-                // no cap
-                List<VisitDataStatus> ac7 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_weight &&
-                                                                x.Comment != Constants.GGSettings.severely_underweight &&
-                                                                x.Comment != Constants.GGSettings.growth_faltering &&
-                                                                x.Comment != Constants.GGSettings.underweight3 &&
-                                                                x.Comment != Constants.GGSettings.overweight &&
-                                                                x.Comment != Constants.GGSettings.obese &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                               (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-                if (ac7.Count > 0)
-                {
-                    var activity7_points = ac7.Count * activity7.Points;
-                    var names = ac7.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac7.Count + " - " + string.Join(",", names);
-
-                    //PointsUser activity7_record = GetIndividualUserPoints(activity7.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity7_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity7_points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity7.Id,
-                    //            Comment = comment
-                    //        }
-                    //    );
-                    //}
-                    //else
-                    //{
-                    //    activity7_record.Points = activity7_points;
-                    //    activity7_record.UpdatedDate = DateTime.Now;
-                    //    activity7_record.UpdatedBy = _uId.ToString();
-                    //    activity7_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity7_record);
-                    //}
-                }
 
                 // 8 
                 // Measuring childrens' growth weight - referral required
                 // no cap
                 List<VisitDataStatus> ac8 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_weight &&
+                                                                x.VisitData.Question == Constants.GGSettings.QuestionWeight &&
                                                                 x.Comment == Constants.GGSettings.severely_underweight &&
                                                                 x.Comment == Constants.GGSettings.growth_faltering &&
                                                                 x.Comment == Constants.GGSettings.underweight3 &&
@@ -785,131 +804,14 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     var names = ac8.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
                     comment = "Total: " + ac8.Count + " - " + string.Join(",", names);
 
-                    //PointsUser activity8_record = GetIndividualUserPoints(activity8.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity8_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity8_points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity8.Id,
-                    //            Comment = comment
-                    //        }
-                    //    );
-                    //}
-                    //else
-                    //{
-                    //    activity8_record.Points = activity8_points;
-                    //    activity8_record.UpdatedDate = DateTime.Now;
-                    //    activity8_record.UpdatedBy = _uId.ToString();
-                    //    activity8_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity8_record);
-                    //}
                 }
 
-                // 9
-                // Measuring childrens' growth MUAC - normal
-                // no cap
-                List<VisitDataStatus> ac9 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_muac &&
-                                                                x.Comment == Constants.GGSettings.normal_comment &&
-                                                                (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-
-                if (ac9.Count > 0)
-                {
-                    var activity9_points = ac9.Count * activity9.Points;
-                    var names = ac9.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac9.Count + " - " + string.Join(",", names);
-
-                    //PointsUser activity9_record = GetIndividualUserPoints(activity9.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity9_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity9_points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity9.Id,
-                    //            Comment = comment
-                    //        }
-                    //    );
-                    //}
-                    //else
-                    //{
-                    //    activity9_record.Points = activity9_points;
-                    //    activity9_record.UpdatedDate = DateTime.Now;
-                    //    activity9_record.UpdatedBy = _uId.ToString();
-                    //    activity9_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity9_record);
-                    //}
-                }
-
-                // 10
-                // Measuring childrens' growth MUAC - referral not required
-                // no cap
-                List<VisitDataStatus> ac10 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_muac &&
-                                                                x.Comment != Constants.GGSettings.severe_acute_malnutrition &&
-                                                                x.Comment != Constants.GGSettings.moderate_acute_malnutrition &&
-                                                                x.Type == Constants.GGSettings.visit_data_client_progress &&
-                                                                (x.VisitData.InsertedDate.Year == today.Year &&
-                                                                x.VisitData.InsertedDate.Month == today.Month)).ToList();
-
-                if (ac10.Count > 0)
-                {
-                    var activity10_points = ac10.Count * activity10.Points;
-                    var names = ac10.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
-                    comment = "Total: " + ac10.Count + " - " + string.Join(",", names);
-
-                    //PointsUser activity10_record = GetIndividualUserPoints(activity10.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity10_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //    new PointsUser
-                    //    {
-                    //        Id = Guid.NewGuid(),
-                    //        IsActive = true,
-                    //        InsertedDate = DateTime.Now,
-                    //        UpdatedBy = _uId.ToString(),
-                    //        Month = today.Month,
-                    //        Year = today.Year,
-                    //        Points = activity10_points,
-                    //        UserId = new Guid(userId),
-                    //        PointsLibraryId = activity10.Id,
-                    //        Comment = comment
-                    //    }
-                    //   );
-                    //}
-                    //else
-                    //{
-                    //    activity10_record.Points = activity10_points;
-                    //    activity10_record.UpdatedDate = DateTime.Now;
-                    //    activity10_record.UpdatedBy = _uId.ToString();
-                    //    activity10_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity10_record);
-                    //}
-                }
 
                 // 11
                 // Measuring childrens' growth MUAC - referral required
                 // no cap
                 List<VisitDataStatus> ac11 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
-                                                                x.VisitData.Question == Constants.GGSettings.q_muac &&
+                                                                x.VisitData.Question == Constants.GGSettings.QuestionMUAC &&
                                                                 x.Comment == Constants.GGSettings.severe_acute_malnutrition &&
                                                                 x.Comment == Constants.GGSettings.moderate_acute_malnutrition &&
                                                                 x.Type == Constants.GGSettings.visit_data_client_progress &&
@@ -922,33 +824,6 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     var names = ac11.Select(x => x.VisitData.Visit.Infant.User.FirstName).Distinct().OrderBy(x => x).ToList();
                     comment = "Total: " + ac11.Count + " - " + string.Join(",", names);
 
-                    //PointsUser activity11_record = GetIndividualUserPoints(activity11.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    //if (activity11_record == null)
-                    //{
-                    //    InsertIndividualUserPoints(
-                    //        new PointsUser
-                    //        {
-                    //            Id = Guid.NewGuid(),
-                    //            IsActive = true,
-                    //            InsertedDate = DateTime.Now,
-                    //            UpdatedBy = _uId.ToString(),
-                    //            Month = today.Month,
-                    //            Year = today.Year,
-                    //            Points = activity11_points,
-                    //            UserId = new Guid(userId),
-                    //            PointsLibraryId = activity11.Id,
-                    //            Comment = comment
-                    //        }
-                    //    );
-                    //}
-                    //else
-                    //{
-                    //    activity11_record.Points = activity11_points;
-                    //    activity11_record.UpdatedDate = DateTime.Now;
-                    //    activity11_record.UpdatedBy = _uId.ToString();
-                    //    activity11_record.Comment = comment;
-                    //    UpdateIndividualUserPoints(activity11_record);
-                    //}
                 }
 
                 // 12
