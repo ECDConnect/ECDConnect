@@ -2,11 +2,13 @@
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -32,19 +34,20 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<BreastFeedingClub, Guid> _breastFeedingClubRepo;
         private readonly IGenericRepository<Caregiver, Guid> _caregiverRepo;
 
-        private readonly string _applicationUserId;
+        private readonly Guid? _applicationUserId;
 
         IPointsEngineService _pointsEngineService;
 
         public ClinicService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
-            [Service] IPointsEngineService pointsEngineService
+            [Service] IPointsEngineService pointsEngineService,
+            HierarchyEngine hierarchyEngine
             )
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id.ToString();
+            _applicationUserId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _districtRepo = _repositoryFactory.CreateGenericRepository<District>(userContext: _applicationUserId);
             _subDistrictRepo = _repositoryFactory.CreateGenericRepository<SubDistrict>(userContext: _applicationUserId);
@@ -97,7 +100,7 @@ namespace EcdLink.Api.CoreApi.Services
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToStringOrNull(),
                 Name = input.Name,
                 ProvinceId = input.ProvinceId
             }
@@ -110,7 +113,7 @@ namespace EcdLink.Api.CoreApi.Services
             district.Name = input.Name;
             district.ProvinceId = input.ProvinceId;
             district.UpdatedDate = DateTime.Now;
-            district.UpdatedBy = _applicationUserId;
+            district.UpdatedBy = _applicationUserId.ToStringOrNull();
             return _districtRepo.Update(district);
         }
 
@@ -119,7 +122,7 @@ namespace EcdLink.Api.CoreApi.Services
             var district = _districtRepo.GetById(districtId);
             district.IsActive = false;
             district.UpdatedDate = DateTime.Now;
-            district.UpdatedBy = _applicationUserId;
+            district.UpdatedBy = _applicationUserId.ToStringOrNull();
             return _districtRepo.Update(district);
         }
 
@@ -159,7 +162,7 @@ namespace EcdLink.Api.CoreApi.Services
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToStringOrNull(),
                 Name = input.Name,
                 DistrictId = input.DistrictId
             }
@@ -171,7 +174,7 @@ namespace EcdLink.Api.CoreApi.Services
             subDistrict.Name = input.Name;
             subDistrict.DistrictId = input.DistrictId;
             subDistrict.UpdatedDate = DateTime.Now;
-            subDistrict.UpdatedBy = _applicationUserId;
+            subDistrict.UpdatedBy = _applicationUserId.ToStringOrNull();
             return _subDistrictRepo.Update(subDistrict);
         }
 
@@ -180,7 +183,7 @@ namespace EcdLink.Api.CoreApi.Services
             var subDistrict = _subDistrictRepo.GetById(subDistrictId);
             subDistrict.IsActive = false;
             subDistrict.UpdatedDate = DateTime.Now;
-            subDistrict.UpdatedBy = _applicationUserId;
+            subDistrict.UpdatedBy = _applicationUserId.ToStringOrNull();
             return _subDistrictRepo.Update(subDistrict);
         }
 
@@ -316,7 +319,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var totalSupportGrant = visitData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving &&
                                                          x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_muac) &&
+            var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.QuestionLength || x.Question == Constants.GGSettings.QuestionWeight || x.Question == Constants.GGSettings.QuestionMUAC) &&
                                                             x.VisitSection != Constants.GGSettings.child_road_to_health &&
                                                             x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.q_immunisation &&
@@ -354,7 +357,7 @@ namespace EcdLink.Api.CoreApi.Services
                     IsActive = true,
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
-                    UpdatedBy = _applicationUserId,
+                    UpdatedBy = _applicationUserId.ToStringOrNull(),
                     Name = input.Name,
                     PhoneNumber = input.PhoneNumber,
                     SiteAddressId = input.SiteAddressId,
@@ -372,7 +375,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var clinic = _clinicRepo.GetById((Guid)input.Id);
             clinic.UpdatedDate = DateTime.Now;
-            clinic.UpdatedBy = _applicationUserId;
+            clinic.UpdatedBy = _applicationUserId.ToStringOrNull();
             clinic.Name = input.Name;
             clinic.PhoneNumber = input.PhoneNumber;
             clinic.SiteAddressId = input.SiteAddressId;
@@ -401,7 +404,7 @@ namespace EcdLink.Api.CoreApi.Services
                     foreach (var item in currentIds)
                     {
                         item.UpdatedDate = DateTime.Now;
-                        item.UpdatedBy = _applicationUserId;
+                        item.UpdatedBy = _applicationUserId.ToStringOrNull();
                         item.IsActive = false;
                         _clinicTeamRepo.Update(item);
                     }
@@ -417,7 +420,7 @@ namespace EcdLink.Api.CoreApi.Services
                     if (!teamLead1.IsActive)
                     {
                         teamLead1.UpdatedDate = DateTime.Now;
-                        teamLead1.UpdatedBy = _applicationUserId;
+                        teamLead1.UpdatedBy = _applicationUserId.ToStringOrNull();
                         teamLead1.IsActive = true;
                         _clinicTeamRepo.Update(teamLead1);
                     }
@@ -436,7 +439,7 @@ namespace EcdLink.Api.CoreApi.Services
                         if (!teamLead2.IsActive)
                         {
                             teamLead2.UpdatedDate = DateTime.Now;
-                            teamLead2.UpdatedBy = _applicationUserId;
+                            teamLead2.UpdatedBy = _applicationUserId.ToStringOrNull();
                             teamLead2.IsActive = true;
                             _clinicTeamRepo.Update(teamLead2);
                         }
@@ -464,7 +467,7 @@ namespace EcdLink.Api.CoreApi.Services
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToStringOrNull(),
                 ClinicId = clinicId,
                 TeamLeadId = teamLeadId
             });
@@ -475,7 +478,7 @@ namespace EcdLink.Api.CoreApi.Services
             var clinic = _clinicRepo.GetById(clinicId);
             clinic.IsActive = false;
             clinic.UpdatedDate = DateTime.Now;
-            clinic.UpdatedBy = _applicationUserId;
+            clinic.UpdatedBy = _applicationUserId.ToStringOrNull();
             return _clinicRepo.Update(clinic);
         }
 

@@ -62,13 +62,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
-            if (provinceSearch.Count != 0)
+            if (provinceSearch != null && provinceSearch.Count != 0)
                 healthCareWorkers = healthCareWorkers.Where(h => provinceSearch.Contains(h.Clinic.SubDistrict.District.Province.Description));
             
-            if (clinicSearch.Count != 0)
+            if (clinicSearch != null && clinicSearch.Count != 0)
                 healthCareWorkers = healthCareWorkers.Where(h => clinicSearch.Contains(h.Clinic.Name));
 
-            if (subDistrictSearch.Count != 0)
+            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
                 healthCareWorkers = healthCareWorkers.Where(h => subDistrictSearch.Contains(h.Clinic.SubDistrict.Name));
 
             if (cancellationToken.IsCancellationRequested)
@@ -88,7 +88,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 InsertedDate = item.InsertedDate,
             }).ToList();
 
-            if (connectUsageSearch.Count != 0)
+            if (connectUsageSearch != null && connectUsageSearch.Count != 0)
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
@@ -115,7 +115,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 }
             }
 
-            if (visitSearch.Count != 0)
+            if (visitSearch != null && visitSearch.Count != 0)
             {
                 var startOfMonth = DateTime.Now.GetStartOfMonth();
                 var endOfMonth = DateTime.Now.GetEndOfMonth();

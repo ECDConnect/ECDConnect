@@ -9,6 +9,7 @@ export const GetAllTeamLead = gql`
     $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
     $order: [PortalUsersTLModelSortInput!]
+    $subDistrictSearch: [String]
   ) {
     allTeamLeads(
       search: $search
@@ -18,6 +19,7 @@ export const GetAllTeamLead = gql`
       connectUsageSearch: $connectUsageSearch
       pagingInput: $pagingInput
       order: $order
+      subDistrictSearch: $subDistrictSearch
     ) {
       id
       insertedDate

@@ -176,7 +176,9 @@ export const PractitionerAbout: React.FC = () => {
         ? clinic?.teamLeads?.map(
             (leader, index) =>
               ({
-                title: `Your Team Leader ${index + 1}`,
+                title: `Your Team Leader ${
+                  clinic?.teamLeads.length > 1 ? index + 1 : ''
+                }`,
                 subTitle: `${leader?.firstName ?? ''} ${leader?.surname}`,
                 switchTextStyles: true,
                 actionName: 'View',

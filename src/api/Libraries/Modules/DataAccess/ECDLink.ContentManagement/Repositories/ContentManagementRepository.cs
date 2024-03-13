@@ -315,7 +315,6 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 if (input.TryGetValue(field.FieldName, out var value))
                 {
-
                     // if we get the string base64 in the value we know it is a file upload 
                     // note: this is being done because the field type is not useful.
                     var fileIndex = value?.ToString()?.IndexOf("base64");
@@ -493,27 +492,24 @@ namespace ECDLink.ContentManagement.Repositories
                 }
                 else if (field.FieldName.ToString() == "availableLanguages") //update languages of the item if its a language field and the locale doesnt match or is null
                 {
-                    ContentValue currentLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id).FirstOrDefault();// && x.LocaleId == localeId
+                    ContentValue availableLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id).FirstOrDefault();
+                    var allLanguages = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
-                    if (currentLanguages.Value != null)
+                    if (availableLanguages == null)
                     {
-                        var languages = currentLanguages.Value.ToString().Split(',').ToList();
-                        if (!languages.Contains(localeId.ToString()))
+                        content.ContentValues.Add(new ContentValue
                         {
-                            languages.Add(localeId.ToString());
-                        }
-                        if (languages.Count > 1)
-                        {
-                            currentLanguages.Value = string.Join(",", languages);
-                        }
-                        else
-                        {
-                            currentLanguages.Value = localeId.ToString();
-                        }
-                    }
-                    else
+                            Value = string.Join(",", allLanguages),
+                            ContentId = contentId,
+                            ContentTypeFieldId = field.Id,
+                            LocaleId = localeId,
+                            TenantId = currentTenantId,
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
+                        });
+                    } else
                     {
-                        currentLanguages.Value = localeId.ToString();
+                        availableLanguages.Value = string.Join(",", allLanguages);
                     }
                 }
                 content.UpdatedDate = DateTime.UtcNow;

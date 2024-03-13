@@ -37,4 +37,5 @@ export interface UserDto extends EntityBase {
   principalObjectData?: {
     isPrincipal?: boolean;
   };
+  connectUsage?: string;
 }

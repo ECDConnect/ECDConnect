@@ -703,8 +703,8 @@ namespace ECDLink.Core.Services
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
             pdfDoc.CreatedUserId = _applicationUserId.ToString();
+            return null;
 
-            return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }
 
         public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId)

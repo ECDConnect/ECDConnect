@@ -185,8 +185,7 @@ namespace EcdLink.Api.CoreApi.Services
                 UserId = userId,
                 CreatedUserId = _applicationUserId.ToString(),
             };
-
-            return await _documentManager.SaveAttendancePDF(pdfDoc);
+            return null;
         }
 
         private int GetTotalForDay(int key, IEnumerable<ClassroomGroupChildAttendanceReportModel> children)

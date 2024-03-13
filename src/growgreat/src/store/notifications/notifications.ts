@@ -2,9 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { Message } from '@models/messages/messages';
 import { NotificationsState, Notification } from './notifications.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { disableBackendNotification } from './notifications.actions';
 
 const initialState: NotificationsState = {
   notifications: [],
+  notificationReferences: [],
 };
 
 const notificationsState = createSlice({
@@ -12,7 +15,20 @@ const notificationsState = createSlice({
   initialState,
   reducers: {
     resetNotificationState: (state) => {
-      state.notifications = [];
+      state.notifications = initialState.notifications;
+      state.notificationReferences = initialState.notificationReferences;
+    },
+    resetFrontendNotificationState: (state) => {
+      const backendNotifications = state.notifications.filter(
+        (item) => item.message.isFromBackend
+      );
+
+      const backendReferences = backendNotifications.map(
+        (item) => item.message.reference
+      );
+
+      state.notifications = backendNotifications || [];
+      state.notificationReferences = backendReferences || [];
     },
     addNotifications: (
       state: NotificationsState,
@@ -31,6 +47,18 @@ const notificationsState = createSlice({
       }));
       state.notifications = notificationsCopy;
     },
+    markNotificationRead: (
+      state,
+      action: PayloadAction<{ reference: string }>
+    ) => {
+      const notification = state.notifications.find(
+        (n) => n.message.reference === action.payload.reference
+      );
+
+      if (notification) {
+        notification.isNew = false;
+      }
+    },
     removeNotification: (state, action: PayloadAction<Notification>) => {
       const notificationIndex = state.notifications.findIndex(
         (n) => n.message.reference === action.payload.message.reference
@@ -40,6 +68,18 @@ const notificationsState = createSlice({
 
       state.notifications.splice(notificationIndex, 1);
     },
+  },
+  extraReducers: (builder) => {
+    setThunkActionStatus(builder, disableBackendNotification);
+    builder.addCase(disableBackendNotification.fulfilled, (state, action) => {
+      const notificationId = action.meta.arg.notificationId;
+
+      state.notifications = state.notifications.filter(
+        (n) => n.message.reference !== notificationId
+      );
+
+      setFulfilledThunkActionStatus(state, action);
+    });
   },
 });
 
