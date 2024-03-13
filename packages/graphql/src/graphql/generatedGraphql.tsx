@@ -6094,7 +6094,7 @@ export type Mutation = {
   addEventRecordType?: Maybe<EventRecordType>;
   addFamilyDayMeeting?: Maybe<ClubMeeting>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
-  addHealthCareWorker?: Maybe<HealthCareWorkerModel>;
+  addHealthCareWorker?: Maybe<PortalUserHcwModel>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
   addNewClub?: Maybe<Club>;

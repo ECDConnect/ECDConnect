@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime;
 using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -53,7 +52,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+            _applicationUserId = _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -297,12 +296,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     maternalDistressScreening.Add(vData);
                 }
-                else if (vData.Question == GGSettings.q_weight)
+                else if (vData.Question == GGSettings.QuestionWeight)
                 {
 
                     previousVisitWeight = (
                          from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == infantId && x.Attended == true).OrderBy(x => x.InsertedDate)
-                         join visitData in _visitDataRepo.GetAll().Where(y => y.Question == GGSettings.q_weight) on visit.Id equals visitData.VisitId
+                         join visitData in _visitDataRepo.GetAll().Where(y => y.Question == GGSettings.QuestionWeight) on visit.Id equals visitData.VisitId
                          select visitData.QuestionAnswer
                      ).LastOrDefault();
                     if (previousVisitWeight == null)
@@ -312,11 +311,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                     growthData.Add(vData);
                 }
-                else if (vData.Question == GGSettings.q_length)
+                else if (vData.Question == GGSettings.QuestionLength)
                 {
                     growthData.Add(vData);
                 }
-                else if (vData.Question == GGSettings.q_muac)
+                else if (vData.Question == GGSettings.QuestionMUAC)
                 {
                     growthData.Add(vData);
                 }
@@ -955,11 +954,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var lColor = "";
             var mColor = "";
 
-            var q1 = growthData.Where(x => x.Question == GGSettings.q_weight && x.VisitName != GGSettings.careForBaby).OrderBy(x => x.Id).FirstOrDefault();
-            var q2 = growthData.Where(x => x.Question == GGSettings.q_length && x.VisitName != GGSettings.careForBaby).OrderBy(x => x.Id).FirstOrDefault();
-            var q3 = growthData.Where(x => x.Question == GGSettings.q_muac).OrderBy(x => x.Id).FirstOrDefault();
+            var q1 = growthData.Where(x => x.Question == GGSettings.QuestionWeight && x.VisitName != GGSettings.CareForBaby).OrderBy(x => x.Id).FirstOrDefault();
+            var q2 = growthData.Where(x => x.Question == GGSettings.QuestionLength && x.VisitName != GGSettings.CareForBaby).OrderBy(x => x.Id).FirstOrDefault();
+            var q3 = growthData.Where(x => x.Question == GGSettings.QuestionMUAC).OrderBy(x => x.Id).FirstOrDefault();
 
-            if (q1 != null && q1.Question == GGSettings.q_weight)
+            if (q1 != null && q1.Question == GGSettings.QuestionWeight)
             {
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
@@ -977,11 +976,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     wIndicator = "Low birth weight";
                     wColor = StatusColours.Amber;
+
+                    // Is this meant to save any data?
                 }
                 else if (totalDaysOld < 7 && _prevWeight == 0 && _weight >= 2.5)
                 {
                     wIndicator = "Normal";
                     wColor = StatusColours.Green;
+
+                    // Is this meant to save any data?
                 }
                 else
                 {
@@ -1075,7 +1078,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            if (q2 != null && q2.Question == GGSettings.q_length)
+            if (q2 != null && q2.Question == GGSettings.QuestionLength)
             {
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
@@ -1125,7 +1128,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            if (q3 != null && q3.Question == GGSettings.q_muac)
+            if (q3 != null && q3.Question == GGSettings.QuestionMUAC)
             {
                 var questionAnswer = q3.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
                 mIndicator = "Normal";
@@ -1954,7 +1957,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             VisitDataStatus growthStatus;
             growthStatus = (
-                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == GGSettings.q_muac)
+                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == GGSettings.QuestionMUAC)
                 join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).FirstOrDefault();
@@ -1986,19 +1989,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
-            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == GGSettings.q_weight).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == GGSettings.QuestionWeight).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Weight = weightData?.VisitData.QuestionAnswer == "undefined" ? "0" : weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
-            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == GGSettings.q_length).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == GGSettings.QuestionLength).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Length = lengthData?.VisitData.QuestionAnswer == "undefined" ? "0" : lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 
-            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == GGSettings.q_muac).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == GGSettings.QuestionMUAC).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;
@@ -2007,9 +2010,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
             result.ScoreColor = scoreColor;
             // EC-877: remove weigth, length and muac from list, because they are already handled above
-            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != GGSettings.q_weight &&
-                                                                 y.VisitData.Question != GGSettings.q_length &&
-                                                                 y.VisitData.Question != GGSettings.q_muac).ToList();
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != GGSettings.QuestionWeight &&
+                                                                 y.VisitData.Question != GGSettings.QuestionLength &&
+                                                                 y.VisitData.Question != GGSettings.QuestionMUAC).ToList();
 
             return result;
         }
@@ -2052,9 +2055,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             List<VisitDataStatus> vData = new List<VisitDataStatus>();
             vData = (
                 from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == GGSettings.q_weight ||
-                                                                     y.Question == GGSettings.q_length ||
-                                                                     y.Question == GGSettings.q_muac).OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == GGSettings.QuestionWeight ||
+                                                                     y.Question == GGSettings.QuestionLength ||
+                                                                     y.Question == GGSettings.QuestionMUAC).OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
                 join visitDataStatus in _visitDataStatusRepo.GetAll() on visitData.Id equals visitDataStatus.VisitDataId
                 select visitDataStatus
             ).ToList();
