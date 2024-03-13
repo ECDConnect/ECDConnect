@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
@@ -13,6 +13,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
@@ -51,14 +52,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
 
             if (!string.IsNullOrWhiteSpace(search))
-                teamLeads = teamLeads
+                teamLeads = teamLeads 
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
             if (provinceSearch != null && provinceSearch.Count != 0)
-                teamLeads = teamLeads = teamLeads.Where(h => h.Clinics.Any(c => provinceSearch.Contains(c.Clinic.SiteAddress.Province.Description)));
+                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => provinceSearch.Contains(c.Clinic.SiteAddress.Province.Description)));
 
             if (clinicSearch != null && clinicSearch.Count != 0)
                 teamLeads = teamLeads.Where(h => h.Clinics.Any(c => clinicSearch.Contains(c.Clinic.Name)));
@@ -80,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             {
                 Id = item.Id,
                 User = new PortalUserModel(item.User, invitations),
-                ClinicIds = item.Clinics.Select(x => (Guid)x.Id).ToList(),
+                ClinicIds = item.Clinics.Select(x => (Guid)x.ClinicId).ToList(),
                 InsertedDate = item.InsertedDate
             }).ToList();
 
@@ -249,5 +250,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var fileName = templateHeaderSheet.Replace(" ", "_");
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PortalTeamLead GetTeamLeadSummary([Service] IHttpContextAccessor contextAccessor,
+                                      IGenericRepositoryFactory repoFactory,
+                                      [Service] IPersonnelService personnelService,
+                                      Guid teamLeadId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var hcwRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
+            var teamRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId);
+            var infantRepo = repoFactory.CreateRepository<Infant>(userContext: uId);
+            
+            var teamLead = teamRepo.GetAll().Where(x => x.Id == teamLeadId).FirstOrDefault();
+            if (teamLead != null)
+            {
+                var siteAddress = personnelService.GetUserSiteAddress(teamLead.User.Id.ToString());
+                var clinicTeamLeadRecords = teamLead.Clinics.Where(x => x.IsActive).ToList();
+
+                var clinicNameList = new List<string>();
+                var clinicIds = new List<Guid>();
+                foreach (var item in clinicTeamLeadRecords)
+                {
+                    var league = item.Clinic.Leagues.Where(x => x.IsActive).FirstOrDefault();
+                    if (league != null)
+                    {
+                        clinicNameList.Add(item.Clinic.Name + " (" + league?.League.Name + ")");
+                    } else
+                    {
+                        clinicNameList.Add(item.Clinic.Name);
+                    }
+                    clinicIds.Add(item.ClinicId);
+                }
+                var healthCareWorkers = hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId != null && clinicIds.Contains((Guid)x.ClinicId))
+                    .Include(x => x.Mothers)
+                    .Include(x => x.Caregivers)
+                    .ToList();
+                var caregiverIds = healthCareWorkers.SelectMany(x => x.Caregivers.Where(x => x.IsActive).Select(x => x.Id)).Distinct().ToList();
+
+                var clinicNames = string.Join(",", clinicNameList);
+                var totalHealthCareWorkers = healthCareWorkers.Count();
+                var totalPregnantMoms = healthCareWorkers.SelectMany(x => x.Mothers.Where(x => x.IsActive)).Distinct().Count();
+                var totalChildren = infantRepo.GetAll().Where(x => x.IsActive && caregiverIds.Contains((Guid)x.CaregiverId)).Distinct().Count();
+                // TODO: get these totals when app dev is done
+                var totalMeetingReportsSubmitted = 0;
+                var totalInFieldVisitsCompleted = 0;
+                return new PortalTeamLead(teamLead.User, clinicNames, siteAddress, clinicNameList.Count, totalHealthCareWorkers,
+                                          totalPregnantMoms, totalChildren, totalMeetingReportsSubmitted, totalInFieldVisitsCompleted);
+            }
+            return null;
+        }
+
     }
 }

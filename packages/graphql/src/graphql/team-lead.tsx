@@ -102,6 +102,28 @@ export const TeamLeadsTemplate = gql`
   }
 `;
 
+export const GetTeamLeadSummary = gql`
+  query GetTeamLeadSummary($teamLeadId: UUID!) {
+    teamLeadSummary(teamLeadId: $teamLeadId) {
+      idNumber
+      phoneNumber
+      whatsAppNumber
+      firstName
+      surname
+      lastSeen
+      clinicNames
+      location
+      totalClinics
+      totalHealthCareWorkers
+      totalPregnantMoms
+      totalChildren
+      totalMeetingReportsSubmitted
+      totalInFieldVisitsCompleted
+      __typename
+    }
+  }
+`;
+
 export const GetTeamLead = gql`
   query GetAllTeamLeadById(
     $teamLeadId: UUID
