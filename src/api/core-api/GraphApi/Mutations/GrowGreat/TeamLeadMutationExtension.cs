@@ -12,7 +12,6 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
-using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
