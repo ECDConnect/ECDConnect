@@ -1,4 +1,4 @@
-import { useDialog, useTheme } from '@ecdlink/core';
+import { useDialog, useSessionStorage, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -15,7 +15,10 @@ import { AddPhotoDialog } from './add-photo-dialog';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { useState } from 'react';
-import { CommunityRouteState } from '../community.types';
+import {
+  COMMUNITY_SESSION_STORAGE_KEY,
+  CommunityRouteState,
+} from '../community.types';
 import { useAppDispatch } from '@/store';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { PractitionerAboutRouteState } from '@/pages/practitioner/practitioner-about/practitioner-about.types';
@@ -28,6 +31,9 @@ import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWork
 import { communitySelectors } from '@/store/community';
 
 export const CommunityWelcome: React.FC = () => {
+  const [, setSessionStorage] = useSessionStorage(
+    COMMUNITY_SESSION_STORAGE_KEY
+  );
   const [message, setMessage] = useState<string>('');
   const [shareContactInfo, setShareContactInfo] = useState<
     boolean | boolean[]
@@ -61,6 +67,8 @@ export const CommunityWelcome: React.FC = () => {
 
   const onSave = async () => {
     if (isOnCharacterLimit) {
+      setSessionStorage('true');
+
       await appDispatch(
         healthCareWorkerThunkActions.updateHealthCareWorkerWelcomeMessage({
           healthCareWorkerId: hcw?.id ?? '',
