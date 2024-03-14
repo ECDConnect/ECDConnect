@@ -3,13 +3,13 @@ using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
-    public class PortalTeamLead
+    public class PortalTeamLeadModel
     {
-        public PortalTeamLead()
+        public PortalTeamLeadModel()
         {
         }
 
-        public PortalTeamLead(ApplicationUser user, string clinicNames, string location, int totalClinics, int totalHealthCareWorkers,
+        public PortalTeamLeadModel(ApplicationUser user, string clinicNames, string location, int totalClinics, int totalHealthCareWorkers,
                               int totalPregnantMoms, int totalChildren, int totalMeetingReportsSubmitted, int totalInFieldVisitsCompleted)
         {
             IdNumber = user.IdNumber;
