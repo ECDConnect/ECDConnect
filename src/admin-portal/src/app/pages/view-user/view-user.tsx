@@ -12,6 +12,7 @@ import {
   Dropdown,
   Dialog,
   ActionModal,
+  StatusChip,
 } from '@ecdlink/ui';
 import {
   JSXElementConstructor,
@@ -29,8 +30,8 @@ import {
   StarIcon,
   SaveIcon,
   ArrowLeftIcon,
-  PaperAirplaneIcon,
   ThumbUpIcon,
+  ExclamationIcon,
 } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
@@ -52,11 +53,10 @@ import {
   ResetUserPassword,
   UpdateUser,
   UserModelInput,
-  SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
-  GetTeamLead,
   GetAllClinic,
   UpdateHealthCareWorkerClinic,
+  GetTeamLeadSummary,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -65,6 +65,14 @@ import * as yup from 'yup';
 import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
 import { subDays } from 'date-fns';
+import {
+  UsersRolesTypeEnum,
+  UsersRouteRedirectTypeEnum,
+} from './view-user.types';
+import { TeamLeadSummary } from './components/team-lead-summary/team-lead-summary';
+import { TeamLeadMeetingReport } from './components/team-lead-meeting-reports/team-lead-meeting-reports';
+import { ConenctUsage } from '../users/sub-pages/team-leads/team-leads.types';
+import { SendInvite } from './components/send-invite/send-invite';
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -110,7 +118,11 @@ export function ViewUser(props: any) {
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
   const endDate = currentDate;
-
+  const connectUsage = props?.location?.state?.connectUsage;
+  const teamLeadId = props?.location?.state?.teamLeadId;
+  const isTeamLead =
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
+  const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification, setSucessNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
     startDate,
@@ -144,19 +156,13 @@ export function ViewUser(props: any) {
     }
   );
 
-  const [getAllTeamLead, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
-    variables: {
-      userId: '',
-    },
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const { data: userData, refetch } = useQuery(GetUserById, {
+  const { data: userData, refetch: refetchUserData } = useQuery(GetUserById, {
     variables: {
       userId: props.location.state.userId ?? userId,
     },
     fetchPolicy: 'cache-and-network',
   });
+
   const userObject = useMemo(() => userData?.userById, [userData?.userById]);
 
   const { data: clinicsData } = useQuery(GetAllClinic, {
@@ -189,19 +195,35 @@ export function ViewUser(props: any) {
     });
   }, [selectedRange]);
 
+  const [getTeamLeadSummary, { data: teamLeadSummary }] = useLazyQuery(
+    GetTeamLeadSummary,
+    {
+      variables: {
+        teamLeadId: props.location.state?.teamLeadId,
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
+  useEffect(() => {
+    if (props.location.state?.teamLeadId) {
+      getTeamLeadSummary();
+    }
+  }, [getTeamLeadSummary, props.location.state?.teamLeadId]);
+
+  const teamLeadReportData = useMemo(
+    () => teamLeadSummary?.teamLeadSummary,
+    [teamLeadSummary?.teamLeadSummary]
+  );
+
   useEffect(() => {
     // props.location.state?.component === 'administrators' &&
     //   getUserById({
     //     variables: { userId: props.location.state.userId ?? userId },
     //   });
 
-    props.location.state?.component === 'chw' &&
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.chw &&
       getChwById({
-        variables: { userId: props.location.state.userId ?? userId },
-      });
-
-    props.location.state?.component === 'team-leads' &&
-      getAllTeamLead({
         variables: { userId: props.location.state.userId ?? userId },
       });
   }, [userId]);
@@ -209,7 +231,6 @@ export function ViewUser(props: any) {
   const { hasPermission } = useUser();
   const { setNotification, clearNotification } = useNotifications();
   const dialog = useDialog();
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   const isNotLockedOut = (user) => {
     if (!user) return true;
@@ -250,51 +271,6 @@ export function ViewUser(props: any) {
               .catch((error) => {
                 setNotification({
                   title: 'Failed to Delete User!',
-                  variant: NOTIFICATION.ERROR,
-                });
-              });
-          }}
-        />
-      ),
-    });
-  };
-
-  let isAdminUser = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
-  );
-
-  const sendInvite = async () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData?.GetHealthCareWorkerById?.user?.fullName ??
-            userData?.userById?.fullName
-          }`}
-          btnText={['Yes, Resend Invitation', 'No, Cancel']}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            sendInviteToApplication({
-              variables: {
-                userId:
-                  userData?.userById?.id ??
-                  chwData.GetHealthCareWorkerById.user.id,
-                inviteToPortal: isAdminUser,
-              },
-            })
-              .then(() => {
-                refetch();
-                setNotification({
-                  title: 'Successfully Sent Invite!',
-                  variant: NOTIFICATION.SUCCESS,
-                });
-              })
-              .catch((err) => {
-                setNotification({
-                  title: 'Failed to Send Invite!',
                   variant: NOTIFICATION.ERROR,
                 });
               });
@@ -425,15 +401,12 @@ export function ViewUser(props: any) {
 
     await updateUser({
       variables: {
-        id:
-          userData?.userById?.id ??
-          chwData?.GetHealthCareWorkerById?.user.id ??
-          teamLeadData?.user.id,
+        id: userData?.userById?.id ?? chwData?.GetHealthCareWorkerById?.user.id,
         input: userInputModel,
       },
     })
       .then(() => {
-        if (userData?.phoneNumber) refetch();
+        if (userData?.phoneNumber) refetchUserData();
 
         if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
           refetchCHW();
@@ -460,7 +433,7 @@ export function ViewUser(props: any) {
         },
       }).then(() => {
         setEditActive(!editActive);
-        refetch();
+        refetchUserData();
       });
     }
   };
@@ -475,6 +448,7 @@ export function ViewUser(props: any) {
       passwordChange = true;
     }
     await saveUser(passwordChange);
+    refetchUserData();
     setEditActive(!editActive);
   };
 
@@ -482,6 +456,112 @@ export function ViewUser(props: any) {
   const password = watch('password');
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+
+  const getRoleStatusChip = (status: string) => {
+    switch (status) {
+      case UsersRouteRedirectTypeEnum?.chw:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="tertiary"
+              backgroundColour="tertiary"
+              textColour="white"
+              text={UsersRolesTypeEnum?.chw}
+            />
+          </div>
+        );
+      case UsersRouteRedirectTypeEnum?.teamLeads:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="darkBlue"
+              backgroundColour="darkBlue"
+              textColour="white"
+              text={UsersRolesTypeEnum?.teamLeads}
+            />
+          </div>
+        );
+      default:
+        return (
+          <div>
+            <StatusChip
+              className="self-cente py-2r ml-auto"
+              borderColour="infoDark"
+              backgroundColour="infoDark"
+              textColour="white"
+              text={UsersRolesTypeEnum?.user}
+            />
+          </div>
+        );
+    }
+  };
+
+  const getConnectUsageChip = (value: string) => {
+    switch (value) {
+      case ConenctUsage?.InvitationActive:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="infoMain"
+              backgroundColour="infoMain"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      case ConenctUsage?.InvitationExpired:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="errorMain"
+              backgroundColour="errorMain"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      case ConenctUsage?.LastOnlineOver6Months:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="darkBlue"
+              backgroundColour="darkBlue"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      case ConenctUsage?.LastOnlineWithinPast6Months:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="darkBlue"
+              backgroundColour="darkBlue"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+      default:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="errorMain"
+              backgroundColour="errorMain"
+              textColour="white"
+              text={connectUsage}
+            />
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
@@ -532,22 +612,10 @@ export function ViewUser(props: any) {
                       chwData?.GetHealthCareWorkerById?.user?.fullName}
                   </p>
                   <div className="flex flex-row pt-2">
-                    {userData &&
-                      userData?.userById?.roles?.map(
-                        (i: any, index: number) => {
-                          return (
-                            <div
-                              key={i.id}
-                              className={classNames(
-                                'bg-tertiary',
-                                ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
-                              )}
-                            >
-                              <p className="text-16"> {i.name}</p>
-                            </div>
-                          );
-                        }
-                      )}
+                    <div className="flex items-center gap-2">
+                      {getRoleStatusChip(props.location.state?.component)}
+                      {isTeamLead && getConnectUsageChip(connectUsage)}
+                    </div>
                     {chwData &&
                       chwData?.GetHealthCareWorkerById?.user?.roles?.map(
                         (i: any, index: number) => {
@@ -593,8 +661,7 @@ export function ViewUser(props: any) {
           <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
             {/* Start main area*/}
             <h3 className="border-b-4 border-dashed pb-2 text-xl ">
-              {' '}
-              Personal information{' '}
+              Personal information
             </h3>
             <form
               key={'formKey'}
@@ -604,16 +671,18 @@ export function ViewUser(props: any) {
                 <>
                   <div className="space-y-0">
                     <div className="grid grid-cols-1 ">
-                      {isCHW || props.location.state?.component === 'chw' ? (
+                      {userData && (
                         <>
-                          <div className="my-4 w-6/12 sm:col-span-3">
-                            <FormField
-                              label={'ID number *'}
-                              nameProp={'idNumber'}
-                              register={registerCHW}
-                              error={chwDetailFormErrors.idNumber?.message}
-                            />
-                          </div>
+                          {!isRegistered && (
+                            <div className="my-4 w-6/12 sm:col-span-3">
+                              <FormField
+                                label={'ID number *'}
+                                nameProp={'idNumber'}
+                                register={registerCHW}
+                                error={chwDetailFormErrors.idNumber?.message}
+                              />
+                            </div>
+                          )}
                           <div className="my-4 w-6/12 sm:col-span-3">
                             <FormField
                               label={'Cellphone number *'}
@@ -623,19 +692,11 @@ export function ViewUser(props: any) {
                             />
                           </div>
                         </>
-                      ) : (
-                        <div className="my-4 w-6/12 sm:col-span-3">
-                          <FormField
-                            label={'Email *'}
-                            nameProp={'email'}
-                            register={register}
-                            error={adminDetailFormErrors.email?.message}
-                          />
-                        </div>
                       )}
 
                       <div>
-                        {isCHW && (
+                        {props.location.state?.component ===
+                          UsersRouteRedirectTypeEnum?.chw && (
                           <Dropdown
                             placeholder={'Click to select a clinic'}
                             className={'justify-between'}
@@ -653,21 +714,24 @@ export function ViewUser(props: any) {
                             }
                           />
                         )}
-                        <div className="my-0 w-6/12 sm:col-span-2">
-                          <PasswordInput
-                            label={'Password'}
-                            nameProp={'password'}
-                            sufficIconColor="black"
-                            value={passwordForm.password}
-                            register={passwordRegister}
-                            strengthMeterVisible={true}
-                            className="mb-9 "
-                          />
-                        </div>
+                        {!isTeamLead && (
+                          <div className="my-0 w-6/12 sm:col-span-2">
+                            <PasswordInput
+                              label={'Password'}
+                              nameProp={'password'}
+                              sufficIconColor="black"
+                              value={passwordForm.password}
+                              register={passwordRegister}
+                              strengthMeterVisible={true}
+                              className="mb-9 "
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                  {isCHW || props.location.state?.component === 'chw' ? (
+                  {props.location.state?.component ===
+                  UsersRouteRedirectTypeEnum?.chw ? (
                     <Button
                       className={' w-4/12 rounded-md '}
                       type="filled"
@@ -698,9 +762,7 @@ export function ViewUser(props: any) {
                       disabled={!isAdminDetailValid}
                       onClick={handleSubmitAdminDetails(onSave)}
                     >
-                      <SaveIcon color="white" className="mr-6 h-6 w-6">
-                        {' '}
-                      </SaveIcon>
+                      <SaveIcon color="white" className="mr-6 h-6 w-6" />
                       <Typography
                         type="help"
                         color="white"
@@ -709,7 +771,7 @@ export function ViewUser(props: any) {
                     </Button>
                   )}
                 </>
-              ) : isCHW || props.location.state?.component === 'chw' ? (
+              ) : userData ? (
                 <div className="flex flex-row justify-start pt-4 text-current">
                   <p className="px-4 text-xl">
                     ID:{' '}
@@ -793,7 +855,9 @@ export function ViewUser(props: any) {
           </Dialog>
         </div>
 
-        {(isCHW || props.location.state?.component === 'chw') &&
+        {(isCHW ||
+          props.location.state?.component ===
+            UsersRouteRedirectTypeEnum?.chw) &&
           data &&
           data.tenantContext &&
           data.tenantContext.applicationName === 'GrowGreat' && (
@@ -806,7 +870,9 @@ export function ViewUser(props: any) {
               </div>
             </div>
           )}
-        {(isCHW || props.location.state?.component === 'chw') && (
+        {(isCHW ||
+          props.location.state?.component ===
+            UsersRouteRedirectTypeEnum?.chw) && (
           <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
               {/* Start main area*/}
@@ -856,7 +922,9 @@ export function ViewUser(props: any) {
             </div>
           </div>
         )}
-        {(isCHW || props.location.state?.component === 'chw') && (
+        {(isCHW ||
+          props.location.state?.component ===
+            UsersRouteRedirectTypeEnum?.chw) && (
           <div className="flex flex-row">
             <div className="border-l-errorMain  border-errorMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
               <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
@@ -908,21 +976,7 @@ export function ViewUser(props: any) {
               <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
                 {/* Start main area*/}
                 <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="h-12 w-12"
-                    style={{
-                      color: '#FF5C00',
-                    }}
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <ExclamationIcon className="text-alertMain h-12 w-12" />
                   <h3 className="mb-2  pb-0 pt-2 text-2xl"> Other issues</h3>
                 </div>
                 <div className="flex flex-col justify-evenly pt-4 text-current">
@@ -961,7 +1015,9 @@ export function ViewUser(props: any) {
             </div>
           </div>
         )}
-        {(isCHW || props.location.state?.component === 'chw') && (
+        {(isCHW ||
+          props.location.state?.component ===
+            UsersRouteRedirectTypeEnum?.chw) && (
           <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
               {/* Start main area*/}
@@ -1000,6 +1056,16 @@ export function ViewUser(props: any) {
           </div>
         )}
 
+        {(isTeamLead ||
+          props.location.state?.component ===
+            UsersRouteRedirectTypeEnum?.teamLeads) &&
+          isRegistered && (
+            <>
+              <TeamLeadSummary teamLeadReportData={teamLeadReportData} />
+              <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
+            </>
+          )}
+
         <div className="flex w-full justify-between  pl-4">
           <div className="flex w-10/12 flex-row  pl-4">
             {hasPermission(PermissionEnum.delete_user) &&
@@ -1025,24 +1091,14 @@ export function ViewUser(props: any) {
               )}
             {isNotLockedOut(
               userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-            ) && (
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="filled"
-                // isLoading={isLoading}
-                color="secondary"
-                onClick={sendInvite}
-              >
-                <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
-                  {' '}
-                </PaperAirplaneIcon>
-                <Typography
-                  type="help"
-                  color="white"
-                  text={'Resend Invitation'}
-                ></Typography>
-              </Button>
-            )}
+            ) &&
+              !isRegistered && (
+                <SendInvite
+                  userData={userData?.userById}
+                  chwData={chwData?.GetHealthCareWorkerById}
+                  refetchUserData={refetchUserData}
+                />
+              )}
           </div>
 
           <div className="w-2/12">

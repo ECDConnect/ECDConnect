@@ -118,7 +118,10 @@ export default function TeamLeads() {
       pathname: '/users/view-user',
       state: {
         component: 'team-leads',
-        userId: selectedRow?.id,
+        userId: selectedRow?.user?.id,
+        teamLeadId: selectedRow?.id,
+        connectUsage: selectedRow?.connectUsage,
+        isRegistered: selectedRow?.isRegistered,
       },
     });
   };

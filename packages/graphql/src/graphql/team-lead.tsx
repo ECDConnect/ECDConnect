@@ -23,6 +23,7 @@ export const GetAllTeamLead = gql`
     ) {
       id
       insertedDate
+      isRegistered
       user {
         id
         connectUsage

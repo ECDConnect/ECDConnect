@@ -425,12 +425,7 @@ export default function UiTable({
     }
 
     return (
-      <div
-        onClick={() => {
-          component !== 'team-leads' && viewRow(row);
-        }}
-        className={'cursor-pointer'}
-      >
+      <div onClick={() => viewRow(row)} className={'cursor-pointer'}>
         {rowValue}{' '}
       </div>
     );
