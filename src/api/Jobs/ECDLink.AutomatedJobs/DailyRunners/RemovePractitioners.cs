@@ -1,6 +1,4 @@
-﻿using ECDLink.AutomatedJobs.Anonymise;
-using ECDLink.AutomatedJobs.Cron;
-using ECDLink.AutomatedJobs.Util;
+﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,23 +12,15 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 /// </summary>
 public class RemovePractitioners : CronJobService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-
     public RemovePractitioners(IServiceScopeFactory scopeFactory, CronJobConfig<RemovePractitioners> config, ILogger<RemovePractitioners> logger)
-            : base(config, logger)
+            : base(scopeFactory, config, logger)
     {
-        _scopeFactory = scopeFactory;
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            TenancyContext.SetTenantContext(scope);
+        var service = GetRequiredService<IAutomatedProcessService>();
 
-            var service = scope.ServiceProvider.GetRequiredService<IAutomatedProcessService>();
-
-            service.ProcessPractitionerRemovals();
-        }
+        service.ProcessPractitionerRemovals();
     }
 }

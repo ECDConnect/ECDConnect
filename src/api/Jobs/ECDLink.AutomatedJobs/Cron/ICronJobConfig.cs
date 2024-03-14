@@ -13,5 +13,6 @@ namespace ECDLink.AutomatedJobs.Cron
         public TimeZoneInfo TimeZoneInfo { get; }
         public bool TestMode { get; }
         public int Enabled { get; set; }
+        public string Tenants { get; set; }
     }
 }
