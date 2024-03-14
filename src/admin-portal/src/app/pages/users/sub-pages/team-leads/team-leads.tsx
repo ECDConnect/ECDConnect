@@ -575,7 +575,13 @@ export default function TeamLeads() {
                 textColour: 'white',
                 colour: 'secondary',
                 type: 'filled',
-                onClick: () => {},
+                onClick: () =>
+                  history.push({
+                    pathname: '/upload-users',
+                    state: {
+                      component: 'team-leads',
+                    },
+                  }),
                 leadingIcon: 'UsersIcon',
               },
               {
@@ -583,7 +589,10 @@ export default function TeamLeads() {
                 textColour: 'secondary',
                 colour: 'secondary',
                 type: 'outlined',
-                onClick: displayPanel,
+                onClick: () => {
+                  displayPanel();
+                  setHandleAdduser(false);
+                },
                 leadingIcon: 'UserIcon',
               },
             ]}

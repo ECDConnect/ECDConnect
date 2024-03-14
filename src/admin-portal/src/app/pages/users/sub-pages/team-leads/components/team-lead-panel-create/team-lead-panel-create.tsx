@@ -6,9 +6,9 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import {
-  AddHealthCareWorkerInputModelInput,
+  AddTeamLeadInputModelInput,
   AddUsersToRole,
-  CreateHealthCareWorker,
+  CreateTeamLead,
   CreateUser,
   RoleList,
   SendInviteToApplication,
@@ -16,9 +16,8 @@ import {
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
-import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
 import { UserPanelCreateProps } from '../../../../components/users';
 import {
   ActionModal,
@@ -34,6 +33,7 @@ import {
 import { SaveIcon, XIcon } from '@heroicons/react/solid';
 import FormField from '../../../../../../components/form-field/form-field';
 import * as yup from 'yup';
+import { GrowGreatRoles } from '../../../../../../utils/constants';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
@@ -63,16 +63,6 @@ export const userSchema = yup.object().shape({
     .required('ID number or passport is required'),
 });
 
-export const hcwSchema = yup.object().shape({
-  userId: yup.string(),
-  clinicId: yup.string().required('Clinic is required'),
-});
-
-const hcwInitialvalues: AddHealthCareWorkerInputModelInput = {
-  clinicId: '',
-  userId: '',
-};
-
 export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
   const emitCloseDialog = (value: boolean) => {
@@ -82,6 +72,8 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
     fetchPolicy: 'cache-and-network',
   });
 
+  console.log({ roleData });
+
   useEffect(() => {
     if (roleData && roleData.roles) {
       addUserRole();
@@ -90,9 +82,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   }, [roleData]);
 
   const [createUser] = useMutation(CreateUser);
-  const [createHealthCareWorker, { loading }] = useMutation(
-    CreateHealthCareWorker
-  );
+  const [createTeamLead, { loading }] = useMutation(CreateTeamLead);
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
@@ -118,26 +108,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
       setFormIsDirty(false);
     }
   }, [isDirty]);
-
-  // COMMUNITY HEALTH WORKER FORMS
-  const {
-    register: healthCareWorkerRegister,
-    formState: healthCareWorkerFormState,
-    getValues: healthCareWorkerGetValues,
-    control: hcwControl,
-  } = useForm({
-    defaultValues: { ...hcwInitialvalues },
-    mode: 'onBlur',
-    resolver: yupResolver(hcwSchema),
-  });
-  const {
-    errors: healthCareWorkerFormErrors,
-    isValid: isHealthCareWorkerValid,
-  } = healthCareWorkerFormState;
-
-  const { clinicId } = useWatch({
-    control: hcwControl,
-  });
 
   const onSave = async () => {
     await saveUser();
@@ -165,33 +135,32 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
     }).then(async (response) => {
       const userId = response.data.addUser.id;
       if (userId) {
-        await saveHealthCareWorker(userId);
+        await saveTeamLead(userId);
         await saveRoles(userId);
       }
     });
   };
 
-  const saveHealthCareWorker = async (userId: string) => {
+  const saveTeamLead = async (userId: string) => {
     // comment this out to ensure FE builds for BE - revert changes
-    const healthCareWorkModel: AddHealthCareWorkerInputModelInput = {
+    const teamLeadModel: AddTeamLeadInputModelInput = {
       userId: userId,
-      clinicId: clinicId,
     };
 
-    await createHealthCareWorker({
+    await createTeamLead({
       variables: {
-        input: { ...healthCareWorkModel },
+        input: { ...teamLeadModel },
       },
     })
       .then(() => {
         setNotification({
-          title: 'Successfully Created CHW!',
+          title: 'Successfully Created Team Lead!',
           variant: NOTIFICATION.SUCCESS,
         });
       })
       .catch((err) => {
         setNotification({
-          title: 'Failed to Create CHW!',
+          title: 'Failed to Create Team Lead!',
           variant: NOTIFICATION.ERROR,
         });
       });
@@ -203,19 +172,19 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
         },
       }).catch((err) => [
         setNotification({
-          title: 'Failed to send CHW Invite!',
+          title: 'Failed to send Team Lead Invite!',
           variant: NOTIFICATION.SUCCESS,
         }),
       ]);
       setNotification({
-        title: 'Successfully Sent CHW Invite!',
+        title: 'Successfully Sent Team Lead Invite!',
         variant: NOTIFICATION.SUCCESS,
       });
     }
   };
 
   const saveRoles = async (userId: string) => {
-    const rolesToAdd: string[] = ['Community Health Worker'];
+    const rolesToAdd: string[] = [GrowGreatRoles?.TeamLead];
 
     await addRolesToUser({
       variables: {
@@ -228,7 +197,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const addUserRole = () => {
     const role = roleData.roles.find(
       //TODO: Keeping this patern but the name should not be hard coded
-      (role: RoleDto) => role.name === 'Community Health Worker'
+      (role: RoleDto) => role.name === GrowGreatRoles?.TeamLead
     );
 
     const copy = [...selectedUserRoles];
@@ -253,10 +222,20 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
               </button>
             </div>
           )}
-          <h1 className="text-uiMidDark text-xl font-medium leading-6">
-            Create Community Health Worker
-          </h1>
-          <p className="text-md pb-2 text-gray-500">Step 1 of 1</p>
+          <Typography
+            type={'h1'}
+            hasMarkup
+            fontSize="24"
+            weight="bold"
+            text={`Create Team Lead`}
+            color={'textMid'}
+          />
+          <Typography
+            type={'help'}
+            hasMarkup
+            text={'Step 1 of 1'}
+            color={'textMid'}
+          />
         </div>
         <div className=" border-t border-dashed border-gray-500 px-4 py-5 ">
           <form className="space-y-6 divide-y divide-gray-200">
@@ -289,19 +268,11 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
                     placeholder="eg. 0650025055"
                   />
                 </div>
-                <div className="my-4 sm:col-span-3">
-                  <HealthCareWorkerForm
-                    formKey={`createhealthcareworker-${new Date().getTime()}`}
-                    register={healthCareWorkerRegister}
-                    errors={healthCareWorkerFormErrors}
-                    clinicId={clinicId}
-                  />
-                </div>
 
                 <div className="my-4 sm:col-span-3">
                   <Typography
                     text={
-                      'Which kind of identification do you have for the CHW? *'
+                      'Which kind of identification do you have for the Team Lead? *'
                     }
                     type={'body'}
                     color={'textMid'}
@@ -402,12 +373,16 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
         className="mt-3 mr-6 w-full rounded"
         type="filled"
         color="secondary"
-        disabled={!isValid || !clinicId}
+        disabled={!isValid}
         isLoading={loading}
         onClick={handleSubmit(onSave)}
       >
         <SaveIcon color="white" className="mr-6 h-6 w-6" />
-        <Typography type="help" color="white" text="Save"></Typography>
+        <Typography
+          type="help"
+          color="white"
+          text="Save and invite user"
+        ></Typography>
       </Button>
     </article>
   );
