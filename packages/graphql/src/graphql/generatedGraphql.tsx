@@ -9952,6 +9952,7 @@ export type NatalGraphic = {
   image?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
+  type?: Maybe<Array<Maybe<NatalType>>>;
   updatedDate?: Maybe<Scalars['String']>;
 };
 
@@ -9960,6 +9961,7 @@ export type NatalGraphicInput = {
   image?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 
@@ -9979,6 +9981,7 @@ export type NatalHealth = {
   id?: Maybe<Scalars['Int']>;
   section?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
+  type?: Maybe<Array<Maybe<NatalType>>>;
   updatedDate?: Maybe<Scalars['String']>;
 };
 
@@ -9996,6 +9999,7 @@ export type NatalHealthInput = {
   discussionJ?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 
@@ -10013,6 +10017,7 @@ export type NatalInfo = {
   pollyTipText?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
+  type?: Maybe<Array<Maybe<NatalType>>>;
   updatedDate?: Maybe<Scalars['String']>;
 };
 
@@ -10028,6 +10033,7 @@ export type NatalInfoInput = {
   pollyTipText?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 
@@ -10059,6 +10065,7 @@ export type NatalVideo = {
   id?: Maybe<Scalars['Int']>;
   section?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
+  type?: Maybe<Array<Maybe<NatalType>>>;
   updatedDate?: Maybe<Scalars['String']>;
   video?: Maybe<Scalars['String']>;
 };
@@ -10067,6 +10074,7 @@ export type NatalVideoInput = {
   availableLanguages?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
   video?: InputMaybe<Scalars['String']>;
 };
@@ -10928,8 +10936,8 @@ export type PortalClinicInputModelInput = {
   teamLead2Id?: InputMaybe<Scalars['UUID']>;
 };
 
-export type PortalTeamLead = {
-  __typename?: 'PortalTeamLead';
+export type PortalTeamLeadModel = {
+  __typename?: 'PortalTeamLeadModel';
   clinicNames?: Maybe<Scalars['String']>;
   firstName?: Maybe<Scalars['String']>;
   idNumber?: Maybe<Scalars['String']>;
@@ -12717,6 +12725,7 @@ export type Query = {
   motherSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
   motherSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
   motherVisits?: Maybe<Array<Maybe<Visit>>>;
+  natalRecordsForType: Array<Maybe<Natal>>;
   onBoardTraineeTimeline?: Maybe<TraineeOnBoardTimeline>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
@@ -12758,11 +12767,14 @@ export type Query = {
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
   subDistrictsAndStats?: Maybe<Array<Maybe<SubDistrictStatsModel>>>;
-  teamLeadSummary?: Maybe<PortalTeamLead>;
+  teamLeadSummary?: Maybe<PortalTeamLeadModel>;
   teamLeadTemplateGenerator?: Maybe<FileModel>;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   traineeByUserId?: Maybe<Trainee>;
+  transferHealthPromotionToNatalHealth: Scalars['Boolean'];
+  transferInfoGraphicsToNatalGraphics: Scalars['Boolean'];
+  transferVisitVideosToNatalVideos: Scalars['Boolean'];
   unsubmittedExpenseItems?: Maybe<Array<Maybe<ExpenseItemModel>>>;
   unsubmittedIncomeItems?: Maybe<Array<Maybe<IncomeItemModel>>>;
   userById?: Maybe<ApplicationUser>;
@@ -15409,6 +15421,11 @@ export type QueryMotherSummaryByPriorityArgs = {
 
 export type QueryMotherVisitsArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryNatalRecordsForTypeArgs = {
+  localeId?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryOnBoardTraineeTimelineArgs = {

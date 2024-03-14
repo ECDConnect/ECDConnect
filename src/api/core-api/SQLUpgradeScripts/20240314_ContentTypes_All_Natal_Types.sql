@@ -1,7 +1,7 @@
 -- Natal
 INSERT INTO public."ContentType"
 ("Id", "Name", "Description", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "IsVisiblePortal", "PortalDisplayOrder")
-VALUES(29, 'Natal', 'Natal ', true, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', true, -1);
+VALUES(29, 'Natal', 'Natal', true, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', true, -1);
 
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
@@ -45,34 +45,37 @@ INSERT INTO public."ContentTypeField"
 VALUES(nextval('public."ContentTypeField_Id_seq"'), 2, 'section', 1, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Section', true, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'pollyTipText', 1, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Title', false, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'type', 4, true, 'NatalType', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Type', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'pollyTipContent', 1, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content', false, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'pollyTipText', 1, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Title', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'contentSectionA', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content section', false, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'pollyTipContent', 1, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 6, 'lightBuldSectionA', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Lightbulb section', false, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 6, 'contentSectionA', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content section', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 7, 'contentSectionB', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 7, 'lightBuldSectionA', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Lightbulb section', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 8, 'lightBuldSectionB', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Lightbulb section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 8, 'contentSectionB', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 9, 'contentSectionC', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 9, 'lightBuldSectionB', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Lightbulb section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 10, 'lightBuldSectionC', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Lightbulb section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 10, 'contentSectionC', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Content section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 11, 'availableLanguages', 5, true, 'Language', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 11, 'lightBuldSectionC', 2, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Lightbulb section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 12, 'updatedDate', 1, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 12, 'availableLanguages', 5, true, 'Language', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+INSERT INTO public."ContentTypeField"
+("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 13, 'updatedDate', 1, true, '', 30, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
 
 -- NatalVideo 
 INSERT INTO public."ContentType"
@@ -87,13 +90,16 @@ INSERT INTO public."ContentTypeField"
 VALUES(nextval('public."ContentTypeField_Id_seq"'), 2, 'section', 1, true, '', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Section', true, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'video', 7, true, '', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Video', false, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'type', 4, true, 'NatalType', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Type', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'availableLanguages', 5, true, 'Language', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'video', 7, true, '', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Video', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'updatedDate', 1, true, '', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'availableLanguages', 5, true, 'Language', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+INSERT INTO public."ContentTypeField"
+("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 6, 'updatedDate', 1, true, '', 31, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
 
 -- NatalGraphic
 INSERT INTO public."ContentType"
@@ -108,13 +114,16 @@ INSERT INTO public."ContentTypeField"
 VALUES(nextval('public."ContentTypeField_Id_seq"'), 2, 'section', 1, true, '', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Section', true, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'image', 3, true, '', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Image', false, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'type', 4, true, 'NatalType', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Type', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'availableLanguages', 5, true, 'Language', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'image', 3, true, '', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Image', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'updatedDate', 1, true, '', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'availableLanguages', 5, true, 'Language', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+INSERT INTO public."ContentTypeField"
+("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 6, 'updatedDate', 1, true, '', 32, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
 
 -- NatalHealth
 INSERT INTO public."ContentType"
@@ -129,40 +138,43 @@ INSERT INTO public."ContentTypeField"
 VALUES(nextval('public."ContentTypeField_Id_seq"'), 2, 'section', 1, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Section', true, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'discussionA', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, true);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 3, 'type', 4, true, 'NatalType', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Type', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'discussionB', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 4, 'discussionA', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, true);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'discussionC', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 5, 'discussionB', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 6, 'discussionD', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 6, 'discussionC', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 7, 'discussionE', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 7, 'discussionD', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 8, 'discussionF', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 8, 'discussionE', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 9, 'discussionG', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 9, 'discussionF', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 10, 'discussionH', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 10, 'discussionG', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 11, 'discussionI', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 11, 'discussionH', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 12, 'discussionJ', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 12, 'discussionI', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 13, 'availableLanguages', 5, true, 'Language', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 13, 'discussionJ', 2, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Discussion Section', false, true, false);
 INSERT INTO public."ContentTypeField"
 ("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 14, 'updatedDate', 1, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 14, 'availableLanguages', 5, true, 'Language', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Languages', true, false, false);
+INSERT INTO public."ContentTypeField"
+("Id","FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName","DisplayMainTable","DisplayPage","IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 15, 'updatedDate', 1, true, '', 33, '0001-01-01 00:00:00.000', '0001-01-01 00:00:00.000', null, '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Last updated', true, false, false);
 
 
 -- NatalType (PostNatal or Antenatal)
