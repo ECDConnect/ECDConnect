@@ -98,16 +98,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   });
 
   const { errors, isValid, isDirty } = formState;
-  const [formIsDirty, setFormIsDirty] = useState(false);
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
-
-  useEffect(() => {
-    if (isDirty) {
-      setFormIsDirty(true);
-    } else {
-      setFormIsDirty(false);
-    }
-  }, [isDirty]);
 
   const onSave = async () => {
     await saveUser();
@@ -211,7 +202,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
     return (
       <>
         <div className="pb-2">
-          {formIsDirty && (
+          {isDirty && (
             <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
               <button
                 className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"

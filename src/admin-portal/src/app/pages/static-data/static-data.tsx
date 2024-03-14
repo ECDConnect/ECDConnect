@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { StaticDataRoutes } from '../../app.routes';
+import { StaticDataRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import UiTable from '../../components/ui-table';
 import AttendingReasonPanel from './sub-pages/attending-reasons/components/attending-reason-panel/attending-reason-panel';

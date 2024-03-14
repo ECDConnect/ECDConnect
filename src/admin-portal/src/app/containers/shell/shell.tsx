@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/outline';
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
-import { AuthRoutes } from '../../app.routes';
+import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';

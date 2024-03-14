@@ -34,6 +34,7 @@ import { format } from 'date-fns';
 import { Status } from '../application-admins/applications-admins.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-panel-create';
+import ROUTES from '../../../../routes/app.routes-constants';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -124,7 +125,7 @@ export default function TeamLeads() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/users/view-user',
+      pathname: ROUTES.VIEW_USERS,
       state: {
         component: 'team-leads',
         userId: selectedRow?.user?.id,
@@ -577,7 +578,7 @@ export default function TeamLeads() {
                 type: 'filled',
                 onClick: () =>
                   history.push({
-                    pathname: '/upload-users',
+                    pathname: ROUTES.UPLOAD_USERS,
                     state: {
                       component: 'team-leads',
                     },
