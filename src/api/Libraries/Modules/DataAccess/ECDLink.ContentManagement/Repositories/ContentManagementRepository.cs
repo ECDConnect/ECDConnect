@@ -93,7 +93,13 @@ namespace ECDLink.ContentManagement.Repositories
                 // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
-                contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                if (!contentFieldValuePairs.ContainsKey("updatedDate"))
+                {
+                    contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                } else
+                {
+                    contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
+                }
                 if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
                 {
                     var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
@@ -268,7 +274,14 @@ namespace ECDLink.ContentManagement.Repositories
 
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
-                contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                if (!contentFieldValuePairs.ContainsKey("updatedDate"))
+                {
+                    contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                }
+                else
+                {
+                    contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
+                }
                 var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
