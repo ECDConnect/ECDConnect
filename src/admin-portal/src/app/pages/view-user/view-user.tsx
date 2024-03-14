@@ -156,13 +156,6 @@ export function ViewUser(props: any) {
     }
   );
 
-  // const [getAllTeamLead, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
-  //   variables: {
-  //     userId: '',
-  //   },
-  //   fetchPolicy: 'cache-and-network',
-  // });
-
   const { data: userData, refetch: refetchUserData } = useQuery(GetUserById, {
     variables: {
       userId: props.location.state.userId ?? userId,
@@ -233,11 +226,6 @@ export function ViewUser(props: any) {
       getChwById({
         variables: { userId: props.location.state.userId ?? userId },
       });
-
-    // props.location.state?.component === 'team-leads' &&
-    //   getAllTeamLead({
-    //     variables: { userId: props.location.state.userId ?? userId },
-    //   });
   }, [userId]);
 
   const { hasPermission } = useUser();
