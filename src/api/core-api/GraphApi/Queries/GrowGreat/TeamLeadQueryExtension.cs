@@ -253,7 +253,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public PortalTeamLead GetTeamLeadSummary([Service] IHttpContextAccessor contextAccessor,
+        public PortalTeamLeadModel GetTeamLeadSummary([Service] IHttpContextAccessor contextAccessor,
                                       IGenericRepositoryFactory repoFactory,
                                       [Service] IPersonnelService personnelService,
                                       Guid teamLeadId)
@@ -296,7 +296,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 // TODO: get these totals when app dev is done
                 var totalMeetingReportsSubmitted = 0;
                 var totalInFieldVisitsCompleted = 0;
-                return new PortalTeamLead(teamLead.User, clinicNames, siteAddress, clinicNameList.Count, totalHealthCareWorkers,
+                return new PortalTeamLeadModel(teamLead.User, clinicNames, siteAddress, clinicNameList.Count, totalHealthCareWorkers,
                                           totalPregnantMoms, totalChildren, totalMeetingReportsSubmitted, totalInFieldVisitsCompleted);
             }
             return null;

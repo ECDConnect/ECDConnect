@@ -4,7 +4,7 @@ using HotChocolate.Types;
 using System;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ConsentMutationExtension
@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 return false;
             }
-            
+
             var languages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
 
             foreach (var id in languages)
