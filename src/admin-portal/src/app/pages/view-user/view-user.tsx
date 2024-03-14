@@ -30,7 +30,6 @@ import {
   StarIcon,
   SaveIcon,
   ArrowLeftIcon,
-  PaperAirplaneIcon,
   ThumbUpIcon,
   ExclamationIcon,
 } from '@heroicons/react/solid';
@@ -54,9 +53,7 @@ import {
   ResetUserPassword,
   UpdateUser,
   UserModelInput,
-  SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
-  GetTeamLead,
   GetAllClinic,
   UpdateHealthCareWorkerClinic,
   GetTeamLeadSummary,
@@ -125,6 +122,7 @@ export function ViewUser(props: any) {
   const teamLeadId = props?.location?.state?.teamLeadId;
   const isTeamLead =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
+  const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification, setSucessNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
     startDate,
@@ -245,14 +243,11 @@ export function ViewUser(props: any) {
   const { hasPermission } = useUser();
   const { setNotification, clearNotification } = useNotifications();
   const dialog = useDialog();
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   const isNotLockedOut = (user) => {
     if (!user) return true;
     return !user?.lockoutEnd || user?.lockoutEnd < new Date();
   };
-
-  console.log(userData?.userById);
 
   const deactivateUser = async () => {
     dialog({
@@ -514,7 +509,7 @@ export function ViewUser(props: any) {
         );
     }
   };
-  console.log({ connectUsage });
+
   const getConnectUsageChip = (value: string) => {
     switch (value) {
       case ConenctUsage?.InvitationActive:
@@ -631,7 +626,7 @@ export function ViewUser(props: any) {
                   <div className="flex flex-row pt-2">
                     <div className="flex items-center gap-2">
                       {getRoleStatusChip(props.location.state?.component)}
-                      {getConnectUsageChip(connectUsage)}
+                      {isTeamLead && getConnectUsageChip(connectUsage)}
                     </div>
                     {chwData &&
                       chwData?.GetHealthCareWorkerById?.user?.roles?.map(
@@ -690,7 +685,7 @@ export function ViewUser(props: any) {
                     <div className="grid grid-cols-1 ">
                       {userData && (
                         <>
-                          {!isTeamLead && (
+                          {!isRegistered && (
                             <div className="my-4 w-6/12 sm:col-span-3">
                               <FormField
                                 label={'ID number *'}
@@ -731,17 +726,19 @@ export function ViewUser(props: any) {
                             }
                           />
                         )}
-                        <div className="my-0 w-6/12 sm:col-span-2">
-                          <PasswordInput
-                            label={'Password'}
-                            nameProp={'password'}
-                            sufficIconColor="black"
-                            value={passwordForm.password}
-                            register={passwordRegister}
-                            strengthMeterVisible={true}
-                            className="mb-9 "
-                          />
-                        </div>
+                        {!isTeamLead && (
+                          <div className="my-0 w-6/12 sm:col-span-2">
+                            <PasswordInput
+                              label={'Password'}
+                              nameProp={'password'}
+                              sufficIconColor="black"
+                              value={passwordForm.password}
+                              register={passwordRegister}
+                              strengthMeterVisible={true}
+                              className="mb-9 "
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1071,14 +1068,15 @@ export function ViewUser(props: any) {
           </div>
         )}
 
-        {(isCHW ||
+        {(isTeamLead ||
           props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.teamLeads) && (
-          <>
-            <TeamLeadSummary teamLeadReportData={teamLeadReportData} />
-            <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
-          </>
-        )}
+            UsersRouteRedirectTypeEnum?.teamLeads) &&
+          isRegistered && (
+            <>
+              <TeamLeadSummary teamLeadReportData={teamLeadReportData} />
+              <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
+            </>
+          )}
 
         <div className="flex w-full justify-between  pl-4">
           <div className="flex w-10/12 flex-row  pl-4">
@@ -1105,13 +1103,14 @@ export function ViewUser(props: any) {
               )}
             {isNotLockedOut(
               userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-            ) && (
-              <SendInvite
-                userData={userData?.userById}
-                chwData={chwData?.GetHealthCareWorkerById}
-                refetchUserData={refetchUserData}
-              />
-            )}
+            ) &&
+              !isRegistered && (
+                <SendInvite
+                  userData={userData?.userById}
+                  chwData={chwData?.GetHealthCareWorkerById}
+                  refetchUserData={refetchUserData}
+                />
+              )}
           </div>
 
           <div className="w-2/12">

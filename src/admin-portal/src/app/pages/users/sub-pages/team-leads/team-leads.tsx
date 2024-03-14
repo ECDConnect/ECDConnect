@@ -110,7 +110,6 @@ export default function TeamLeads() {
   const history = useHistory();
 
   const viewSelectedRow = (selectedRow: any) => {
-    console.log({ selectedRow });
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -122,6 +121,7 @@ export default function TeamLeads() {
         userId: selectedRow?.user?.id,
         teamLeadId: selectedRow?.id,
         connectUsage: selectedRow?.connectUsage,
+        isRegistered: selectedRow?.isRegistered,
       },
     });
   };
