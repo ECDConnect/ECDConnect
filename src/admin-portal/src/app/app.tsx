@@ -15,7 +15,7 @@ import {
 } from '@ecdlink/core';
 import { createUploadLink } from 'apollo-upload-client';
 import React, { useEffect, useState } from 'react';
-import { MainRoutes, PublicRoutes } from './app.routes';
+import { MainRoutes, PublicRoutes } from './routes/app.routes';
 import { useAuth } from './hooks/useAuth';
 import { UserProvider } from './hooks/useUser';
 import { useHistory, useParams } from 'react-router-dom';

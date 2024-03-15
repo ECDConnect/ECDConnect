@@ -39,3 +39,18 @@ export interface HealthCareWorkerDto extends EntityBase {
     };
   };
 }
+
+export interface HealthCareWorkerSummaryForPeriodDto extends EntityBase {
+  totalCaregiversAndChildrenWithIssues?: number;
+  totalCaregiversAndChildrenWithUrgentIssues?: number;
+  totalChildren?: number;
+  totalChildrenWithNoIssues?: number;
+  totalClientsVisited?: number;
+  totalFoldersOpened?: number;
+  totalPregnantMoms?: number;
+  totalPregnantMomsWithIssues?: number;
+  totalPregnantMomsWithNoIssues?: number;
+  totalPregnantMomsWithUrgentIssues?: number;
+  totalVisitsMissed?: number;
+  totalVisitsOverdue?: number;
+}

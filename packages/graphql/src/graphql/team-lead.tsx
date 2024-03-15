@@ -9,6 +9,7 @@ export const GetAllTeamLead = gql`
     $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
     $order: [PortalUsersTLModelSortInput!]
+    $subDistrictSearch: [String]
   ) {
     allTeamLeads(
       search: $search
@@ -18,10 +19,13 @@ export const GetAllTeamLead = gql`
       connectUsageSearch: $connectUsageSearch
       pagingInput: $pagingInput
       order: $order
+      subDistrictSearch: $subDistrictSearch
     ) {
       id
       insertedDate
+      isRegistered
       user {
+        id
         connectUsage
         isActive
         userName
@@ -71,7 +75,7 @@ export const GetAllTeamLeadAdminList = gql`
 `;
 
 export const CreateTeamLead = gql`
-  mutation addTeamLead($input: TeamLeadModelInput) {
+  mutation addTeamLead($input: AddTeamLeadInputModelInput) {
     addTeamLead(input: $input) {
       id
     }
@@ -91,6 +95,16 @@ export const UploadTeamLeads = gql`
   }
 `;
 
+export const DeactivateTeamLead = gql`
+  mutation DeactivateTeamLead($teamLeadId: UUID!) {
+    deactivateTeamLead(teamLeadId: $teamLeadId) {
+      id
+      userId
+      isActive
+    }
+  }
+`;
+
 export const TeamLeadsTemplate = gql`
   query {
     teamLeadTemplateGenerator {
@@ -98,6 +112,28 @@ export const TeamLeadsTemplate = gql`
       base64File
       fileName
       extension
+    }
+  }
+`;
+
+export const GetTeamLeadSummary = gql`
+  query GetTeamLeadSummary($teamLeadId: UUID!) {
+    teamLeadSummary(teamLeadId: $teamLeadId) {
+      idNumber
+      phoneNumber
+      whatsAppNumber
+      firstName
+      surname
+      lastSeen
+      clinicNames
+      location
+      totalClinics
+      totalHealthCareWorkers
+      totalPregnantMoms
+      totalChildren
+      totalMeetingReportsSubmitted
+      totalInFieldVisitsCompleted
+      __typename
     }
   }
 `;
@@ -112,6 +148,7 @@ export const GetTeamLead = gql`
     GetAllTeamLead(where: { id: { eq: $teamLeadId } }) {
       id
       user {
+        id
         isActive
         userName
         email

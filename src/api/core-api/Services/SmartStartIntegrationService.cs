@@ -466,7 +466,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         List<Visit> visits = _visitsRepo
             .GetAll()
             .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 && x.Attended == true && !x.IntegrationSubmitDate.HasValue)
-            .Include(x => x.VisitAnswers)
+            .Include(x => x.VisitData)
             .ToList();
 
         foreach (Visit visit in visits)
@@ -493,7 +493,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 // get smart space visit ID if available
                 if (mappedSpartSpaceVisitId == null)
                 {
-                    mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                    mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitData, (DateTime)visit.ActualVisitDate.Value.Date,
                                                                                         mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId.Value);
                 }
 
@@ -517,7 +517,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     // Consent
                     var userConsent = _dbContext.UserConsents.Where(x => string.Equals(x.UserId, visit.Practitioner.UserId) && string.Equals(x.ConsentType, Constants.SSSettings.consent_type_franchisee)).FirstOrDefault();
                     var didAcceptAgreements = userConsent != null ? "true" : "false";
-                    var observationNotes = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var observationNotes = visit.VisitData.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                     // Scores
                     // Section 1 total = 12(step 2) StimulatingAndResourcedScore
@@ -559,20 +559,20 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var useOfSmartStartRoutineScore = step3 + step4;
                     var totalScore = stableAndNurturingScore + stimulatingAndResourcedScore + useOfSmartStartRoutineScore + interactiveStoryTellingScore + childOpportunitiesScore + positiveInteractionScore;
 
-                    var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var numberOfChildrenPresent = visit.VisitData.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var numberOfChildrenNotRegistered = 0;
                 
-                    var isFranchiseeHittingChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isFranchiseeHittingChildren = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isThereTooManyChildren = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isRoutineLongEnough = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
                     
-                    var isVenueSafeRecord = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isVenueSafeRecord = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step11_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isVenueSafe = "true";
                     if (isVenueSafeRecord != null && isVenueSafeRecord != "")
                     {
                         isVenueSafe = isVenueSafeRecord == "false" ? "true" : "false";
                     }
-                    var isSmartSpaceStillFineRecord = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isSmartSpaceStillFineRecord = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step14_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var isSmartSpaceStillFine = "true";
                     if (isSmartSpaceStillFineRecord != null && isSmartSpaceStillFineRecord != "")
                     {
@@ -864,7 +864,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         List<Visit> visits = _visitsRepo
             .GetAll()
             .Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 && x.Attended == true && !x.IntegrationSubmitDate.HasValue)
-            .Include(x => x.VisitAnswers)
+            .Include(x => x.VisitData)
             .ToList();
 
 
@@ -892,13 +892,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 // get smart space visit ID if available
                 if (mappedSpartSpaceVisitId == null)
                 {
-                    var smartSpaceCheckAnswers = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var smartSpaceCheckAnswers = visit.VisitData.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
                     if (smartSpaceCheckAnswers != null)
                     {
-                        var spaceEmergencyPlanning = visit.VisitAnswers.Where(x =>
+                        var spaceEmergencyPlanning = visit.VisitData.Where(x =>
                                 (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
                                 x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
-                        mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                        mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitData, (DateTime)visit.ActualVisitDate.Value.Date,
                                                                                         mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId.Value);
 
                     }
@@ -921,8 +921,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
                     }
 
-                    var observationNotes = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var discussionSummary = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.summary_discussion_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var observationNotes = visit.VisitData.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var discussionSummary = visit.VisitData.Where(x => x.Question == Constants.SSSettings.summary_discussion_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                     // A.The learning environment & use of the SmartStart routine -score LearningEnvironment_Score
                     var learningEnvironmentScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
@@ -934,12 +934,12 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var operationalStandardsScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).Select(x => x.SectionScore).FirstOrDefault();
                     var totalScore = learningEnvironmentScore + programmeImplementationScore + recordsScore + operationalStandardsScore;
 
-                    var numberOfAssistants = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var numberOfAssistants = visit.VisitData.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var numberOfChildrenPresent = visit.VisitData.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var wasSuccessful = visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() ? "true" : "false";
 
-                    var isHittingChild = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var wasSmartSpaceChecked = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isHittingChild = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step16_q1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var wasSmartSpaceChecked = visit.VisitData.Where(x => x.Question == Constants.SSSettings.smart_space_check).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                     var pqaAgreement = _visitDataRepo.GetAll().Where(x => x.Visit.PractitionerId == visit.PractitionerId &&
                                                                      x.Visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
@@ -960,8 +960,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     }
 
                     var didAcceptAgreements = acceptedItems >= 3 ? "true" : "false";
-                    var areThereTooManyChildren = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
-                    var isRoutineLongEnough = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var areThereTooManyChildren = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                    var isRoutineLongEnough = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step16_q3).Select(x => x.QuestionAnswer).FirstOrDefault();
                     var statusOutcome = "Red";
                     if (visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
                     {
@@ -1699,7 +1699,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         x.VisitType.Type == Constants.SSSettings.client_coach &&
                         x.Attended == true && x.IsActive == true && !x.IntegrationSubmitDate.HasValue
                         )
-            .Include(x => x.VisitAnswers)
+            .Include(x => x.VisitData)
             .ToList();
 
         foreach (Visit visit in visits)
@@ -1721,44 +1721,44 @@ public partial class SmartStartIntegrationService : IIntegrationService
             if (mappedTraineeId != null && mappedCoachId != null && mappedVisitId == null)
             {
                 // Answers for questions - smart_space_checklist
-                var hasCleanWater = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasToilet = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasHandwashing = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoHarmfulSubstances = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoFireHazards = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a5).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoSharpObjects = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a6).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoBurnRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a7).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoDrowningRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a8).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoElectrocutionRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a9).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoSmokeRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a10).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoFallingRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a11).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNoAnimalRisks = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a12).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var isInSafePlace = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a14).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasFireExtinguishment = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a15).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasFirstAidKit = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a16).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var doesNotExceedMaximumCapacity = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasEnoughPlaySpace = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var isOutdoorsFenced = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var isOutdoorsClean = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a13).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var areEmergencyNumbersVisible = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var isEmergencyPlanVisible = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a17).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var hasNaturalVentilation = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step13_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var numberOfAssistants = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
-                var capacity = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.capacity).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasCleanWater = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasToilet = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasHandwashing = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoHarmfulSubstances = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoFireHazards = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a5).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoSharpObjects = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a6).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoBurnRisks = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a7).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoDrowningRisks = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a8).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoElectrocutionRisks = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a9).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoSmokeRisks = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a10).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoFallingRisks = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a11).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNoAnimalRisks = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a12).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isInSafePlace = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a14).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasFireExtinguishment = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a15).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasFirstAidKit = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a16).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var doesNotExceedMaximumCapacity = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasEnoughPlaySpace = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isOutdoorsFenced = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isOutdoorsClean = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a13).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var areEmergencyNumbersVisible = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var isEmergencyPlanVisible = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a17).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var hasNaturalVentilation = visit.VisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var numberOfAssistants = visit.VisitData.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
+                var capacity = visit.VisitData.Where(x => x.Question == Constants.SSSettings.capacity).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                 // trainee question/answer and not coach
                 var ownsProperty = _visitDataRepo.GetAll().Where(x => x.Visit.TraineeId == visit.TraineeId && x.Question == Constants.SSSettings.own_property).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                 // Scores
-                int programmeCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_programme).Count();
-                int healthCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_health && x.QuestionAnswer == "true").Count();
-                int safetyCount = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_safety && x.QuestionAnswer == "true").Count();
+                int programmeCount = visit.VisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_programme).Count();
+                int healthCount = visit.VisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_health && x.QuestionAnswer == "true").Count();
+                int safetyCount = visit.VisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_safety && x.QuestionAnswer == "true").Count();
                 int requiredItemsScore = programmeCount + healthCount + safetyCount;
-                int unrequiredItemsScore = visit.VisitAnswers.Where(x => x.VisitSection == Constants.SSSettings.ss_space && x.QuestionAnswer == "true").Count();
+                int unrequiredItemsScore = visit.VisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_space && x.QuestionAnswer == "true").Count();
                 int totalScore = requiredItemsScore + unrequiredItemsScore;
 
                 // Consent
-                var userConsent = visit.VisitAnswers.Where(x => x.Visit.VisitType.Name == Constants.SSSettings.visitType_coach_franchisee_agreement).FirstOrDefault();
+                var userConsent = visit.VisitData.Where(x => x.Visit.VisitType.Name == Constants.SSSettings.visitType_coach_franchisee_agreement).FirstOrDefault();
                 var hasAcceptedSmartSpaceAgreement = userConsent != null ? "true" : "false";
 
                 jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + (numberOfAssistants == null ? 0 : numberOfAssistants) + ",");

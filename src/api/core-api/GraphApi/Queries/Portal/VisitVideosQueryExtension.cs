@@ -5,7 +5,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class VisitVideosQueryExtension

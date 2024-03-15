@@ -183,9 +183,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }
 
             sumObj = new ClientSummary();
-            sumObj.VisitName = Constants.GGSettings.careForBaby;
+            sumObj.VisitName = Constants.GGSettings.CareForBaby;
             sumObj.Order = 2;
-            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.careForBaby);
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.CareForBaby);
             if (sumObj.SummaryData != null)
             {
                 summary.Add(sumObj);

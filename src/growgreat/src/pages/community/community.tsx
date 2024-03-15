@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { Connect } from './connect-tab/connect';
 import { useEffect, useState } from 'react';
-import { CommunityRouteState } from './community.types';
+import { COMMUNITY_TABS, CommunityRouteState } from './community.types';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { TeamTab } from './team-tab';
@@ -24,13 +24,6 @@ import { communitySelectors } from '@/store/community';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CommunityActions } from '@/store/community/community.actions';
 import { CommunityWalkthrough } from './walkthrough';
-
-export const COMMUNITY_TABS = {
-  TEAM: 0,
-  LEAGUE: 1,
-  BREASTFEEDING_CLUBS: 2,
-  CONNECT: 3,
-};
 
 export const Community: React.FC = () => {
   const [isHelpPageOpen, setIsHelpPageOpen] = useState<boolean>(false);
@@ -68,12 +61,12 @@ export const Community: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: 'Team',
+      title: COMMUNITY_TABS.TEAM.TITLE,
       initActive: true,
       child: <TeamTab forceReload={!wasWalkthroughSession} />,
     },
     {
-      title: 'League',
+      title: COMMUNITY_TABS.LEAGUE.TITLE,
       initActive: false,
       child: <LeagueTab />,
     },
@@ -81,12 +74,12 @@ export const Community: React.FC = () => {
       id: getStringFromClassNameOrId(
         communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.SEVEN].target
       ),
-      title: 'Breastfeeding clubs',
+      title: COMMUNITY_TABS.BREASTFEEDING_CLUBS.TITLE,
       initActive: false,
       child: <BreastfeedingClubsTab />,
     },
     {
-      title: 'Connect',
+      title: COMMUNITY_TABS.CONNECT.TITLE,
       initActive: false,
       child: <Connect />,
     },
@@ -116,7 +109,7 @@ export const Community: React.FC = () => {
       typeof state?.activeTabIndex === 'number' &&
       previousTabIndex !== selectedTabIndex
     ) {
-      setSelectedTabIndex(state?.activeTabIndex || COMMUNITY_TABS.TEAM);
+      setSelectedTabIndex(state?.activeTabIndex || COMMUNITY_TABS.TEAM.INDEX);
       history.replace(ROUTES.COMMUNITY.ROOT, {
         activeTabIndex: undefined,
       });
@@ -186,7 +179,7 @@ export const Community: React.FC = () => {
           color={'primary'}
           onBack={() => history.push(ROUTES.ROOT)}
           displayHelp={
-            selectedTabIndex === COMMUNITY_TABS.TEAM &&
+            selectedTabIndex === COMMUNITY_TABS.TEAM.INDEX &&
             !!clinic &&
             !isLoadingClinic
           }

@@ -24,6 +24,7 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using NPOI.SS.Formula.Functions;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -62,30 +63,13 @@ namespace EcdLink.Api.CoreApi.Services
 
                 _logger.LogInformation("DailyUserOfflineNotification adminId: " + adminId);
 
-                // var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
-
-                // var offlinePractitioners = practitionerRepo.GetAll().Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
-
-                // foreach (var prac in offlinePractitioners)
-                // {
-                //     TimeSpan daysToCheck = (DateTime.Now - prac.User.LastSeen);
-                //     if (daysToCheck.Days > 0)
-                //     {
-                //         if (daysToCheck.Days >= 21 && daysToCheck.Days <30)
-                //         {
-                //             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
-                //         }
-                //         else if (daysToCheck.Days >= 30)
-                //         {
-                //             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, prac.User, "", null, null, null, false, true, null, prac.UserId.ToString());
-                //         }
-                //     }
-                // }
+                DateTime today = DateTime.Today;
+                var twentyOneDaysAgo = today.AddDays(-21);
 
                 var healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: adminId);
                 var offlineHcws = healthCareWorkerRepo.GetAll()
                    .Include(u => u.User)
-                   .Where(x => x.User.IsActive == true && x.User.LastSeen.Date <= DateTime.Now.AddDays(-21).Date).OrderByDescending(x => x.User.LastSeen).ToList();//
+                   .Where(x => x.User.IsActive == true && x.User.PhoneNumber.Length > 0 && x.User.LastSeen.Date <= twentyOneDaysAgo.Date).OrderByDescending(x => x.User.LastSeen).ToList();//
 
                 _logger.LogInformation("DailyUserOfflineNotification offline HCWS: " + offlineHcws.Count());
 
@@ -96,12 +80,10 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
                         {
-                            _logger.LogInformation("DailyUserOfflineNotification send 3 week: " + hcw.User.Id);
                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
                         }
                         else if (daysToCheck.Days >= 30)
                         {
-                            _logger.LogInformation("DailyUserOfflineNotification send 4 week: " + hcw.User.Id);
                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
                         }
                     }
@@ -109,7 +91,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Issue with attendance tracking in DailyUserOfflineNotification" + ex.Message, ex);
+                _logger.LogError("Issue in DailyUserOfflineNotification" + ex.Message, ex);
             }
             _logger.LogInformation("DailyUserOfflineNotification stopped at " + DateTime.Now);
         }

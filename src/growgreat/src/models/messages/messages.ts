@@ -12,14 +12,11 @@ export type Message = {
   color: Colours;
   routeConfig?: MessageRouteConfig;
   viewType: MessageViewType;
-  area:
-    | 'data-sync'
-    | 'inactive'
-    | 'practitioner'
-    | 'tracking-attendance'
-    | 'child-registration'
-    | 'programme-planning'
-    | 'progress-report';
+  area: 'data-sync' | 'inactive' | 'practitioner' | 'walkthrough' | string;
+  expiryDate?: string;
+  action?: string;
+  isFromBackend?: boolean;
+  cta?: string;
 };
 
 export type MessageRouteConfig = {
@@ -27,4 +24,11 @@ export type MessageRouteConfig = {
   params?: any;
 };
 
-export type MessageViewType = 'Messages' | 'Hub' | 'Both';
+export interface MessageActionConfig {
+  buttonName: string;
+  buttonIcon?: string;
+  url: string;
+  state?: any;
+}
+
+export type MessageViewType = 'Messages' | 'Hub' | 'Both' | 'None';

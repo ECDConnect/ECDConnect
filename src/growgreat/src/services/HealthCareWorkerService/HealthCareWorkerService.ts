@@ -73,7 +73,7 @@ class HealthCareWorkerService {
     const response = await apiInstance.post<any>(``, {
       query: `mutation updateHealthCareWorker(
         $userId: String,
-        $input: HealthCareWorkerInputModelInput
+        $input: UpdateHealthCareWorkerInputModelInput
       ) {
         updateHealthCareWorker(
           userId: $userId,
@@ -131,7 +131,7 @@ class HealthCareWorkerService {
     const response = await apiInstance.post<{
       data: { updateHealthCareWorkerTabs: HealthCareWorkerDto };
     }>(``, {
-      query: `mutation UpdateHealthCareWorkerTabs($input: HealthCareWorkerModelInput, $userId: String) {
+      query: `mutation UpdateHealthCareWorkerTabs($input: UpdateHealthCareWorkerTabsInputModelInput, $userId: String) {
           updateHealthCareWorkerTabs(input: $input, userId: $userId) {
             user {
               id

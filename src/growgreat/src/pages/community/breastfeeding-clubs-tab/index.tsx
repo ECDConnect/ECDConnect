@@ -15,7 +15,7 @@ import { format } from 'date-fns';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { CommunityRouteState } from '../community.types';
-import { COMMUNITY_TABS } from '../community';
+import { COMMUNITY_TABS } from '../community.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAlertSeverity } from '@/utils/common/string.utils';
 import { communitySelectors, communityThunkActions } from '@/store/community';
@@ -256,7 +256,7 @@ export const BreastfeedingClubsTab: React.FC = () => {
             text="Back to team"
             onClick={() =>
               history.push(ROUTES.COMMUNITY.ROOT, {
-                activeTabIndex: COMMUNITY_TABS.TEAM,
+                activeTabIndex: COMMUNITY_TABS.TEAM.INDEX,
               } as CommunityRouteState)
             }
           />

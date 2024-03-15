@@ -1,6 +1,6 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using ECDLink.Abstractrions.Constants;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -9,14 +9,13 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
@@ -30,6 +29,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitDataManager _visitDataManager;
         private VisitDataStatusManager _visitDataStatusManager;
         private IGrowGreatPointsCalculationsService _pointsCalculationService;
+        private INotificationService _notificationService;
 
         private Guid? _applicationUserId;
         private IGenericRepository<Infant, Guid> _infantRepo;
@@ -39,6 +39,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private IGenericRepository<Caregiver, Guid> _caregiverRepo;
         private IGenericRepository<Mother, Guid> _motherRepo;
 
+        private ApplicationUserManager _userManager;
+
         public InfantManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -46,7 +48,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
             VisitDataManager visitDataManager,
-            [Service] IGrowGreatPointsCalculationsService pointsCalculationService)
+            [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
+            [Service] INotificationService notificationService,
+            [Service] ApplicationUserManager userManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -55,6 +59,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataManager = visitDataManager;
             _pointsCalculationService = pointsCalculationService;
+            _notificationService = notificationService;
+            _userManager = userManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -167,6 +173,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             {
                 AddVisits(infant.Id, infant.User.DateOfBirth);
                 _pointsCalculationService.CalculateInfantClientRegistration(_applicationUserId.Value);
+            }
+
+            if (totalClients == 0) {
+               var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
+               _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotification, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue);   
             }
 
             return createdInfant;

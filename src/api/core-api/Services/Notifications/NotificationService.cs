@@ -15,6 +15,7 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IHttpContextAccessor _contextAccessor;
         private Guid _uId;
         private ApplicationUserManager _userManager;
+        private ILogger<NotificationService> _logger;
 
         /*
          1 - function is invoked and called with a template type, the template type defines the protocol, singular or multiple
@@ -45,7 +47,9 @@ namespace EcdLink.Api.CoreApi.Services
             IHttpContextAccessor contextAccessor, 
             IGenericRepositoryFactory repositoryFactory, 
             HierarchyEngine hierarchyEngine, 
-            [Service] ApplicationUserManager userManager)
+            [Service] ApplicationUserManager userManager,
+            [Service] ILogger<NotificationService> logger
+            )
         {
             _contextAccessor = contextAccessor;
             _notificationProviderFactory = notificationProviderFactory;
@@ -56,6 +60,7 @@ namespace EcdLink.Api.CoreApi.Services
             _templateRepo = _repositoryFactory.CreateGenericRepository<MessageTemplate>(userContext: _uId);
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _uId);
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<List<MessageTemplate>> RetrieveTemplate(string template)
@@ -95,7 +100,19 @@ namespace EcdLink.Api.CoreApi.Services
             //check if any exact templates for exact person for exact same date and protocol exists
         }
 
-        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false, bool dontSendIfExists = false, string searchCriteria = null, string relatedToUserId = null)
+        public async Task<bool> SendNotificationAsync(
+        string userType, 
+        string templatetype, 
+        DateTime messageDate, 
+        ApplicationUser user = null, 
+        string message = "", 
+        string status = MessageStatusConstants.Blue, 
+        List<TagsReplacements> replacements = null, 
+        DateTime? messageEndDate = null, 
+        bool expireOldMessagesOfType = false, 
+        bool dontSendIfExists = false, 
+        string searchCriteria = null, 
+        string relatedToUserId = null)
         {
             try
             {                
@@ -158,6 +175,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             } catch (Exception ex)
             {
+                _logger.LogError("Issue in DailyUserOfflineNotification" + ex.Message, ex);
                 return false;
             }
             return true;
@@ -180,10 +198,15 @@ namespace EcdLink.Api.CoreApi.Services
             await CommitNotification(notification, template); //commit first, entities are null after sms has been sent
             //convert str to enum
             TemplateTypeEnum templateType = (TemplateTypeEnum)Enum.Parse(typeof(TemplateTypeEnum), template.TypeCode.ToString());
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            string firstName = user.FirstName;
+
             var notificationProvider = _notificationProviderFactory.Create(user);
+
             await notificationProvider
-              .SetMessageMapped(templateType, notification.Subject, notification.Message)
-              .SendMessageAsync();
+                .SetMessageMapped(templateType, notification.Subject, notification.Message)
+                .SendMessageAsync();
         }
 
         private async Task SendHubMessageAsync(Notification notification, ApplicationUser user, MessageTemplate template)
@@ -364,7 +387,11 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach (var replacement in replacements)
             {
-               subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                if (subject != null)
+                {
+                    subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+                }
+               
                message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                 if (ctaText != "")
                     ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);

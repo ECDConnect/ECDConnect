@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -21,6 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool UpdateVisitDataStatus(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusReferral input)
         {
@@ -37,20 +39,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 visitDataStatusRepo.Update(entityToUpdate);
 
                 //update generated G4/G9  item
-                var entityToUpdateG4 = visitDataStatusRepo.GetAll().Where(x => x.VisitDataId == entityToUpdate.VisitDataId
-                && (x.Type.Equals(Constants.GGSettings.visit_data_client_dashboard) || x.Type.Equals(Constants.GGSettings.visit_data_client_summary)))
-                    .OrderBy(x => x.Id).FirstOrDefault();
+                var otherVisitReferrals = visitDataStatusRepo.GetAll().Where(x => 
+                    x.VisitData.VisitId == entityToUpdate.VisitData.VisitId
+                    && (x.Type.Equals(Constants.GGSettings.visit_data_client_dashboard) || x.Type.Equals(Constants.GGSettings.visit_data_client_summary)))
+                    .ToList();
 
-                if (entityToUpdateG4 != null)
+                foreach (var referral in otherVisitReferrals)
                 {
-                    entityToUpdateG4.UpdatedDate = DateTime.Now;
-                    entityToUpdateG4.UpdatedBy = applicationUserId.ToString();
-                    entityToUpdateG4.IsCompleted = (bool)inputItem.IsCompleted;
-                    entityToUpdateG4.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
-                    visitDataStatusRepo.Update(entityToUpdateG4);
+                    referral.UpdatedDate = DateTime.Now;
+                    referral.UpdatedBy = applicationUserId.ToString();
+                    referral.IsCompleted = (bool)inputItem.IsCompleted;
+                    referral.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
+                    visitDataStatusRepo.Update(referral);
                 }
             }
 
+            // TODO: check which needs to be called based on the referrals made
+            pointsCalculationService.CalculatePregnantMotherReferralPoints(applicationUserId);
+            pointsCalculationService.CalculateInfantVisitAndReferralPoints(applicationUserId);
+            
             return true;
         }
     }

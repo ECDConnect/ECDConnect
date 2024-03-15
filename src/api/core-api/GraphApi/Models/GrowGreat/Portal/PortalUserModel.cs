@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
     public class PortalUsersHCWModel
     {
@@ -15,7 +15,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public PortalUserModel User { get; set; }
         public Guid? ClinicId { get; set; }
         public string ConnectUsage { get; set; }
-
+        public bool IsRegistered { get; set; }
     }
 
     public class PortalUserHCWModel
@@ -23,12 +23,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid Id { get; set; }
         public Guid? ClinicId { get; set; }
         public Guid? UserId { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsRegistered { get; set; }
 
         public PortalUserHCWModel(HealthCareWorker entity)
         {
             Id = entity.Id;
             ClinicId = entity.ClinicId;
             UserId = entity.UserId;
+            IsActive = entity.IsActive;
+            IsRegistered = entity.IsRegistered;
         }
     }
 
@@ -39,17 +43,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public PortalUserModel User { get; set; }
         public List<Guid> ClinicIds { get; set; }
         public string ConnectUsage { get; set; }
+        public bool IsRegistered { get; set; }
     }
 
     public class PortalUserTLModel
     {
         public Guid Id { get; set; }
         public Guid? UserId { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsRegistered { get; set; }
 
         public PortalUserTLModel(TeamLead entity)
         {
             Id = entity.Id;
             UserId = entity.UserId;
+            IsRegistered = entity.IsRegistered;
         }
     }
 
@@ -86,13 +94,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         private string GetConnectUsage(ApplicationUser user, List<ShortenUrlEntity> invitations)
         {
             var comment = "";
-           
-           if (user.IsActive == false)
-           {
+
+            if (user.IsActive == false)
+            {
                 comment = "Removed: " + user.UpdatedDate?.ToString("dd/MM/yyyy");
-           } 
-           else
-           {
+            }
+            else
+            {
                 comment = "Online: " + user.LastSeen.ToString("dd/MM/yyyy");
 
                 if (invitations.Count != 0)
@@ -112,8 +120,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
                             comment = Constants.PortalSettings.usage_invitation_expired;
                         }
                     }
-                } 
-           }
+                }
+            }
             return comment;
         }
 
@@ -136,6 +144,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string Email { get; set; }
         public string WhatsAppNumber { get; set; }
         public bool IsActive { get; set; } = false;
-        public string ConnectUsage {  get; set; }
+        public string ConnectUsage { get; set; }
     }
 }

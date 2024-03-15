@@ -113,9 +113,14 @@ export function ContentManagement() {
         },
         {
           name: 'Danger signs',
-          // href: '/',
+          href: 'DangerSign',
           id: 4,
         },
+        // {
+        //   name: 'Natal',
+        //   href: 'Natal',
+        //   id: 5,
+        // },
         {
           name: ContentManagementTabs.GGCOMMUNITY.name,
           id: ContentManagementTabs.GGCOMMUNITY.id,

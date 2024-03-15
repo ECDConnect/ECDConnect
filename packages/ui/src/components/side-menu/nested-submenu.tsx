@@ -4,6 +4,7 @@ import { Badge } from '../badge/badge';
 import Divider from '../divider/divider';
 import Typography from '../typography/typography';
 import { NavigationDropdown, NavigationItem } from './side-menu.types';
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/solid';
 
 export type NestedSubMenuProps = {
   item: NavigationDropdown;
@@ -25,7 +26,7 @@ export default function NestedSubMenu({ item, onNavigation }) {
           <div
             onClick={handleOpenSubMenu}
             className={classNames(
-              openSubMenu ? 'bg-secondaryAccent2 text-primary' : 'text-primary',
+              openSubMenu ? 'bg-alertBg text-primary' : 'text-primary',
               'flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium'
             )}
           >
@@ -45,6 +46,11 @@ export default function NestedSubMenu({ item, onNavigation }) {
                   </Badge>
                 )}
               </div>
+            )}
+            {openSubMenu ? (
+              <ChevronUpIcon className="ml-auto h-6 w-6" />
+            ) : (
+              <ChevronDownIcon className="ml-auto h-6 w-6" />
             )}
           </div>
         </div>

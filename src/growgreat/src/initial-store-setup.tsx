@@ -78,26 +78,24 @@ function InitialStoreSetup(props: Props) {
   useEffect(() => {
     if (healthCareWorker) {
       (async () => {
-        const promises = [
-          appDispatch(
+        if (healthCareWorker?.clinicId) {
+          await appDispatch(
             communityThunkActions.getClinicById({
               clinicId: healthCareWorker?.clinicId || '',
             })
-          ).unwrap(),
-          appDispatch(
-            caregiverThunkActions.getCaregiversForHealthCareWorker({
-              id: healthCareWorker?.id || '',
-            })
-          ).unwrap(),
-        ];
-
-        await Promise.all(promises);
+          ).unwrap();
+        }
+        await appDispatch(
+          caregiverThunkActions.getCaregiversForHealthCareWorker({
+            id: healthCareWorker?.id || '',
+          })
+        ).unwrap();
       })();
     }
   }, [appDispatch, healthCareWorker]);
 
   useEffect(() => {
-    if (userClinic) {
+    if (userClinic && userClinic.league?.id) {
       (async () =>
         await appDispatch(
           communityThunkActions.getLeagueById({

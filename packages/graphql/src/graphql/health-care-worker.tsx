@@ -24,7 +24,9 @@ export const GetAllHealthCareWorker = gql`
       id
       insertedDate
       clinicId
+      isRegistered
       user {
+        id
         connectUsage
         isActive
         userName
@@ -109,6 +111,16 @@ export const UploadHealthCareWorkers = gql`
         errorDescription
       }
       createdUsers
+    }
+  }
+`;
+
+export const DeactivateHealthCareWorker = gql`
+  mutation DeactivateHealthCareWorker($hcwId: UUID!) {
+    deactivateHealthCareWorker(hcwId: $hcwId) {
+      id
+      userId
+      isActive
     }
   }
 `;
