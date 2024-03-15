@@ -3526,6 +3526,7 @@ export type DangerSign = {
   dangerSignI?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   section?: Maybe<Scalars['String']>;
+  type?: Maybe<Array<Maybe<NatalType>>>;
   updatedDate?: Maybe<Scalars['String']>;
 };
 
@@ -3541,6 +3542,7 @@ export type DangerSignInput = {
   dangerSignH?: InputMaybe<Scalars['String']>;
   dangerSignI?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 
@@ -10010,9 +10012,9 @@ export type NatalInfo = {
   contentSectionB?: Maybe<Scalars['String']>;
   contentSectionC?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
-  lightBuldSectionA?: Maybe<Scalars['String']>;
-  lightBuldSectionB?: Maybe<Scalars['String']>;
-  lightBuldSectionC?: Maybe<Scalars['String']>;
+  lightBulbSectionA?: Maybe<Scalars['String']>;
+  lightBulbSectionB?: Maybe<Scalars['String']>;
+  lightBulbSectionC?: Maybe<Scalars['String']>;
   pollyTipContent?: Maybe<Scalars['String']>;
   pollyTipText?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
@@ -10026,9 +10028,9 @@ export type NatalInfoInput = {
   contentSectionA?: InputMaybe<Scalars['String']>;
   contentSectionB?: InputMaybe<Scalars['String']>;
   contentSectionC?: InputMaybe<Scalars['String']>;
-  lightBuldSectionA?: InputMaybe<Scalars['String']>;
-  lightBuldSectionB?: InputMaybe<Scalars['String']>;
-  lightBuldSectionC?: InputMaybe<Scalars['String']>;
+  lightBulbSectionA?: InputMaybe<Scalars['String']>;
+  lightBulbSectionB?: InputMaybe<Scalars['String']>;
+  lightBulbSectionC?: InputMaybe<Scalars['String']>;
   pollyTipContent?: InputMaybe<Scalars['String']>;
   pollyTipText?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
@@ -12774,6 +12776,8 @@ export type Query = {
   traineeByUserId?: Maybe<Trainee>;
   transferHealthPromotionToNatalHealth: Scalars['Boolean'];
   transferInfoGraphicsToNatalGraphics: Scalars['Boolean'];
+  transferMoreInformationToNatal: Scalars['Boolean'];
+  transferMoreInformationToNatalInfo: Scalars['Boolean'];
   transferVisitVideosToNatalVideos: Scalars['Boolean'];
   unsubmittedExpenseItems?: Maybe<Array<Maybe<ExpenseItemModel>>>;
   unsubmittedIncomeItems?: Maybe<Array<Maybe<IncomeItemModel>>>;
