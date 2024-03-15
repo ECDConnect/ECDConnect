@@ -174,6 +174,8 @@ export default function HealthCareWorkers() {
         component: 'chw',
         userId: selectedRow?.userId,
         clinicId: selectedRow?.clinicId,
+        hcwId: selectedRow?.id,
+        isRegistered: selectedRow?.isRegistered,
       },
     });
   };

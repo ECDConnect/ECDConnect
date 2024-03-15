@@ -1,12 +1,11 @@
 import { useQuery } from '@apollo/client';
-import { PermissionEnum } from '@ecdlink/core';
+import { PermissionEnum, usePanel } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
 import {
   GetAllClinic,
   GetAllProvince,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
-  getTeamLeadCount,
 } from '@ecdlink/graphql';
 import ReactDatePicker from 'react-datepicker';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -19,7 +18,14 @@ import {
   SearchIcon,
   UploadIcon,
 } from '@heroicons/react/solid';
-import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Dialog,
+  DialogPosition,
+  Dropdown,
+  SearchDropDown,
+  SearchDropDownOption,
+} from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { useHistory } from 'react-router';
 import UiTable from './components/ui-table';
@@ -27,6 +33,8 @@ import { ConenctUsage } from './team-leads.types';
 import { format } from 'date-fns';
 import { Status } from '../application-admins/applications-admins.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-panel-create';
+import ROUTES from '../../../../routes/app.routes-constants';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -54,6 +62,8 @@ export default function TeamLeads() {
   const { hasPermission } = useUser();
   const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const [handleAdduser, setHandleAdduser] = useState(false);
+  const panel = usePanel();
 
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
@@ -115,7 +125,7 @@ export default function TeamLeads() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/users/view-user',
+      pathname: ROUTES.VIEW_USERS,
       state: {
         component: 'team-leads',
         userId: selectedRow?.user?.id,
@@ -126,7 +136,7 @@ export default function TeamLeads() {
     });
   };
 
-  const { data } = useQuery(GetAllTeamLead, {
+  const { data, refetch } = useQuery(GetAllTeamLead, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
@@ -311,6 +321,25 @@ export default function TeamLeads() {
     }
   }, [endDate]);
 
+  const displayPanel = () => {
+    panel({
+      noPadding: true,
+      title: '',
+      render: (onSubmit: any) => (
+        <TeamLeadPanelCreate
+          key={`userPanelCreate`}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
+
+            if (userCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
   if (tableData) {
     return (
       <div>
@@ -362,14 +391,7 @@ export default function TeamLeads() {
               <div className="flex  flex-row">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
-                    onClick={() => {
-                      history.push({
-                        pathname: '/upload-users',
-                        state: {
-                          component: 'team-leads',
-                        },
-                      });
-                    }}
+                    onClick={() => setHandleAdduser(true)}
                     type="button"
                     className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
                   >
@@ -536,6 +558,47 @@ export default function TeamLeads() {
             </div>
           </div>
         </div>
+        <Dialog
+          className="absolute left-56 bottom-96 mb-44 w-6/12"
+          stretch
+          visible={handleAdduser}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'ExclamationCircleIcon'}
+            iconColor="white"
+            iconBorderColor="infoMain"
+            importantText={`Would you like to add one Team Lead or multiple?`}
+            actionButtons={[
+              {
+                text: 'Add multiple Team Leads',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () =>
+                  history.push({
+                    pathname: ROUTES.UPLOAD_USERS,
+                    state: {
+                      component: 'team-leads',
+                    },
+                  }),
+                leadingIcon: 'UsersIcon',
+              },
+              {
+                text: 'Add one Team Lead',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  displayPanel();
+                  setHandleAdduser(false);
+                },
+                leadingIcon: 'UserIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </div>
     );
   } else {

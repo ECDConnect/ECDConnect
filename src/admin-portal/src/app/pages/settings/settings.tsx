@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { SettingsRoutes } from '../../app.routes';
+import { SettingsRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 
 const navigation = [
@@ -38,8 +38,8 @@ export function Settings() {
   }, []);
 
   return (
-    <div className="shadow flex-1 min-w-0 bg-white xl:flex rounded bg-white">
-      <div className="border-b border-gray-200 xl:border-b-0 xl:flex-shrink-0 xl:w-64 xl:border-r xl:border-uiMidDark ">
+    <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
+      <div className="xl:border-uiMidDark border-b border-gray-200 xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
         {navigation.map((item) => (
           <SubNavigationLink
             key={`${item.name}-${new Date().getTime()}`}

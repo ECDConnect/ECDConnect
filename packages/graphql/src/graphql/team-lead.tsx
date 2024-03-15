@@ -75,7 +75,7 @@ export const GetAllTeamLeadAdminList = gql`
 `;
 
 export const CreateTeamLead = gql`
-  mutation addTeamLead($input: TeamLeadModelInput) {
+  mutation addTeamLead($input: AddTeamLeadInputModelInput) {
     addTeamLead(input: $input) {
       id
     }

@@ -22,9 +22,11 @@ import {
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
 import {
+  CheckCircleIcon,
   ClockIcon,
   PaperAirplaneIcon,
   TrashIcon,
+  XCircleIcon,
 } from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { UiTableProps } from './type';
@@ -340,6 +342,9 @@ export default function UiTable({
       );
     } else if (column.field === 'connectUsage') {
       const columnColor = (value?: string) => {
+        const firstWord = value?.split(' ')[0];
+        const isRemoved = firstWord === 'Removed:';
+
         switch (value) {
           case 'Invitation active':
             return (
@@ -356,9 +361,14 @@ export default function UiTable({
               </div>
             );
           default:
-            return (
+            return isRemoved ? (
               <div className="flex items-center gap-0.5">
-                <ClockIcon className="text-successMain h-5 w-5" />
+                <XCircleIcon className="text-alertMain h-5 w-5" />
+                <span className="text-alertMain">{display_value}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-0.5">
+                <CheckCircleIcon className="text-successMain h-5 w-5" />
                 <span className="text-successMain">{display_value}</span>
               </div>
             );

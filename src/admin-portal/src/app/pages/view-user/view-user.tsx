@@ -25,13 +25,10 @@ import {
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import {
-  ExclamationCircleIcon,
   TrashIcon,
-  StarIcon,
   SaveIcon,
   ArrowLeftIcon,
   ThumbUpIcon,
-  ExclamationIcon,
 } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
@@ -62,7 +59,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
 import * as yup from 'yup';
 
-import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
 import { subDays } from 'date-fns';
 import {
@@ -73,6 +69,10 @@ import { TeamLeadSummary } from './components/team-lead-summary/team-lead-summar
 import { TeamLeadMeetingReport } from './components/team-lead-meeting-reports/team-lead-meeting-reports';
 import { ConenctUsage } from '../users/sub-pages/team-leads/team-leads.types';
 import { SendInvite } from './components/send-invite/send-invite';
+import { DeactivateUser } from './components/deactivate-user/deactivate-user';
+import { HealthCareWorkerSummary } from './components/health-care-worker-summary/health-care-worker-summary';
+import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
+import { HalthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -119,11 +119,12 @@ export function ViewUser(props: any) {
   const startDate = subDays(currentDate, 30);
   const endDate = currentDate;
   const connectUsage = props?.location?.state?.connectUsage;
+  const hcwId = props?.location?.state?.hcwId;
   const teamLeadId = props?.location?.state?.teamLeadId;
   const isTeamLead =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const isRegistered = props?.location?.state?.isRegistered;
-  const [successNotification, setSucessNotification] = useState<boolean>(false);
+  const [successNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
     startDate,
     endDate,
@@ -199,17 +200,17 @@ export function ViewUser(props: any) {
     GetTeamLeadSummary,
     {
       variables: {
-        teamLeadId: props.location.state?.teamLeadId,
+        teamLeadId: teamLeadId,
       },
       fetchPolicy: 'cache-and-network',
     }
   );
 
   useEffect(() => {
-    if (props.location.state?.teamLeadId) {
+    if (teamLeadId) {
       getTeamLeadSummary();
     }
-  }, [getTeamLeadSummary, props.location.state?.teamLeadId]);
+  }, [getTeamLeadSummary, teamLeadId]);
 
   const teamLeadReportData = useMemo(
     () => teamLeadSummary?.teamLeadSummary,
@@ -217,11 +218,6 @@ export function ViewUser(props: any) {
   );
 
   useEffect(() => {
-    // props.location.state?.component === 'administrators' &&
-    //   getUserById({
-    //     variables: { userId: props.location.state.userId ?? userId },
-    //   });
-
     props.location.state?.component === UsersRouteRedirectTypeEnum?.chw &&
       getChwById({
         variables: { userId: props.location.state.userId ?? userId },
@@ -229,7 +225,7 @@ export function ViewUser(props: any) {
   }, [userId]);
 
   const { hasPermission } = useUser();
-  const { setNotification, clearNotification } = useNotifications();
+  const { setNotification } = useNotifications();
   const dialog = useDialog();
 
   const isNotLockedOut = (user) => {
@@ -287,7 +283,6 @@ export function ViewUser(props: any) {
   );
 
   const {
-    register,
     setValue: adminDetailSetValue,
     formState: adminDetailFormState,
     getValues: adminDetailGetValues,
@@ -310,19 +305,11 @@ export function ViewUser(props: any) {
     mode: 'onChange',
   });
 
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-    watch,
-  } = useForm({
+  const { register: passwordRegister, getValues: passwordGetValues } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
     mode: 'onChange',
   });
-
-  const { errors: passwordFormErrors, isValid: isPasswordValid } =
-    passwordFormState;
 
   const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
     adminDetailFormState;
@@ -451,11 +438,6 @@ export function ViewUser(props: any) {
     refetchUserData();
     setEditActive(!editActive);
   };
-
-  //check password strength
-  const password = watch('password');
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const getRoleStatusChip = (status: string) => {
     switch (status) {
@@ -714,7 +696,7 @@ export function ViewUser(props: any) {
                             }
                           />
                         )}
-                        {!isTeamLead && (
+                        {!isTeamLead && !hcwId && (
                           <div className="my-0 w-6/12 sm:col-span-2">
                             <PasswordInput
                               label={'Password'}
@@ -858,6 +840,7 @@ export function ViewUser(props: any) {
         {(isCHW ||
           props.location.state?.component ===
             UsersRouteRedirectTypeEnum?.chw) &&
+          isRegistered &&
           data &&
           data.tenantContext &&
           data.tenantContext.applicationName === 'GrowGreat' && (
@@ -872,189 +855,28 @@ export function ViewUser(props: any) {
           )}
         {(isCHW ||
           props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.chw) && (
-          <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-              {/* Start main area*/}
-              <h3 className="mb-2 border-b-4 border-dashed pb-2 text-xl">
-                {' '}
-                Clients summary
-              </h3>
-              <div className="flex flex-row justify-evenly pt-4 text-current">
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalPregnantMoms
-                    }
-                  </span>
-                  pregnant moms
-                </p>
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalChildren
-                    }
-                  </span>
-                  children
-                </p>
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalClientsVisited
-                    }
-                  </span>
-                  clients visited
-                </p>
-                <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalFoldersOpened
-                    }
-                  </span>
-                  folders opened
-                </p>
-              </div>
-              {/* End main area */}
-            </div>
-          </div>
-        )}
+            UsersRouteRedirectTypeEnum?.chw) &&
+          isRegistered && (
+            <HealthCareWorkerSummary
+              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+            />
+          )}
         {(isCHW ||
           props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.chw) && (
-          <div className="flex flex-row">
-            <div className="border-l-errorMain  border-errorMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                {/* Start main area*/}
-                <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <ExclamationCircleIcon
-                    className="h-12 w-12 pb-2"
-                    style={{
-                      color: '#ED1414',
-                    }}
-                  ></ExclamationCircleIcon>
-                  <h3 className="mb-2  pb-0 pt-2 text-2xl"> Urgent issues</h3>
-                </div>
-                <div className="flex flex-col justify-evenly pt-4 text-current">
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalVisitsMissed
-                      }
-                    </span>
-                    Visits Missed
-                  </p>
-
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalPregnantMomsWithUrgentIssues
-                      }
-                    </span>
-                    pregnant moms have urgent issues
-                  </p>
-
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalCaregiversAndChildrenWithUrgentIssues
-                      }
-                    </span>
-                    caregivers & children have urgent issues
-                  </p>
-                </div>
-                {/* End main area */}
-              </div>
-            </div>
-            <div className="border-l-alertMain  border-alertMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                {/* Start main area*/}
-                <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <ExclamationIcon className="text-alertMain h-12 w-12" />
-                  <h3 className="mb-2  pb-0 pt-2 text-2xl"> Other issues</h3>
-                </div>
-                <div className="flex flex-col justify-evenly pt-4 text-current">
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-alertMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalVisitsOverdue
-                      }
-                    </span>
-                    visits overdue
-                  </p>
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-alertMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalPregnantMomsWithIssues
-                      }
-                    </span>
-                    pregnant moms have other issues
-                  </p>
-
-                  <p className="px-4py-2 text-xl">
-                    <span className="text-alertMain p-2 text-2xl">
-                      {
-                        summaryData?.healthCareWorkerSummaryForPeriod
-                          ?.totalCaregiversAndChildrenWithIssues
-                      }
-                    </span>
-                    caregivers & children have other issues
-                  </p>
-                </div>
-
-                {/* End main area */}
-              </div>
-            </div>
-          </div>
-        )}
+            UsersRouteRedirectTypeEnum?.chw) &&
+          isRegistered && (
+            <HealthCareWorkerIssues
+              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+            />
+          )}
         {(isCHW ||
           props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.chw) && (
-          <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-              {/* Start main area*/}
-              <div className="flex flex-row border-b-4 border-dashed pb-0">
-                <StarIcon
-                  className="successMain h-12 w-12 pb-2"
-                  style={{
-                    color: '#83BB26',
-                  }}
-                ></StarIcon>
-                <h3 className="mb-2  pb-0 pt-2 text-2xl"> Highlights</h3>
-              </div>
-              <div className="flex flex-col justify-evenly pt-4 text-current">
-                <p className="px-4 py-2 text-lg">
-                  <span className="text-successMain p-2 text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalPregnantMomsWithNoIssues
-                    }
-                  </span>
-                  pregnant moms are doing well & have no issues
-                </p>
-                <p className="px-4 py-2 text-lg">
-                  <span className="text-successMain p-2 text-2xl">
-                    {
-                      summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalChildrenWithNoIssues
-                    }
-                  </span>
-                  children are doing well & have no issues
-                </p>
-              </div>
-
-              {/* End main area */}
-            </div>
-          </div>
-        )}
+            UsersRouteRedirectTypeEnum?.chw) &&
+          isRegistered && (
+            <HalthCareWorkerHighlights
+              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+            />
+          )}
 
         {(isTeamLead ||
           props.location.state?.component ===
@@ -1091,14 +913,25 @@ export function ViewUser(props: any) {
               )}
             {isNotLockedOut(
               userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-            ) &&
-              !isRegistered && (
-                <SendInvite
+            ) && (
+              <div className="flex w-full items-center gap-2">
+                {!isRegistered && (
+                  <SendInvite
+                    userData={userData?.userById}
+                    chwData={chwData?.GetHealthCareWorkerById}
+                    refetchUserData={refetchUserData}
+                  />
+                )}
+                <DeactivateUser
                   userData={userData?.userById}
                   chwData={chwData?.GetHealthCareWorkerById}
                   refetchUserData={refetchUserData}
+                  isTeamLead={isTeamLead}
+                  teamLeadId={teamLeadId}
+                  hcwId={hcwId}
                 />
-              )}
+              </div>
+            )}
           </div>
 
           <div className="w-2/12">
