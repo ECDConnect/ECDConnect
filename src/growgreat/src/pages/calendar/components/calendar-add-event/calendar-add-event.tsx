@@ -40,14 +40,18 @@ import { calendarConvert } from '@/store/calendar/calendar.util';
 import CalendarSearchParticipant from '../calendar-search-participant/calendar-search-participant';
 import * as styles from './calendar-add-event.styles';
 import { userSelectors } from '@/store/user';
-import { ListDataItem } from '../calendar.types';
+import { ListDataItem, ParticipantType } from '../calendar.types';
 import {
-  mapPractitionerToListDataItem,
+  mapClinicMemberToListDataItemList,
+  mapMotherToListDataItem,
+  mapTeamLeadToListDataItem,
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CalendarActions } from '@/store/calendar/calendar.actions';
+import { motherSelectors } from '@/store/mother';
+import { communitySelectors } from '@/store/community';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
@@ -63,7 +67,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     useState<boolean>(false);
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  //const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const mothers = useSelector(motherSelectors.getMothers);
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
   const { isLoading, wasLoading } = useThunkFetchCall(
     'calendar',
@@ -80,26 +85,58 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     }
   }, [isLoading, isNewEvent, model, onUpdated, wasLoading]);
 
-  const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
-    eventProps?.participantUserIds?.map((pid) => {
-      // const practitioner = practitioners?.find((x) => x.userId === pid);
-      // return {
-      //   id: newGuid(),
-      //   participantUserId: pid,
-      //   participantUser: {
-      //     firstName: practitioner?.user?.firstName || '',
-      //     surname: practitioner?.user?.surname || '',
-      //   },
-      // };
-      return {
-        id: newGuid(),
-        participantUserId: pid,
-        participantUser: {
-          firstName: '',
-          surname: '',
-        },
-      };
-    });
+  const matchEventPropParticipants = (
+    participantUserIds: string[] | undefined
+  ): CalendarEventParticipantModel[] | undefined => {
+    if (participantUserIds === undefined || participantUserIds === null)
+      return undefined;
+
+    participantUserIds
+      .map((pid) => {
+        const mother = mothers?.find((x) => x.userId === pid);
+        if (!!mother) {
+          return {
+            id: newGuid(),
+            participantUserId: pid,
+            participantUser: {
+              firstName: mother.user?.firstName || '',
+              surname: mother.user?.surname || '',
+              type: 'mother',
+            },
+          };
+        }
+        const teamLead = clinicDetails?.teamLeads.find(
+          (tl) => tl.user?.id === pid
+        );
+        if (!!teamLead) {
+          return {
+            id: newGuid(),
+            participantUserId: pid,
+            participantUser: {
+              firstName: teamLead.firstName || '',
+              surname: teamLead.surname || '',
+              type: 'mother',
+            },
+          };
+        }
+        const hcw = clinicDetails?.clinicMembers.find(
+          (m) => m.healthCareWorkerId === pid
+        );
+        if (!!hcw) {
+          return {
+            id: newGuid(),
+            participantUserId: pid,
+            participantUser: {
+              firstName: hcw.firstName || '',
+              surname: hcw.surname || '',
+              type: 'healthCareWorker',
+            },
+          };
+        }
+        return undefined;
+      })
+      .filter((x) => x !== undefined);
+  };
 
   const event: CalendarEventModel = useSelector(
     calendarSelectors.getCalendarEventById(eventProps?.id || '')
@@ -111,7 +148,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     eventType: eventProps?.eventType || '',
     name: eventProps?.name || '',
     start: eventProps?.start || '',
-    participants: eventPropParticipants || [],
+    participants:
+      matchEventPropParticipants(eventProps?.participantUserIds) || [],
     action: eventProps?.action || null,
     userId: currentUser.id || '',
     user: {
@@ -172,7 +210,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       userId: p.participantUserId,
       firstName: p.participantUser.firstName,
       surname: p.participantUser.surname,
-      isClub: false,
+      type: p.participantUser.type || 'mother',
     })),
   };
   const {
@@ -277,36 +315,35 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const onSearchParticipantDone = useCallback(
     async (participantUsers: CalendarAddEventParticipantFormModel[]) => {
-      /*
-      const clubIds: string[] = participantUsers
-        .filter((x) => x.isClub)
-        .map((x) => x.userId);
-
-      if (clubIds.length > 0) {
-        const clubMembers = await appDispatch(
-          clubThunkActions.getClubsMembers({ clubIds })
-        ).unwrap();
-        if (!!clubMembers && clubMembers.length > 0) {
-          const clubUsers = clubMembers
-            .filter(
-              (x) =>
-                !!x.practitioner &&
-                !!x.practitioner.user &&
-                x.practitioner.user.isActive
-            )
-            .map((x) => {
-              return {
-                userId: x.practitioner?.user?.id || '',
-                firstName: x.practitioner?.user?.firstName || '',
-                surname: x.practitioner?.user?.surname || '',
-                isClub: false,
-              };
-            });
-          if (clubUsers.length > 0) participantUsers.push(...clubUsers);
-        }
+      const clinicSelected = participantUsers.find(
+        (x) => x.type === 'clinic' && x.userId === clinicDetails?.id
+      );
+      if (!!clinicSelected && !!clinicDetails) {
+        const members: CalendarAddEventParticipantFormModel[] = [];
+        members.push(
+          ...clinicDetails.teamLeads.map((tl) => ({
+            userId: tl.id,
+            firstName: tl.firstName,
+            surname: tl.surname,
+            type: 'teamLead' as ParticipantType,
+          }))
+        );
+        members.push(
+          ...clinicDetails.clinicMembers.map((m) => ({
+            userId: m.healthCareWorkerId,
+            firstName: m.firstName,
+            surname: m.surname,
+            type: 'healthCareWorker' as ParticipantType,
+          }))
+        );
+        participantUsers.push(
+          ...members.filter(
+            (m) => !participantUsers.find((p) => p.userId === m.userId)
+          )
+        );
       }
-      */
-      participantUsers = participantUsers.filter((p) => !p.isClub);
+
+      participantUsers = participantUsers.filter((p) => p.type !== 'clinic');
 
       setSearchParticipantsVisible(false);
       setEventFormValue('participants', participantUsers);
@@ -338,23 +375,41 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       participantUsers: CalendarAddEventParticipantFormModel[]
     ): ListDataItem[] => {
       const list: ListDataItem[] = [];
-      // if (!!practitioners) {
-      //   list.push(
-      //     ...practitioners
-      //       .filter(
-      //         (p) =>
-      //           participantUsers.findIndex((u) => u.userId === p.userId) >= 0
-      //       )
-      //       .map((p) => mapPractitionerToListDataItem(p))
-      //   );
-      //   list.forEach((x) => (x.rightIcon = 'XIcon'));
-      //   sortListDataItems(list);
-      // }
+      if (!!mothers && !!clinicDetails) {
+        list.push(
+          ...mothers
+            .filter(
+              (m) =>
+                participantUsers.findIndex((u) => u.userId === m.user?.id) >= 0
+            )
+            .map((p) => mapMotherToListDataItem(p))
+        );
+        list.push(
+          ...clinicDetails.teamLeads
+            .filter(
+              (m) =>
+                participantUsers.findIndex((u) => u.userId === m.user?.id) >= 0
+            )
+            .map((p) => mapTeamLeadToListDataItem(p))
+        );
+        list.push(
+          ...clinicDetails.clinicMembers
+            .filter(
+              (m) =>
+                participantUsers.findIndex(
+                  (u) => u.userId === m.healthCareWorkerId
+                ) >= 0
+            )
+            .map((p) => mapClinicMemberToListDataItemList(p))
+        );
+        list.forEach((x) => (x.rightIcon = 'XIcon'));
+        sortListDataItems(list);
+      }
       const cu = mapUserToListDataItem(currentUser);
       cu.noClick = true;
       return [cu, ...list];
     },
-    [/*practitioners,*/ currentUser]
+    [mothers, clinicDetails, currentUser]
   );
 
   const formValue_end = getEventFormValues().end;

@@ -32,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var healthCareWorker = new HealthCareWorker()
             {
-                Id = new Guid(),
+                Id = input.UserId,
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,

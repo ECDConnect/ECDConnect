@@ -1,5 +1,6 @@
 import { CalendarEventModel } from '@ecdlink/core';
 import * as Yup from 'yup';
+import { ParticipantType } from '../calendar.types';
 
 export type CalendarAddEventInfo = {
   id?: string;
@@ -46,7 +47,7 @@ export interface CalendarAddEventParticipantFormModel {
   userId: string;
   firstName: string;
   surname: string;
-  isClub: boolean;
+  type: ParticipantType;
 }
 
 export interface CalendarAddEventFormModel {

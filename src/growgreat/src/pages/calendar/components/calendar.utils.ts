@@ -1,31 +1,34 @@
 import {
   CalendarEventActionModel,
   CalendarEventModel,
-  ClubDto,
-  PractitionerDto,
+  ClinicDto,
+  ClinicMemberDto,
+  //ClubDto,
+  MotherDto,
+  TeamLeadDto,
   UserDto,
   getAvatarColor,
 } from '@ecdlink/core';
 import { ListDataItem } from './calendar.types';
+import Pregnant from '@/assets/pregnant.svg';
 
-export const mapPractitionerToListDataItem = (
-  practitioner: PractitionerDto
-): ListDataItem => {
+export const mapMotherToListDataItem = (mother: MotherDto): ListDataItem => {
   return {
-    id: practitioner.userId || '',
-    profileDataUrl: practitioner.user?.profileImageUrl,
-    title: `${practitioner.user?.firstName} ${practitioner.user?.surname}`,
-    subTitle: practitioner.isTrainee ? 'Trainee' : 'Practitioner',
-    profileText: `${
-      practitioner.user?.firstName && practitioner.user?.firstName[0]
-    }${practitioner.user?.surname && practitioner.user?.surname[0]}`,
+    id: mother.user?.id || mother.id || '',
+    icon: Pregnant,
+    //profileDataUrl: mother.user?.profileImageUrl,
+    title: `${mother.user?.firstName} ${mother.user?.surname}`,
+    subTitle: mother.statusInfo?.notes || '',
+    profileText: `${mother.user?.firstName && mother.user?.firstName[0]}${
+      mother.user?.surname && mother.user?.surname[0]
+    }`,
     hideAlertSeverity: true,
     alertSeverity: 'none',
-    avatarColor: getAvatarColor() || '',
+    avatarColor: getAvatarColor('growgreat') || '',
     extraData: {
-      firstName: practitioner.user?.firstName || '',
-      surname: practitioner.user?.surname || '',
-      isClub: false,
+      firstName: mother.user?.firstName || '',
+      surname: mother.user?.surname || '',
+      type: 'mother',
     },
     rightIcon: '',
   };
@@ -42,40 +45,117 @@ export const mapUserToListDataItem = (user: UserDto): ListDataItem => {
     }`,
     hideAlertSeverity: true,
     alertSeverity: 'none',
-    avatarColor: getAvatarColor() || '',
+    avatarColor: getAvatarColor('growgreat') || '',
     extraData: {
       firstName: user.firstName || '',
       surname: user.surname || '',
-      isClub: false,
+      type: 'healthCareWorker',
     },
     rightIcon: '',
     noClick: true,
   };
 };
 
-export const mapClubToListDataItem = (club: ClubDto): ListDataItem => {
+export const mapClinicToListDataItem = (clinic: ClinicDto): ListDataItem => {
   return {
-    id: club.id,
-    title: club.name,
-    subTitle: 'Club',
-    profileText: club.name,
+    id: clinic.id,
+    title: clinic.name,
+    subTitle: 'Clinic',
+    profileText: clinic.name,
     hideAlertSeverity: true,
     alertSeverity: 'none',
-    avatarColor: getAvatarColor() || '',
+    avatarColor: getAvatarColor('growgreat'),
     extraData: {
-      firstName: club.name,
+      firstName: clinic.name,
       surname: '',
-      isClub: true,
+      type: 'clinic',
     },
-    rightIcon: '',
   };
 };
 
+export const mapClinicTeamLeadsToListDataItemList = (
+  teamLeads: TeamLeadDto[]
+): ListDataItem[] => {
+  return teamLeads.map((tl) => mapTeamLeadToListDataItem(tl));
+};
+
+export const mapTeamLeadToListDataItem = (
+  teamLead: TeamLeadDto
+): ListDataItem => {
+  return {
+    id: teamLead.id,
+    profileDataUrl: undefined,
+    title: `${teamLead.firstName} ${teamLead.surname}`,
+    subTitle: 'Team Lead',
+    profileText: `${teamLead.firstName && teamLead.firstName[0]}${
+      teamLead.surname && teamLead.surname[0]
+    }`,
+    hideAlertSeverity: true,
+    alertSeverity: 'none',
+    avatarColor: getAvatarColor('growgreat') || '',
+    extraData: {
+      firstName: teamLead.firstName || '',
+      surname: teamLead.surname || '',
+      type: 'teamLead',
+    },
+    rightIcon: '',
+    noClick: true,
+  };
+};
+
+export const mapClinicMembersToListDataItemList = (
+  members: ClinicMemberDto[]
+): ListDataItem[] => {
+  return members.map((m) => mapClinicMemberToListDataItemList(m));
+};
+
+export const mapClinicMemberToListDataItemList = (
+  member: ClinicMemberDto
+): ListDataItem => {
+  return {
+    id: member.healthCareWorkerId,
+    profileDataUrl: member.profileImageUrl,
+    title: `${member.firstName} ${member.surname}`,
+    subTitle: 'HCW',
+    profileText: `${member.firstName && member.firstName[0]}${
+      member.surname && member.surname[0]
+    }`,
+    hideAlertSeverity: true,
+    alertSeverity: 'none',
+    avatarColor: getAvatarColor('growgreat') || '',
+    extraData: {
+      firstName: member.firstName || '',
+      surname: member.surname || '',
+      type: 'healthCareWorker',
+    },
+    rightIcon: '',
+    noClick: true,
+  };
+};
+
+// export const mapClubToListDataItem = (club: ClubDto): ListDataItem => {
+//   return {
+//     id: club.id,
+//     title: club.name,
+//     subTitle: 'Club',
+//     profileText: club.name,
+//     hideAlertSeverity: true,
+//     alertSeverity: 'none',
+//     avatarColor: getAvatarColor() || '',
+//     extraData: {
+//       firstName: club.name,
+//       surname: '',
+//       isClub: true,
+//     },
+//     rightIcon: '',
+//   };
+// };
+
 export const sortListDataItems = (items: ListDataItem[]) => {
   items.sort((a, b) => {
-    if (a.extraData?.isClub === true && b.extraData?.isClub === false)
+    if (a.extraData?.type === 'clinic' && b.extraData?.type !== 'clinic')
       return -1;
-    if (a.extraData?.isClub === b.extraData?.isClub) {
+    if (a.extraData?.type === b.extraData?.type) {
       if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
     }
     return 1;

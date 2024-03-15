@@ -143,6 +143,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 hcwUsers.Add(user.UserName,
                     new HealthCareWorker()
                     {
+                        Id = user.Id,
                         User = user,
                         IsRegistered = false, //TODO: Registered by default?
                         ConsentForPhoto = false,
@@ -430,6 +431,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     teamLeadUsers.Add(user.UserName,
                         new TeamLead()
                         {
+                            Id = user.Id,
                             User = user,
                             JobTitle = RolesGG.TEAM_LEAD,
                             TenantId = tenantId,

@@ -228,12 +228,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return new Mother()
             {
-                Id = Guid.NewGuid(),
+                Id = motherUser.Id,
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = _applicationUserId.ToStringOrNull(),
-                UserId = new Guid(input.UserId),
+                UserId = motherUser.Id,
                 User = motherUser,
                 Age = input.Age,
                 WhatsAppNumber = input.WhatsAppNumber,
