@@ -1,4 +1,5 @@
 import { Step } from 'react-joyride';
+import communityWalkthrough from '@/i18n/modules/community/walkthrough/en-za.json';
 
 export const COMMUNITY_WALKTHROUGH_STEPS = {
   ONE: 0,
@@ -15,7 +16,7 @@ export const COMMUNITY_WALKTHROUGH_STEPS = {
 export const communityWalkthroughSteps: Step[] = [
   {
     target: '#walkthrough-community-step-0',
-    content: 'Tap here to see the league!',
+    content: communityWalkthrough['Tap here to see the league!'],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
     disableBeacon: true,
@@ -24,14 +25,20 @@ export const communityWalkthroughSteps: Step[] = [
   },
   {
     target: '#walkthrough-community-step-1',
-    content: 'I’ll show you details about the league & each team’s position',
+    content:
+      communityWalkthrough[
+        'I’ll show you details about the league & each team’s position'
+      ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
     placement: 'bottom',
   },
   {
     target: '#walkthrough-community-step-2',
-    content: 'Tap here to see how your team earned points this quarter',
+    content:
+      communityWalkthrough[
+        'Tap here to see how your team earned points this quarter'
+      ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
     spotlightClicks: true,
@@ -39,38 +46,51 @@ export const communityWalkthroughSteps: Step[] = [
   {
     target: '#walkthrough-community-step-3',
     content:
-      'You can see how your team earned points & you can tap through to learn more',
+      communityWalkthrough[
+        'You can see how your team earned points & you can tap through to learn more'
+      ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
   },
   {
     target: '#walkthrough-community-step-4',
-    content: 'Back on the Team tab, you can see your team leader here',
+    content:
+      communityWalkthrough[
+        'Back on the Team tab, you can see your team leader here'
+      ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
   },
   {
     target: '#walkthrough-community-step-5',
-    content: 'You can tap through here to see all your team members',
+    content:
+      communityWalkthrough[
+        'You can tap through here to see all your team members'
+      ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
   },
   {
     target: '#walkthrough-community-step-6',
-    content: 'You can tap through here manage your team’s breastfeeding clubs',
+    content:
+      communityWalkthrough[
+        'You can tap through here manage your team’s breastfeeding clubs'
+      ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
   },
   {
     target: '#walkthrough-community-step-7',
     content:
-      'You can see all past breastfeeding clubs & add new breastfeeding clubs',
+      communityWalkthrough[
+        'You can see all past breastfeeding clubs & add new breastfeeding clubs'
+      ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
   },
   {
     target: '#walkthrough-last-step',
-    content: 'Great job, you’re ready to start!',
+    content: communityWalkthrough['Great job, you’re ready to start!'],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
     placement: 'bottom',
