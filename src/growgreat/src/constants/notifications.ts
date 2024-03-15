@@ -14,11 +14,6 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   SeeWalkthrough: {
     cta: 'SeeWalkthrough',
-    routeConfig: {
-      route: ROUTES.CLIENTS.INFANT_PROFILE.VISITS.ANTENATAL_VISIT,
-      params: { displayHelp: true },
-    },
-    viewType: 'Both',
   },
 };
 
