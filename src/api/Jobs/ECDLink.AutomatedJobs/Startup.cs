@@ -1,14 +1,8 @@
-﻿using Cronos;
-using ECDLink.AutomatedJobs.Configuration;
+﻿using ECDLink.AutomatedJobs.Configuration;
 using ECDLink.AutomatedJobs.Cron;
-using ECDLink.AutomatedJobs.DailyRunners;
-using ECDLink.AutomatedJobs.Notifications;
 using ECDLink.Core.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using NPOI.SS.Formula.Functions;
-using NPOI.XSSF.Streaming.Values;
 using System;
 using System.Linq;
 using System.Reflection;

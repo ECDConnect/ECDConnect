@@ -15,16 +15,11 @@ namespace ECDLink.AutomatedJobs.Jobs.Integration
 {
     public class IntegrationJobService : CronJobService
     {
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IGenericRepositoryFactory _repoFactory;
-        private readonly HierarchyEngine _hierarchyEngine;
         private readonly List<MethodInfo> _integrationMethods;
 
         public IntegrationJobService(IServiceScopeFactory scopeFactory, IntegrationJobServiceConfig config, ILogger<IntegrationJobService> logger)
-                : base(config, logger)
+                : base(scopeFactory, config, logger)
         {
-            _scopeFactory = scopeFactory;
-
             _integrationMethods = new List<MethodInfo>();
             var serviceType = typeof(IIntegrationService);
             foreach (var method in config.Options.Methods) 
@@ -45,25 +40,21 @@ namespace ECDLink.AutomatedJobs.Jobs.Integration
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            var service = Scope.ServiceProvider.GetRequiredService<IIntegrationService>();
+            if (service != null && service.Enabled)
             {
-                TenancyContext.SetTenantContext(scope);
-                var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
-                if (service != null && service.Enabled)
+                foreach (var mi in this._integrationMethods)
                 {
-                    foreach (var mi in this._integrationMethods)
+                    try
                     {
-                        try
-                        {
-                            _logger.LogInformation("CronJobs: {0} Work {1} Start", _name, mi.Name);
-                            var task = (Task)mi.Invoke(service, null);
-                            await task;
-                            _logger.LogInformation("CronJobs: {0} Work {1} End", _name, mi.Name);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "CronJobs: {0} Work {1} Failed: {2}", _name, mi.Name, ex.Message);
-                        }
+                        _logger.LogInformation("CronJobs: {0} Work {1} Start", _name, mi.Name);
+                        var task = (Task)mi.Invoke(service, null);
+                        await task;
+                        _logger.LogInformation("CronJobs: {0} Work {1} End", _name, mi.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "CronJobs: {0} Work {1} Failed: {2}", _name, mi.Name, ex.Message);
                     }
                 }
             }

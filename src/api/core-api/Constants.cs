@@ -1,3 +1,5 @@
+using Azure.Storage.Blobs.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System;
 
@@ -539,9 +541,9 @@ namespace EcdLink.Api.CoreApi
             // Infant Questions
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
             public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
-            public const string q_weight = "Weight";
-            public const string q_length = "Length";
-            public const string q_muac = "What is {client} MUAC today?";
+            public const string QuestionWeight = "Weight";
+            public const string QuestionLength = "Length";
+            public const string QuestionMUAC = "What is {client} MUAC today?";
             public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
             public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
@@ -651,7 +653,7 @@ namespace EcdLink.Api.CoreApi
             public const string breast_milk_only = "Breast milk only";
             public const string formula_milk_only = "Formula milk only";
             public const string mixed_feeding = "Mixed feeding";
-            public const string normal_comment = "Normal";
+            public const string NormalComment = "Normal";
 
             // Growth names
             public const string weightForAgeBoys = "weight-for-age-boys";
@@ -666,7 +668,7 @@ namespace EcdLink.Api.CoreApi
 
             // Visit names
             public const string careForMom = "Care for mom";
-            public const string careForBaby = "Care for baby";
+            public const string CareForBaby = "Care for baby";
 
             public const string pillar1_report = "Nutrition";
             public const string pillar1_db = "Pillar 1: Nutrition";
@@ -719,8 +721,8 @@ namespace EcdLink.Api.CoreApi
             public const string caregiverHasChanged = "caregiver_has_changed";
 
             //sections
-            public const string maternal_distress_screening = "Maternal distress screening";
-            public const string mother_growth = "Mother growth monitoring (Mid-upper arm circumference)";
+            public const string MaternalDistressScreening = "Maternal distress screening";
+            public const string MotherNutritionMUACMeasurement = "Mother growth monitoring (Mid-upper arm circumference)";
             public const string alcohol_use = "Alcohol use";
             public const string child_docs = "Child documentation";
             public const string child_road_to_health = "Road to Health Book";
@@ -862,13 +864,36 @@ namespace EcdLink.Api.CoreApi
         {
             public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
         }
+
         public static class PointsActivityConstants
         {
             public static readonly Guid ChildFoldersOpenedActivityId = new Guid("92c06990-7428-4a8f-8cfe-e1dfca83fb3e");
             public static readonly Guid PregnantMomFolderOpenedActivityId = new Guid("f20f0917-b497-440c-836e-aa54cf2d10f0");
             public static readonly Guid EarlyPregnacyIdentificationActivityId = new Guid("f5a72c31-5aa6-4852-9903-c9685420ab4b");
+            public static readonly Guid PregnantMotherReferralForMaternalDistressActivityId = new Guid("868743ae-a750-420b-94df-c00945c56367");
+            public static readonly Guid PregnantMotherReferralForMaternalMalnutritionActivityId = new Guid("3e4d346d-8190-439f-b000-a54d2b19f852");
+
+
+            public static readonly Guid ChildWeightMeasuredActivityId = new Guid("3075e510-6f2d-43f9-9171-9561a213b935");
+            public static readonly Guid ChildWeightMeasuredActionTakenOrNotRequiredActivityId = new Guid("6fe4149b-cfb6-4193-be04-c7ad6b091b8b");
+            public static readonly Guid ChildLengthMeasuredActivityId = new Guid("1a2fdde9-5644-4977-9acd-58957c9f30ac");
+            public static readonly Guid ChildLengthMeasuredActionTakenOrNotRequiredActivityId = new Guid("7ae6cfcb-85a3-4962-af8e-39901dc19848");
+            public static readonly Guid ChildMuacMeasuredActivityId = new Guid("78ed5347-3877-49f2-bf00-a6673df363a3");
+            public static readonly Guid ChildMuacMeasuredActionTakenOrNotRequiredActivityId = new Guid("1b0c8486-99e5-4670-a162-a4586d4a4c46");
+
+            public static readonly Guid MotherMaternalStressVisitsUpToDateActivityId = new Guid("05ffdb20-d420-458d-af15-8706ed8c8084");
+            public static readonly Guid MotherAlcoholAbuseVisitsUpToDateActivityId = new Guid("bd5bd8c7-0fda-464c-8f9d-2ed8f51ef69f");
+            public static readonly Guid MotherMalnutritionVisitsUpToDateActivityId = new Guid("91c0eeda-3acd-463d-90b8-808703d9b5c8");            
         }
         
+        public static class StatusColours
+        {
+            public static readonly string Green = MetricsColorEnum.Success.ToString();
+            public static readonly string Amber = MetricsColorEnum.Warning.ToString();
+            public static readonly string Red = MetricsColorEnum.Error.ToString();
+            public static readonly string None = MetricsColorEnum.None.ToString();
+        }
+
         public static class CoachingCircleSettings
         {
             public const string no_circle_meetings_held = "No coaching circles held yet ";

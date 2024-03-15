@@ -5,7 +5,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
   Avatar,
-  BannerWrapper,
   DialogPosition,
   IconBadge,
   NavigationRouteItem,
@@ -15,6 +14,7 @@ import {
   ScoreCard,
   RoundIcon,
   TitleListItem,
+  BannerWrapper,
 } from '@ecdlink/ui';
 
 import { useDocuments } from '@/hooks/useDocuments';
@@ -44,6 +44,7 @@ import {
   getTierDetails,
 } from '@/utils/community/league-position';
 import { LeagueType } from '@/constants/Community';
+import { COMMUNITY_TABS } from '../community/community.types';
 
 export const Dashboard: React.FC = () => {
   const history = useHistory();
@@ -78,6 +79,10 @@ export const Dashboard: React.FC = () => {
   const { startService } = useNotificationService();
 
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
+
+  const communityHref = isFirstTimeCommunitySection
+    ? ROUTES.COMMUNITY.WELCOME
+    : ROUTES.COMMUNITY.ROOT;
 
   const { isTop25PercentInTheLeague, isMiddle50PercentInTheLeague } =
     calculateClinicLeaguePositionPercentiles(
@@ -153,7 +158,7 @@ export const Dashboard: React.FC = () => {
     { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
     {
       name: NavigationTypes.ClientFolders,
-      icon: 'UserGroupIcon',
+      icon: 'FolderOpenIcon',
       current: false,
       nestedChildren: [
         {
@@ -176,6 +181,44 @@ export const Dashboard: React.FC = () => {
         },
       ],
     },
+    ...(clinicDetails
+      ? [
+          {
+            name: NavigationTypes.Community,
+            href: communityHref,
+            icon: 'UserGroupIcon',
+            current: false,
+            nestedChildren: [
+              {
+                name: COMMUNITY_TABS.TEAM.TITLE,
+                href: communityHref,
+                params: { activeTabIndex: COMMUNITY_TABS.TEAM.INDEX },
+                current: false,
+              },
+              {
+                name: COMMUNITY_TABS.LEAGUE.TITLE,
+                href: communityHref,
+                params: { activeTabIndex: COMMUNITY_TABS.LEAGUE.INDEX },
+                current: false,
+              },
+              {
+                name: COMMUNITY_TABS.BREASTFEEDING_CLUBS.TITLE,
+                href: communityHref,
+                params: {
+                  activeTabIndex: COMMUNITY_TABS.BREASTFEEDING_CLUBS.INDEX,
+                },
+                current: false,
+              },
+              {
+                name: COMMUNITY_TABS.CONNECT.TITLE,
+                href: communityHref,
+                params: { activeTabIndex: COMMUNITY_TABS.CONNECT.INDEX },
+                current: false,
+              },
+            ],
+          },
+        ]
+      : []),
     {
       name: NavigationTypes.Calendar,
       href: ROUTES.CALENDAR,
@@ -203,23 +246,11 @@ export const Dashboard: React.FC = () => {
     {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
-      icon: 'BellIcon',
+      icon: 'BriefcaseIcon',
       current: false,
       showDivider: true,
     },
-    ...(clinicDetails
-      ? [
-          {
-            name: NavigationTypes.Community,
-            href: isFirstTimeCommunitySection
-              ? ROUTES.COMMUNITY.WELCOME
-              : ROUTES.COMMUNITY.ROOT,
-            icon: 'UserGroupIcon',
-            current: false,
-            showDivider: true,
-          },
-        ]
-      : []),
+
     {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,

@@ -5,7 +5,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import WhatsLogo from '../../../../../assets/whatsgg.svg';
 import { useSelector } from 'react-redux';
 import { communitySelectors } from '@/store/community';
-import { formatPhoneNumber, useSnackbar } from '@ecdlink/core';
+import { addPhoneNumberMask, useSnackbar } from '@ecdlink/core';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
@@ -117,7 +117,7 @@ export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
         className={'mt-4'}
       />
       <Typography
-        text={formatPhoneNumber(clinic?.phoneNumber ?? '0000000000')}
+        text={addPhoneNumberMask(clinic?.phoneNumber ?? '0000000000')}
         type="body"
         color="secondary"
       />
@@ -153,7 +153,7 @@ export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
             className="mt-4"
           />
           <Typography
-            text={formatPhoneNumber(
+            text={addPhoneNumberMask(
               teamLeader?.phoneNumber ||
                 teamLeader?.whatsAppNumber ||
                 '0000000000'

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ClinicsRoutes, UserRoutes } from '../../app.routes';
+import { ClinicsRoutes, UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';

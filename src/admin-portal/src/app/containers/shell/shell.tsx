@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/outline';
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
-import { AuthRoutes } from '../../app.routes';
+import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';
@@ -231,7 +231,7 @@ export default function Shell() {
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
                 {navigation?.map((item) => (
-                  <div>
+                  <div key={`${item} + ${Math.random()}`}>
                     <MenuItem
                       key={`${item.name}-${new Date().getTime()}`}
                       item={item}

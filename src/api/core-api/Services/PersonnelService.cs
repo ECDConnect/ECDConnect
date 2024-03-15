@@ -3,7 +3,6 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
@@ -33,7 +32,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -73,7 +71,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
         private IClubService _clubService;
-        private IAbsenteeService _absenteeService;
         private ILogger<UserMutationExtension> _logger;
         private IReassignmentService __reassignmentService;
         private IServiceProvider _services;
@@ -87,7 +84,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             UserLicenseManager userLicenseManager,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
-            [Service] IAbsenteeService absenteeService,
             ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine,
             [Service] ILogger<UserMutationExtension> logger,
@@ -123,7 +119,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _clubService = clubService;
-            _absenteeService = absenteeService;
             _logger = logger;
             _services = services;
         }
@@ -207,19 +202,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerRecord.ClubName = clubMember?.Club?.Name;
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
             }
-
-            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString(), DateTime.Now.GetStartOfPreviousMonth());
-            if (absentees.Any())
-            {
-                practitionerRecord.Absentees = absentees;
-                //check if currently on leave?
-                if (absentees.Where(x => x.AbsentDate.Date <= DateTime.Now.Date && x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date >= DateTime.Now.Date).Any() )
-                {
-                    practitionerRecord.IsOnLeave = true;
-                }
-            }
-            practitionerRecord.DaysAbsentLastMonth = _absenteeService.GetAbsenteeCountByUser(practitioner.UserId.ToString());
-
             return practitionerRecord;
         }
 

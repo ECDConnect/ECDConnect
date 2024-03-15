@@ -1,5 +1,4 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
@@ -8,10 +7,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
     {
         public virtual ApplicationUser User { get; set; }
         public string UserId { get; set; }
-
         public virtual Clinic Clinic { get; set; }
         public Guid? ClinicId { get; set; }
-
         public string JobTitle { get; set; }
     }
 }
