@@ -1,7 +1,9 @@
 import { ActionModal, Button, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
+import LanguageSelector, {
+  LanguageSelectorProps,
+} from '@/components/language-selector/language-selector';
 import { useWindowSize } from '@reach/window-size';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -11,7 +13,6 @@ import { visitThunkActions } from '@/store/visit';
 import { useSelector } from 'react-redux';
 import { getMoreInformationSelector } from '@/store/visit/visit.selectors';
 import { replaceBraces } from '@ecdlink/core';
-import { useTranslation } from 'react-i18next';
 
 const HEADER_HEIGHT = 120;
 
@@ -21,6 +22,7 @@ export interface WalkthroughInfoPageProps {
   onClose: () => void;
   disableContentFromPortal?: boolean;
   extraElement?: ReactElement;
+  availableLanguages?: LanguageSelectorProps['availableLanguages'];
 }
 
 export const WalkthroughInfoPage = ({
@@ -29,6 +31,7 @@ export const WalkthroughInfoPage = ({
   onClose,
   extraElement,
   disableContentFromPortal,
+  availableLanguages,
 }: WalkthroughInfoPageProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
 
@@ -37,8 +40,6 @@ export const WalkthroughInfoPage = ({
   const { height } = useWindowSize();
 
   const appDispatch = useAppDispatch();
-
-  const { t, i18n } = useTranslation();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -75,8 +76,7 @@ export const WalkthroughInfoPage = ({
             {
               textClassName: 'text-white',
               colour: 'primary',
-              text:
-                moreInformation?.infoBoxDescription || t('Start walkthrough'),
+              text: moreInformation?.infoBoxDescription || 'Start walkthrough',
               textType: 'markdown',
               textColour: 'white',
               type: 'filled',
@@ -137,7 +137,6 @@ export const WalkthroughInfoPage = ({
     onClose,
     onHelp,
     sectionName,
-    t,
   ]);
 
   const getContent = useCallback(async () => {
@@ -176,11 +175,9 @@ export const WalkthroughInfoPage = ({
     <>
       <div className="bg-uiBg px-4 pb-2 pt-1">
         <LanguageSelector
-          showOfflineAlert
-          selectLanguage={(language) => {
-            i18n.changeLanguage(language.locale);
-            setLanguage(language);
-          }}
+          availableLanguages={availableLanguages}
+          showOfflineAlert={!disableContentFromPortal}
+          selectLanguage={setLanguage}
         />
       </div>
       <div
