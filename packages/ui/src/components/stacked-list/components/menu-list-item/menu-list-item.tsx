@@ -28,6 +28,7 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({
 
   return (
     <div
+      id={item?.id}
       className={classNames(styles.menulistItemContainer, item.className)}
       onClick={() => {
         if (!!item.onActionClick) item.onActionClick();

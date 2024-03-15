@@ -3,6 +3,7 @@ import Typography from '../../typography/typography';
 import { PointsDetailsCardProps } from './points-details-card.types';
 
 export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
+  id,
   pointsEarned,
   activityCount,
   title,
@@ -18,6 +19,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
 }) => {
   return (
     <div
+      id={id}
       className={classNames(
         className,
         `bg-${colour} rounded-10 flex w-full flex-row items-center p-5 pl-8`

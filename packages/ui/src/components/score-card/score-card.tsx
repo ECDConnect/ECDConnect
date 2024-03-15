@@ -27,11 +27,13 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
   barStatusChip,
   barDivides,
   hideProgressBar,
+  id,
 }) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
 
   return (
     <div
+      id={id}
       className={classNames(className, `${styles.wrapper} bg-${bgColour}`)}
       onClick={() => {
         !!onClick && onClick();
