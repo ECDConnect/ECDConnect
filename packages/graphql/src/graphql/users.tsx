@@ -178,8 +178,8 @@ export const sentInviteToMultipleUsers = gql`
   }
 `;
 export const deleteMultipleUsers = gql`
-  mutation BulkDeleteUser($ids: [String]) {
-    BulkDeleteUser(ids: $ids) {
+  mutation bulkDeleteUser($ids: [String]) {
+    bulkDeleteUser(ids: $ids) {
       success
       failed
     }

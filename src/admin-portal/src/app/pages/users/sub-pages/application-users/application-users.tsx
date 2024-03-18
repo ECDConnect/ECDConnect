@@ -351,6 +351,7 @@ export default function ApplicationUsers() {
                   }
                   component={'administrators'}
                   viewRow={viewSelectedRow}
+                  noBulkSelection
                 />
               </div>
             </div>

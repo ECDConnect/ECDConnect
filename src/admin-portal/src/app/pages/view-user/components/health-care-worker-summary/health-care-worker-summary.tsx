@@ -26,7 +26,10 @@ export const HealthCareWorkerSummary: React.FC<
               type={'h1'}
               hasMarkup
               fontSize="48"
-              text={String(summaryData?.totalPregnantMoms)}
+              text={
+                summaryData?.totalPregnantMoms !== undefined &&
+                String(summaryData?.totalPregnantMoms)
+              }
               color={'textMid'}
             />
             <Typography
@@ -40,7 +43,10 @@ export const HealthCareWorkerSummary: React.FC<
               type={'h1'}
               hasMarkup
               fontSize="48"
-              text={String(summaryData?.totalChildren)}
+              text={
+                summaryData?.totalChildren !== undefined &&
+                String(summaryData?.totalChildren)
+              }
               color={'textMid'}
             />
             <Typography type={'help'} text={'children'} color={'textMid'} />
@@ -50,7 +56,10 @@ export const HealthCareWorkerSummary: React.FC<
               type={'h1'}
               hasMarkup
               fontSize="48"
-              text={String(summaryData?.totalClientsVisited)}
+              text={
+                summaryData?.totalClientsVisited !== undefined &&
+                String(summaryData?.totalClientsVisited)
+              }
               color={'textMid'}
             />
             <Typography
@@ -64,7 +73,10 @@ export const HealthCareWorkerSummary: React.FC<
               type={'h1'}
               hasMarkup
               fontSize="48"
-              text={String(summaryData?.totalFoldersOpened)}
+              text={
+                summaryData?.totalFoldersOpened !== undefined &&
+                String(summaryData?.totalFoldersOpened)
+              }
               color={'textMid'}
             />
             <Typography
