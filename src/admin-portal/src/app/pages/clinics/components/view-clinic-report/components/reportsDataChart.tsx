@@ -21,20 +21,22 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
   icon,
   title,
 }) => {
-  const renderPositionText = useMemo(() => {
-    if (targetPerc < 50) {
-      return 'bottom';
-    } else {
-      return 'top';
-    }
-  }, [targetPerc]);
-
   const renderOpenedFolderText = (title) => {
     switch (title) {
       case 'Pregnant moms':
-        return `This team is in ${renderPositionText} than ${targetPerc}% of other GGC teams for pregnant mom folders opened!`;
+        if (targetPerc < 50) {
+          return `This team is in the bottom ${
+            100 - targetPerc
+          }% of other GGC teams for pregnant mom folders opened!`;
+        }
+        return `This team is doing better than ${targetPerc}% of other GGC teams for pregnant mom folders opened!`;
       default:
-        return `This team is in the ${renderPositionText} ${targetPerc}% for number of child folders opened compared to other GGC teams.`;
+        if (targetPerc < 50) {
+          return `This team is in the bottom ${
+            100 - targetPerc
+          }%f other GGC teams for child folders opened compared to other GGC teams.`;
+        }
+        return `This team is in the top ${targetPerc}%f other GGC teams for child folders opened compared to other GGC teams.`;
     }
   };
 
