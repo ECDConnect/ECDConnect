@@ -43,8 +43,9 @@ import {
   getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
-import { LeagueType } from '@/constants/Community';
+import { LeagueType, MaxIndividualPointsPerMonth } from '@/constants/Community';
 import { COMMUNITY_TABS } from '../community/community.types';
+import { getIndividualPointsUIDetails } from '@/utils/community/individual-points';
 
 export const Dashboard: React.FC = () => {
   const history = useHistory();
@@ -90,6 +91,12 @@ export const Dashboard: React.FC = () => {
       clinicDetails?.points?.leagueRanking ?? 0
     );
 
+  // TODO: Get real individual points
+  const currentIndividualPoints = 600;
+
+  const individualPointsUIDetails = getIndividualPointsUIDetails(
+    currentIndividualPoints
+  );
   const leaguePointsColours = getLeaguePointsColours(
     isTop25PercentInTheLeague,
     isMiddle50PercentInTheLeague
@@ -290,6 +297,28 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  const individualPointsCard = useMemo((): ScoreCardProps => {
+    const Polly = individualPointsUIDetails.icon;
+
+    return {
+      image: (
+        <div>
+          <Polly className="mr-4 h-14 w-14" />
+        </div>
+      ),
+      mainText: '{Points}',
+      currentPoints: currentIndividualPoints,
+      maxPoints: MaxIndividualPointsPerMonth,
+      barBgColour: 'white',
+      barColour: individualPointsUIDetails.dashboardColour,
+      hint: 'Points',
+      hintClassName: 'mt-3',
+      bgColour: individualPointsUIDetails.backgroundColour,
+      textColour: 'textDark',
+      onClick: () => history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS),
+    };
+  }, [clinicDetails, league]);
+
   const communityCard = useMemo(
     (): ScoreCardProps => ({
       image: !!clinicDetails?.points?.leagueRanking ? (
@@ -422,35 +451,54 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!clinicDetails?.league ? (
+        <div className="mt-30 flex w-full flex-col gap-1">
           <ScoreCard
-            className="mt-30 h-20 w-full"
-            mainText={communityCard.mainText}
-            hint={communityCard.hint}
-            hintClassName={communityCard.hintClassName}
+            className="h-20"
+            mainText={individualPointsCard.mainText}
+            hint={individualPointsCard.hint}
+            hintClassName={individualPointsCard.hintClassName}
             textPosition="left"
-            currentPoints={communityCard.currentPoints}
-            maxPoints={communityCard.maxPoints}
-            onClick={communityCard.onClick}
-            barBgColour={communityCard.barBgColour}
-            barColour={communityCard.barColour}
-            bgColour={communityCard.bgColour}
-            image={communityCard.image}
-            textColour={communityCard.textColour}
+            currentPoints={individualPointsCard.currentPoints}
+            maxPoints={individualPointsCard.maxPoints}
+            onClick={individualPointsCard.onClick}
+            barBgColour={individualPointsCard.barBgColour}
+            barColour={individualPointsCard.barColour}
+            bgColour={individualPointsCard.bgColour}
+            image={individualPointsCard.image}
+            textColour={individualPointsCard.textColour}
             onClickClassName="text-textLight"
-            statusChip={communityCard.statusChip}
+            statusChip={individualPointsCard.statusChip}
           />
-        ) : (
-          <TitleListItem
-            item={{
-              title: communityCard.hint,
-              onActionClick: communityCard.onClick!,
-              titleIcon: 'UserGroupIcon',
-              titleIconClassName: 'bg-tertiary text-white',
-              classNames: 'bg-uiBg w-full mt-30',
-            }}
-          />
-        )}
+          {!!clinicDetails?.league ? (
+            <ScoreCard
+              className="h-20"
+              mainText={communityCard.mainText}
+              hint={communityCard.hint}
+              hintClassName={communityCard.hintClassName}
+              textPosition="left"
+              currentPoints={communityCard.currentPoints}
+              maxPoints={communityCard.maxPoints}
+              onClick={communityCard.onClick}
+              barBgColour={communityCard.barBgColour}
+              barColour={communityCard.barColour}
+              bgColour={communityCard.bgColour}
+              image={communityCard.image}
+              textColour={communityCard.textColour}
+              onClickClassName="text-textLight"
+              statusChip={communityCard.statusChip}
+            />
+          ) : (
+            <TitleListItem
+              item={{
+                title: communityCard.hint,
+                onActionClick: communityCard.onClick!,
+                titleIcon: 'UserGroupIcon',
+                titleIconClassName: 'bg-tertiary text-white',
+                classNames: 'bg-uiBg w-full mt-30',
+              }}
+            />
+          )}
+        </div>
       </div>
     </BannerWrapper>
   );

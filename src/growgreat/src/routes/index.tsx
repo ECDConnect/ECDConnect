@@ -11,9 +11,9 @@ import { PregnantRegister } from '@/pages/mom/pregnant-register/pregnant-registe
 import { PregnantRegisterForm } from '@/pages/mom/pregnant-register-form/pregnant-register-form';
 import { InfantRegister } from '@/pages/infant/infant-register/infant-register';
 import { InfantRegisterForm } from '@/pages/infant/infant-register-form/infant-register-form';
-import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
-import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
-import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
+import { PractitionerAbout } from '@/pages/practitioner/practitioner-about/practitioner-about';
+import PractitionerAccount from '@/pages/practitioner/practitioner-account/practitioner-account';
+import { PractitionerProfile } from '@/pages/practitioner/practitioner-profile/practitioner-profile';
 import ROUTES from '@/routes/routes';
 import ClassDashboard from '@/pages/client/client-dashboard/class-dashboard';
 import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
@@ -53,6 +53,7 @@ import { TeamMembers } from '@/pages/community/team-tab/team/members';
 import { TeamMemberProfile } from '@/pages/community/team-tab/team/members/member-profile';
 import { TeamLeaderProfile } from '@/pages/community/team-tab/team/members/leader-profile';
 import { AddBreastfeedingClub } from '@/pages/community/breastfeeding-clubs-tab/add-breastfeeding-club';
+import { IndividualPoints } from '@/pages/practitioner/individual-points';
 
 function PublicRoutes() {
   return (
@@ -305,6 +306,11 @@ function AuthRoutes() {
       <Route
         path={ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD}
         component={AddBreastfeedingClub}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS}
+        component={IndividualPoints}
         exact
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />

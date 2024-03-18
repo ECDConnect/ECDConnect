@@ -99,7 +99,7 @@ const ROUTES = {
   }),
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
-  PRACTITIONER: addPrefix('/practitioner', {
+  PRACTITIONER: addPrefix('/health-care-worker', {
     ABOUT: '/about',
     ACCOUNT: '/account',
     PROGRAMME_INFORMATION: '/programme-information',
@@ -107,6 +107,7 @@ const ROUTES = {
       PLAYGROUPS: '/playgroups',
       EDIT: '/edit',
     }),
+    INDIVIDUAL_POINTS: '/points',
   }),
   HEALTH_CAREWORKER_PROFILE_SETUP: '/healthcare-worker-profile-setup',
   CHILD_NOTES: '/child-notes',
