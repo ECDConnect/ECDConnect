@@ -97,7 +97,7 @@ export default function TeamLeads() {
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
@@ -136,7 +136,7 @@ export default function TeamLeads() {
     });
   };
 
-  const { data, refetch } = useQuery(GetAllTeamLead, {
+  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
@@ -552,6 +552,7 @@ export default function TeamLeads() {
                     }
                     component="team-leads"
                     viewRow={viewSelectedRow}
+                    isLoading={loading}
                   />
                 </div>
               </div>
