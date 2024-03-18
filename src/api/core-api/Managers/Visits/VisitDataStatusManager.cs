@@ -1,7 +1,11 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using ECDLink.Abstractrions.Constants;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -21,6 +25,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private VisitManager _visitManager;
+        private ApplicationUserManager _userManager;
+        
+        private INotificationService _notificationService;
         private VisitBackReferralManager _visitBackReferralManager;
         private HierarchyEngine _hierarchyEngine;
 
@@ -43,12 +50,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             VisitManager visitManager,
+            [Service] ApplicationUserManager userManager,
+            [Service] INotificationService notificationService,
             VisitBackReferralManager visitBackReferralManager,
             HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitManager = visitManager;
+            _userManager = userManager;
+             _notificationService = notificationService;
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
 
@@ -821,6 +832,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // add amber item to G9 client summary: ""You are struggling and need some support""
                 comment = GGSettings.need_support;
                 AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
+
+                Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ClientFirstName",
+                    ReplacementValue = firstName
+                 });
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "motherId",
+                    ReplacementValue = mother.UserId.ToString()
+                });
+                var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
             }
             else
             {
@@ -848,6 +874,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     //add green item to G9 client summary: You are coping well!
                     comment = GGSettings.coping_well;
                     AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
+                }
+                if (q3.QuestionAnswer == GGSettings.answer_no) {
+                    _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGRedAlertMaternalDistress);
                 }
             }
             return true;
