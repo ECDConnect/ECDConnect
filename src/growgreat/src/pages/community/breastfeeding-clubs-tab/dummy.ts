@@ -1,4 +1,4 @@
-// TODO: Remove this file when breastfeeding clubs tab is ready
+// walkthrough data
 export const dummy = [
   {
     id: '7a45f211-fbfb-4449-bda5-1605d961d06e',
