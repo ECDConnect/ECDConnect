@@ -4282,6 +4282,7 @@ export type HcwSummary = {
 export type HcwVisitStatus = {
   __typename?: 'HCWVisitStatus';
   childDueVisits: Scalars['Int'];
+  lastCompletedVisit?: Maybe<Scalars['DateTime']>;
   motherDueVisits: Scalars['Int'];
   motherOverDueVisits: Scalars['Int'];
 };

@@ -219,6 +219,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, Constants.GGSettings.client_mother);
             visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_mother);
             visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_child);
+            visitStatus.LastCompletedVisit = visitManager.GetLastCompletedVisitForHCW(userId);
 
             return visitStatus;
         }

@@ -7,6 +7,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.DataAccessLayer.Managers;
@@ -86,6 +87,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // EC-797 - if this infant is not the first client, we set the tab values to true;
             int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
                             + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
+
+            int totalActiveClieants = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.IsActive == true)).Count()
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.IsActive == true)).Count();
+                
 
             // Either load the caregiver or map from input
             var caregiver = input.CaregiverId.HasValue ? _caregiverRepo.GetById(input.CaregiverId.Value) : null;
@@ -175,9 +180,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 _pointsCalculationService.CalculateInfantClientRegistration(_applicationUserId.Value);
             }
 
-            if (totalClients == 0) {
+            if (totalActiveClieants == 0) {
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "infantId",
+                    ReplacementValue = infant.UserId.ToString(),
+                });
+
                var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
-               _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotification, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue);   
+               _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements);   
             }
 
             return createdInfant;
