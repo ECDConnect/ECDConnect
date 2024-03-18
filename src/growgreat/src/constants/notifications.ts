@@ -15,6 +15,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   SeeWalkthrough: {
     cta: 'SeeWalkthrough',
   },
+  CompleteProfile: {
+    cta: 'CompleteProfile',
+  },
 };
 
 export const enum MessageStatusConstants {

@@ -27,6 +27,7 @@ export interface VisitStatusDto {
   childDueVisits?: number;
   motherDueVisits?: number;
   motherOverDueVisits?: number;
+  lastCompletedVisit?: string;
 }
 
 export interface VisitDataStatusDto {

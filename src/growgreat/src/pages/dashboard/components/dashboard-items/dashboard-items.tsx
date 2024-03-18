@@ -63,7 +63,7 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
     }
 
     if (notification.message.routeConfig) {
-      history.push(
+      return history.push(
         notification.message.routeConfig.route,
         notification.message.routeConfig.params
       );

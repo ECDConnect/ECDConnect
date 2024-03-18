@@ -367,6 +367,24 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return visitCount;
         }
+
+        public DateTime? GetLastCompletedVisitForHCW(string HCWId)
+        {
+            IQueryable<Visit> totalVisitsCompleted = _visitRepo.GetAll()
+                    .Where(x => x.Attended == true);
+
+            totalVisitsCompleted = totalVisitsCompleted.Where(x =>
+                (x.Mother.IsActive
+                    && x.Mother.HealthCareWorker.UserId.ToString() == HCWId)
+                || (x.Infant.IsActive
+                    && x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == HCWId));
+
+            if (totalVisitsCompleted != null)
+            {
+                return totalVisitsCompleted.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault().ActualVisitDate;
+            }
+            return null;
+        }
         
         public DateTime? GetClientsNextVisitDate(Guid Id, string type)
         {
