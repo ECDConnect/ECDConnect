@@ -1,5 +1,7 @@
 import { StatusChip, Typography, ScoreCard } from '@ecdlink/ui';
 import { PointsReportSummaryDto } from '../view-clinic-report';
+import { calculateTierPercentages, getTierDetails } from './points-utils';
+import { LeagueType } from '../view-clinic-report.types';
 
 interface PointsReportSummaryProps {
   dataFromClinicPointsData: PointsReportSummaryDto;
@@ -8,6 +10,16 @@ interface PointsReportSummaryProps {
 export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
   dataFromClinicPointsData,
 }) => {
+  const { bronzePercentage, silverPercentage, goldPercentage } =
+    calculateTierPercentages(
+      ('Super League' as LeagueType) ?? LeagueType.League
+    );
+
+  const { tierName, tierColor } = getTierDetails(
+    LeagueType.SuperLeague,
+    dataFromClinicPointsData?.pointsTotal ?? 0
+  );
+
   return (
     <>
       <div className="mt-8">
@@ -36,24 +48,31 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
         </div>
       </div>
       <div className="mt-8 w-6/12 rounded-2xl bg-white p-6">
-        <div className="bg-alertBg rounded-2xl p-2">
+        <div className="bg-pointsCardBg rounded-2xl p-2">
           <ScoreCard
             className="my-4"
-            mainText={String(300)}
+            mainText={
+              String(dataFromClinicPointsData?.pointsTotal) ?? String(0)
+            }
             hint="points earned"
-            currentPoints={300}
-            maxPoints={1000}
-            barBgColour="uiLight"
-            barColour="alertMain"
-            bgColour="alertBg"
+            currentPoints={dataFromClinicPointsData?.pointsTotal ?? 0}
+            maxPoints={10000}
+            barBgColour="pointsCardBarBg"
+            barColour={tierColor}
+            bgColour="pointsCardBg"
             barSize="small"
             textColour="black"
             barStatusChip={{
               backgroundColour: 'alertMain',
               borderColour: 'alertMain',
               textColour: 'white',
-              text: 'Bronze',
+              text: tierName,
             }}
+            barDivides={[
+              { widthPercentage: bronzePercentage },
+              { widthPercentage: silverPercentage },
+              { widthPercentage: goldPercentage },
+            ]}
           />
         </div>
       </div>
