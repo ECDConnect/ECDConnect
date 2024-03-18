@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
@@ -12,6 +13,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -38,16 +40,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
         [UseSorting]
-        public List<PortalUsersHCWModel> GetAllHealthCareWorkers([Service] IHttpContextAccessor contextAccessor,
-                                                              IGenericRepositoryFactory repoFactory,
-                                                              CancellationToken cancellationToken, 
-                                                              PagedQueryInput pagingInput = null,
-                                                              string search = null,
-                                                              List<string> provinceSearch = null,
-                                                              List<string> clinicSearch = null,
-                                                              List<string> subDistrictSearch = null,
-                                                              List<string> visitSearch = null,
-                                                              List<string> connectUsageSearch = null)
+        public List<PortalUsersHCWModel> GetAllHealthCareWorkers(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            CancellationToken cancellationToken, 
+            PagedQueryInput pagingInput = null,
+            string search = null,
+            List<string> provinceSearch = null,
+            List<string> clinicSearch = null,
+            List<string> subDistrictSearch = null,
+            List<string> visitSearch = null,
+            List<string> connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
@@ -388,5 +391,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
 
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<PointsActivityModel> GetPointsForHealthCareWorker(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IPointsEngineService pointsEngineService,
+            IGenericRepositoryFactory repoFactory,
+            Guid userId,
+            DateTime startDate,
+            DateTime? endDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
+
+            var points = pointsEngineService.GetSummaryUserPoints(userId, startDate, endDate);
+
+            return points.Select(x => new PointsActivityModel(x)).ToList();
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public TeamStandingModel GetHealthCareWorkerTeamStanding(
+            [Service] IPointsEngineService pointsService,
+            Guid userId)
+        {
+            var teamStanding = pointsService.GetHealthCareWorkerTeamStanding(userId);
+
+            return teamStanding;
+        }
     }
 }
