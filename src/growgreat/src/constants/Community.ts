@@ -44,3 +44,10 @@ export enum ActivityId {
   Deworming = '4cd64b45-6cf0-441e-acfe-e7c1525cd843',
   BreastfeedingClubs = '5f8fd37a-d2f5-44bc-9670-0513a47b88e5',
 }
+/*
+  NOTE that the user can earn more points than this 
+  since it depends on the number of clients they have, 
+  number of visits they conduct, etc. 
+  785 is just the calculation for the max bar. 
+*/
+export const MaxIndividualPointsPerMonth = 785;
