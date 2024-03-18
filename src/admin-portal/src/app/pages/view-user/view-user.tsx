@@ -15,12 +15,10 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { TrashIcon, ArrowLeftIcon, ThumbUpIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
-  initialUserDetailsValues,
   NOTIFICATION,
   PermissionEnum,
   useDialog,
@@ -36,9 +34,7 @@ import {
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
 } from '@ecdlink/graphql';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
-import * as yup from 'yup';
 import { subDays } from 'date-fns';
 import {
   UsersRolesTypeEnum,
@@ -53,10 +49,8 @@ import { HealthCareWorkerSummary } from './components/health-care-worker-summary
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HalthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
+import { TenantContext } from '../../utils/constants';
 
-const adminSchema = yup.object().shape({
-  email: yup.string().email().required('email address is required'),
-});
 const formatDate = (value: string | number | Date) => {
   try {
     const date = new Date(value);
@@ -455,7 +449,7 @@ export function ViewUser(props: any) {
           isRegistered &&
           data &&
           data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat' && (
+          data.tenantContext.applicationName === TenantContext.GrowGreat && (
             <div className=" flex justify-end">
               <div>
                 <CustomDateRangePicker

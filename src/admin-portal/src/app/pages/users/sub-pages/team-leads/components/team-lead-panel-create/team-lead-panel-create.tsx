@@ -72,8 +72,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
     fetchPolicy: 'cache-and-network',
   });
 
-  console.log({ roleData });
-
   useEffect(() => {
     if (roleData && roleData.roles) {
       addUserRole();

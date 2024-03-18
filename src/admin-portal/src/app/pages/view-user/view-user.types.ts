@@ -8,3 +8,8 @@ export enum UsersRolesTypeEnum {
   teamLeads = 'Team Lead',
   user = 'User',
 }
+
+export enum idTypeEnum {
+  idNumber = 'idNumber',
+  passport = 'Passport',
+}
