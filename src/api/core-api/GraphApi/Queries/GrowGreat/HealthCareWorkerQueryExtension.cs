@@ -352,7 +352,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string>{"Column", "Type Description"},
                 new List<string>{"Type of identification", "Text, (Must be: 'id' or 'passport')"},
                 new List<string>{"ID number", "Number, (required if type of identification is 'id'; must be 13 digits)"},
-                new List<string>{"Passport number", "Number, (required if type of identification is 'passport')"},
+                new List<string>{"Passport", "Text, (required if type of identification is 'passport')"},
                 new List<string>{"First name", "Text, (required)"},
                 new List<string>{"Surname", "Text, (required)"},
                 new List<string>{"Cellphone number", "Number, (required, 10 digits)"},
@@ -365,7 +365,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string>{
                     "Type of identification",
                     "ID number",
-                    "Passport number",
+                    "Passport",
                     "First name",
                     "Surname",
                     "Cellphone number",
