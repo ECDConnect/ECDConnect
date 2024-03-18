@@ -3,6 +3,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getHealthCareWorkerByUserId,
+  getHealthCareWorkerPoints,
+  gethealthCareWorkerTeamStanding,
   updateHealthCareWorker,
   updateHealthCareWorkerTabs,
   updateHealthCareWorkerWelcomeMessage,
@@ -13,6 +15,7 @@ import { UpdateHealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 const initialState: HealthCareWorkerState = {
   healthCareWorker: undefined,
+  points: [],
 };
 
 const healthCareWorkerSlice = createSlice({
@@ -41,6 +44,15 @@ const healthCareWorkerSlice = createSlice({
     builder.addCase(getHealthCareWorkerByUserId.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
+    builder.addCase(getHealthCareWorkerPoints.fulfilled, (state, action) => {
+      state.points = action.payload;
+    });
+    builder.addCase(
+      gethealthCareWorkerTeamStanding.fulfilled,
+      (state, action) => {
+        state.teamStanding = action.payload;
+      }
+    );
     builder.addCase(updateHealthCareWorker.fulfilled, (state, action) => {
       state.healthCareWorker = {
         ...state.healthCareWorker,

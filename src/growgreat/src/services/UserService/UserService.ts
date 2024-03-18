@@ -20,7 +20,8 @@ class UserService {
             isSouthAfricanCitizen
             verifiedByHomeAffairs
             dateOfBirth
-            idNumber            
+            idNumber   
+            insertedDate         
             firstName
             surname
             fullName

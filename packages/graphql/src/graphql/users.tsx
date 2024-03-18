@@ -50,6 +50,7 @@ export const GetUserById = gql`
       contactPreference
       genderId
       phoneNumber
+      whatsAppNumber
       profileImageUrl
       isImported
       resetData
@@ -178,8 +179,8 @@ export const sentInviteToMultipleUsers = gql`
   }
 `;
 export const deleteMultipleUsers = gql`
-  mutation BulkDeleteUser($ids: [String]) {
-    BulkDeleteUser(ids: $ids) {
+  mutation bulkDeleteUser($ids: [String]) {
+    bulkDeleteUser(ids: $ids) {
       success
       failed
     }

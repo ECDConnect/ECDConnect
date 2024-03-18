@@ -26,6 +26,7 @@ import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { subMonths } from 'date-fns';
 import { communitySelectors, communityThunkActions } from './store/community';
+import { visitThunkActions } from '@/store/visit';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -71,6 +72,12 @@ function InitialStoreSetup(props: Props) {
         await appDispatch(
           caregiverThunkActions.getAllCaregiverClients({ userId: userData.id! })
         ))();
+      (async () =>
+        await appDispatch(
+          visitThunkActions.getHealthCareWorkerVisitStatus({
+            userId: userData.id!,
+          })
+        ).unwrap())();
     }
     setInitLoading(false);
   }, [appDispatch, userData]);
@@ -90,6 +97,22 @@ function InitialStoreSetup(props: Props) {
             id: healthCareWorker?.id || '',
           })
         ).unwrap();
+        if (!!healthCareWorker.user && !!healthCareWorker.user.id) {
+          const currentDate = new Date();
+          const oneYearAgo = new Date();
+          oneYearAgo.setMonth(currentDate.getMonth() - 12);
+          await appDispatch(
+            healthCareWorkerThunkActions.getHealthCareWorkerPoints({
+              userId: healthCareWorker.user.id,
+              startDate: oneYearAgo,
+            })
+          ).unwrap();
+          await appDispatch(
+            healthCareWorkerThunkActions.gethealthCareWorkerTeamStanding({
+              userId: healthCareWorker.user.id,
+            })
+          ).unwrap();
+        }
       })();
     }
   }, [appDispatch, healthCareWorker]);

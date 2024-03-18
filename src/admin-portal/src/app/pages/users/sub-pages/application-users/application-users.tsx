@@ -51,7 +51,7 @@ export default function ApplicationUsers() {
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
 
   const dateDropdownValue = useMemo(
     () =>
@@ -106,7 +106,7 @@ export default function ApplicationUsers() {
     };
   };
 
-  const [getAllUsers, { data }] = useLazyQuery(UserList, {
+  const [getAllUsers, { data, loading }] = useLazyQuery(UserList, {
     variables: getVariables(searchValue, sortDescending, selectedPage, 100),
     fetchPolicy: 'network-only',
   });
@@ -351,6 +351,8 @@ export default function ApplicationUsers() {
                   }
                   component={'administrators'}
                   viewRow={viewSelectedRow}
+                  noBulkSelection
+                  isLoading={loading}
                 />
               </div>
             </div>

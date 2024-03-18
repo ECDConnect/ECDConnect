@@ -77,10 +77,23 @@ export const Messages: React.FC = () => {
     paging.visibleItems?.splice(notificationIndex!!, 1);
   };
 
-  const messageActioned = (notification: Notification) => {
+  const messageActioned = async (notification: Notification) => {
     if (notification.message?.isFromBackend) {
-      appDispatch(
+      await appDispatch(
         markAsReadNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+    }
+
+    if (
+      notification.message?.cta?.includes(
+        notificationTagConfig?.SeeWalkthrough?.cta ?? ''
+      )
+    ) {
+      await appDispatch(notificationActions.removeNotification(notification!));
+      await appDispatch(
+        disableBackendNotification({
           notificationId: notification?.message?.reference ?? '',
         })
       );

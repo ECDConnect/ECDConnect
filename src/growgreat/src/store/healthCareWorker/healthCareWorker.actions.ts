@@ -2,16 +2,19 @@ import { HealthCareWorkerService } from '@/services/HealthCareWorkerService';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import {
+  TeamStandingModel,
   UpdateHealthCareWorkerInputModelInput,
   UpdateHealthCareWorkerTabsInputModelInput,
 } from '@ecdlink/graphql';
-import { HealthCareWorkerDto } from '@ecdlink/core';
+import { HealthCareWorkerDto, UserPointsAcitivtyDto } from '@ecdlink/core';
 
 export const HealthCareWorkerActions = {
   UPDATE_HEALTH_CAREWORKER_TABS: 'updateHealthCareWorkerTabs',
   UPDATE_HEALTH_CARE_WORKER_WELCOME_MESSAGE:
     'updateHealthCareWorkerWelcomeMessage',
   UPDATE_HEALTH_CARE_WORKER_BY_ID: 'updateHealthCareWorkerById',
+  GET_HEALTH_CARE_WORKER_POINTS: 'getHealthCareWorkerPoints',
+  GET_HEALTH_CARE_WORKER_TEAM_STANDING: 'getHealthCareWorkerTeamStanding',
 };
 
 export const getHealthCareWorkerByUserId = createAsyncThunk<
@@ -42,6 +45,61 @@ export const getHealthCareWorkerByUserId = createAsyncThunk<
       }
 
       return healthCareWorker;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getHealthCareWorkerPoints = createAsyncThunk<
+  UserPointsAcitivtyDto[],
+  { userId: string; startDate: Date; endDate?: Date },
+  ThunkApiType<RootState>
+>(
+  HealthCareWorkerActions.GET_HEALTH_CARE_WORKER_POINTS,
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId, startDate, endDate }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let points: UserPointsAcitivtyDto[];
+
+      if (userAuth?.auth_token) {
+        points = await new HealthCareWorkerService(
+          userAuth?.auth_token
+        ).getHealthCareWorkerPoints(userId, startDate, endDate);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return points;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const gethealthCareWorkerTeamStanding = createAsyncThunk<
+  TeamStandingModel,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  HealthCareWorkerActions.GET_HEALTH_CARE_WORKER_TEAM_STANDING,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new HealthCareWorkerService(
+          userAuth?.auth_token
+        ).getHealthCareWorkerTeamStanding(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

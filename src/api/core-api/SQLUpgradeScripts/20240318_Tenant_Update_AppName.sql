@@ -1,0 +1,1 @@
+update "Tenant" SET "ApplicationName" = 'CHW Connect' WHERE "Id"='39077d0e-e443-4076-aaf2-978dc6805aa0';

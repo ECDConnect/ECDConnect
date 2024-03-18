@@ -39,6 +39,7 @@ import {
   communityWalkthroughSteps,
 } from '../walkthrough/steps';
 import { useWalkthrough } from '@/context/walkthroughContext';
+import { dummy } from './dummy';
 
 export const BreastfeedingClubsTab: React.FC = () => {
   const [isToShowAll, setIsToShowAll] = useState(false);
@@ -102,7 +103,11 @@ export const BreastfeedingClubsTab: React.FC = () => {
     'MMM'
   )} ${currentYear}`;
 
-  const monthData = groupBreastfeedingClubByMonth(breastfeedingClubs ?? []);
+  const monthData = groupBreastfeedingClubByMonth(
+    walkthroughState?.isTourActive && !breastfeedingClubs?.length
+      ? dummy
+      : breastfeedingClubs ?? []
+  );
 
   const isToAddCurrentMonthData = !monthData?.some((item) => {
     return item.month === currentMonth && item.year === currentYear;

@@ -25,7 +25,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
-import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
 import {
@@ -145,7 +144,7 @@ export default function HealthCareWorkers() {
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
 
   const [connectUsageFilter, setConnectUsageFilter] = useState<
     SearchDropDownOption<string>[]
@@ -180,7 +179,7 @@ export default function HealthCareWorkers() {
     });
   };
 
-  const { data, refetch } = useQuery(GetAllHealthCareWorker, {
+  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
@@ -515,15 +514,17 @@ export default function HealthCareWorkers() {
               )}
 
               {filterDateAdded && (
-                <ReactDatePicker
-                  selected={startDate}
-                  onChange={onChange}
-                  startDate={startDate}
-                  endDate={endDate}
-                  selectsRange={true}
-                  inline
-                  shouldCloseOnSelect={true}
-                />
+                <div>
+                  <ReactDatePicker
+                    selected={startDate}
+                    onChange={onChange}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selectsRange={true}
+                    inline
+                    shouldCloseOnSelect={true}
+                  />
+                </div>
               )}
               <div className="flex items-center gap-2">
                 <SearchDropDown<string>
@@ -649,6 +650,7 @@ export default function HealthCareWorkers() {
                   }
                   component={'chw'}
                   viewRow={viewSelectedRow}
+                  isLoading={loading}
                 />
               </div>
             </div>

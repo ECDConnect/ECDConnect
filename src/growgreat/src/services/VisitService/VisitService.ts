@@ -32,6 +32,7 @@ class Visit {
             motherOverDueVisits
             motherDueVisits
             childDueVisits
+            lastCompletedVisit
           }
         } 
           `,

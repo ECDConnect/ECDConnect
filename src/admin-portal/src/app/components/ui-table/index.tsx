@@ -659,9 +659,7 @@ export default function UiTable({
           color="tertiary"
           onClick={deactivateUser}
         >
-          <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-            {' '}
-          </TrashIcon>
+          <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
             color="tertiary"

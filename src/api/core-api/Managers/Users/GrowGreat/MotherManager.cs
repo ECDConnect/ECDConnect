@@ -1,12 +1,15 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using ECDLink.Abstractrions.Constants;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -28,11 +31,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitManager _visitManager;
         private VisitDataStatusManager _visitDataStatusManager;
         private IGrowGreatPointsCalculationsService _pointsCalculationService;
-
+        private INotificationService _notificationService;
         private Guid? _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
         private IGenericRepository<Infant, Guid> _infantRepo;
         private IGenericRepository<Document, Guid> _documentRepo;
+        private ApplicationUserManager _userManager;
 
         public MotherManager(
             IHttpContextAccessor contextAccessor,
@@ -41,7 +45,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             InfantManager infantManager,
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
-            [Service] IGrowGreatPointsCalculationsService pointsCalculationService
+            [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
+            [Service] INotificationService notificationService,
+            [Service] ApplicationUserManager userManager
             )
         {
             _contextAccessor = contextAccessor;
@@ -51,6 +57,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
             _pointsCalculationService = pointsCalculationService;
+            _notificationService = notificationService;
+            _userManager = userManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
@@ -65,6 +73,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Mother AddMother(MotherModel input)
         {
+            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.IsActive == true)).Count()
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.IsActive == true)).Count();
+
             var mother = GetMotherFromInputModel(input);
             var createdMom = _motherRepo.Insert(mother);
 
@@ -82,6 +93,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             // Call points engine for hcw
             _pointsCalculationService.CalculatePregnantMomClientRegistration(_applicationUserId.Value);
+
+             if (totalClients == 0) {
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "motherId",
+                    ReplacementValue = createdMom.UserId.ToString(),
+                });
+
+               var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
+               _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements);   
+            }
 
             return createdMom;
         }

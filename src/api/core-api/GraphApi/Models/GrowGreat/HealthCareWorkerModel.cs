@@ -11,7 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public bool? ConsentForPhoto { get; set; }
         public bool? IsRegistered { get; set; }
         public string Language { get; set; }
-        public Guid LanguageId { get; set; }
+        public Guid? LanguageId { get; set; }
 
         public bool ClickedDashboardClientsTab { get; set; }
         public bool ClickedDashboardVisitsTab { get; set; }
@@ -33,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
             UserId = entity.UserId.Value;
             ConsentForPhoto = entity.ConsentForPhoto;
             IsRegistered = entity.IsRegistered;
-            LanguageId = entity.LanguageId.Value;
+            LanguageId = entity.LanguageId;
             Language = entity.Language != null ? entity.Language.Description : null;
             ClickedContactTab = entity.ClickedContactTab;
             ClickedDashboardClientsTab = entity.ClickedDashboardClientsTab;

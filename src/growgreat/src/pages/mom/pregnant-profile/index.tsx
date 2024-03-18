@@ -97,6 +97,8 @@ export const PregnantProfile: React.FC = () => {
 
   const previousActiveTab = usePrevious(state?.activeTabIndex);
 
+  const showWelcomeDialog = state?.displayHelp || false;
+
   const appDispatch = useAppDispatch();
 
   const { isOnline } = useOnlineStatus();
@@ -274,7 +276,8 @@ export const PregnantProfile: React.FC = () => {
       (currentTab === PREGNANT_PROFILE_TABS.REFERRALS &&
         !mother?.clickedReferralsTab) ||
       (currentTab === PREGNANT_PROFILE_TABS.CONTACT &&
-        !mother?.clickedContactTab)
+        !mother?.clickedContactTab) ||
+      showWelcomeDialog
     ) {
       let tabName = '';
 
@@ -336,9 +339,13 @@ export const PregnantProfile: React.FC = () => {
     }
   }, [
     dialog,
-    mother,
+    mother?.clickedContactTab,
+    mother?.clickedProgressTab,
+    mother?.clickedReferralsTab,
+    mother?.clickedVisitTab,
     onHelp,
     setIsWalkthroughSession,
+    showWelcomeDialog,
     state?.activeTabIndex,
     updateClickedTab,
   ]);
@@ -539,13 +546,17 @@ export const PregnantProfile: React.FC = () => {
   }, [appDispatch, motherId]);
 
   useEffect(() => {
-    if (previousActiveTab !== state?.activeTabIndex && !!maternalCaseRecord) {
+    if (
+      (previousActiveTab !== state?.activeTabIndex && !!maternalCaseRecord) ||
+      showWelcomeDialog
+    ) {
       handleWelcomeDialog();
     }
   }, [
     handleWelcomeDialog,
     maternalCaseRecord,
     previousActiveTab,
+    showWelcomeDialog,
     state?.activeTabIndex,
   ]);
 

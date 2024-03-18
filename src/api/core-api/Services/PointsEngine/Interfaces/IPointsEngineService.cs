@@ -2,6 +2,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
+using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
 
@@ -14,7 +15,8 @@ namespace ECDLink.Core.Services.Interfaces
         void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false, int? timeScored = null);
         List<PointsLibrary> GetPointsLibraryForActivity(string activity, string subActivity = null);
         List<PointsLibrary> GetPointsLibraryForTenant();
-        List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null);        
+        List<PointsUserSummary> GetSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null);
+        List<PointsUserSummary> GetOldSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null);        
         PointsUserSummary InsertIndividualSummaryUserPoints(PointsUserSummary input);
         PointsUserSummary UpdateIndividualSummaryUserPoints(PointsUserSummary input);
 
@@ -34,6 +36,14 @@ namespace ECDLink.Core.Services.Interfaces
         /// <param name="userId"></param>
         /// <returns></returns>
         UserClubStandingModel GetUserClubStanding(string userId);
+
+        /// <summary>
+        /// Gets the percentile standing of a user within relative to others within the team/clinic
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        TeamStandingModel GetHealthCareWorkerTeamStanding(Guid userId);
+
         // Clubs
         bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
         bool CalculateMeetRegularly(Guid clubId, Guid clubMeetingId);

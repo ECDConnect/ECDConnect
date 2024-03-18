@@ -32,6 +32,7 @@ import { XIcon } from '@heroicons/react/solid';
 import MessageForm from './message-form';
 import { useHistory } from 'react-router';
 import { MessageRoleDto, ggRoles, ssRoles } from './message';
+import { TenantContext } from '../../../utils/constants';
 
 export default function MessagePanel() {
   const messageSchema = Yup.object().shape({
@@ -123,7 +124,7 @@ export default function MessagePanel() {
       if (
         tenantData &&
         tenantData.tenantContext &&
-        tenantData.tenantContext.applicationName === 'GrowGreat'
+        tenantData.tenantContext.applicationName === TenantContext.GrowGreat
       ) {
         setRoleData(ggRoles);
       } else {

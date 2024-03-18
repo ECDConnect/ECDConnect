@@ -80,7 +80,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string CoachSelfAssessmentFormReminder = "coach-fillin-self-asessment-form";
 
         //GG notifications
-        public const string GGWalkthroughNotification = "gg-walkthrough-notification";
+        public const string GGWalkthroughNotificationInfant = "gg-walkthrough-notification-infant";
+        public const string GGWalkthroughNotificationMother = "gg-walkthrough-notification-mother";
         public const string GGUploadRTHNotification = "gg-upload-rth";
         public const string GGExpectedMomDeliveryDateApproaching = "gg-expected-moms-delivery-date-approaching";
         public const string GGRedAlertMaternalDistress = "gg-redalert-maternal-distress";

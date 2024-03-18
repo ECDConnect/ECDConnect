@@ -1,12 +1,9 @@
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

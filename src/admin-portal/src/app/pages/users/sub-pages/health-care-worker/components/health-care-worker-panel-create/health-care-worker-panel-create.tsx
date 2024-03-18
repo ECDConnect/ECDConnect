@@ -34,34 +34,7 @@ import {
 import { SaveIcon, XIcon } from '@heroicons/react/solid';
 import FormField from '../../../../../../components/form-field/form-field';
 import * as yup from 'yup';
-
-export const userSchema = yup.object().shape({
-  firstName: yup.string().required('First name is Required'),
-  surname: yup.string().required('Surname is Required'),
-  email: yup.string().email('Invalid email'),
-  phoneNumber: yup
-    .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid')
-    .required('Cellphone number is required'),
-  idNumber: yup
-    .string()
-    .test('idNumber', 'ID number or passport is not valid', function (value) {
-      const { passport } = this.parent;
-      const isIdValid = SA_ID_REGEX.test(value);
-      const isPassportValid = SA_PASSPORT_REGEX.test(value);
-
-      if (!isIdValid && !isPassportValid) {
-        return false;
-      }
-
-      if (passport && isIdValid) {
-        return false;
-      }
-
-      return true;
-    })
-    .required('ID number or passport is required'),
-});
+import { idTypeEnum } from '../../../../../view-user/view-user.types';
 
 export const hcwSchema = yup.object().shape({
   userId: yup.string(),
@@ -100,6 +73,26 @@ export default function HealthCareWorkerPanelCreate(
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
   const [idType, setIdType] = useState<string>('idNumber');
+
+  const userSchema = yup.object().shape({
+    firstName: yup.string().required('First name is Required'),
+    surname: yup.string().required('Surname is Required'),
+    email: yup.string().email('Invalid email'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+    idNumber:
+      idType === idTypeEnum.idNumber
+        ? yup
+            .string()
+            .matches(SA_ID_REGEX, 'Id number is not valid')
+            .required('ID Number is Required')
+        : yup
+            .string()
+            .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
+            .required('ID Number is Required'),
+  });
 
   // FORMS
   // USER FORM DETAILS

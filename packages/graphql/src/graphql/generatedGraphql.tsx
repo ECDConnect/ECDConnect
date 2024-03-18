@@ -3526,6 +3526,7 @@ export type DangerSign = {
   dangerSignI?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   section?: Maybe<Scalars['String']>;
+  type?: Maybe<Array<Maybe<NatalType>>>;
   updatedDate?: Maybe<Scalars['String']>;
 };
 
@@ -3541,6 +3542,7 @@ export type DangerSignInput = {
   dangerSignH?: InputMaybe<Scalars['String']>;
   dangerSignI?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 
@@ -4280,6 +4282,7 @@ export type HcwSummary = {
 export type HcwVisitStatus = {
   __typename?: 'HCWVisitStatus';
   childDueVisits: Scalars['Int'];
+  lastCompletedVisit?: Maybe<Scalars['DateTime']>;
   motherDueVisits: Scalars['Int'];
   motherOverDueVisits: Scalars['Int'];
 };
@@ -4388,7 +4391,7 @@ export type HealthCareWorkerModel = {
   isNewAtClinic: Scalars['Boolean'];
   isRegistered?: Maybe<Scalars['Boolean']>;
   language?: Maybe<Scalars['String']>;
-  languageId: Scalars['UUID'];
+  languageId?: Maybe<Scalars['UUID']>;
   shareContactInfo: Scalars['Boolean'];
   user?: Maybe<UserModel>;
   userId: Scalars['UUID'];
@@ -10010,9 +10013,9 @@ export type NatalInfo = {
   contentSectionB?: Maybe<Scalars['String']>;
   contentSectionC?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
-  lightBuldSectionA?: Maybe<Scalars['String']>;
-  lightBuldSectionB?: Maybe<Scalars['String']>;
-  lightBuldSectionC?: Maybe<Scalars['String']>;
+  lightBulbSectionA?: Maybe<Scalars['String']>;
+  lightBulbSectionB?: Maybe<Scalars['String']>;
+  lightBulbSectionC?: Maybe<Scalars['String']>;
   pollyTipContent?: Maybe<Scalars['String']>;
   pollyTipText?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
@@ -10026,9 +10029,9 @@ export type NatalInfoInput = {
   contentSectionA?: InputMaybe<Scalars['String']>;
   contentSectionB?: InputMaybe<Scalars['String']>;
   contentSectionC?: InputMaybe<Scalars['String']>;
-  lightBuldSectionA?: InputMaybe<Scalars['String']>;
-  lightBuldSectionB?: InputMaybe<Scalars['String']>;
-  lightBuldSectionC?: InputMaybe<Scalars['String']>;
+  lightBulbSectionA?: InputMaybe<Scalars['String']>;
+  lightBulbSectionB?: InputMaybe<Scalars['String']>;
+  lightBulbSectionC?: InputMaybe<Scalars['String']>;
   pollyTipContent?: InputMaybe<Scalars['String']>;
   pollyTipText?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
@@ -10647,6 +10650,18 @@ export type PointsActivityInput = {
   PointsCategory?: InputMaybe<PointsCategoryInput>;
   PointsCategoryId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type PointsActivityModel = {
+  __typename?: 'PointsActivityModel';
+  activityName?: Maybe<Scalars['String']>;
+  maxMonthlyPoints?: Maybe<Scalars['Int']>;
+  month: Scalars['Int'];
+  pointsActivityId: Scalars['UUID'];
+  pointsTotal: Scalars['Int'];
+  timesScored: Scalars['Int'];
+  todoDescription?: Maybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type PointsActivitySortInput = {
@@ -12701,6 +12716,7 @@ export type Query = {
   healthCareWorkerByUserId?: Maybe<HealthCareWorkerModel>;
   healthCareWorkerHighlights?: Maybe<HcwHighlights>;
   healthCareWorkerSummaryForPeriod?: Maybe<HcwSummary>;
+  healthCareWorkerTeamStanding?: Maybe<TeamStandingModel>;
   healthCareWorkerTemplateGenerator?: Maybe<FileModel>;
   healthCareWorkerVisitStatus?: Maybe<HcwVisitStatus>;
   healthPromotion: Array<Maybe<HealthPromotion>>;
@@ -12732,6 +12748,7 @@ export type Query = {
   openLanguage: Array<Maybe<Language>>;
   ownershipMetrics?: Maybe<PractitionerMetricReport>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
+  pointsForHealthCareWorker?: Maybe<Array<Maybe<PointsActivityModel>>>;
   pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
   practitionerById?: Maybe<PractitionerModel>;
@@ -12774,6 +12791,8 @@ export type Query = {
   traineeByUserId?: Maybe<Trainee>;
   transferHealthPromotionToNatalHealth: Scalars['Boolean'];
   transferInfoGraphicsToNatalGraphics: Scalars['Boolean'];
+  transferMoreInformationToNatal: Scalars['Boolean'];
+  transferMoreInformationToNatalInfo: Scalars['Boolean'];
   transferVisitVideosToNatalVideos: Scalars['Boolean'];
   unsubmittedExpenseItems?: Maybe<Array<Maybe<ExpenseItemModel>>>;
   unsubmittedIncomeItems?: Maybe<Array<Maybe<IncomeItemModel>>>;
@@ -15320,6 +15339,10 @@ export type QueryHealthCareWorkerSummaryForPeriodArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryHealthCareWorkerTeamStandingArgs = {
+  userId: Scalars['UUID'];
+};
+
 export type QueryHealthCareWorkerVisitStatusArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -15439,6 +15462,12 @@ export type QueryOpenAccessAddChildDetailArgs = {
 export type QueryOpenConsentArgs = {
   locale?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPointsForHealthCareWorkerArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  startDate: Scalars['DateTime'];
+  userId: Scalars['UUID'];
 };
 
 export type QueryPointsSummaryForUserArgs = {
@@ -17183,6 +17212,14 @@ export type TeamLeadSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
+};
+
+export type TeamStandingModel = {
+  __typename?: 'TeamStandingModel';
+  percentageMembersWithFewerPointsForCurrentMonth: Scalars['Int'];
+  percentageMembersWithFewerPointsForCurrentYear: Scalars['Int'];
+  percentageMembersWithMorePointsForCurrentMonth: Scalars['Int'];
+  percentageMembersWithMorePointsForCurrentYear: Scalars['Int'];
 };
 
 export type TenantModel = {
