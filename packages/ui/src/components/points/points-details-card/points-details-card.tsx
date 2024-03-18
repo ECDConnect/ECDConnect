@@ -46,18 +46,20 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
         />
         <Typography type="help" color={textColour} text={description} />
       </div>
-      <div
-        className={`relative ml-auto flex ${
-          size === 'large' ? 'h-16 w-16' : 'h-11 w-11'
-        } items-center justify-center`}
-      >
-        {badgeImage}
-        <Typography
-          className={`relative z-10 ${isShare ? 'mb-4' : ''}`}
-          color={badgeTextColour}
-          type="body"
-          text={String(pointsEarned)}
-        />
+      <div className="ml-auto">
+        <div
+          className={`relative flex ${
+            size === 'large' ? 'h-16 w-16' : 'h-11 w-11'
+          } items-center justify-center`}
+        >
+          {badgeImage}
+          <Typography
+            className={`relative z-10 ${isShare ? 'mb-4' : ''}`}
+            color={badgeTextColour}
+            type="body"
+            text={String(pointsEarned)}
+          />
+        </div>
       </div>
     </div>
   );

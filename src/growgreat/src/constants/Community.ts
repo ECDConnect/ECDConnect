@@ -50,4 +50,7 @@ export enum ActivityId {
   number of visits they conduct, etc. 
   785 is just the calculation for the max bar. 
 */
-export const MaxIndividualPointsPerMonth = 785;
+export enum MaxIndividualPoints {
+  PerMonth = 785,
+  PerYear = 9420,
+}

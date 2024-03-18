@@ -2,11 +2,14 @@ import { HealthCareWorkerService } from '@/services/HealthCareWorkerService';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import {
+  MoreInformation,
   TeamStandingModel,
   UpdateHealthCareWorkerInputModelInput,
   UpdateHealthCareWorkerTabsInputModelInput,
 } from '@ecdlink/graphql';
 import { HealthCareWorkerDto, UserPointsAcitivtyDto } from '@ecdlink/core';
+import { differenceInDays } from 'date-fns';
+import InfoService from '@/services/InfoService/InfoService';
 
 export const HealthCareWorkerActions = {
   UPDATE_HEALTH_CAREWORKER_TABS: 'updateHealthCareWorkerTabs',
@@ -15,6 +18,7 @@ export const HealthCareWorkerActions = {
   UPDATE_HEALTH_CARE_WORKER_BY_ID: 'updateHealthCareWorkerById',
   GET_HEALTH_CARE_WORKER_POINTS: 'getHealthCareWorkerPoints',
   GET_HEALTH_CARE_WORKER_TEAM_STANDING: 'getHealthCareWorkerTeamStanding',
+  GET_MORE_INFORMATION: 'getMoreInformation',
 };
 
 export const getHealthCareWorkerByUserId = createAsyncThunk<
@@ -57,7 +61,6 @@ export const getHealthCareWorkerPoints = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   HealthCareWorkerActions.GET_HEALTH_CARE_WORKER_POINTS,
-  // eslint-disable-next-line no-empty-pattern
   async ({ userId, startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -81,7 +84,7 @@ export const getHealthCareWorkerPoints = createAsyncThunk<
   }
 );
 
-export const gethealthCareWorkerTeamStanding = createAsyncThunk<
+export const getHealthCareWorkerTeamStanding = createAsyncThunk<
   TeamStandingModel,
   { userId: string },
   ThunkApiType<RootState>
@@ -192,6 +195,44 @@ export const updateHealthCareWorkerWelcomeMessage = createAsyncThunk<
         );
 
         return response;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getMoreInformation = createAsyncThunk<
+  MoreInformation[],
+  { section: string; locale: string },
+  ThunkApiType<RootState>
+>(
+  HealthCareWorkerActions.GET_MORE_INFORMATION,
+  async ({ locale, section }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      healthCareWorker: { points },
+    } = getState();
+
+    try {
+      const currentInfo = points?.infoPage?.find((item) => item[locale])?.[
+        locale
+      ];
+
+      if (currentInfo) {
+        const daysSinceLateLoad = differenceInDays(
+          new Date(),
+          new Date(currentInfo?.dateLoaded)
+        );
+
+        if (daysSinceLateLoad < 1) {
+          return currentInfo?.data;
+        }
+      }
+      if (userAuth?.auth_token) {
+        return await new InfoService().getMoreInformation(section, locale);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

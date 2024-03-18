@@ -1,10 +1,10 @@
-import { HealthCareWorkerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getHealthCareWorkerByUserId,
   getHealthCareWorkerPoints,
-  gethealthCareWorkerTeamStanding,
+  getHealthCareWorkerTeamStanding,
+  getMoreInformation,
   updateHealthCareWorker,
   updateHealthCareWorkerTabs,
   updateHealthCareWorkerWelcomeMessage,
@@ -15,7 +15,7 @@ import { UpdateHealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 const initialState: HealthCareWorkerState = {
   healthCareWorker: undefined,
-  points: [],
+  points: { data: [] },
 };
 
 const healthCareWorkerSlice = createSlice({
@@ -41,16 +41,54 @@ const healthCareWorkerSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, updateHealthCareWorkerWelcomeMessage);
     setThunkActionStatus(builder, updateHealthCareWorker);
+    setThunkActionStatus(builder, getHealthCareWorkerPoints);
+    setThunkActionStatus(builder, getHealthCareWorkerTeamStanding);
+    setThunkActionStatus(builder, getMoreInformation);
+    builder.addCase(getMoreInformation.fulfilled, (state, action) => {
+      const locale = action?.meta?.arg?.locale;
+
+      if (!state.points?.infoPage) {
+        state.points.infoPage = [];
+      }
+
+      const existingLocaleIndex = state.points.infoPage.findIndex((infoItem) =>
+        Object.hasOwnProperty.call(infoItem, locale)
+      );
+
+      if (existingLocaleIndex !== -1) {
+        state.points.infoPage[existingLocaleIndex][locale] = {
+          dateLoaded: new Date().toISOString(),
+          data: action.payload,
+        };
+      } else {
+        const newLocaleData = {
+          [locale]: {
+            dateLoaded: new Date().toISOString(),
+            data: action.payload,
+          },
+        };
+        state.points.infoPage.push(newLocaleData);
+      }
+
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getHealthCareWorkerByUserId.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
     builder.addCase(getHealthCareWorkerPoints.fulfilled, (state, action) => {
-      state.points = action.payload;
+      state.points = {
+        ...state.points,
+        data: action.payload,
+      };
+
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(
-      gethealthCareWorkerTeamStanding.fulfilled,
+      getHealthCareWorkerTeamStanding.fulfilled,
       (state, action) => {
         state.teamStanding = action.payload;
+
+        setFulfilledThunkActionStatus(state, action);
       }
     );
     builder.addCase(updateHealthCareWorker.fulfilled, (state, action) => {
