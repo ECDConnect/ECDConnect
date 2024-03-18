@@ -7,10 +7,11 @@ import {
   PasswordInput,
   SA_CELL_REGEX,
   SA_ID_REGEX,
+  SA_PASSPORT_REGEX,
   Typography,
 } from '@ecdlink/ui';
 import FormField from '../../../../components/form-field/form-field';
-import { UsersRouteRedirectTypeEnum } from '../../view-user.types';
+import { UsersRouteRedirectTypeEnum, idTypeEnum } from '../../view-user.types';
 import { SaveIcon } from '@heroicons/react/solid';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
@@ -47,21 +48,6 @@ export interface PersonalInfoProps {
   isNotLockedOut: (user: UserDto) => boolean;
 }
 
-const chwSchema = yup.object().shape({
-  idNumber: yup
-    .string()
-    .matches(SA_ID_REGEX, 'Id number is not valid')
-    .required('ID number is required'),
-  phoneNumber: yup
-    .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid')
-    .required('Cellphone number is required'),
-});
-
-const adminSchema = yup.object().shape({
-  email: yup.string().email().required('email address is required'),
-});
-
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   userData,
   isRegistered,
@@ -84,6 +70,28 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const [clinics, setClinics] = useState([]);
   const [hasClinicChange, setHasClinicChange] = useState(false);
   const [handleClinicChange, setHandleClinicChange] = useState(false);
+  const [idType, setIdType] = useState<string>('idNumber');
+
+  const chwSchema = yup.object().shape({
+    idNumber:
+      idType === idTypeEnum.idNumber
+        ? yup
+            .string()
+            .matches(SA_ID_REGEX, 'Id number is not valid')
+            .required('ID Number is Required')
+        : yup
+            .string()
+            .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
+            .required('ID Number is Required'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+  });
+
+  const adminSchema = yup.object().shape({
+    email: yup.string().email().required('email address is required'),
+  });
 
   const { data: clinicsData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
@@ -101,6 +109,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       );
     }
   }, [clinicsData?.GetAllClinic]);
+  const hcwClinic = clinicsData?.GetAllClinic?.find(
+    (item) => item?.id === clinicId
+  );
 
   const updateHealthCareWorkerClinic = useCallback(async () => {
     const response = await updateHCWClinic({
@@ -149,6 +160,14 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const { errors: chwDetailFormErrors, isValid: isChwDetailValid } =
     chwDetailFormState;
   const passwordForm = passwordGetValues();
+
+  useEffect(() => {
+    const currentPreferedId = localStorage?.getItem('preferedId');
+
+    if (currentPreferedId === idTypeEnum.passport) {
+      setIdType(idTypeEnum.passport);
+    }
+  }, []);
 
   useEffect(() => {
     adminDetailSetValue('email', userData?.email || chwData?.user.email, {
@@ -252,14 +271,95 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   {userData && (
                     <>
                       {!isRegistered && (
-                        <div className="my-4 w-6/12 sm:col-span-3">
+                        <>
+                          <div className="my-4 sm:col-span-3">
+                            <Typography
+                              text={
+                                'Which kind of identification do you have for the CHW? *'
+                              }
+                              type={'body'}
+                              color={'textMid'}
+                            />
+                            <div className=" mb-4 flex flex-row">
+                              <Button
+                                className={'mt-3 mr-1 w-full rounded-md '}
+                                type={'filled'}
+                                color={
+                                  idType === idTypeEnum.idNumber
+                                    ? 'tertiary'
+                                    : 'errorBg'
+                                }
+                                onClick={() => {
+                                  setIdType(idTypeEnum.idNumber);
+                                  localStorage.setItem(
+                                    'preferedId',
+                                    idTypeEnum.idNumber
+                                  );
+                                }}
+                              >
+                                <Typography
+                                  type="help"
+                                  color={
+                                    idType === idTypeEnum.idNumber
+                                      ? 'white'
+                                      : 'tertiary'
+                                  }
+                                  text="Id Number"
+                                ></Typography>
+                              </Button>
+
+                              <Button
+                                className={'mt-3 mr-1 w-full rounded-md '}
+                                type={'filled'}
+                                color={
+                                  idType === idTypeEnum.idNumber
+                                    ? 'errorBg'
+                                    : 'tertiary'
+                                }
+                                onClick={() => {
+                                  setIdType(idTypeEnum.passport);
+                                  localStorage.setItem(
+                                    'preferedId',
+                                    idTypeEnum.passport
+                                  );
+                                }}
+                              >
+                                <Typography
+                                  type="help"
+                                  color={
+                                    idType === idTypeEnum.passport
+                                      ? 'white'
+                                      : 'tertiary'
+                                  }
+                                  text="Passport"
+                                ></Typography>
+                              </Button>
+                            </div>
+                            <FormField
+                              label={
+                                idType === idTypeEnum.idNumber
+                                  ? 'ID number *'
+                                  : 'Passport *'
+                              }
+                              nameProp={idTypeEnum.idNumber}
+                              register={registerCHW}
+                              error={chwDetailFormErrors.idNumber?.message}
+                              placeholder={
+                                idType === idTypeEnum.idNumber
+                                  ? 'e.g 6201014800088'
+                                  : 'e.g EN000666'
+                              }
+                            />
+                          </div>
+                          {/* <div className="my-4 w-6/12 sm:col-span-3">
                           <FormField
                             label={'ID number *'}
                             nameProp={'idNumber'}
                             register={registerCHW}
                             error={chwDetailFormErrors.idNumber?.message}
                           />
-                        </div>
+                        </div> */}
+                        </>
                       )}
                       <div className="my-4 w-6/12 sm:col-span-3">
                         <FormField
@@ -340,19 +440,99 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               )}
             </>
           ) : userData ? (
-            <div className="flex flex-row justify-start pt-4 text-current">
-              <p className="px-4 text-xl">
-                ID: {userData?.idNumber || chwData?.user?.idNumber}
-              </p>
-              <p className="px-4 text-xl">
-                {' '}
-                Cellphone: {userData?.phoneNumber || chwData?.user?.phoneNumber}
-              </p>
-              {userData?.whatsappNumber && (
-                <p className="px-4 text-xl">
-                  WhatsApp:{' '}
-                  {userData?.whatsappNumber || chwData?.user?.whatsappNumber}
-                </p>
+            <div className="grid grid-cols-3 justify-start gap-y-8 p-4 text-current">
+              <div className="flex items-center">
+                <Typography
+                  type="h2"
+                  hasMarkup
+                  fontSize="18"
+                  color="textMid"
+                  text={'ID:'}
+                  className="px-4"
+                />
+                <Typography
+                  type="h2"
+                  hasMarkup
+                  fontSize="18"
+                  color="textMid"
+                  text={userData?.idNumber || chwData?.user?.idNumber}
+                />
+              </div>
+              <div className="flex items-center">
+                <Typography
+                  type="h2"
+                  hasMarkup
+                  fontSize="18"
+                  color="textMid"
+                  text={'Cellphone:'}
+                  className="px-4"
+                />
+                <Typography
+                  type="h2"
+                  hasMarkup
+                  fontSize="18"
+                  color="textMid"
+                  text={userData?.phoneNumber || chwData?.user?.phoneNumber}
+                />
+              </div>
+              {userData?.whatsAppNumber && (
+                <div className="flex items-center">
+                  <Typography
+                    type="h2"
+                    hasMarkup
+                    fontSize="18"
+                    color="textMid"
+                    text={'WhatsApp:'}
+                    className="px-4"
+                  />
+                  <Typography
+                    type="h2"
+                    hasMarkup
+                    fontSize="18"
+                    color="textMid"
+                    text={
+                      userData?.whatsAppNumber || chwData?.user?.whatsAppNumber
+                    }
+                  />
+                </div>
+              )}
+              {hcwClinic && (
+                <>
+                  <div className="flex items-center">
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={'Clinic:'}
+                      className="px-4"
+                    />
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={hcwClinic?.name}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={'Location:'}
+                      className="px-4"
+                    />
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={hcwClinic?.siteAddress?.addressLine1}
+                    />
+                  </div>
+                </>
               )}
             </div>
           ) : (
