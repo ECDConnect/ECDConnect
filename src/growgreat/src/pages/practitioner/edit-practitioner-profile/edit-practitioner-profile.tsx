@@ -16,9 +16,13 @@ import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@store';
 import {
   healthCareWorkerActions,
-  healthCareWorkerSelectors,
   healthCareWorkerThunkActions,
 } from '@/store/healthCareWorker';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@store/notifications';
+import { notificationTagConfig } from '@/constants/notifications';
 import { UpdateHealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 export const EditPractitionerProfile: React.FC = () => {
@@ -29,13 +33,17 @@ export const EditPractitionerProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(userSelectors.getUser);
-  const healthCareWorker = useSelector(
-    healthCareWorkerSelectors?.getHealthCareWorker
-  );
-
   const [label, setLabel] = useState('');
   const [activeStep, setActiveStep] = useState(EditPractitionerSteps.WELCOME);
   const [language, setLanguage] = useState<string>();
+
+  const completeProfileNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(
+      notificationTagConfig?.CompleteProfile.cta ?? ''
+    )
+  );
 
   useEffect(() => {
     if (activeStep === EditPractitionerSteps.WELCOME) {
@@ -76,6 +84,10 @@ export const EditPractitionerProfile: React.FC = () => {
           userId: user?.id!,
           input: input,
         })
+      );
+
+      appDispatch(
+        notificationActions.removeNotification(completeProfileNotification!)
       );
     }
     history.push(ROUTES.ROOT);
