@@ -48,7 +48,7 @@ export default function ApplicationAdmins() {
   const panel = usePanel();
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
   const [showFilter, setShowFilter] = useState(false);
 
   const [selectedPage, setSelectedPage] = useState<number>(1);
@@ -396,7 +396,6 @@ export default function ApplicationAdmins() {
                       : tableData
                   }
                   sendRow={true}
-                  searchInput={searchValue}
                   options={{
                     per_page: selectedPageSize,
                     rows: tableData?.length,
