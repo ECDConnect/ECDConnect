@@ -989,6 +989,7 @@ namespace EcdLink.Api.CoreApi
         {
             public const string visit_high_activity = "High activity (at least 20 visits in past month)";
             public const string visit_medium_activity = "Medium activity (at least 10 visits in past month)";
+            public const string visit_low_activity = "Low activity (no home visits in the past month)";
 
             public const string usage_invitation_active = "Invitation active";
             public const string usage_invitation_expired = "Invitation expired";
