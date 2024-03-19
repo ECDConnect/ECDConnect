@@ -1,4 +1,4 @@
-import { Button, ScoreCard, StatusChip, Typography } from '@ecdlink/ui';
+import { Button, Typography } from '@ecdlink/ui';
 import { useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
@@ -13,6 +13,9 @@ import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
+import DatePicker from 'react-datepicker';
+import { useCallback, useRef, useState } from 'react';
+import { sub } from 'date-fns';
 
 export interface PointsReportSummaryDto {
   childrenRankingPerc: number;
@@ -32,13 +35,35 @@ export const ViewClinicReport = () => {
   const location = useLocation<ClinicsRouteState>();
   const panel = usePanel();
   const clinic = location?.state?.clinic;
+  const today = new Date();
+  const initialBefore30Days = sub(today, {
+    days: 30,
+  });
+
+  // const [startDate, setStartDate] = useState(today);
+  // const [endDate, setEndDate] = useState(initialBefore30Days);
+  const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
+  const [startDate, endDate] = dateRange;
+
+  // const onChange = (dates) => {
+  //   const [start, end] = dates;
+  //   setStartDate(start);
+  //   setEndDate(end);
+  // };
+
+  const labelContentRef = useRef(null);
+  const onClickLabel = useCallback((event) => {
+    if (event.nativeEvent.target !== labelContentRef.current) {
+      event.preventDefault();
+    }
+  }, []);
 
   const { data: clinicReportData } = useQuery(GetClinicVisitReportData, {
     fetchPolicy: 'cache-and-network',
     variables: {
       clinicId: clinic?.id,
-      startDate: '2022-11-30T22:56:30.085Z',
-      endDate: '2023-11-30T22:56:30.085Z',
+      startDate: startDate,
+      endDate: endDate,
     },
   });
 
@@ -256,14 +281,38 @@ export const ViewClinicReport = () => {
         </div>
       </div>
       <div className="mt-8">
-        <div>
+        <div className="flex w-full items-center justify-around">
           <Typography
-            type="h4"
+            type="h3"
             weight="bold"
             color="textDark"
             text={`Visit information`}
             align="left"
+            className="w-full"
           />
+
+          {/* <ReactDatePicker
+                    selected={startDate}
+                    onChange={onChange}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selectsRange={true}
+                    inline
+                    shouldCloseOnSelect={true}
+                  /> */}
+
+          <div className="w-56">
+            <DatePicker
+              selectsRange={true}
+              startDate={startDate}
+              endDate={endDate}
+              maxDate={today}
+              onChange={(update) => {
+                setDateRange(update);
+              }}
+              className="bg-secondary w-56 rounded-xl text-white"
+            />
+          </div>
         </div>
         <div>
           <ClientRegistration

@@ -2,6 +2,7 @@ import { StatusChip, Typography, ScoreCard } from '@ecdlink/ui';
 import { PointsReportSummaryDto } from '../view-clinic-report';
 import { calculateTierPercentages, getTierDetails } from './points-utils';
 import { LeagueType } from '../view-clinic-report.types';
+import { getCommunityQuarterDescription } from '@ecdlink/core';
 
 interface PointsReportSummaryProps {
   dataFromClinicPointsData: PointsReportSummaryDto;
@@ -10,6 +11,8 @@ interface PointsReportSummaryProps {
 export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
   dataFromClinicPointsData,
 }) => {
+  const today = new Date();
+  const { quarter } = getCommunityQuarterDescription(today);
   const { bronzePercentage, silverPercentage, goldPercentage } =
     calculateTierPercentages(
       ('Super League' as LeagueType) ?? LeagueType.League
@@ -54,7 +57,7 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
             mainText={
               String(dataFromClinicPointsData?.pointsTotal) ?? String(0)
             }
-            hint="points earned"
+            hint={`points so far in Quarter ${quarter?.quarter}`}
             currentPoints={dataFromClinicPointsData?.pointsTotal ?? 0}
             maxPoints={10000}
             barBgColour="pointsCardBarBg"
