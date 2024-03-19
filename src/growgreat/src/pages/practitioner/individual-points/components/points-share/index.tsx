@@ -54,7 +54,7 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
   const description =
     viewMode === 'year' ? yearlyDescription : monthlyDescription;
 
-  const percentageMembersWithFewer =
+  const percentageMembersWithFewerPoints =
     (viewMode === 'year'
       ? standing?.percentageMembersWithFewerPointsForCurrentYear
       : standing?.percentageMembersWithFewerPointsForCurrentMonth) ?? 0;
@@ -80,7 +80,7 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
     let colour: Colours = 'secondary';
     let Icon = CelebrateIconLight;
 
-    if (percentageMembersWithFewer === 100) {
+    if (percentageMembersWithFewerPoints === 100) {
       message = `Top CHW ${
         clinic?.name ? `at ${clinic.name}` : ''
       } for this period!`;
@@ -88,7 +88,7 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
       Icon = AwardIconDark;
     }
 
-    if (percentageMembersWithFewer > 75) {
+    if (percentageMembersWithFewerPoints > 75) {
       message = `One of the top CHWs ${
         clinic?.name ? `at ${clinic.name}` : ''
       } for this period!`;
@@ -96,7 +96,7 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
       Icon = AwardIconDark;
     }
 
-    if (percentageMembersWithFewer > 50) {
+    if (percentageMembersWithFewerPoints > 50) {
       message = 'High points earner!';
       colour = 'secondary';
       Icon = CelebrateIconLight;
@@ -115,7 +115,7 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
         </div>
       </div>
     );
-  }, [percentageMembersWithFewer, totalPoints, clinic?.name]);
+  }, [percentageMembersWithFewerPoints, totalPoints, clinic?.name]);
 
   return (
     <div ref={shareRef} className="overflow-auto">
