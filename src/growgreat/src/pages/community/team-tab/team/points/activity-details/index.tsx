@@ -1,5 +1,4 @@
 import ROUTES from '@/routes/routes';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import {
   ScoreCard,
   Typography,
@@ -9,7 +8,10 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { ActivityDetailsParams, ActivityDetailsState } from './index.types';
-import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import {
+  formatStringWithFirstLetterCapitalized,
+  getCommunityQuarterDescription,
+} from '@ecdlink/core';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';

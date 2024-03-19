@@ -1,5 +1,4 @@
 import ROUTES from '@/routes/routes';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import {
   Alert,
   BannerWrapper,
@@ -11,7 +10,11 @@ import {
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { activities as activityConstants } from './constants';
-import { formatTextToSlug, getStringFromClassNameOrId } from '@ecdlink/core';
+import {
+  formatTextToSlug,
+  getCommunityQuarterDescription,
+  getStringFromClassNameOrId,
+} from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { communitySelectors } from '@/store/community';
 import {

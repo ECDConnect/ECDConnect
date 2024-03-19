@@ -24,6 +24,7 @@ export const GetAllTeamLead = gql`
       id
       insertedDate
       isRegistered
+      clinicIds
       user {
         id
         connectUsage

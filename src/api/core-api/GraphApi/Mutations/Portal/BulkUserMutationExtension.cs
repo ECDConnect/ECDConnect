@@ -327,9 +327,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
 
-            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
-            var clinicIds = clinicRepo.GetAll().Select(c => c.Id.ToString()).ToList();
-
             if (file is null || currentUserId is null)
             {
                 throw new QueryException("Invalid input.");
@@ -343,8 +340,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var userImportList = new List<ApplicationUser>();
             var teamLeadUsers = new Dictionary<string, TeamLead>();
             var createdUsers = new List<string>();
-            var teamLeadClinics = new List<AddBulkTeamLeadInputModel>();
-
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -369,8 +364,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                     var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
                     var email = ExcelHelper.GetCellValue(currentRow.GetCell(6));
-                    var clinicId1 = ExcelHelper.GetCellValue(currentRow.GetCell(7));
-                    var clinicId2 = ExcelHelper.GetCellValue(currentRow.GetCell(8));
 
                     if (idOrPassport is null
                         && id is null
@@ -379,11 +372,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         && surname is null
                         && cellphone is null
                         && email is null
-                        && clinicId1 is null
-                        && clinicId2 is null)
+                        )
                         continue;
 
-                    var rowErrors = GetTeamLeadValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email, clinicId1, clinicId2, clinicIds);
+                    var rowErrors = GetTeamLeadValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email);
 
                     // Collect all row errors.
                     // Could be on a row with no errors, but previous rows had errors.
@@ -420,12 +412,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     };
                     userImportList.Add(user);
 
-                    // Record Clinic Ids
-                    teamLeadClinics.Add(new AddBulkTeamLeadInputModel() { Username = user.UserName, ClinicId = clinicId1 });
-                    if (clinicId2 != null) {
-                        teamLeadClinics.Add(new AddBulkTeamLeadInputModel() { Username = user.UserName, ClinicId = clinicId2 });
-                    }
-
                     // Add new community health worker.
                     teamLeadUsers.Add(user.UserName,
                         new TeamLead()
@@ -459,7 +445,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Return errors before trying to create users so the list doesn't need to be diff'd for users that were created.
             if (validationErrors.Any())
                 return new UserImportModel() { ValidationErrors = validationErrors };
-
 
             // Create Team Leads
             var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: currentUserId);
@@ -507,25 +492,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     // Get the current tl's user.
                     var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
-                    var userClinics = teamLeadClinics.Where(x => x.Username == user.UserName).ToList();
 
                     // Assign newly created user
                     newTl.UserId = user.Id;
-                    List<ClinicTeamLead> clinics = new List<ClinicTeamLead>();
-                    foreach (var item in userClinics)
-                    {
-                        clinics.Add(
-                            new ClinicTeamLead
-                            {
-                                Id = new Guid(),
-                                IsActive = true,
-                                InsertedDate = DateTime.Now,
-                                TeamLeadId = newTl.Id,
-                                ClinicId = new Guid(item.ClinicId)
-                            }
-                        );
-                    }
-                    newTl.Clinics = clinics;
 
                     try
                     {
@@ -576,10 +545,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 string firstName, 
                 string surname, 
                 string cellphone, 
-                string email, 
-                string clinicId1,
-                string clinicId2,
-                List<string> clinicIds)
+                string email)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -612,32 +578,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (!string.IsNullOrEmpty(email) // Email is optional
                     && !UserHelper.IsEmailValid(email))
                     errors.Add("Email is invalid");
-
-                if (clinicId1 is null || clinicId1.Length == 0)
-                {
-                    errors.Add("Clinic id 1 is empty.");
-                }
-                else
-                {
-                    if (!clinicIds.Contains(clinicId1))
-                    {
-                        errors.Add("Invalid clinic id for clinic 1.");
-                    }
-                }
-
-                if (clinicId2 is not null || clinicId2.Length == 0)
-                {
-                    if (!clinicIds.Contains(clinicId2))
-                    {
-                        errors.Add("Invalid clinic id for clinic 2.");
-                    }
-                }
-
-                if (clinicId1 is not null && clinicId2 is not null && clinicId1 == clinicId2)
-                {
-                    errors.Add("Clinic id 1 and clinic id 2 cannot be the same");
-                }
-
                 return errors;
             }
         }

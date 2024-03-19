@@ -1,6 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
@@ -13,7 +12,6 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -57,26 +55,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
             var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
+            var hasFilters = false;
 
-            // FILTER HEALTH CARE WORKERS
+            if (cancellationToken.IsCancellationRequested)
+                return null;
+
             if (!string.IsNullOrWhiteSpace(search))
                 healthCareWorkers = healthCareWorkers
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
-
-            if (provinceSearch != null && provinceSearch.Count != 0)
-                healthCareWorkers = healthCareWorkers.Where(h => provinceSearch.Contains(h.Clinic.SubDistrict.District.Province.Description));
-            
-            if (clinicSearch != null && clinicSearch.Count != 0)
-                healthCareWorkers = healthCareWorkers.Where(h => clinicSearch.Contains(h.Clinic.Name));
-
-            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
-                healthCareWorkers = healthCareWorkers.Where(h => subDistrictSearch.Contains(h.Clinic.SubDistrict.Name));
-
-            if (cancellationToken.IsCancellationRequested)
-                return null;
 
             // Get ids and tokens
             List<Guid> userIds = healthCareWorkers.Select(x => (Guid)x.UserId).ToList();
@@ -89,39 +78,64 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 Id = item.Id,
                 User = new PortalUserModel(item.User, invitations),
                 ClinicId = item.ClinicId,
+                ClinicName = item.Clinic.Name,
                 InsertedDate = item.InsertedDate,
-                IsRegistered = item.IsRegistered
+                IsRegistered = item.IsRegistered,
+                ProvinceId = item.Clinic.SubDistrict.District.ProvinceId,
+                SubDistrictId = item.Clinic.SubDistrictId
             }).ToList();
+
+            List<PortalUsersHCWModel> filteredUsers = new List<PortalUsersHCWModel>();
+
+            if (provinceSearch != null && provinceSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(workers.Where(x => provinceSearch.Contains(x.ProvinceId.ToString())));
+            }
+
+            if (clinicSearch != null && clinicSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(workers.Where(x => clinicSearch.Contains(x.ClinicName)));
+            }
+
+            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(workers.Where(x => provinceSearch.Contains(x.SubDistrictId.ToString())));
+            }
 
             if (connectUsageSearch != null && connectUsageSearch.Count != 0)
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
+                hasFilters = true;
 
                 if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
                 {
-                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
                 {
-                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                 {
-                    workers = workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
                 {
-                    workers = workers.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
                 {
-                    workers = workers.Where(x => x.User.IsActive == false).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.IsActive == false).ToList());
                 }
             }
 
             if (visitSearch != null && visitSearch.Count != 0)
             {
+                hasFilters = true;
                 var startOfMonth = DateTime.Now.GetStartOfMonth();
                 var endOfMonth = DateTime.Now.GetEndOfMonth();
 
@@ -133,7 +147,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                            )
                                                            ).ToList();
                 
-                List<PortalUsersHCWModel> visitHCWs = new List<PortalUsersHCWModel>();
                 foreach (var item in workers)
                 {
                     var totalClientsVisits = visits.Where(x => (x.Mother != null && x.Mother.HealthCareWorker.User.Id == item.User.Id) || (x.Infant != null && x.Infant.Caregiver.HealthCareWorker.User.Id == item.User.Id)).Count();
@@ -142,24 +155,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     {
                         if (totalClientsVisits >= 20)
                         {
-                            visitHCWs.Add(item);
+                            filteredUsers.Add(item);
                         }
-                    } else if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
+                    } 
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
                     {
                         if (totalClientsVisits > 0 && totalClientsVisits <= 10)
                         {
-                            visitHCWs.Add(item);
+                            filteredUsers.Add(item);
                         }
                     }
-                    else // Low activity (no home visits in the past month)
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity)) 
                     {
                         if (totalClientsVisits == 0)
                         {
-                            visitHCWs.Add(item);
+                            filteredUsers.Add(item);
                         }
                     }
                 }
-                return visitHCWs;
+            }
+            if (hasFilters)
+            {
+                return filteredUsers;
             }
 
             return workers;

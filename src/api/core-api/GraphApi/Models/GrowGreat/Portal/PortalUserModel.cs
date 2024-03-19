@@ -14,8 +14,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public DateTime InsertedDate { get; set; }
         public PortalUserModel User { get; set; }
         public Guid? ClinicId { get; set; }
+        public string ClinicName { get; set; }
         public string ConnectUsage { get; set; }
         public bool IsRegistered { get; set; }
+        public Guid? ProvinceId { get; set; }
+        public Guid? SubDistrictId { get; set; }
     }
 
     public class PortalUserHCWModel
@@ -42,6 +45,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public DateTime InsertedDate { get; set; }
         public PortalUserModel User { get; set; }
         public List<Guid> ClinicIds { get; set; }
+        public List<string> ClinicNames { get; set; }
+        public List<Guid> ProvinceIds { get; set; }
+        public List<Guid> SubDistrictIds { get; set; }
         public string ConnectUsage { get; set; }
         public bool IsRegistered { get; set; }
     }
@@ -52,12 +58,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public Guid? UserId { get; set; }
         public bool IsActive { get; set; }
         public bool IsRegistered { get; set; }
-
+        public List<Guid> ClinicIds { get; set; }
         public PortalUserTLModel(TeamLead entity)
         {
             Id = entity.Id;
             UserId = entity.UserId;
             IsRegistered = entity.IsRegistered;
+            ClinicIds = entity.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList();
         }
     }
 
@@ -145,5 +152,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public string WhatsAppNumber { get; set; }
         public bool IsActive { get; set; } = false;
         public string ConnectUsage { get; set; }
+        
     }
 }
