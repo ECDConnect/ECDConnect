@@ -9,7 +9,6 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { NoCommunityFound } from '../0-components/no-community-found';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { useWindowSize } from '@reach/window-size';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router';
@@ -29,6 +28,7 @@ import {
 import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
+  getCommunityQuarterDescription,
   getStringFromClassNameOrId,
   useDialog,
   useSnackbar,
