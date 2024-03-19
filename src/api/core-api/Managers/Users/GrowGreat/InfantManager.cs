@@ -103,12 +103,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
                 infant = new Infant()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = infantUser.Id,
                     IsActive = true,
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId.ToStringOrNull(),
-                    UserId = new Guid(input.UserId),
+                    UserId = infantUser.Id,
                     User = infantUser,
                     CaregiverId = caregiver.Id,
                     Caregiver = caregiver,
@@ -128,12 +128,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 {
                     infant = new Infant()
                     {
-                        Id = Guid.NewGuid(),
+                        Id = infantUser.Id,
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
                         UpdatedBy = _applicationUserId.ToStringOrNull(),
-                        UserId = new Guid(input.UserId),
+                        UserId = infantUser.Id,
                         User = infantUser,
                         MotherCaregiverId = mother.Id,
                         Mother = mother,
@@ -151,12 +151,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 {
                     infant = new Infant()
                     {
-                        Id = Guid.NewGuid(),
+                        Id = infantUser.Id,
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
                         UpdatedBy = _applicationUserId.ToStringOrNull(),
-                        UserId = new Guid(input.UserId),
+                        UserId = infantUser.Id,
                         User = infantUser,
                         CaregiverId = caregiver.Id,
                         Caregiver = caregiver,

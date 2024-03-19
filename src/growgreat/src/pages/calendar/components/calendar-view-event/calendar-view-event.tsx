@@ -1,10 +1,14 @@
-import { CalendarEventModel, useDialog } from '@ecdlink/core';
+import {
+  CalendarEventModel,
+  CalendarEventParticipantModel,
+  getDateWithoutTimeZone,
+  useDialog,
+} from '@ecdlink/core';
 import {
   CalendarViewEventOptions,
   CalendarViewEventProps,
 } from './calendar-view-event.types';
 import {
-  ActionModal,
   BannerWrapper,
   Button,
   DialogPosition,
@@ -19,14 +23,22 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { userSelectors } from '@/store/user';
 import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
-import { getEventAction } from '../calendar.utils';
-//import { pqaSelectors } from '@/store/pqa';
-import { Visit } from '@ecdlink/graphql';
+import { EventType } from '../calendar.types';
+import { useMemo, useState } from 'react';
+import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
+import { motherSelectors } from '@/store/mother';
+import { infantSelectors } from '@/store/infant';
+import { mapIdsToCalendarEventParticipants } from '../calendar.utils';
+import { startVisit } from '@/pages/client/visits-tab/start-visit/start-visit.utils';
+import { StartVisitClientType } from '@/pages/client/visits-tab/start-visit/start-visit.types';
+import { useAppDispatch } from '@/store';
+import { HomeVisitPrompt } from './popups/home-visit-prompt';
+import { HomeVisitMultipleClientsPrompt } from './popups/home-visit-multiple-clients-prompt';
 
 export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-  const dialog = useDialog();
+  const appDispatch = useAppDispatch();
   const calendarEditEvent = useCalendarEditEvent();
 
   const eventById = useSelector(
@@ -35,41 +47,67 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
     )
   );
   const event = !!eventById ? eventById : (props.event as CalendarEventModel);
-  const eventAction = getEventAction(event);
+  const eventType = event.eventType as EventType;
   const startDate = new Date(event.start);
   const endDate = new Date(event.end);
   const user = useSelector(userSelectors.getUser);
-  const canEdit = !!props.canEdit ? props.canEdit : user?.id === event.userId;
-  const canAction = user?.id === event.userId;
-  const visit: any = null; //Visit | null = null;  // get the visit given the eventId or maybe from the calendar
+  const eventOwner = user?.id === event.userId;
+  const canEdit = !!props.canEdit ? props.canEdit : eventOwner;
+  const mothers = useSelector(motherSelectors.getMothers);
+  const infants = useSelector(infantSelectors.getInfants);
 
-  const getVisitForEvent = (eventId: string): Visit | null => {
-    return visit;
-  };
+  const title = 'View event';
+  const subTitle = ''; // format(startDate, 'EEEE, d LLLL yyyy');
 
-  const displayCannotStartVisit = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <ActionModal
-          icon="ExclamationCircleIcon"
-          importantText={`You cannot start this visit`}
-          detailText={`This visit has been completed or the start date has not arrived yet. Please go to the SmartStarter's journey to see which visit to complete next.`}
-          actionButtons={[
-            {
-              text: 'Close',
-              textColour: 'primary',
-              colour: 'white',
-              type: 'outlined',
-              onClick: () => {
-                onSubmit();
-              },
-              leadingIcon: 'XIcon',
-            },
-          ]}
-        />
-      ),
-    });
+  const [showHomeVisitPrompt, setShowHomeVisitPrompt] =
+    useState<boolean>(false);
+  const [
+    showHomeVisitMultipleClientsPrompt,
+    setShowHomeVisitMultipleClientsPrompt,
+  ] = useState<boolean>(false);
+  const [selectedParticipant, setSelectedParticipant] =
+    useState<CalendarEventParticipantModel | null>(null);
+  const [participants, setParticipants] = useState<
+    CalendarEventParticipantModel[]
+  >([]);
+
+  useMemo(() => {
+    const ids = event.participants.map((p) => p.participantUserId);
+    const p = mapIdsToCalendarEventParticipants(ids, infants, mothers);
+    setParticipants(p);
+  }, [event, mothers, infants]);
+
+  const clientParticipants = participants.filter(
+    (p) =>
+      p.participantUser.type === 'infant' || p.participantUser.type === 'mother'
+  );
+
+  const selectedParticipantAsMother =
+    selectedParticipant?.participantUser.type === 'mother'
+      ? mothers.find((x) => x.id === selectedParticipant.participantUserId)
+      : null;
+  const selectedParticipantAsInfant =
+    selectedParticipant?.participantUser.type === 'infant'
+      ? infants.find((x) => x.id === selectedParticipant.participantUserId)
+      : null;
+  const selectedParticipantNextVisitDate =
+    selectedParticipantAsMother?.nextVisitDate ||
+    selectedParticipantAsInfant?.nextVisitDate;
+
+  const canDisplayStartButton = (): boolean => {
+    if (!eventOwner) return false;
+    if (eventType === 'Home visit') {
+      if (clientParticipants.length > 0) {
+        return true;
+      }
+    }
+    if (eventType === 'Breastfeeding club') {
+      return true;
+    }
+    if (eventType === 'Other') {
+      return false;
+    }
+    return false;
   };
 
   const onEdit = () => {
@@ -80,142 +118,203 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   };
 
   const onAction = () => {
-    props.onClose();
-    if (!!visit) {
-      const now = new Date();
-      if (
-        new Date(visit.plannedVisitDate).getTime() > now.getTime() ||
-        !!visit.actualVisitDate
-      ) {
-        displayCannotStartVisit();
-        return;
-      }
+    if (eventType === 'Home visit') {
+      onActionHomeVisit();
+      return;
     }
-    if (!!eventAction) {
-      history.push(eventAction.url, eventAction.state);
+    if (eventType === 'Breastfeeding club') {
+      onActionBreastfeedingClub();
+      return;
+    }
+    props.onClose();
+  };
+
+  const onActionHomeVisit = () => {
+    if (clientParticipants.length === 1) {
+      setSelectedParticipant(clientParticipants[0]);
+      setShowHomeVisitPrompt(true);
+    } else {
+      // more than one participants
+      setSelectedParticipant(null);
+      setShowHomeVisitMultipleClientsPrompt(true);
+      //props.onClose();
     }
   };
 
+  const startVisitHome = async (type: '2month' | 'other') => {
+    setShowHomeVisitPrompt(false);
+    setShowHomeVisitMultipleClientsPrompt(false);
+    props.onClose();
+    await startVisit(
+      {
+        id: selectedParticipant?.participantUserId,
+        type: selectedParticipant?.participantUser.type as StartVisitClientType,
+      },
+      appDispatch,
+      history
+    );
+  };
+
+  const getHomeVisitPromptActionButtons = (): ActionModalButton[] => {
+    const buttons: ActionModalButton[] = [];
+    const today = getDateWithoutTimeZone(new Date().toISOString());
+    const nextVisitDate = !!selectedParticipantNextVisitDate
+      ? getDateWithoutTimeZone(selectedParticipantNextVisitDate)
+      : undefined;
+    if (
+      !!selectedParticipant &&
+      !!nextVisitDate &&
+      !!today &&
+      nextVisitDate.getTime() >= today.getTime()
+    ) {
+      buttons.push({
+        text: '2 month',
+        textColour: 'primary',
+        colour: 'primary',
+        type: 'outlined',
+        onClick: async () => await startVisitHome('2month'),
+        leadingIcon: 'PresentationChartBarIcon',
+      });
+    }
+    buttons.push({
+      text: 'Other',
+      textColour: 'primary',
+      colour: 'primary',
+      type: 'outlined',
+      onClick: async () => await startVisitHome('other'),
+      leadingIcon: 'ClipboardListIcon',
+    });
+    return buttons;
+  };
+
+  const onHomeVisitMultipleClientsPromptCancel = () => {
+    setShowHomeVisitMultipleClientsPrompt(false);
+  };
+
+  const onHomeVisitMultipleClientsPromptSelected = (id: string) => {
+    const client = participants.find((x) => x.participantUserId === id);
+    if (!!client) {
+      setSelectedParticipant(client);
+      setShowHomeVisitPrompt(true);
+    } else {
+      setShowHomeVisitMultipleClientsPrompt(false);
+    }
+  };
+
+  const onActionBreastfeedingClub = () => {};
+
   return (
-    <BannerWrapper
-      size={'small'}
-      backgroundColour={'white'}
-      renderBorder={true}
-      title={'View event'}
-      subTitle={format(startDate, 'EEEE, d LLLL yyyy')}
-      color={'primary'}
-      onClose={() => {
-        props.onClose();
-      }}
-      displayOffline={!isOnline}
-    >
-      <div className={'flex flex-col'}>
-        <div className="bg-uiBg flex flex-row">
-          <div className="w-8/12">
-            <Typography
-              type="h3"
-              color="textDark"
-              text={event.name}
-              weight="bold"
-              className="px-4 pt-4 pb-4"
-            />
+    <>
+      <BannerWrapper
+        size={'small'}
+        backgroundColour={'white'}
+        renderBorder={true}
+        title={title}
+        subTitle={subTitle}
+        color={'primary'}
+        onBack={() => {
+          props.onClose();
+        }}
+        onClose={() => {
+          props.onClose();
+        }}
+        displayOffline={!isOnline}
+      >
+        <div className={'flex flex-col'}>
+          <div className="flex flex-row">
+            <div className="w-8/12">
+              <Typography
+                type="h3"
+                color="textDark"
+                text={event.name}
+                weight="bold"
+                className="px-4 pt-4 pb-4"
+              />
+            </div>
+            {!!canEdit && (
+              <div className="mt-2 w-4/12 text-right">
+                <Button
+                  onClick={() => onEdit()}
+                  className="mr-4 w-20"
+                  size="small"
+                  textColor="secondary"
+                  color="secondaryAccent2"
+                  type="filled"
+                >
+                  <Typography
+                    type="h6"
+                    className="ml-2"
+                    text={'Edit'}
+                    color="secondary"
+                  />
+                  {renderIcon(
+                    'PencilIcon',
+                    classNames('h-4 w-4 text-secondary')
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
-          {!!canEdit && (
-            <div className="mt-2 w-4/12 text-right">
-              <Button
-                onClick={() => onEdit()}
-                className="mr-4 w-20"
-                size="small"
-                color="primary"
-                type="outlined"
-              >
-                {renderIcon('PencilIcon', classNames('h-4 w-4 text-primary'))}
+          <div className="flex flex-row px-4 pt-4 pb-4">
+            <div className="w-10">
+              {renderIcon('CalendarIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
+            </div>
+            <div>
+              <Typography
+                type="body"
+                color="textDark"
+                text={format(startDate, 'EEEE, d LLLL yyyy')}
+                className=""
+              />
+            </div>
+          </div>
+          {!event.allDay && (
+            <div className="flex flex-row px-4 pb-4">
+              <div className="w-10">
+                {renderIcon('ClockIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
+              </div>
+              <div>
                 <Typography
-                  type="h6"
-                  className="ml-2"
-                  text={'Edit'}
-                  color="primary"
+                  type="body"
+                  color="textDark"
+                  text={`${format(startDate, 'h:mm')} - ${format(
+                    endDate,
+                    'h:mm aa'
+                  )}`}
+                  className=""
                 />
-              </Button>
+              </div>
             </div>
           )}
-        </div>
-        <div className="flex flex-row px-4 pt-4 pb-4">
-          <div className="w-10">
-            {renderIcon('CalendarIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
-          </div>
-          <div>
-            <Typography
-              type="body"
-              color="textDark"
-              text={format(startDate, 'EEEE, d LLLL yyyy')}
-              className=""
-            />
-          </div>
-        </div>
-        {!event.allDay && (
+          {!!event.eventType && (
+            <div className="flex flex-row px-4 pb-4">
+              <div className="w-10">
+                {renderIcon('TagIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
+              </div>
+              <div>
+                <Typography
+                  type="body"
+                  color="textDark"
+                  text={event.eventType}
+                  className=""
+                />
+              </div>
+            </div>
+          )}
           <div className="flex flex-row px-4 pb-4">
             <div className="w-10">
-              {renderIcon('ClockIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
+              {renderIcon('UserGroupIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
             </div>
             <div>
               <Typography
                 type="body"
                 color="textDark"
-                text={`${format(startDate, 'h:mm')} - ${format(
-                  endDate,
-                  'h:mm aa'
-                )}`}
+                text={`${event.participants.length + 1} participants`}
                 className=""
               />
             </div>
           </div>
-        )}
-        {!!event.eventType && (
-          <div className="flex flex-row px-4 pb-4">
-            <div className="w-10">
-              {renderIcon('TagIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
-            </div>
-            <div>
-              <Typography
-                type="body"
-                color="textDark"
-                text={event.eventType}
-                className=""
-              />
-            </div>
-          </div>
-        )}
-        <div className="flex flex-row px-4 pb-4">
-          <div className="w-10">
-            {renderIcon('UserGroupIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
-          </div>
-          <div>
-            <Typography
-              type="body"
-              color="textDark"
-              text={`${event.participants.length + 1} participants`}
-              className=""
-            />
-          </div>
-        </div>
-        <div className="flex flex-row px-4 pb-2">
-          <div className="w-10">
-            {renderIcon('UserIcon', 'mt-1 h-4 w-4 text-textDark mr-4')}
-          </div>
-          <div>
-            <Typography
-              type="small"
-              color="textDark"
-              text={`${event.user.firstName} ${event.user.surname} ${
-                event.userId !== user?.id ? '(Organiser)' : '(You, Organiser)'
-              }`}
-              className=""
-            />
-          </div>
-        </div>
-        {event.participants.map((p, index) => (
-          <div key={`participant-${index}`} className="flex flex-row px-4 pb-2">
+          <div className="flex flex-row px-4 pb-2">
             <div className="w-10">
               {renderIcon('UserIcon', 'mt-1 h-4 w-4 text-textDark mr-4')}
             </div>
@@ -223,51 +322,86 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
               <Typography
                 type="small"
                 color="textDark"
-                text={`${p.participantUser.firstName} ${
-                  p.participantUser.surname
-                } ${p.participantUserId === user?.id ? '(You)' : ''}`}
+                text={`${event.user.firstName} ${event.user.surname} ${
+                  event.userId !== user?.id ? '(Organiser)' : '(You, Organiser)'
+                }`}
                 className=""
               />
             </div>
           </div>
-        ))}
-        <div className="flex flex-row px-4 pt-2 pb-4">
-          <div className="w-10">
-            {renderIcon('ClipboardListIcon', 'mt-1 h-5 w-5 text-textDark mr-4')}
-          </div>
-          <div>
-            <Typography
-              type="body"
-              color="textDark"
-              text={event.description}
-              className=""
-            />
-          </div>
-        </div>
-        {canAction && !!eventAction && !!eventAction.url && (
-          <div className="px-4 pb-4">
-            <Button
-              onClick={() => onAction()}
-              className="w-full"
-              size="small"
-              color="primary"
-              type="filled"
+          {event.participants.map((p, index) => (
+            <div
+              key={`participant-${index}`}
+              className="flex flex-row px-4 pb-2"
             >
+              <div className="w-10">
+                {renderIcon('UserIcon', 'mt-1 h-4 w-4 text-textDark mr-4')}
+              </div>
+              <div>
+                <Typography
+                  type="small"
+                  color="textDark"
+                  text={`${p.participantUser.firstName} ${
+                    p.participantUser.surname
+                  } ${p.participantUserId === user?.id ? '(You)' : ''}`}
+                  className=""
+                />
+              </div>
+            </div>
+          ))}
+          <div className="flex flex-row px-4 pt-2 pb-4">
+            <div className="w-10">
               {renderIcon(
-                eventAction.buttonIcon || 'ArrowCircleRightIcon',
-                classNames('h-5 w-5 text-white')
+                'ClipboardListIcon',
+                'mt-1 h-5 w-5 text-textDark mr-4'
               )}
+            </div>
+            <div>
               <Typography
-                type="h6"
-                className="ml-2"
-                text={eventAction.buttonName || 'Go'}
-                color="white"
+                type="body"
+                color="textDark"
+                text={event.description}
+                className=""
               />
-            </Button>
+            </div>
           </div>
-        )}
-      </div>
-    </BannerWrapper>
+          {canDisplayStartButton() /*&& !!eventAction && !!eventAction.url*/ && (
+            <div className="px-4 pb-4">
+              <Button
+                onClick={() => onAction()}
+                className="w-full"
+                size="small"
+                color="primary"
+                type="filled"
+              >
+                {renderIcon(
+                  'ArrowCircleRightIcon',
+                  classNames('h-5 w-5 text-white')
+                )}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text="Start"
+                  color="white"
+                />
+              </Button>
+            </div>
+          )}
+        </div>
+      </BannerWrapper>
+      <HomeVisitPrompt
+        visible={showHomeVisitPrompt}
+        actionButtons={getHomeVisitPromptActionButtons()}
+      />
+      <HomeVisitMultipleClientsPrompt
+        clients={clientParticipants}
+        onCancel={onHomeVisitMultipleClientsPromptCancel}
+        onSelected={onHomeVisitMultipleClientsPromptSelected}
+        subTitle={subTitle}
+        title={title}
+        visible={showHomeVisitMultipleClientsPrompt}
+      />
+    </>
   );
 };
 
@@ -277,7 +411,7 @@ export const useCalendarViewEvent = (): ((
   const dialog = useDialog();
   return (options: CalendarViewEventOptions) => {
     dialog({
-      position: DialogPosition.Middle,
+      position: DialogPosition.Full,
       render: (onSubmit: () => void, onCancel: () => void) => {
         return (
           <CalendarViewEvent

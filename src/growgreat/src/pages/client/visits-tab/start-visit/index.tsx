@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import format from 'date-fns/format';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -12,26 +12,19 @@ import ROUTES from '@/routes/routes';
 
 import { CLIENT_TABS } from '../../client-dashboard/class-dashboard';
 import { useAppDispatch } from '@/store';
-import { infantThunkActions } from '@/store/infant';
-import { motherThunkActions } from '@/store/mother';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { MotherActions } from '@/store/mother/mother.actions';
-import { VisitDto, getDateWithoutTimeZone, useSnackbar } from '@ecdlink/core';
-import { VisitModelInput } from '@ecdlink/graphql';
-import { ViewEditState as MomViewEditState } from '@/pages/mom/pregnant-profile/progress-tab/activity-list/forms/dynamic-form';
-import { ViewEditState as InfantViewEditState } from '@/pages/infant/infant-profile/progress-tab/activity-list/forms/dynamic-form';
-import { ThunkActionStatuses } from '@/store/types';
+import { useSnackbar } from '@ecdlink/core';
+import { startVisit } from './start-visit.utils';
+import { StartVisitClient } from './start-visit.types';
 
-interface DropdownOnChange {
-  id: string | undefined;
-  type: 'mother' | 'infant';
-}
+interface DropdownOnChange extends StartVisitClient {}
 
 const HEADER_HEIGHT = 64;
 
 export const StartVisitFromVisitDashboard: React.FC = () => {
-  const [client, setClient] = useState<DropdownOnChange | undefined>();
+  const [client, setClient] = useState<DropdownOnChange | undefined>(undefined);
 
   const appDispatch = useAppDispatch();
 
@@ -104,131 +97,14 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
     history.push(ROUTES.CLIENTS.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
   };
 
-  const getCurrentVisit = (visits: VisitDto[]) => {
-    const today = getDateWithoutTimeZone(new Date().toISOString())!;
-
-    return visits
-      ?.filter((visit) => {
-        const dueDate = getDateWithoutTimeZone(visit.dueDate!);
-
-        if (dueDate && today) {
-          return dueDate >= today && !visit.attended;
-        }
-
-        return false;
-      })
-      ?.reduce((previousVisit, currentVisit) => {
-        // Calculate the absolute difference in milliseconds between the due dates and today
-        const previousDifference = Math.abs(
-          new Date(previousVisit.dueDate)?.getTime()! - today?.getTime()
-        );
-        const currentDifference = Math.abs(
-          new Date(currentVisit.dueDate)?.getTime()! - today?.getTime()
-        );
-        // Return the visit with the smaller difference as the closest visit
-        return currentDifference < previousDifference
-          ? currentVisit
-          : previousVisit;
-      });
-  };
-
   // When the user starts a visit from this screen, it should start the next scheduled/planned visit if available. If there’s no planned visit, then start an “Other visit”.
   const onStartVisit = async () => {
-    switch (client?.type) {
-      case 'infant': {
-        const visitsResponse = await appDispatch(
-          infantThunkActions.getInfantVisits({ infantId: client?.id ?? '' })
-        );
-        const isFulfilled =
-          visitsResponse?.meta?.requestStatus === ThunkActionStatuses.Fulfilled;
-
-        if (!isFulfilled) return;
-
-        const visits = visitsResponse?.payload as VisitDto[];
-
-        const currentVisit = getCurrentVisit(visits);
-
-        if (!currentVisit?.id) {
-          const input: VisitModelInput = {
-            infantId: client.id,
-            plannedVisitDate: new Date().toISOString(),
-            actualVisitDate: new Date().toISOString(),
-            attended: false,
-          };
-
-          const response = await appDispatch(
-            infantThunkActions.addAdditionalVisitForInfant(input)
-          );
-
-          const otherVisit = (response.payload as VisitDto) || undefined;
-          if (otherVisit?.id) {
-            return history.push(
-              ROUTES.CLIENTS.INFANT_PROFILE.PROGRESS.ACTIVITIES_FORM.replace(
-                ':id',
-                client?.id ?? ''
-              ).replace(':visitId', otherVisit?.id),
-              { editView: true } as InfantViewEditState
-            );
-          }
-        }
-
-        return history.push(
-          ROUTES.CLIENTS.INFANT_PROFILE.PROGRESS.ACTIVITIES_FORM.replace(
-            ':id',
-            client?.id ?? ''
-          ).replace(':visitId', currentVisit?.id),
-          { editView: true } as InfantViewEditState
-        );
-      }
-      case 'mother': {
-        const visitsResponse = await appDispatch(
-          motherThunkActions.getMotherVisits({ motherId: client?.id ?? '' })
-        );
-        const isFulfilled =
-          visitsResponse?.meta?.requestStatus === ThunkActionStatuses.Fulfilled;
-
-        if (!isFulfilled) return;
-
-        const visits = visitsResponse?.payload as VisitDto[];
-
-        const currentVisit = getCurrentVisit(visits);
-
-        if (!currentVisit?.id) {
-          const input: VisitModelInput = {
-            motherId: client.id,
-            plannedVisitDate: new Date().toISOString(),
-            actualVisitDate: new Date().toISOString(),
-            attended: false,
-          };
-
-          const response = await appDispatch(
-            motherThunkActions.addAdditionalVisitForMother(input)
-          );
-
-          const otherVisit = (response.payload as VisitDto) || undefined;
-          if (otherVisit?.id) {
-            return history.push(
-              ROUTES.CLIENTS.MOM_PROFILE.PROGRESS.ACTIVITIES_FORM.replace(
-                ':id',
-                client?.id ?? ''
-              ).replace(':visitId', otherVisit?.id),
-              { editView: true } as MomViewEditState
-            );
-          }
-        }
-
-        return history.push(
-          ROUTES.CLIENTS.MOM_PROFILE.PROGRESS.ACTIVITIES_FORM.replace(
-            ':id',
-            client?.id ?? ''
-          ).replace(':visitId', currentVisit?.id),
-          { editView: true } as MomViewEditState
-        );
-      }
-      default:
-        history.push(ROUTES.CLIENTS.ROOT, {
-          activeTabIndex: CLIENT_TABS.VISIT,
-        });
+    if (!!client) {
+      await startVisit(client, appDispatch, history);
+    } else {
+      history.push(ROUTES.CLIENTS.ROOT, {
+        activeTabIndex: CLIENT_TABS.VISIT,
+      });
     }
   };
 

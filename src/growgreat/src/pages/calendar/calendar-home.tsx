@@ -25,7 +25,7 @@ import type { EventObject } from '@toast-ui/calendar';
 import { useCalendarAddEvent } from './components/calendar-add-event/calendar-add-event';
 import { useSelector } from 'react-redux';
 import { calendarSelectors } from '@/store/calendar';
-import { CalendarEventModel } from '@ecdlink/core';
+import { CalendarEventModel, useTheme } from '@ecdlink/core';
 import { useCalendarViewEvent } from './components/calendar-view-event/calendar-view-event';
 
 export const CalendarHome: React.FC = () => {
@@ -38,6 +38,7 @@ export const CalendarHome: React.FC = () => {
   );
   const [calendarDate, setCalendarDate] = useState<Date>(date);
   const [calendarView, setCalendarView] = useState<ViewType>('day');
+  const theme = useTheme();
   const calendarRef = createRef<ToastUIReactCalendar>();
 
   const events = useSelector(calendarSelectors.getCalendarEventObjects());
@@ -107,6 +108,9 @@ export const CalendarHome: React.FC = () => {
 
   const addEvent = (start: Date, end: Date, isAllday: boolean) => {
     calendarInstance()?.clearGridSelections();
+    if (!isAllday && end.getTime() - start.getTime() < 3600000) {
+      end.setTime(start.getTime() + 3600000);
+    }
     calendarAddEvent({
       event: {
         allDay: isAllday,
@@ -276,6 +280,12 @@ export const CalendarHome: React.FC = () => {
               }
               events={events}
               calendars={CALENDARS}
+              theme={{
+                common: {
+                  backgroundColor: 'white',
+                  today: 'white',
+                },
+              }}
             />
           </div>
         </div>

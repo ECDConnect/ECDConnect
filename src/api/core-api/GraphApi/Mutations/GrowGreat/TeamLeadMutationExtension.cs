@@ -33,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var teamLead = teamLeadRepo.Insert(new TeamLead()
             {
-                Id = new Guid(),
+                Id = input.UserId,
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,

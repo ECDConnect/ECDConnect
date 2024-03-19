@@ -78,7 +78,7 @@ export const calendarConvert = {
         title: input.name,
         body: input.description,
         category: input.allDay ? 'allday' : 'time',
-        color: '#ffffff',
+        color: '#231F20',
         backgroundColor:
           eventTypes.find((et) => et.name === input.eventType)?.colour ||
           '#1a80b7',
