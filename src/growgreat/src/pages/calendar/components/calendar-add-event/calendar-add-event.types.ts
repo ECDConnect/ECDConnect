@@ -1,20 +1,10 @@
 import { CalendarEventModel } from '@ecdlink/core';
 import * as Yup from 'yup';
-import { ParticipantType } from '../calendar.types';
+import { EventType, ParticipantType } from '../calendar.types';
 
 export type CalendarAddEventInfo = {
   id?: string;
-  eventType?:
-    | 'SmartSpace'
-    | 'First PQA'
-    | 'PQA follow-up'
-    | 'First site visit'
-    | 'Second site visit'
-    | 'Re-accreditation'
-    | 'General support visit'
-    | 'Coaching circle'
-    | 'Re-accreditation follow-up'
-    | 'Club Monthly Meeting';
+  eventType?: EventType;
   start?: string;
   end?: string;
   minDate?: string;

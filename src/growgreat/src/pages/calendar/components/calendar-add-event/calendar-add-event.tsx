@@ -43,6 +43,8 @@ import { userSelectors } from '@/store/user';
 import { ListDataItem, ParticipantType } from '../calendar.types';
 import {
   mapClinicMemberToListDataItemList,
+  mapIdsToCalendarEventParticipants,
+  mapInfantToListDataItem,
   mapMotherToListDataItem,
   mapTeamLeadToListDataItem,
   mapUserToListDataItem,
@@ -51,6 +53,7 @@ import {
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CalendarActions } from '@/store/calendar/calendar.actions';
 import { motherSelectors } from '@/store/mother';
+import { infantSelectors } from '@/store/infant';
 import { communitySelectors } from '@/store/community';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
@@ -68,6 +71,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
   const mothers = useSelector(motherSelectors.getMothers);
+  const infants = useSelector(infantSelectors.getInfants);
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
   const { isLoading, wasLoading } = useThunkFetchCall(
@@ -90,52 +94,12 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   ): CalendarEventParticipantModel[] | undefined => {
     if (participantUserIds === undefined || participantUserIds === null)
       return undefined;
-
-    participantUserIds
-      .map((pid) => {
-        const mother = mothers?.find((x) => x.userId === pid);
-        if (!!mother) {
-          return {
-            id: newGuid(),
-            participantUserId: pid,
-            participantUser: {
-              firstName: mother.user?.firstName || '',
-              surname: mother.user?.surname || '',
-              type: 'mother',
-            },
-          };
-        }
-        const teamLead = clinicDetails?.teamLeads.find(
-          (tl) => tl.user?.id === pid
-        );
-        if (!!teamLead) {
-          return {
-            id: newGuid(),
-            participantUserId: pid,
-            participantUser: {
-              firstName: teamLead.firstName || '',
-              surname: teamLead.surname || '',
-              type: 'mother',
-            },
-          };
-        }
-        const hcw = clinicDetails?.clinicMembers.find(
-          (m) => m.healthCareWorkerId === pid
-        );
-        if (!!hcw) {
-          return {
-            id: newGuid(),
-            participantUserId: pid,
-            participantUser: {
-              firstName: hcw.firstName || '',
-              surname: hcw.surname || '',
-              type: 'healthCareWorker',
-            },
-          };
-        }
-        return undefined;
-      })
-      .filter((x) => x !== undefined);
+    return mapIdsToCalendarEventParticipants(
+      participantUserIds,
+      infants,
+      mothers,
+      clinicDetails
+    );
   };
 
   const event: CalendarEventModel = useSelector(
@@ -375,7 +339,14 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       participantUsers: CalendarAddEventParticipantFormModel[]
     ): ListDataItem[] => {
       const list: ListDataItem[] = [];
-      if (!!mothers && !!clinicDetails) {
+      if (!!mothers && !!infants && !!clinicDetails) {
+        list.push(
+          ...infants
+            .filter(
+              (i) => participantUsers.findIndex((u) => u.userId === i.id) >= 0
+            )
+            .map((i) => mapInfantToListDataItem(i))
+        );
         list.push(
           ...mothers
             .filter(
@@ -409,7 +380,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       cu.noClick = true;
       return [cu, ...list];
     },
-    [mothers, clinicDetails, currentUser]
+    [infants, mothers, clinicDetails, currentUser]
   );
 
   const formValue_end = getEventFormValues().end;

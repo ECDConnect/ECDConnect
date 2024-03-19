@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { motherSelectors } from '@/store/mother';
+import { infantSelectors } from '@/store/infant';
 import { UserDto } from '@ecdlink/core';
 import * as styles from './calendar-search-participant.styles';
 import { ListDataItem } from '../calendar.types';
@@ -20,6 +21,7 @@ import {
   mapClinicMembersToListDataItemList,
   mapClinicTeamLeadsToListDataItemList,
   mapClinicToListDataItem,
+  mapInfantToListDataItem,
   mapMotherToListDataItem,
   mapUserToListDataItem,
   sortListDataItems,
@@ -39,6 +41,7 @@ export const CalendarSearchParticipant: React.FC<
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
   const mothers = useSelector(motherSelectors.getMothers);
+  const infants = useSelector(infantSelectors.getInfants);
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
   const handleListScroll = useCallback((scrollTop: number) => {
@@ -123,7 +126,9 @@ export const CalendarSearchParticipant: React.FC<
 
   useEffect(() => {
     if (!!mothers && mothers.length > 0 && !!clinicDetails) {
-      const list = mothers.map((p) => mapMotherToListDataItem(p));
+      const list: ListDataItem[] = [];
+      list.push(...mothers.map((p) => mapMotherToListDataItem(p)));
+      list.push(...infants.map((i) => mapInfantToListDataItem(i)));
       list.push(
         ...mapClinicTeamLeadsToListDataItemList(clinicDetails.teamLeads)
       );
