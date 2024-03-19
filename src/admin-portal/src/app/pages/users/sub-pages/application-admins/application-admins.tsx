@@ -24,6 +24,7 @@ import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
 import UiTable from './components/ui-table';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import { GrowGreatRoles } from '../../../../utils/constants';
 
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   AdminTypes?.ContentManager,
@@ -123,6 +124,7 @@ export default function ApplicationAdmins() {
             displayColumnIdPassportEmail:
               obj?.email || obj?.userName || obj?.idNumber || '',
           };
+
           const { __typename: _, roles, ...rest } = newUserData;
           const modifiedRoles = roles.map(
             (role: { [x: string]: any; __typename: any }) => {
@@ -214,6 +216,9 @@ export default function ApplicationAdmins() {
   const history = useHistory();
 
   const viewSelectedRow = (selectedRow: any) => {
+    const role = selectedRow?.roles?.filter(
+      (item) => item?.name !== GrowGreatRoles.HealthCareWorker
+    );
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -221,7 +226,7 @@ export default function ApplicationAdmins() {
     history.push({
       pathname: '/users/view-user',
       state: {
-        component: 'administrators',
+        component: role?.[0]?.name,
         userId: selectedRow?.userId,
       },
     });
