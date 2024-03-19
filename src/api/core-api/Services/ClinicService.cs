@@ -318,17 +318,17 @@ namespace EcdLink.Api.CoreApi.Services
                                                             x.InsertedDate.Date >= startDate &&
                                                             x.InsertedDate.Date <= endDate).ToList();
 
-            var totalSupportGrant = visitData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
+            var totalSupportGrant = visitData.Where(x => x.Question == Constants.GGSettings.QuestionReceivingCSG &&
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.QuestionLength || x.Question == Constants.GGSettings.QuestionWeight || x.Question == Constants.GGSettings.QuestionMUAC) &&
                                                             x.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                            x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
+                                                            x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.q_immunisation &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalUpToDateDeworming = visitData.Where(x => x.Question == Constants.GGSettings.q_deworming &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalUpToDateVitaminA = visitData.Where(x => x.Question == Constants.GGSettings.q_vitamin_a &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
+            var totalUpToDateDeworming = visitData.Where(x => x.Question == Constants.GGSettings.QuestionDeworming &&
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
+            var totalUpToDateVitaminA = visitData.Where(x => x.Question == Constants.GGSettings.QuestionVitaminA &&
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
 
             return new ChildClientsModel()
             {

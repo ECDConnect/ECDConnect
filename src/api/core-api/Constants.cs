@@ -441,7 +441,7 @@ namespace EcdLink.Api.CoreApi
             public const string client_pregnant_mom_multiple_children = "Multiple children";
             public const string maternal_record_name = "maternalcaserecord.png";
             public const string upload_maternal_case_record = "Upload maternal case record";
-            public const string additional_visits = "additional_visits";
+            public const string VisitTypeAdditionalVisit = "additional_visits";
             public const string visit1 = "visit_1";
             public const string visit2 = "visit_2";
             public const string visit3 = "visit_3";
@@ -585,12 +585,12 @@ namespace EcdLink.Api.CoreApi
             public const string q_moving7 = "Uses fingers to feed themselves";
 
             public const string q_immunisation = "Did the baby have the {age} immunisation?";
-            public const string q_vitamin_a = "Is Vitamin A up to date?";
-            public const string q_deworming = "Is deworming up to date?";
+            public const string QuestionVitaminA = "Is Vitamin A up to date?";
+            public const string QuestionDeworming = "Is deworming up to date?";
             public const string q_birth_certificate = "Does {client} have a birth certificate?";
-            public const string q_csg_receiving = "Is {client} receiving the CSG?";
+            public const string QuestionReceivingCSG = "Is {client} receiving the CSG?";
             public const string q_csg_applied = "Has {client} applied for a CSG?";
-            public const string q_csg_qualify = "Does {client} qualify for CSG?";
+            public const string QuestionCSGQualification = "Does {client} qualify for CSG?";
             public const string q_csg_not_applied = "Why has {client} not applied for a CSG?";
 
             public const string cfm_name = "Care for mom";
@@ -642,7 +642,7 @@ namespace EcdLink.Api.CoreApi
             public const string p1_8 = "Other fruits & vegetables";
 
             // Answers
-            public const string answer_yes = "true";
+            public const string AnswerYes = "true";
             public const string answer_no = "false";
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
@@ -702,18 +702,18 @@ namespace EcdLink.Api.CoreApi
             public const string day_7 = "day_7";
             public const string week_2 = "week_2";
             public const string week_4 = "week_4";
-            public const string week_7_to_8 = "week_7_to_8";
-            public const string months_3 = "3_months";
-            public const string months_4 = "4_months";
-            public const string months_5 = "5_months";
-            public const string months_6 = "6_months";
-            public const string months_9 = "9_months";
-            public const string months_12 = "12_months";
-            public const string months_15 = "15_months";
-            public const string months_18 = "18_months";
-            public const string months_21 = "21_months";
-            public const string months_24 = "24_months";
-            public const string years_5 = "5_years";
+            public const string VisitTypeWeekSevenToEight = "week_7_to_8";
+            public const string VisitTypeThreeMonths = "3_months";
+            public const string VisitTypeFourMonths = "4_months";
+            public const string VisitTypeFiveMonths = "5_months";
+            public const string VisitTypeSixMonths = "6_months";
+            public const string VisitTypeNineMonths = "9_months";
+            public const string VisitTypeTwelveMonths = "12_months";
+            public const string VisitTypeFifteenMonths = "15_months";
+            public const string VisitTypeEighteenMonths = "18_months";
+            public const string VisitTypeTwentyOneMonths = "21_months";
+            public const string VisitTypeTwentyFourMonths = "24_months";
+            public const string VisitTypeYearFive = "5_years";
 
             //record events
             public const string caregiverIsPregnant = "caregiver_is_pregnant";
@@ -883,7 +883,13 @@ namespace EcdLink.Api.CoreApi
 
             public static readonly Guid MotherMaternalStressVisitsUpToDateActivityId = new Guid("05ffdb20-d420-458d-af15-8706ed8c8084");
             public static readonly Guid MotherAlcoholAbuseVisitsUpToDateActivityId = new Guid("bd5bd8c7-0fda-464c-8f9d-2ed8f51ef69f");
-            public static readonly Guid MotherMalnutritionVisitsUpToDateActivityId = new Guid("91c0eeda-3acd-463d-90b8-808703d9b5c8");            
+            public static readonly Guid MotherMalnutritionVisitsUpToDateActivityId = new Guid("91c0eeda-3acd-463d-90b8-808703d9b5c8");
+
+            public static readonly Guid ChildrenAllReceivingCSGActivityId = new Guid("4d57d1e6-976c-4220-a075-465042c7ddb4");
+            public static readonly Guid ChildrenDevelopmentScreeningUpToDateActivityId = new Guid("5be4e1ac-248c-41d0-9b0a-c4f820a49e83");
+            public static readonly Guid ChildrenVitaminAUpToDateActivityId = new Guid("ecbda3f8-9bd6-472d-a4c3-ec0f10c20797");
+            public static readonly Guid ChildrenDewormingUpToDateActivityId = new Guid("31b8633f-aeac-4970-99cf-e72745c963b7");
+            public static readonly Guid ChildrenImmunisationsUpToDateActivityId = new Guid("b3be1d39-c4e3-4fbc-bfb4-80099320436c");
         }
         
         public static class StatusColours

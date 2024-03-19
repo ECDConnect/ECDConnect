@@ -450,17 +450,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // returning visits only applicable after infant was registered
                 var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                       x.VisitType.Type == Constants.GGSettings.client_child &&
-                                                      x.VisitType.Name != Constants.GGSettings.additional_visits &&
+                                                      x.VisitType.Name != Constants.GGSettings.VisitTypeAdditionalVisit &&
                                                      (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                                                      OrderBy(y => y.PlannedVisitDate).ToList();
                 var other_visits_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                                  x.VisitType.Type == Constants.GGSettings.client_child &&
-                                                                 x.VisitType.Name == Constants.GGSettings.additional_visits &&
+                                                                 x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit &&
                                                                 (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                                                                 OrderBy(y => y.PlannedVisitDate).ToList();
                 var other_visits_no_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                                  x.VisitType.Type == Constants.GGSettings.client_child &&
-                                                                 x.VisitType.Name == Constants.GGSettings.additional_visits && x.DueDate.HasValue == false &&
+                                                                 x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit && x.DueDate.HasValue == false &&
                                                                 (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date)).
                                                                 OrderBy(y => y.PlannedVisitDate).ToList();
 
@@ -493,7 +493,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 _visit.OrderDate = _visit.DueDate != null ? _visit.DueDate.Value.Date : _visit.PlannedVisitDate;
             }
 
-            var additional_visits = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.additional_visits).ToList();
+            var additional_visits = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit).ToList();
             foreach (var item in additional_visits)
             {
                 if (item.DueDate == null)
