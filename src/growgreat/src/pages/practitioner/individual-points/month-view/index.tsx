@@ -120,7 +120,7 @@ export const IndividualPointsMonthView = () => {
           barSize="medium"
           textColour="black"
         />
-        <ComparativeMessage />
+        <ComparativeMessage viewMode="month" />
         <Typography
           className="mt-6"
           type="h3"
