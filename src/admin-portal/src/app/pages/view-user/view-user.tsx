@@ -86,6 +86,7 @@ export function ViewUser(props: any) {
   const teamLeadId = props?.location?.state?.teamLeadId;
   const isTeamLead =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
+  const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
@@ -441,6 +442,7 @@ export function ViewUser(props: any) {
           refetchUserData={refetchUserData}
           refetchCHW={refetchCHW}
           isNotLockedOut={isNotLockedOut}
+          clinicIds={clinicIds}
         />
 
         {(isCHW ||

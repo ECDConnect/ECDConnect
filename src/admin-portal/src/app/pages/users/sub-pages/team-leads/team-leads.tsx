@@ -35,6 +35,7 @@ import { Status } from '../application-admins/applications-admins.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-panel-create';
 import ROUTES from '../../../../routes/app.routes-constants';
+import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -127,11 +128,12 @@ export default function TeamLeads() {
     history.push({
       pathname: ROUTES.VIEW_USERS,
       state: {
-        component: 'team-leads',
+        component: UsersRouteRedirectTypeEnum.teamLeads,
         userId: selectedRow?.user?.id,
         teamLeadId: selectedRow?.id,
         connectUsage: selectedRow?.connectUsage,
         isRegistered: selectedRow?.isRegistered,
+        clinicIds: selectedRow?.clinicIds,
       },
     });
   };
