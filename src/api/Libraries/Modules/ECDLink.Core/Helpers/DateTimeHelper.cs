@@ -1,5 +1,4 @@
-﻿using ECDLink.Core.Extensions;
-using System;
+﻿using System;
 
 namespace ECDLink.Core.Helpers
 {

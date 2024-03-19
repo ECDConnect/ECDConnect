@@ -62,6 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         { "video", Convert.ToString(videoValue) },
                         { "availableLanguages", Convert.ToString(localeId) },
                     };
+
                     contentRepo.Create(ctNatalVideoId, localeId, dataDict);
                 }
             }
@@ -253,23 +254,57 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
         public bool TransferMoreInformationToNatal([Service] ContentManagementRepository contentRepo)
         {
+            //title
+            //section
+            //type
+            //info
+            //video
+            //graphic
+            //health
+
             var localeId = new System.Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var postnatalId = GetPostnatalId(contentRepo, localeId);
             var antenatalId = GetAntenatalId(contentRepo, localeId);
             var natalId = 29;
 
-            var pillar1Data = GetPillar1Data(postnatalId, localeId);
-            var pillar2Data = GetPillar2Data(postnatalId, localeId);
-            var pillar3Data = GetPillar3Data(postnatalId, localeId);
-            var pillar5Data = GetPillar5Data(postnatalId, localeId);
-            var careForMomData = GetCareForMomData(postnatalId, localeId);
-            var careForBabyData = GetCareForBabyData(postnatalId, localeId);
+            //var pillar1Data = GetPillar1Data(postnatalId, localeId);
+            //var pillar2Data = GetPillar2Data(postnatalId, localeId);
+            //var pillar3Data = GetPillar3Data(postnatalId, localeId);
+            //var pillar5Data = GetPillar5Data(postnatalId, localeId);
+           // var careForMomData = GetCareForMomData(postnatalId, localeId);
+            //var careForBabyData = GetCareForBabyData(postnatalId, localeId);
 
             var pregnancyCareData = GetPregnancyCareData(antenatalId, localeId);
             var healthCareData = GetHealthCareData(antenatalId, localeId);
             var nutritionCareData = GetNutritionData(antenatalId, localeId);
 
- //           contentRepo.Create(natalId, localeId, dataDict2);
+            foreach (var item in pregnancyCareData)
+            {
+                var natal = (IDictionary<string, object>)item;
+                natal.TryGetValue("title", out var titleValue);
+                natal.TryGetValue("section", out var sectionValue);
+                natal.TryGetValue("type", out var typeValue);
+
+                natal.TryGetValue("info", out var infoValue);
+                natal.TryGetValue("video", out var videoValue);
+                natal.TryGetValue("graphic", out var graphicValue);
+                natal.TryGetValue("health", out var healthValue);
+
+
+                Dictionary<string, object> dataDict = new Dictionary<string, object>
+                {
+                    { "title", Convert.ToString(titleValue) },
+                    { "section", Convert.ToString(sectionValue) },
+                    { "type", Convert.ToString(typeValue) },
+                    { "info", Convert.ToString(infoValue) },
+                    { "video", Convert.ToString(videoValue) },
+                    { "graphic", Convert.ToString(graphicValue) },
+                    { "health", Convert.ToString(healthValue) },
+                    { "availableLanguages", Convert.ToString(localeId) },
+                };
+                contentRepo.Create(natalId, localeId, dataDict);
+            }
+
 
             return true;
         }
@@ -297,7 +332,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Care for mom" },
                     { "section", "Care for mom" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1917" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -305,7 +340,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Clinic check-ups" },
                     { "section", "Care for mom" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1898" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -313,7 +348,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Self care" },
                     { "section", "Care for mom" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1899" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -321,7 +356,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Self care & support" },
                     { "section", "Care for mom" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1900" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -329,8 +364,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Maternal distress" },
                     { "section", "Care for mom" },
                     { "type", postnatalId },
-                    { "info", "" },
-                    { "video", "" },
+                    { "video", "1886" },
+                    { "availableLanguages", Convert.ToString(localeId) },
+                },
+                new Dictionary<string, object>
+                {
+                    { "title", "Maternal distress" },
+                    { "section", "Care for mom" },
+                    { "type", postnatalId },
+                    { "info", "1918" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -338,7 +380,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Newborn care" },
                     { "section", "Care for mom" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1901" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
             };
@@ -353,7 +395,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Breast milk only" },
                     { "section", "Pillar 1: Nutrition" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1902" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -361,7 +403,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Formula milk only" },
                     { "section", "Pillar 1: Nutrition (every visit)" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1903" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -369,7 +411,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Formula milk only" },
                     { "section", "Pillar 1: Nutrition (first visit)" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1904" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -377,7 +419,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Formula milk only" },
                     { "section", "Pillar 1: Nutrition (day 7-48)" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1905" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -385,7 +427,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Mixed feeding" },
                     { "section", "Pillar 1: Nutrition" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1906" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -393,7 +435,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Benefits of breastfeeding" },
                     { "section", "Pillar 1: Nutrition - Breast milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1888" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -401,7 +443,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "How breastfeeding works" },
                     { "section", "Pillar 1: Nutrition - Breast milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1891" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -409,7 +451,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Breastfeeding challenges" },
                     { "section", "Pillar 1: Nutrition - Breast milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1889" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -417,7 +459,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Unsafe feeding practices" },
                     { "section", "Pillar 1: Nutrition - Breast milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1892" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -425,7 +467,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Breastfeeding in the workplace" },
                     { "section", "Pillar 1: Nutrition - Breast milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1894" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -433,7 +475,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Benefits of breastfeeding" },
                     { "section", "Pillar 1: Nutrition - Formula milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1937" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -441,7 +483,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "How breastfeeding works" },
                     { "section", "Pillar 1: Nutrition - Formula milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1940" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -449,7 +491,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Unsafe feeding practices" },
                     { "section", "Pillar 1: Nutrition - Formula milk only" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1941" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -457,7 +499,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Benefits of breastfeeding" },
                     { "section", "Pillar 1: Nutrition - Mixed feeding" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1939" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -465,7 +507,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "How breastfeeding works" },
                     { "section", "Pillar 1: Nutrition - Mixed feeding" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1880" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -473,7 +515,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Unsafe feeding practices" },
                     { "section", "Pillar 1: Nutrition - Mixed feeding" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1942" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -481,7 +523,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "First foods" },
                     { "section", "Pillar 1: Nutrition - Mixed feeding" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1890" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -489,7 +531,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Complementary feeding" },
                     { "section", "Pillar 1: Nutrition - Mixed feeding" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1883" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -497,7 +539,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Food groups" },
                     { "section", "Pillar 1: Nutrition - Complementary feeding" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1944" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -505,7 +547,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Egg" },
                     { "section", "Pillar 1: Nutrition - Complementary feeding" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1945" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
             };
@@ -520,7 +562,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Developmental screening" },
                     { "section", "Pillar 2: Love, play and talk" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1919" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -528,7 +570,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "14 week developmental screening" },
                     { "section", "Pillar 2: Love, play and talk" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1927" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -536,7 +578,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "6 month developmental screening" },
                     { "section", "Pillar 2: Love, play and talk" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1923" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -544,7 +586,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "9 month developmental screening" },
                     { "section", "Pillar 2: Love, play and talk" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1924" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -552,7 +594,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "12 month developmental screening" },
                     { "section", "Pillar 2: Love, play and talk" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1925" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -560,7 +602,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "18 month developmental screening" },
                     { "section", "Pillar 2: Love, play and talk" },
                     { "type", postnatalId },
-                    { "info", "" },
+                    { "info", "1926" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -568,7 +610,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Bonding" },
                     { "section", "Pillar 2: Love, play and talk" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1887" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
             };
@@ -583,7 +625,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Immunisation" },
                     { "section", "Pillar 3: Protection - Immunisations" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1885" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
             };
@@ -598,7 +640,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "HIV care & medication" },
                     { "section", "Pillar 5: Extra care" },
                     { "type", postnatalId },
-                    { "health", "" },
+                    { "health", "1907" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
             };
@@ -613,7 +655,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Kangaroo Mother Care" },
                     { "section", "Care for baby" },
                     { "type", postnatalId },
-                    { "video", "" },
+                    { "video", "1875" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
             };
@@ -628,7 +670,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Maternal distress" },
                     { "section", "Pregnancy care" },
                     { "type", antenatalId },
-                    { "info", "" },
+                    { "info", "1920" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -636,7 +678,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Pregnancy care" },
                     { "section", "Pregnancy care" },
                     { "type", antenatalId },
-                    { "health", "" },
+                    { "health", "1910" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -644,7 +686,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Drug or alcohol use" },
                     { "section", "Pregnancy care" },
                     { "type", antenatalId },
-                    { "health", "" },
+                    { "health", "1911" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>
@@ -652,7 +694,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "title", "Alcohol use" },
                     { "section", "Pregnancy care" },
                     { "type", antenatalId },
-                    { "health", "" },
+                    { "health", "1912" },
                     { "availableLanguages", Convert.ToString(localeId) },
                 },
                 new Dictionary<string, object>

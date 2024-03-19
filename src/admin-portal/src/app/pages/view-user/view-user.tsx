@@ -49,7 +49,7 @@ import { HealthCareWorkerSummary } from './components/health-care-worker-summary
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HalthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
-import { TenantContext } from '../../utils/constants';
+import { GrowGreatRoles, TenantContext } from '../../utils/constants';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -86,6 +86,9 @@ export function ViewUser(props: any) {
   const teamLeadId = props?.location?.state?.teamLeadId;
   const isTeamLead =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
+  const isAdministrator =
+    props.location.state?.component === UsersRolesTypeEnum?.administrator;
+  const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
@@ -227,7 +230,7 @@ export function ViewUser(props: any) {
   };
 
   let isCHW = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Community Health Worker'
+    (role: any) => role.name === GrowGreatRoles.HealthCareWorker
   );
 
   const getRoleStatusChip = (status: string) => {
@@ -253,6 +256,18 @@ export function ViewUser(props: any) {
               backgroundColour="darkBlue"
               textColour="white"
               text={UsersRolesTypeEnum?.teamLeads}
+            />
+          </div>
+        );
+      case UsersRolesTypeEnum?.administrator:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="darkBlue"
+              backgroundColour="darkBlue"
+              textColour="white"
+              text={UsersRolesTypeEnum?.administrator}
             />
           </div>
         );
@@ -396,7 +411,7 @@ export function ViewUser(props: any) {
                             <div
                               key={i.id}
                               className={classNames(
-                                i.name === 'Community Health Worker'
+                                i.name === GrowGreatRoles.HealthCareWorker
                                   ? 'bg-primary'
                                   : 'bg-tertiary',
                                 ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
@@ -404,7 +419,7 @@ export function ViewUser(props: any) {
                             >
                               <p className="text-16">
                                 {' '}
-                                {i.name === 'Community Health Worker'
+                                {i.name === GrowGreatRoles.HealthCareWorker
                                   ? 'CHW'
                                   : i.name}
                               </p>
@@ -441,6 +456,8 @@ export function ViewUser(props: any) {
           refetchUserData={refetchUserData}
           refetchCHW={refetchCHW}
           isNotLockedOut={isNotLockedOut}
+          clinicIds={clinicIds}
+          isAdministrator={isAdministrator}
         />
 
         {(isCHW ||

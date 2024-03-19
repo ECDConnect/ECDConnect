@@ -83,7 +83,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // add additional visit for when we need to add additional visits for the client
                 // TODO - We should not set this as a class level variable
                 _additionalVisitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(GGSettings.client_mother) &&
-                                                                   x.Name == GGSettings.additional_visits).
+                                                                   x.Name == GGSettings.VisitTypeAdditionalVisit).
                                                                    OrderBy(x => x.NormalizedName).FirstOrDefault();
 
                 ManageVisitDataStatusForMother(allVisitData, mother.User.FirstName, mother.Id.ToString());
@@ -104,7 +104,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 // add additional visit for when we need to add additional visits for the client
                 _additionalVisitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(GGSettings.client_child) &&
-                                                                   x.Name == GGSettings.additional_visits).
+                                                                   x.Name == GGSettings.VisitTypeAdditionalVisit).
                                                                    OrderBy(x => x.NormalizedName).FirstOrDefault();
 
                 ManageVisitDataStatusForInfant(allVisitData, infant.User.FirstName, infant.Id.ToString(), infant.Gender.Description, infant.User.DateOfBirth, motherName);
@@ -147,7 +147,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
 
                     }
-                    else if (vData.QuestionAnswer == GGSettings.answer_yes)
+                    else if (vData.QuestionAnswer == GGSettings.AnswerYes)
                     {
 
                         // progress: green - ""Up to date with clinic visits""
@@ -178,7 +178,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
 
                     }
-                    else if (vData.QuestionAnswer == GGSettings.answer_yes)
+                    else if (vData.QuestionAnswer == GGSettings.AnswerYes)
                     {
 
                         // progress: green - ""Up to date with clinic visits""
@@ -326,7 +326,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 else if (vData.Question == GGSettings.q_breastfeeding_club)
                 {
 
-                    if (vData.QuestionAnswer == GGSettings.answer_yes)
+                    if (vData.QuestionAnswer == GGSettings.AnswerYes)
                     {
                         // Progress: under the green - ""Breast milk only"" item, add amber text ""Needs support with breastfeeding"" (see in context of progress screen in G3.8)"
                         comment = GGSettings.breast_milk_only;
@@ -452,8 +452,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
                 else if (vData.Question == GGSettings.q_immunisation ||
-                            vData.Question == GGSettings.q_vitamin_a ||
-                            vData.Question == GGSettings.q_deworming)
+                            vData.Question == GGSettings.QuestionVitaminA ||
+                            vData.Question == GGSettings.QuestionDeworming)
                 {
                     immunisationsData.Add(vData);
 
@@ -554,10 +554,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_dashboard, vData.VisitSection, false);
                     }
                 }
-                else if (vData.Question == GGSettings.q_csg_receiving)
+                else if (vData.Question == GGSettings.QuestionReceivingCSG)
                 {
 
-                    if (vData.QuestionAnswer == GGSettings.answer_yes)
+                    if (vData.QuestionAnswer == GGSettings.AnswerYes)
                     {
 
                         // green, ""Has applied for a child support grant""
@@ -641,7 +641,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(visitData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, visitData.VisitSection, false);
                     }
 
-                    if (visitData.QuestionAnswer == GGSettings.answer_yes)
+                    if (visitData.QuestionAnswer == GGSettings.AnswerYes)
                     {
                         // a ""green"" item is added to the client progress list ""Pregnancy booked""
                         comment = GGSettings.pregnancy_booked;
@@ -672,7 +672,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = GGSettings.missed_clinic_visit;
                         AddVisitDataStatus(visitData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, visitData.VisitSection, false);
                     }
-                    if (visitData.QuestionAnswer == GGSettings.answer_yes)
+                    if (visitData.QuestionAnswer == GGSettings.AnswerYes)
                     {
                         // ""green"" item is added to the progress: "Clinic visits up to date"
                         comment = GGSettings.clinic_visits_up_to_date;
@@ -803,7 +803,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var q3 = maternalDistressScreening.Where(x => x.Question == GGSettings.q_suicide).OrderBy(x => x.Id).FirstOrDefault();
 
             // a GGSettings.answer_yes response to the 3rd question trumps all.
-            if (q3.QuestionAnswer == GGSettings.answer_yes)
+            if (q3.QuestionAnswer == GGSettings.AnswerYes)
             {
                 comment = firstName + GGSettings.maternal_distress;
                 AddVisitDataStatus(q3, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
@@ -824,7 +824,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else
             {
-                if (q3.QuestionAnswer == GGSettings.answer_no && (q1.QuestionAnswer == GGSettings.answer_yes || q2.QuestionAnswer == GGSettings.answer_yes))
+                if (q3.QuestionAnswer == GGSettings.answer_no && (q1.QuestionAnswer == GGSettings.AnswerYes || q2.QuestionAnswer == GGSettings.AnswerYes))
                 {
                     comment = firstName + GGSettings.maternal_distress;
                     AddVisitDataStatus(q3, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
@@ -867,15 +867,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 score++;
                 score++;
             }
-            if (q2.QuestionAnswer == GGSettings.answer_yes)
+            if (q2.QuestionAnswer == GGSettings.AnswerYes)
             {
                 score++;
             }
-            if (q3.QuestionAnswer == GGSettings.answer_yes)
+            if (q3.QuestionAnswer == GGSettings.AnswerYes)
             {
                 score++;
             }
-            if (q4.QuestionAnswer == GGSettings.answer_yes)
+            if (q4.QuestionAnswer == GGSettings.AnswerYes)
             {
                 score++;
             }
@@ -915,7 +915,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var q1 = idDocs.Where(x => x.Question == GGSettings.q_ID_doc).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = idDocs.Where(x => x.Question == GGSettings.q_citizen).OrderBy(x => x.Id).FirstOrDefault();
 
-            if (q1.QuestionAnswer == GGSettings.answer_no && q2.QuestionAnswer == GGSettings.answer_yes)
+            if (q1.QuestionAnswer == GGSettings.answer_no && q2.QuestionAnswer == GGSettings.AnswerYes)
             {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list under Department of Home Affairs referrals(""Lethabo doesn't have an ID book)
                 comment = firstName + GGSettings.no_id_book;
@@ -930,7 +930,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 AddVisitDataStatus(q1, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q1.VisitSection, false);
             }
 
-            if (q1.QuestionAnswer == GGSettings.answer_yes)
+            if (q1.QuestionAnswer == GGSettings.AnswerYes)
             {
                 // add to green items in progress screen(use case 2)(""Lethabo has an ID book"")
                 comment = firstName + GGSettings.id_book;
@@ -1411,7 +1411,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                             }
                         }
                     }
-                    if (item.Question == GGSettings.q_vitamin_a)
+                    if (item.Question == GGSettings.QuestionVitaminA)
                     {
                         if (item.QuestionAnswer == GGSettings.answer_no)
                         {
@@ -1441,7 +1441,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                             }
                         }
                     }
-                    if (item.Question == GGSettings.q_deworming)
+                    if (item.Question == GGSettings.QuestionDeworming)
                     {
                         if (item.QuestionAnswer == GGSettings.answer_no)
                         {
