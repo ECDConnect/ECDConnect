@@ -237,13 +237,13 @@ export default function ApplicationAdmins() {
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
-  console.log(types);
+
   const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
   const numberOfFilters = useMemo(
     () => statusFilter?.length + types?.length + hasDateFilter,
     [statusFilter?.length, types?.length, hasDateFilter]
   );
-  console.log({ numberOfFilters });
+
   const renderFilterButtonText = useMemo(() => {
     if (numberOfFilters) {
       if (numberOfFilters === 1) {
