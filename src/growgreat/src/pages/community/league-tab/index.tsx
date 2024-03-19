@@ -19,9 +19,12 @@ import {
   getLeagueById,
 } from '@/store/community/community.actions';
 import { communitySelectors } from '@/store/community';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { calculateClinicLeaguePositionPercentiles } from '@/utils/community/league-position';
-import { getStringFromClassNameOrId, useSnackbar } from '@ecdlink/core';
+import {
+  getCommunityQuarterDescription,
+  getStringFromClassNameOrId,
+  useSnackbar,
+} from '@ecdlink/core';
 import { NoCommunityFound } from '../0-components/no-community-found';
 import {
   COMMUNITY_WALKTHROUGH_STEPS,
