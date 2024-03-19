@@ -9,7 +9,6 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { NoCommunityFound } from '../0-components/no-community-found';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { useWindowSize } from '@reach/window-size';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router';
@@ -29,6 +28,7 @@ import {
 import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
+  getCommunityQuarterDescription,
   getStringFromClassNameOrId,
   useDialog,
   useSnackbar,
@@ -39,6 +39,7 @@ import {
   communityWalkthroughSteps,
 } from '../walkthrough/steps';
 import { useWalkthrough } from '@/context/walkthroughContext';
+import { dummy } from './dummy';
 
 export const BreastfeedingClubsTab: React.FC = () => {
   const [isToShowAll, setIsToShowAll] = useState(false);
@@ -102,7 +103,11 @@ export const BreastfeedingClubsTab: React.FC = () => {
     'MMM'
   )} ${currentYear}`;
 
-  const monthData = groupBreastfeedingClubByMonth(breastfeedingClubs ?? []);
+  const monthData = groupBreastfeedingClubByMonth(
+    walkthroughState?.isTourActive && !breastfeedingClubs?.length
+      ? dummy
+      : breastfeedingClubs ?? []
+  );
 
   const isToAddCurrentMonthData = !monthData?.some((item) => {
     return item.month === currentMonth && item.year === currentYear;

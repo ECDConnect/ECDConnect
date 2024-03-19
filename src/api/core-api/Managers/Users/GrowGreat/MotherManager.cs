@@ -302,7 +302,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
 
             // Get all visit types linked to mother excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name != Constants.GGSettings.VisitTypeAdditionalVisit).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);

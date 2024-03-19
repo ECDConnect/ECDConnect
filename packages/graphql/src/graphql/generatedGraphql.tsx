@@ -4391,7 +4391,7 @@ export type HealthCareWorkerModel = {
   isNewAtClinic: Scalars['Boolean'];
   isRegistered?: Maybe<Scalars['Boolean']>;
   language?: Maybe<Scalars['String']>;
-  languageId: Scalars['UUID'];
+  languageId?: Maybe<Scalars['UUID']>;
   shareContactInfo: Scalars['Boolean'];
   user?: Maybe<UserModel>;
   userId: Scalars['UUID'];
@@ -10652,6 +10652,18 @@ export type PointsActivityInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type PointsActivityModel = {
+  __typename?: 'PointsActivityModel';
+  activityName?: Maybe<Scalars['String']>;
+  maxMonthlyPoints?: Maybe<Scalars['Int']>;
+  month: Scalars['Int'];
+  pointsActivityId: Scalars['UUID'];
+  pointsTotal: Scalars['Int'];
+  timesScored: Scalars['Int'];
+  todoDescription?: Maybe<Scalars['String']>;
+  year: Scalars['Int'];
+};
+
 export type PointsActivitySortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -12704,6 +12716,7 @@ export type Query = {
   healthCareWorkerByUserId?: Maybe<HealthCareWorkerModel>;
   healthCareWorkerHighlights?: Maybe<HcwHighlights>;
   healthCareWorkerSummaryForPeriod?: Maybe<HcwSummary>;
+  healthCareWorkerTeamStanding?: Maybe<TeamStandingModel>;
   healthCareWorkerTemplateGenerator?: Maybe<FileModel>;
   healthCareWorkerVisitStatus?: Maybe<HcwVisitStatus>;
   healthPromotion: Array<Maybe<HealthPromotion>>;
@@ -12735,6 +12748,7 @@ export type Query = {
   openLanguage: Array<Maybe<Language>>;
   ownershipMetrics?: Maybe<PractitionerMetricReport>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
+  pointsForHealthCareWorker?: Maybe<Array<Maybe<PointsActivityModel>>>;
   pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
   practitionerById?: Maybe<PractitionerModel>;
@@ -15325,6 +15339,10 @@ export type QueryHealthCareWorkerSummaryForPeriodArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryHealthCareWorkerTeamStandingArgs = {
+  userId: Scalars['UUID'];
+};
+
 export type QueryHealthCareWorkerVisitStatusArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -15444,6 +15462,12 @@ export type QueryOpenAccessAddChildDetailArgs = {
 export type QueryOpenConsentArgs = {
   locale?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPointsForHealthCareWorkerArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  startDate: Scalars['DateTime'];
+  userId: Scalars['UUID'];
 };
 
 export type QueryPointsSummaryForUserArgs = {
@@ -17188,6 +17212,14 @@ export type TeamLeadSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
+};
+
+export type TeamStandingModel = {
+  __typename?: 'TeamStandingModel';
+  percentageMembersWithFewerPointsForCurrentMonth: Scalars['Int'];
+  percentageMembersWithFewerPointsForCurrentYear: Scalars['Int'];
+  percentageMembersWithMorePointsForCurrentMonth: Scalars['Int'];
+  percentageMembersWithMorePointsForCurrentYear: Scalars['Int'];
 };
 
 export type TenantModel = {

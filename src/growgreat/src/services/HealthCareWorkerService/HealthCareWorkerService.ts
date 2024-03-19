@@ -1,6 +1,11 @@
 import { api } from '../axios.helper';
-import { Config, HealthCareWorkerDto } from '@ecdlink/core';
 import {
+  Config,
+  HealthCareWorkerDto,
+  UserPointsAcitivtyDto,
+} from '@ecdlink/core';
+import {
+  TeamStandingModel,
   UpdateHealthCareWorkerInputModelInput,
   UpdateHealthCareWorkerTabsInputModelInput,
 } from '@ecdlink/graphql';
@@ -63,6 +68,74 @@ class HealthCareWorkerService {
     }
 
     return response.data.data.healthCareWorkerByUserId;
+  }
+
+  async getHealthCareWorkerPoints(
+    userId: string,
+    startDate: Date,
+    endDate?: Date
+  ): Promise<UserPointsAcitivtyDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { pointsForHealthCareWorker: UserPointsAcitivtyDto[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query getPointsForHealthCareWorker($userId: UUID!, $startDate: DateTime!, $endDate: DateTime) {
+        pointsForHealthCareWorker(userId: $userId, startDate: $startDate, endDate: $endDate) {
+          pointsActivityId
+          month
+          year
+          pointsTotal
+          timesScored
+          activityName
+          todoDescription
+          maxMonthlyPoints
+        }
+      }
+      `,
+      variables: {
+        userId: userId,
+        startDate: startDate,
+        endDate: endDate,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'pointsForHealthCareWorker Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.pointsForHealthCareWorker;
+  }
+
+  async getHealthCareWorkerTeamStanding(
+    userId: string
+  ): Promise<TeamStandingModel> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { healthCareWorkerTeamStanding: TeamStandingModel };
+      errors?: {};
+    }>(``, {
+      query: `query GetHealthCareWorkerTeamStanding($userId: UUID!) {
+          healthCareWorkerTeamStanding(userId: $userId) {
+            percentageMembersWithFewerPointsForCurrentMonth
+            percentageMembersWithFewerPointsForCurrentYear
+            percentageMembersWithMorePointsForCurrentMonth
+            percentageMembersWithMorePointsForCurrentYear
+          }
+        }`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get standing for user Failed - Server connection error');
+    }
+
+    return response.data.data.healthCareWorkerTeamStanding;
   }
 
   async updateHealthCareWorker(

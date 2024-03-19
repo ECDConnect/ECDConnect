@@ -9,6 +9,7 @@ namespace ECDLink.Core.Services.Interfaces
         void CalculatePregnantMotherReferralPoints(Guid userId);
         void CalculateInfantVisitAndReferralPoints(Guid userId);
         void CalculatePregnantMotherVisitsCompletedPoints();
+        void CalculateInfantVisitsCompletedPoints();
         void CalculateBreastFeedingClubPoints(Guid clinicId);
     }
 }

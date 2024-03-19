@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime startDate,
             DateTime? endDate)
         {
-            var pointsSummary = pointsService.GetSummaryUserPoints(userId, startDate, endDate);
+            var pointsSummary = pointsService.GetOldSummaryUserPoints(Guid.Parse(userId), startDate, endDate);
 
             return pointsSummary;
         }

@@ -12,7 +12,18 @@ export type RoundIconProps = {
   iconClassName?: string;
 };
 
-type SizeType = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '16';
+type SizeType =
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
+  | '12'
+  | '16';
 
 export type IconSize = {
   h: SizeType;

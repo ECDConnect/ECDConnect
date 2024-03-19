@@ -97,6 +97,27 @@ function InitialStoreSetup(props: Props) {
             id: healthCareWorker?.id || '',
           })
         ).unwrap();
+        if (!!healthCareWorker.user && !!healthCareWorker.user.id) {
+          const currentDate = new Date();
+          const oneYearAgo = new Date();
+          oneYearAgo.setMonth(currentDate.getMonth() - 12);
+
+          const promises = [
+            appDispatch(
+              healthCareWorkerThunkActions.getHealthCareWorkerPoints({
+                userId: healthCareWorker.user.id,
+                startDate: oneYearAgo,
+              })
+            ).unwrap(),
+            appDispatch(
+              healthCareWorkerThunkActions.getHealthCareWorkerTeamStanding({
+                userId: healthCareWorker.user.id,
+              })
+            ).unwrap(),
+          ];
+
+          await Promise.all(promises);
+        }
       })();
     }
   }, [appDispatch, healthCareWorker]);

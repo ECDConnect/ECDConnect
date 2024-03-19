@@ -77,6 +77,10 @@ export const TeamLeaderProfile = () => {
       return history.push(ROUTES.PRACTITIONER.ABOUT);
     }
 
+    if (state?.isFromIndividualPointsYearView) {
+      return history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.YEAR_VIEW);
+    }
+
     history.push(ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT);
   };
 

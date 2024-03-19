@@ -17,7 +17,6 @@ import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { CommunityRouteState } from '../community.types';
 import { useWindowSize } from '@reach/window-size';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useSelector } from 'react-redux';
@@ -33,7 +32,11 @@ import {
 import { LeagueType } from '@/constants/Community';
 
 import { NoCommunityFound } from '../0-components/no-community-found';
-import { getStringFromClassNameOrId, useSnackbar } from '@ecdlink/core';
+import {
+  getCommunityQuarterDescription,
+  getStringFromClassNameOrId,
+  useSnackbar,
+} from '@ecdlink/core';
 import { TeamTabProps, TeamTabState } from './types';
 import {
   COMMUNITY_WALKTHROUGH_STEPS,

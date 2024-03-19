@@ -9,6 +9,9 @@ export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
   maxPoints,
   description,
   badgeImage,
+  icon = 'PencilIcon',
+  imageUrl,
+  barColour = 'primary',
 }) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
 
@@ -19,34 +22,29 @@ export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
           hexBackgroundColor="tertiary"
           iconColor="white"
           backgroundColor="tertiary"
-          icon="PencilIcon"
-          size={{ w: '16', h: '16' }}
+          icon={icon}
+          imageUrl={imageUrl}
+          size={{ w: '12', h: '12' }}
         />
-        <Typography type="h2" text={description} className="ml-5 pt-2" />
-        <div
-          className="h-16 w-16 p-2"
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            marginLeft: 'auto',
-          }}
-        >
-          {badgeImage}
-          <h1
-            className="text-2x1 font-semibold text-white"
+        <Typography type="h3" text={description} className="ml-5 pt-2" />
+        <div className="ml-auto">
+          <div
+            className="h-14 w-14 p-2"
             style={{
-              textAlign: 'center',
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 'fit-content',
-              margin: 'auto',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            {maxPoints}
-          </h1>
+            {badgeImage}
+            <h1
+              className="text-2x1 absolute top-0 bottom-0 left-0 right-0 m-auto text-center font-semibold text-white"
+              style={{
+                height: 'fit-content',
+              }}
+            >
+              {maxPoints}
+            </h1>
+          </div>
         </div>
       </div>
       <div className="h-4 w-full">
@@ -55,7 +53,7 @@ export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
           label=""
           subLabel=""
           value={percentageScore}
-          primaryColour={'primary'}
+          primaryColour={barColour}
           secondaryColour={'uiLight'}
         />
       </div>

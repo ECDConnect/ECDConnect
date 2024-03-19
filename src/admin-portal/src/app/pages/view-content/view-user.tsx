@@ -388,7 +388,6 @@ export function ViewUser(props: any) {
         if (userData?.phoneNumber) refetch();
 
         if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
-          console.log('refetchCHW');
           refetchCHW();
         }
 
@@ -430,7 +429,7 @@ export function ViewUser(props: any) {
   const password = watch('password');
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-  console.log(userData?.userById);
+
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <div className="justify-self col-end-3 ">

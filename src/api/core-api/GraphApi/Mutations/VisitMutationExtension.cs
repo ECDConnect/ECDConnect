@@ -37,7 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name == Constants.GGSettings.additional_visits).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name == Constants.GGSettings.VisitTypeAdditionalVisit).OrderBy(x => x.NormalizedName).FirstOrDefault();
             Mother mother = motherRepo.GetAll().Where(x => x.UserId.ToString() == input.MotherId.ToString()).FirstOrDefault();
 
             input.VisitType = visitType;
@@ -64,7 +64,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name == Constants.GGSettings.additional_visits).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name == Constants.GGSettings.VisitTypeAdditionalVisit).OrderBy(x => x.NormalizedName).FirstOrDefault();
             Infant infant = infantRepo.GetAll().Where(x => x.UserId.ToString() == input.InfantId.ToString()).FirstOrDefault();
 
 

@@ -23,6 +23,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
+import { TenantContext } from '../../utils/constants';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -116,7 +117,7 @@ export default function Shell() {
     if (
       theme &&
       theme.images &&
-      data?.tenantContext.applicationName !== 'GrowGreat'
+      data?.tenantContext.applicationName !== TenantContext.GrowGreat
     ) {
       return theme.images.logoUrl;
     } else {

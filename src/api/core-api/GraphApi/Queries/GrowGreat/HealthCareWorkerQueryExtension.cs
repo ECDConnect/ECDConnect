@@ -38,42 +38,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
         [UseSorting]
-        public List<PortalUsersHCWModel> GetAllHealthCareWorkers([Service] IHttpContextAccessor contextAccessor,
-                                                              IGenericRepositoryFactory repoFactory,
-                                                              CancellationToken cancellationToken, 
-                                                              PagedQueryInput pagingInput = null,
-                                                              string search = null,
-                                                              List<string> provinceSearch = null,
-                                                              List<string> clinicSearch = null,
-                                                              List<string> subDistrictSearch = null,
-                                                              List<string> visitSearch = null,
-                                                              List<string> connectUsageSearch = null)
+        public List<PortalUsersHCWModel> GetAllHealthCareWorkers(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            CancellationToken cancellationToken, 
+            PagedQueryInput pagingInput = null,
+            string search = null,
+            List<string> provinceSearch = null,
+            List<string> clinicSearch = null,
+            List<string> subDistrictSearch = null,
+            List<string> visitSearch = null,
+            List<string> connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
             var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
+            var hasFilters = false;
 
-            // FILTER HEALTH CARE WORKERS
+            if (cancellationToken.IsCancellationRequested)
+                return null;
+
             if (!string.IsNullOrWhiteSpace(search))
                 healthCareWorkers = healthCareWorkers
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
-
-            if (provinceSearch != null && provinceSearch.Count != 0)
-                healthCareWorkers = healthCareWorkers.Where(h => provinceSearch.Contains(h.Clinic.SubDistrict.District.Province.Description));
-            
-            if (clinicSearch != null && clinicSearch.Count != 0)
-                healthCareWorkers = healthCareWorkers.Where(h => clinicSearch.Contains(h.Clinic.Name));
-
-            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
-                healthCareWorkers = healthCareWorkers.Where(h => subDistrictSearch.Contains(h.Clinic.SubDistrict.Name));
-
-            if (cancellationToken.IsCancellationRequested)
-                return null;
 
             // Get ids and tokens
             List<Guid> userIds = healthCareWorkers.Select(x => (Guid)x.UserId).ToList();
@@ -86,39 +78,64 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 Id = item.Id,
                 User = new PortalUserModel(item.User, invitations),
                 ClinicId = item.ClinicId,
+                ClinicName = item.Clinic.Name,
                 InsertedDate = item.InsertedDate,
-                IsRegistered = item.IsRegistered
+                IsRegistered = item.IsRegistered,
+                ProvinceId = item.Clinic.SubDistrict.District.ProvinceId,
+                SubDistrictId = item.Clinic.SubDistrictId
             }).ToList();
+
+            List<PortalUsersHCWModel> filteredUsers = new List<PortalUsersHCWModel>();
+
+            if (provinceSearch != null && provinceSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(workers.Where(x => provinceSearch.Contains(x.ProvinceId.ToString())));
+            }
+
+            if (clinicSearch != null && clinicSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(workers.Where(x => clinicSearch.Contains(x.ClinicName)));
+            }
+
+            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(workers.Where(x => provinceSearch.Contains(x.SubDistrictId.ToString())));
+            }
 
             if (connectUsageSearch != null && connectUsageSearch.Count != 0)
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
+                hasFilters = true;
 
                 if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
                 {
-                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
                 {
-                    workers = workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                 {
-                    workers = workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
                 {
-                    workers = workers.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
                 {
-                    workers = workers.Where(x => x.User.IsActive == false).ToList();
+                    filteredUsers.AddRange(workers.Where(x => x.User.IsActive == false).ToList());
                 }
             }
 
             if (visitSearch != null && visitSearch.Count != 0)
             {
+                hasFilters = true;
                 var startOfMonth = DateTime.Now.GetStartOfMonth();
                 var endOfMonth = DateTime.Now.GetEndOfMonth();
 
@@ -130,7 +147,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                            )
                                                            ).ToList();
                 
-                List<PortalUsersHCWModel> visitHCWs = new List<PortalUsersHCWModel>();
                 foreach (var item in workers)
                 {
                     var totalClientsVisits = visits.Where(x => (x.Mother != null && x.Mother.HealthCareWorker.User.Id == item.User.Id) || (x.Infant != null && x.Infant.Caregiver.HealthCareWorker.User.Id == item.User.Id)).Count();
@@ -139,24 +155,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     {
                         if (totalClientsVisits >= 20)
                         {
-                            visitHCWs.Add(item);
+                            filteredUsers.Add(item);
                         }
-                    } else if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
+                    } 
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
                     {
                         if (totalClientsVisits > 0 && totalClientsVisits <= 10)
                         {
-                            visitHCWs.Add(item);
+                            filteredUsers.Add(item);
                         }
                     }
-                    else // Low activity (no home visits in the past month)
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity)) 
                     {
                         if (totalClientsVisits == 0)
                         {
-                            visitHCWs.Add(item);
+                            filteredUsers.Add(item);
                         }
                     }
                 }
-                return visitHCWs;
+            }
+            if (hasFilters)
+            {
+                return filteredUsers;
             }
 
             return workers;
@@ -352,7 +372,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string>{"Column", "Type Description"},
                 new List<string>{"Type of identification", "Text, (Must be: 'id' or 'passport')"},
                 new List<string>{"ID number", "Number, (required if type of identification is 'id'; must be 13 digits)"},
-                new List<string>{"Passport number", "Number, (required if type of identification is 'passport')"},
+                new List<string>{"Passport", "Text, (required if type of identification is 'passport')"},
                 new List<string>{"First name", "Text, (required)"},
                 new List<string>{"Surname", "Text, (required)"},
                 new List<string>{"Cellphone number", "Number, (required, 10 digits)"},
@@ -365,7 +385,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string>{
                     "Type of identification",
                     "ID number",
-                    "Passport number",
+                    "Passport",
                     "First name",
                     "Surname",
                     "Cellphone number",
@@ -388,5 +408,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
 
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<PointsActivityModel> GetPointsForHealthCareWorker(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IPointsEngineService pointsEngineService,
+            IGenericRepositoryFactory repoFactory,
+            Guid userId,
+            DateTime startDate,
+            DateTime? endDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
+
+            var points = pointsEngineService.GetSummaryUserPoints(userId, startDate, endDate);
+
+            return points.Select(x => new PointsActivityModel(x)).ToList();
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public TeamStandingModel GetHealthCareWorkerTeamStanding(
+            [Service] IPointsEngineService pointsService,
+            Guid userId)
+        {
+            var teamStanding = pointsService.GetHealthCareWorkerTeamStanding(userId);
+
+            return teamStanding;
+        }
     }
 }

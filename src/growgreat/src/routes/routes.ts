@@ -99,13 +99,17 @@ const ROUTES = {
   }),
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
-  PRACTITIONER: addPrefix('/practitioner', {
+  PRACTITIONER: addPrefix('/health-care-worker', {
     ABOUT: '/about',
     ACCOUNT: '/account',
     PROGRAMME_INFORMATION: '/programme-information',
     PROFILE: addPrefix('/profile', {
       PLAYGROUPS: '/playgroups',
       EDIT: '/edit',
+    }),
+    INDIVIDUAL_POINTS: addPrefix('/points', {
+      INFO_PAGE: '/info-page',
+      YEAR_VIEW: '/year-view',
     }),
   }),
   HEALTH_CAREWORKER_PROFILE_SETUP: '/healthcare-worker-profile-setup',

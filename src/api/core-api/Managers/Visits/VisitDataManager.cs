@@ -492,7 +492,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             List<VisitData> vData = (
                 from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_birth_certificate || y.Question == Constants.GGSettings.q_csg_receiving)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_birth_certificate || y.Question == Constants.GGSettings.QuestionReceivingCSG)
                                                         .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
                 select visitData
             ).ToList();
@@ -500,7 +500,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (vData.Count != 0)
             {
                 var birth = vData.Where(x => x.Question == Constants.GGSettings.q_birth_certificate).OrderBy(x => x.Id).FirstOrDefault();
-                var csg = vData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving).OrderBy(x => x.Id).FirstOrDefault();
+                var csg = vData.Where(x => x.Question == Constants.GGSettings.QuestionReceivingCSG).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (birth?.QuestionAnswer == "false")
                 {

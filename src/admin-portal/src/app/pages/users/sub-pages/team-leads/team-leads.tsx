@@ -25,6 +25,7 @@ import {
   Dropdown,
   SearchDropDown,
   SearchDropDownOption,
+  Typography,
 } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { useHistory } from 'react-router';
@@ -35,6 +36,7 @@ import { Status } from '../application-admins/applications-admins.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-panel-create';
 import ROUTES from '../../../../routes/app.routes-constants';
+import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -97,7 +99,7 @@ export default function TeamLeads() {
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
@@ -127,16 +129,17 @@ export default function TeamLeads() {
     history.push({
       pathname: ROUTES.VIEW_USERS,
       state: {
-        component: 'team-leads',
+        component: UsersRouteRedirectTypeEnum.teamLeads,
         userId: selectedRow?.user?.id,
         teamLeadId: selectedRow?.id,
         connectUsage: selectedRow?.connectUsage,
         isRegistered: selectedRow?.isRegistered,
+        clinicIds: selectedRow?.clinicIds,
       },
     });
   };
 
-  const { data, refetch } = useQuery(GetAllTeamLead, {
+  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
@@ -340,6 +343,36 @@ export default function TeamLeads() {
     });
   };
 
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () =>
+      statusFilter?.length +
+      connectUsageFilter?.length +
+      provincesFiltered?.length +
+      clinicsFiltered?.length +
+      subDistrictsFiltered?.length +
+      hasDateFilter,
+    [
+      statusFilter?.length,
+      connectUsageFilter?.length,
+      provincesFiltered?.length,
+      clinicsFiltered?.length,
+      subDistrictsFiltered?.length,
+      hasDateFilter,
+    ]
+  );
+
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
+
   if (tableData) {
     return (
       <div>
@@ -368,18 +401,37 @@ export default function TeamLeads() {
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    className={`${
+                      numberOfFilters
+                        ? ' bg-secondary'
+                        : 'border-secondary border-2 bg-white'
+                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      numberOfFilters ? 'text-white' : 'text-textMid'
+                    } hover:bg-gray-300 focus:ring-2`}
                     type="button"
                   >
-                    <div className="flex gap-1">
-                      Filter
+                    <div className="flex items-center gap-1">
+                      <Typography
+                        className="truncate"
+                        type="help"
+                        color={numberOfFilters ? 'white' : 'textLight'}
+                        text={renderFilterButtonText}
+                      />
                       {!showFilter ? (
                         <span>
-                          <ChevronDownIcon className="h-6 w-6 text-white" />
+                          <ChevronDownIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       ) : (
                         <span>
-                          <ChevronUpIcon className="h-6 w-6 text-white" />
+                          <ChevronUpIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       )}
                     </div>
@@ -552,6 +604,7 @@ export default function TeamLeads() {
                     }
                     component="team-leads"
                     viewRow={viewSelectedRow}
+                    isLoading={loading}
                   />
                 </div>
               </div>

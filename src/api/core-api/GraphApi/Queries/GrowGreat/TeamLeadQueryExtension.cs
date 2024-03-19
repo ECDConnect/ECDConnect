@@ -50,6 +50,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
             var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
+            var hasFilters = false;
+
+            if (cancellationToken.IsCancellationRequested)
+                return null;
 
             if (!string.IsNullOrWhiteSpace(search))
                 teamLeads = teamLeads 
@@ -57,19 +61,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
-
-            if (provinceSearch != null && provinceSearch.Count != 0)
-                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => provinceSearch.Contains(c.Clinic.SiteAddress.Province.Description)));
-
-            if (clinicSearch != null && clinicSearch.Count != 0)
-                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => clinicSearch.Contains(c.Clinic.Name)));
-
-            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
-                teamLeads = teamLeads.Where(h => h.Clinics.Any(c => subDistrictSearch.Contains(c.Clinic.SubDistrict.Name)));
-
-            if (cancellationToken.IsCancellationRequested)
-                return null;
-
 
             // Get ids and tokens
             List<Guid> userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
@@ -81,41 +72,66 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             {
                 Id = item.Id,
                 User = new PortalUserModel(item.User, invitations),
-                ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => (Guid)x.ClinicId).Distinct().ToList(),
+                ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList(),
+                ClinicNames = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.Name).ToList(),
                 InsertedDate = item.InsertedDate,
-                IsRegistered = item.IsRegistered
+                IsRegistered = item.IsRegistered,
+                ProvinceIds = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.SubDistrict.District.ProvinceId).ToList(),
+                SubDistrictIds = item.Clinics.Where(x => x.IsActive).Select(x => (Guid)x.Clinic.SubDistrictId).ToList()
             }).ToList();
+
+            List<PortalUsersTLModel> filteredUsers = new List<PortalUsersTLModel>();
+
+            if (provinceSearch != null && provinceSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(teamLeaders.Where(h => h.ProvinceIds.Any(c => provinceSearch.Contains(c.ToString()))));
+            }
+
+            if (clinicSearch != null && clinicSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(teamLeaders.Where(h => h.ClinicNames.Any(c => clinicSearch.Contains(c))));
+            }
+
+            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
+            {
+                hasFilters = true;
+                filteredUsers.AddRange(teamLeaders.Where(h => h.SubDistrictIds.Any(c => provinceSearch.Contains(c.ToString()))));
+            }
 
 
             if (connectUsageSearch != null && connectUsageSearch.Count != 0)
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
+                hasFilters = true;
 
                 if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList();
+                    filteredUsers.AddRange(teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList();
+                    filteredUsers.AddRange(teamLeaders.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList();
+                    filteredUsers.AddRange(teamLeaders.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList();
+                    filteredUsers.AddRange(teamLeaders.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList());
                 }
-                else if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
                 {
-                    teamLeaders = teamLeaders.Where(x => x.User.IsActive == false).ToList();
+                    filteredUsers.AddRange(teamLeaders.Where(x => x.User.IsActive == false).ToList());
                 }
             }
 
             if (visitSearch != null && visitSearch.Count != 0)
             {
+                hasFilters = true;
                 var startOfMonth = DateTime.Now.GetStartOfMonth();
                 var endOfMonth = DateTime.Now.GetEndOfMonth();
                 var clinicIds = teamLeaders.Select(x => x.ClinicIds).Distinct().ToList();
@@ -129,35 +145,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                            (x.Infant.IsActive && hcwIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.User.Id)))
                                                            ).ToList();
 
-                List<PortalUsersTLModel> visitTeamLeaders = new List<PortalUsersTLModel>();
                 foreach (var item in teamLeaders)
                 {
                     var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
-
 
                     if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
                     {
                         if (totalClientsVisits >= 20)
                         {
-                            visitTeamLeaders.Add(item);
+                            filteredUsers.Add(item);
                         }
                     }
-                    else if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
                     {
                         if (totalClientsVisits > 0 && totalClientsVisits <= 10)
                         {
-                            visitTeamLeaders.Add(item);
+                            filteredUsers.Add(item);
                         }
                     }
-                    else // Low activity (no home visits in the past month)
+                    if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity))
                     {
                         if (totalClientsVisits == 0)
                         {
-                            visitTeamLeaders.Add(item);
+                            filteredUsers.Add(item);
                         }
                     }
                 }
-                return visitTeamLeaders;
+            }
+            if (hasFilters)
+            {
+                return filteredUsers;
             }
 
             return teamLeaders;
@@ -213,13 +230,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string> { "Column", "Type Description"},
                 new List<string> { "Type of identification", "Text, (Must be: 'id' or 'passport')"},
                 new List<string> { "ID number", "Number, (required if type of identification is 'id'; must be 13 digits)"},
-                new List<string> {"Passport", "Number, (required if type of identification is 'passport')"},
+                new List<string> {"Passport", "Text, (required if type of identification is 'passport')"},
                 new List<string> {"First name", "Text, (required)"},
                 new List<string> {"Surname", "Text, (required)"},
                 new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
                 new List<string> {"Email address", "email, (optional)"},
-                new List<string> {"Clinic ID 1", "Clinic ID 1, (required)" },
-                new List<string> {"Clinic ID 2", "Clinic ID 2, (optional)" }
             };
             
             var templateHeaderSheet = $"Team Lead Template";
@@ -229,23 +244,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     "Type of identification",
                     "ID number",
                     "Passport",
-                     "First name",
+                    "First name",
                     "Surname",
                     "Cellphone number",
-                    "Email address",
-                    "Clinic Id 1",
-                    "Clinic Id 2"
+                    "Email address"
                 }
             };
 
-            var clinicNameSheet = $"Clinic Names";
-            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: uId);
-            var clinicNames = clinicRepo.GetAll().Where(c => c.TenantId == TenantExecutionContext.Tenant.Id).Select(c => new List<string> { c.Name, c.Id.ToString(), "" }).ToList();
-
             var spreadSheets = new Dictionary<string, List<List<string>>>() {
                 { templateHeaderSheet, templateHeaders },
-                { fieldDefinitionSheet, fieldDefinitionList },
-                { clinicNameSheet, clinicNames }
+                { fieldDefinitionSheet, fieldDefinitionList }
             };
 
             var fileName = templateHeaderSheet.Replace(" ", "_");

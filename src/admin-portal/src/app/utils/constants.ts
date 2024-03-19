@@ -4,3 +4,7 @@ export enum GrowGreatRoles {
   HealthCareWorker = 'Community Health Worker',
   TeamLead = 'Team Lead',
 }
+
+export enum TenantContext {
+  GrowGreat = 'CHW Connect',
+}
