@@ -46,6 +46,7 @@ export interface PersonalInfoProps {
   refetchUserData: () => void;
   refetchCHW: () => void;
   isNotLockedOut: (user: UserDto) => boolean;
+  clinicIds?: string[];
 }
 
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({
@@ -59,6 +60,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   refetchUserData,
   refetchCHW,
   isNotLockedOut,
+  clinicIds,
 }) => {
   const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -109,8 +111,13 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       );
     }
   }, [clinicsData?.GetAllClinic]);
+
   const hcwClinic = clinicsData?.GetAllClinic?.find(
     (item) => item?.id === clinicId
+  );
+
+  const tlClinics = clinicsData?.GetAllClinic?.filter((item) =>
+    clinicIds?.some((x) => x === item?.id?.toString())
   );
 
   const updateHealthCareWorkerClinic = useCallback(async () => {
@@ -440,49 +447,15 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               )}
             </>
           ) : userData ? (
-            <div className="grid grid-cols-3 justify-start gap-y-8 p-4 text-current">
-              <div className="flex items-center">
-                <Typography
-                  type="h2"
-                  hasMarkup
-                  fontSize="18"
-                  color="textMid"
-                  text={'ID:'}
-                  className="px-4"
-                />
-                <Typography
-                  type="h2"
-                  hasMarkup
-                  fontSize="18"
-                  color="textMid"
-                  text={userData?.idNumber || chwData?.user?.idNumber}
-                />
-              </div>
-              <div className="flex items-center">
-                <Typography
-                  type="h2"
-                  hasMarkup
-                  fontSize="18"
-                  color="textMid"
-                  text={'Cellphone:'}
-                  className="px-4"
-                />
-                <Typography
-                  type="h2"
-                  hasMarkup
-                  fontSize="18"
-                  color="textMid"
-                  text={userData?.phoneNumber || chwData?.user?.phoneNumber}
-                />
-              </div>
-              {userData?.whatsAppNumber && (
+            <div>
+              <div className="grid grid-cols-3 justify-start gap-y-8 p-4 text-current">
                 <div className="flex items-center">
                   <Typography
                     type="h2"
                     hasMarkup
                     fontSize="18"
                     color="textMid"
-                    text={'WhatsApp:'}
+                    text={'ID:'}
                     className="px-4"
                   />
                   <Typography
@@ -490,15 +463,52 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                     hasMarkup
                     fontSize="18"
                     color="textMid"
-                    text={
-                      userData?.whatsAppNumber || chwData?.user?.whatsAppNumber
-                    }
+                    text={userData?.idNumber || chwData?.user?.idNumber}
                   />
                 </div>
-              )}
-              {hcwClinic && (
-                <>
+                <div className="flex items-center">
+                  <Typography
+                    type="h2"
+                    hasMarkup
+                    fontSize="18"
+                    color="textMid"
+                    text={'Cellphone:'}
+                    className="px-4"
+                  />
+                  <Typography
+                    type="h2"
+                    hasMarkup
+                    fontSize="18"
+                    color="textMid"
+                    text={userData?.phoneNumber || chwData?.user?.phoneNumber}
+                  />
+                </div>
+                {userData?.whatsAppNumber && (
                   <div className="flex items-center">
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={'WhatsApp:'}
+                      className="px-4"
+                    />
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={
+                        userData?.whatsAppNumber ||
+                        chwData?.user?.whatsAppNumber
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+              {hcwClinic && (
+                <div className="ml-4 flex w-11/12 items-center justify-between">
+                  <div className="flex w-full items-center">
                     <Typography
                       type="h2"
                       hasMarkup
@@ -515,6 +525,70 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       text={hcwClinic?.name}
                     />
                   </div>
+                  <div className="flex w-full items-center">
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={'Location:'}
+                      className="px-4"
+                    />
+                    <div className="flex flex-col items-center">
+                      <Typography
+                        type="h2"
+                        hasMarkup
+                        fontSize="18"
+                        color="textMid"
+                        text={`${hcwClinic?.subDistrict?.name}, `}
+                        className="w-96"
+                      />
+                      <Typography
+                        type="h2"
+                        hasMarkup
+                        fontSize="18"
+                        color="textMid"
+                        text={`${hcwClinic?.subDistrict?.district?.name}, `}
+                        className="w-full"
+                      />
+                      <Typography
+                        type="h2"
+                        hasMarkup
+                        fontSize="18"
+                        color="textMid"
+                        text={
+                          hcwClinic?.subDistrict?.district?.province
+                            ?.description
+                        }
+                        className="flex w-full flex-nowrap"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              {tlClinics?.length > 0 && (
+                <div className="flex w-10/12 items-center justify-between">
+                  <div className="flex items-center">
+                    <Typography
+                      type="h2"
+                      hasMarkup
+                      fontSize="18"
+                      color="textMid"
+                      text={'Clinic(s):'}
+                      className="px-4"
+                    />
+                    {tlClinics?.map((item) => {
+                      return (
+                        <Typography
+                          type="h2"
+                          hasMarkup
+                          fontSize="18"
+                          color="textMid"
+                          text={item?.name}
+                        />
+                      );
+                    })}
+                  </div>
                   <div className="flex items-center">
                     <Typography
                       type="h2"
@@ -524,15 +598,40 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       text={'Location:'}
                       className="px-4"
                     />
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={hcwClinic?.siteAddress?.addressLine1}
-                    />
+                    {tlClinics?.map((item) => {
+                      return (
+                        <div className="flex flex-col items-center">
+                          <Typography
+                            type="h2"
+                            hasMarkup
+                            fontSize="18"
+                            color="textMid"
+                            text={`${item?.subDistrict?.name}, `}
+                            className="w-96"
+                          />
+                          <Typography
+                            type="h2"
+                            hasMarkup
+                            fontSize="18"
+                            color="textMid"
+                            text={`${item?.subDistrict?.district?.name}, `}
+                            className="w-full"
+                          />
+                          <Typography
+                            type="h2"
+                            hasMarkup
+                            fontSize="18"
+                            color="textMid"
+                            text={
+                              item?.subDistrict?.district?.province?.description
+                            }
+                            className="flex w-full flex-nowrap"
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
-                </>
+                </div>
               )}
             </div>
           ) : (
