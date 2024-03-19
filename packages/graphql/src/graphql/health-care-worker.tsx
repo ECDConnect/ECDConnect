@@ -41,6 +41,7 @@ export const GetAllHealthCareWorker = gql`
         contactPreference
         genderId
         phoneNumber
+        whatsAppNumber
         insertedDate
         lockoutEnd
         __typename

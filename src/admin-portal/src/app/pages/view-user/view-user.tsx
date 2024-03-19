@@ -1,41 +1,25 @@
-import FormField from '../../components/form-field/form-field';
 import {
   Alert,
   Button,
   DialogPosition,
   Typography,
-  SA_CELL_REGEX,
-  SA_ID_REGEX,
   AlertType,
   ProfileAvatar,
   classNames,
-  Dropdown,
-  Dialog,
-  ActionModal,
   StatusChip,
 } from '@ecdlink/ui';
 import {
   JSXElementConstructor,
   ReactElement,
-  useCallback,
   useEffect,
   useMemo,
   useState,
 } from 'react';
-import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import {
-  TrashIcon,
-  SaveIcon,
-  ArrowLeftIcon,
-  ThumbUpIcon,
-} from '@heroicons/react/solid';
+import { TrashIcon, ArrowLeftIcon, ThumbUpIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
-  initialPasswordValue,
-  initialUserDetailsValues,
   NOTIFICATION,
-  passwordSchema,
   PermissionEnum,
   useDialog,
   useNotifications,
@@ -47,19 +31,10 @@ import {
   GetHealthCareWorkerByUserId,
   GetTenantContext,
   GetUserById,
-  ResetUserPassword,
-  UpdateUser,
-  UserModelInput,
   GetHealthCareWorkerSummaryForPeriod,
-  GetAllClinic,
-  UpdateHealthCareWorkerClinic,
   GetTeamLeadSummary,
 } from '@ecdlink/graphql';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
-import * as yup from 'yup';
-
-import { PasswordInput } from '../../components/password-input/password-input';
 import { subDays } from 'date-fns';
 import {
   UsersRolesTypeEnum,
@@ -73,21 +48,9 @@ import { DeactivateUser } from './components/deactivate-user/deactivate-user';
 import { HealthCareWorkerSummary } from './components/health-care-worker-summary/health-care-worker-summary';
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HalthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
+import { PersonalInfo } from './components/personal-info/personal-info';
+import { TenantContext } from '../../utils/constants';
 
-const chwSchema = yup.object().shape({
-  idNumber: yup
-    .string()
-    .matches(SA_ID_REGEX, 'Id number is not valid')
-    .required('ID number is required'),
-  phoneNumber: yup
-    .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid')
-    .required('Cellphone number is required'),
-});
-
-const adminSchema = yup.object().shape({
-  email: yup.string().email().required('email address is required'),
-});
 const formatDate = (value: string | number | Date) => {
   try {
     const date = new Date(value);
@@ -135,14 +98,8 @@ export function ViewUser(props: any) {
   };
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
-  const [updateUser, { loading }] = useMutation(UpdateUser);
-  const [clinic, setClinic] = useState('');
-  const [clinics, setClinics] = useState([]);
-  const [hasClinicChange, setHasClinicChange] = useState(false);
-  const [handleClinicChange, setHandleClinicChange] = useState(false);
 
   let userId = localStorage.getItem('selectedUser');
-  const [resetUserPassword] = useMutation(ResetUserPassword);
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
@@ -163,13 +120,6 @@ export function ViewUser(props: any) {
     },
     fetchPolicy: 'cache-and-network',
   });
-
-  const userObject = useMemo(() => userData?.userById, [userData?.userById]);
-
-  const { data: clinicsData } = useQuery(GetAllClinic, {
-    fetchPolicy: 'cache-and-network',
-  });
-  const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
 
   const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
     useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
@@ -276,168 +226,9 @@ export function ViewUser(props: any) {
     });
   };
 
-  const [editActive, setEditActive] = useState<boolean>(false);
-
   let isCHW = userData?.userById?.roles?.some(
     (role: any) => role.name === 'Community Health Worker'
   );
-
-  const {
-    setValue: adminDetailSetValue,
-    formState: adminDetailFormState,
-    getValues: adminDetailGetValues,
-    handleSubmit: handleSubmitAdminDetails,
-  } = useForm({
-    resolver: yupResolver(adminSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onChange',
-  });
-
-  const {
-    register: registerCHW,
-    setValue: chwDetailSetValue,
-    formState: chwDetailFormState,
-    getValues: chwDetailGetValues,
-    handleSubmit: handleSubmitChwDetails,
-  } = useForm({
-    resolver: yupResolver(chwSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onChange',
-  });
-
-  const { register: passwordRegister, getValues: passwordGetValues } = useForm({
-    resolver: yupResolver(passwordSchema),
-    defaultValues: initialPasswordValue,
-    mode: 'onChange',
-  });
-
-  const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
-    adminDetailFormState;
-
-  const { errors: chwDetailFormErrors, isValid: isChwDetailValid } =
-    chwDetailFormState;
-  const passwordForm = passwordGetValues();
-
-  // SET EDIT FORMS
-  useEffect(() => {
-    adminDetailSetValue(
-      'email',
-      userData?.userById?.email || chwData?.GetHealthCareWorkerById?.user.email,
-      {
-        shouldValidate: true,
-      }
-    );
-
-    chwDetailSetValue(
-      'idNumber',
-      userData?.userById?.idNumber ||
-        chwData?.GetHealthCareWorkerById?.user.idNumber,
-      {
-        shouldValidate: true,
-      }
-    );
-
-    chwDetailSetValue(
-      'phoneNumber',
-      userData?.userById?.phoneNumber ||
-        chwData?.GetHealthCareWorkerById?.user.phoneNumber,
-      {
-        shouldValidate: true,
-      }
-    );
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData, chwData]);
-
-  useEffect(() => {
-    if (clinicsData?.GetAllClinic?.length > 0) {
-      setClinics(
-        clinicsData?.GetAllClinic?.map((item) => {
-          return {
-            value: item?.id,
-            label: item?.name,
-          };
-        })
-      );
-    }
-  }, [clinicsData?.GetAllClinic]);
-
-  const updateHealthCareWorkerClinic = useCallback(async () => {
-    const response = await updateHCWClinic({
-      variables: {
-        userId: userObject?.id,
-        clinicId: clinic,
-      },
-    });
-
-    if (response) {
-      setEditActive(!editActive);
-    }
-  }, [clinic, editActive, updateHCWClinic, userObject?.id]);
-
-  const saveUser = async (passwordChange: boolean) => {
-    const passwordForm = passwordGetValues();
-    const adminDataForm = adminDetailGetValues();
-    const chwDataForm = chwDetailGetValues();
-
-    const userInputModel: UserModelInput = {
-      idNumber: chwDataForm?.idNumber,
-      phoneNumber: chwDataForm?.phoneNumber,
-      email: adminDataForm?.email,
-    };
-
-    await updateUser({
-      variables: {
-        id: userData?.userById?.id ?? chwData?.GetHealthCareWorkerById?.user.id,
-        input: userInputModel,
-      },
-    })
-      .then(() => {
-        if (userData?.phoneNumber) refetchUserData();
-
-        if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
-          refetchCHW();
-        }
-
-        setNotification({
-          title: 'Successfully Updated User!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-      })
-      .catch((err) => {
-        setNotification({
-          title: 'Failed to update User',
-          variant: NOTIFICATION.ERROR,
-        });
-      });
-
-    if (passwordChange) {
-      await resetUserPassword({
-        variables: {
-          id:
-            userData?.userById?.id ?? chwData?.GetHealthCareWorkerById?.user.id,
-          newPassword: passwordForm.password,
-        },
-      }).then(() => {
-        setEditActive(!editActive);
-        refetchUserData();
-      });
-    }
-  };
-
-  const onSave = async () => {
-    if (hasClinicChange) {
-      updateHealthCareWorkerClinic();
-      setHandleClinicChange(false);
-    }
-    let passwordChange = false;
-    if (passwordForm.password.length > 0) {
-      passwordChange = true;
-    }
-    await saveUser(passwordChange);
-    refetchUserData();
-    setEditActive(!editActive);
-  };
 
   const getRoleStatusChip = (status: string) => {
     switch (status) {
@@ -639,203 +430,18 @@ export function ViewUser(props: any) {
           )}
         </div>
 
-        <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-            {/* Start main area*/}
-            <h3 className="border-b-4 border-dashed pb-2 text-xl ">
-              Personal information
-            </h3>
-            <form
-              key={'formKey'}
-              className="space-y-3 divide-y divide-gray-200"
-            >
-              {editActive ? (
-                <>
-                  <div className="space-y-0">
-                    <div className="grid grid-cols-1 ">
-                      {userData && (
-                        <>
-                          {!isRegistered && (
-                            <div className="my-4 w-6/12 sm:col-span-3">
-                              <FormField
-                                label={'ID number *'}
-                                nameProp={'idNumber'}
-                                register={registerCHW}
-                                error={chwDetailFormErrors.idNumber?.message}
-                              />
-                            </div>
-                          )}
-                          <div className="my-4 w-6/12 sm:col-span-3">
-                            <FormField
-                              label={'Cellphone number *'}
-                              nameProp={'phoneNumber'}
-                              register={registerCHW}
-                              error={chwDetailFormErrors.phoneNumber?.message}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      <div>
-                        {props.location.state?.component ===
-                          UsersRouteRedirectTypeEnum?.chw && (
-                          <Dropdown
-                            placeholder={'Click to select a clinic'}
-                            className={'justify-between'}
-                            label={'Clinic *'}
-                            list={clinics}
-                            onChange={(item) => {
-                              setClinic(item);
-                              setHasClinicChange(true);
-                            }}
-                            fullWidth
-                            labelColor="textMid"
-                            fillColor="adminPortalBg"
-                            selectedValue={
-                              clinic || props.location.state?.clinicId
-                            }
-                          />
-                        )}
-                        {!isTeamLead && !hcwId && (
-                          <div className="my-0 w-6/12 sm:col-span-2">
-                            <PasswordInput
-                              label={'Password'}
-                              nameProp={'password'}
-                              sufficIconColor="black"
-                              value={passwordForm.password}
-                              register={passwordRegister}
-                              strengthMeterVisible={true}
-                              className="mb-9 "
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {props.location.state?.component ===
-                  UsersRouteRedirectTypeEnum?.chw ? (
-                    <Button
-                      className={' w-4/12 rounded-md '}
-                      type="filled"
-                      isLoading={loading}
-                      color="secondary"
-                      disabled={!isChwDetailValid}
-                      onClick={
-                        hasClinicChange
-                          ? () => setHandleClinicChange(true)
-                          : handleSubmitChwDetails(onSave)
-                      }
-                    >
-                      <SaveIcon color="white" className="mr-6 h-6 w-6">
-                        {' '}
-                      </SaveIcon>
-                      <Typography
-                        type="help"
-                        color="white"
-                        text={'Save Changes'}
-                      ></Typography>
-                    </Button>
-                  ) : (
-                    <Button
-                      className={' w-4/12 rounded-md '}
-                      type="filled"
-                      isLoading={loading}
-                      color="secondary"
-                      disabled={!isAdminDetailValid}
-                      onClick={handleSubmitAdminDetails(onSave)}
-                    >
-                      <SaveIcon color="white" className="mr-6 h-6 w-6" />
-                      <Typography
-                        type="help"
-                        color="white"
-                        text={'Save Changes'}
-                      ></Typography>
-                    </Button>
-                  )}
-                </>
-              ) : userData ? (
-                <div className="flex flex-row justify-start pt-4 text-current">
-                  <p className="px-4 text-xl">
-                    ID:{' '}
-                    {userData?.userById?.idNumber ||
-                      chwData?.GetHealthCareWorkerById?.user?.idNumber}
-                  </p>
-                  <p className="px-4 text-xl">
-                    {' '}
-                    Cellphone:{' '}
-                    {userData?.userById?.phoneNumber ||
-                      chwData?.GetHealthCareWorkerById?.user?.phoneNumber}
-                  </p>
-                  {userData?.userById?.whatsappNumber && (
-                    <p className="px-4 text-xl">
-                      WhatsApp:{' '}
-                      {userData?.userById?.whatsappNumber ||
-                        chwData?.GetHealthCareWorkerById?.user?.whatsappNumber}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="flex flex-row justify-start pt-4 text-current">
-                  <p className="px-4 text-xl">
-                    Email: {userData?.userById?.email}
-                  </p>
-                </div>
-              )}
-            </form>
-            {/* End main area */}
-          </div>
-
-          <div className="flex justify-end p-4">
-            {isNotLockedOut(
-              userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-            ) && (
-              <button
-                onClick={() => {
-                  setEditActive(!editActive);
-                }}
-                id="dropdownHoverButton"
-                className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-                type="button"
-              >
-                {' '}
-                {editActive ? 'Close' : 'Edit'}
-              </button>
-            )}
-          </div>
-          <Dialog
-            className="absolute left-40 bottom-80 w-6/12"
-            visible={handleClinicChange}
-            position={DialogPosition.Middle}
-          >
-            <ActionModal
-              className="z-80"
-              icon={'InformationCircleIcon'}
-              iconColor="alertMain"
-              iconBorderColor="alertBg"
-              importantText={`Are you sure you want to change ${userObject?.firstName} clinic?`}
-              detailText={`This change will reflect on the app for ${userObject?.firstName} immediately.`}
-              actionButtons={[
-                {
-                  text: 'Yes, confirm',
-                  textColour: 'white',
-                  colour: 'secondary',
-                  type: 'filled',
-                  onClick: handleSubmitChwDetails(onSave),
-
-                  leadingIcon: 'BadgeCheckIcon',
-                },
-                {
-                  text: 'No, cancel',
-                  textColour: 'secondary',
-                  colour: 'secondary',
-                  type: 'outlined',
-                  onClick: () => setHandleClinicChange(false),
-                  leadingIcon: 'XIcon',
-                },
-              ]}
-            />
-          </Dialog>
-        </div>
+        <PersonalInfo
+          userData={userData?.userById}
+          chwData={chwData?.GetHealthCareWorkerById}
+          isRegistered={isRegistered}
+          component={props?.location?.state?.component}
+          isTeamLead={isTeamLead}
+          hcwId={hcwId}
+          clinicId={props?.location?.state?.clinicId}
+          refetchUserData={refetchUserData}
+          refetchCHW={refetchCHW}
+          isNotLockedOut={isNotLockedOut}
+        />
 
         {(isCHW ||
           props.location.state?.component ===
@@ -843,7 +449,7 @@ export function ViewUser(props: any) {
           isRegistered &&
           data &&
           data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat' && (
+          data.tenantContext.applicationName === TenantContext.GrowGreat && (
             <div className=" flex justify-end">
               <div>
                 <CustomDateRangePicker

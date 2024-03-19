@@ -25,6 +25,7 @@ import {
 } from '../../constants/content-management';
 import { LinksShared } from './components/links-shared/links-shared';
 import ProgressToolsContentList from './sub-pages/content-list/components/progress-tools-content-list/progress-tools-content-list';
+import { TenantContext } from '../../utils/constants';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -88,7 +89,7 @@ export function ContentManagement() {
     if (
       data &&
       data.tenantContext &&
-      data.tenantContext.applicationName === 'GrowGreat'
+      data.tenantContext.applicationName === TenantContext.GrowGreat
     ) {
       return [
         {
@@ -283,7 +284,7 @@ export function ContentManagement() {
       if (
         data &&
         data.tenantContext &&
-        data.tenantContext.applicationName !== 'GrowGreat'
+        data.tenantContext.applicationName !== TenantContext.GrowGreat
       ) {
         return setSubTabs([
           {
@@ -475,7 +476,8 @@ export function ContentManagement() {
                       ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2'
                       : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                     'consent-tabs text-md flex h-14 items-center justify-center font-medium',
-                    data?.tenantContext.applicationName === 'GrowGreat'
+                    data?.tenantContext.applicationName ===
+                      TenantContext.GrowGreat
                       ? 'w-3/12'
                       : 'flex w-5/12 justify-center'
                   )}

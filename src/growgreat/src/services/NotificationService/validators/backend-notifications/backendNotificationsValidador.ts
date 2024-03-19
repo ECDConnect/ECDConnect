@@ -21,7 +21,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
   constructor(accessToken?: string, user?: UserDto) {
     this._accessToken = accessToken;
     this.user = user;
-    this.interval = NotificationIntervals.hour;
+    this.interval = NotificationIntervals.halfhour;
     this.lastCheckTimestamp = 0;
   }
 

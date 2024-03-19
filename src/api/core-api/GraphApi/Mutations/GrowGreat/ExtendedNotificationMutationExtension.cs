@@ -39,7 +39,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
   [Service] INotificationService notificationService, string userId)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotification, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>());
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>());
         }
 
         public async Task<bool> SendGGUploadRTHNotification(

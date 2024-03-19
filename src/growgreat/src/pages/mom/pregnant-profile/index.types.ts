@@ -7,6 +7,7 @@ export type PregnantProfileRouteState = {
     notes?: string;
     infantId: string;
   };
+  displayHelp?: boolean;
 };
 
 export interface PregnantProfileParams {

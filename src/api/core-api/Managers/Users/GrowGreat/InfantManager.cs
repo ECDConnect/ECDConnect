@@ -7,6 +7,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.DataAccessLayer.Managers;
@@ -86,6 +87,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // EC-797 - if this infant is not the first client, we set the tab values to true;
             int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
                             + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
+
+            int totalActiveClieants = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.IsActive == true)).Count()
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.IsActive == true)).Count();
+                
 
             // Either load the caregiver or map from input
             var caregiver = input.CaregiverId.HasValue ? _caregiverRepo.GetById(input.CaregiverId.Value) : null;
@@ -175,9 +180,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 _pointsCalculationService.CalculateInfantClientRegistration(_applicationUserId.Value);
             }
 
-            if (totalClients == 0) {
+            if (totalActiveClieants == 0) {
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "infantId",
+                    ReplacementValue = infant.UserId.ToString(),
+                });
+
                var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
-               _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotification, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue);   
+               _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements);   
             }
 
             return createdInfant;
@@ -484,7 +496,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private void AddVisits(Guid infantId, DateTime BirthDate)
         {
             // Get all visit types linked to child excluding additional_visits
-            List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name != Constants.GGSettings.VisitTypeAdditionalVisit).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = GetVisitDates(BirthDate.Date.AddDays(1), visitTypes);
@@ -532,77 +544,77 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 }
                 else if (_visit.VisitType.Name == Constants.GGSettings.week_4)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.week_7_to_8).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeWeekSevenToEight).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.week_7_to_8)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeWeekSevenToEight)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_3).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeThreeMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_3)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeThreeMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_4).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeFourMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_4)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeFourMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_5).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeFiveMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_5)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeFiveMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_6).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeSixMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_6)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeSixMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_9).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeNineMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_9)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeNineMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_12).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeTwelveMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_12)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeTwelveMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_15).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeFifteenMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_15)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeFifteenMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_18).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeEighteenMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_18)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeEighteenMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_21).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeTwentyOneMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_21)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeTwentyOneMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.months_24).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeTwentyFourMonths).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.months_24)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeTwentyFourMonths)
                 {
-                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.years_5).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeYearFive).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
                 }
-                else if (_visit.VisitType.Name == Constants.GGSettings.years_5)
+                else if (_visit.VisitType.Name == Constants.GGSettings.VisitTypeYearFive)
                 {
                     _visit.DueDate = (_visit.PlannedVisitDate != default(DateTime) ? _visit?.PlannedVisitDate.AddDays(-1).Date : null);
                     visitRepo.Update(_visit);
@@ -638,61 +650,61 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddDays(27);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.week_7_to_8)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeWeekSevenToEight)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddDays(48);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_3)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeThreeMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(3);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_4)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeFourMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(4);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_5)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeFiveMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(5);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_6)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeSixMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(6);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_9)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeNineMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(9);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_12)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeTwelveMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(12);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_15)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeFifteenMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(15);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_18)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeEighteenMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(18);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_21)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeTwentyOneMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(21);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.months_24)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeTwentyFourMonths)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddMonths(24);
                     visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
                 }
-                else if (visitTypes[i].Name == Constants.GGSettings.years_5)
+                else if (visitTypes[i].Name == Constants.GGSettings.VisitTypeYearFive)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddYears(5);
                 }
