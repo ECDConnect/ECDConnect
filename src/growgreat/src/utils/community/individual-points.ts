@@ -4,16 +4,21 @@ import { Colours } from '@ecdlink/ui';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { ReactComponent as PollyCasual } from '@/assets/pollyCasual.svg';
-import { MaxIndividualPointsPerMonth } from '@/constants/Community';
+import { MaxIndividualPoints } from '@/constants/Community';
 
-export function getIndividualPointsUIDetails(currentPoints: number): {
+export function getIndividualPointsUIDetails(
+  currentPoints: number,
+  type: 'month' | 'year'
+): {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   mainColour: Colours;
   dashboardColour: Colours;
   backgroundColour: Colours;
 } {
   const currentPointsPercentage =
-    (currentPoints / MaxIndividualPointsPerMonth) * 100;
+    (currentPoints /
+      MaxIndividualPoints[type === 'month' ? 'PerMonth' : 'PerYear']) *
+    100;
 
   if (currentPointsPercentage >= 80) {
     return {

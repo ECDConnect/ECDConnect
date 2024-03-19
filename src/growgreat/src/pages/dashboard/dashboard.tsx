@@ -43,11 +43,14 @@ import {
   getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
-import { LeagueType, MaxIndividualPointsPerMonth } from '@/constants/Community';
+import { LeagueType, MaxIndividualPoints } from '@/constants/Community';
 import { COMMUNITY_TABS } from '../community/community.types';
 import { getIndividualPointsUIDetails } from '@/utils/community/individual-points';
+import { getHealthCareWorkerTotalPointsPerMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
 
 export const Dashboard: React.FC = () => {
+  const today = new Date();
+
   const history = useHistory();
   const { theme } = useTheme();
   const location = useLocation<DashboardRouteState>();
@@ -69,6 +72,9 @@ export const Dashboard: React.FC = () => {
   );
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
   const league = useSelector(communitySelectors.getLeagueSelector);
+  const currentIndividualPoints = useSelector(
+    getHealthCareWorkerTotalPointsPerMonthSelector(today.getMonth() + 1)
+  );
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -91,11 +97,9 @@ export const Dashboard: React.FC = () => {
       clinicDetails?.points?.leagueRanking ?? 0
     );
 
-  // TODO: Get real individual points
-  const currentIndividualPoints = 600;
-
   const individualPointsUIDetails = getIndividualPointsUIDetails(
-    currentIndividualPoints
+    currentIndividualPoints,
+    'month'
   );
   const leaguePointsColours = getLeaguePointsColours(
     isTop25PercentInTheLeague,
@@ -303,21 +307,25 @@ export const Dashboard: React.FC = () => {
     return {
       image: (
         <div>
-          <Polly className="mr-4 h-14 w-14" />
+          <Polly className="mr-4 h-12 w-12" />
         </div>
       ),
-      mainText: '{Points}',
+      mainText: currentIndividualPoints
+        ? String(currentIndividualPoints ?? 0)
+        : '',
       currentPoints: currentIndividualPoints,
-      maxPoints: MaxIndividualPointsPerMonth,
+      maxPoints: MaxIndividualPoints.PerMonth,
       barBgColour: 'white',
       barColour: individualPointsUIDetails.dashboardColour,
       hint: 'Points',
-      hintClassName: 'mt-3',
+      hintClassName: currentIndividualPoints ? 'mt-3' : 'mt-12',
       bgColour: individualPointsUIDetails.backgroundColour,
       textColour: 'textDark',
-      onClick: () => history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS),
+      hideProgressBar: !currentIndividualPoints,
+      onClick: () =>
+        history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.MONTH_VIEW),
     };
-  }, [clinicDetails, league]);
+  }, [currentIndividualPoints]);
 
   const communityCard = useMemo(
     (): ScoreCardProps => ({
@@ -468,6 +476,7 @@ export const Dashboard: React.FC = () => {
             textColour={individualPointsCard.textColour}
             onClickClassName="text-textLight"
             statusChip={individualPointsCard.statusChip}
+            hideProgressBar={individualPointsCard.hideProgressBar}
           />
           {!!clinicDetails?.league ? (
             <ScoreCard
@@ -494,7 +503,7 @@ export const Dashboard: React.FC = () => {
                 onActionClick: communityCard.onClick!,
                 titleIcon: 'UserGroupIcon',
                 titleIconClassName: 'bg-tertiary text-white',
-                classNames: 'bg-uiBg w-full mt-30',
+                classNames: 'bg-uiBg w-full',
               }}
             />
           )}

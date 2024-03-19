@@ -107,7 +107,11 @@ const ROUTES = {
       PLAYGROUPS: '/playgroups',
       EDIT: '/edit',
     }),
-    INDIVIDUAL_POINTS: '/points',
+    INDIVIDUAL_POINTS: addPrefix('/points', {
+      INFO_PAGE: '/info-page',
+      MONTH_VIEW: '/month-view',
+      YEAR_VIEW: '/year-view',
+    }),
   }),
   HEALTH_CAREWORKER_PROFILE_SETUP: '/healthcare-worker-profile-setup',
   CHILD_NOTES: '/child-notes',

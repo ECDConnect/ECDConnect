@@ -1,24 +1,38 @@
+import { UserPointsAcitivtyDto } from '@ecdlink/core';
 import { Divider, PointsDetailsCard, Typography } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { format } from 'date-fns';
 
-export const PointsMonthSummary = () => {
-  const dummyPoints = [1, 2, 3];
+export const PointsMonthSummary = ({
+  points,
+}: {
+  points: UserPointsAcitivtyDto[];
+}) => {
+  const sum = points.reduce((acc, curr) => acc + curr.pointsTotal, 0);
 
   return (
     <>
       <Divider dividerType="dashed" className="mt-6 mb-4" />
-      <Typography type="h4" color="textDark" text={`{Month}`} />
+      <Typography
+        type="h4"
+        color="textDark"
+        text={format(
+          new Date(points?.[0]?.year, points?.[0]?.month - 1),
+          'MMMM'
+        )}
+      />
       <Typography
         type="body"
         color="textMid"
         className="mb-4"
-        text={`{points} points`}
+        text={`${sum} points`}
       />
-      {dummyPoints.map((item, index) => (
+      {points?.map((item, index) => (
         <PointsDetailsCard
-          pointsEarned={2}
-          activityCount={5}
-          title={'Lorem Ipsum'}
+          key={item.pointsActivityId + index}
+          pointsEarned={item?.pointsTotal}
+          activityCount={item?.timesScored}
+          title={item?.activityName}
           size="medium"
           className="mb-1"
           colour="uiBg"

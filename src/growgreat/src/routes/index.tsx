@@ -53,7 +53,11 @@ import { TeamMembers } from '@/pages/community/team-tab/team/members';
 import { TeamMemberProfile } from '@/pages/community/team-tab/team/members/member-profile';
 import { TeamLeaderProfile } from '@/pages/community/team-tab/team/members/leader-profile';
 import { AddBreastfeedingClub } from '@/pages/community/breastfeeding-clubs-tab/add-breastfeeding-club';
-import { IndividualPoints } from '@/pages/practitioner/individual-points';
+import {
+  IndividualPointsMonthView,
+  IndividualPointsYearView,
+} from '@/pages/practitioner/individual-points';
+import { IndividualPointsInfoPage } from '@/pages/practitioner/individual-points/info-page';
 
 function PublicRoutes() {
   return (
@@ -309,8 +313,18 @@ function AuthRoutes() {
         exact
       />
       <Route
-        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS}
-        component={IndividualPoints}
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.MONTH_VIEW}
+        component={IndividualPointsMonthView}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.YEAR_VIEW}
+        component={IndividualPointsYearView}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.INFO_PAGE}
+        component={IndividualPointsInfoPage}
         exact
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />

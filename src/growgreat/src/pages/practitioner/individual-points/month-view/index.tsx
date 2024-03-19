@@ -1,4 +1,4 @@
-import { MaxIndividualPointsPerMonth } from '@/constants/Community';
+import { MaxIndividualPoints } from '@/constants/Community';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { getIndividualPointsUIDetails } from '@/utils/community/individual-points';
@@ -11,27 +11,35 @@ import {
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router';
-import { ComparativeMessage } from './components/comparative-message';
+import { ComparativeMessage } from '../components/comparative-message';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Pregnant from '@/assets/pregnant.svg';
 import Infant from '@/assets/infant.svg';
-import { PointsMonthSummary } from './components/points-month-summary';
+import { useSelector } from 'react-redux';
+import { getHealthCareWorkerTotalPointsPerMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
 
-export const IndividualPoints = () => {
-  const [isToShowPointsEarned, setIsToShowPointsEarned] = useState(false);
-
+export const IndividualPointsMonthView = () => {
   const history = useHistory();
 
   const today = new Date();
 
   const { isOnline } = useOnlineStatus();
 
-  // TODO: Get real individual points
-  const currentIndividualPoints = 600;
+  const { isLoading } = useThunkFetchCall(
+    'healthCareWorker',
+    HealthCareWorkerActions.GET_HEALTH_CARE_WORKER_POINTS
+  );
+
+  const currentIndividualPoints = useSelector(
+    getHealthCareWorkerTotalPointsPerMonthSelector(today.getMonth() + 1)
+  );
 
   const individualPointsUIDetails = getIndividualPointsUIDetails(
-    currentIndividualPoints
+    currentIndividualPoints,
+    'month'
   );
 
   const pointsToEarn = useMemo((): {
@@ -74,30 +82,27 @@ export const IndividualPoints = () => {
     return [childFolders, momFolders, visits, referrals];
   }, []);
 
-  const dummyMonths = [2, 3];
-
   return (
     <BannerWrapper
+      isLoading={isLoading}
       displayHelp
       displayOffline={!isOnline}
       renderBorder
       size="small"
       title="Points"
-      onBack={() =>
-        isToShowPointsEarned
-          ? setIsToShowPointsEarned(false)
-          : history.push(ROUTES.DASHBOARD)
+      onBack={() => history.push(ROUTES.DASHBOARD)}
+      onHelp={() =>
+        history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.INFO_PAGE)
       }
-      onHelp={() => {}}
       className="flex flex-col p-4 pt-6"
     >
       <Typography type="h2" text={format(today, 'MMMM yyyy')} />
       <ScoreCard
         className="my-4"
-        mainText={'{Points}'}
+        mainText={String(currentIndividualPoints ?? 0)}
         hint="points"
         currentPoints={currentIndividualPoints}
-        maxPoints={MaxIndividualPointsPerMonth}
+        maxPoints={MaxIndividualPoints.PerMonth}
         barBgColour="uiLight"
         barColour={individualPointsUIDetails.mainColour}
         bgColour="uiBg"
@@ -108,47 +113,29 @@ export const IndividualPoints = () => {
       <Typography
         className="mt-6"
         type="h3"
-        text={
-          isToShowPointsEarned
-            ? 'What you earned points for:'
-            : `How you can earn more points in ${format(today, 'MMMM')}:`
-        }
+        text={`How you can earn more points in ${format(today, 'MMMM')}:`}
       />
-      {!isToShowPointsEarned &&
-        pointsToEarn.map((item, index) => (
-          <PointsProgressCard
-            key={'points_' + index}
-            icon={item?.icon ?? ''}
-            imageUrl={item?.imageUrl ?? ''}
-            currentPoints={item.currentPoints}
-            maxPoints={item.maxPoints}
-            description={item.description}
-            barColour="secondary"
-            badgeImage={
-              <Badge
-                style={{
-                  objectFit: 'cover',
-                  width: '100%',
-                  height: '100%',
-                }}
-                fill="var(--secondary)"
-              />
-            }
-          />
-        ))}
-      {isToShowPointsEarned &&
-        dummyMonths.map((item, index) => <PointsMonthSummary key={index} />)}
-      {isToShowPointsEarned && (
-        <Button
-          className="mt-4"
-          icon="EyeIcon"
-          type="outlined"
-          textColor="primary"
-          color="primary"
-          text="See more months"
-          onClick={() => {}}
+      {pointsToEarn?.map((item, index) => (
+        <PointsProgressCard
+          key={'points_' + index}
+          icon={item?.icon ?? ''}
+          imageUrl={item?.imageUrl ?? ''}
+          currentPoints={item.currentPoints}
+          maxPoints={item.maxPoints}
+          description={item.description}
+          barColour="secondary"
+          badgeImage={
+            <Badge
+              style={{
+                objectFit: 'cover',
+                width: '100%',
+                height: '100%',
+              }}
+              fill="var(--secondary)"
+            />
+          }
         />
-      )}
+      ))}
       <div className={`mt-auto flex flex-col gap-4 pt-8`}>
         <Button
           icon="ShareIcon"
@@ -156,18 +143,20 @@ export const IndividualPoints = () => {
           textColor="white"
           color="primary"
           text="Share"
-          onClick={() => {}}
+          onClick={() => {
+            // TODO: Implement share
+          }}
         />
-        {!isToShowPointsEarned && (
-          <Button
-            icon="EyeIcon"
-            type="outlined"
-            textColor="primary"
-            color="primary"
-            text="See more"
-            onClick={() => setIsToShowPointsEarned(true)}
-          />
-        )}
+        <Button
+          icon="EyeIcon"
+          type="outlined"
+          textColor="primary"
+          color="primary"
+          text="See more"
+          onClick={() =>
+            history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.YEAR_VIEW)
+          }
+        />
       </div>
     </BannerWrapper>
   );

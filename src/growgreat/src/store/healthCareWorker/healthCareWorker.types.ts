@@ -1,8 +1,16 @@
 import { HealthCareWorkerDto, UserPointsAcitivtyDto } from '@ecdlink/core';
-import { TeamStandingModel } from '@ecdlink/graphql';
+import { MoreInformation, TeamStandingModel } from '@ecdlink/graphql';
 
 export interface HealthCareWorkerState {
   healthCareWorker?: HealthCareWorkerDto;
-  points: UserPointsAcitivtyDto[];
+  points: {
+    data: UserPointsAcitivtyDto[];
+    infoPage?: {
+      [locale: string]: {
+        dateLoaded: string;
+        data: MoreInformation[];
+      };
+    }[];
+  };
   teamStanding?: TeamStandingModel;
 }

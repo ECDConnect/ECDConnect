@@ -4,4 +4,5 @@ export interface LeaderProfileRouteParams {
 
 export interface LeaderProfileRouteState {
   isFromAboutPage?: boolean;
+  isFromIndividualPointsYearView?: boolean;
 }

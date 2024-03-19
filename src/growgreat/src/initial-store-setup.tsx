@@ -101,17 +101,22 @@ function InitialStoreSetup(props: Props) {
           const currentDate = new Date();
           const oneYearAgo = new Date();
           oneYearAgo.setMonth(currentDate.getMonth() - 12);
-          await appDispatch(
-            healthCareWorkerThunkActions.getHealthCareWorkerPoints({
-              userId: healthCareWorker.user.id,
-              startDate: oneYearAgo,
-            })
-          ).unwrap();
-          await appDispatch(
-            healthCareWorkerThunkActions.gethealthCareWorkerTeamStanding({
-              userId: healthCareWorker.user.id,
-            })
-          ).unwrap();
+
+          const promises = [
+            appDispatch(
+              healthCareWorkerThunkActions.getHealthCareWorkerPoints({
+                userId: healthCareWorker.user.id,
+                startDate: oneYearAgo,
+              })
+            ).unwrap(),
+            appDispatch(
+              healthCareWorkerThunkActions.getHealthCareWorkerTeamStanding({
+                userId: healthCareWorker.user.id,
+              })
+            ).unwrap(),
+          ];
+
+          await Promise.all(promises);
         }
       })();
     }
