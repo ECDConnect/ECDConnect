@@ -52,7 +52,7 @@ export const IndividualPointsInfoPage = () => {
   const onClose = () => {
     history.push(
       ROUTES.PRACTITIONER.INDIVIDUAL_POINTS[
-        state?.isFromIndividualPointsYearView ? 'YEAR_VIEW' : 'MONTH_VIEW'
+        state?.isFromIndividualPointsYearView ? 'YEAR_VIEW' : 'ROOT'
       ]
     );
   };

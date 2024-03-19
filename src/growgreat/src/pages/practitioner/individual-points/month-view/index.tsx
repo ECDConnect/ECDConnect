@@ -13,15 +13,18 @@ import { format } from 'date-fns';
 import { useHistory } from 'react-router';
 import { ComparativeMessage } from '../components/comparative-message';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Pregnant from '@/assets/pregnant.svg';
 import Infant from '@/assets/infant.svg';
 import { useSelector } from 'react-redux';
-import { getHealthCareWorkerTotalPointsPerMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
+import { getHealthCareWorkerTotalPointsByMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
+import { PointsShare } from '../components/points-share';
 
 export const IndividualPointsMonthView = () => {
+  const [isDownloadPointsShare, setIsDownloadPointsShare] = useState(false);
+
   const history = useHistory();
 
   const today = new Date();
@@ -34,7 +37,7 @@ export const IndividualPointsMonthView = () => {
   );
 
   const currentIndividualPoints = useSelector(
-    getHealthCareWorkerTotalPointsPerMonthSelector(today.getMonth() + 1)
+    getHealthCareWorkerTotalPointsByMonthSelector(today.getMonth() + 1)
   );
 
   const individualPointsUIDetails = getIndividualPointsUIDetails(
@@ -82,82 +85,92 @@ export const IndividualPointsMonthView = () => {
     return [childFolders, momFolders, visits, referrals];
   }, []);
 
+  const onShare = () => {
+    setIsDownloadPointsShare(true);
+    setTimeout(() => {
+      setIsDownloadPointsShare(false);
+    }, 1000);
+  };
+
   return (
-    <BannerWrapper
-      isLoading={isLoading}
-      displayHelp
-      displayOffline={!isOnline}
-      renderBorder
-      size="small"
-      title="Points"
-      onBack={() => history.push(ROUTES.DASHBOARD)}
-      onHelp={() =>
-        history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.INFO_PAGE)
-      }
-      className="flex flex-col p-4 pt-6"
-    >
-      <Typography type="h2" text={format(today, 'MMMM yyyy')} />
-      <ScoreCard
-        className="my-4"
-        mainText={String(currentIndividualPoints ?? 0)}
-        hint="points"
-        currentPoints={currentIndividualPoints}
-        maxPoints={MaxIndividualPoints.PerMonth}
-        barBgColour="uiLight"
-        barColour={individualPointsUIDetails.mainColour}
-        bgColour="uiBg"
-        barSize="medium"
-        textColour="black"
-      />
-      <ComparativeMessage />
-      <Typography
-        className="mt-6"
-        type="h3"
-        text={`How you can earn more points in ${format(today, 'MMMM')}:`}
-      />
-      {pointsToEarn?.map((item, index) => (
-        <PointsProgressCard
-          key={'points_' + index}
-          icon={item?.icon ?? ''}
-          imageUrl={item?.imageUrl ?? ''}
-          currentPoints={item.currentPoints}
-          maxPoints={item.maxPoints}
-          description={item.description}
-          barColour="secondary"
-          badgeImage={
-            <Badge
-              style={{
-                objectFit: 'cover',
-                width: '100%',
-                height: '100%',
-              }}
-              fill="var(--secondary)"
-            />
-          }
+    <>
+      <BannerWrapper
+        isLoading={isLoading}
+        displayHelp
+        displayOffline={!isOnline}
+        renderBorder
+        size="small"
+        title="Points"
+        onBack={() => history.push(ROUTES.DASHBOARD)}
+        onHelp={() =>
+          history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.INFO_PAGE)
+        }
+        className="flex flex-col p-4 pt-6"
+      >
+        <Typography type="h2" text={format(today, 'MMMM yyyy')} />
+        <ScoreCard
+          className="my-4"
+          mainText={String(currentIndividualPoints ?? 0)}
+          hint="points"
+          currentPoints={currentIndividualPoints}
+          maxPoints={MaxIndividualPoints.PerMonth}
+          barBgColour="uiLight"
+          barColour={individualPointsUIDetails.mainColour}
+          bgColour="uiBg"
+          barSize="medium"
+          textColour="black"
         />
-      ))}
-      <div className={`mt-auto flex flex-col gap-4 pt-8`}>
-        <Button
-          icon="ShareIcon"
-          type="filled"
-          textColor="white"
-          color="primary"
-          text="Share"
-          onClick={() => {
-            // TODO: Implement share
-          }}
+        <ComparativeMessage />
+        <Typography
+          className="mt-6"
+          type="h3"
+          text={`How you can earn more points in ${format(today, 'MMMM')}:`}
         />
-        <Button
-          icon="EyeIcon"
-          type="outlined"
-          textColor="primary"
-          color="primary"
-          text="See more"
-          onClick={() =>
-            history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.YEAR_VIEW)
-          }
-        />
-      </div>
-    </BannerWrapper>
+        {pointsToEarn?.map((item, index) => (
+          <PointsProgressCard
+            key={'points_' + index}
+            icon={item?.icon ?? ''}
+            imageUrl={item?.imageUrl ?? ''}
+            currentPoints={item.currentPoints}
+            maxPoints={item.maxPoints}
+            description={item.description}
+            barColour="secondary"
+            badgeImage={
+              <Badge
+                style={{
+                  objectFit: 'cover',
+                  width: '100%',
+                  height: '100%',
+                }}
+                fill="var(--secondary)"
+              />
+            }
+          />
+        ))}
+        <div className={`mt-auto flex flex-col gap-4 pt-8`}>
+          <Button
+            icon="ShareIcon"
+            type="filled"
+            textColor="white"
+            color="primary"
+            text="Share"
+            isLoading={isDownloadPointsShare}
+            disabled={isDownloadPointsShare}
+            onClick={onShare}
+          />
+          <Button
+            icon="EyeIcon"
+            type="outlined"
+            textColor="primary"
+            color="primary"
+            text="See more"
+            onClick={() =>
+              history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.YEAR_VIEW)
+            }
+          />
+        </div>
+      </BannerWrapper>
+      {isDownloadPointsShare && <PointsShare viewMode="month" />}
+    </>
   );
 };
