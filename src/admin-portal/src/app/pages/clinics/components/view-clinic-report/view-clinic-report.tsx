@@ -40,23 +40,8 @@ export const ViewClinicReport = () => {
     days: 30,
   });
 
-  // const [startDate, setStartDate] = useState(today);
-  // const [endDate, setEndDate] = useState(initialBefore30Days);
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDate, endDate] = dateRange;
-
-  // const onChange = (dates) => {
-  //   const [start, end] = dates;
-  //   setStartDate(start);
-  //   setEndDate(end);
-  // };
-
-  const labelContentRef = useRef(null);
-  const onClickLabel = useCallback((event) => {
-    if (event.nativeEvent.target !== labelContentRef.current) {
-      event.preventDefault();
-    }
-  }, []);
 
   const { data: clinicReportData } = useQuery(GetClinicVisitReportData, {
     fetchPolicy: 'cache-and-network',
@@ -88,10 +73,6 @@ export const ViewClinicReport = () => {
           clinic={clinic}
           closeDialog={(clinicCreated: boolean) => {
             onSubmit();
-
-            // if (clinicCreated) {
-            //   refetch();
-            // }
           }}
         />
       ),
@@ -290,17 +271,6 @@ export const ViewClinicReport = () => {
             align="left"
             className="w-full"
           />
-
-          {/* <ReactDatePicker
-                    selected={startDate}
-                    onChange={onChange}
-                    startDate={startDate}
-                    endDate={endDate}
-                    selectsRange={true}
-                    inline
-                    shouldCloseOnSelect={true}
-                  /> */}
-
           <div className="w-56">
             <DatePicker
               selectsRange={true}
