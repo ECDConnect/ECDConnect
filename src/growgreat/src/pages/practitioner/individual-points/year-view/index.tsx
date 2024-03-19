@@ -100,7 +100,7 @@ export const IndividualPointsYearView = () => {
           barSize="medium"
           textColour="black"
         />
-        <ComparativeMessage />
+        <ComparativeMessage viewMode="year" />
         {!!pointsDetailsPerMonth?.length && (
           <Typography
             className="mt-6"

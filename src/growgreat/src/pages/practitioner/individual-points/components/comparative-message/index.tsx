@@ -6,34 +6,51 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { ReactComponent as PollyCasual } from '@/assets/pollyCasual.svg';
 import { useSelector } from 'react-redux';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
-import { getHealthCareWorkerTotalPointsSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
 import { MaxIndividualPoints } from '@/constants/Community';
 import { userSelectors } from '@/store/user';
 
-export const ComparativeMessage = () => {
+export const ComparativeMessage = ({
+  viewMode,
+}: {
+  viewMode: 'month' | 'year';
+}) => {
+  const today = new Date();
+
   const user = useSelector(userSelectors.getUser);
-  const totalPoints = useSelector(getHealthCareWorkerTotalPointsSelector);
+  const totalPoints = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorkerTotalPointsSelector
+  );
+  const currentIndividualPoints = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorkerTotalPointsByMonthSelector(
+      today.getMonth() + 1
+    )
+  );
   const standing = useSelector(
     healthCareWorkerSelectors.getHealthCareWorkerTeamStandingSelector
   );
 
   const firstName = user?.firstName ?? 'CHW';
 
-  const percentageScore = (totalPoints / MaxIndividualPoints.PerYear) * 100;
+  const points = viewMode === 'year' ? totalPoints : currentIndividualPoints;
 
-  const percentageMembersWithFewerPointsForCurrentYear =
-    standing?.percentageMembersWithFewerPointsForCurrentYear ?? 0;
-  const percentageMembersWithMorePointsForCurrentYear =
-    standing?.percentageMembersWithMorePointsForCurrentYear ?? 0;
+  const percentageScore =
+    (points /
+      MaxIndividualPoints[viewMode === 'year' ? 'PerYear' : 'PerMonth']) *
+    100;
 
-  const isComparativeMessageA =
-    percentageMembersWithFewerPointsForCurrentYear === 100;
-  const isComparativeMessageB =
-    percentageMembersWithFewerPointsForCurrentYear > 75;
-  const isComparativeMessageC =
-    percentageMembersWithFewerPointsForCurrentYear >= 50;
-  const isComparativeMessageD =
-    percentageMembersWithMorePointsForCurrentYear > 50;
+  const percentageMembersWithFewerPoints =
+    (viewMode === 'year'
+      ? standing?.percentageMembersWithFewerPointsForCurrentYear
+      : standing?.percentageMembersWithFewerPointsForCurrentMonth) ?? 0;
+  const percentageMembersWithMorePoints =
+    (viewMode === 'year'
+      ? standing?.percentageMembersWithMorePointsForCurrentYear
+      : standing?.percentageMembersWithMorePointsForCurrentMonth) ?? 0;
+
+  const isComparativeMessageA = percentageMembersWithFewerPoints === 100;
+  const isComparativeMessageB = percentageMembersWithFewerPoints >= 75;
+  const isComparativeMessageC = percentageMembersWithFewerPoints >= 50;
+  const isComparativeMessageD = percentageMembersWithMorePoints > 50;
   const isAlternativeMessageA = percentageScore >= 80;
   const isAlternativeMessageB = percentageScore >= 60;
 
@@ -44,7 +61,7 @@ export const ComparativeMessage = () => {
     let message: AlertProps['message'] =
       'Keep using CHW Connect to earn points!';
 
-    if (!totalPoints) {
+    if (!points) {
       Icon = PollyCasual;
       type = 'warning';
       title = `No points earned yet`;
@@ -69,7 +86,7 @@ export const ComparativeMessage = () => {
       Icon = PollyCasual;
       type = 'warning';
       title = `Keep going ${firstName}!`;
-      message = `Most of the CHWs in your team have more than ${totalPoints} points! Earn more points to join them.`;
+      message = `Most of the CHWs in your team have more than ${points} points! Earn more points to join them.`;
     } else if (isAlternativeMessageA) {
       Icon = PollyImpressed;
       type = 'successLight';
@@ -102,7 +119,7 @@ export const ComparativeMessage = () => {
     isComparativeMessageB,
     isComparativeMessageC,
     isComparativeMessageD,
-    totalPoints,
+    points,
   ]);
 
   return <Alert {...props} />;
