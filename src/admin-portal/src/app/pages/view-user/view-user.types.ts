@@ -7,6 +7,7 @@ export enum UsersRolesTypeEnum {
   chw = 'Community Health Worker',
   teamLeads = 'Team Lead',
   user = 'User',
+  administrator = 'Administrator',
 }
 
 export enum idTypeEnum {

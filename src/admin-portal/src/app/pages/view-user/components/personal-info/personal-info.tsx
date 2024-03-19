@@ -32,7 +32,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import * as yup from 'yup';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 export interface PersonalInfoProps {
@@ -47,6 +47,7 @@ export interface PersonalInfoProps {
   refetchCHW: () => void;
   isNotLockedOut: (user: UserDto) => boolean;
   clinicIds?: string[];
+  isAdministrator?: boolean;
 }
 
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({
@@ -61,6 +62,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   refetchCHW,
   isNotLockedOut,
   clinicIds,
+  isAdministrator,
 }) => {
   const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -446,7 +448,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 </Button>
               )}
             </>
-          ) : userData ? (
+          ) : userData && !isAdministrator ? (
             <div>
               <div className="grid grid-cols-3 justify-start gap-y-8 p-4 text-current">
                 <div className="flex items-center">
@@ -644,7 +646,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       </div>
 
       <div className="flex justify-end p-4">
-        {isNotLockedOut(userData ?? chwData?.user) && (
+        {isNotLockedOut(userData ?? chwData?.user) && !isAdministrator && (
           <button
             onClick={() => {
               setEditActive(!editActive);
