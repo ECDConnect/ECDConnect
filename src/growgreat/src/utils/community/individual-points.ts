@@ -14,6 +14,7 @@ export function getIndividualPointsUIDetails(
   mainColour: Colours;
   dashboardColour: Colours;
   backgroundColour: Colours;
+  currentPointsPercentage: number;
 } {
   const currentPointsPercentage =
     (currentPoints /
@@ -22,6 +23,7 @@ export function getIndividualPointsUIDetails(
 
   if (currentPointsPercentage >= 80) {
     return {
+      currentPointsPercentage,
       icon: PollyImpressed,
       mainColour: 'successMain',
       dashboardColour: 'successMain',
@@ -31,6 +33,7 @@ export function getIndividualPointsUIDetails(
 
   if (currentPointsPercentage >= 60) {
     return {
+      currentPointsPercentage,
       icon: PollyHappy,
       mainColour: 'secondary',
       dashboardColour: 'successMain',
@@ -39,6 +42,7 @@ export function getIndividualPointsUIDetails(
   }
 
   return {
+    currentPointsPercentage,
     icon: PollyCasual,
     mainColour: 'alertMain',
     dashboardColour: 'alertMain',

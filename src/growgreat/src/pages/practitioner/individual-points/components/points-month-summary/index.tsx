@@ -10,6 +10,8 @@ export const PointsMonthSummary = ({
 }) => {
   const sum = points.reduce((acc, curr) => acc + curr.pointsTotal, 0);
 
+  const sortedPoints = points.sort((a, b) => b.pointsTotal - a.pointsTotal);
+
   return (
     <>
       <Divider dividerType="dashed" className="mt-6 mb-4" />
@@ -27,7 +29,7 @@ export const PointsMonthSummary = ({
         className="mb-4"
         text={`${sum} points`}
       />
-      {points?.map((item, index) => (
+      {sortedPoints?.map((item, index) => (
         <PointsDetailsCard
           key={item.pointsActivityId + index}
           pointsEarned={item?.pointsTotal}

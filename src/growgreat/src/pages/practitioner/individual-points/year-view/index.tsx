@@ -18,6 +18,7 @@ import { LeaderProfileRouteState } from '@/pages/community/team-tab/team/members
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CommunityActions } from '@/store/community/community.actions';
 import { PointsShare } from '../components/points-share';
+import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 
 export const IndividualPointsYearView = () => {
   const [isDownloadPointsShare, setIsDownloadPointsShare] = useState(false);
@@ -90,6 +91,15 @@ export const IndividualPointsYearView = () => {
         <Typography type="h2" text={`Points ${today.getFullYear()}`} />
         <ScoreCard
           className="my-4"
+          image={
+            individualPointsUIDetails?.currentPointsPercentage >= 80 ? (
+              <div>
+                <CelebrateIcon className="mr-4 h-14 w-14" />
+              </div>
+            ) : (
+              <></>
+            )
+          }
           mainText={String(totalPoints ?? 0)}
           hint="points"
           currentPoints={totalPoints}
