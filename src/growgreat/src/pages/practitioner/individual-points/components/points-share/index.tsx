@@ -86,17 +86,13 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
       } for this period!`;
       colour = 'successMain';
       Icon = AwardIconDark;
-    }
-
-    if (percentageMembersWithFewerPoints > 75) {
+    } else if (percentageMembersWithFewerPoints > 75) {
       message = `One of the top CHWs ${
         clinic?.name ? `at ${clinic.name}` : ''
       } for this period!`;
       colour = 'successMain';
       Icon = AwardIconDark;
-    }
-
-    if (percentageMembersWithFewerPoints > 50) {
+    } else if (percentageMembersWithFewerPoints > 50) {
       message = 'High points earner!';
       colour = 'secondary';
       Icon = CelebrateIconLight;
