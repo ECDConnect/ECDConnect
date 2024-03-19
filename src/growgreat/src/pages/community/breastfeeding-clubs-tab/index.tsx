@@ -236,7 +236,7 @@ export const BreastfeedingClubsTab: React.FC = () => {
             type="outlined"
             textColor="primary"
             color="primary"
-            text={isToShowAll ? 'See less months' : 'See more months'}
+            text={isToShowAll ? 'See fewer months' : 'See more months'}
             onClick={() => setIsToShowAll(!isToShowAll)}
           />
         )}
