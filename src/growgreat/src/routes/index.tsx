@@ -313,7 +313,7 @@ function AuthRoutes() {
         exact
       />
       <Route
-        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.MONTH_VIEW}
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT}
         component={IndividualPointsMonthView}
         exact
       />
