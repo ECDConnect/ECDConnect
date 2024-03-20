@@ -18,6 +18,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   CompleteProfile: {
     cta: 'CompleteProfile',
   },
+  RedAlertReferral: {
+    cta: 'SeeReferralsRedAlert',
+  },
 };
 
 export const enum MessageStatusConstants {

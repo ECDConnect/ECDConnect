@@ -97,6 +97,11 @@ function InitialStoreSetup(props: Props) {
             id: healthCareWorker?.id || '',
           })
         ).unwrap();
+        appDispatch(
+          healthCareWorkerThunkActions.getHealthCareWorkerPointsTodoItems({
+            healthCareWorkerId: healthCareWorker.id!,
+          })
+        ).unwrap();
         if (!!healthCareWorker.user && !!healthCareWorker.user.id) {
           const currentDate = new Date();
           const oneYearAgo = new Date();

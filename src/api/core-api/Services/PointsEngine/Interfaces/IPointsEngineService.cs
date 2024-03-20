@@ -55,5 +55,7 @@ namespace ECDLink.Core.Services.Interfaces
 
         ClinicPointsModel GetPointsDetailsForClinic(Guid clinicId);
         LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId);
+
+        List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId);
     }
 }

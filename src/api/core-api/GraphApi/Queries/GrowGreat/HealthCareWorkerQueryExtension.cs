@@ -525,5 +525,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             return teamStanding;
         }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(
+            [Service] IPointsEngineService pointsService,
+            Guid healthCareWorkerId)
+        {
+            var pointsTodoItems = pointsService.GetHealthCareWorkerPointsTodoItems(healthCareWorkerId);
+
+            return pointsTodoItems;
+        }
     }
 }

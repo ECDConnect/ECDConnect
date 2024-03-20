@@ -17,6 +17,7 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -26,9 +27,11 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -64,6 +67,11 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly IGenericRepository<Clinic, Guid> _clinicRepo;
         private readonly IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
+        private readonly IGenericRepository<Mother, Guid> _motherRepo;
+        private readonly IGenericRepository<Infant, Guid> _infantRepo;
+
+        private IGenericRepository<Visit, Guid> _visitRepo;
+        private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
 
         private readonly IGenericRepository<League, Guid> _leagueRepo;
 
@@ -122,6 +130,11 @@ namespace EcdLink.Api.CoreApi.Services
 
             _clinicRepo = _repositoryFactory.CreateGenericRepository<Clinic>(userContext: _uId);
             _healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: _uId);
+            _motherRepo = _repositoryFactory.CreateGenericRepository<Mother>(userContext: _uId);
+            _infantRepo = _repositoryFactory.CreateGenericRepository<Infant>(userContext: _uId);
+
+            _visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
+            _visitDataStatusRepo = _repositoryFactory.CreateGenericRepository<VisitDataStatus>(userContext: _uId);
 
             _leagueRepo = _repositoryFactory.CreateGenericRepository<League>(userContext: _uId);
 
@@ -1398,5 +1411,158 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
+        public List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId)
+        {
+            var pointsTodoItems = new List<PointsPointsTodoItemModel>();
+
+            //_visitManager.GetTotalVisitsOverdueForPeriod
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+
+            #region Complete due visits
+
+            var dueVisits = _visitRepo.GetAll().Where(x => x.Attended == false
+                    && x.DueDate <= monthEnd
+                    && (
+                        (
+                            x.Mother.IsActive == true
+                            && x.Mother.HealthCareWorker.Id == healthCareWorkerId
+                        )
+                        || (
+                            x.Infant.IsActive
+                            && x.Infant.Caregiver.HealthCareWorkerId.HasValue
+                            && x.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId)))
+                .Select(x => new { x.Id, IsInfantVisit = x.InfantId.HasValue })
+                .ToList();
+
+            if(dueVisits.Any() )
+            {
+                var visitsCompletedThisMonth = _visitRepo.GetAll().Where(x => x.Attended == true
+                    && x.DueDate >= monthStart
+                    && x.DueDate <= monthEnd
+                    && (
+                        (
+                            x.Mother.IsActive == true
+                            && x.Mother.HealthCareWorker.Id == healthCareWorkerId
+                        )
+                        || (
+                            x.Infant.IsActive
+                            && x.Infant.Caregiver.HealthCareWorkerId.HasValue
+                            && x.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId)))
+                .Count();
+
+                var dueInfantVisits = dueVisits.Where(x => x.IsInfantVisit).Count();
+                var dueMotherVisits = dueVisits.Where(x => !x.IsInfantVisit).Count();
+
+                var count = dueInfantVisits + dueMotherVisits;
+
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Complete {count} visits due this month",
+                    Points = (dueInfantVisits > 0 ? 260 : 0) + (dueMotherVisits > 0 ? 200 : 0),
+                    Count = count,
+                    PercentageComplete = count / (count + visitsCompletedThisMonth) * 100,
+                });
+            }
+
+            #endregion
+
+            #region Complete referrals
+
+            var motherReferrals = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Mother.HealthCareWorkerId == healthCareWorkerId
+                    && (x.VisitData.VisitSection == GGSettings.MaternalDistressScreening
+                        || x.VisitData.VisitSection == GGSettings.MotherNutritionMUACMeasurement)
+                    && x.Type == GGSettings.visit_data_client_referral
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => new { x.Id, x.VisitData.VisitSection, x.IsCompleted })
+                .Distinct()
+                .ToList();
+
+            var infantReferrals = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.HasValue 
+                    && x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId
+                    && (x.VisitData.Question == GGSettings.QuestionLength
+                        || x.VisitData.Question == GGSettings.QuestionWeight
+                        || x.VisitData.Question == GGSettings.QuestionMUAC)
+                    && (x.Section == GGSettings.refer_to_clinic || x.Section == GGSettings.refer_to_clinic_urgently)
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => new { x.Id, x.VisitData.Question, x.IsCompleted })
+                .Distinct()
+                .ToList();
+
+            var missedReferrals = motherReferrals.Count(x => !x.IsCompleted) + infantReferrals.Count(x => !x.IsCompleted);
+            if (missedReferrals > 0)
+            {
+                var motherMissedReferralTypes = motherReferrals.Select(x => x.VisitSection).Distinct().Count();
+                var infantMissedReferralTypes = infantReferrals.Select(x => x.Question).Distinct().Count();
+
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Make {missedReferrals} referrals",
+                    Points = (motherMissedReferralTypes * 20) + (infantMissedReferralTypes * 20),
+                    Count = missedReferrals,
+                    PercentageComplete = missedReferrals / (infantReferrals.Count() + motherReferrals.Count()) * 100,
+                });
+            }
+
+            #endregion
+
+            #region Open mother folder
+
+            var mothers = _motherRepo.GetAll()
+                .Where(x => x.HealthCareWorker.Id == healthCareWorkerId
+                    && x.IsActive == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd
+                    && x.ExpectedDateOfDelivery != null)
+                .Count();
+
+            if (mothers < 2)
+            {
+                var count = 2 - mothers;
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Open {count} pregnant mom folders",
+                    Points = 50,
+                    Count = count,
+                    PercentageComplete = count / 2 * 100,
+                });
+            }
+
+
+            #endregion
+
+            #region Open infant folder
+
+            var twoYearsAgo = DateTime.Now.AddYears(-2);
+            var infants = _infantRepo.GetAll()
+                .Where(x => x.Caregiver.HealthCareWorkerId.HasValue
+                    && x.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId
+                    && x.IsActive == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd
+                    && x.User.DateOfBirth > twoYearsAgo).Count();
+
+            if (infants < 5)
+            {
+                var count = 5 - infants;
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Open {count} child folders",
+                    Points = 100,
+                    Count = count,
+                    PercentageComplete = count / 5 * 100,
+                });
+            }
+
+            #endregion
+
+            return pointsTodoItems;
+        }
     }
 }

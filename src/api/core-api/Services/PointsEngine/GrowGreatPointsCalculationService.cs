@@ -79,18 +79,6 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             _clinicService = clinicService;
         }
 
-
-        // TODO - Need to fix this
-        private void UpdateUserSummaryPoints(string userId, DateTime today)
-        {
-            var allRecords = _pointsEngineService.GetPointsLibraryForTenant();
-
-            foreach (var activity in allRecords)
-            {
-                _pointsEngineService.UpdateUserSummaryPoints(userId, activity, today);
-            }
-        }
-
         private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null, DateTime? dateScored = null)
         {
             var monthStart = (dateScored ?? DateTime.Now).GetStartOfMonth();
@@ -303,7 +291,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
 
             #endregion
 
-            #region Measuring childrens' growth length - Action not required
+            #region Measuring childrens' growth length - Action not required or referral made
 
             var lengthMeasuredNoAction = _visitDataStatusRepo.GetAll()
                 .Where(x =>
@@ -367,7 +355,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
 
             #endregion
 
-            #region Measuring childrens' growth length - Action not required
+            #region Measuring childrens' growth length - Action not required or referral made
 
             var weightMeasuredNoAction = _visitDataStatusRepo.GetAll()
                 .Where(x =>
@@ -431,7 +419,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
 
             #endregion
 
-            #region Measuring childrens' MUAC - Action not required
+            #region Measuring childrens' MUAC - Action not required or referral made
 
             var muacMeasuredNoAction = _visitDataStatusRepo.GetAll()
                 .Where(x =>

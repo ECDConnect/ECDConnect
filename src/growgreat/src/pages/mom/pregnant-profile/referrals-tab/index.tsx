@@ -43,6 +43,12 @@ import ROUTES from '@/routes/routes';
 import { useWalkthrough } from '@/context/walkthroughContext';
 import { referralsSteps } from './walkthrough/steps';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationTagConfig } from '@/constants/notifications';
 
 const HEADER_HEIGHT = 64;
 
@@ -83,6 +89,14 @@ export const ReferralsTab: React.FC = () => {
   const { isLoading: isLoadingUpdateVisitData } = useThunkFetchCall(
     'mothers',
     MotherActions.UPDATE_VISIT_DATA_STATUS
+  );
+
+  const notifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter((item) =>
+    item?.message?.cta?.includes(
+      notificationTagConfig?.RedAlertReferral.cta ?? ''
+    )
   );
 
   const isLoading =
@@ -286,12 +300,29 @@ export const ReferralsTab: React.FC = () => {
           appDispatch(
             motherThunkActions.updateVisitDataStatus({ input: newState })
           ).unwrap();
-        }
 
+          const removeNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes(
+                'was experiencing maternal distress'
+              )
+          );
+          if (notifications && removeNotification) {
+            notifications.forEach((x) => {
+              appDispatch(notificationActions.removeNotification(x!));
+              appDispatch(
+                disableBackendNotification({
+                  notificationId: x?.message?.reference ?? '',
+                })
+              );
+            });
+          }
+        }
         return newState;
       });
     },
-    [appDispatch, referralsForMother?.length]
+    [appDispatch, notifications, referralsForMother?.length]
   );
 
   const onOptionSelected = useCallback(
@@ -306,8 +337,8 @@ export const ReferralsTab: React.FC = () => {
 
       const updatedQuestions = { ...questions, [index]: updatedAnswers };
       const formattedQuestions = updatedAnswers.map((item) => {
-        const { id, isCompleted } = item;
-        return { id, isCompleted };
+        const { id, isCompleted, comment } = item;
+        return { id, isCompleted, comment };
       });
 
       handleSetReferrals?.(formattedQuestions);
