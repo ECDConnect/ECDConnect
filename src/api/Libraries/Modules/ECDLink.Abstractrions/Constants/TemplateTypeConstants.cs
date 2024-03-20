@@ -91,7 +91,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGChildMUAC = "gg-child-muac";
         public const string GGChildGrowthIssue = "gg-child-growth-issue"; 
         public const string GGMultipleReferrals = "gg-multiple-referrals";
-        public const string GGReferralDangerSigns = "gg-referral-danger-signs";
+        public const string GGReferralDangerSignsMother = "gg-referral-danger-signs-mother";
+        public const string GGReferralDangerSignsInfant = "gg-referral-danger-signs-infant";
         public const string GGTwoVisitsMissed = "gg-two-visits-missed";
         public const string GGChildOlderThanFive = "gg-child-older-than-five";
         public const string GGReferDOHA = "gg-refer-home-affairs";
