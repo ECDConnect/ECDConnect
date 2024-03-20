@@ -10860,6 +10860,14 @@ export type PointsLibrarySortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type PointsPointsTodoItemModel = {
+  __typename?: 'PointsPointsTodoItemModel';
+  count: Scalars['Int'];
+  message?: Maybe<Scalars['String']>;
+  percentageComplete: Scalars['Int'];
+  points: Scalars['Int'];
+};
+
 export type PointsUserSummary = {
   __typename?: 'PointsUserSummary';
   dateScored: Scalars['DateTime'];
@@ -12715,6 +12723,9 @@ export type Query = {
   hasContentTypeBeenTranslated: Scalars['Boolean'];
   healthCareWorkerByUserId?: Maybe<HealthCareWorkerModel>;
   healthCareWorkerHighlights?: Maybe<HcwHighlights>;
+  healthCareWorkerPointsTodoItems?: Maybe<
+    Array<Maybe<PointsPointsTodoItemModel>>
+  >;
   healthCareWorkerSummaryForPeriod?: Maybe<HcwSummary>;
   healthCareWorkerTeamStanding?: Maybe<TeamStandingModel>;
   healthCareWorkerTemplateGenerator?: Maybe<FileModel>;
@@ -15330,6 +15341,10 @@ export type QueryHealthCareWorkerByUserIdArgs = {
 
 export type QueryHealthCareWorkerHighlightsArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryHealthCareWorkerPointsTodoItemsArgs = {
+  healthCareWorkerId: Scalars['UUID'];
 };
 
 export type QueryHealthCareWorkerSummaryForPeriodArgs = {

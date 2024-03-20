@@ -111,8 +111,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (input.VisitData.Sections == null)
             {
-                // No data to save
-                return visit;
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                if (input.VisitData.VisitName == Constants.GGSettings.pillar3_db)
+                {
+                    _section.VisitSection = Constants.GGSettings.pillar3_section;
+                }
+                _section.Questions = new List<CMSQuestion>();
+                var _question = new CMSQuestion();
+               _question.Question = "";
+               _question.Answer = "";
+               _section.Questions.Add(_question);
+               input.VisitData.Sections = new CMSVisitSection[] { _section };
             }
 
             // Add visit data
