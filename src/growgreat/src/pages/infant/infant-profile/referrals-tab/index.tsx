@@ -42,6 +42,12 @@ import { referralsSteps } from './walkthrough/steps';
 import { useWalkthrough } from '@/context/walkthroughContext';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationTagConfig } from '@/constants/notifications';
 
 const HEADER_HEIGHT = 64;
 interface GroupedData {
@@ -104,6 +110,14 @@ export const ReferralsTab: React.FC = () => {
     getInfantCurrentVisitSelector(state, '')
   );
 
+  const dangerSignsNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.DangerSignsReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
   const previousVisit = useSelector((state: RootState) =>
     getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
@@ -212,12 +226,29 @@ export const ReferralsTab: React.FC = () => {
           appDispatch(
             infantThunkActions.updateVisitDataStatus({ input: newState })
           ).unwrap();
+
+          const removeDangerSignNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('was experiencing:')
+          );
+
+          if (dangerSignsNotifications && removeDangerSignNotification) {
+            dangerSignsNotifications.forEach((x) => {
+              appDispatch(notificationActions.removeNotification(x!));
+              appDispatch(
+                disableBackendNotification({
+                  notificationId: x?.message?.reference ?? '',
+                })
+              );
+            });
+          }
         }
 
         return newState;
       });
     },
-    [appDispatch, referralsForInfant?.length]
+    [appDispatch, dangerSignsNotifications, referralsForInfant?.length]
   );
 
   // group data under sections
@@ -314,8 +345,8 @@ export const ReferralsTab: React.FC = () => {
 
       const updatedQuestions = { ...questions, [index]: updatedAnswers };
       const formattedQuestions = updatedAnswers.map((item) => {
-        const { id, isCompleted } = item;
-        return { id, isCompleted };
+        const { id, isCompleted, comment } = item;
+        return { id, isCompleted, comment };
       });
 
       handleSetReferrals?.(formattedQuestions);

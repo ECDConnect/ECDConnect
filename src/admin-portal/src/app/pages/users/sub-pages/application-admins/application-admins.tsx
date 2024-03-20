@@ -30,6 +30,7 @@ export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   AdminTypes?.ContentManager,
   AdminTypes?.SuperAdmin,
   AdminTypes?.DesignManager,
+  AdminTypes?.Administrator,
 ].map((item) => ({
   id: item,
   label: item,
@@ -46,7 +47,10 @@ export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
 }));
 
 export default function ApplicationAdmins() {
-  const { hasPermission } = useUser();
+  const { hasPermission, user } = useUser();
+  const isSuperAdmin = user?.roles?.some(
+    (role: any) => role.name === AdminTypes.SuperAdmin
+  );
 
   const [searchValue, setSearchValue] = useState('');
   const [tableData, setTableData] = useState<any[]>([]);
@@ -408,7 +412,7 @@ export default function ApplicationAdmins() {
             </div>
 
             <div className="mt-3 justify-end sm:mt-0 sm:ml-4">
-              {hasPermission(PermissionEnum.create_user) && (
+              {hasPermission(PermissionEnum.create_user) && isSuperAdmin && (
                 <button
                   onClick={displayUserPanel}
                   type="button"

@@ -8,8 +8,8 @@ import { ComparativeMessage } from '../components/comparative-message';
 import { PointsMonthSummary } from '../components/points-month-summary';
 import { useSelector } from 'react-redux';
 import {
-  getHealthCareWorkerAllPointsDetailsSplittedPerMonthSelector,
-  getHealthCareWorkerTotalPointsSelector,
+  getHealthCareWorkerAllCompletedPointsDetailsSplitPerMonthSelector,
+  getHealthCareWorkerTotalCompletedPointsSelector,
 } from '@/store/healthCareWorker/healthCareWorker.selectors';
 import { useState } from 'react';
 import { communitySelectors } from '@/store/community';
@@ -39,9 +39,11 @@ export const IndividualPointsYearView = () => {
 
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
   const pointsDetailsPerMonth = useSelector(
-    getHealthCareWorkerAllPointsDetailsSplittedPerMonthSelector()
+    getHealthCareWorkerAllCompletedPointsDetailsSplitPerMonthSelector()
   );
-  const totalPoints = useSelector(getHealthCareWorkerTotalPointsSelector);
+  const totalPoints = useSelector(
+    getHealthCareWorkerTotalCompletedPointsSelector
+  );
 
   const individualPointsUIDetails = getIndividualPointsUIDetails(
     totalPoints,

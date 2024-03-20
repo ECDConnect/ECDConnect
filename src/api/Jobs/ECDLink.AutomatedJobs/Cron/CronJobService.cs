@@ -59,6 +59,13 @@ namespace ECDLink.AutomatedJobs.Cron
           if (service == null) throw new Exception(string.Format("Service {0} not found.", typeof(T).Name ));
           return service;
         }
+        public List<T> GetServices<T>()
+        {
+            if (this._scope == null) throw new NullReferenceException("_scope is null.  Only call this within the context of DoWork method.");
+            var services = _scope.ServiceProvider.GetServices<T>();
+            if (services == null || services.All(x => x == null)) throw new Exception(string.Format("Service {0} not found.", typeof(T).Name));
+            return services.Where(x => x != null).ToList();
+        }
 
         public virtual async Task StartAsync(CancellationToken cancellationToken)
         {

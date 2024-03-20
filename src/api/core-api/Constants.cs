@@ -891,6 +891,11 @@ namespace EcdLink.Api.CoreApi
             public static readonly Guid ChildrenDewormingUpToDateActivityId = new Guid("31b8633f-aeac-4970-99cf-e72745c963b7");
             public static readonly Guid ChildrenImmunisationsUpToDateActivityId = new Guid("b3be1d39-c4e3-4fbc-bfb4-80099320436c");
         }
+
+        public static class GrowGreatPointsAmounts
+        {
+            public const int MontlyPointsMaxForHealthCareWorker = 785;
+        }
         
         public static class StatusColours
         {

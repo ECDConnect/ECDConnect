@@ -6,39 +6,58 @@ export const getHealthCareWorker = (
   state: RootState
 ): HealthCareWorkerDto | undefined => state.healthCareWorker.healthCareWorker;
 
-export const getHealthCareWorkerPointsDetailsSelector = (state: RootState) =>
-  state.healthCareWorker.points.data;
+export const getHealthCareWorkerCompletedPointsDetailsSelector = (
+  state: RootState
+) => state.healthCareWorker.points.completedItems;
 
-export const getHealthCareWorkerTotalPointsSelector = (state: RootState) => {
-  const points = state.healthCareWorker.points.data;
-  return points?.reduce((acc, curr) => acc + curr.pointsTotal, 0);
+export const getHealthCareWorkerTotalCompletedPointsSelector = (
+  state: RootState
+) => {
+  const points = state.healthCareWorker.points.completedItems;
+  return points?.reduce((acc, curr) => acc + curr.pointsTotal, 0) ?? 0;
 };
 
-export const getHealthCareWorkerAllPointsDetailsSplittedPerMonthSelector = () =>
-  createSelector(getHealthCareWorkerPointsDetailsSelector, (points) => {
-    const dividedByMonth: { [key: number]: UserPointsAcitivtyDto[] } = {};
+export const getHealthCareWorkerAllCompletedPointsDetailsSplitPerMonthSelector =
+  () =>
+    createSelector(
+      getHealthCareWorkerCompletedPointsDetailsSelector,
+      (points) => {
+        const dividedByMonth: { [key: number]: UserPointsAcitivtyDto[] } = {};
 
-    points?.forEach((item) => {
-      const { month } = item;
-      if (!dividedByMonth[month]) {
-        dividedByMonth[month] = [];
+        points?.forEach((item) => {
+          const { month } = item;
+          if (!dividedByMonth[month]) {
+            dividedByMonth[month] = [];
+          }
+          dividedByMonth[month].push(item);
+        });
+
+        return Object.values(dividedByMonth)?.reverse();
       }
-      dividedByMonth[month].push(item);
-    });
+    );
 
-    return Object.values(dividedByMonth)?.reverse();
-  });
+export const getHealthCareWorkerCompletedPointsByMonthSelector = (
+  month: number
+) =>
+  createSelector(
+    getHealthCareWorkerCompletedPointsDetailsSelector,
+    (points) => {
+      return points?.filter((point) => point.month === month);
+    }
+  );
 
-export const getHealthCareWorkerPointsByMonthSelector = (month: number) =>
-  createSelector(getHealthCareWorkerPointsDetailsSelector, (points) => {
-    return points?.filter((point) => point.month === month);
-  });
-
-export const getHealthCareWorkerTotalPointsByMonthSelector = (month: number) =>
-  createSelector(getHealthCareWorkerPointsDetailsSelector, (points) => {
-    const filteredPoints = points?.filter((point) => point.month === month);
-    return filteredPoints?.reduce((acc, curr) => acc + curr.pointsTotal, 0);
-  });
+export const getHealthCareWorkerTotalCompletedPointsByMonthSelector = (
+  month: number
+) =>
+  createSelector(
+    getHealthCareWorkerCompletedPointsDetailsSelector,
+    (points) => {
+      const filteredPoints = points?.filter((point) => point.month === month);
+      return (
+        filteredPoints?.reduce((acc, curr) => acc + curr.pointsTotal, 0) ?? 0
+      );
+    }
+  );
 
 export const getMoreInformationSelector = (locale: string) =>
   createSelector(
@@ -48,3 +67,6 @@ export const getMoreInformationSelector = (locale: string) =>
 
 export const getHealthCareWorkerTeamStandingSelector = (state: RootState) =>
   state.healthCareWorker.teamStanding;
+
+export const getHealthCareWorkerPointsTodoItemsSelector = (state: RootState) =>
+  state.healthCareWorker.points.todoItems;

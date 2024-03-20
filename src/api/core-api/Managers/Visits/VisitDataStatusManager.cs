@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -258,6 +259,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                 AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
                             }
 
+                            Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == infantId).FirstOrDefault();
+                            List<TagsReplacements> replacements = new List<TagsReplacements>();
+                            replacements.Add(new TagsReplacements()
+                            {
+                                FindValue = "FirstName",
+                                ReplacementValue = motherName
+                            });
+                            replacements.Add(new TagsReplacements()
+                            {
+                                FindValue = "infantId",
+                                ReplacementValue = infant.UserId.ToString()
+                            });
+                            replacements.Add(new TagsReplacements()
+                            {
+                                FindValue = "DangerSignsList",
+                                ReplacementValue = bulletList
+                            });
+                            var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
+                            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null);
+
                             // Add additional visit item with secondary text: ""Danger signs""
                             AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.danger_signs);
                         }
@@ -299,6 +320,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // Add item to G9 Client summary download ""You need urgent care for some serious health issues""
                         comment = GGSettings.urgent_care;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
+
+                        Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == infantId).FirstOrDefault();
+                        List<TagsReplacements> replacements = new List<TagsReplacements>();
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "FirstName",
+                            ReplacementValue = firstName
+                        });
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "infantId",
+                            ReplacementValue = infant.UserId.ToString()
+                        });
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "DangerSignsList",
+                            ReplacementValue = bulletList
+                        });
+
+                        var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null);
                     }
                 }
                 else if (vData.Question == GGSettings.q_stop_worry ||
@@ -783,6 +825,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // Add item to G9 Client summary download ""You need urgent care for some serious health issues""
                         comment = GGSettings.urgent_care;
                         AddVisitDataStatus(visitData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, visitData.VisitSection, false);
+
+                        Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == motherId).FirstOrDefault();
+                        List<TagsReplacements> replacements = new List<TagsReplacements>();
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "FirstName",
+                            ReplacementValue = firstName
+                        });
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "motherId",
+                            ReplacementValue = mother.UserId.ToString()
+                        });
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "DangerSignsList",
+                            ReplacementValue = bulletList
+                        });
+                        var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements);
                     }
                 }
             }
@@ -1773,7 +1835,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (clientType == GGSettings.client_mother)
             {
-                if (visitId == "" && visitId == null)
+                if (visitId == "" || visitId == null)
                 {
                     allReferrals = (
                         from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
@@ -1794,7 +1856,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else
             {
-                if (visitId == "" && visitId == null)
+                if (visitId == "" || visitId == null)
                 {
                     allReferrals = (
                         from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
