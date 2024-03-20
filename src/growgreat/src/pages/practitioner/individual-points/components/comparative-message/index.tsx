@@ -18,10 +18,10 @@ export const ComparativeMessage = ({
 
   const user = useSelector(userSelectors.getUser);
   const totalPoints = useSelector(
-    healthCareWorkerSelectors.getHealthCareWorkerTotalPointsSelector
+    healthCareWorkerSelectors.getHealthCareWorkerTotalCompletedPointsSelector
   );
   const currentIndividualPoints = useSelector(
-    healthCareWorkerSelectors.getHealthCareWorkerTotalPointsByMonthSelector(
+    healthCareWorkerSelectors.getHealthCareWorkerTotalCompletedPointsByMonthSelector(
       today.getMonth() + 1
     )
   );

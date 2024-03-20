@@ -46,7 +46,8 @@ import {
 import { LeagueType, MaxIndividualPoints } from '@/constants/Community';
 import { COMMUNITY_TABS } from '../community/community.types';
 import { getIndividualPointsUIDetails } from '@/utils/community/individual-points';
-import { getHealthCareWorkerTotalPointsByMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
+import { getHealthCareWorkerTotalCompletedPointsByMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
+import { PointsMonthViewRouteState } from '../practitioner/individual-points/month-view/types';
 
 export const Dashboard: React.FC = () => {
   const today = new Date();
@@ -73,7 +74,7 @@ export const Dashboard: React.FC = () => {
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
   const league = useSelector(communitySelectors.getLeagueSelector);
   const currentIndividualPoints = useSelector(
-    getHealthCareWorkerTotalPointsByMonthSelector(today.getMonth() + 1)
+    getHealthCareWorkerTotalCompletedPointsByMonthSelector(today.getMonth() + 1)
   );
 
   const { tierName, tierColor } = getTierDetails(
@@ -322,7 +323,10 @@ export const Dashboard: React.FC = () => {
       bgColour: individualPointsUIDetails.backgroundColour,
       textColour: 'textDark',
       hideProgressBar: !currentIndividualPoints,
-      onClick: () => history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT),
+      onClick: () =>
+        history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT, {
+          forceReload: true,
+        } as PointsMonthViewRouteState),
     };
   }, [currentIndividualPoints]);
 

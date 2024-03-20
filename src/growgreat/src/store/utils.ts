@@ -28,6 +28,9 @@ export const setThunkActionStatus = (
   });
   if (!removeRejectedStatus) {
     builder.addCase(action.rejected, (state, currentAction) => {
+      if (!navigator.onLine)
+        return setFulfilledThunkActionStatus(state, currentAction);
+
       const actionType = getActionName(currentAction.type);
 
       const previousStatus = state.status || [];
