@@ -18,7 +18,7 @@ export const NotificationHeaderCard: React.FC<NotificationHeaderCardProps> = ({
           className={styles.header}
         />
         <Typography
-          type={'body'}
+          type={'markdown'}
           text={message}
           color={'textLight'}
           className={styles.text}

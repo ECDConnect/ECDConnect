@@ -383,6 +383,16 @@ export const ActivityList: React.FC = () => {
     isKangarooMotherCare,
   ].some((item) => !!item);
 
+  const isDisplayCareForMom = [
+    isShowClinicCheckUps,
+    isDangerSignsFollowUpForMom,
+    isChildBefore49Days,
+    isSelfCareAndSupport,
+    isMaternalDistress,
+    isMaternalDistressFollowUp,
+    isMaternalDistressScreening,
+  ].some((item) => !!item);
+
   const is6Week = ageDays >= 49 && ageDays <= 56;
   const is10Week = ageDays >= 57 && ageMonths <= 3;
   const is14Week = ageMonths === 4;
@@ -480,6 +490,7 @@ export const ActivityList: React.FC = () => {
         (item.id === activitiesTypes.careForMom &&
           infant?.caregiver?.relation?.description !==
             motherType?.description) ||
+        (item.id === activitiesTypes.careForMom && !isDisplayCareForMom) ||
         (item.id === activitiesTypes.pillar3 && !isDisplayPillar3) ||
         (item.id === activitiesTypes.pillar5 && !isDisplayPillar5)
       )
@@ -495,6 +506,7 @@ export const ActivityList: React.FC = () => {
     isDisplayPillar2,
     isDisplayCareForBaby,
     infant?.caregiver?.relation?.description,
+    isDisplayCareForMom,
     isDisplayPillar3,
     isDisplayPillar5,
   ]);
