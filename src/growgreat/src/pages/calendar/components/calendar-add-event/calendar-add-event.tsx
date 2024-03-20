@@ -131,8 +131,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     useState<boolean>(false);
   const [hasChangesOnEvent, setHasChangesOnEvent] = useState<boolean>(false);
   const currentDate = new Date();
-  const startDate = new Date(event.start);
-  const endDate = new Date(event.end);
+  const startDate = !event.start ? undefined : new Date(event.start);
+  const endDate = !event.end ? undefined : new Date(event.end);
   const minDate = !!eventProps?.minDate
     ? new Date(eventProps.minDate)
     : new Date(
@@ -145,28 +145,30 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     : undefined;
   const defaultValues: CalendarAddEventFormModel = {
     name: event.name || '',
-    start: event.allDay
-      ? new Date(
-          startDate.getFullYear(),
-          startDate.getMonth(),
-          startDate.getDate(),
-          12,
-          0,
-          0,
-          0
-        )
-      : startDate,
-    end: event.allDay
-      ? new Date(
-          endDate.getFullYear(),
-          endDate.getMonth(),
-          endDate.getDate(),
-          12,
-          0,
-          0,
-          0
-        )
-      : endDate,
+    start:
+      event.allDay && !!startDate
+        ? new Date(
+            startDate.getFullYear(),
+            startDate.getMonth(),
+            startDate.getDate(),
+            12,
+            0,
+            0,
+            0
+          )
+        : startDate,
+    end:
+      event.allDay && !!endDate
+        ? new Date(
+            endDate.getFullYear(),
+            endDate.getMonth(),
+            endDate.getDate(),
+            12,
+            0,
+            0,
+            0
+          )
+        : endDate,
     allDay: event.allDay,
     description: event.description || '',
     eventType: !event.eventType ? undefined : event.eventType,
@@ -234,13 +236,13 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         allDay: formValues.allDay,
         description: formValues.description,
         end: formValues.allDay
-          ? new Date(formValues.end.setHours(12, 0, 0, 0)).toISOString()
-          : formValues.end.toISOString(),
+          ? new Date(formValues.end!.setHours(12, 0, 0, 0)).toISOString()
+          : formValues.end!.toISOString(),
         eventType: formValues.eventType || '',
         name: formValues.name,
         start: formValues.allDay
-          ? new Date(formValues.start.setHours(12, 0, 0, 0)).toISOString()
-          : formValues.start.toISOString(),
+          ? new Date(formValues.start!.setHours(12, 0, 0, 0)).toISOString()
+          : formValues.start!.toISOString(),
         participants: participants,
         action: event.action,
         userId: currentUser.id || '',
@@ -388,21 +390,29 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const onChangeStartDate = useCallback(
     (start: Date) => {
-      const duration = formValue_end.getTime() - formValue_start.getTime();
-      const end = addMilliseconds(start, duration);
-      setEventFormValue('start', start);
-      setEventFormValue('end', end);
+      if (!!formValue_end && !!formValue_start) {
+        const duration = formValue_end.getTime() - formValue_start.getTime();
+        const end = addMilliseconds(start, duration);
+        setEventFormValue('start', start);
+        setEventFormValue('end', end);
+      } else {
+        setEventFormValue('start', start);
+      }
     },
     [formValue_end, formValue_start, setEventFormValue]
   );
 
   const onChangeEndDate = useCallback(
     (end: Date) => {
-      const duration = formValue_end.getTime() - formValue_start.getTime();
-      setEventFormValue('end', end);
-      if (formValue_start.getTime() > end.getTime()) {
-        const start = subMilliseconds(end, duration);
-        setEventFormValue('start', start);
+      if (!!formValue_end && !!formValue_start) {
+        const duration = formValue_end.getTime() - formValue_start.getTime();
+        setEventFormValue('end', end);
+        if (formValue_start.getTime() > end.getTime()) {
+          const start = subMilliseconds(end, duration);
+          setEventFormValue('start', start);
+        }
+      } else {
+        setEventFormValue('end', end);
       }
     },
     [formValue_end, formValue_start, setEventFormValue]
@@ -415,7 +425,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         backgroundColour={'white'}
         renderBorder={true}
         title={isNewEvent ? 'Add event' : 'Update event'}
-        subTitle={format(startDate, 'EEEE, d LLLL yyyy')}
+        subTitle={!!startDate ? format(startDate, 'EEEE, d LLLL yyyy') : ''}
         color={'primary'}
         onBack={() => exitUpdateEvent()}
         onClose={() => exitUpdateEvent()}
