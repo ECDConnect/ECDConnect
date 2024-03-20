@@ -994,7 +994,7 @@ namespace EcdLink.Api.CoreApi
             public const string usage_invitation_active = "Invitation active";
             public const string usage_invitation_expired = "Invitation expired";
             public const string usage_last_online_past_6_months = "Last online within past 6 months";
-            public const string usage_last_online_over_months = "Last online over 6 months ago";
+            public const string usage_last_online_over_6_months = "Last online over 6 months ago";
             public const string usage_removed = "Removed (users who have been removed from CHW Connect)";
 
         }
