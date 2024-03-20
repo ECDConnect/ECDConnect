@@ -34,10 +34,10 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
     healthCareWorkerSelectors.getHealthCareWorker
   );
   const yearlyPoints = useSelector(
-    healthCareWorkerSelectors.getHealthCareWorkerPointsDetailsSelector
+    healthCareWorkerSelectors.getHealthCareWorkerCompletedPointsDetailsSelector
   );
   const monthlyPoints = useSelector(
-    healthCareWorkerSelectors.getHealthCareWorkerPointsByMonthSelector(
+    healthCareWorkerSelectors.getHealthCareWorkerCompletedPointsByMonthSelector(
       today.getMonth() + 1
     )
   );
@@ -61,7 +61,7 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
 
   const points =
     viewMode === 'year'
-      ? yearlyPoints.filter((point) => point.year === today.getFullYear())
+      ? yearlyPoints?.filter((point) => point.year === today.getFullYear())
       : monthlyPoints;
 
   const sortedPoints = points
@@ -133,7 +133,7 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
             color="textDark"
             text={`${healthCareWorker?.user?.firstName} ${
               healthCareWorker?.user?.surname ?? ''
-            }'ss GGC points`}
+            }'s GGC points`}
           />
           <Typography type="h4" color="textDark" text={description} />
         </div>
