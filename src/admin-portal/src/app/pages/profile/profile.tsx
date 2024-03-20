@@ -22,6 +22,7 @@ import { useUser } from '../../hooks/useUser';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { PasswordInput } from '../../components/password-input/password-input';
+import { GrowGreatRoles } from '../../utils/constants';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
@@ -66,7 +67,10 @@ export function Profile(props: any) {
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
-
+  const isAdministrator = userData?.userById?.roles?.find(
+    (item) => item?.name === GrowGreatRoles.Administrator
+  );
+  console.log({ userData });
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
   const [avatarFile, setAvatarFile] = useState(null);
@@ -218,15 +222,17 @@ export function Profile(props: any) {
                   </div>
                 </div>
                 <div className="flex w-full flex-col pt-6">
-                  <div>
-                    <FormField
-                      label={'Email address *'}
-                      nameProp={'email'}
-                      register={register}
-                      disabled
-                      error={errors.email?.message}
-                    />
-                  </div>
+                  {!isAdministrator && (
+                    <div>
+                      <FormField
+                        label={'Email address *'}
+                        nameProp={'email'}
+                        register={register}
+                        disabled
+                        error={errors.email?.message}
+                      />
+                    </div>
+                  )}
 
                   <div className="space-y-2 pt-6 pb-4">
                     <PasswordInput

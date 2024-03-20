@@ -15,8 +15,8 @@ import { useUser } from '../../../../hooks/useUser';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
+  PlusIcon,
   SearchIcon,
-  UploadIcon,
 } from '@heroicons/react/solid';
 import {
   ActionModal,
@@ -447,7 +447,7 @@ export default function TeamLeads() {
                     type="button"
                     className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
                   >
-                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
+                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
                     Add Team Leads
                   </button>
                 )}
