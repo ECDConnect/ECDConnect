@@ -2,6 +2,7 @@ import { api } from '../axios.helper';
 import {
   Config,
   HealthCareWorkerDto,
+  PointsTodoItemDto,
   UserPointsAcitivtyDto,
 } from '@ecdlink/core';
 import {
@@ -136,6 +137,36 @@ class HealthCareWorkerService {
     }
 
     return response.data.data.healthCareWorkerTeamStanding;
+  }
+
+  async getHealthCareWorkerPointsTodoItems(
+    healthCareWorkerId: string
+  ): Promise<PointsTodoItemDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { healthCareWorkerPointsTodoItems: PointsTodoItemDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query GetHealthCareWorkerPointsTodoItems($healthCareWorkerId: UUID!) {
+          healthCareWorkerPointsTodoItems(healthCareWorkerId: $healthCareWorkerId) {
+            message
+            points
+            count
+            percentageComplete
+          }
+        }`,
+      variables: {
+        healthCareWorkerId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Get points todo items for user Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.healthCareWorkerPointsTodoItems;
   }
 
   async updateHealthCareWorker(

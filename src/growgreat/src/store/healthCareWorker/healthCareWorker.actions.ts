@@ -7,7 +7,11 @@ import {
   UpdateHealthCareWorkerInputModelInput,
   UpdateHealthCareWorkerTabsInputModelInput,
 } from '@ecdlink/graphql';
-import { HealthCareWorkerDto, UserPointsAcitivtyDto } from '@ecdlink/core';
+import {
+  HealthCareWorkerDto,
+  PointsTodoItemDto,
+  UserPointsAcitivtyDto,
+} from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 import InfoService from '@/services/InfoService/InfoService';
 
@@ -18,6 +22,8 @@ export const HealthCareWorkerActions = {
   UPDATE_HEALTH_CARE_WORKER_BY_ID: 'updateHealthCareWorkerById',
   GET_HEALTH_CARE_WORKER_POINTS: 'getHealthCareWorkerPoints',
   GET_HEALTH_CARE_WORKER_TEAM_STANDING: 'getHealthCareWorkerTeamStanding',
+  GET_HEALTH_CARE_WORKER_POINTS_TODO_ITEMS:
+    'getHealthCareWorkerPointsTodoItems',
   GET_MORE_INFORMATION: 'getMoreInformation',
 };
 
@@ -100,6 +106,31 @@ export const getHealthCareWorkerTeamStanding = createAsyncThunk<
         return await new HealthCareWorkerService(
           userAuth?.auth_token
         ).getHealthCareWorkerTeamStanding(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getHealthCareWorkerPointsTodoItems = createAsyncThunk<
+  PointsTodoItemDto[],
+  { healthCareWorkerId: string },
+  ThunkApiType<RootState>
+>(
+  HealthCareWorkerActions.GET_HEALTH_CARE_WORKER_POINTS_TODO_ITEMS,
+  async ({ healthCareWorkerId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new HealthCareWorkerService(
+          userAuth?.auth_token
+        ).getHealthCareWorkerPointsTodoItems(healthCareWorkerId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
