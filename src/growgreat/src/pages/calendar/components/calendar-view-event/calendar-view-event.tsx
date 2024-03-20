@@ -1,7 +1,6 @@
 import {
   CalendarEventModel,
   CalendarEventParticipantModel,
-  getDateWithoutTimeZone,
   useDialog,
 } from '@ecdlink/core';
 import {
@@ -25,7 +24,6 @@ import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
 import { EventType } from '../calendar.types';
 import { useMemo, useState } from 'react';
-import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
 import { motherSelectors } from '@/store/mother';
 import { infantSelectors } from '@/store/infant';
 import { mapIdsToCalendarEventParticipants } from '../calendar.utils';
@@ -34,6 +32,8 @@ import { StartVisitClientType } from '@/pages/client/visits-tab/start-visit/star
 import { useAppDispatch } from '@/store';
 import { HomeVisitPrompt } from './popups/home-visit-prompt';
 import { HomeVisitMultipleClientsPrompt } from './popups/home-visit-multiple-clients-prompt';
+import { AddBreastFeedingClubRouteState } from '@/pages/community/breastfeeding-clubs-tab/add-breastfeeding-club/types';
+import ROUTES from '@/routes/routes';
 
 export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const { isOnline } = useOnlineStatus();
@@ -81,18 +81,6 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
     (p) =>
       p.participantUser.type === 'infant' || p.participantUser.type === 'mother'
   );
-
-  const selectedParticipantAsMother =
-    selectedParticipant?.participantUser.type === 'mother'
-      ? mothers.find((x) => x.id === selectedParticipant.participantUserId)
-      : null;
-  const selectedParticipantAsInfant =
-    selectedParticipant?.participantUser.type === 'infant'
-      ? infants.find((x) => x.id === selectedParticipant.participantUserId)
-      : null;
-  const selectedParticipantNextVisitDate =
-    selectedParticipantAsMother?.nextVisitDate ||
-    selectedParticipantAsInfant?.nextVisitDate;
 
   const canDisplayStartButton = (): boolean => {
     if (!eventOwner) return false;
@@ -155,38 +143,6 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
     );
   };
 
-  const getHomeVisitPromptActionButtons = (): ActionModalButton[] => {
-    const buttons: ActionModalButton[] = [];
-    const today = getDateWithoutTimeZone(new Date().toISOString());
-    const nextVisitDate = !!selectedParticipantNextVisitDate
-      ? getDateWithoutTimeZone(selectedParticipantNextVisitDate)
-      : undefined;
-    if (
-      !!selectedParticipant &&
-      !!nextVisitDate &&
-      !!today &&
-      nextVisitDate.getTime() >= today.getTime()
-    ) {
-      buttons.push({
-        text: '2 month',
-        textColour: 'primary',
-        colour: 'primary',
-        type: 'outlined',
-        onClick: async () => await startVisitHome('2month'),
-        leadingIcon: 'PresentationChartBarIcon',
-      });
-    }
-    buttons.push({
-      text: 'Other',
-      textColour: 'primary',
-      colour: 'primary',
-      type: 'outlined',
-      onClick: async () => await startVisitHome('other'),
-      leadingIcon: 'ClipboardListIcon',
-    });
-    return buttons;
-  };
-
   const onHomeVisitMultipleClientsPromptCancel = () => {
     setShowHomeVisitMultipleClientsPrompt(false);
   };
@@ -201,7 +157,12 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
     }
   };
 
-  const onActionBreastfeedingClub = () => {};
+  const onActionBreastfeedingClub = () => {
+    history.push(ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD, {
+      isFromPointsScreen: false,
+    } as AddBreastFeedingClubRouteState);
+    props.onClose();
+  };
 
   return (
     <>
@@ -390,8 +351,12 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
         </div>
       </BannerWrapper>
       <HomeVisitPrompt
+        client={{
+          id: selectedParticipant?.participantUserId,
+          type: selectedParticipant?.participantUser.type,
+        }}
         visible={showHomeVisitPrompt}
-        actionButtons={getHomeVisitPromptActionButtons()}
+        startVisit={startVisitHome}
       />
       <HomeVisitMultipleClientsPrompt
         clients={clientParticipants}

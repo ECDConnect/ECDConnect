@@ -1,20 +1,21 @@
 import {
-  CalendarEventActionModel,
-  CalendarEventModel,
   CalendarEventParticipantModel,
   ClinicDto,
   ClinicMemberDto,
   InfantDto,
-  //ClubDto,
   MotherDto,
   TeamLeadDto,
   UserDto,
+  VisitDto,
   getAvatarColor,
 } from '@ecdlink/core';
 import { ListDataItem, ParticipantType } from './calendar.types';
 import Pregnant from '@/assets/pregnant.svg';
 import Infant from '@/assets/infant.svg';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { infantThunkActions } from '@/store/infant';
+import { motherThunkActions } from '@/store/mother';
+import { AppDispatch, ThunkActionStatuses } from '@/store/types';
 
 const TypeInfo = {
   clinic: {
