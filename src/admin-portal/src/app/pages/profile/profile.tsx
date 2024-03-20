@@ -70,7 +70,7 @@ export function Profile(props: any) {
   const isAdministrator = userData?.userById?.roles?.find(
     (item) => item?.name === GrowGreatRoles.Administrator
   );
-  console.log({ userData });
+
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
   const [avatarFile, setAvatarFile] = useState(null);
