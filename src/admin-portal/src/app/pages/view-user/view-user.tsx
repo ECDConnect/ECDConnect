@@ -402,7 +402,8 @@ export function ViewUser(props: any) {
                   <div className="flex flex-row pt-2">
                     <div className="flex items-center gap-2">
                       {getRoleStatusChip(props.location.state?.component)}
-                      {isTeamLead && getConnectUsageChip(connectUsage)}
+                      {(isTeamLead || isCHW) &&
+                        getConnectUsageChip(connectUsage)}
                     </div>
                     {chwData &&
                       chwData?.GetHealthCareWorkerById?.user?.roles?.map(
