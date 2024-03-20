@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useWindowSize } from '@reach/window-size';
 
@@ -9,8 +9,6 @@ import {
   Button,
   Divider,
   LoadingSpinner,
-  renderIcon,
-  RoundIcon,
   Typography,
 } from '@ecdlink/ui';
 import { SuccessCard } from '@/components/success-card/success-card';
@@ -24,19 +22,14 @@ import { CLIENT_TABS } from '../client-dashboard/class-dashboard';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { VisitActions } from '@/store/visit/visit.actions';
-
-interface CardProps {
-  value?: number;
-  label: string;
-  icon: string;
-  points?: number;
-}
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { PointsMonthViewRouteState } from '@/pages/practitioner/individual-points/month-view/types';
+import { Card } from './components/card';
 
 const HEADER_HEIGHT = 122;
 
 export const HighlightsTab = () => {
-  const [showSuccessCard, setShowSuccessCard] = useState(true); // TODO: add integration
-  // const [isHighlights, setisHighlights] = useState(false);
+  const today = new Date();
 
   const history = useHistory();
   const { height } = useWindowSize();
@@ -45,6 +38,11 @@ export const HighlightsTab = () => {
   const user = useSelector(userSelectors.getUser);
   const highlightsData = useSelector(
     visitSelectors.getHealthCareWorkerHighlightsSelector
+  );
+  const currentIndividualPoints = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorkerTotalCompletedPointsByMonthSelector(
+      today.getMonth() + 1
+    )
   );
 
   const { isLoading } = useThunkFetchCall(
@@ -98,10 +96,6 @@ export const HighlightsTab = () => {
     }
   }
 
-  const onCloseSuccessCard = useCallback(() => {
-    setShowSuccessCard(false);
-  }, []);
-
   useLayoutEffect(() => {
     if (user?.id && isOnline) {
       appDispatch(
@@ -110,64 +104,18 @@ export const HighlightsTab = () => {
     }
   }, [appDispatch, isOnline, user?.id]);
 
-  const navigate = useCallback(
-    (location) => () => {
-      history.push(location);
-    },
-    [history]
-  );
-
-  const Card = useCallback(
-    ({ value, label, icon, points }: CardProps) => (
-      <div className="bg-uiBg mb-4 flex items-center gap-3 rounded-2xl p-4">
-        <RoundIcon icon={icon} iconColor="white" backgroundColor="tertiary" />
-        <Typography
-          type="body"
-          weight="bold"
-          lineHeight="snug"
-          color="textDark"
-          className="text-3xl"
-          text={String(value)}
-        />
-        <Typography
-          type="h4"
-          weight="bold"
-          lineHeight="snug"
-          color="textMid"
-          text={label}
-          className="w-screen"
-        />
-        {!!points && (
-          <div className="relative mr-1 flex h-12 w-12 items-center justify-center bg-transparent text-center">
-            <span className="bg-secondary absolute top-3 h-5 w-6 rounded-xl"></span>
-            {renderIcon('BadgeCheckIcon', 'text-secondary absolute h-12 w-12')}
-            <Typography
-              type="body"
-              weight="bold"
-              lineHeight="snug"
-              color="white"
-              className="absolute pt-1"
-              text={String(points)}
-            />
-          </div>
-        )}
-      </div>
-    ),
-    []
-  );
-
   const renderContent = useMemo(() => {
     if (isHighlights) {
       return (
         <>
           <Divider className="pb-4" dividerType="dashed" />
-          {showSuccessCard && (
+          {!!currentIndividualPoints && (
             <SuccessCard
               className="my-4"
               customIcon={<CelebrateIcon className="h-14	w-14" />}
               text={`Great job ${user?.firstName || ''}!`}
+              subText={`You've earned ${currentIndividualPoints} points so far this month`}
               color="successMain"
-              onClose={onCloseSuccessCard}
             />
           )}
           <Card
@@ -230,10 +178,8 @@ export const HighlightsTab = () => {
       </div>
     );
   }, [
-    Card,
+    currentIndividualPoints,
     isHighlights,
-    onCloseSuccessCard,
-    showSuccessCard,
     user?.firstName,
     highlightsData,
     showThisWeek,
@@ -288,7 +234,6 @@ export const HighlightsTab = () => {
               activeTabIndex: CLIENT_TABS.VISIT,
             })
           }
-          //onClick={navigate(ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT)}
         />
         {isHighlights && (
           <Button
@@ -299,7 +244,11 @@ export const HighlightsTab = () => {
             textColor="primary"
             className="mt-4 w-full"
             iconPosition="start"
-            onClick={navigate(ROUTES.CLIENTS.HIGHLIGHTS_TAB.POINTS_SUMMARY)}
+            onClick={() =>
+              history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT, {
+                forceReload: true,
+              } as PointsMonthViewRouteState)
+            }
           />
         )}
       </div>
