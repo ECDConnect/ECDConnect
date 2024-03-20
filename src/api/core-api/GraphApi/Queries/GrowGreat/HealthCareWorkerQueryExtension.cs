@@ -73,7 +73,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.Invitation && x.IsActive && x.Clicked == 0)
                     .ToList();
 
-            List<PortalUsersHCWModel> workers = healthCareWorkers.Select(item => new PortalUsersHCWModel
+            List<PortalUsersHCWModel> records = healthCareWorkers.Select(item => new PortalUsersHCWModel
             {
                 Id = item.Id,
                 User = new PortalUserModel(item.User, invitations),
@@ -87,49 +87,104 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             List<PortalUsersHCWModel> filteredUsers = new List<PortalUsersHCWModel>();
 
-            if (provinceSearch != null && provinceSearch.Count != 0)
-            {
-                hasFilters = true;
-                filteredUsers.AddRange(workers.Where(x => provinceSearch.Contains(x.ProvinceId.ToString())));
-            }
-
-            if (clinicSearch != null && clinicSearch.Count != 0)
-            {
-                hasFilters = true;
-                filteredUsers.AddRange(workers.Where(x => clinicSearch.Contains(x.ClinicName)));
-            }
-
-            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
-            {
-                hasFilters = true;
-                filteredUsers.AddRange(workers.Where(x => provinceSearch.Contains(x.SubDistrictId.ToString())));
-            }
-
             if (connectUsageSearch != null && connectUsageSearch.Count != 0)
             {
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
                 hasFilters = true;
 
-                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
+                foreach (var item in records)
                 {
-                    filteredUsers.AddRange(workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_active).ToList());
+                    if (connectUsageSearch.Contains(item.User.ConnectUsage))
+                    {
+                        filteredUsers.Add(item);
+                    }
+                    if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+                    {
+                        if (item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
+                        {
+                            filteredUsers.Add(item);
+                        }
+                    }
+                    if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
+                    {
+                        if (item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
+                        {
+                            filteredUsers.Add(item);
+                        }
+                    }
                 }
-                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
+            }
+
+            if (provinceSearch != null && provinceSearch.Count != 0)
+            {
+                hasFilters = true;
+                if (filteredUsers.Count > 0)
                 {
-                    filteredUsers.AddRange(workers.Where(x => x.User.ConnectUsage == Constants.PortalSettings.usage_invitation_expired).ToList());
+                    foreach (var item in filteredUsers.ToList())
+                    {
+                        if (!provinceSearch.Contains(item.ProvinceId.ToString()))
+                        {
+                            filteredUsers.Remove(item);
+                        }
+                    }
+                } else
+                {
+                    foreach (var item in records)
+                    {
+                        if (provinceSearch.Contains(item.ProvinceId.ToString()))
+                        {
+                            filteredUsers.Add(item);
+                        }
+                    }
                 }
-                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+            }
+
+            if (clinicSearch != null && clinicSearch.Count != 0)
+            {
+                hasFilters = true;
+                if (filteredUsers.Count > 0)
                 {
-                    filteredUsers.AddRange(workers.Where(x => x.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date).ToList());
+                    foreach (var item in filteredUsers.ToList())
+                    {
+                        if (!clinicSearch.Contains(item.ClinicName))
+                        {
+                            filteredUsers.Remove(item);
+                        }
+                    }
+                } else
+                {
+                    foreach (var item in records)
+                    {
+                        if (clinicSearch.Contains(item.ClinicName))
+                        {
+                            filteredUsers.Add(item);
+                        }
+                    }
                 }
-                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_months))
+            }
+
+            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
+            {
+                hasFilters = true;
+                if (filteredUsers.Count > 0)
                 {
-                    filteredUsers.AddRange(workers.Where(x => x.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date).ToList());
-                }
-                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                    foreach (var item in filteredUsers.ToList())
+                    {
+                        if (!subDistrictSearch.Contains(item.SubDistrictId.ToString()))
+                        {
+                            filteredUsers.Remove(item);
+                        }
+                    }
+                } else
                 {
-                    filteredUsers.AddRange(workers.Where(x => x.User.IsActive == false).ToList());
+                    foreach (var item in records)
+                    {
+                        if (subDistrictSearch.Contains(item.SubDistrictId.ToString()))
+                        {
+                            filteredUsers.Add(item);
+                        }
+                    }
                 }
             }
 
@@ -146,40 +201,73 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                            (x.Infant.IsActive && userIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.UserId))
                                                            )
                                                            ).ToList();
-                
-                foreach (var item in workers)
-                {
-                    var totalClientsVisits = visits.Where(x => (x.Mother != null && x.Mother.HealthCareWorker.User.Id == item.User.Id) || (x.Infant != null && x.Infant.Caregiver.HealthCareWorker.User.Id == item.User.Id)).Count();
 
-                    if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
+                if (filteredUsers.Count > 0)
+                {
+                    foreach (var item in filteredUsers.ToList())
                     {
-                        if (totalClientsVisits >= 20)
+                        var totalClientsVisits = visits.Where(x => (x.Mother != null && x.Mother.HealthCareWorker.User.Id == item.User.Id) || (x.Infant != null && x.Infant.Caregiver.HealthCareWorker.User.Id == item.User.Id)).Count();
+
+                        if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
                         {
-                            filteredUsers.Add(item);
+                            if (totalClientsVisits < 20)
+                            {
+                                filteredUsers.Remove(item);
+                            }
                         }
-                    } 
-                    if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
-                    {
-                        if (totalClientsVisits > 0 && totalClientsVisits <= 10)
+                        if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
                         {
-                            filteredUsers.Add(item);
+                            if (totalClientsVisits < 10)
+                            {
+                                filteredUsers.Remove(item);
+                            }
+                        }
+                        if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity))
+                        {
+                            if (totalClientsVisits != 0)
+                            {
+                                filteredUsers.Remove(item);
+                            }
                         }
                     }
-                    if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity)) 
+                }
+                else
+                {
+                    foreach (var item in records)
                     {
-                        if (totalClientsVisits == 0)
+                        var totalClientsVisits = visits.Where(x => (x.Mother != null && x.Mother.HealthCareWorker.User.Id == item.User.Id) || (x.Infant != null && x.Infant.Caregiver.HealthCareWorker.User.Id == item.User.Id)).Count();
+
+                        if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
                         {
-                            filteredUsers.Add(item);
+                            if (totalClientsVisits >= 20)
+                            {
+                                filteredUsers.Add(item);
+                            }
+                        } 
+                        if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
+                        {
+                            if (totalClientsVisits > 0 && totalClientsVisits <= 10)
+                            {
+                                filteredUsers.Add(item);
+                            }
+                        }
+                        if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity)) 
+                        {
+                            if (totalClientsVisits == 0)
+                            {
+                                filteredUsers.Add(item);
+                            }
                         }
                     }
                 }
             }
+
             if (hasFilters)
             {
                 return filteredUsers;
             }
 
-            return workers;
+            return records;
         }
        
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
