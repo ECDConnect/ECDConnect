@@ -713,6 +713,7 @@ export default function HealthCareWorkers() {
                   component={'chw'}
                   viewRow={viewSelectedRow}
                   isLoading={loading}
+                  refetchData={refetch}
                 />
               </div>
             </div>

@@ -605,6 +605,7 @@ export default function TeamLeads() {
                     component="team-leads"
                     viewRow={viewSelectedRow}
                     isLoading={loading}
+                    refetchData={refetch}
                   />
                 </div>
               </div>
