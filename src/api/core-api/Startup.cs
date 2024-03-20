@@ -172,6 +172,9 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
             services.AddTransient<IClinicService, ClinicService>();
 
+            // Notification tasks (All will be run daily)
+            services.AddTransient<INotificationTask, MonthlyEarnMorePointsNotificationTask>();
+
             services.AddSingleton<IConverter, SynchronizedConverter>(serviceProvider =>
             {
                 return new SynchronizedConverter(new PdfTools());
