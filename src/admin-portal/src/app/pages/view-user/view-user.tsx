@@ -402,7 +402,8 @@ export function ViewUser(props: any) {
                   <div className="flex flex-row pt-2">
                     <div className="flex items-center gap-2">
                       {getRoleStatusChip(props.location.state?.component)}
-                      {isTeamLead && getConnectUsageChip(connectUsage)}
+                      {(isTeamLead || isCHW) &&
+                        getConnectUsageChip(connectUsage)}
                     </div>
                     {chwData &&
                       chwData?.GetHealthCareWorkerById?.user?.roles?.map(
@@ -513,48 +514,28 @@ export function ViewUser(props: any) {
 
         <div className="flex w-full justify-between  pl-4">
           <div className="flex w-10/12 flex-row  pl-4">
-            {hasPermission(PermissionEnum.delete_user) &&
-              isNotLockedOut(
-                userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-              ) && (
-                <Button
-                  className={'mt-3 mr-2 w-4/12 rounded-md'}
-                  type="outlined"
-                  // isLoading={isLoading}
-                  color="tertiary"
-                  onClick={deactivateUser}
-                >
-                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
-                    {' '}
-                  </TrashIcon>
-                  <Typography
-                    type="help"
-                    color="tertiary"
-                    text={'Deactivate User'}
-                  ></Typography>
-                </Button>
-              )}
             {isNotLockedOut(
               userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-            ) && (
-              <div className="flex w-full items-center gap-2">
-                {!isRegistered && (
-                  <SendInvite
+            ) &&
+              !isAdministrator && (
+                <div className="flex w-full items-center gap-2">
+                  {!isRegistered && (
+                    <SendInvite
+                      userData={userData?.userById}
+                      chwData={chwData?.GetHealthCareWorkerById}
+                      refetchUserData={refetchUserData}
+                    />
+                  )}
+                  <DeactivateUser
                     userData={userData?.userById}
                     chwData={chwData?.GetHealthCareWorkerById}
                     refetchUserData={refetchUserData}
+                    isTeamLead={isTeamLead}
+                    teamLeadId={teamLeadId}
+                    hcwId={hcwId}
                   />
-                )}
-                <DeactivateUser
-                  userData={userData?.userById}
-                  chwData={chwData?.GetHealthCareWorkerById}
-                  refetchUserData={refetchUserData}
-                  isTeamLead={isTeamLead}
-                  teamLeadId={teamLeadId}
-                  hcwId={hcwId}
-                />
-              </div>
-            )}
+                </div>
+              )}
           </div>
 
           <div className="w-2/12">

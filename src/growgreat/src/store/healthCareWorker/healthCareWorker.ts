@@ -3,6 +3,7 @@ import localForage from 'localforage';
 import {
   getHealthCareWorkerByUserId,
   getHealthCareWorkerPoints,
+  getHealthCareWorkerPointsTodoItems,
   getHealthCareWorkerTeamStanding,
   getMoreInformation,
   updateHealthCareWorker,
@@ -15,7 +16,7 @@ import { UpdateHealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 const initialState: HealthCareWorkerState = {
   healthCareWorker: undefined,
-  points: { data: [] },
+  points: { completedItems: [] },
 };
 
 const healthCareWorkerSlice = createSlice({
@@ -44,6 +45,18 @@ const healthCareWorkerSlice = createSlice({
     setThunkActionStatus(builder, getHealthCareWorkerPoints);
     setThunkActionStatus(builder, getHealthCareWorkerTeamStanding);
     setThunkActionStatus(builder, getMoreInformation);
+    setThunkActionStatus(builder, getHealthCareWorkerPointsTodoItems);
+    builder.addCase(
+      getHealthCareWorkerPointsTodoItems.fulfilled,
+      (state, action) => {
+        state.points = {
+          ...state.points,
+          todoItems: action.payload,
+        };
+
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {
       const locale = action?.meta?.arg?.locale;
 
@@ -78,7 +91,7 @@ const healthCareWorkerSlice = createSlice({
     builder.addCase(getHealthCareWorkerPoints.fulfilled, (state, action) => {
       state.points = {
         ...state.points,
-        data: action.payload,
+        completedItems: action.payload,
       };
 
       setFulfilledThunkActionStatus(state, action);

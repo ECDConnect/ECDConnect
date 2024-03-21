@@ -85,44 +85,56 @@ function InitialStoreSetup(props: Props) {
   useEffect(() => {
     if (healthCareWorker) {
       (async () => {
+        const promises = [];
+
         if (healthCareWorker?.clinicId) {
-          await appDispatch(
-            communityThunkActions.getClinicById({
-              clinicId: healthCareWorker?.clinicId || '',
-            })
-          ).unwrap();
+          promises.push(
+            appDispatch(
+              communityThunkActions.getClinicById({
+                clinicId: healthCareWorker?.clinicId || '',
+              })
+            ).unwrap()
+          );
         }
-        await appDispatch(
-          caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id || '',
-          })
-        ).unwrap();
-        appDispatch(
-          healthCareWorkerThunkActions.getHealthCareWorkerPointsTodoItems({
-            healthCareWorkerId: healthCareWorker.id!,
-          })
-        ).unwrap();
+
+        promises.push(
+          appDispatch(
+            caregiverThunkActions.getCaregiversForHealthCareWorker({
+              id: healthCareWorker?.id || '',
+            })
+          ).unwrap()
+        );
+        promises.push(
+          appDispatch(
+            healthCareWorkerThunkActions.getHealthCareWorkerPointsTodoItems({
+              healthCareWorkerId: healthCareWorker.id!,
+            })
+          ).unwrap()
+        );
+
         if (!!healthCareWorker.user && !!healthCareWorker.user.id) {
           const currentDate = new Date();
           const oneYearAgo = new Date();
           oneYearAgo.setMonth(currentDate.getMonth() - 12);
 
-          const promises = [
+          promises.push(
             appDispatch(
               healthCareWorkerThunkActions.getHealthCareWorkerPoints({
                 userId: healthCareWorker.user.id,
                 startDate: oneYearAgo,
               })
-            ).unwrap(),
+            ).unwrap()
+          );
+          promises.push(
             appDispatch(
               healthCareWorkerThunkActions.getHealthCareWorkerTeamStanding({
                 userId: healthCareWorker.user.id,
               })
-            ).unwrap(),
-          ];
-
-          await Promise.all(promises);
+            ).unwrap()
+          );
         }
+
+        await Promise.all(promises);
       })();
     }
   }, [appDispatch, healthCareWorker]);

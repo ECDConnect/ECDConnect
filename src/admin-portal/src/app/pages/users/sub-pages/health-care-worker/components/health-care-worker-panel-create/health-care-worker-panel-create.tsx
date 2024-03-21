@@ -86,7 +86,7 @@ export default function HealthCareWorkerPanelCreate(
       idType === idTypeEnum.idNumber
         ? yup
             .string()
-            .matches(SA_ID_REGEX, 'Id number is not valid')
+            .matches(SA_ID_REGEX, 'ID number is not valid')
             .required('ID Number is Required')
         : yup
             .string()
@@ -311,7 +311,7 @@ export default function HealthCareWorkerPanelCreate(
                       <Typography
                         type="help"
                         color={idType === 'idNumber' ? 'white' : 'tertiary'}
-                        text="Id Number"
+                        text="ID Number"
                       ></Typography>
                     </Button>
 
@@ -329,7 +329,7 @@ export default function HealthCareWorkerPanelCreate(
                     </Button>
                   </div>
                   <FormField
-                    label={idType === 'idNumber' ? 'Id number *' : 'Passport *'}
+                    label={idType === 'idNumber' ? 'ID number *' : 'Passport *'}
                     nameProp={'idNumber'}
                     register={register}
                     error={errors.idNumber?.message}

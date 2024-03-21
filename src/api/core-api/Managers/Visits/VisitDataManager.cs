@@ -149,10 +149,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // update the visit record to show attended when follow up is done
-            visit.UpdatedDate = DateTime.Now;
-            visit.UpdatedBy = _applicationUserId.ToString();
-            visit.Attended = true;
-            visit.ActualVisitDate = DateTime.Now;
+            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
+            if (count != 0)
+            {
+               visit.UpdatedDate = DateTime.Now;
+               visit.UpdatedBy = _applicationUserId.ToString();
+               visit.Attended = true;
+               visit.ActualVisitDate = DateTime.Now;
+            }        
 
             return _visitRepo.Update(visit);
         }

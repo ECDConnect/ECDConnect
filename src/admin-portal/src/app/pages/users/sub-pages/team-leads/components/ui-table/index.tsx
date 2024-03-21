@@ -45,6 +45,7 @@ export default function UiTable({
   onBulkActionCallback,
   languages,
   noBulkSelection,
+  refetchData,
 }: UiTableProps) {
   const [inviteRows, setInviteRows] = useState<boolean>(false);
   const { setNotification } = useNotifications();
@@ -114,12 +115,13 @@ export default function UiTable({
             title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
             variant: NOTIFICATION.SUCCESS,
           });
-          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
-            setNotification({
-              title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
-              variant: NOTIFICATION.ERROR,
-            });
-          }
+        }
+        if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedRows([]);
         }
       })
       .catch((err) => {
@@ -137,17 +139,20 @@ export default function UiTable({
       },
     })
       .then((res) => {
-        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+        if (res.data?.bulkDeleteUser?.success.length > 0) {
           setNotification({
-            title: ` Successfully Deactivated ${res.data?.sendBulkInviteToPortal?.success.length} Users!`,
+            title: ` Successfully Deactivated ${res.data?.bulkDeleteUser?.success.length} Users!`,
             variant: NOTIFICATION.SUCCESS,
           });
-          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
-            setNotification({
-              title: ` Failed to Deactivate ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
-              variant: NOTIFICATION.ERROR,
-            });
-          }
+          refetchData();
+          setSelectedRows([]);
+        }
+        if (res.data?.bulkDeleteUser?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Deactivate ${res.data?.bulkDeleteUser?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedRows([]);
         }
       })
       .catch((err) => {
@@ -156,7 +161,49 @@ export default function UiTable({
           variant: NOTIFICATION.ERROR,
         });
       });
-  }, [deactivateUsers, selectedRows, setNotification]);
+  }, [deactivateUsers, selectedRows, setNotification, refetchData]);
+
+  const handleBulkDelete = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <AlertModal
+          title={`Deactivate ${selectedRows?.length} Team Leads?`}
+          message={`Are you sure you want to deactivate these Team Leads? Team Leads will lose their access to CHW Connect immediately. Make sure you have communicated this to Team Leads before deactivating them.`}
+          btnText={['Yes, deactivate Team Leads', 'No, Cancel']}
+          onCancel={() => {
+            onCancel();
+            setSelectedRows([]);
+          }}
+          onSubmit={() => {
+            deactivateUser();
+            onSubmit();
+          }}
+        />
+      ),
+    });
+  }, [deactivateUser, dialog, selectedRows?.length]);
+
+  const handleBulkInvitation = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <AlertModal
+          title={`Resend invitation to ${selectedRows?.length} Team Leads?`}
+          message={`Are you sure you want to send the invitation to the 4 Team Leads selected?`}
+          btnText={['Yes, resend', 'No, Cancel']}
+          onCancel={() => {
+            onCancel();
+            setSelectedRows([]);
+          }}
+          onSubmit={() => {
+            inviteUsers();
+            onSubmit();
+          }}
+        />
+      ),
+    });
+  }, [inviteUsers, dialog, selectedRows?.length]);
 
   const deleteCoachingCircleTopics = useCallback(() => {
     deleteCoachingCircleTopicsMutation({
@@ -506,7 +553,7 @@ export default function UiTable({
           isLoading={invitationsLoading}
           disabled={invitationsLoading}
           color="secondary"
-          onClick={inviteUsers}
+          onClick={handleBulkInvitation}
         >
           <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
           <Typography type="help" color="white" text="Resend Invitations" />
@@ -518,11 +565,9 @@ export default function UiTable({
           isLoading={deactivating}
           disabled={deactivating}
           color="tertiary"
-          onClick={deactivateUser}
+          onClick={handleBulkDelete}
         >
-          <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-            {' '}
-          </TrashIcon>
+          <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
             color="tertiary"
@@ -533,12 +578,12 @@ export default function UiTable({
     );
   }, [
     component,
-    deactivateUser,
+    handleBulkDelete,
     deactivating,
     deleteDialog,
     deletingCoachingCircleTopics,
     invitationsLoading,
-    inviteUsers,
+    handleBulkInvitation,
   ]);
 
   if (isLoading) {

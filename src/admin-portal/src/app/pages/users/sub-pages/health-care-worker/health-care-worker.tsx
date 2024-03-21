@@ -17,6 +17,8 @@ import {
   GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import {
+  ActionModal,
+  Dialog,
   DialogPosition,
   Dropdown,
   SearchDropDown,
@@ -42,6 +44,7 @@ import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
 import { AppVisitActivity } from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import ROUTES from '../../../../routes/app.routes-constants';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -88,6 +91,7 @@ export default function HealthCareWorkers() {
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [handleAdduser, setHandleAdduser] = useState(false);
 
   const onChange = (dates) => {
     const [start, end] = dates;
@@ -169,13 +173,14 @@ export default function HealthCareWorkers() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/users/view-user',
+      pathname: ROUTES.VIEW_USERS,
       state: {
         component: 'chw',
         userId: selectedRow?.userId,
         clinicId: selectedRow?.clinicId,
         hcwId: selectedRow?.id,
         isRegistered: selectedRow?.isRegistered,
+        connectUsage: selectedRow?.connectUsage,
       },
     });
   };
@@ -457,7 +462,7 @@ export default function HealthCareWorkers() {
               </div>
             </div>
 
-            <div className="mt-0  flex w-10/12 flex-row sm:mt-0  sm:ml-4">
+            <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
               <div className="pr-2 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
@@ -500,30 +505,19 @@ export default function HealthCareWorkers() {
                   </button>
                 </span>
               </div>
-
-              <div className="flex w-full flex-row ">
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={displayPanel}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                  >
-                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                    Add CHW
-                  </button>
-                )}
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={() => {
-                      history.push('/upload-users');
-                    }}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                  >
-                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
-                    Bulk Upload
-                  </button>
-                )}
+              <div>
+                <div className="flex w-full">
+                  {hasPermission(PermissionEnum.create_user) && (
+                    <button
+                      onClick={() => setHandleAdduser(true)}
+                      type="button"
+                      className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                    >
+                      <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                      Add CHWs
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -713,11 +707,50 @@ export default function HealthCareWorkers() {
                   component={'chw'}
                   viewRow={viewSelectedRow}
                   isLoading={loading}
+                  refetchData={refetch}
                 />
               </div>
             </div>
           </div>
         </div>
+        <Dialog
+          className="absolute left-56 bottom-96 mb-44 w-6/12"
+          stretch
+          visible={handleAdduser}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'ExclamationCircleIcon'}
+            iconColor="white"
+            iconBorderColor="infoMain"
+            importantText={`Would you like to add one CHW or multiple?`}
+            actionButtons={[
+              {
+                text: 'Add multiple CHWs',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () =>
+                  history.push({
+                    pathname: ROUTES.UPLOAD_USERS,
+                  }),
+                leadingIcon: 'UsersIcon',
+              },
+              {
+                text: 'Add one CHW',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  displayPanel();
+                  setHandleAdduser(false);
+                },
+                leadingIcon: 'UserIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </div>
     );
   } else {

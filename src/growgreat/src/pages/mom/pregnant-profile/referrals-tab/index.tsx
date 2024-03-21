@@ -91,14 +91,6 @@ export const ReferralsTab: React.FC = () => {
     MotherActions.UPDATE_VISIT_DATA_STATUS
   );
 
-  const notifications = useSelector(
-    notificationsSelectors.getAllNotifications
-  ).filter((item) =>
-    item?.message?.cta?.includes(
-      notificationTagConfig?.RedAlertReferral.cta ?? ''
-    )
-  );
-
   const isLoading =
     isLoadingReferrals ||
     isLoadingCompletedReferrals ||
@@ -110,6 +102,24 @@ export const ReferralsTab: React.FC = () => {
   const { id: motherId } = useParams<MotherParams>();
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
+  );
+
+  const redAlertNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.RedAlertReferral.cta ?? ''
+      ) && item?.message?.action?.includes(motherId)
+  );
+
+  const dangerSignsNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.DangerSignsReferral.cta ?? ''
+      ) && item?.message?.action?.includes(motherId)
   );
 
   const currentVisit = useSelector((state: RootState) =>
@@ -143,7 +153,7 @@ export const ReferralsTab: React.FC = () => {
       appDispatch(
         motherThunkActions.getReferralsForMother({
           motherId: motherId,
-          visitId: previousVisit.id,
+          visitId: '',
         })
       ).unwrap();
     } else if (currentVisit) {
@@ -301,15 +311,33 @@ export const ReferralsTab: React.FC = () => {
             motherThunkActions.updateVisitDataStatus({ input: newState })
           ).unwrap();
 
-          const removeNotification = newState.find(
+          const removeRedAlertNotification = newState.find(
             (item) =>
               item.isCompleted &&
               String(item.comment).includes(
                 'was experiencing maternal distress'
               )
           );
-          if (notifications && removeNotification) {
-            notifications.forEach((x) => {
+
+          if (redAlertNotifications && removeRedAlertNotification) {
+            redAlertNotifications.forEach((x) => {
+              appDispatch(notificationActions.removeNotification(x!));
+              appDispatch(
+                disableBackendNotification({
+                  notificationId: x?.message?.reference ?? '',
+                })
+              );
+            });
+          }
+
+          const removeDangerSignNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('was experiencing:')
+          );
+
+          if (dangerSignsNotifications && removeDangerSignNotification) {
+            dangerSignsNotifications.forEach((x) => {
               appDispatch(notificationActions.removeNotification(x!));
               appDispatch(
                 disableBackendNotification({
@@ -322,7 +350,12 @@ export const ReferralsTab: React.FC = () => {
         return newState;
       });
     },
-    [appDispatch, notifications, referralsForMother?.length]
+    [
+      appDispatch,
+      dangerSignsNotifications,
+      redAlertNotifications,
+      referralsForMother?.length,
+    ]
   );
 
   const onOptionSelected = useCallback(

@@ -510,7 +510,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               </div>
               {hcwClinic && (
                 <div className="ml-4 flex w-11/12 items-center justify-between">
-                  <div className="flex w-full items-center">
+                  <div className="flex w-4/12 items-center">
                     <Typography
                       type="h2"
                       hasMarkup
@@ -527,23 +527,22 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       text={hcwClinic?.name}
                     />
                   </div>
-                  <div className="flex w-full items-center">
+                  <div className="flex w-full items-center gap-1">
                     <Typography
                       type="h2"
                       hasMarkup
                       fontSize="18"
                       color="textMid"
                       text={'Location:'}
-                      className="px-4"
+                      className="pl-4"
                     />
-                    <div className="flex flex-col items-center">
+                    <div className="flex w-10/12 items-center gap-1">
                       <Typography
                         type="h2"
                         hasMarkup
                         fontSize="18"
                         color="textMid"
                         text={`${hcwClinic?.subDistrict?.name}, `}
-                        className="w-96"
                       />
                       <Typography
                         type="h2"
@@ -551,7 +550,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                         fontSize="18"
                         color="textMid"
                         text={`${hcwClinic?.subDistrict?.district?.name}, `}
-                        className="w-full"
                       />
                       <Typography
                         type="h2"
@@ -562,7 +560,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                           hcwClinic?.subDistrict?.district?.province
                             ?.description
                         }
-                        className="flex w-full flex-nowrap"
                       />
                     </div>
                   </div>
@@ -570,7 +567,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               )}
               {tlClinics?.length > 0 && (
                 <div className="flex w-10/12 items-center justify-between">
-                  <div className="flex items-center">
+                  <div className="flex w-4/12 items-center">
                     <Typography
                       type="h2"
                       hasMarkup
@@ -591,25 +588,24 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       );
                     })}
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex w-full items-center gap-1">
                     <Typography
                       type="h2"
                       hasMarkup
                       fontSize="18"
                       color="textMid"
                       text={'Location:'}
-                      className="px-4"
+                      className="pl-4"
                     />
                     {tlClinics?.map((item) => {
                       return (
-                        <div className="flex flex-col items-center">
+                        <div className="flex w-10/12 items-center gap-1">
                           <Typography
                             type="h2"
                             hasMarkup
                             fontSize="18"
                             color="textMid"
                             text={`${item?.subDistrict?.name}, `}
-                            className="w-96"
                           />
                           <Typography
                             type="h2"
@@ -617,7 +613,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                             fontSize="18"
                             color="textMid"
                             text={`${item?.subDistrict?.district?.name}, `}
-                            className="w-full"
                           />
                           <Typography
                             type="h2"
@@ -627,7 +622,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                             text={
                               item?.subDistrict?.district?.province?.description
                             }
-                            className="flex w-full flex-nowrap"
                           />
                         </div>
                       );
