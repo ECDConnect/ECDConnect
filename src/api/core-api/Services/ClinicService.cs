@@ -328,7 +328,6 @@ namespace EcdLink.Api.CoreApi.Services
             clinicVisitReportModel.ClientRegistration = GetClientRegistration(mothers, infants, startDate.Date, endDate.Date);
             clinicVisitReportModel.PregnantMoms = GetPregnantMoms(motherIds, startDate.Date, endDate.Date);
             clinicVisitReportModel.ChildClients = GetChildClients(infantIds, startDate.Date, endDate.Date);
-            // TODO: G11 development not done
             clinicVisitReportModel.BreastFeedingClub = GetBreastFeedingClubData(clinicId, startDate.Date, endDate.Date);
 
             return clinicVisitReportModel;
