@@ -1,7 +1,9 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -13,10 +15,8 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using System.Collections.Generic;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {

@@ -27,7 +27,6 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1564,5 +1563,103 @@ namespace EcdLink.Api.CoreApi.Services
 
             return pointsTodoItems;
         }
+
+        public LeagueClinicsModel GetClinicRankingsForOpeningFolders(Guid leagueId, Guid pointsActivityId, Guid pointsCategoryId)
+        {
+            var league = _leagueRepo.GetAll()
+                .Where(x => x.Id == leagueId)
+                .Include(x => x.LeagueType)
+                .FirstOrDefault();
+
+            var clinicsWithUsers = _clinicRepo.GetAll()
+                .Where(x => x.Leagues.Any(y => y.LeagueId == league.Id && y.IsActive))
+                .Select(x => new { ClinicId = x.Id, ClinicName = x.Name, UserIds = x.HealthCareWorkers.Select(x => x.UserId) })
+                .ToList();
+
+            var allUserIds = clinicsWithUsers
+                .SelectMany(x => x.UserIds)
+                .Where(x => x.HasValue)
+                .Select(x => x.Value)
+                .ToList();
+
+            var allUserPoints = _pointsUserSummaryRepo.GetAll().Where(x
+                => x.UserId.HasValue
+                && allUserIds.Contains(x.UserId.Value)
+                && x.PointsActivityId == pointsActivityId
+                && x.DateScored >= league.StartDate
+                && x.DateScored <= league.EndDate)
+                .ToList();
+
+            // Get clinic points
+            var allClinicPoints = _pointsClinicSummaryRepo.GetAll().Where(x =>
+                clinicsWithUsers.Select(x => x.ClinicId).Contains(x.ClinicId)
+                && x.PointsCategoryId == pointsCategoryId
+                && x.DateScored >= league.StartDate
+                && x.DateScored <= league.EndDate).ToList();
+
+            var quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
+            var quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
+
+            var clinicList = new List<LeagueClinicPointsModel>();
+            foreach (var clinic in clinicsWithUsers)
+            {
+                var pointsTotalForYear =
+                    allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
+
+                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal);
+
+                clinicList.Add(new LeagueClinicPointsModel()
+                {
+                    ClinicId = clinic.ClinicId,
+                    ClinicName = clinic.ClinicName,
+                    PointsTotalForYear = pointsTotalForYear,
+                    PointsTotalForQuarter = pointsTotalForQuarter,
+                });
+            }
+
+            // Set league ranks for year, keeping highest rank for all that have equal points
+            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForYear).ToList();
+            clinicList[0].LeagueRankingForYear = 1;
+            for (int i = 1; i < clinicList.Count; i++)
+            {
+                if (clinicList[i].PointsTotalForYear == clinicList[i - 1].PointsTotalForYear)
+                {
+                    clinicList[i].LeagueRankingForYear = clinicList[i - 1].LeagueRankingForYear;
+                }
+                else
+                {
+                    clinicList[i].LeagueRankingForYear = i + 1;
+                }
+            }
+
+            // Set league ranks for year, keeping highest rank for all that have equal points
+            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForQuarter).ToList();
+            clinicList[0].LeagueRankingForQuarter = 1;
+            for (int i = 1; i < clinicList.Count; i++)
+            {
+                if (clinicList[i].PointsTotalForQuarter == clinicList[i - 1].PointsTotalForQuarter)
+                {
+                    clinicList[i].LeagueRankingForQuarter = clinicList[i - 1].LeagueRankingForQuarter;
+                }
+                else
+                {
+                    clinicList[i].LeagueRankingForQuarter = i + 1;
+                }
+            }
+
+            return new LeagueClinicsModel()
+            {
+                Id = league.Id,
+                StartDate = league.StartDate.HasValue ? league.StartDate.Value : DateTime.Now,
+                EndDate = league.EndDate.HasValue ? league.EndDate.Value : DateTime.Now,
+                LeagueTypeId = league.LeagueTypeId,
+                LeagueTypeName = league.LeagueType.Name,
+                Name = league.Name,
+                Clinics = clinicList
+            };
+        }
+
     }
 }

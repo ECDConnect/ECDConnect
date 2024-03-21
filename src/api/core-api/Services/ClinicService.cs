@@ -1,10 +1,9 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
-using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -17,11 +16,9 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static NPOI.HSSF.Util.HSSFColor;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -209,46 +206,52 @@ namespace EcdLink.Api.CoreApi.Services
 
         public ClinicReportModel GetClinicPointsData(Guid clinicId)
         {
+            ClinicReportModel clinicReportModel = new ClinicReportModel();
+
             var prevYearDec = new DateTime(DateTime.Now.Year - 1, 12, 01);
             var clinic = _clinicRepo.GetAll()
                 .Where(x => x.Id == clinicId)
                 .Include(x => x.TeamLeads.Where(x => x.IsActive == true))
-                .Include(x => x.SiteAddress)
                 .Include(x => x.HealthCareWorkers.Where(x => x.IsActive == true))
                 .Include(x => x.Leagues)
             .FirstOrDefault();
 
+            // get all active HCWs
             var hcwUserIds = clinic.HealthCareWorkers.Where(x => x.IsActive == true).Select(x => x.UserId).ToList();
-            var clinicPoints = _pointsEngineService.GetPointsDetailsForClinic(clinicId);
-            var clinicData = new ClinicModel(clinic, clinicPoints);
-
-            ClinicReportModel clinicReportModel = new ClinicReportModel();
-
-            if (clinicData.Points != null)
-            {
-                clinicReportModel.LeagueRanking = clinicData.Points.LeagueRanking;
-                clinicReportModel.PointsTotal = clinicData.Points.PointsTotal;
-            }
-
             clinicReportModel.TotalHCWs = hcwUserIds.Count;
 
+            // All Points
+            var allPoints = _pointsEngineService.GetPointsDetailsForClinic(clinicId);
+            if (allPoints.Points != null)
+            {
+                clinicReportModel.LeagueRanking = allPoints.LeagueRanking;
+                clinicReportModel.PointsTotal = allPoints.PointsTotal;
+                clinicReportModel.MaxPointsTotal = allPoints.MaxPointsTotal;
+            }
+
+            // Folder Points
             var momsActivity = _pointsActivityRepo.GetAll().Where(x => x.Name == "Pregnant mom folders opened").FirstOrDefault();
+            var momsActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, momsActivity.Id, (Guid)momsActivity.PointsCategoryId);
+
             var childrenActivity = _pointsActivityRepo.GetAll().Where(x => x.Name == "Child folders opened").FirstOrDefault();
-            var userPoints = _pointsUserSummaryRepo.GetAll().Where(x => hcwUserIds.Contains(x.UserId) && 
+            var childrenActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, childrenActivity.Id, (Guid)childrenActivity.PointsCategoryId);
+
+            // Get points from December for opening folders
+            var userActivityPoints = _pointsUserSummaryRepo.GetAll().Where(x => hcwUserIds.Contains(x.UserId) &&
                 (x.PointsActivityId == momsActivity.Id || x.PointsActivityId == childrenActivity.Id)
                 && x.DateScored >= prevYearDec.Date
                 && x.DateScored <= DateTime.Now.Date).ToList();
-
+            
             // Maximum = 50* 12 * (number of active CHWs currently)
             // Points earned = total number of points earned by the team for opening pregnant mom folders from Dec of the previous year to today's date
             // Calculation: (points earned / maximum)%
             // IF the percentage is greater than 100 %, show 100 %
-            // red if less than 51% -amber if 51 to 74 % -green if greater than 74 % ""
-            
             var momsMax = 50 * 12 * hcwUserIds.Count;
-            var momsPoints = userPoints.Where(x => x.PointsActivityId == momsActivity.Id).Sum(x => x.PointsTotal);
+            var momsPoints = userActivityPoints.Where(x => x.PointsActivityId == momsActivity.Id).Sum(x => x.PointsTotal);
             var momsTargetPerc = Math.Round((double)momsPoints / (double)momsMax * 100);
             var momsTargetPercColor = MetricsColorEnum.Error.ToString();
+            var momsTopClinic = momsActivityRankingData.Clinics.GetItemByIndex(0);
+            var momsClinicRank = momsActivityRankingData.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
 
             if (momsTargetPerc > 50 && momsTargetPerc <= 74)
             {
@@ -260,32 +263,34 @@ namespace EcdLink.Api.CoreApi.Services
 
             clinicReportModel.MomsTargetPerc = momsTargetPerc > 100 ? 100 : momsTargetPerc;
             clinicReportModel.MomsTargetPercColor = momsTargetPercColor;
-            clinicReportModel.MomsTopTeamPerc = 0;
-            clinicReportModel.MomsRankingPerc = 0;
-
+            clinicReportModel.MomsTopLeagueTeamPerc = Math.Round((double)momsTopClinic.PointsTotalForYear / (double)(50 * 12) * 100);
+            clinicReportModel.MomsRankingPerc = Math.Round((double)momsClinicRank.LeagueRankingForYear / (double)momsActivityRankingData.Clinics.Count * 100);
+            clinicReportModel.MomsRankingPerc = (double)-100 / (double)(momsActivityRankingData.Clinics.Count - 1) * (momsClinicRank.LeagueRankingForYear - momsActivityRankingData.Clinics.Count);
 
             // Maximum = 100 * 12 * (number of active CHWs currently)
             // Points earned = total number of points earned by the team for opening pregnant mom folders from Dec of the previous year to today's date
             // Calculation: (points earned / maximum)%
             // IF the percentage is greater than 100 %, show 100 %
-            var childrenMax = 100 * 12 * hcwUserIds.Count;
-            var childrenPoints = userPoints.Where(x => x.PointsActivityId == childrenActivity.Id).Sum(x => x.PointsTotal);
-            var childrenTargetPerc = Math.Round((double)childrenPoints / (double)childrenMax * 100);
-            var childrenTargetPercColor = MetricsColorEnum.Error.ToString();
+            var childMax = 100 * 12 * hcwUserIds.Count;
+            var childPoints = userActivityPoints.Where(x => x.PointsActivityId == childrenActivity.Id).Sum(x => x.PointsTotal);
+            var childTargetPerc = Math.Round((double)childPoints / (double)childMax * 100);
+            var childTargetPercColor = MetricsColorEnum.Error.ToString();
+            var childTopClinic = childrenActivityRankingData.Clinics.GetItemByIndex(0);
+            var childClinicRank = childrenActivityRankingData.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
 
-            if (childrenTargetPerc > 50 && childrenTargetPerc <= 74)
+            if (childTargetPerc > 50 && childTargetPerc <= 74)
             {
-                childrenTargetPercColor = MetricsColorEnum.Warning.ToString();
+                childTargetPercColor = MetricsColorEnum.Warning.ToString();
             }
-            else if (childrenTargetPerc > 74)
+            else if (childTargetPerc > 74)
             {
-                childrenTargetPercColor = MetricsColorEnum.Success.ToString();
+                childTargetPercColor = MetricsColorEnum.Success.ToString();
             }
 
-            clinicReportModel.ChildrenTargetPerc = childrenTargetPerc > 100 ? 100 : childrenTargetPerc;
-            clinicReportModel.ChildrenTargetPercColor = childrenTargetPercColor;
-            clinicReportModel.ChildrenTopTeamPerc = 0;
-            clinicReportModel.ChildrenRankingPerc = 0;
+            clinicReportModel.ChildrenTargetPerc = childTargetPerc > 100 ? 100 : childTargetPerc;
+            clinicReportModel.ChildrenTargetPercColor = childTargetPercColor;
+            clinicReportModel.ChildrenTopLeagueTeamPerc = Math.Round((double)childTopClinic.PointsTotalForYear / (double)(100 * 12) * 100);
+            clinicReportModel.ChildrenRankingPerc = (double)-100 / (double)(childrenActivityRankingData.Clinics.Count - 1) * (childClinicRank.LeagueRankingForYear - childrenActivityRankingData.Clinics.Count);
 
             return clinicReportModel;
         }
@@ -319,8 +324,7 @@ namespace EcdLink.Api.CoreApi.Services
             clinicVisitReportModel.ClientRegistration = GetClientRegistration(mothers, infants, startDate.Date, endDate.Date);
             clinicVisitReportModel.PregnantMoms = GetPregnantMoms(motherIds, startDate.Date, endDate.Date);
             clinicVisitReportModel.ChildClients = GetChildClients(infantIds, startDate.Date, endDate.Date);
-            // TODO: G11 development not done
-            clinicVisitReportModel.BreastFeedingClub = GetBreastFeedingClub(motherIds, startDate.Date, endDate.Date);
+            clinicVisitReportModel.BreastFeedingClub = GetBreastFeedingClubData(clinicId, startDate.Date, endDate.Date);
 
             return clinicVisitReportModel;
         }
@@ -402,13 +406,17 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
-        private BreastFeedingClubPortalModel GetBreastFeedingClub(List<Guid> infantIds, DateTime startDate, DateTime endDate)
+        private BreastFeedingClubPortalModel GetBreastFeedingClubData(Guid clinicId, DateTime startDate, DateTime endDate)
         {
+            var clubMeetings = _breastFeedingClubRepo.GetAll()
+                .Where(x => x.ClinicId == clinicId
+                    && x.MeetingDate.Date >= startDate && x.MeetingDate <= endDate)
+                .ToList();
 
             return new BreastFeedingClubPortalModel()
             {
-                TotalClubsHeld = 0,
-                TotalCaregiversAttended = 0
+                TotalClubsHeld = clubMeetings.Count,
+                TotalCaregiversAttended = clubMeetings.Select(x => x.Clients.Count).Sum(),
             };
         }
 
