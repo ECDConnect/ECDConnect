@@ -329,7 +329,7 @@ namespace EcdLink.Api.CoreApi.Services
             clinicVisitReportModel.PregnantMoms = GetPregnantMoms(motherIds, startDate.Date, endDate.Date);
             clinicVisitReportModel.ChildClients = GetChildClients(infantIds, startDate.Date, endDate.Date);
             // TODO: G11 development not done
-            clinicVisitReportModel.BreastFeedingClub = GetBreastFeedingClub(motherIds, startDate.Date, endDate.Date);
+            clinicVisitReportModel.BreastFeedingClub = GetBreastFeedingClubData(clinicId, startDate.Date, endDate.Date);
 
             return clinicVisitReportModel;
         }
@@ -411,13 +411,17 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
-        private BreastFeedingClubPortalModel GetBreastFeedingClub(List<Guid> infantIds, DateTime startDate, DateTime endDate)
+        private BreastFeedingClubPortalModel GetBreastFeedingClubData(Guid clinicId, DateTime startDate, DateTime endDate)
         {
+            var clubMeetings = _breastFeedingClubRepo.GetAll()
+                .Where(x => x.ClinicId == clinicId
+                    && x.MeetingDate.Date >= startDate && x.MeetingDate <= endDate)
+                .ToList();
 
             return new BreastFeedingClubPortalModel()
             {
-                TotalClubsHeld = 0,
-                TotalCaregiversAttended = 0
+                TotalClubsHeld = clubMeetings.Count,
+                TotalCaregiversAttended = clubMeetings.Select(x => x.Clients.Count).Sum(),
             };
         }
 
