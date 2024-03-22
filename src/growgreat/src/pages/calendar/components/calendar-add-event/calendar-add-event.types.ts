@@ -42,8 +42,8 @@ export interface CalendarAddEventParticipantFormModel {
 
 export interface CalendarAddEventFormModel {
   name: string;
-  start: Date;
-  end: Date;
+  start: Date | undefined;
+  end: Date | undefined;
   allDay: boolean;
   description: string;
   eventType?: string;
