@@ -53,7 +53,7 @@ export function Tab({
         isOnlyTab
       )}
       onClick={() => selectTabReceived(tabIndex)}
-      style={{ minWidth: 120 }}
+      style={{ width: '-webkit-fill-available' }}
     >
       <Typography
         type={isOnlyTab ? 'h2' : 'h4'}

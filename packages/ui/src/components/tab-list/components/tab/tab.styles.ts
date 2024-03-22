@@ -1,11 +1,11 @@
 import { classNames } from '../../../../utils/style-class.utils';
 
 export const tabInactive = (isOnlyTab: boolean) =>
-  `border-transparent hover:text-uiLight hover:border-uiLight whitespace-nowrap py-4 px-1 text-${
+  `border-transparent hover:text-uiLight hover:border-uiLight whitespace-nowrap p-4 text-${
     isOnlyTab ? 'start' : 'center'
   } border-b-4 items-${isOnlyTab ? 'start' : 'center'}`;
 export const tabActive = (isOnlyTab: boolean) =>
-  `border-primary whitespace-nowrap py-4 px-1 border-b-4 items-${
+  `border-primary whitespace-nowrap p-4 border-b-4 items-${
     isOnlyTab ? 'start' : 'center'
   } text-${isOnlyTab ? 'start' : 'center'}`;
 
