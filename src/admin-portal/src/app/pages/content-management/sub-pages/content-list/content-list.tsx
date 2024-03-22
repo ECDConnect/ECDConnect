@@ -80,7 +80,8 @@ export default function ContentList({
             x.fieldType.dataType === FieldType.DatePicker) &&
             !!x.displayMainTable) ||
           x?.displayName === 'CTF45 - Languages' ||
-          x?.displayName === 'Languages'
+          x?.displayName === 'Languages' ||
+          x?.displayName === 'GT - Available Languages'
         )
           displayFields.push(x);
       });
