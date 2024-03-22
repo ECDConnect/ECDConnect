@@ -27,4 +27,12 @@ export enum ContentTypeEnum {
   StoryBookPartQuestion = 12,
   Activity = 13,
   Consent = 14,
+  Connect = 27,
+  ConnectItem = 28,
+  Natal = 29,
+  NatalInfo = 30,
+  NatalVideo = 31,
+  NatalGraphic = 32,
+  NatalHealth = 33,
+  DangerSign = 35,
 }
