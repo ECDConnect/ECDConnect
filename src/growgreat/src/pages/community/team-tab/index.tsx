@@ -308,7 +308,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({ forceReload }) => {
             <Alert type="warning" title="No team leader" />
           )}
         </div>
-        <div className={`mt-auto flex flex-col gap-4`}>
+        <div className={`mt-auto flex flex-col gap-4 pt-4`}>
           <Button
             id={getStringFromClassNameOrId(
               communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.SIX].target

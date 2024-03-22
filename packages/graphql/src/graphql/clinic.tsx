@@ -187,11 +187,11 @@ export const GetClinicPointsData = gql`
       pointsTotal
       momsTargetPerc
       momsTargetPercColor
-      momsTopTeamPerc
+      momsTopLeagueTeamPerc
       momsRankingPerc
       childrenTargetPerc
       childrenTargetPercColor
-      childrenTopTeamPerc
+      childrenTopLeagueTeamPerc
       childrenRankingPerc
     }
   }

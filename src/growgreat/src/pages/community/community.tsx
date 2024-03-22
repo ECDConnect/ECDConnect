@@ -224,37 +224,31 @@ export const Community: React.FC = () => {
           walkthroughStepIndex={walkthroughState?.stepIndex}
         />
       )}
-      {(!walkthroughState?.isTourActive ||
-        [
-          COMMUNITY_WALKTHROUGH_STEPS.SEVEN,
-          COMMUNITY_WALKTHROUGH_STEPS.NINE,
-        ].includes(walkthroughState?.stepIndex)) && (
-        <BannerWrapper
-          showBackground={false}
-          size="medium"
-          renderBorder
-          title="Community"
-          subTitle={date}
-          color={'primary'}
-          onBack={() => history.push(ROUTES.ROOT)}
-          displayHelp={
-            selectedTabIndex === COMMUNITY_TABS.TEAM.INDEX &&
-            !!clinic &&
-            !isLoadingClinic
+      <BannerWrapper
+        showBackground={false}
+        size="medium"
+        renderBorder
+        title="Community"
+        subTitle={date}
+        color={'primary'}
+        onBack={() => history.push(ROUTES.ROOT)}
+        displayHelp={
+          selectedTabIndex === COMMUNITY_TABS.TEAM.INDEX &&
+          !!clinic &&
+          !isLoadingClinic
+        }
+        onHelp={() => setIsHelpPageOpen(true)}
+        displayOffline={!isOnline}
+      >
+        <TabList
+          className="bg-uiBg"
+          tabItems={tabItems}
+          setSelectedIndex={selectedTabIndex}
+          tabSelected={(tab: TabItem, tabIndex: number) =>
+            setTabSelected(tab, tabIndex)
           }
-          onHelp={() => setIsHelpPageOpen(true)}
-          displayOffline={!isOnline}
-        >
-          <TabList
-            className="bg-uiBg"
-            tabItems={tabItems}
-            setSelectedIndex={selectedTabIndex}
-            tabSelected={(tab: TabItem, tabIndex: number) =>
-              setTabSelected(tab, tabIndex)
-            }
-          />
-        </BannerWrapper>
-      )}
+        />
+      </BannerWrapper>
       <div
         id={getStringFromClassNameOrId(
           communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.NINE].target

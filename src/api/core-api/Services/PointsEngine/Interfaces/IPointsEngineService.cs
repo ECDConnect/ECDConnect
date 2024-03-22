@@ -2,7 +2,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
-using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
 
@@ -55,6 +54,7 @@ namespace ECDLink.Core.Services.Interfaces
 
         ClinicPointsModel GetPointsDetailsForClinic(Guid clinicId);
         LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId);
+        LeagueClinicsModel GetClinicRankingsForOpeningFolders(Guid leagueId, Guid pointsActivityId, Guid categoryId);
 
         List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId);
     }

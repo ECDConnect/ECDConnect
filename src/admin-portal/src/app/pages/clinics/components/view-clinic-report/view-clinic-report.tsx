@@ -21,12 +21,12 @@ export interface PointsReportSummaryDto {
   childrenRankingPerc: number;
   childrenTargetPerc: number;
   childrenTargetPercColor: string;
-  childrenTopTeamPerc: number;
+  childrenTopLeagueTeamPerc: number;
   leagueRanking: number;
   momsRankingPerc: number;
   momsTargetPerc: number;
   momsTargetPercColor: string;
-  momsTopTeamPerc: number;
+  momsTopLeagueTeamPerc: number;
   pointsTotal: number;
   totalHCWs: number;
 }
@@ -243,7 +243,10 @@ export const ViewClinicReport = () => {
             targetPercColor={
               clinicPointsData?.clinicPointsData?.momsTargetPercColor
             }
-            topTeamPerc={clinicPointsData?.clinicPointsData?.momsTopTeamPerc}
+            topTeamPerc={
+              clinicPointsData?.clinicPointsData?.momsTopLeagueTeamPerc
+            }
+            targetRanking={clinicPointsData?.clinicPointsData?.momsRankingPerc}
             title={'Pregnant moms'}
             icon={Pregnant}
           />
@@ -254,7 +257,10 @@ export const ViewClinicReport = () => {
               clinicPointsData?.clinicPointsData?.childrenTargetPercColor
             }
             topTeamPerc={
-              clinicPointsData?.clinicPointsData?.childrenTopTeamPerc
+              clinicPointsData?.clinicPointsData?.childrenTopLeagueTeamPerc
+            }
+            targetRanking={
+              clinicPointsData?.clinicPointsData?.childrenRankingPerc
             }
             title={'Children'}
             icon={Infant}

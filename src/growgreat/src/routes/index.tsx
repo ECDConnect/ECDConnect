@@ -28,8 +28,6 @@ import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';
 import { BookVisit } from '@/pages/mom/pregnant-profile/visits/book-visit';
 import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
 import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
-import PointsSummary from '@/pages/client/highlights-tab/points-summary';
-import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
 import { InfantProfile } from '@/pages/infant/infant-profile';
 import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
 import { MomActivityList } from '@/pages/mom/pregnant-profile/progress-tab/activity-list';
@@ -206,18 +204,6 @@ function AuthRoutes() {
         path={ROUTES.CLIENTS.VISIT_TAB.CHILD_VISITS}
         component={ChildVisits}
       />
-
-      <Route
-        exact
-        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.POINTS_SUMMARY}
-        component={PointsSummary}
-      />
-      <Route
-        exact
-        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
-        component={UpcomingVisit}
-      />
-
       <Route
         exact
         path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS}
