@@ -84,7 +84,7 @@ export const Dashboard: React.FC = () => {
 
   const { userProfilePicture } = useDocuments();
 
-  const { startService } = useNotificationService();
+  const { stopService } = useNotificationService();
 
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
 
@@ -122,7 +122,7 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (!healthCareWorker?.isRegistered || !healthCareWorker.languageId) {
-      startService();
+      stopService();
     }
   }, []);
 
