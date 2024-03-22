@@ -41,6 +41,7 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { VisitModelInput } from '@ecdlink/graphql';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { visitSteps as walkthroughSteps } from './walkthrough/steps';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 
 const HEADER_HEIGHT = 64;
 
@@ -68,6 +69,8 @@ export const VisitsTab: React.FC = () => {
   const dialog = useDialog();
 
   const { errorDialog } = useRequestResponseDialog();
+
+  const calendarAddEvent = useCalendarAddEvent();
 
   const { id: infantId } = useParams<InfantProfileParams>();
 
@@ -287,6 +290,14 @@ export const VisitsTab: React.FC = () => {
     [visitSteps.length]
   );
 
+  const onBookVisit = () => {
+    calendarAddEvent({
+      event: {
+        participantUserIds: [infantId],
+      },
+    });
+  };
+
   const onAddVisit = useCallback(() => {
     return dialog({
       position: DialogPosition.Middle,
@@ -333,8 +344,8 @@ export const VisitsTab: React.FC = () => {
                 text: 'Book a visit',
                 colour: 'primary',
                 onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
                   onClose();
+                  onBookVisit();
                 },
                 type: 'outlined',
                 textColour: 'primary',

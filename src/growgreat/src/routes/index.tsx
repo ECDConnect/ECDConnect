@@ -21,18 +21,15 @@ import { Training } from '@/pages/training/training';
 import { StartVisitFromVisitDashboard } from '@/pages/client/visits-tab/start-visit';
 import PregnancyVisits from '@/pages/client/visits-tab/pregnancy-visits';
 import ChildVisits from '@/pages/client/visits-tab/child-visits';
-import BookVisitFromVisitDashboard from '@/pages/client/visits-tab/book-visit';
 import { PregnantProfile } from '@/pages/mom/pregnant-profile';
 import { RecordEvent } from '@/pages/mom/pregnant-profile/visits/record-event';
 import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';
-import { BookVisit } from '@/pages/mom/pregnant-profile/visits/book-visit';
 import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
 import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
 import { InfantProfile } from '@/pages/infant/infant-profile';
 import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
 import { MomActivityList } from '@/pages/mom/pregnant-profile/progress-tab/activity-list';
 import { RecordEvent as InfantRecordEvent } from '@/pages/infant/infant-profile/visits-tab/record-event';
-import { BookVisit as InfantBookVisit } from '@/pages/infant/infant-profile/visits-tab/book-visit';
 import { PastVisits as InfantPastVisits } from '@/pages/infant/infant-profile/visits-tab/past-visits';
 import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-address';
 import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
@@ -136,11 +133,6 @@ function AuthRoutes() {
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT}
-        component={BookVisit}
-      />
-      <Route
-        exact
         path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.PAST_VISITS}
         component={PastVisits}
       />
@@ -171,11 +163,6 @@ function AuthRoutes() {
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.BOOK_VISIT}
-        component={InfantBookVisit}
-      />
-      <Route
-        exact
         path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.PAST_VISITS}
         component={InfantPastVisits}
       />
@@ -188,11 +175,6 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.VISIT_TAB.START_VISIT}
         component={StartVisitFromVisitDashboard}
-      />
-      <Route
-        exact
-        path={ROUTES.CLIENTS.VISIT_TAB.BOOK_VISIT}
-        component={BookVisitFromVisitDashboard}
       />
       <Route
         exact
