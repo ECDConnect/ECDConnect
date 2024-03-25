@@ -3,7 +3,7 @@ import { useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
 import { usePanel } from '@ecdlink/core';
-import { useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetClinicPointsData,
   GetClinicVisitReportData,
@@ -14,7 +14,7 @@ import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
 import DatePicker from 'react-datepicker';
-import { useCallback, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { sub } from 'date-fns';
 
 export interface PointsReportSummaryDto {
@@ -43,14 +43,17 @@ export const ViewClinicReport = () => {
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDate, endDate] = dateRange;
 
-  const { data: clinicReportData } = useQuery(GetClinicVisitReportData, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      clinicId: clinic?.id,
-      startDate: startDate,
-      endDate: endDate,
-    },
-  });
+  const [fetchVisitInformation, { data: clinicReportData }] = useLazyQuery(
+    GetClinicVisitReportData,
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        clinicId: clinic?.id,
+        startDate: startDate,
+        endDate: endDate,
+      },
+    }
+  );
 
   const { data: clinicPointsData } = useQuery(GetClinicPointsData, {
     fetchPolicy: 'cache-and-network',
@@ -60,6 +63,19 @@ export const ViewClinicReport = () => {
   });
 
   const dataFromClinicPointsData = clinicPointsData?.clinicPointsData;
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      fetchVisitInformation({
+        fetchPolicy: 'cache-and-network',
+        variables: {
+          clinicId: clinic?.id,
+          startDate: startDate,
+          endDate: endDate,
+        },
+      });
+    }
+  }, [clinic?.id, endDate, fetchVisitInformation, startDate]);
 
   const displayEditPanel = () => {
     panel({
