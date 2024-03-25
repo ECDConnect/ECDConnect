@@ -273,7 +273,9 @@ export default function UploadBulkUser(props: any) {
               type="error"
               list={docErrors.map(
                 (error) =>
-                  error.errorDescription +
+                  'Row ' +
+                  error?.row +
+                  ':' +
                   '</br>' +
                   (error.errors?.length ? error.errors.join('</br>') : '')
               )}
