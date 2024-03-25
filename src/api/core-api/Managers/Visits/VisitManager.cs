@@ -379,7 +379,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 || (x.Infant.IsActive
                     && x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == HCWId));
 
-            if (totalVisitsCompleted != null)
+            if (totalVisitsCompleted.Any())
             {
                 return totalVisitsCompleted.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault().ActualVisitDate;
             }
