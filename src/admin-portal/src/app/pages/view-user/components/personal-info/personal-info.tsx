@@ -211,6 +211,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       idNumber: chwDataForm?.idNumber,
       phoneNumber: chwDataForm?.phoneNumber,
       email: adminDataForm?.email,
+      userName: chwDataForm?.idNumber,
     };
 
     await updateUser({
