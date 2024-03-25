@@ -2113,15 +2113,16 @@ export type ClinicPointsModel = {
 
 export type ClinicReportModel = {
   __typename?: 'ClinicReportModel';
-  childrenRankingPerc: Scalars['Int'];
-  childrenTargetPerc: Scalars['Int'];
+  childrenRankingPerc: Scalars['Float'];
+  childrenTargetPerc: Scalars['Float'];
   childrenTargetPercColor?: Maybe<Scalars['String']>;
-  childrenTopTeamPerc: Scalars['Int'];
+  childrenTopLeagueTeamPerc: Scalars['Float'];
   leagueRanking: Scalars['Int'];
-  momsRankingPerc: Scalars['Int'];
-  momsTargetPerc: Scalars['Int'];
+  maxPointsTotal: Scalars['Int'];
+  momsRankingPerc: Scalars['Float'];
+  momsTargetPerc: Scalars['Float'];
   momsTargetPercColor?: Maybe<Scalars['String']>;
-  momsTopTeamPerc: Scalars['Int'];
+  momsTopLeagueTeamPerc: Scalars['Float'];
   pointsTotal: Scalars['Int'];
   totalHCWs: Scalars['Int'];
 };
@@ -5641,6 +5642,13 @@ export type ListFilterInputTypeOfVisitFilterInput = {
   some?: InputMaybe<VisitFilterInput>;
 };
 
+export type ListStringOperationFilterInput = {
+  all?: InputMaybe<StringOperationFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<StringOperationFilterInput>;
+  some?: InputMaybe<StringOperationFilterInput>;
+};
+
 export enum LogRelatedType {
   Error = 'ERROR',
   Log = 'LOG',
@@ -6139,6 +6147,9 @@ export type Mutation = {
   addHealthCareWorker?: Maybe<PortalUserHcwModel>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
+  addNatalGraphic: Scalars['Boolean'];
+  addNatalInfo: Scalars['Boolean'];
+  addNatalVideo: Scalars['Boolean'];
   addNewClub?: Maybe<Club>;
   addNewClubLeader?: Maybe<ClubLeader>;
   addNewClubMembers: Scalars['Boolean'];
@@ -6604,6 +6615,11 @@ export type Mutation = {
   switchPrincipal: Scalars['Boolean'];
   testPointEngine: Scalars['Boolean'];
   trackAttendance: Scalars['Boolean'];
+  transferHealthPromotionToNatalHealth: Scalars['Boolean'];
+  transferInfoGraphicsToNatalGraphics: Scalars['Boolean'];
+  transferMoreInformationToNatal: Scalars['Boolean'];
+  transferMoreInformationToNatalInfo: Scalars['Boolean'];
+  transferVisitVideosToNatalVideos: Scalars['Boolean'];
   updateAbsentees?: Maybe<Absentees>;
   updateActivity?: Maybe<Activity>;
   updateAuditLogType?: Maybe<AuditLogType>;
@@ -6891,6 +6907,42 @@ export type MutationAddInfantArgs = {
 
 export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
+};
+
+export type MutationAddNatalGraphicArgs = {
+  contentTypeId: Scalars['Int'];
+  image?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
+  section?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddNatalInfoArgs = {
+  contentTypeId: Scalars['Int'];
+  discussionA?: InputMaybe<Scalars['String']>;
+  discussionB?: InputMaybe<Scalars['String']>;
+  discussionC?: InputMaybe<Scalars['String']>;
+  discussionD?: InputMaybe<Scalars['String']>;
+  discussionE?: InputMaybe<Scalars['String']>;
+  discussionF?: InputMaybe<Scalars['String']>;
+  discussionG?: InputMaybe<Scalars['String']>;
+  discussionH?: InputMaybe<Scalars['String']>;
+  discussionI?: InputMaybe<Scalars['String']>;
+  discussionJ?: InputMaybe<Scalars['String']>;
+  localeId: Scalars['UUID'];
+  section?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddNatalVideoArgs = {
+  contentTypeId: Scalars['Int'];
+  localeId: Scalars['UUID'];
+  section?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+  video?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddNewClubArgs = {
@@ -10959,6 +11011,18 @@ export type PortalClinicInputModelInput = {
   teamLead2Id?: InputMaybe<Scalars['UUID']>;
 };
 
+export type PortalNatalModel = {
+  __typename?: 'PortalNatalModel';
+  childContentTypeId?: Maybe<Scalars['String']>;
+  childContentTypeName?: Maybe<Scalars['String']>;
+  childId?: Maybe<Scalars['String']>;
+  childType?: Maybe<Scalars['String']>;
+  languages?: Maybe<Scalars['String']>;
+  section?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
 export type PortalTeamLeadModel = {
   __typename?: 'PortalTeamLeadModel';
   clinicNames?: Maybe<Scalars['String']>;
@@ -11060,6 +11124,7 @@ export type PortalUserModelSortInput = {
 
 export type PortalUserTlModel = {
   __typename?: 'PortalUserTLModel';
+  clinicIds?: Maybe<Array<Scalars['UUID']>>;
   id: Scalars['UUID'];
   isActive: Scalars['Boolean'];
   isRegistered: Scalars['Boolean'];
@@ -11069,51 +11134,66 @@ export type PortalUserTlModel = {
 export type PortalUsersHcwModel = {
   __typename?: 'PortalUsersHCWModel';
   clinicId?: Maybe<Scalars['UUID']>;
+  clinicName?: Maybe<Scalars['String']>;
   connectUsage?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isRegistered: Scalars['Boolean'];
+  provinceId?: Maybe<Scalars['UUID']>;
+  subDistrictId?: Maybe<Scalars['UUID']>;
   user?: Maybe<PortalUserModel>;
 };
 
 export type PortalUsersHcwModelFilterInput = {
   and?: InputMaybe<Array<PortalUsersHcwModelFilterInput>>;
   clinicId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  clinicName?: InputMaybe<StringOperationFilterInput>;
   connectUsage?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<PortalUsersHcwModelFilterInput>>;
+  provinceId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  subDistrictId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   user?: InputMaybe<PortalUserModelFilterInput>;
 };
 
 export type PortalUsersHcwModelSortInput = {
   clinicId?: InputMaybe<SortEnumType>;
+  clinicName?: InputMaybe<SortEnumType>;
   connectUsage?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isRegistered?: InputMaybe<SortEnumType>;
+  provinceId?: InputMaybe<SortEnumType>;
+  subDistrictId?: InputMaybe<SortEnumType>;
   user?: InputMaybe<PortalUserModelSortInput>;
 };
 
 export type PortalUsersTlModel = {
   __typename?: 'PortalUsersTLModel';
   clinicIds?: Maybe<Array<Scalars['UUID']>>;
+  clinicNames?: Maybe<Array<Maybe<Scalars['String']>>>;
   connectUsage?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isRegistered: Scalars['Boolean'];
+  provinceIds?: Maybe<Array<Scalars['UUID']>>;
+  subDistrictIds?: Maybe<Array<Scalars['UUID']>>;
   user?: Maybe<PortalUserModel>;
 };
 
 export type PortalUsersTlModelFilterInput = {
   and?: InputMaybe<Array<PortalUsersTlModelFilterInput>>;
   clinicIds?: InputMaybe<ListComparableGuidOperationFilterInput>;
+  clinicNames?: InputMaybe<ListStringOperationFilterInput>;
   connectUsage?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<PortalUsersTlModelFilterInput>>;
+  provinceIds?: InputMaybe<ListComparableGuidOperationFilterInput>;
+  subDistrictIds?: InputMaybe<ListComparableGuidOperationFilterInput>;
   user?: InputMaybe<PortalUserModelFilterInput>;
 };
 
@@ -12752,7 +12832,7 @@ export type Query = {
   motherSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
   motherSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
   motherVisits?: Maybe<Array<Maybe<Visit>>>;
-  natalRecordsForType: Array<Maybe<Natal>>;
+  natalRecordsForType?: Maybe<Array<Maybe<PortalNatalModel>>>;
   onBoardTraineeTimeline?: Maybe<TraineeOnBoardTimeline>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
@@ -12800,11 +12880,6 @@ export type Query = {
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   traineeByUserId?: Maybe<Trainee>;
-  transferHealthPromotionToNatalHealth: Scalars['Boolean'];
-  transferInfoGraphicsToNatalGraphics: Scalars['Boolean'];
-  transferMoreInformationToNatal: Scalars['Boolean'];
-  transferMoreInformationToNatalInfo: Scalars['Boolean'];
-  transferVisitVideosToNatalVideos: Scalars['Boolean'];
   unsubmittedExpenseItems?: Maybe<Array<Maybe<ExpenseItemModel>>>;
   unsubmittedIncomeItems?: Maybe<Array<Maybe<IncomeItemModel>>>;
   userById?: Maybe<ApplicationUser>;
@@ -15462,8 +15537,9 @@ export type QueryMotherVisitsArgs = {
 };
 
 export type QueryNatalRecordsForTypeArgs = {
-  localeId?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
+  contentTypeId: Scalars['Int'];
+  localeId: Scalars['UUID'];
+  natalType?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryOnBoardTraineeTimelineArgs = {
@@ -17758,6 +17834,7 @@ export type UserModel = {
   raceId?: Maybe<Scalars['UUID']>;
   resetData?: Maybe<Scalars['Boolean']>;
   surname?: Maybe<Scalars['String']>;
+  userName?: Maybe<Scalars['String']>;
   verifiedByHomeAffairs?: Maybe<Scalars['Boolean']>;
   whatsAppNumber?: Maybe<Scalars['String']>;
 };
@@ -17785,6 +17862,7 @@ export type UserModelInput = {
   raceId?: InputMaybe<Scalars['UUID']>;
   resetData?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
+  userName?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs?: InputMaybe<Scalars['Boolean']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };

@@ -1,5 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using System;
+﻿using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
