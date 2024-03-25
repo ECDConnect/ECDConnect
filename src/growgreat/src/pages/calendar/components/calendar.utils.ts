@@ -6,16 +6,12 @@ import {
   MotherDto,
   TeamLeadDto,
   UserDto,
-  VisitDto,
   getAvatarColor,
 } from '@ecdlink/core';
 import { ListDataItem, ParticipantType } from './calendar.types';
 import Pregnant from '@/assets/pregnant.svg';
 import Infant from '@/assets/infant.svg';
 import { newGuid } from '@/utils/common/uuid.utils';
-import { infantThunkActions } from '@/store/infant';
-import { motherThunkActions } from '@/store/mother';
-import { AppDispatch, ThunkActionStatuses } from '@/store/types';
 
 const TypeInfo = {
   clinic: {
@@ -33,6 +29,13 @@ const TypeInfo = {
   healthCareWorker: {
     icon: undefined,
   },
+};
+
+const getInfantName = (infant: InfantDto) => {
+  const caregiverName = infant.caregiver?.firstName || '';
+  const infantName = infant.user?.firstName || '';
+  if (!!caregiverName) return `${caregiverName} & ${infantName}`;
+  return infantName;
 };
 
 export const mapCalendarEventParticipantModelToListDataItem = (
@@ -80,18 +83,19 @@ export const mapInfantToListDataItem = (infant: InfantDto): ListDataItem => {
   if (notes.length > 0) {
     notes = `${notes[0].toUpperCase()}${notes.slice(1)}`;
   }
+  const infantName = getInfantName(infant);
   return {
     id: infant.id || '',
     icon: TypeInfo['infant'].icon,
     //profileDataUrl: mother.user?.profileImageUrl,
-    title: `${infant.user?.firstName}`,
+    title: infantName,
     subTitle: notes,
-    profileText: `${infant.user?.firstName}`,
+    profileText: infantName,
     hideAlertSeverity: true,
     alertSeverity: 'none',
     avatarColor: getAvatarColor('growgreat') || '',
     extraData: {
-      firstName: infant.user?.firstName || '',
+      firstName: infantName,
       surname: '',
       type: 'infant',
     },
@@ -281,8 +285,8 @@ export const mapIdsToCalendarEventParticipants = (
           id: newGuid(),
           participantUserId: pid,
           participantUser: {
-            firstName: infant.user?.firstName || '',
-            surname: infant.user?.surname || '',
+            firstName: getInfantName(infant),
+            surname: '',
             type: 'infant',
           },
         };

@@ -1,4 +1,5 @@
 import {
+  ActionModal,
   Button,
   DialogPosition,
   Divider,
@@ -40,6 +41,8 @@ import {
 } from '../walkthrough/steps';
 import { useWalkthrough } from '@/context/walkthroughContext';
 import { dummy } from './dummy';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { userSelectors } from '@/store/user';
 
 export const BreastfeedingClubsTab: React.FC = () => {
   const [isToShowAll, setIsToShowAll] = useState(false);
@@ -48,6 +51,7 @@ export const BreastfeedingClubsTab: React.FC = () => {
   const breastfeedingClubs = useAppSelector(
     communitySelectors.getBreastFeedingClubsSelector
   );
+  const user = useAppSelector(userSelectors.getUser);
 
   const { showMessage } = useSnackbar();
 
@@ -85,6 +89,8 @@ export const BreastfeedingClubsTab: React.FC = () => {
   const history = useHistory();
 
   const appDispatch = useAppDispatch();
+
+  const calendarAddEvent = useCalendarAddEvent();
 
   const dialog = useDialog();
 
@@ -178,6 +184,67 @@ export const BreastfeedingClubsTab: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const getBreastfeedingClubEventParticipants = (): string[] => {
+    const participants: string[] = [];
+    if (!!clinic) {
+      participants.push(...clinic.teamLeads.map((t) => t.id));
+      participants.push(
+        ...clinic.clinicMembers.map((c) => c.healthCareWorkerId)
+      );
+    }
+    return participants.filter((p) => p !== user?.id);
+  };
+
+  const onAddBreastfeedingClub = () => {
+    return dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render(onClose) {
+        return (
+          <ActionModal
+            className="z-50"
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconClassName="h-10 w-10"
+            title="Would you like to add a breastfeeding club or schedule one in calendar?"
+            detailText="You can add a club that has already happened or schedule a club for a future date."
+            actionButtons={[
+              {
+                text: 'Add club now',
+                colour: 'primary',
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'PlusCircleIcon',
+                onClick: () => {
+                  onClose();
+                  history.push(ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD);
+                },
+              },
+              {
+                text: 'Schedule in calendar',
+                colour: 'primary',
+                type: 'outlined',
+                textColour: 'primary',
+                leadingIcon: 'CalendarIcon',
+                onClick: () => {
+                  onClose();
+                  calendarAddEvent({
+                    event: {
+                      eventType: 'Breastfeeding club',
+                      participantUserIds:
+                        getBreastfeedingClubEventParticipants(),
+                    },
+                  });
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   if (isLoading && !walkthroughState?.isTourActive) {
     return (
       <LoadingSpinner
@@ -248,9 +315,7 @@ export const BreastfeedingClubsTab: React.FC = () => {
             textColor="white"
             color="primary"
             text="Add a breastfeeding club"
-            onClick={() =>
-              history.push(ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD)
-            }
+            onClick={onAddBreastfeedingClub}
           />
           <Button
             className="mb-4"
