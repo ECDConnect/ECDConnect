@@ -48,6 +48,8 @@ import { COMMUNITY_TABS } from '../community/community.types';
 import { getIndividualPointsUIDetails } from '@/utils/community/individual-points';
 import { getHealthCareWorkerTotalCompletedPointsByMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
 import { PointsMonthViewRouteState } from '../practitioner/individual-points/month-view/types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
 
 export const Dashboard: React.FC = () => {
   const today = new Date();
@@ -57,6 +59,12 @@ export const Dashboard: React.FC = () => {
   const location = useLocation<DashboardRouteState>();
   const isFromLogin =
     location?.state?.isFromLogin || location?.state?.isFromSignUp;
+
+  const { isLoading: isLoadingHCWPoints } = useThunkFetchCall(
+    'healthCareWorker',
+    HealthCareWorkerActions.GET_HEALTH_CARE_WORKER_POINTS
+  );
+
   const userData = useSelector(userSelectors.getUser);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const appDispatch = useAppDispatch();
@@ -311,24 +319,22 @@ export const Dashboard: React.FC = () => {
           <Polly className="mr-4 h-12 w-12" />
         </div>
       ),
-      mainText: currentIndividualPoints
-        ? String(currentIndividualPoints ?? 0)
-        : '',
+      mainText: isLoadingHCWPoints ? '' : String(currentIndividualPoints ?? 0),
       currentPoints: currentIndividualPoints,
       maxPoints: MaxIndividualPoints.PerMonth,
       barBgColour: 'white',
       barColour: individualPointsUIDetails.dashboardColour,
       hint: 'Points',
-      hintClassName: currentIndividualPoints ? 'mt-3' : 'mt-12',
+      hintClassName: isLoadingHCWPoints ? 'mt-12' : 'mt-3',
       bgColour: individualPointsUIDetails.backgroundColour,
       textColour: 'textDark',
-      hideProgressBar: !currentIndividualPoints,
+      hideProgressBar: isLoadingHCWPoints,
       onClick: () =>
         history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT, {
           forceReload: true,
         } as PointsMonthViewRouteState),
     };
-  }, [currentIndividualPoints]);
+  }, [isLoadingHCWPoints, currentIndividualPoints]);
 
   const communityCard = useMemo(
     (): ScoreCardProps => ({
