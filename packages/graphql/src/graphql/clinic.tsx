@@ -62,6 +62,9 @@ export const GetAllClinic = gql`
         }
       }
       isActive
+      healthCareWorkers {
+        id
+      }
     }
   }
 `;
