@@ -16,7 +16,6 @@ export const getFirstWord = (str) => {
 };
 
 export const isRemovedUser = (word) => {
-  console.log({ word });
   if (getFirstWord(word) === 'Removed:') {
     return true;
   } else {
