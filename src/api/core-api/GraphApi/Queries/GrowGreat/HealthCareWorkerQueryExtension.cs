@@ -321,15 +321,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public HCWVisitStatus GetHealthCareWorkerVisitStatus([Service] VisitManager visitManager, string userId)
+        public HealthCareWorkerVisitStatusModel GetHealthCareWorkerVisitStatus([Service] VisitManager visitManager, Guid userId)
         {
-            var visitStatus = new HCWVisitStatus();
-            visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, Constants.GGSettings.client_mother);
-            visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_mother);
-            visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_child);
-            visitStatus.LastCompletedVisit = visitManager.GetLastCompletedVisitForHCW(userId);
-
-            return visitStatus;
+            return visitManager.GetHealthCareWorkerVisitStatus(userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

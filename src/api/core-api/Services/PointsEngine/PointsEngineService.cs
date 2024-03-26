@@ -1467,7 +1467,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Complete {count} visits due this month",
                     Points = (dueInfantVisits > 0 ? 260 : 0) + (dueMotherVisits > 0 ? 200 : 0),
                     Count = count,
-                    PercentageComplete = count / (count + visitsCompletedThisMonth) * 100,
+                    PercentageComplete = (int)((float)visitsCompletedThisMonth / (count + visitsCompletedThisMonth) * 100),
                 });
             }
 
@@ -1512,7 +1512,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Make {missedReferrals} referrals",
                     Points = (motherMissedReferralTypes * 20) + (infantMissedReferralTypes * 20),
                     Count = missedReferrals,
-                    PercentageComplete = missedReferrals / (infantReferrals.Count() + motherReferrals.Count()) * 100,
+                    PercentageComplete = (int)((float)missedReferrals / (infantReferrals.Count() + motherReferrals.Count()) * 100),
                 });
             }
 
@@ -1536,7 +1536,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Open {count} pregnant mom folders",
                     Points = 50,
                     Count = count,
-                    PercentageComplete = count / 2 * 100,
+                    PercentageComplete = (int)((float)mothers / 2 * 100),
                 });
             }
 
@@ -1562,7 +1562,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Open {count} child folders",
                     Points = 100,
                     Count = count,
-                    PercentageComplete = count / 5 * 100,
+                    PercentageComplete = (int)((float)infants / 5 * 100),
                 });
             }
 
