@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { PermissionEnum, usePanel, ClinicDto } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
-import { GetAllClinic, GetSubDistrictsAndStats } from '@ecdlink/graphql';
+import { GetAllPortalClinics, GetSubDistrictsAndStats } from '@ecdlink/graphql';
 import { SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -13,7 +13,7 @@ import { useHistory } from 'react-router';
 
 export default function ClinicsSubPage() {
   const { hasPermission } = useUser();
-  const { data, refetch } = useQuery(GetAllClinic, {
+  const { data, refetch } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -45,27 +45,27 @@ export default function ClinicsSubPage() {
 
   const subDistrictsFilteredArray = useMemo(
     () =>
-      data?.GetAllClinic?.filter((el) => {
+      data?.allPortalClinics?.filter((el) => {
         return filteredSubDistricts?.some((f) => {
           return f === el?.subDistrict?.id;
         });
       }),
-    [data?.GetAllClinic, filteredSubDistricts]
+    [data?.allPortalClinics, filteredSubDistricts]
   );
 
   useEffect(() => {
-    if (data && data.GetAllClinic) {
-      const copyItems = data.GetAllClinic.filter(
-        (v) => v?.isActive === true
-      ).map((item: ClinicDto) => ({
-        ...item,
-        id: `${item?.id}`,
-        name: item?.name,
-        isActive: item?.isActive,
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
-      }));
+    if (data && data.allPortalClinics) {
+      const copyItems = data.allPortalClinics
+        .filter((v) => v?.isActive === true)
+        .map((item: ClinicDto) => ({
+          ...item,
+          id: `${item?.id}`,
+          name: item?.name,
+          isActive: item?.isActive,
+          _view: undefined,
+          _edit: undefined,
+          _url: undefined,
+        }));
       setTableData(copyItems);
     }
   }, [data]);
@@ -97,14 +97,15 @@ export default function ClinicsSubPage() {
         );
       setTableData(clinicsFilteredAndSorted);
     } else {
-      const clinicsFilteredAndSorted = data?.GetAllClinic?.slice()?.sort(
-        (a, b) =>
+      const clinicsFilteredAndSorted = data?.allPortalClinics
+        ?.slice()
+        ?.sort((a, b) =>
           a.insertedDate > b.insertedDate
             ? -1
             : a.insertedDate < b.insertedDate
             ? 1
             : 0
-      );
+        );
       setTableData(clinicsFilteredAndSorted);
     }
   }, [data, subDistrictsFiltered, subDistrictsFilteredArray]);

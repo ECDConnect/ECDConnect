@@ -16,7 +16,7 @@ import { SaveIcon } from '@heroicons/react/solid';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import {
-  GetAllClinic,
+  GetAllPortalClinics,
   ResetUserPassword,
   UpdateHealthCareWorkerClinic,
   UpdateUser,
@@ -97,14 +97,14 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     email: yup.string().email().required('email address is required'),
   });
 
-  const { data: clinicsData } = useQuery(GetAllClinic, {
+  const { data: clinicsData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
   useEffect(() => {
-    if (clinicsData?.GetAllClinic?.length > 0) {
+    if (clinicsData?.allPortalClinics?.length > 0) {
       setClinics(
-        clinicsData?.GetAllClinic?.map((item) => {
+        clinicsData?.allPortalClinics?.map((item) => {
           return {
             value: item?.id,
             label: item?.name,
@@ -112,13 +112,13 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
         })
       );
     }
-  }, [clinicsData?.GetAllClinic]);
+  }, [clinicsData?.allPortalClinics]);
 
-  const hcwClinic = clinicsData?.GetAllClinic?.find(
+  const hcwClinic = clinicsData?.allPortalClinics?.find(
     (item) => item?.id === clinicId
   );
 
-  const tlClinics = clinicsData?.GetAllClinic?.filter((item) =>
+  const tlClinics = clinicsData?.allPortalClinics?.filter((item) =>
     clinicIds?.some((x) => x === item?.id?.toString())
   );
 

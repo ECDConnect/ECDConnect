@@ -23,6 +23,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ClinicQueryExtension
     {
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Clinic> GetAllPortalClinics([Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
+            return clinicRepo.GetAll().Where(x => x.IsActive)
+                .Include(x => x.TeamLeads.Where(x => x.IsActive))
+                .Include(x => x.SiteAddress)
+                .Include(x => x.SubDistrict)
+                .Include(x => x.HealthCareWorkers.Where(x => x.IsActive))
+                .Include(x => x.Leagues.Where(x => x.IsActive))
+                .ToList();
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClinicReportModel GetClinicPointsData([Service] IClinicService clinicService, Guid clinicId)
         {

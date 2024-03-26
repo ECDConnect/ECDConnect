@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client';
 import { PermissionEnum, usePanel } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
 import {
-  GetAllClinic,
+  GetAllPortalClinics,
   GetAllProvince,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
@@ -164,7 +164,7 @@ export default function TeamLeads() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const { data: clinicData } = useQuery(GetAllClinic, {
+  const { data: clinicData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -187,10 +187,10 @@ export default function TeamLeads() {
   };
 
   useEffect(() => {
-    if (clinicData?.GetAllClinic?.length > 0) {
-      const clinicsSorted = clinicData?.GetAllClinic?.slice()?.sort((a, b) =>
-        a.name < b.name ? -1 : a.name > b.name ? 1 : 0
-      );
+    if (clinicData?.allPortalClinics?.length > 0) {
+      const clinicsSorted = clinicData?.allPortalClinics
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
       setClinics(
         clinicsSorted?.map((item) => {
@@ -202,7 +202,7 @@ export default function TeamLeads() {
         })
       );
     }
-  }, [clinicData?.GetAllClinic]);
+  }, [clinicData?.allPortalClinics]);
 
   useEffect(() => {
     if (subDistrictData?.subDistrictsAndStats?.length > 0) {

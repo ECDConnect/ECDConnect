@@ -25,7 +25,7 @@ import {
   CreateSiteAddress,
   DeleteClinicById,
   EditClinic,
-  GetAllClinic,
+  GetAllPortalClinics,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
   SiteAddressInput,
@@ -62,7 +62,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     },
   });
 
-  const { data: clinicsData } = useQuery(GetAllClinic, {
+  const { data: clinicsData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -94,7 +94,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   const hasSubDistricts =
     watchFields?.subDistrict &&
-    clinicsData?.GetAllClinic?.filter(
+    clinicsData?.allPortalClinics?.filter(
       (item) => item?.subDistrict?.id === watchFields?.subDistrict
     );
   const hasName =
@@ -103,7 +103,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   const duplicatedName =
     findObjectWithString(
-      clinicsData?.GetAllClinic,
+      clinicsData?.allPortalClinics,
       'name',
       watchFields?.name
     ) &&
