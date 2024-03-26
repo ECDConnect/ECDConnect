@@ -13,7 +13,7 @@ export const GetNatalRecordsForType = gql`
     ) {
       title
       section
-      languages
+      availableLanguages
       childType
       childId
       childContentTypeName
