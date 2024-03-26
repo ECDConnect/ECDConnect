@@ -87,6 +87,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var sixMonths = today.AddMonths(-6);
                 hasFilters = true;
 
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                {
+                    filteredUsers = records.Where(x => x.User.IsActive == false).ToList();
+                }
+                
                 foreach (var item in records)
                 {
                     if (connectUsageSearch.Contains(item.User.ConnectUsage))
@@ -95,14 +100,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                     {
-                        if (item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
+                        if (item.User.LastSeen.Date != item.User.InsertedDate && item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
                     {
-                        if (item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
+                        if (item.User.LastSeen.Date != item.User.InsertedDate && item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }
