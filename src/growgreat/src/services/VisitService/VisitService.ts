@@ -37,6 +37,10 @@ class Visit {
             motherDueVisits
             childDueVisits
             lastCompletedVisit
+            motherVisitsCompletedThisMonth
+            motherVisitsCompletedThisYear
+            childVisitsCompletedThisMonth
+            childVisitsCompletedThisYear
           }
         } 
           `,
