@@ -19,7 +19,6 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,6 +87,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var sixMonths = today.AddMonths(-6);
                 hasFilters = true;
 
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                {
+                    filteredUsers = records.Where(x => x.User.IsActive == false).ToList();
+                }
+                
                 foreach (var item in records)
                 {
                     if (connectUsageSearch.Contains(item.User.ConnectUsage))

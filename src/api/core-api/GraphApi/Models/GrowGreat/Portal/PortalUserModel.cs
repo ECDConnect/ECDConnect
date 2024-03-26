@@ -108,7 +108,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             }
             else
             {
-                comment = "Online: " + user.LastSeen.ToString("dd/MM/yyyy");
+                if (user.LastSeen != user.InsertedDate)
+                {
+                    comment = "Online: " + user.LastSeen.ToString("dd/MM/yyyy");
+                }
 
                 if (invitations.Count != 0)
                 {

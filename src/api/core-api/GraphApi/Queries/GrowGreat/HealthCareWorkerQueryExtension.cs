@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -92,6 +93,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var today = DateTime.Now;
                 var sixMonths = today.AddMonths(-6);
                 hasFilters = true;
+
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                {
+                    filteredUsers = records.Where(x => x.User.IsActive == false).ToList();
+                }
 
                 foreach (var item in records)
                 {
