@@ -320,8 +320,8 @@ export const Visits: React.FC = () => {
                 isLoading: isLoadingAddAdditionalVisit,
                 disabled: isLoadingAddAdditionalVisit,
                 onClick: () => {
-                  onBookVisit();
                   onClose();
+                  onBookVisit();
                 },
                 type: 'outlined',
                 textColour: 'primary',
