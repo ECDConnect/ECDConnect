@@ -222,19 +222,25 @@ namespace EcdLink.Api.CoreApi.Services
 
             // All Points
             var allPoints = _pointsEngineService.GetPointsDetailsForClinic(clinicId);
-            if (allPoints.Points != null)
+            if (allPoints?.Points != null)
             {
                 clinicReportModel.LeagueRanking = allPoints.LeagueRanking;
                 clinicReportModel.PointsTotal = allPoints.PointsTotal;
                 clinicReportModel.MaxPointsTotal = allPoints.MaxPointsTotal;
             }
-
+            
             // Folder Points
-            var momsActivity = _pointsActivityRepo.GetAll().Where(x => x.Name == "Pregnant mom folders opened").FirstOrDefault();
-            var momsActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, momsActivity.Id, (Guid)momsActivity.PointsCategoryId);
+            LeagueClinicsModel momsActivityRankingData = new LeagueClinicsModel();
+            LeagueClinicsModel childrenActivityRankingData = new LeagueClinicsModel();
 
+            var momsActivity = _pointsActivityRepo.GetAll().Where(x => x.Name == "Pregnant mom folders opened").FirstOrDefault();
             var childrenActivity = _pointsActivityRepo.GetAll().Where(x => x.Name == "Child folders opened").FirstOrDefault();
-            var childrenActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, childrenActivity.Id, (Guid)childrenActivity.PointsCategoryId);
+
+            if (clinic.Leagues.Count > 0)
+            {
+                momsActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, momsActivity.Id, (Guid)momsActivity.PointsCategoryId);
+                childrenActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, childrenActivity.Id, (Guid)childrenActivity.PointsCategoryId);
+            }
 
             // Get points from December for opening folders
             var userActivityPoints = _pointsUserSummaryRepo.GetAll().Where(x => hcwUserIds.Contains(x.UserId) &&
@@ -250,22 +256,26 @@ namespace EcdLink.Api.CoreApi.Services
             var momsPoints = userActivityPoints.Where(x => x.PointsActivityId == momsActivity.Id).Sum(x => x.PointsTotal);
             var momsTargetPerc = Math.Round((double)momsPoints / (double)momsMax * 100);
             var momsTargetPercColor = MetricsColorEnum.Error.ToString();
-            var momsTopClinic = momsActivityRankingData.Clinics.GetItemByIndex(0);
-            var momsClinicRank = momsActivityRankingData.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
-
             if (momsTargetPerc > 50 && momsTargetPerc <= 74)
             {
                 momsTargetPercColor = MetricsColorEnum.Warning.ToString();
-            } else if (momsTargetPerc > 74)
+            }
+            else if (momsTargetPerc > 74)
             {
                 momsTargetPercColor = MetricsColorEnum.Success.ToString();
             }
 
             clinicReportModel.MomsTargetPerc = momsTargetPerc > 100 ? 100 : momsTargetPerc;
             clinicReportModel.MomsTargetPercColor = momsTargetPercColor;
-            clinicReportModel.MomsTopLeagueTeamPerc = Math.Round((double)momsTopClinic.PointsTotalForYear / (double)(50 * 12) * 100);
-            clinicReportModel.MomsRankingPerc = Math.Round((double)momsClinicRank.LeagueRankingForYear / (double)momsActivityRankingData.Clinics.Count * 100);
-            clinicReportModel.MomsRankingPerc = (double)-100 / (double)(momsActivityRankingData.Clinics.Count - 1) * (momsClinicRank.LeagueRankingForYear - momsActivityRankingData.Clinics.Count);
+
+            if (clinic.Leagues.Count > 0)
+            { 
+                var momsTopClinic = momsActivityRankingData?.Clinics.GetItemByIndex(0);
+                var momsClinicRank = momsActivityRankingData?.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
+                clinicReportModel.MomsTopLeagueTeamPerc = momsTopClinic != null ? Math.Round((double)momsTopClinic.PointsTotalForYear / (double)(50 * 12) * 100) : 0;
+                clinicReportModel.MomsRankingPerc = (double)-100 / (double)(momsActivityRankingData.Clinics.Count - 1) * (momsClinicRank.LeagueRankingForYear - momsActivityRankingData.Clinics.Count);
+            }
+            
 
             // Maximum = 100 * 12 * (number of active CHWs currently)
             // Points earned = total number of points earned by the team for opening pregnant mom folders from Dec of the previous year to today's date
@@ -275,8 +285,6 @@ namespace EcdLink.Api.CoreApi.Services
             var childPoints = userActivityPoints.Where(x => x.PointsActivityId == childrenActivity.Id).Sum(x => x.PointsTotal);
             var childTargetPerc = Math.Round((double)childPoints / (double)childMax * 100);
             var childTargetPercColor = MetricsColorEnum.Error.ToString();
-            var childTopClinic = childrenActivityRankingData.Clinics.GetItemByIndex(0);
-            var childClinicRank = childrenActivityRankingData.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
 
             if (childTargetPerc > 50 && childTargetPerc <= 74)
             {
@@ -289,8 +297,13 @@ namespace EcdLink.Api.CoreApi.Services
 
             clinicReportModel.ChildrenTargetPerc = childTargetPerc > 100 ? 100 : childTargetPerc;
             clinicReportModel.ChildrenTargetPercColor = childTargetPercColor;
-            clinicReportModel.ChildrenTopLeagueTeamPerc = Math.Round((double)childTopClinic.PointsTotalForYear / (double)(100 * 12) * 100);
-            clinicReportModel.ChildrenRankingPerc = (double)-100 / (double)(childrenActivityRankingData.Clinics.Count - 1) * (childClinicRank.LeagueRankingForYear - childrenActivityRankingData.Clinics.Count);
+            if (clinic.Leagues.Count > 0)
+            {
+                var childTopClinic = childrenActivityRankingData?.Clinics.GetItemByIndex(0);
+                var childClinicRank = childrenActivityRankingData?.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
+                clinicReportModel.ChildrenTopLeagueTeamPerc = childTopClinic != null ? Math.Round((double)childTopClinic.PointsTotalForYear / (double)(100 * 12) * 100): 0;
+                clinicReportModel.ChildrenRankingPerc = (double)-100 / (double)(childrenActivityRankingData.Clinics.Count - 1) * (childClinicRank.LeagueRankingForYear - childrenActivityRankingData.Clinics.Count);
+            }
 
             return clinicReportModel;
         }

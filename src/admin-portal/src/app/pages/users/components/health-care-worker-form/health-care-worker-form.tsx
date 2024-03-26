@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { ClinicDto } from '@ecdlink/core';
-import { GetAllClinic } from '@ecdlink/graphql';
+import { GetAllPortalClinics } from '@ecdlink/graphql';
 import { UseFormRegister } from 'react-hook-form';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
 import { Typography } from '@ecdlink/ui';
@@ -18,7 +18,7 @@ const HealthCareWorkerForm: React.FC<HealthCareWorkerFormProps> = ({
   register,
   clinicId,
 }) => {
-  const { data: clinicsData } = useQuery(GetAllClinic, {
+  const { data: clinicsData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -35,8 +35,8 @@ const HealthCareWorkerForm: React.FC<HealthCareWorkerFormProps> = ({
                 register={register}
                 options={
                   clinicsData &&
-                  clinicsData.GetAllClinic &&
-                  clinicsData.GetAllClinic.map((x: ClinicDto) => {
+                  clinicsData.allPortalClinics &&
+                  clinicsData.allPortalClinics.map((x: ClinicDto) => {
                     return {
                       key: x.id,
                       value: x.name,
