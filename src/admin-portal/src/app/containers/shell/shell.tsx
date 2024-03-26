@@ -93,8 +93,8 @@ export default function Shell() {
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
       if (
-        user.roles.some((x) => x.name === 'Administrator') ||
-        user.roles.some((x) => x.name === 'Super Admin')
+        user?.roles?.some((x) => x.name === 'Administrator') ||
+        user?.roles?.some((x) => x.name === 'Super Admin')
       ) {
         const sorted = navigationList
           .slice()
