@@ -76,7 +76,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<PortalUsersHCWModel> records = healthCareWorkers.Select(item => new PortalUsersHCWModel
             {
                 Id = item.Id,
-                User = new PortalUserModel(item.User, invitations),
+                User = new PortalUserModel(item.User, invitations, item.IsRegistered),
                 ClinicId = item.ClinicId,
                 ClinicName = item.Clinic.Name,
                 InsertedDate = item.InsertedDate,
@@ -93,6 +93,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var sixMonths = today.AddMonths(-6);
                 hasFilters = true;
 
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                {
+                    filteredUsers = records.Where(x => x.User.IsActive == false).ToList();
+                }
+
                 foreach (var item in records)
                 {
                     if (connectUsageSearch.Contains(item.User.ConnectUsage))
@@ -101,14 +106,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                     {
-                        if (item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
+                        if (item.IsRegistered && 
+                            item.User.IsActive &&
+                            item.User.LastSeen.Date != item.User.InsertedDate && 
+                            item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
                     {
-                        if (item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
+                        if (item.IsRegistered &&
+                            item.User.IsActive &&
+                            item.User.LastSeen.Date != item.User.InsertedDate && 
+                            item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }
@@ -321,15 +332,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public HCWVisitStatus GetHealthCareWorkerVisitStatus([Service] VisitManager visitManager, string userId)
+        public HealthCareWorkerVisitStatusModel GetHealthCareWorkerVisitStatus([Service] VisitManager visitManager, Guid userId)
         {
-            var visitStatus = new HCWVisitStatus();
-            visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, Constants.GGSettings.client_mother);
-            visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_mother);
-            visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_child);
-            visitStatus.LastCompletedVisit = visitManager.GetLastCompletedVisitForHCW(userId);
-
-            return visitStatus;
+            return visitManager.GetHealthCareWorkerVisitStatus(userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

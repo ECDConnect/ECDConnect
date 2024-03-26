@@ -1315,7 +1315,7 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
-        public LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId)
+        public LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId, DateTime? quarterStart = null, DateTime? quarterEnd = null)
         {
             var league = _leagueRepo.GetAll()
                 .Where(x => x.Id == leagueId)
@@ -1346,8 +1346,15 @@ namespace EcdLink.Api.CoreApi.Services
                 && x.DateScored >= league.StartDate
                 && x.DateScored <= league.EndDate).ToList();
 
-            var quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
-            var quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
+            if (!quarterStart.HasValue)
+            {
+                quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
+            }
+
+            if(!quarterEnd.HasValue)
+            {
+                quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
+            }
 
             var clinicList = new List<LeagueClinicPointsModel>();
             foreach (var clinic in clinicsWithUsers)
@@ -1356,8 +1363,8 @@ namespace EcdLink.Api.CoreApi.Services
                     allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
                     + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
 
-                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal)
-                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal);
+                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal);
 
                 clinicList.Add(new LeagueClinicPointsModel()
                 {
@@ -1460,7 +1467,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Complete {count} visits due this month",
                     Points = (dueInfantVisits > 0 ? 260 : 0) + (dueMotherVisits > 0 ? 200 : 0),
                     Count = count,
-                    PercentageComplete = count / (count + visitsCompletedThisMonth) * 100,
+                    PercentageComplete = (int)((float)visitsCompletedThisMonth / (count + visitsCompletedThisMonth) * 100),
                 });
             }
 
@@ -1505,7 +1512,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Make {missedReferrals} referrals",
                     Points = (motherMissedReferralTypes * 20) + (infantMissedReferralTypes * 20),
                     Count = missedReferrals,
-                    PercentageComplete = missedReferrals / (infantReferrals.Count() + motherReferrals.Count()) * 100,
+                    PercentageComplete = (int)((float)missedReferrals / (infantReferrals.Count() + motherReferrals.Count()) * 100),
                 });
             }
 
@@ -1529,7 +1536,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Open {count} pregnant mom folders",
                     Points = 50,
                     Count = count,
-                    PercentageComplete = count / 2 * 100,
+                    PercentageComplete = (int)((float)mothers / 2 * 100),
                 });
             }
 
@@ -1555,7 +1562,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Message = $"Open {count} child folders",
                     Points = 100,
                     Count = count,
-                    PercentageComplete = count / 5 * 100,
+                    PercentageComplete = (int)((float)infants / 5 * 100),
                 });
             }
 

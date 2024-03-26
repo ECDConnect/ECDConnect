@@ -19,7 +19,6 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,7 +70,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<PortalUsersTLModel> records = teamLeads.Select(item => new PortalUsersTLModel
             {
                 Id = item.Id,
-                User = new PortalUserModel(item.User, invitations),
+                User = new PortalUserModel(item.User, invitations, item.IsRegistered),
                 ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList(),
                 ClinicNames = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.Name).ToList(),
                 InsertedDate = item.InsertedDate,
@@ -88,6 +87,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var sixMonths = today.AddMonths(-6);
                 hasFilters = true;
 
+                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+                {
+                    filteredUsers = records.Where(x => x.User.IsActive == false).ToList();
+                }
+
                 foreach (var item in records)
                 {
                     if (connectUsageSearch.Contains(item.User.ConnectUsage))
@@ -96,14 +100,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                     {
-                        if (item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
+                        if (item.IsRegistered &&
+                            item.User.IsActive &&
+                            item.User.LastSeen.Date != item.User.InsertedDate &&
+                            item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
                     {
-                        if (item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
+                        if (item.IsRegistered &&
+                            item.User.IsActive &&
+                            item.User.LastSeen.Date != item.User.InsertedDate &&
+                            item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }

@@ -1,7 +1,7 @@
-import { useLazyQuery, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
 import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
-import { SortEnumType, UserList } from '@ecdlink/graphql';
+import { UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import { useUser } from '../../../../hooks/useUser';

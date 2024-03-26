@@ -24,7 +24,6 @@ import {
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
 const initialState: VisitState & ThunkStateStatus = {
-  visitStatus: {},
   visitFormData: [],
   visitFormDataForMother: [],
 };

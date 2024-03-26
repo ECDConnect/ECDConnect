@@ -14,17 +14,20 @@ import { ReactComponent as AwardIconDark } from '@/assets/awardIconDark.svg';
 import { useEffect, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
 import { communitySelectors } from '@/store/community';
+import { visitSelectors } from '@/store/visit';
 
 export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
   const shareRef = useRef<HTMLDivElement>(null);
 
+  const status = useSelector(visitSelectors.getVisitStatus);
+
   useEffect(() => {
     setTimeout(() => {
       if (shareRef.current) {
-        captureAndDownloadComponent(shareRef.current, 'GGC-points');
+        captureAndDownloadComponent(shareRef.current, `GGC-points/${viewMode}`);
       }
     }, 100);
-  }, []);
+  }, [viewMode]);
 
   const { theme } = useTheme();
 
@@ -70,10 +73,22 @@ export const PointsShare = ({ viewMode }: { viewMode: 'year' | 'month' }) => {
 
   const totalPoints = points?.reduce((acc, curr) => acc + curr.pointsTotal, 0);
 
-  // TODO: replace with real data
-  const childrenVisited = `{count}`;
-  // TODO: replace with real data
-  const momsVisited = `{count}`;
+  const childVisitsCompleted =
+    viewMode === 'year'
+      ? status?.childVisitsCompletedThisYear
+      : status?.childVisitsCompletedThisMonth;
+  const motherVisitsCompleted =
+    viewMode === 'year'
+      ? status?.motherVisitsCompletedThisYear
+      : status?.motherVisitsCompletedThisMonth;
+  const childrenVisited =
+    typeof childVisitsCompleted === 'number'
+      ? childVisitsCompleted
+      : '(data not available)';
+  const momsVisited =
+    typeof motherVisitsCompleted === 'number'
+      ? motherVisitsCompleted
+      : '(data not available)';
 
   const renderSummaryMessage = useMemo(() => {
     let message = 'Well done!';
