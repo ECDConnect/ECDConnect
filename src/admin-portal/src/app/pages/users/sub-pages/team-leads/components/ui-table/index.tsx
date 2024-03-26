@@ -178,7 +178,9 @@ export default function UiTable({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title={`Deactivate ${selectedRows?.length} Team Leads?`}
+          title={`Deactivate ${
+            selectedRows?.length - registeredOrInactiveUsers?.length
+          } Team Leads?`}
           message={`Are you sure you want to deactivate these Team Leads? Team Leads will lose their access to CHW Connect immediately. Make sure you have communicated this to Team Leads before deactivating them.`}
           btnText={['Yes, deactivate Team Leads', 'No, Cancel']}
           hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
@@ -209,7 +211,9 @@ export default function UiTable({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title={`Resend invitation to ${selectedRows?.length} Team Leads?`}
+          title={`Resend invitation to ${
+            selectedRows?.length - registeredOrInactiveUsers?.length
+          } Team Leads?`}
           message={`Are you sure you want to send the invitation to the 4 Team Leads selected?`}
           btnText={['Yes, resend', 'No, Cancel']}
           hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
