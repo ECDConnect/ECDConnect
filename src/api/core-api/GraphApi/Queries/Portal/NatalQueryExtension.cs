@@ -75,8 +75,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     var contentType = contentRepo.GetContentTypeForContentId(int.Parse(childId));
                     var childContentTypeName = contentType.Name;
                     var childContentTypeId = contentType.Id.ToString();
+                    var availableLanguages = languages.Split(",").ToList();
 
-                    results.Add(new PortalNatalModel(title, section, languages, childType, childId, updatedDate, childContentTypeName, childContentTypeId));
+                    results.Add(new PortalNatalModel(title, section, availableLanguages, childType, childId, updatedDate, childContentTypeName, childContentTypeId));
                 }
             }
             return results;
