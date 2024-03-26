@@ -148,13 +148,6 @@ export const IndividualPointsMonthView = () => {
           })
         )
       );
-
-      history.replace(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT, {
-        forceReload: undefined,
-      });
-    }
-
-    if (healthCareWorker?.user?.id) {
       promises.push(
         appDispatch(
           getHealthCareWorkerVisitStatus({
@@ -162,6 +155,10 @@ export const IndividualPointsMonthView = () => {
           })
         )
       );
+
+      history.replace(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT, {
+        forceReload: undefined,
+      });
     }
 
     Promise.all(promises);
