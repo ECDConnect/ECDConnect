@@ -27,6 +27,10 @@ import {
 import { useSnackbar } from '@ecdlink/core';
 import { PointsMonthViewRouteState } from './types';
 import { useAppDispatch } from '@/store';
+import {
+  VisitActions,
+  getHealthCareWorkerVisitStatus,
+} from '@/store/visit/visit.actions';
 
 export const IndividualPointsMonthView = () => {
   const [isDownloadPointsShare, setIsDownloadPointsShare] = useState(false);
@@ -70,6 +74,11 @@ export const IndividualPointsMonthView = () => {
     item.message.includes('referral')
   );
 
+  const { isLoading: isLoadingVisitStatus } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_VISIT_STATUS
+  );
+
   const {
     isLoading: isLoadingCompletedPoints,
     wasLoading: wasLoadingCompletedPoints,
@@ -107,6 +116,8 @@ export const IndividualPointsMonthView = () => {
   const error = errorCompletedPoints || errorTodoItems || errorTeamStanding;
 
   const refreshData = useCallback(() => {
+    const promises = [];
+
     if (
       location.state?.forceReload &&
       healthCareWorker?.user?.id &&
@@ -115,31 +126,45 @@ export const IndividualPointsMonthView = () => {
       const oneYearAgo = new Date();
       oneYearAgo.setMonth(today.getMonth() - 12);
 
-      const promises = [
+      promises.push(
         appDispatch(
           healthCareWorkerThunkActions.getHealthCareWorkerPoints({
             userId: healthCareWorker.user.id,
             startDate: oneYearAgo,
           })
-        ),
+        )
+      );
+      promises.push(
         appDispatch(
           healthCareWorkerThunkActions.getHealthCareWorkerPointsTodoItems({
             healthCareWorkerId: healthCareWorker.id,
           })
-        ),
+        )
+      );
+      promises.push(
         appDispatch(
           healthCareWorkerThunkActions.getHealthCareWorkerTeamStanding({
             userId: healthCareWorker.user.id,
           })
-        ),
-      ];
-
-      Promise.all(promises);
+        )
+      );
 
       history.replace(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT, {
         forceReload: undefined,
       });
     }
+
+    if (healthCareWorker?.user?.id) {
+      promises.push(
+        appDispatch(
+          getHealthCareWorkerVisitStatus({
+            userId: healthCareWorker.user.id,
+          })
+        )
+      );
+    }
+
+    Promise.all(promises);
   }, [
     appDispatch,
     healthCareWorker,
@@ -159,7 +184,9 @@ export const IndividualPointsMonthView = () => {
 
   useEffect(() => {
     refreshData();
-  }, [refreshData]);
+    // trigger refreshData only when the component mounts
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const pointsToEarn = useMemo((): {
     imageUrl?: string;
@@ -288,8 +315,8 @@ export const IndividualPointsMonthView = () => {
             textColor="white"
             color="primary"
             text="Share"
-            isLoading={isDownloadPointsShare}
-            disabled={isDownloadPointsShare}
+            isLoading={isDownloadPointsShare || isLoadingVisitStatus}
+            disabled={isDownloadPointsShare || isLoadingVisitStatus}
             onClick={onShare}
           />
           <Button

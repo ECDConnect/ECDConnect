@@ -19,6 +19,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CommunityActions } from '@/store/community/community.actions';
 import { PointsShare } from '../components/points-share';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { VisitActions } from '@/store/visit/visit.actions';
 
 export const IndividualPointsYearView = () => {
   const [isDownloadPointsShare, setIsDownloadPointsShare] = useState(false);
@@ -31,6 +32,11 @@ export const IndividualPointsYearView = () => {
   const { isOnline } = useOnlineStatus();
 
   const { showMessage } = useSnackbar();
+
+  const { isLoading: isLoadingVisitStatus } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_VISIT_STATUS
+  );
 
   const { isLoading } = useThunkFetchCall(
     'community',
@@ -145,8 +151,8 @@ export const IndividualPointsYearView = () => {
               textColor="white"
               color="primary"
               text="Share"
-              isLoading={isDownloadPointsShare}
-              disabled={isDownloadPointsShare}
+              isLoading={isDownloadPointsShare || isLoadingVisitStatus}
+              disabled={isDownloadPointsShare || isLoadingVisitStatus}
               onClick={onShare}
             />
           ) : (
