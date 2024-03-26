@@ -331,59 +331,44 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return message;
         }
-        
-        public int GetMissedVisitsForHCWCount(string HCWId, string type)
+
+        public HealthCareWorkerVisitStatusModel GetHealthCareWorkerVisitStatus(Guid healthCareWorkerUserId)
         {
-            var visitCount = 0;
-            DateTime today = DateTime.Today;
+            var monday = StartOfWeek(DateTime.Today, DayOfWeek.Monday);
+            var sunday = monday.AddDays(6);
+            var startDate = DateTime.Now.AddYears(-1);
 
-            if (type == Constants.GGSettings.client_mother)
+            var visits = _visitRepo.GetAll()
+                .Where(x =>
+                    ((x.Mother.HealthCareWorker.UserId == healthCareWorkerUserId && x.Mother.IsActive) || (x.Infant.Caregiver.HealthCareWorker.UserId == healthCareWorkerUserId && x.Infant.IsActive))
+                    && ((!x.Attended && x.PlannedVisitDate.Date <= sunday) || (x.Attended && x.PlannedVisitDate.Date >= startDate)))
+                .Select(x => new { x.Id, x.MotherId, x.InfantId, x.Attended, x.PlannedVisitDate, x.ActualVisitDate, x.VisitType.Type })
+                .ToList();
+
+            var motherVisitsCompletedThisMonth = visits.Where(x => x.MotherId.HasValue && x.Attended && x.PlannedVisitDate.Month == DateTime.Now.Month).Count();
+            var motherVisitsCompletedThisYear = visits.Where(x => x.MotherId.HasValue && x.Attended && x.PlannedVisitDate.Year == DateTime.Now.Year).Count();
+
+            var childVisitsCompletedThisMonth = visits.Where(x => x.InfantId.HasValue && x.Attended && x.PlannedVisitDate.Month == DateTime.Now.Month).Count();
+            var childVisitsCompletedThisYear = visits.Where(x => x.InfantId.HasValue && x.Attended && x.PlannedVisitDate.Year == DateTime.Now.Year).Count();
+
+            var motherOverDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date <= DateTime.Today).Count();
+
+            var motherDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+            var childDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+
+            var lastCompletedVisit = visits.Where(x => x.Attended).OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
+
+            return new HealthCareWorkerVisitStatusModel
             {
-                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Mother.IsActive && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
-            }
-            else
-            {
-                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Infant.IsActive && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
-            }
-
-            return visitCount;
-        }
-        
-        public int GetVisitsDueForHCWCount(string HCWId, string type)
-        {
-            var visitCount = 0;
-            DateTime today = DateTime.Today;
-            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
-            DateTime sunday = monday.AddDays(6);
-
-            if (type == Constants.GGSettings.client_mother)
-            {
-                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Mother.IsActive && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date && x.VisitType.Type == type).Count();
-            }
-            else
-            {
-                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == Guid.Parse(HCWId) && x.Infant.IsActive && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date && x.VisitType.Type == type).Count();
-            }
-
-            return visitCount;
-        }
-
-        public DateTime? GetLastCompletedVisitForHCW(string HCWId)
-        {
-            IQueryable<Visit> totalVisitsCompleted = _visitRepo.GetAll()
-                    .Where(x => x.Attended == true);
-
-            totalVisitsCompleted = totalVisitsCompleted.Where(x =>
-                (x.Mother.IsActive
-                    && x.Mother.HealthCareWorker.UserId.ToString() == HCWId)
-                || (x.Infant.IsActive
-                    && x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == HCWId));
-
-            if (totalVisitsCompleted.Any())
-            {
-                return totalVisitsCompleted.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault().ActualVisitDate;
-            }
-            return null;
+                MotherVisitsCompletedThisMonth = motherVisitsCompletedThisMonth,
+                MotherVisitsCompletedThisYear = motherVisitsCompletedThisYear,
+                MotherDueVisits = motherDueVisits,
+                MotherOverDueVisits = motherOverDueVisits,
+                ChildVisitsCompletedThisMonth = childVisitsCompletedThisMonth,
+                ChildVisitsCompletedThisYear = childVisitsCompletedThisYear,
+                ChildDueVisits = childDueVisits,
+                LastCompletedVisit = lastCompletedVisit == null ? null : lastCompletedVisit.ActualVisitDate,
+            };
         }
         
         public DateTime? GetClientsNextVisitDate(Guid Id, string type)

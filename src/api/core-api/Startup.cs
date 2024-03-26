@@ -46,7 +46,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Data;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -173,7 +176,11 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IClinicService, ClinicService>();
 
             // Notification tasks (All will be run daily)
-            services.AddTransient<INotificationTask, MonthlyEarnMorePointsNotificationTask>();
+            foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()
+                 .Where(x => x.GetInterfaces().Contains(typeof(INotificationTask))))
+            {
+                services.Add(new ServiceDescriptor(typeof(INotificationTask), notificationTask, ServiceLifetime.Transient));
+            }
 
             services.AddSingleton<IConverter, SynchronizedConverter>(serviceProvider =>
             {

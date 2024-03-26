@@ -4280,14 +4280,6 @@ export type HcwSummary = {
   totalVisitsOverdue: Scalars['Int'];
 };
 
-export type HcwVisitStatus = {
-  __typename?: 'HCWVisitStatus';
-  childDueVisits: Scalars['Int'];
-  lastCompletedVisit?: Maybe<Scalars['DateTime']>;
-  motherDueVisits: Scalars['Int'];
-  motherOverDueVisits: Scalars['Int'];
-};
-
 export type HealthCareWorker = {
   __typename?: 'HealthCareWorker';
   caregivers?: Maybe<Array<Maybe<Caregiver>>>;
@@ -4424,6 +4416,18 @@ export type HealthCareWorkerSortInput = {
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
   welcomeMessage?: InputMaybe<SortEnumType>;
+};
+
+export type HealthCareWorkerVisitStatusModel = {
+  __typename?: 'HealthCareWorkerVisitStatusModel';
+  childDueVisits: Scalars['Int'];
+  childVisitsCompletedThisMonth: Scalars['Int'];
+  childVisitsCompletedThisYear: Scalars['Int'];
+  lastCompletedVisit?: Maybe<Scalars['DateTime']>;
+  motherDueVisits: Scalars['Int'];
+  motherOverDueVisits: Scalars['Int'];
+  motherVisitsCompletedThisMonth: Scalars['Int'];
+  motherVisitsCompletedThisYear: Scalars['Int'];
 };
 
 export type HealthPromotion = {
@@ -12809,7 +12813,7 @@ export type Query = {
   healthCareWorkerSummaryForPeriod?: Maybe<HcwSummary>;
   healthCareWorkerTeamStanding?: Maybe<TeamStandingModel>;
   healthCareWorkerTemplateGenerator?: Maybe<FileModel>;
-  healthCareWorkerVisitStatus?: Maybe<HcwVisitStatus>;
+  healthCareWorkerVisitStatus?: Maybe<HealthCareWorkerVisitStatusModel>;
   healthPromotion: Array<Maybe<HealthPromotion>>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
@@ -15434,7 +15438,7 @@ export type QueryHealthCareWorkerTeamStandingArgs = {
 };
 
 export type QueryHealthCareWorkerVisitStatusArgs = {
-  userId?: InputMaybe<Scalars['String']>;
+  userId: Scalars['UUID'];
 };
 
 export type QueryHealthPromotionArgs = {

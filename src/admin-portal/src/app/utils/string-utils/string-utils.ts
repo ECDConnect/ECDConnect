@@ -10,3 +10,15 @@ export const filterByValue = (array, value) => {
       JSON?.stringify(data)?.toLowerCase()?.indexOf(value?.toLowerCase()) !== -1
   );
 };
+
+export const getFirstWord = (str) => {
+  return str.replace(/\s.*/, '');
+};
+
+export const isRemovedUser = (word) => {
+  if (getFirstWord(word) === 'Removed:') {
+    return true;
+  } else {
+    return false;
+  }
+};

@@ -74,7 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         {
         }
 
-        public PortalUserModel(ApplicationUser user, List<ShortenUrlEntity> invitations)
+        public PortalUserModel(ApplicationUser user, List<ShortenUrlEntity> invitations, bool isRegistered)
         {
             Id = user.Id;
             IsSouthAfricanCitizen = user.IsSouthAfricanCitizen;
@@ -95,10 +95,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             Email = user.Email;
             WhatsAppNumber = user.WhatsAppNumber;
             IsActive = user.IsActive;
-            ConnectUsage = GetConnectUsage(user, invitations);
+            ConnectUsage = GetConnectUsage(user, invitations, isRegistered);
         }
 
-        private string GetConnectUsage(ApplicationUser user, List<ShortenUrlEntity> invitations)
+        private string GetConnectUsage(ApplicationUser user, List<ShortenUrlEntity> invitations,bool isRegistered)
         {
             var comment = "";
 
@@ -126,6 +126,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
                         {
                             comment = Constants.PortalSettings.usage_invitation_expired;
                         }
+                    }
+                } else
+                {
+                    if (!isRegistered)
+                    {
+                        comment = Constants.PortalSettings.usage_invitation_expired;
                     }
                 }
             }

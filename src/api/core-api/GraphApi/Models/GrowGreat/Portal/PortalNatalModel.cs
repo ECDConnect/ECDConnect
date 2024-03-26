@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
@@ -8,12 +9,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         {
         }
 
-        public PortalNatalModel(string title, string section, string languages, string childType, string childId, 
+        public PortalNatalModel(string title, string section, List<string> availableLanguages, string childType, string childId, 
                                 DateTime updatedDate, string childContentTypeName, string childContentTypeId)
         {
             Title = title;
             Section = section;
-            Languages = languages;
+            AvailableLanguages = availableLanguages;
             ChildType = childType;
             ChildId = childId;
             UpdatedDate = updatedDate;
@@ -22,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         }
         public string Title { get; set; }
         public string Section { get; set; }
-        public string Languages { get; set; }
+        public List<string> AvailableLanguages { get; set; }
         public string ChildType { get; set; }
         public string ChildId { get; set; }
         public string ChildContentTypeName { get; set; }

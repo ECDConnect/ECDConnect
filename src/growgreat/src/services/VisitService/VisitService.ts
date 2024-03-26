@@ -29,6 +29,10 @@ class Visit {
       query: `
         query GetHealthCareWorkerVisitStatus($userId: UUID!) {
           healthCareWorkerVisitStatus(userId: $userId) {
+            motherVisitsCompletedThisMonth
+            childVisitsCompletedThisMonth
+            motherVisitsCompletedThisYear
+            childVisitsCompletedThisYear
             motherOverDueVisits
             motherDueVisits
             childDueVisits
