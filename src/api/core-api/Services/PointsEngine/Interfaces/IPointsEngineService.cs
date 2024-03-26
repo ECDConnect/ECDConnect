@@ -53,7 +53,7 @@ namespace ECDLink.Core.Services.Interfaces
         List<KeyValuePair<string, int>> GetUserPointsTotals(List<Guid> userIds, int year, int? month = null);
 
         ClinicPointsModel GetPointsDetailsForClinic(Guid clinicId);
-        LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId);
+        LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId, DateTime? quarterStart = null, DateTime? quarterEnd = null);
         LeagueClinicsModel GetClinicRankingsForOpeningFolders(Guid leagueId, Guid pointsActivityId, Guid categoryId);
 
         List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId);

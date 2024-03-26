@@ -121,7 +121,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGBronzeTierPointsTeam = "gg-points-bronze-tier-team";
         public const string GGPointsTeamPlacement = "gg-points-placement-team";
         public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
-        public const string GGPointsTeamPlacementNotBottom75Perc = "gg-points-placement-team-bottom-75perc";
+        public const string GGPointsTeamPlacementBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
 
         //Bulk messaging

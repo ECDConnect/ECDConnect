@@ -1315,7 +1315,7 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
-        public LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId)
+        public LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId, DateTime? quarterStart = null, DateTime? quarterEnd = null)
         {
             var league = _leagueRepo.GetAll()
                 .Where(x => x.Id == leagueId)
@@ -1346,8 +1346,15 @@ namespace EcdLink.Api.CoreApi.Services
                 && x.DateScored >= league.StartDate
                 && x.DateScored <= league.EndDate).ToList();
 
-            var quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
-            var quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
+            if (!quarterStart.HasValue)
+            {
+                quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
+            }
+
+            if(!quarterEnd.HasValue)
+            {
+                quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
+            }
 
             var clinicList = new List<LeagueClinicPointsModel>();
             foreach (var clinic in clinicsWithUsers)
@@ -1356,8 +1363,8 @@ namespace EcdLink.Api.CoreApi.Services
                     allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
                     + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
 
-                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal)
-                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal);
+                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal);
 
                 clinicList.Add(new LeagueClinicPointsModel()
                 {

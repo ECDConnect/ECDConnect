@@ -91,6 +91,20 @@ namespace ECDLink.Core.Extensions
             return dateDiff.Days == 10;
         }
 
+        public static bool IsSevenDaysUntilMonthEnd(this DateTime date)
+        {
+            var nextMonth = date.AddMonths(1).GetStartOfMonth();
+
+            var dateDiff = nextMonth - date;
+
+            return dateDiff.Days == 7;
+        }
+
+        public static bool IsLastDayOfMonth(this DateTime date)
+        {
+            return DateTime.Now.Date == DateTime.Now.GetEndOfMonth().Date;
+        }
+
         /// <returns>Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).</returns>
         public static long ToEpochTime(this DateTime date)
         {
