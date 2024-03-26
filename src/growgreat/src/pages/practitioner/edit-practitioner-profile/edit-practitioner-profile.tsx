@@ -86,9 +86,11 @@ export const EditPractitionerProfile: React.FC = () => {
         })
       );
 
-      appDispatch(
-        notificationActions.removeNotification(completeProfileNotification!)
-      );
+      if (completeProfileNotification) {
+        appDispatch(
+          notificationActions.removeNotification(completeProfileNotification!)
+        );
+      }
     }
     history.push(ROUTES.ROOT);
   };
