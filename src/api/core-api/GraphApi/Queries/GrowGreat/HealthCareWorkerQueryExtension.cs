@@ -29,7 +29,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -77,7 +76,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<PortalUsersHCWModel> records = healthCareWorkers.Select(item => new PortalUsersHCWModel
             {
                 Id = item.Id,
-                User = new PortalUserModel(item.User, invitations),
+                User = new PortalUserModel(item.User, invitations, item.IsRegistered),
                 ClinicId = item.ClinicId,
                 ClinicName = item.Clinic.Name,
                 InsertedDate = item.InsertedDate,
@@ -107,14 +106,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
                     {
-                        if (item.User.LastSeen.Date != item.User.InsertedDate && item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
+                        if (item.IsRegistered && 
+                            item.User.IsActive &&
+                            item.User.LastSeen.Date != item.User.InsertedDate && 
+                            item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }
                     }
                     if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
                     {
-                        if (item.User.LastSeen.Date != item.User.InsertedDate && item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
+                        if (item.IsRegistered &&
+                            item.User.IsActive &&
+                            item.User.LastSeen.Date != item.User.InsertedDate && 
+                            item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
                         {
                             filteredUsers.Add(item);
                         }
