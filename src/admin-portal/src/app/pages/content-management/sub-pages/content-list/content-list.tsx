@@ -24,6 +24,7 @@ import {
 } from '../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../components/ui-table/type';
 import { LanguageId } from '../../../../constants/language';
+import { GetNatalRecordsForType } from '@ecdlink/graphql';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -57,7 +58,7 @@ export default function ContentList({
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
   const filterByValue = useCallback((array, value) => {
-    return array.filter(
+    return array?.filter(
       (data) =>
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
@@ -178,6 +179,21 @@ export default function ContentList({
       localeId: languageId,
     },
   });
+
+  const {
+    data: natalData,
+    refetch: refetchNatalContent,
+    loading: loadingNatalContent,
+  } = useQuery(GetNatalRecordsForType, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      contentTypeId: 29,
+      natalType: 'postnatal',
+      localeId: languageId,
+    },
+  });
+
+  console.log({ natalData });
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
@@ -372,6 +388,26 @@ export default function ContentList({
                   }
                   onBulkActionCallback={onBulkActionCallback}
                   languages={languages}
+                />
+                <UiTable
+                  columns={[
+                    { field: 'title', use: 'Title' },
+                    { field: 'section', use: 'Section' },
+                    { field: `languages`, use: 'Languages' },
+                    { field: 'insertedDate', use: 'Date added' },
+                  ]}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(
+                          natalData?.natalRecordsForType,
+                          searchValue
+                        )
+                      : natalData?.natalRecordsForType
+                  }
+                  viewRow={
+                    hasPermission(PermissionEnum.update_user) && viewSelectedRow
+                  }
+                  noBulkSelection={true}
                 />
               </div>
             </div>

@@ -536,9 +536,9 @@ export function ContentManagement() {
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
-                        optionDefinitions={dataDefinitions.contentDefinitions}
+                        optionDefinitions={dataDefinitions?.contentDefinitions}
                         contentType={selectedType}
-                        languages={languages.GetAllLanguage}
+                        languages={languages?.GetAllLanguage}
                         viewContent={getContentValues}
                         refreshParent={() => refreshParent()}
                         selectedTab={selectedTab}
