@@ -8,6 +8,7 @@ import { TypographyWeight } from '../typography/models/TypographyTypes';
 import Typography from '../typography/typography';
 import * as styles from './action-modal.styles';
 import { ActionModalButton } from './models/ActionModalButton';
+import { Alert, AlertType } from '../alert';
 
 export interface ActionModalProps extends ComponentBaseProps {
   icon?: string;
@@ -26,6 +27,9 @@ export interface ActionModalProps extends ComponentBaseProps {
   linkClick?: () => void;
   actionButtons?: ActionModalButton[];
   textAlignment?: 'left' | 'right' | 'center';
+  hasAlert?: boolean;
+  alertMessage?: string;
+  alertType?: AlertType;
 }
 
 export const ActionModal: React.FC<ActionModalProps> = ({
@@ -47,6 +51,9 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   customDetailText,
   className,
   buttonClass,
+  hasAlert,
+  alertMessage,
+  alertType,
 }) => {
   return (
     <div
@@ -119,6 +126,13 @@ export const ActionModal: React.FC<ActionModalProps> = ({
             </div>
           );
         })}
+      {hasAlert && alertMessage && (
+        <Alert
+          className={'mt-5 mb-3'}
+          message={alertMessage || ''}
+          type={(alertType as AlertType) || 'error'}
+        />
+      )}
       {linkText?.length > 0 && (
         <div
           className={styles.textWrapper(textAlignment)}

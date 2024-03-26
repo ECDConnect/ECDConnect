@@ -63,6 +63,13 @@ export default function UiTable({
 
   const [searchRows, setSearchRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const isAllInactive = selectedUsers.every((obj) => obj?.isActive === false);
+  const registeredOrInactiveUsers = selectedUsers?.filter(
+    (item) => item?.isRegistered === true || item?.isActive === false
+  );
+  const disableBulkButtons =
+    selectedUsers?.length <= registeredOrInactiveUsers?.length;
   const searchKeys = useRef(columns.map(({ field }) => field));
   const fuseOptions = {
     keys: searchKeys.current,
@@ -122,6 +129,7 @@ export default function UiTable({
             variant: NOTIFICATION.ERROR,
           });
           setSelectedRows([]);
+          setSelectedUsers([]);
         }
       })
       .catch((err) => {
@@ -146,6 +154,7 @@ export default function UiTable({
           });
           refetchData();
           setSelectedRows([]);
+          setSelectedUsers([]);
         }
         if (res.data?.bulkDeleteUser?.failed.length > 0) {
           setNotification({
@@ -153,6 +162,7 @@ export default function UiTable({
             variant: NOTIFICATION.ERROR,
           });
           setSelectedRows([]);
+          setSelectedUsers([]);
         }
       })
       .catch((err) => {
@@ -171,9 +181,13 @@ export default function UiTable({
           title={`Deactivate ${selectedRows?.length} Team Leads?`}
           message={`Are you sure you want to deactivate these Team Leads? Team Leads will lose their access to CHW Connect immediately. Make sure you have communicated this to Team Leads before deactivating them.`}
           btnText={['Yes, deactivate Team Leads', 'No, Cancel']}
+          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          alertMessage={`Note: ${registeredOrInactiveUsers?.length} Team Leads selected have already been deactivated.`}
+          alertType="error"
           onCancel={() => {
             onCancel();
             setSelectedRows([]);
+            setSelectedUsers([]);
           }}
           onSubmit={() => {
             deactivateUser();
@@ -182,7 +196,13 @@ export default function UiTable({
         />
       ),
     });
-  }, [deactivateUser, dialog, selectedRows?.length]);
+  }, [
+    deactivateUser,
+    dialog,
+    isAllInactive,
+    registeredOrInactiveUsers?.length,
+    selectedRows?.length,
+  ]);
 
   const handleBulkInvitation = useCallback(() => {
     dialog({
@@ -192,9 +212,13 @@ export default function UiTable({
           title={`Resend invitation to ${selectedRows?.length} Team Leads?`}
           message={`Are you sure you want to send the invitation to the 4 Team Leads selected?`}
           btnText={['Yes, resend', 'No, Cancel']}
+          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          alertMessage={`Note: ${registeredOrInactiveUsers?.length} selected Team Leads are already registered or have been deactivated so you cannot resend these invitations.`}
+          alertType="error"
           onCancel={() => {
             onCancel();
             setSelectedRows([]);
+            setSelectedUsers([]);
           }}
           onSubmit={() => {
             inviteUsers();
@@ -203,7 +227,13 @@ export default function UiTable({
         />
       ),
     });
-  }, [inviteUsers, dialog, selectedRows?.length]);
+  }, [
+    dialog,
+    selectedRows?.length,
+    isAllInactive,
+    registeredOrInactiveUsers?.length,
+    inviteUsers,
+  ]);
 
   const deleteCoachingCircleTopics = useCallback(() => {
     deleteCoachingCircleTopicsMutation({
@@ -299,6 +329,16 @@ export default function UiTable({
       } else {
         return prevSelectedRows.filter(
           (selectedRow) => selectedRow !== selectedRowId
+        );
+      }
+    });
+
+    setSelectedUsers((prevSelectedRows) => {
+      if (isChecked) {
+        return [...prevSelectedRows, row];
+      } else {
+        return prevSelectedRows.filter(
+          (selectedRow) => selectedRow?.id !== selectedRowId
         );
       }
     });
@@ -551,7 +591,7 @@ export default function UiTable({
           className="mr-4 rounded-xl px-6 py-0"
           type="filled"
           isLoading={invitationsLoading}
-          disabled={invitationsLoading}
+          disabled={invitationsLoading || disableBulkButtons || isAllInactive}
           color="secondary"
           onClick={handleBulkInvitation}
         >
@@ -563,7 +603,7 @@ export default function UiTable({
           className="rounded-xl px-6 py-0"
           type="outlined"
           isLoading={deactivating}
-          disabled={deactivating}
+          disabled={deactivating || disableBulkButtons || isAllInactive}
           color="tertiary"
           onClick={handleBulkDelete}
         >
@@ -578,12 +618,14 @@ export default function UiTable({
     );
   }, [
     component,
-    handleBulkDelete,
-    deactivating,
-    deleteDialog,
-    deletingCoachingCircleTopics,
     invitationsLoading,
+    disableBulkButtons,
+    isAllInactive,
     handleBulkInvitation,
+    deactivating,
+    handleBulkDelete,
+    deletingCoachingCircleTopics,
+    deleteDialog,
   ]);
 
   if (isLoading) {

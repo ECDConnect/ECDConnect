@@ -1,4 +1,4 @@
-import { ActionModal } from '@ecdlink/ui';
+import { ActionModal, AlertType } from '@ecdlink/ui';
 import React from 'react';
 
 export type AlertModalProps = {
@@ -8,6 +8,9 @@ export type AlertModalProps = {
   isLoading?: boolean;
   onSubmit: () => void;
   onCancel: () => void;
+  hasAlert?: boolean;
+  alertMessage?: string;
+  alertType?: AlertType;
 };
 
 const AlertModal: React.FC<AlertModalProps> = ({
@@ -17,6 +20,9 @@ const AlertModal: React.FC<AlertModalProps> = ({
   isLoading,
   onSubmit,
   onCancel,
+  hasAlert,
+  alertMessage,
+  alertType,
 }) => {
   return (
     <ActionModal
@@ -25,6 +31,9 @@ const AlertModal: React.FC<AlertModalProps> = ({
       iconBorderColor="alertBg"
       title={title}
       detailText={message}
+      alertMessage={alertMessage}
+      hasAlert={hasAlert}
+      alertType={alertType}
       buttonClass="rounded-xl"
       actionButtons={[
         {

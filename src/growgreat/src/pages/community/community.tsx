@@ -209,6 +209,11 @@ export const Community: React.FC = () => {
         tooltipComponent={({ ...props }) => (
           <Tooltip
             {...props}
+            className={
+              walkthroughState?.stepIndex === COMMUNITY_WALKTHROUGH_STEPS.SEVEN
+                ? 'mt-20'
+                : ''
+            }
             pollyNeutralSteps={[...Array(8).keys()]}
             pollyImpressedSteps={[COMMUNITY_WALKTHROUGH_STEPS.NINE]}
             displayCloseButton={props.index < props.size - 1}
@@ -216,7 +221,8 @@ export const Community: React.FC = () => {
         )}
         styles={getJoyrideStyles(
           isFinalWalkthroughStep,
-          isFinalWalkthroughStep
+          walkthroughState?.stepIndex === COMMUNITY_WALKTHROUGH_STEPS.SEVEN ||
+            isFinalWalkthroughStep
         )}
       />
       {walkthroughState?.isTourActive && (
