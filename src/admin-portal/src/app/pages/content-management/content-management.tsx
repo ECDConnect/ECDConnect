@@ -37,7 +37,8 @@ export function ContentManagement() {
   const [choosedSectionTitle, setChoosedSectionTitleSectionTitle] =
     useState('');
   const previousTab = usePrevious(selectedTab);
-
+  console.log({ specialType });
+  console.log({ selectedType });
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
 
@@ -62,7 +63,7 @@ export function ContentManagement() {
     },
     fetchPolicy: 'cache-and-network',
   });
-
+  console.log({ dataTypes });
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
     contentDefinitions,
     {
@@ -85,6 +86,16 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
+  const handleSpecialTypes = useCallback(() => {
+    setSelectedType({ ...selectedType, name: specialType });
+  }, []);
+
+  useEffect(() => {
+    if (specialType === ContentTypes?.POSTNATAL) {
+      handleSpecialTypes();
+    }
+  }, [specialType]);
+
   const getNavigationItems = () => {
     if (
       data &&
@@ -104,7 +115,7 @@ export function ContentManagement() {
         },
         {
           name: 'Postnatal',
-          href: 'MoreInformation',
+          href: 'Postnatal',
           id: 2,
         },
         {
@@ -461,12 +472,13 @@ export function ContentManagement() {
                       (type: ContentTypeDto) =>
                         type.name === item.name || type.name === item.href
                     );
-
+                    console.log({ selectedTypeObject });
                     if (selectedTypeObject) {
                       setSelectedTab(item.id);
                       setSpecialType('');
                       showGroupContentTypes(selectedTypeObject);
                     } else {
+                      console.log('entrouuuu');
                       setSelectedTab(item.id);
                       setSpecialType(item.name);
                     }

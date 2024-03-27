@@ -8,7 +8,7 @@ import {
   LanguageDto,
   PermissionEnum,
 } from '@ecdlink/core';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -24,7 +24,8 @@ import {
 } from '../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../components/ui-table/type';
 import { LanguageId } from '../../../../constants/language';
-import { GetNatalRecordsForType } from '@ecdlink/graphql';
+import { GetNatalRecordsForType, GetTenantContext } from '@ecdlink/graphql';
+import { TenantContext } from '../../../../utils/constants';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -54,7 +55,7 @@ export default function ContentList({
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
   const [buttonText, setButtonText] = useState(contentType.name);
-
+  console.log({ contentType });
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
   const filterByValue = useCallback((array, value) => {
@@ -193,6 +194,10 @@ export default function ContentList({
     },
   });
 
+  const { data: tenantData } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   console.log({ natalData });
 
   useEffect(() => {
@@ -320,6 +325,81 @@ export default function ContentList({
     refreshParent();
   };
 
+  const renderTables = useMemo(() => {
+    if (
+      tenantData &&
+      tenantData.tenantContext &&
+      tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+      contentType.name === 'sdf'
+    ) {
+      return (
+        <UiTable
+          columns={[
+            { field: 'title', use: 'Title' },
+            { field: 'section', use: 'Section' },
+            { field: `availableLanguages`, use: 'Languages' },
+            { field: 'updatedDate', use: 'Last updated' },
+          ]}
+          rows={
+            searchValue !== 'Search by title or content...'
+              ? filterByValue(natalData?.natalRecordsForType, searchValue)
+              : natalData?.natalRecordsForType
+          }
+          viewRow={hasPermission(PermissionEnum.update_user) && viewSelectedRow}
+          noBulkSelection={true}
+          languages={languages}
+        />
+      );
+    } else {
+      return (
+        <UiTable
+          isLoading={!tableData.length && loadingContent}
+          columns={displayFields?.map((item) => {
+            return {
+              field:
+                typeof item.fieldName === 'string'
+                  ? item.fieldName
+                  : JSON?.stringify(item.fieldName),
+              use:
+                typeof item.displayName === 'string'
+                  ? item.displayName
+                  : JSON?.stringify(item.displayName),
+            };
+          })}
+          rows={
+            searchValue !== 'Search by title or content...'
+              ? filterByValue(tableData, searchValue)
+              : tableData
+          }
+          component={
+            selectedTab === ContentManagementTabs.COMMUNITY.id
+              ? ContentTypes.COACHING_CIRCLE_TOPICS
+              : 'cms'
+          }
+          viewRow={
+            hasPermission(PermissionEnum.update_static) && viewSelectedRow
+          }
+          onBulkActionCallback={onBulkActionCallback}
+          languages={languages}
+        />
+      );
+    }
+  }, [
+    contentType.name,
+    displayFields,
+    filterByValue,
+    hasPermission,
+    languages,
+    loadingContent,
+    natalData?.natalRecordsForType,
+    onBulkActionCallback,
+    searchValue,
+    selectedTab,
+    tableData,
+    tenantData,
+    viewSelectedRow,
+  ]);
+
   if (tableData && displayFields) {
     return (
       <div>
@@ -358,57 +438,7 @@ export default function ContentList({
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                <UiTable
-                  isLoading={!tableData.length && loadingContent}
-                  columns={displayFields.map((item) => {
-                    return {
-                      field:
-                        typeof item.fieldName === 'string'
-                          ? item.fieldName
-                          : JSON?.stringify(item.fieldName),
-                      use:
-                        typeof item.displayName === 'string'
-                          ? item.displayName
-                          : JSON?.stringify(item.displayName),
-                    };
-                  })}
-                  rows={
-                    searchValue !== 'Search by title or content...'
-                      ? filterByValue(tableData, searchValue)
-                      : tableData
-                  }
-                  component={
-                    selectedTab === ContentManagementTabs.COMMUNITY.id
-                      ? ContentTypes.COACHING_CIRCLE_TOPICS
-                      : 'cms'
-                  }
-                  viewRow={
-                    hasPermission(PermissionEnum.update_static) &&
-                    viewSelectedRow
-                  }
-                  onBulkActionCallback={onBulkActionCallback}
-                  languages={languages}
-                />
-                <UiTable
-                  columns={[
-                    { field: 'title', use: 'Title' },
-                    { field: 'section', use: 'Section' },
-                    { field: `languages`, use: 'Languages' },
-                    { field: 'insertedDate', use: 'Date added' },
-                  ]}
-                  rows={
-                    searchValue !== 'Search by title or content...'
-                      ? filterByValue(
-                          natalData?.natalRecordsForType,
-                          searchValue
-                        )
-                      : natalData?.natalRecordsForType
-                  }
-                  viewRow={
-                    hasPermission(PermissionEnum.update_user) && viewSelectedRow
-                  }
-                  noBulkSelection={true}
-                />
+                {renderTables}
               </div>
             </div>
           </div>
