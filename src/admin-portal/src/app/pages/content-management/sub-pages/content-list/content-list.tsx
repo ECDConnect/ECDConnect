@@ -206,7 +206,11 @@ export default function ContentList({
         ...item,
       }));
       if (selectedTab === 1) {
-        setTableData(moreInforItems);
+        setTableData(
+          moreInforItems?.filter(
+            (item) => item?.type === 'Points' || item?.type === 'Info page'
+          )
+        );
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'

@@ -463,16 +463,7 @@ export default function ContentEdit({
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Note that any changes made below are not made to SmartLink.`}
-                list={[
-                  'If you make any major edits below, discuss them with the SmartLink team.',
-                ]}
-                type="warning"
-              />
-            )}
+            ) : null}
 
             <DynamicForm
               template={template}

@@ -8664,6 +8664,7 @@ export type MutationSendGgBronzeTierPointsTeamNotificationArgs = {
 
 export type MutationSendGgChildGrowthIssueNotificationArgs = {
   childFirstName?: InputMaybe<Scalars['String']>;
+  infantUserId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -8674,6 +8675,7 @@ export type MutationSendGgChildMuacMalnutritionNotificationArgs = {
 
 export type MutationSendGgChildMuacNotificationArgs = {
   childFirstName?: InputMaybe<Scalars['String']>;
+  infantUserId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -11017,11 +11019,11 @@ export type PortalClinicInputModelInput = {
 
 export type PortalNatalModel = {
   __typename?: 'PortalNatalModel';
+  availableLanguages?: Maybe<Array<Maybe<Scalars['String']>>>;
   childContentTypeId?: Maybe<Scalars['String']>;
   childContentTypeName?: Maybe<Scalars['String']>;
   childId?: Maybe<Scalars['String']>;
   childType?: Maybe<Scalars['String']>;
-  languages?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -12624,6 +12626,7 @@ export type Query = {
   allMothers?: Maybe<Array<Maybe<Mother>>>;
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
+  allPortalClinics?: Maybe<Array<Maybe<Clinic>>>;
   allPractitionerInvites?: Maybe<Array<Scalars['DateTime']>>;
   allPractitioners?: Maybe<Array<Maybe<PractitionerModel>>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<CoachPractitioner>>>;

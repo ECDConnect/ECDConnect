@@ -571,29 +571,25 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
 
         public int GetTotalVisitsCompletedForPeriod(
-            string heathCareWorkerId,
+            string healthCareWorkerUserId,
             List<string> types,
             DateTime? startDate = null,
             DateTime? endDate = null)
         {
             IQueryable<Visit> totalVisitsCompleted = _visitRepo.GetAll()
-                    .Where(x => x.Attended == true);
+                    .Where(x => 
+                           (x.Mother.IsActive && x.Mother.HealthCareWorker.UserId.ToString() == healthCareWorkerUserId && x.Attended) ||
+                           (x.Infant.IsActive && x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == healthCareWorkerUserId && x.Attended));
 
             if (startDate is not null)
-                totalVisitsCompleted.Where(x => x.PlannedVisitDate.Date >= startDate);
-            if (startDate is not null)
-                totalVisitsCompleted.Where(x => x.PlannedVisitDate.Date <= endDate);
+                totalVisitsCompleted = totalVisitsCompleted.Where(x => x.ActualVisitDate.Value.Date >= startDate.Value.Date);
+            if (endDate is not null)
+                totalVisitsCompleted = totalVisitsCompleted.Where(x => x.ActualVisitDate.Value.Date <= endDate.Value.Date);
 
             if (types?.Count > 0)
                 totalVisitsCompleted = totalVisitsCompleted.Where(x =>
                     types.Contains(x.VisitType.Type)
-                );
-
-            totalVisitsCompleted = totalVisitsCompleted.Where(x =>
-                (x.Mother.IsActive
-                    && x.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId)
-                || (x.Infant.IsActive
-                    && x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId));
+             );
 
             return totalVisitsCompleted.Count();
         }

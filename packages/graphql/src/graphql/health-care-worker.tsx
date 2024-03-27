@@ -28,6 +28,7 @@ export const GetAllHealthCareWorker = gql`
       user {
         id
         connectUsage
+        connectUsageColor
         isActive
         userName
         email

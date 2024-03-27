@@ -51,7 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
             var usersQuery = userManager.Users
                 .Where(u => u.TenantId == tenantId)
