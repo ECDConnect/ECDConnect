@@ -16,8 +16,8 @@ export default function Clinics() {
   const panel = usePanel();
 
   useEffect(() => {
-    if (data && data.GetAllPortalClinics) {
-      const copyItems = data.GetAllPortalClinics.map((item: ClinicDto) => ({
+    if (data && data.allPortalClinics) {
+      const copyItems = data.allPortalClinics.map((item: ClinicDto) => ({
         ...item,
         fullName: item.name,
         // isActive: item.isActive,

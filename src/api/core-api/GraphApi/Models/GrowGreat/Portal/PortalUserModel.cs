@@ -76,6 +76,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 
         public PortalUserModel(ApplicationUser user, List<ShortenUrlEntity> invitations, bool isRegistered)
         {
+            SetConnectUsageAndColor(user, invitations, isRegistered);
+
             Id = user.Id;
             IsSouthAfricanCitizen = user.IsSouthAfricanCitizen;
             IdNumber = user.IdNumber;
@@ -95,21 +97,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             Email = user.Email;
             WhatsAppNumber = user.WhatsAppNumber;
             IsActive = user.IsActive;
-            ConnectUsage = GetConnectUsage(user, invitations, isRegistered);
+            ConnectUsage = this.ConnectUsage;
+            ConnectUsageColor = this.ConnectUsageColor;
         }
 
-        private string GetConnectUsage(ApplicationUser user, List<ShortenUrlEntity> invitations,bool isRegistered)
+        private void SetConnectUsageAndColor(ApplicationUser user, List<ShortenUrlEntity> invitations,bool isRegistered)
         {
-            var comment = "";
-
             if (user.IsActive == false)
             {
-                comment = "Removed: " + user.UpdatedDate?.ToString("dd/MM/yyyy");
+                this.ConnectUsage = "Removed: " + user.UpdatedDate?.ToString("dd/MM/yyyy");
+                this.ConnectUsageColor = Constants.PortalSettings.usage_red;
             }
             else
             {
-                comment = "Online: " + user.LastSeen.ToString("dd/MM/yyyy");
-
+                this.ConnectUsage = "Online: " + user.LastSeen.ToString("dd/MM/yyyy");
                 if (invitations.Count != 0)
                 {
                     var invitation = invitations.Where(x => x.UserId == user.Id).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
@@ -120,22 +121,66 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
                         DateTime expiredDate = date.AddDays(30);
                         if (expiredDate > DateTime.Now)
                         {
-                            comment = Constants.PortalSettings.usage_invitation_active;
+                            this.ConnectUsage = Constants.PortalSettings.usage_invitation_active;
+
                         }
                         else if (expiredDate < DateTime.Now)
                         {
-                            comment = Constants.PortalSettings.usage_invitation_expired;
+                            this.ConnectUsage = Constants.PortalSettings.usage_invitation_expired;
+                        }
+                    } else
+                    {
+                        if (!isRegistered)
+                        {
+                            this.ConnectUsage = Constants.PortalSettings.usage_invitation_expired;
                         }
                     }
-                } else
+                }
+                else
                 {
                     if (!isRegistered)
                     {
-                        comment = Constants.PortalSettings.usage_invitation_expired;
+                        this.ConnectUsage = Constants.PortalSettings.usage_invitation_expired;
                     }
                 }
             }
-            return comment;
+            
+            // Setting the color
+            if (isRegistered)
+            {
+                var fourteenDays = DateTime.Now.AddDays(-14);
+                var twentyDays = DateTime.Now.AddDays(-20);
+
+                // User last online less than 14 days ago - green
+                if (user.LastSeen.Date >= fourteenDays.Date && user.LastSeen.Date <= DateTime.Now.Date)
+                {
+                    this.ConnectUsageColor = Constants.PortalSettings.usage_green;
+                }
+                // User last online less than 14 days to 20 days ago - orange
+                if (user.LastSeen.Date >= twentyDays.Date && user.LastSeen.Date <= fourteenDays.Date)
+                {
+                    this.ConnectUsageColor = Constants.PortalSettings.usage_orange;
+                }
+                // User last online more than 20 days ago - red
+                if (user.LastSeen.Date <= twentyDays.Date)
+                {
+                    this.ConnectUsageColor = Constants.PortalSettings.usage_green;
+                }
+
+            } else
+            {
+                // User has not registered yet, invite is active - blue
+                if (this.ConnectUsage == Constants.PortalSettings.usage_invitation_active)
+                {
+                    this.ConnectUsageColor = Constants.PortalSettings.usage_blue;
+                }
+                // User has not registered yet, invite is expired - red
+                if (this.ConnectUsage == Constants.PortalSettings.usage_invitation_expired)
+                {
+                    this.ConnectUsageColor = Constants.PortalSettings.usage_red;
+                }
+            }
+
         }
 
         public Guid Id { get; set; }
@@ -157,7 +202,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public string Email { get; set; }
         public string WhatsAppNumber { get; set; }
         public bool IsActive { get; set; } = false;
-        public string ConnectUsage { get; set; }
+        public string ConnectUsage { get; set; } = string.Empty;
+        public string ConnectUsageColor { get; set; } = string.Empty;
         
     }
 }

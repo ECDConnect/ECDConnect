@@ -1000,6 +1000,11 @@ namespace EcdLink.Api.CoreApi
             public const string usage_last_online_over_6_months = "Last online over 6 months ago";
             public const string usage_removed = "Removed (users who have been removed from CHW Connect)";
 
+            public const string usage_green = "#83BB26";
+            public const string usage_orange = "#FF5C00";
+            public const string usage_red = "#ED1414";
+            public const string usage_blue = "#1D67D5";
+
         }
     }
 }
