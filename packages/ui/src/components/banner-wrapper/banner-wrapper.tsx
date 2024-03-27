@@ -70,6 +70,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
   version,
   id,
   helpId,
+  style,
 }) => {
   const showMenu = (menuItems?.length || 0) > 0;
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -82,6 +83,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
         `bg-${backgroundColour}`,
         renderOverflow ? 'h-full' : ''
       )}
+      style={style}
     >
       {showBackground && (
         <div className={styles.backgroundImageWrapper(size, color)}>

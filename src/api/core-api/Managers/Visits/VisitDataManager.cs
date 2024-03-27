@@ -1,7 +1,6 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -112,8 +111,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (input.VisitData.Sections == null)
             {
-                // No data to save
-                return visit;
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                if (input.VisitData.VisitName == Constants.GGSettings.pillar3_db)
+                {
+                    _section.VisitSection = Constants.GGSettings.pillar3_section;
+                }
+                _section.Questions = new List<CMSQuestion>();
+                var _question = new CMSQuestion();
+               _question.Question = "";
+               _question.Answer = "";
+               _section.Questions.Add(_question);
+               input.VisitData.Sections = new CMSVisitSection[] { _section };
             }
 
             // Add visit data
@@ -140,10 +149,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // update the visit record to show attended when follow up is done
-            visit.UpdatedDate = DateTime.Now;
-            visit.UpdatedBy = _applicationUserId.ToString();
-            visit.Attended = true;
-            visit.ActualVisitDate = DateTime.Now;
+            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
+            if (count != 0)
+            {
+               visit.UpdatedDate = DateTime.Now;
+               visit.UpdatedBy = _applicationUserId.ToString();
+               visit.Attended = true;
+               visit.ActualVisitDate = DateTime.Now;
+            }        
 
             return _visitRepo.Update(visit);
         }
@@ -493,7 +506,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             List<VisitData> vData = (
                 from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_birth_certificate || y.Question == Constants.GGSettings.q_csg_receiving)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_birth_certificate || y.Question == Constants.GGSettings.QuestionReceivingCSG)
                                                         .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
                 select visitData
             ).ToList();
@@ -501,7 +514,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (vData.Count != 0)
             {
                 var birth = vData.Where(x => x.Question == Constants.GGSettings.q_birth_certificate).OrderBy(x => x.Id).FirstOrDefault();
-                var csg = vData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving).OrderBy(x => x.Id).FirstOrDefault();
+                var csg = vData.Where(x => x.Question == Constants.GGSettings.QuestionReceivingCSG).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (birth?.QuestionAnswer == "false")
                 {

@@ -43,15 +43,28 @@ import {
   getLeaguePointsColours,
   getTierDetails,
 } from '@/utils/community/league-position';
-import { LeagueType } from '@/constants/Community';
+import { LeagueType, MaxIndividualPoints } from '@/constants/Community';
 import { COMMUNITY_TABS } from '../community/community.types';
+import { getIndividualPointsUIDetails } from '@/utils/community/individual-points';
+import { getHealthCareWorkerTotalCompletedPointsByMonthSelector } from '@/store/healthCareWorker/healthCareWorker.selectors';
+import { PointsMonthViewRouteState } from '../practitioner/individual-points/month-view/types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { HealthCareWorkerActions } from '@/store/healthCareWorker/healthCareWorker.actions';
 
 export const Dashboard: React.FC = () => {
+  const today = new Date();
+
   const history = useHistory();
   const { theme } = useTheme();
   const location = useLocation<DashboardRouteState>();
   const isFromLogin =
     location?.state?.isFromLogin || location?.state?.isFromSignUp;
+
+  const { isLoading: isLoadingHCWPoints } = useThunkFetchCall(
+    'healthCareWorker',
+    HealthCareWorkerActions.GET_HEALTH_CARE_WORKER_POINTS
+  );
+
   const userData = useSelector(userSelectors.getUser);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const appDispatch = useAppDispatch();
@@ -68,6 +81,9 @@ export const Dashboard: React.FC = () => {
   );
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
   const league = useSelector(communitySelectors.getLeagueSelector);
+  const currentIndividualPoints = useSelector(
+    getHealthCareWorkerTotalCompletedPointsByMonthSelector(today.getMonth() + 1)
+  );
 
   const { tierName, tierColor } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -76,7 +92,7 @@ export const Dashboard: React.FC = () => {
 
   const { userProfilePicture } = useDocuments();
 
-  const { startService } = useNotificationService();
+  const { stopService } = useNotificationService();
 
   const isFirstTimeCommunitySection = healthCareWorker?.isNewAtClinic;
 
@@ -90,6 +106,10 @@ export const Dashboard: React.FC = () => {
       clinicDetails?.points?.leagueRanking ?? 0
     );
 
+  const individualPointsUIDetails = getIndividualPointsUIDetails(
+    currentIndividualPoints,
+    'month'
+  );
   const leaguePointsColours = getLeaguePointsColours(
     isTop25PercentInTheLeague,
     isMiddle50PercentInTheLeague
@@ -110,7 +130,7 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (!healthCareWorker?.isRegistered || !healthCareWorker.languageId) {
-      startService();
+      stopService();
     }
   }, []);
 
@@ -290,6 +310,32 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  const individualPointsCard = useMemo((): ScoreCardProps => {
+    const Polly = individualPointsUIDetails.icon;
+
+    return {
+      image: (
+        <div>
+          <Polly className="mr-4 h-12 w-12" />
+        </div>
+      ),
+      mainText: isLoadingHCWPoints ? '' : String(currentIndividualPoints ?? 0),
+      currentPoints: currentIndividualPoints,
+      maxPoints: MaxIndividualPoints.PerMonth,
+      barBgColour: 'white',
+      barColour: individualPointsUIDetails.dashboardColour,
+      hint: 'Points',
+      hintClassName: isLoadingHCWPoints ? 'mt-12' : 'mt-3',
+      bgColour: individualPointsUIDetails.backgroundColour,
+      textColour: 'textDark',
+      hideProgressBar: isLoadingHCWPoints,
+      onClick: () =>
+        history.push(ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT, {
+          forceReload: true,
+        } as PointsMonthViewRouteState),
+    };
+  }, [isLoadingHCWPoints, currentIndividualPoints]);
+
   const communityCard = useMemo(
     (): ScoreCardProps => ({
       image: !!clinicDetails?.points?.leagueRanking ? (
@@ -422,35 +468,55 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!clinicDetails?.league ? (
+        <div className="mt-30 flex w-full flex-col gap-1">
           <ScoreCard
-            className="mt-30 h-20 w-full"
-            mainText={communityCard.mainText}
-            hint={communityCard.hint}
-            hintClassName={communityCard.hintClassName}
+            className="h-20"
+            mainText={individualPointsCard.mainText}
+            hint={individualPointsCard.hint}
+            hintClassName={individualPointsCard.hintClassName}
             textPosition="left"
-            currentPoints={communityCard.currentPoints}
-            maxPoints={communityCard.maxPoints}
-            onClick={communityCard.onClick}
-            barBgColour={communityCard.barBgColour}
-            barColour={communityCard.barColour}
-            bgColour={communityCard.bgColour}
-            image={communityCard.image}
-            textColour={communityCard.textColour}
+            currentPoints={individualPointsCard.currentPoints}
+            maxPoints={individualPointsCard.maxPoints}
+            onClick={individualPointsCard.onClick}
+            barBgColour={individualPointsCard.barBgColour}
+            barColour={individualPointsCard.barColour}
+            bgColour={individualPointsCard.bgColour}
+            image={individualPointsCard.image}
+            textColour={individualPointsCard.textColour}
             onClickClassName="text-textLight"
-            statusChip={communityCard.statusChip}
+            statusChip={individualPointsCard.statusChip}
+            hideProgressBar={individualPointsCard.hideProgressBar}
           />
-        ) : (
-          <TitleListItem
-            item={{
-              title: communityCard.hint,
-              onActionClick: communityCard.onClick!,
-              titleIcon: 'UserGroupIcon',
-              titleIconClassName: 'bg-tertiary text-white',
-              classNames: 'bg-uiBg w-full mt-30',
-            }}
-          />
-        )}
+          {!!clinicDetails?.league ? (
+            <ScoreCard
+              className="h-20"
+              mainText={communityCard.mainText}
+              hint={communityCard.hint}
+              hintClassName={communityCard.hintClassName}
+              textPosition="left"
+              currentPoints={communityCard.currentPoints}
+              maxPoints={communityCard.maxPoints}
+              onClick={communityCard.onClick}
+              barBgColour={communityCard.barBgColour}
+              barColour={communityCard.barColour}
+              bgColour={communityCard.bgColour}
+              image={communityCard.image}
+              textColour={communityCard.textColour}
+              onClickClassName="text-textLight"
+              statusChip={communityCard.statusChip}
+            />
+          ) : (
+            <TitleListItem
+              item={{
+                title: communityCard.hint,
+                onActionClick: communityCard.onClick!,
+                titleIcon: 'UserGroupIcon',
+                titleIconClassName: 'bg-tertiary text-white',
+                classNames: 'bg-uiBg w-full',
+              }}
+            />
+          )}
+        </div>
       </div>
     </BannerWrapper>
   );

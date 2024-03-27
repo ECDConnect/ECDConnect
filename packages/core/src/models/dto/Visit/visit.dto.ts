@@ -24,9 +24,14 @@ export interface VisitDto {
 }
 
 export interface VisitStatusDto {
-  childDueVisits?: number;
-  motherDueVisits?: number;
-  motherOverDueVisits?: number;
+  motherVisitsCompletedThisMonth: number;
+  childVisitsCompletedThisMonth: number;
+  motherVisitsCompletedThisYear: number;
+  childVisitsCompletedThisYear: number;
+  childDueVisits: number;
+  motherDueVisits: number;
+  motherOverDueVisits: number;
+  lastCompletedVisit?: string;
 }
 
 export interface VisitDataStatusDto {

@@ -1,12 +1,11 @@
 import { useQuery } from '@apollo/client';
-import { PermissionEnum } from '@ecdlink/core';
+import { PermissionEnum, usePanel } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
 import {
-  GetAllClinic,
+  GetAllPortalClinics,
   GetAllProvince,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
-  getTeamLeadCount,
 } from '@ecdlink/graphql';
 import ReactDatePicker from 'react-datepicker';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,10 +15,18 @@ import { useUser } from '../../../../hooks/useUser';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
+  PlusIcon,
   SearchIcon,
-  UploadIcon,
 } from '@heroicons/react/solid';
-import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Dialog,
+  DialogPosition,
+  Dropdown,
+  SearchDropDown,
+  SearchDropDownOption,
+  Typography,
+} from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { useHistory } from 'react-router';
 import UiTable from './components/ui-table';
@@ -27,6 +34,9 @@ import { ConenctUsage } from './team-leads.types';
 import { format } from 'date-fns';
 import { Status } from '../application-admins/applications-admins.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-panel-create';
+import ROUTES from '../../../../routes/app.routes-constants';
+import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -54,6 +64,8 @@ export default function TeamLeads() {
   const { hasPermission } = useUser();
   const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const [handleAdduser, setHandleAdduser] = useState(false);
+  const panel = usePanel();
 
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
@@ -87,7 +99,7 @@ export default function TeamLeads() {
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
@@ -115,15 +127,19 @@ export default function TeamLeads() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/users/view-user',
+      pathname: ROUTES.VIEW_USERS,
       state: {
-        component: 'team-leads',
-        userId: selectedRow?.userId,
+        component: UsersRouteRedirectTypeEnum.teamLeads,
+        userId: selectedRow?.user?.id,
+        teamLeadId: selectedRow?.id,
+        connectUsage: selectedRow?.connectUsage,
+        isRegistered: selectedRow?.isRegistered,
+        clinicIds: selectedRow?.clinicIds,
       },
     });
   };
 
-  const { data } = useQuery(GetAllTeamLead, {
+  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
@@ -148,7 +164,7 @@ export default function TeamLeads() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const { data: clinicData } = useQuery(GetAllClinic, {
+  const { data: clinicData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -171,10 +187,10 @@ export default function TeamLeads() {
   };
 
   useEffect(() => {
-    if (clinicData?.GetAllClinic?.length > 0) {
-      const clinicsSorted = clinicData?.GetAllClinic?.slice()?.sort((a, b) =>
-        a.name < b.name ? -1 : a.name > b.name ? 1 : 0
-      );
+    if (clinicData?.allPortalClinics?.length > 0) {
+      const clinicsSorted = clinicData?.allPortalClinics
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
       setClinics(
         clinicsSorted?.map((item) => {
@@ -186,7 +202,7 @@ export default function TeamLeads() {
         })
       );
     }
-  }, [clinicData?.GetAllClinic]);
+  }, [clinicData?.allPortalClinics]);
 
   useEffect(() => {
     if (subDistrictData?.subDistrictsAndStats?.length > 0) {
@@ -308,6 +324,55 @@ export default function TeamLeads() {
     }
   }, [endDate]);
 
+  const displayPanel = () => {
+    panel({
+      noPadding: true,
+      title: '',
+      render: (onSubmit: any) => (
+        <TeamLeadPanelCreate
+          key={`userPanelCreate`}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
+
+            if (userCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () =>
+      statusFilter?.length +
+      connectUsageFilter?.length +
+      provincesFiltered?.length +
+      clinicsFiltered?.length +
+      subDistrictsFiltered?.length +
+      hasDateFilter,
+    [
+      statusFilter?.length,
+      connectUsageFilter?.length,
+      provincesFiltered?.length,
+      clinicsFiltered?.length,
+      subDistrictsFiltered?.length,
+      hasDateFilter,
+    ]
+  );
+
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
+
   if (tableData) {
     return (
       <div>
@@ -336,18 +401,37 @@ export default function TeamLeads() {
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    className={`${
+                      numberOfFilters
+                        ? ' bg-secondary'
+                        : 'border-secondary border-2 bg-white'
+                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      numberOfFilters ? 'text-white' : 'text-textMid'
+                    } hover:bg-gray-300 focus:ring-2`}
                     type="button"
                   >
-                    <div className="flex gap-1">
-                      Filter
+                    <div className="flex items-center gap-1">
+                      <Typography
+                        className="truncate"
+                        type="help"
+                        color={numberOfFilters ? 'white' : 'textLight'}
+                        text={renderFilterButtonText}
+                      />
                       {!showFilter ? (
                         <span>
-                          <ChevronDownIcon className="h-6 w-6 text-white" />
+                          <ChevronDownIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       ) : (
                         <span>
-                          <ChevronUpIcon className="h-6 w-6 text-white" />
+                          <ChevronUpIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       )}
                     </div>
@@ -359,18 +443,11 @@ export default function TeamLeads() {
               <div className="flex  flex-row">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
-                    onClick={() => {
-                      history.push({
-                        pathname: '/upload-users',
-                        state: {
-                          component: 'team-leads',
-                        },
-                      });
-                    }}
+                    onClick={() => setHandleAdduser(true)}
                     type="button"
                     className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
                   >
-                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
+                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
                     Add Team Leads
                   </button>
                 )}
@@ -527,12 +604,55 @@ export default function TeamLeads() {
                     }
                     component="team-leads"
                     viewRow={viewSelectedRow}
+                    isLoading={loading}
+                    refetchData={refetch}
                   />
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <Dialog
+          className="absolute left-56 bottom-96 mb-44 w-6/12"
+          stretch
+          visible={handleAdduser}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'ExclamationCircleIcon'}
+            iconColor="white"
+            iconBorderColor="infoMain"
+            importantText={`Would you like to add one Team Lead or multiple?`}
+            actionButtons={[
+              {
+                text: 'Add multiple Team Leads',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () =>
+                  history.push({
+                    pathname: ROUTES.UPLOAD_USERS,
+                    state: {
+                      component: 'team-leads',
+                    },
+                  }),
+                leadingIcon: 'UsersIcon',
+              },
+              {
+                text: 'Add one Team Lead',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  displayPanel();
+                  setHandleAdduser(false);
+                },
+                leadingIcon: 'UserIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </div>
     );
   } else {

@@ -1,5 +1,4 @@
 import ROUTES from '@/routes/routes';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import {
   Alert,
   BannerWrapper,
@@ -11,7 +10,11 @@ import {
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { activities as activityConstants } from './constants';
-import { formatTextToSlug } from '@ecdlink/core';
+import {
+  formatTextToSlug,
+  getCommunityQuarterDescription,
+  getStringFromClassNameOrId,
+} from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { communitySelectors } from '@/store/community';
 import {
@@ -21,6 +24,12 @@ import {
 import { LeagueType } from '@/constants/Community';
 import { ActivityDetailsState } from './activity-details/index.types';
 import { TeamTabState } from '../../types';
+import {
+  COMMUNITY_WALKTHROUGH_STEPS,
+  communityWalkthroughSteps,
+} from '@/pages/community/walkthrough/steps';
+import { useWalkthrough } from '@/context/walkthroughContext';
+import { useWindowSize } from '@reach/window-size';
 
 export const TeamPoints = () => {
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
@@ -29,7 +38,11 @@ export const TeamPoints = () => {
 
   const today = new Date();
 
+  const { height } = useWindowSize();
+
   const { quarterDescription } = getCommunityQuarterDescription(today);
+
+  const { walkthroughState } = useWalkthrough();
 
   const { tierName, tierColor, pointsToNextTier, nextTier } = getTierDetails(
     (clinicDetails?.league?.leagueTypeName as LeagueType) ?? LeagueType.League,
@@ -82,6 +95,8 @@ export const TeamPoints = () => {
         } as TeamTabState)
       }
       className="p-4 pt-6"
+      renderOverflow={!walkthroughState?.isTourActive}
+      style={{ height: walkthroughState?.isTourActive ? height : 'auto' }}
     >
       <Typography
         type="h2"
@@ -126,10 +141,15 @@ export const TeamPoints = () => {
         color="textDark"
       />
       <StackedList
+        id={getStringFromClassNameOrId(
+          communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.FOUR].target
+        )}
         isFullHeight={false}
         className="flex flex-col gap-2"
         type={'MenuList' as StackedListType}
-        listItems={activities}
+        listItems={
+          walkthroughState?.isTourActive ? activities.slice(0, 3) : activities
+        }
       />
     </BannerWrapper>
   );

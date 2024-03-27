@@ -1,14 +1,17 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.Extensions;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -34,6 +37,9 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<BreastFeedingClub, Guid> _breastFeedingClubRepo;
         private readonly IGenericRepository<Caregiver, Guid> _caregiverRepo;
 
+        private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
+        private readonly IGenericRepository<PointsActivity, Guid> _pointsActivityRepo;
+
         private readonly Guid? _applicationUserId;
 
         IPointsEngineService _pointsEngineService;
@@ -58,6 +64,8 @@ namespace EcdLink.Api.CoreApi.Services
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _breastFeedingClubRepo = _repositoryFactory.CreateGenericRepository<BreastFeedingClub>(userContext: _applicationUserId);
             _caregiverRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
+            _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _applicationUserId);
+            _pointsActivityRepo = _repositoryFactory.CreateGenericRepository<PointsActivity>(userContext: _applicationUserId);
 
             _pointsEngineService = pointsEngineService;
 
@@ -181,48 +189,121 @@ namespace EcdLink.Api.CoreApi.Services
         public SubDistrict DeleteSubDistrict(Guid subDistrictId)
         {
             var subDistrict = _subDistrictRepo.GetById(subDistrictId);
-            subDistrict.IsActive = false;
-            subDistrict.UpdatedDate = DateTime.Now;
-            subDistrict.UpdatedBy = _applicationUserId.ToStringOrNull();
-            return _subDistrictRepo.Update(subDistrict);
+            var linkedClinic = _clinicRepo.GetAll().Where(x => x.SubDistrictId == subDistrictId).Select(x => x.Id).Distinct().Count();
+            if (linkedClinic == 0)
+            {
+                subDistrict.IsActive = false;
+                subDistrict.UpdatedDate = DateTime.Now;
+                subDistrict.UpdatedBy = _applicationUserId.ToStringOrNull();
+                return _subDistrictRepo.Update(subDistrict);
+            }
+            return subDistrict;
         }
 
         #endregion
 
         #region Clinic
 
-        // TODO: G11 development not done
         public ClinicReportModel GetClinicPointsData(Guid clinicId)
         {
+            ClinicReportModel clinicReportModel = new ClinicReportModel();
+
+            var prevYearDec = new DateTime(DateTime.Now.Year - 1, 12, 01);
             var clinic = _clinicRepo.GetAll()
                 .Where(x => x.Id == clinicId)
-                .Include(x => x.TeamLeads)
-                .Include(x => x.SiteAddress)
-                .Include(x => x.HealthCareWorkers)
+                .Include(x => x.TeamLeads.Where(x => x.IsActive == true))
+                .Include(x => x.HealthCareWorkers.Where(x => x.IsActive == true))
                 .Include(x => x.Leagues)
             .FirstOrDefault();
 
-            var clinicPoints = _pointsEngineService.GetPointsDetailsForClinic(clinicId);
-            var clinicData = new ClinicModel(clinic, clinicPoints);
+            // get all active HCWs
+            var hcwUserIds = clinic.HealthCareWorkers.Where(x => x.IsActive == true).Select(x => x.UserId).ToList();
+            clinicReportModel.TotalHCWs = hcwUserIds.Count;
 
-            ClinicReportModel clinicReportModel = new ClinicReportModel();
-
-            if (clinicData.Points != null)
+            // All Points
+            var allPoints = _pointsEngineService.GetPointsDetailsForClinic(clinicId);
+            if (allPoints?.Points != null)
             {
-                clinicReportModel.LeagueRanking = clinicData.Points.LeagueRanking;
-                clinicReportModel.PointsTotal = clinicData.Points.PointsTotal;
+                clinicReportModel.LeagueRanking = allPoints.LeagueRanking;
+                clinicReportModel.PointsTotal = allPoints.PointsTotal;
+                clinicReportModel.MaxPointsTotal = allPoints.MaxPointsTotal;
+            }
+            
+            // Folder Points
+            LeagueClinicsModel momsActivityRankingData = new LeagueClinicsModel();
+            LeagueClinicsModel childrenActivityRankingData = new LeagueClinicsModel();
+
+            var momsActivity = _pointsActivityRepo.GetAll().Where(x => x.Name == "Pregnant mom folders opened").FirstOrDefault();
+            var childrenActivity = _pointsActivityRepo.GetAll().Where(x => x.Name == "Child folders opened").FirstOrDefault();
+
+            if (clinic.Leagues.Count > 0)
+            {
+                momsActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, momsActivity.Id, (Guid)momsActivity.PointsCategoryId);
+                childrenActivityRankingData = _pointsEngineService.GetClinicRankingsForOpeningFolders(clinic.Leagues.ElementAtOrDefault(0).LeagueId, childrenActivity.Id, (Guid)childrenActivity.PointsCategoryId);
             }
 
-            clinicReportModel.TotalHCWs = clinic.HealthCareWorkers.Count;
-            clinicReportModel.MomsTargetPerc = 0;
-            clinicReportModel.MomsTargetPercColor = MetricsColorEnum.Error.ToString();
-            clinicReportModel.MomsTopTeamPerc = 0;
-            clinicReportModel.MomsRankingPerc = 0;
+            // Get points from December for opening folders
+            var userActivityPoints = _pointsUserSummaryRepo.GetAll().Where(x => hcwUserIds.Contains(x.UserId) &&
+                (x.PointsActivityId == momsActivity.Id || x.PointsActivityId == childrenActivity.Id)
+                && x.DateScored >= prevYearDec.Date
+                && x.DateScored <= DateTime.Now.Date).ToList();
+            
+            // Maximum = 50* 12 * (number of active CHWs currently)
+            // Points earned = total number of points earned by the team for opening pregnant mom folders from Dec of the previous year to today's date
+            // Calculation: (points earned / maximum)%
+            // IF the percentage is greater than 100 %, show 100 %
+            var momsMax = 50 * 12 * hcwUserIds.Count;
+            var momsPoints = userActivityPoints.Where(x => x.PointsActivityId == momsActivity.Id).Sum(x => x.PointsTotal);
+            var momsTargetPerc = Math.Round((double)momsPoints / (double)momsMax * 100);
+            var momsTargetPercColor = MetricsColorEnum.Error.ToString();
+            if (momsTargetPerc > 50 && momsTargetPerc <= 74)
+            {
+                momsTargetPercColor = MetricsColorEnum.Warning.ToString();
+            }
+            else if (momsTargetPerc > 74)
+            {
+                momsTargetPercColor = MetricsColorEnum.Success.ToString();
+            }
 
-            clinicReportModel.ChildrenTargetPerc = 0;
-            clinicReportModel.ChildrenTargetPercColor = MetricsColorEnum.Error.ToString();
-            clinicReportModel.ChildrenTopTeamPerc = 0;
-            clinicReportModel.ChildrenRankingPerc = 0;
+            clinicReportModel.MomsTargetPerc = momsTargetPerc > 100 ? 100 : momsTargetPerc;
+            clinicReportModel.MomsTargetPercColor = momsTargetPercColor;
+
+            if (clinic.Leagues.Count > 0)
+            { 
+                var momsTopClinic = momsActivityRankingData?.Clinics.GetItemByIndex(0);
+                var momsClinicRank = momsActivityRankingData?.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
+                clinicReportModel.MomsTopLeagueTeamPerc = momsTopClinic != null ? Math.Round((double)momsTopClinic.PointsTotalForYear / (double)(50 * 12) * 100) : 0;
+                clinicReportModel.MomsRankingPerc = (double)-100 / (double)(momsActivityRankingData.Clinics.Count - 1) * (momsClinicRank.LeagueRankingForYear - momsActivityRankingData.Clinics.Count);
+            }
+            
+
+            // Maximum = 100 * 12 * (number of active CHWs currently)
+            // Points earned = total number of points earned by the team for opening pregnant mom folders from Dec of the previous year to today's date
+            // Calculation: (points earned / maximum)%
+            // IF the percentage is greater than 100 %, show 100 %
+            var childMax = 100 * 12 * hcwUserIds.Count;
+            var childPoints = userActivityPoints.Where(x => x.PointsActivityId == childrenActivity.Id).Sum(x => x.PointsTotal);
+            var childTargetPerc = Math.Round((double)childPoints / (double)childMax * 100);
+            var childTargetPercColor = MetricsColorEnum.Error.ToString();
+
+            if (childTargetPerc > 50 && childTargetPerc <= 74)
+            {
+                childTargetPercColor = MetricsColorEnum.Warning.ToString();
+            }
+            else if (childTargetPerc > 74)
+            {
+                childTargetPercColor = MetricsColorEnum.Success.ToString();
+            }
+
+            clinicReportModel.ChildrenTargetPerc = childTargetPerc > 100 ? 100 : childTargetPerc;
+            clinicReportModel.ChildrenTargetPercColor = childTargetPercColor;
+            if (clinic.Leagues.Count > 0)
+            {
+                var childTopClinic = childrenActivityRankingData?.Clinics.GetItemByIndex(0);
+                var childClinicRank = childrenActivityRankingData?.Clinics.Where(x => x.ClinicId == clinicId).FirstOrDefault();
+                clinicReportModel.ChildrenTopLeagueTeamPerc = childTopClinic != null ? Math.Round((double)childTopClinic.PointsTotalForYear / (double)(100 * 12) * 100): 0;
+                clinicReportModel.ChildrenRankingPerc = (double)-100 / (double)(childrenActivityRankingData.Clinics.Count - 1) * (childClinicRank.LeagueRankingForYear - childrenActivityRankingData.Clinics.Count);
+            }
 
             return clinicReportModel;
         }
@@ -256,8 +337,7 @@ namespace EcdLink.Api.CoreApi.Services
             clinicVisitReportModel.ClientRegistration = GetClientRegistration(mothers, infants, startDate.Date, endDate.Date);
             clinicVisitReportModel.PregnantMoms = GetPregnantMoms(motherIds, startDate.Date, endDate.Date);
             clinicVisitReportModel.ChildClients = GetChildClients(infantIds, startDate.Date, endDate.Date);
-            // TODO: G11 development not done
-            clinicVisitReportModel.BreastFeedingClub = GetBreastFeedingClub(motherIds, startDate.Date, endDate.Date);
+            clinicVisitReportModel.BreastFeedingClub = GetBreastFeedingClubData(clinicId, startDate.Date, endDate.Date);
 
             return clinicVisitReportModel;
         }
@@ -317,17 +397,17 @@ namespace EcdLink.Api.CoreApi.Services
                                                             x.InsertedDate.Date >= startDate &&
                                                             x.InsertedDate.Date <= endDate).ToList();
 
-            var totalSupportGrant = visitData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
+            var totalSupportGrant = visitData.Where(x => x.Question == Constants.GGSettings.QuestionReceivingCSG &&
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.QuestionLength || x.Question == Constants.GGSettings.QuestionWeight || x.Question == Constants.GGSettings.QuestionMUAC) &&
                                                             x.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                            x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
+                                                            x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.q_immunisation &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalUpToDateDeworming = visitData.Where(x => x.Question == Constants.GGSettings.q_deworming &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalUpToDateVitaminA = visitData.Where(x => x.Question == Constants.GGSettings.q_vitamin_a &&
-                                                         x.QuestionAnswer == Constants.GGSettings.answer_yes).Select(x => x.Visit.InfantId).Distinct().Count();
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
+            var totalUpToDateDeworming = visitData.Where(x => x.Question == Constants.GGSettings.QuestionDeworming &&
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
+            var totalUpToDateVitaminA = visitData.Where(x => x.Question == Constants.GGSettings.QuestionVitaminA &&
+                                                         x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
 
             return new ChildClientsModel()
             {
@@ -339,13 +419,17 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
-        private BreastFeedingClubPortalModel GetBreastFeedingClub(List<Guid> infantIds, DateTime startDate, DateTime endDate)
+        private BreastFeedingClubPortalModel GetBreastFeedingClubData(Guid clinicId, DateTime startDate, DateTime endDate)
         {
+            var clubMeetings = _breastFeedingClubRepo.GetAll()
+                .Where(x => x.ClinicId == clinicId
+                    && x.MeetingDate.Date >= startDate && x.MeetingDate <= endDate)
+                .ToList();
 
             return new BreastFeedingClubPortalModel()
             {
-                TotalClubsHeld = 0,
-                TotalCaregiversAttended = 0
+                TotalClubsHeld = clubMeetings.Count,
+                TotalCaregiversAttended = clubMeetings.Select(x => x.Clients.Count).Sum(),
             };
         }
 

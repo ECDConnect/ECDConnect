@@ -57,6 +57,13 @@ export default function UiTable({
 
   const [searchRows, setSearchRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const isAllInactive = selectedUsers.every((obj) => obj?.isActive === false);
+  const registeredOrInactiveUsers = selectedUsers?.filter(
+    (item) => item?.isRegistered === true || item?.isActive === false
+  );
+  const disableBulkButtons =
+    selectedUsers?.length <= registeredOrInactiveUsers?.length;
   const searchKeys = useRef(columns.map(({ field }) => field));
   const fuseOptions = {
     keys: searchKeys.current,
@@ -247,6 +254,16 @@ export default function UiTable({
       } else {
         return prevSelectedRows.filter(
           (selectedRow) => selectedRow !== selectedRowId
+        );
+      }
+    });
+
+    setSelectedUsers((prevSelectedRows) => {
+      if (isChecked) {
+        return [...prevSelectedRows, row];
+      } else {
+        return prevSelectedRows.filter(
+          (selectedRow) => selectedRow?.id !== selectedRowId
         );
       }
     });
@@ -643,7 +660,7 @@ export default function UiTable({
           className="mr-4 rounded-xl px-6 py-0"
           type="filled"
           isLoading={invitationsLoading}
-          disabled={invitationsLoading}
+          disabled={invitationsLoading || disableBulkButtons || isAllInactive}
           color="secondary"
           onClick={inviteUsers}
         >
@@ -655,13 +672,11 @@ export default function UiTable({
           className="rounded-xl px-6 py-0"
           type="outlined"
           isLoading={deactivating}
-          disabled={deactivating}
+          disabled={deactivating || disableBulkButtons || isAllInactive}
           color="tertiary"
           onClick={deactivateUser}
         >
-          <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-            {' '}
-          </TrashIcon>
+          <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
             color="tertiary"

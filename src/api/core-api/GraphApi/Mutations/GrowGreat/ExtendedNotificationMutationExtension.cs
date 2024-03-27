@@ -39,7 +39,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
   [Service] INotificationService notificationService, string userId)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotification, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>());
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>());
         }
 
         public async Task<bool> SendGGUploadRTHNotification(
@@ -167,7 +167,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = dangerSignsList
             } };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSigns, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGTwoVisitsMissedNotification(
@@ -586,7 +586,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = currentYear
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementNotBottom75Perc, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementBottom75Perc, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
         }
 
         public async Task<bool> SendGGPointsYearlySummaryNotification(

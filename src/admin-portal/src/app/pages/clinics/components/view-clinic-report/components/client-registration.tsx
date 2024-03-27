@@ -295,7 +295,7 @@ export const ClientRegistration: React.FC<ClientRegistrationProps> = ({
               <Typography
                 type="help"
                 color="textMid"
-                text={`caregivers attended breastfeeding clubs`}
+                text={`children up to date with deworming`}
                 align="left"
                 className="w-44"
               />
@@ -307,7 +307,7 @@ export const ClientRegistration: React.FC<ClientRegistrationProps> = ({
             <Typography
               type="h4"
               color="textDark"
-              text={`Pregnant mom clients`}
+              text={`Breastfeeding clubs`}
               align="left"
             />
           </div>

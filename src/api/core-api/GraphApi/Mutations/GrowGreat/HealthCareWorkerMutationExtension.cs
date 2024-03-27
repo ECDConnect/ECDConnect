@@ -1,16 +1,21 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -27,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var healthCareWorker = new HealthCareWorker()
             {
-                Id = new Guid(),
+                Id = input.UserId,
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
@@ -66,6 +71,53 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
             return new PortalUserHCWModel(updatedHealthCareWorker);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public async Task<PortalUserHCWModel> DeactivateHealthCareWorker(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            ApplicationUserManager userManager,
+            Guid hcwId)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var hcwRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: applicationUserId);
+            var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: applicationUserId);
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            var hcw = hcwRepo.GetById(hcwId);
+            if (hcw != null)
+            {
+                // Archive application user linked to this hcw
+                var user = await userManager.FindByIdAsync(hcw.UserId);
+                user.LockoutEnabled = true;
+                user.LockoutEnd = DateTime.MaxValue;
+                user.IsActive = false;
+                user.UpdatedDate = DateTime.UtcNow;
+                await userManager.UpdateAsync(user);
+
+                auditInsertRepo.Insert(new IntegrationAudit()
+                {
+                    ChangeType = "Delete",
+                    Entity = "ApplicationUser",
+                    Property = "IsActive",
+                    ValueAfter = "false",
+                    ValueBefore = "true",
+                    UserId = applicationUserId,
+                    RelatedId = user.Id.ToString(),
+                    TenantId = tenantId
+                });
+
+                // Archive hcw
+                hcw.IsActive = false;
+                hcw.UpdatedDate = DateTime.Now;
+                hcw.UpdatedBy = applicationUserId.ToString();
+                var updatedRecord = hcwRepo.Update(hcw);
+
+                return new PortalUserHCWModel(updatedRecord);
+            }
+
+            return null;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]

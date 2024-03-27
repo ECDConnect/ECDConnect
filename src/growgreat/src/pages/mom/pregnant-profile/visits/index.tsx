@@ -36,6 +36,7 @@ import { MotherActions } from '@/store/mother/mother.actions';
 import { VisitModelInput } from '@/../../../packages/graphql/lib';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { visitSteps as walkthroughSteps } from './walkthrough/steps';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 
 const HEADER_HEIGHT = 64;
 
@@ -51,6 +52,8 @@ export const Visits: React.FC = () => {
   const dialog = useDialog();
 
   const { errorDialog } = useRequestResponseDialog();
+
+  const calendarAddEvent = useCalendarAddEvent();
 
   const [, , , motherId] = location.pathname.split('/');
 
@@ -317,8 +320,8 @@ export const Visits: React.FC = () => {
                 isLoading: isLoadingAddAdditionalVisit,
                 disabled: isLoadingAddAdditionalVisit,
                 onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
                   onClose();
+                  onBookVisit();
                 },
                 type: 'outlined',
                 textColour: 'primary',
@@ -361,6 +364,14 @@ export const Visits: React.FC = () => {
   useLayoutEffect(() => {
     appDispatch(motherThunkActions.getMotherVisits({ motherId })).unwrap();
   }, [appDispatch, motherId]);
+
+  const onBookVisit = () => {
+    calendarAddEvent({
+      event: {
+        participantUserIds: [motherId],
+      },
+    });
+  };
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>

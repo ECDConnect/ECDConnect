@@ -2,12 +2,11 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { useEffect, useMemo } from 'react';
 import { useAppDispatch } from '@/store';
-import { Divider, Typography } from '@ecdlink/ui';
+import { Divider, RoundIcon, Typography } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
-import OpenLink from '@/assets/openLink.svg';
-import OpenBook from '@/assets/openBook.svg';
 import { ConnectItem } from '@ecdlink/graphql';
 import { communitySelectors, communityThunkActions } from '@/store/community';
+import { ExternalLinkIcon } from '@heroicons/react/solid';
 
 const HEADER_HEIGHT = 222;
 
@@ -79,33 +78,26 @@ export const Connect: React.FC = () => {
       className="flex flex-col p-4"
       style={{ height: height - HEADER_HEIGHT }}
     >
-      <div className="flex items-center gap-3 rounded-2xl p-4">
-        <img className={''} src={OpenBook} alt="" />
-        <Typography
-          type="body"
-          weight="bold"
-          lineHeight="snug"
-          color="textDark"
-          className="text-3xl"
-          text="Links & resoures"
-        />
+      <div className="flex items-center gap-3 rounded-2xl py-4">
+        <RoundIcon icon="BookOpenIcon" backgroundColor="secondary" />
+        <Typography type="h2" color="textDark" text="Links & resoures" />
       </div>
       <Divider className="mb-4" dividerType="dashed" />
 
-      {connectItems?.map((item) => (
+      {connectItems?.map((item, index) => (
         <div key={item.name}>
           <Typography
-            type="h2"
+            type="h3"
             weight="bold"
             lineHeight="snug"
-            color="textMid"
-            className="mb-2"
+            color="textDark"
+            className="mb-4"
             text={item?.name || ''}
           />
 
           {item?.children?.map((child) => (
             <div
-              className="bg-uiBg mb-2 flex items-center gap-1 rounded-2xl p-4"
+              className="bg-uiBg text-textDark mb-2 flex items-center gap-1 rounded-2xl p-4 font-semibold"
               key={child?.id}
             >
               <table
@@ -125,7 +117,7 @@ export const Connect: React.FC = () => {
                         target="_blank"
                         rel="noreferrer"
                       >
-                        <img className={''} src={OpenLink} alt="" />
+                        <ExternalLinkIcon className="text-primary h-6 w-6" />
                       </a>
                     </td>
                   </tr>
@@ -133,8 +125,9 @@ export const Connect: React.FC = () => {
               </table>
             </div>
           ))}
-
-          <Divider className="p-4" dividerType="dashed" />
+          {connectItems?.length !== index + 1 && (
+            <Divider className="p-4" dividerType="dashed" />
+          )}
         </div>
       ))}
     </div>

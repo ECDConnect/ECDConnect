@@ -11,6 +11,7 @@ interface ReportsDataCharProps {
   topTeamPerc: number;
   title: string;
   icon: any;
+  targetRanking: number;
 }
 
 export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
@@ -20,30 +21,39 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
   topTeamPerc,
   icon,
   title,
+  targetRanking,
 }) => {
-  const renderPositionText = useMemo(() => {
-    if (targetPerc < 50) {
-      return 'bottom';
-    } else {
-      return 'top';
-    }
-  }, [targetPerc]);
-
   const renderOpenedFolderText = (title) => {
     switch (title) {
       case 'Pregnant moms':
-        return `This team is in ${renderPositionText} than ${targetPerc}% of other GGC teams for pregnant mom folders opened!`;
+        if (targetPerc < 50) {
+          return `This team is in the bottom ${targetRanking?.toFixed(
+            2
+          )}% of other GGC teams for pregnant mom folders opened!`;
+        }
+        return `This team is doing better than ${targetRanking?.toFixed(
+          2
+        )}% of other GGC teams for pregnant mom folders opened!`;
       default:
-        return `This team is in the ${renderPositionText} ${targetPerc}% for number of child folders opened compared to other GGC teams.`;
+        if (targetPerc < 50) {
+          return `This team is in the bottom ${targetRanking?.toFixed(
+            2
+          )}%f other GGC teams for child folders opened compared to other GGC teams.`;
+        }
+        return `This team is in the top ${targetRanking?.toFixed(
+          2
+        )}% of other GGC teams for child folders opened compared to other GGC teams.`;
     }
   };
 
   const renderGraphColor = (color) => {
     switch (color) {
-      case 'Errr':
-        return '#ED1414';
+      case 'Error':
+        return '#FFEEF6';
+      case 'Success':
+        return '#C1DD92';
       default:
-        return '#83BB26';
+        return '#ED1414';
     }
   };
 
@@ -51,6 +61,8 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
     switch (color) {
       case 'Error':
         return '#ED1414';
+      case 'Success':
+        return '#83BB26';
       default:
         return '#9B96A6';
     }

@@ -36,6 +36,16 @@ export const MessageCard: React.FC<MessageCardProps> = ({
       ? 'p-4 flex flex-row items-start bg-uiBg'
       : 'p-4 flex flex-row items-start bg-white';
 
+  const stripTags = (taggedString?: string) => {
+    return taggedString
+      ? taggedString
+          .replaceAll('<p>', '')
+          .replaceAll('</p>', '')
+          .replaceAll('<li>', '')
+          .replaceAll('</li>', ' ')
+      : '';
+  };
+
   return (
     <div className={classNames(className, wrapperStyles)}>
       <div className="w-1/5">
@@ -45,7 +55,7 @@ export const MessageCard: React.FC<MessageCardProps> = ({
           iconColor={'white'}
         />
       </div>
-      <div className="w-4/5 flex flex-col items-start">
+      <div className="flex w-4/5 flex-col items-start">
         <div className="flex flex-row items-center">
           <Typography
             className="mr-2"
@@ -59,7 +69,7 @@ export const MessageCard: React.FC<MessageCardProps> = ({
             )}
           />
           {status === 'new' && (
-            <div className={'h-2 w-2 rounded-full p-1 bg-infoMain'}></div>
+            <div className={'bg-infoMain h-2 w-2 rounded-full p-1'}></div>
           )}
         </div>
 
@@ -74,7 +84,7 @@ export const MessageCard: React.FC<MessageCardProps> = ({
           type="unspecified"
           fontSize="14"
           weight="normal"
-          text={message}
+          text={stripTags(message)}
         />
 
         <Button

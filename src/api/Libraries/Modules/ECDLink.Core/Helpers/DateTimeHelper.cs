@@ -1,5 +1,4 @@
-﻿using ECDLink.Core.Extensions;
-using System;
+﻿using System;
 
 namespace ECDLink.Core.Helpers
 {
@@ -13,10 +12,14 @@ namespace ECDLink.Core.Helpers
             return dateTimeVal;
         }
 
-
         public static DateTime GetCurrentGrowGreatQuarterStart()
         {
-            switch (DateTime.Now.Month)
+            return GetGrowGreatQuarterStart(DateTime.Now.Month);
+        }
+
+        public static DateTime GetGrowGreatQuarterStart(int month)
+        {
+            switch (month)
             {
                 case 10:
                 case 11:
@@ -41,7 +44,12 @@ namespace ECDLink.Core.Helpers
 
         public static DateTime GetCurrentGrowGreatQuarterEnd()
         {
-            switch (DateTime.Now.Month)
+            return GetGrowGreatQuarterEnd(DateTime.Now.Month);
+        }
+
+        public static DateTime GetGrowGreatQuarterEnd(int month)
+        {
+            switch (month)
             {
                 case 10:
                 case 11:

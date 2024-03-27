@@ -25,7 +25,7 @@ import {
   CreateSiteAddress,
   DeleteClinicById,
   EditClinic,
-  GetAllClinic,
+  GetAllPortalClinics,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
   SiteAddressInput,
@@ -62,7 +62,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     },
   });
 
-  const { data: clinicsData } = useQuery(GetAllClinic, {
+  const { data: clinicsData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -89,10 +89,12 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   const watchFields = useWatch({ control });
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
+  const clinicTeamLeads = props?.clinic?.teamLeads;
+  const clinicHcws = props?.clinic?.healthCareWorkers;
 
   const hasSubDistricts =
     watchFields?.subDistrict &&
-    clinicsData?.GetAllClinic?.filter(
+    clinicsData?.allPortalClinics?.filter(
       (item) => item?.subDistrict?.id === watchFields?.subDistrict
     );
   const hasName =
@@ -101,7 +103,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
 
   const duplicatedName =
     findObjectWithString(
-      clinicsData?.GetAllClinic,
+      clinicsData?.allPortalClinics,
       'name',
       watchFields?.name
     ) &&
@@ -442,14 +444,14 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           <StatusChip
             backgroundColour="successMain"
             borderColour="successMain"
-            text={`${props?.clinic?.teamLeads?.length} Team Leads`}
+            text={`${clinicTeamLeads?.length} Team Leads`}
             textColour={'white'}
             className={'mr-2 px-6 py-1.5'}
           />
           <StatusChip
             backgroundColour="successMain"
             borderColour="successMain"
-            text={`${0} CHWs`}
+            text={`${clinicHcws?.length} CHWs`}
             textColour={'white'}
             className={'mr-2 px-6 py-1.5'}
           />
@@ -601,7 +603,10 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
           <button
             type="submit"
             onClick={() => setHandleDeleteModal(true)}
-            className={`focus:outline-none border-secondary text-secondary flex inline-flex w-full items-center justify-center rounded-2xl border bg-white px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
+            className={`focus:outline-none border-secondary text-secondary ${
+              clinicHcws?.length > 0 ? 'opacity-25' : ''
+            } flex inline-flex w-full items-center justify-center rounded-2xl border bg-white px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2`}
+            disabled={clinicHcws?.length > 0}
           >
             <TrashIcon width="22px" className="mr-2" />
             Remove clinic

@@ -2,6 +2,8 @@ export type CommunityRouteState = {
   activeTabIndex?: number;
 };
 
+export const COMMUNITY_SESSION_STORAGE_KEY = 'isFromCommunityWelcome';
+
 export const COMMUNITY_TABS = {
   TEAM: { INDEX: 0, TITLE: 'Team' },
   LEAGUE: { INDEX: 1, TITLE: 'League' },

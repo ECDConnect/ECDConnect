@@ -1,7 +1,9 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -13,17 +15,29 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using System.Collections.Generic;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
-using EcdLink.Api.CoreApi.Services.PointsEngine.Interfaces;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ClinicQueryExtension
     {
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Clinic> GetAllPortalClinics([Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
+            return clinicRepo.GetAll().Where(x => x.IsActive)
+                .Include(x => x.TeamLeads.Where(x => x.IsActive))
+                .Include(x => x.SiteAddress)
+                .Include(x => x.SubDistrict)
+                .Include(x => x.HealthCareWorkers.Where(x => x.IsActive))
+                .Include(x => x.Leagues.Where(x => x.IsActive))
+                .ToList();
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClinicReportModel GetClinicPointsData([Service] IClinicService clinicService, Guid clinicId)
         {

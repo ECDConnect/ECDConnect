@@ -1,4 +1,5 @@
 import {
+  ActionModal,
   Button,
   DialogPosition,
   Divider,
@@ -9,7 +10,6 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { NoCommunityFound } from '../0-components/no-community-found';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { useWindowSize } from '@reach/window-size';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router';
@@ -28,8 +28,21 @@ import {
 } from '@/utils/community/breastfeeding-clubs.utils';
 import { CommunityActions } from '@/store/community/community.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useDialog, useSnackbar } from '@ecdlink/core';
+import {
+  getCommunityQuarterDescription,
+  getStringFromClassNameOrId,
+  useDialog,
+  useSnackbar,
+} from '@ecdlink/core';
 import { MonthDetails } from './month-details';
+import {
+  COMMUNITY_WALKTHROUGH_STEPS,
+  communityWalkthroughSteps,
+} from '../walkthrough/steps';
+import { useWalkthrough } from '@/context/walkthroughContext';
+import { dummy } from './dummy';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { userSelectors } from '@/store/user';
 
 export const BreastfeedingClubsTab: React.FC = () => {
   const [isToShowAll, setIsToShowAll] = useState(false);
@@ -38,8 +51,11 @@ export const BreastfeedingClubsTab: React.FC = () => {
   const breastfeedingClubs = useAppSelector(
     communitySelectors.getBreastFeedingClubsSelector
   );
+  const user = useAppSelector(userSelectors.getUser);
 
   const { showMessage } = useSnackbar();
+
+  const { walkthroughState } = useWalkthrough();
 
   const {
     isLoading: isLoadingBreastFeedingClubs,
@@ -74,6 +90,8 @@ export const BreastfeedingClubsTab: React.FC = () => {
 
   const appDispatch = useAppDispatch();
 
+  const calendarAddEvent = useCalendarAddEvent();
+
   const dialog = useDialog();
 
   const headerHeight = 120;
@@ -91,7 +109,11 @@ export const BreastfeedingClubsTab: React.FC = () => {
     'MMM'
   )} ${currentYear}`;
 
-  const monthData = groupBreastfeedingClubByMonth(breastfeedingClubs ?? []);
+  const monthData = groupBreastfeedingClubByMonth(
+    walkthroughState?.isTourActive && !breastfeedingClubs?.length
+      ? dummy
+      : breastfeedingClubs ?? []
+  );
 
   const isToAddCurrentMonthData = !monthData?.some((item) => {
     return item.month === currentMonth && item.year === currentYear;
@@ -162,7 +184,68 @@ export const BreastfeedingClubsTab: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (isLoading) {
+  const getBreastfeedingClubEventParticipants = (): string[] => {
+    const participants: string[] = [];
+    if (!!clinic) {
+      participants.push(...clinic.teamLeads.map((t) => t.id));
+      participants.push(
+        ...clinic.clinicMembers.map((c) => c.healthCareWorkerId)
+      );
+    }
+    return participants.filter((p) => p !== user?.id);
+  };
+
+  const onAddBreastfeedingClub = () => {
+    return dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render(onClose) {
+        return (
+          <ActionModal
+            className="z-50"
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconClassName="h-10 w-10"
+            title="Would you like to add a breastfeeding club or schedule one in calendar?"
+            detailText="You can add a club that has already happened or schedule a club for a future date."
+            actionButtons={[
+              {
+                text: 'Add club now',
+                colour: 'primary',
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'PlusCircleIcon',
+                onClick: () => {
+                  onClose();
+                  history.push(ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD);
+                },
+              },
+              {
+                text: 'Schedule in calendar',
+                colour: 'primary',
+                type: 'outlined',
+                textColour: 'primary',
+                leadingIcon: 'CalendarIcon',
+                onClick: () => {
+                  onClose();
+                  calendarAddEvent({
+                    event: {
+                      eventType: 'Breastfeeding club',
+                      participantUserIds:
+                        getBreastfeedingClubEventParticipants(),
+                    },
+                  });
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  if (isLoading && !walkthroughState?.isTourActive) {
     return (
       <LoadingSpinner
         className="mt-6"
@@ -180,9 +263,21 @@ export const BreastfeedingClubsTab: React.FC = () => {
   return (
     <div
       className="overflow-auto p-4 pt-6"
-      style={{ height: height - headerHeight }}
+      style={{
+        height: walkthroughState?.isTourActive ? height : height - headerHeight,
+      }}
     >
-      <div className="flex h-full flex-col">
+      <div
+        id={getStringFromClassNameOrId(
+          communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.EIGHT].target
+        )}
+        className="flex flex-col"
+        style={
+          walkthroughState?.isTourActive
+            ? { height: 'fit-content' }
+            : { height: '100%' }
+        }
+      >
         <Typography type="h2" text={title} />
         <Typography
           type="h3"
@@ -195,7 +290,11 @@ export const BreastfeedingClubsTab: React.FC = () => {
             isFullHeight={false}
             className="flex flex-col gap-2"
             type={'UserAlertList' as StackedListType}
-            listItems={pastBreastfeedingClubs}
+            listItems={
+              walkthroughState?.isTourActive
+                ? pastBreastfeedingClubs.slice(0, 2)
+                : pastBreastfeedingClubs
+            }
           />
         </div>
         {mergedBreastfeedingClubs.length > 5 && (
@@ -204,7 +303,7 @@ export const BreastfeedingClubsTab: React.FC = () => {
             type="outlined"
             textColor="primary"
             color="primary"
-            text={isToShowAll ? 'See less months' : 'See more months'}
+            text={isToShowAll ? 'See fewer months' : 'See more months'}
             onClick={() => setIsToShowAll(!isToShowAll)}
           />
         )}
@@ -216,9 +315,7 @@ export const BreastfeedingClubsTab: React.FC = () => {
             textColor="white"
             color="primary"
             text="Add a breastfeeding club"
-            onClick={() =>
-              history.push(ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD)
-            }
+            onClick={onAddBreastfeedingClub}
           />
           <Button
             className="mb-4"

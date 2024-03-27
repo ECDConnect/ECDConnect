@@ -22,10 +22,19 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
     (!!onClickItem || !!item.onActionClick) && !item.noClick;
   const renderAvatar = useMemo(() => {
     if (item.icon) {
+      if (item.icon.indexOf('/') >= 0) {
+        return (
+          <RoundIcon
+            className="mr-4"
+            imageUrl={item.icon}
+            hexBackgroundColor={item.avatarColor}
+          />
+        );
+      }
       return (
         <RoundIcon
           className="mr-4"
-          imageUrl={item.icon}
+          icon={item.icon}
           hexBackgroundColor={item.avatarColor}
         />
       );

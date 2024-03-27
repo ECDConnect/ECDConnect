@@ -1,5 +1,6 @@
 export enum AdminTypes {
-  SuperAdmin = 'SuperAdmin',
+  SuperAdmin = 'Super Admin',
+  Administrator = 'Administrator',
   ContentManager = 'ContentManager',
   DesignManager = 'DesignManager',
 }

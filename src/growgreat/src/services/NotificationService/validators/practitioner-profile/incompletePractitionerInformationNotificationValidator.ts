@@ -49,6 +49,7 @@ export class IncompletePractitionerInformationNotificationValidator
             icon: 'SwitchVerticalIcon',
             color: 'primary',
             actionText: 'Complete your profile',
+            cta: 'CompleteProfile',
             viewType: 'Hub',
             routeConfig: {
               route: ROUTES.HEALTH_CAREWORKER_PROFILE_SETUP,

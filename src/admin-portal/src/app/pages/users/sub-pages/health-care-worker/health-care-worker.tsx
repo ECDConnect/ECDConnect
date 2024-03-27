@@ -12,20 +12,22 @@ import { HealthCareWorkerDto } from '@ecdlink/core/lib/models/dto/Users/health-c
 import {
   SendInviteToApplication,
   GetAllHealthCareWorker,
-  GetAllClinic,
+  GetAllPortalClinics,
   GetAllProvince,
   GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import {
+  ActionModal,
+  Dialog,
   DialogPosition,
   Dropdown,
   SearchDropDown,
   SearchDropDownOption,
+  Typography,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
-import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
 import {
@@ -42,6 +44,7 @@ import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
 import { AppVisitActivity } from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import ROUTES from '../../../../routes/app.routes-constants';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -88,6 +91,7 @@ export default function HealthCareWorkers() {
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [handleAdduser, setHandleAdduser] = useState(false);
 
   const onChange = (dates) => {
     const [start, end] = dates;
@@ -145,7 +149,7 @@ export default function HealthCareWorkers() {
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
 
   const [connectUsageFilter, setConnectUsageFilter] = useState<
     SearchDropDownOption<string>[]
@@ -169,15 +173,19 @@ export default function HealthCareWorkers() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/users/view-user',
+      pathname: ROUTES.VIEW_USERS,
       state: {
         component: 'chw',
         userId: selectedRow?.userId,
+        clinicId: selectedRow?.clinicId,
+        hcwId: selectedRow?.id,
+        isRegistered: selectedRow?.isRegistered,
+        connectUsage: selectedRow?.connectUsage,
       },
     });
   };
 
-  const { data, refetch } = useQuery(GetAllHealthCareWorker, {
+  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
     variables: {
       search: '',
       clinicSearch: filteredClinics,
@@ -198,7 +206,7 @@ export default function HealthCareWorkers() {
     fetchPolicy: 'network-only',
   });
 
-  const { data: clinicData } = useQuery(GetAllClinic, {
+  const { data: clinicData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
   const { data: provinceData } = useQuery(GetAllProvince, {
@@ -329,6 +337,27 @@ export default function HealthCareWorkers() {
     });
   };
 
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () =>
+      statusFilter?.length +
+      connectUsageFilter?.length +
+      provincesFiltered?.length +
+      clinicsFiltered?.length +
+      appActivityFilter?.length +
+      subDistrictsFiltered?.length +
+      hasDateFilter,
+    [
+      statusFilter?.length,
+      connectUsageFilter?.length,
+      provincesFiltered?.length,
+      clinicsFiltered?.length,
+      appActivityFilter?.length,
+      subDistrictsFiltered?.length,
+      hasDateFilter,
+    ]
+  );
+
   const clearFilters = () => {
     setStatusFilter([]);
     setConnectUsageFilter([]);
@@ -337,13 +366,14 @@ export default function HealthCareWorkers() {
     setStartDate('');
     setEndDate('');
     setAppActivityFilter([]);
+    setSubDistrictsFiltered([]);
   };
 
   useEffect(() => {
-    if (clinicData?.GetAllClinic?.length > 0) {
-      const clinicsSorted = clinicData?.GetAllClinic?.slice()?.sort((a, b) =>
-        a.name < b.name ? -1 : a.name > b.name ? 1 : 0
-      );
+    if (clinicData?.allPortalClinics?.length > 0) {
+      const clinicsSorted = clinicData?.allPortalClinics
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
       setClinics(
         clinicsSorted?.map((item) => {
@@ -355,7 +385,7 @@ export default function HealthCareWorkers() {
         })
       );
     }
-  }, [clinicData?.GetAllClinic]);
+  }, [clinicData?.allPortalClinics]);
 
   useEffect(() => {
     if (subDistrictData?.subDistrictsAndStats?.length > 0) {
@@ -399,6 +429,17 @@ export default function HealthCareWorkers() {
     }
   }, [provinceData?.GetAllProvince]);
 
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
+
   if (tableData) {
     return (
       <div>
@@ -421,54 +462,62 @@ export default function HealthCareWorkers() {
               </div>
             </div>
 
-            <div className="mt-0  flex w-10/12 flex-row sm:mt-0  sm:ml-4">
+            <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
               <div className="pr-2 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    className={`${
+                      numberOfFilters
+                        ? ' bg-secondary'
+                        : 'border-secondary border-2 bg-white'
+                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      numberOfFilters ? 'text-white' : 'text-textMid'
+                    } hover:bg-gray-300 focus:ring-2`}
                     type="button"
                   >
-                    <div className="flex gap-1">
-                      Filter
+                    <div className="flex items-center gap-1">
+                      <Typography
+                        className="truncate"
+                        type="help"
+                        color={numberOfFilters ? 'white' : 'textLight'}
+                        text={renderFilterButtonText}
+                      />
                       {!showFilter ? (
                         <span>
-                          <ChevronDownIcon className="h-6 w-6 text-white" />
+                          <ChevronDownIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       ) : (
                         <span>
-                          <ChevronUpIcon className="h-6 w-6 text-white" />
+                          <ChevronUpIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       )}
                     </div>
                   </button>
                 </span>
               </div>
-
-              <div className="flex w-full flex-row ">
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={displayPanel}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                  >
-                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                    Add CHW
-                  </button>
-                )}
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={() => {
-                      history.push('/upload-users');
-                    }}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                  >
-                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
-                    Bulk Upload
-                  </button>
-                )}
+              <div>
+                <div className="flex w-full">
+                  {hasPermission(PermissionEnum.create_user) && (
+                    <button
+                      onClick={() => setHandleAdduser(true)}
+                      type="button"
+                      className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                    >
+                      <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                      Add CHWs
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -512,15 +561,17 @@ export default function HealthCareWorkers() {
               )}
 
               {filterDateAdded && (
-                <ReactDatePicker
-                  selected={startDate}
-                  onChange={onChange}
-                  startDate={startDate}
-                  endDate={endDate}
-                  selectsRange={true}
-                  inline
-                  shouldCloseOnSelect={true}
-                />
+                <div>
+                  <ReactDatePicker
+                    selected={startDate}
+                    onChange={onChange}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selectsRange={true}
+                    inline
+                    shouldCloseOnSelect={true}
+                  />
+                </div>
               )}
               <div className="flex items-center gap-2">
                 <SearchDropDown<string>
@@ -553,6 +604,9 @@ export default function HealthCareWorkers() {
                   selectedOptions={clinicsFiltered}
                   onChange={setClinicsFiltered}
                   placeholder={'Clinic'}
+                  info={{
+                    name: `Clinic:`,
+                  }}
                   multiple={true}
                   color={'secondary'}
                 />
@@ -569,6 +623,9 @@ export default function HealthCareWorkers() {
                   selectedOptions={subDistrictsFiltered}
                   onChange={setSubDistrictsFiltered}
                   placeholder={'Sub-district'}
+                  info={{
+                    name: `Sub-district:`,
+                  }}
                   multiple={true}
                   color={'secondary'}
                 />
@@ -585,6 +642,9 @@ export default function HealthCareWorkers() {
                   selectedOptions={provincesFiltered}
                   onChange={setProvincesFiltered}
                   placeholder={'Province'}
+                  info={{
+                    name: `Province:`,
+                  }}
                   multiple={true}
                   color={'secondary'}
                 />
@@ -646,11 +706,51 @@ export default function HealthCareWorkers() {
                   }
                   component={'chw'}
                   viewRow={viewSelectedRow}
+                  isLoading={loading}
+                  refetchData={refetch}
                 />
               </div>
             </div>
           </div>
         </div>
+        <Dialog
+          className="absolute left-56 bottom-96 mb-44 w-6/12"
+          stretch
+          visible={handleAdduser}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'ExclamationCircleIcon'}
+            iconColor="white"
+            iconBorderColor="infoMain"
+            importantText={`Would you like to add one CHW or multiple?`}
+            actionButtons={[
+              {
+                text: 'Add multiple CHWs',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () =>
+                  history.push({
+                    pathname: ROUTES.UPLOAD_USERS,
+                  }),
+                leadingIcon: 'UsersIcon',
+              },
+              {
+                text: 'Add one CHW',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  displayPanel();
+                  setHandleAdduser(false);
+                },
+                leadingIcon: 'UserIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </div>
     );
   } else {

@@ -17,6 +17,7 @@ export interface UiTableProps {
   onBulkActionCallback?: (status: BulkActionStatus) => void;
   languages?: LanguageDto[];
   noBulkSelection?: boolean;
+  refetchData?: () => void;
 }
 
 interface Iprop {

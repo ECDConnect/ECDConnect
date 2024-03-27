@@ -4,6 +4,10 @@ import { Message } from '@models/messages/messages';
 interface NotificationTagConfigParams {
   [key: string]: Partial<Message>;
   AcceptAgreement: Partial<Message>;
+  SeeWalkthrough: Partial<Message>;
+  CompleteProfile: Partial<Message>;
+  RedAlertReferral: Partial<Message>;
+  DangerSignsReferral: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AcceptAgreement: {
@@ -14,11 +18,15 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   SeeWalkthrough: {
     cta: 'SeeWalkthrough',
-    routeConfig: {
-      route: ROUTES.CLIENTS.INFANT_PROFILE.VISITS.ANTENATAL_VISIT,
-      params: { displayHelp: true },
-    },
-    viewType: 'Both',
+  },
+  CompleteProfile: {
+    cta: 'CompleteProfile',
+  },
+  RedAlertReferral: {
+    cta: 'SeeReferralsRedAlert',
+  },
+  DangerSignsReferral: {
+    cta: 'SeeReferralsDangerSigns',
   },
 };
 

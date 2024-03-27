@@ -27,11 +27,20 @@ class Visit {
       errors?: {};
     }>(``, {
       query: `
-        query GetHealthCareWorkerVisitStatus($userId: String) {
+        query GetHealthCareWorkerVisitStatus($userId: UUID!) {
           healthCareWorkerVisitStatus(userId: $userId) {
+            motherVisitsCompletedThisMonth
+            childVisitsCompletedThisMonth
+            motherVisitsCompletedThisYear
+            childVisitsCompletedThisYear
             motherOverDueVisits
             motherDueVisits
             childDueVisits
+            lastCompletedVisit
+            motherVisitsCompletedThisMonth
+            motherVisitsCompletedThisYear
+            childVisitsCompletedThisMonth
+            childVisitsCompletedThisYear
           }
         } 
           `,

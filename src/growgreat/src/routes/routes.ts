@@ -46,7 +46,6 @@ const ROUTES = {
       VISITS: {
         RECORD_EVENT: '/:id/record-event',
         START_VISIT: '/:id/start-visit',
-        BOOK_VISIT: '/:id/book-visit',
         PAST_VISITS: '/:id/past-visits',
         ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
@@ -69,7 +68,6 @@ const ROUTES = {
       },
       VISITS: {
         RECORD_EVENT: '/:id/record-event',
-        BOOK_VISIT: '/:id/book-visit',
         PAST_VISITS: '/:id/past-visits',
         ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
@@ -83,13 +81,8 @@ const ROUTES = {
     }),
     VISIT_TAB: {
       START_VISIT: '/start-visit',
-      BOOK_VISIT: '/book-visit',
       PREGNANCY_VISITS: '/pregnancy-visits',
       CHILD_VISITS: '/child-visits',
-    },
-    HIGHLIGHTS_TAB: {
-      UPCOMING_VISIT: '/upcoming-visit',
-      POINTS_SUMMARY: '/points-summary,',
     },
   }),
   CHILD: addPrefix('/child', {
@@ -99,13 +92,17 @@ const ROUTES = {
   }),
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
-  PRACTITIONER: addPrefix('/practitioner', {
+  PRACTITIONER: addPrefix('/health-care-worker', {
     ABOUT: '/about',
     ACCOUNT: '/account',
     PROGRAMME_INFORMATION: '/programme-information',
     PROFILE: addPrefix('/profile', {
       PLAYGROUPS: '/playgroups',
       EDIT: '/edit',
+    }),
+    INDIVIDUAL_POINTS: addPrefix('/points', {
+      INFO_PAGE: '/info-page',
+      YEAR_VIEW: '/year-view',
     }),
   }),
   HEALTH_CAREWORKER_PROFILE_SETUP: '/healthcare-worker-profile-setup',

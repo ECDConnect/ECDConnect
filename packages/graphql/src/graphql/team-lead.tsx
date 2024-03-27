@@ -23,8 +23,12 @@ export const GetAllTeamLead = gql`
     ) {
       id
       insertedDate
+      isRegistered
+      clinicIds
       user {
+        id
         connectUsage
+        connectUsageColor
         isActive
         userName
         email
@@ -73,7 +77,7 @@ export const GetAllTeamLeadAdminList = gql`
 `;
 
 export const CreateTeamLead = gql`
-  mutation addTeamLead($input: TeamLeadModelInput) {
+  mutation addTeamLead($input: AddTeamLeadInputModelInput) {
     addTeamLead(input: $input) {
       id
     }
@@ -93,6 +97,16 @@ export const UploadTeamLeads = gql`
   }
 `;
 
+export const DeactivateTeamLead = gql`
+  mutation DeactivateTeamLead($teamLeadId: UUID!) {
+    deactivateTeamLead(teamLeadId: $teamLeadId) {
+      id
+      userId
+      isActive
+    }
+  }
+`;
+
 export const TeamLeadsTemplate = gql`
   query {
     teamLeadTemplateGenerator {
@@ -100,6 +114,28 @@ export const TeamLeadsTemplate = gql`
       base64File
       fileName
       extension
+    }
+  }
+`;
+
+export const GetTeamLeadSummary = gql`
+  query GetTeamLeadSummary($teamLeadId: UUID!) {
+    teamLeadSummary(teamLeadId: $teamLeadId) {
+      idNumber
+      phoneNumber
+      whatsAppNumber
+      firstName
+      surname
+      lastSeen
+      clinicNames
+      location
+      totalClinics
+      totalHealthCareWorkers
+      totalPregnantMoms
+      totalChildren
+      totalMeetingReportsSubmitted
+      totalInFieldVisitsCompleted
+      __typename
     }
   }
 `;
@@ -114,6 +150,7 @@ export const GetTeamLead = gql`
     GetAllTeamLead(where: { id: { eq: $teamLeadId } }) {
       id
       user {
+        id
         isActive
         userName
         email
