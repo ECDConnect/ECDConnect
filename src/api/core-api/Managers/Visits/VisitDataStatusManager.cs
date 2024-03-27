@@ -1186,8 +1186,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // Red G4
                     comment = GGSettings.refer_to_clinic_urgently;
                     AddVisitDataStatus(q3, comment, mColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
-
-                     _ = _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId);
                 }
                 else if (questionAnswer >= 11.5 && questionAnswer < 12.5)
                 {
@@ -1250,8 +1248,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         growthIssue = lIndicator;
                     }
-                   
                     _ = _notificationManager.SendGGChildGrowthIssueNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mothername, infantUserId, growthIssue);
+                } else
+                {
+                    _ = _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId);
                 }
 
             }
