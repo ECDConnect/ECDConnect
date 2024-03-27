@@ -28,6 +28,7 @@ export const GetAllTeamLead = gql`
       user {
         id
         connectUsage
+        connectUsageColor
         isActive
         userName
         email

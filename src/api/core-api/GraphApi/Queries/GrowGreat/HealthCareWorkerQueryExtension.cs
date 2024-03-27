@@ -370,8 +370,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             DateTime? endDate = null)
         {
             // Take given date or take now with 30 days back
-            var _endDate = (endDate?.ToUniversalTime() ?? DateTime.UtcNow).Date.AddDays(1).Subtract(TimeSpan.FromMicroseconds(1));
-            DateTime _startDate = DateTime.UtcNow;
+            var _endDate = (endDate?.ToUniversalTime() ?? DateTime.Now).Date.AddDays(1).Subtract(TimeSpan.FromMicroseconds(1));
+            DateTime _startDate = DateTime.Now;
 
             if (startDate >= endDate)
             {
@@ -380,8 +380,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 _endDate = a;
             }
             else
-                _startDate = (startDate?.ToUniversalTime().Date ?? DateTime.UtcNow.Date.Subtract(TimeSpan.FromDays(30)));
-
+                _startDate = (startDate?.ToUniversalTime().Date ?? DateTime.Now.Date.Subtract(TimeSpan.FromDays(30)));
+            
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>();
             Guid.TryParse(healthCareWorkerId, out Guid hcwId);
             var communityHealthWorker = healthCareWorkerRepo.GetById(hcwId);
@@ -401,7 +401,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             // Mothers and Infants are folders.
             summary.TotalFoldersOpened = motherManager.GetTotalNewClientsForPeriod(healthCareWorkerUserId, _startDate, _endDate);
-
             summary.TotalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_child, _startDate, _endDate);
 
             var motherVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_mother, _startDate, _endDate);
