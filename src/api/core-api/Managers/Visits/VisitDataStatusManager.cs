@@ -18,6 +18,7 @@ using System.Globalization;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
 using Microsoft.EntityFrameworkCore;
+using EcdLink.Api.CoreApi.Managers.Notifications;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -27,7 +28,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepositoryFactory _repoFactory;
         private VisitManager _visitManager;
         private ApplicationUserManager _userManager;
-        
+        private ExtendedNotificationManager _notificationManager;
+
         private INotificationService _notificationService;
         private VisitBackReferralManager _visitBackReferralManager;
         private HierarchyEngine _hierarchyEngine;
@@ -52,6 +54,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             IGenericRepositoryFactory repoFactory,
             VisitManager visitManager,
             [Service] ApplicationUserManager userManager,
+            [Service] ExtendedNotificationManager notificationManager,
             [Service] INotificationService notificationService,
             VisitBackReferralManager visitBackReferralManager,
             HierarchyEngine hierarchyEngine)
@@ -60,7 +63,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _visitManager = visitManager;
             _userManager = userManager;
-             _notificationService = notificationService;
+            _notificationManager = notificationManager;
+            _notificationService = notificationService;
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
 
@@ -79,7 +83,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public Boolean ManageVisitDataStatus(string id, string clientType, string visitId)
         {
             // This should not be set as a class level variable, it should be passed through if needed
-            _visitId = visitId; 
+            _visitId = visitId;
 
             var allVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId).ToList();
 
@@ -89,7 +93,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // Referral
             // Progress
 
-            if (clientType == GGSettings.client_mother) {
+            if (clientType == GGSettings.client_mother)
+            {
                 var mother = _motherRepo.GetAll().Where(x => x.User.Id == Guid.Parse(id)).OrderBy(x => x.Id).FirstOrDefault();
 
                 // add additional visit for when we need to add additional visits for the client
@@ -119,12 +124,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                                                    x.Name == GGSettings.VisitTypeAdditionalVisit).
                                                                    OrderBy(x => x.NormalizedName).FirstOrDefault();
 
-                ManageVisitDataStatusForInfant(allVisitData, infant.User.FirstName, infant.Id.ToString(), infant.Gender.Description, infant.User.DateOfBirth, motherName);
+                ManageVisitDataStatusForInfant(allVisitData, infant.User.FirstName, infant.Id.ToString(), infant.Gender.Description, infant.User.DateOfBirth, motherName, infant.UserId.ToString());
             }
 
             return true;
         }
-        private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob, string motherName)
+        private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob, string motherName, string infantUserId)
         {
 
             var comment = "";
@@ -259,25 +264,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                 AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
                             }
 
-                            Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == infantId).FirstOrDefault();
-                            List<TagsReplacements> replacements = new List<TagsReplacements>();
-                            replacements.Add(new TagsReplacements()
-                            {
-                                FindValue = "FirstName",
-                                ReplacementValue = motherName
-                            });
-                            replacements.Add(new TagsReplacements()
-                            {
-                                FindValue = "infantId",
-                                ReplacementValue = infant.UserId.ToString()
-                            });
-                            replacements.Add(new TagsReplacements()
-                            {
-                                FindValue = "DangerSignsList",
-                                ReplacementValue = bulletList
-                            });
-                            var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
-                            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null);
+                            _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), motherName, bulletList, infantUserId);
 
                             // Add additional visit item with secondary text: ""Danger signs""
                             AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.danger_signs);
@@ -321,26 +308,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = GGSettings.urgent_care;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
 
-                        Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == infantId).FirstOrDefault();
-                        List<TagsReplacements> replacements = new List<TagsReplacements>();
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "FirstName",
-                            ReplacementValue = firstName
-                        });
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "infantId",
-                            ReplacementValue = infant.UserId.ToString()
-                        });
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "DangerSignsList",
-                            ReplacementValue = bulletList
-                        });
-
-                        var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null);
+                          _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, infantUserId);
                     }
                 }
                 else if (vData.Question == GGSettings.q_stop_worry ||
@@ -642,7 +610,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (growthData.Count > 0)
             {
-                ManageGrowthData(growthData, firstName, infantId, gender, totalMonthsOld, totalDaysOld, previousVisitWeight);
+                ManageGrowthData(growthData, firstName, infantId, gender, totalMonthsOld, totalDaysOld, previousVisitWeight, motherName, infantUserId);
             }
 
             if (feedingData.Count > 0)
@@ -827,24 +795,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(visitData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, visitData.VisitSection, false);
 
                         Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == motherId).FirstOrDefault();
-                        List<TagsReplacements> replacements = new List<TagsReplacements>();
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "FirstName",
-                            ReplacementValue = firstName
-                        });
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "motherId",
-                            ReplacementValue = mother.UserId.ToString()
-                        });
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "DangerSignsList",
-                            ReplacementValue = bulletList
-                        });
-                        var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements);
+                        _ = _notificationManager.SendGGReferralDangerSignsMotherNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, mother.UserId.ToString());
                     }
                 }
             }
@@ -895,20 +846,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 comment = GGSettings.need_support;
                 AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
 
-                Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
+                if (clientType == GGSettings.client_child)
                 {
-                    FindValue = "ClientFirstName",
-                    ReplacementValue = firstName
-                 });
-                replacements.Add(new TagsReplacements()
+                    Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
+                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infant.UserId.ToString());
+                } else if (clientType == GGSettings.client_child)
                 {
-                    FindValue = "motherId",
-                    ReplacementValue = mother.UserId.ToString()
-                });
-                var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+                    Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
+                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString());
+                }
             }
             else
             {
@@ -937,8 +883,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     comment = GGSettings.coping_well;
                     AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
                 }
-                if (q3.QuestionAnswer == GGSettings.answer_no) {
-                    _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGRedAlertMaternalDistress);
+                if (q3.QuestionAnswer == GGSettings.answer_no)
+                {
+                    if (clientType == GGSettings.client_child)
+                    {
+                        _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGRedAlertMaternalDistressInfant);
+                    }
+                    else if (clientType == GGSettings.client_child)
+                    {
+                        _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGRedAlertMaternalDistressMother);
+                    }  
                 }
             }
             return true;
@@ -1033,7 +987,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-        private Boolean ManageGrowthData(List<VisitData> growthData, string firstName, string infantId, string gender, int totalMonthsOld, double totalDaysOld, string previousVisitWeight)
+        private Boolean ManageGrowthData(List<VisitData> growthData, string firstName, string infantId, string gender, int totalMonthsOld, double totalDaysOld, string previousVisitWeight, string mothername, string infantUserId)
         {
             var comment = "";
 
@@ -1049,20 +1003,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var q2 = growthData.Where(x => x.Question == GGSettings.QuestionLength && x.VisitName != GGSettings.CareForBaby).OrderBy(x => x.Id).FirstOrDefault();
             var q3 = growthData.Where(x => x.Question == GGSettings.QuestionMUAC).OrderBy(x => x.Id).FirstOrDefault();
 
+            var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+            var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+
+            var _prevWeight = 0.0;
+            if (previousVisitWeight != "undefined" && previousVisitWeight != "")
+            {
+                _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
+            }
+
+            Boolean weightIncreased = _weight >= _prevWeight;
+            wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
+            lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender, false);
+
             if (q1 != null && q1.Question == GGSettings.QuestionWeight)
             {
-
-                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _prevWeight = 0.0;
-                if (previousVisitWeight != "undefined" && previousVisitWeight != "")
-                {
-                    _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
-                }
-
-                Boolean weightIncreased = _weight >= _prevWeight;
-                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
-
                 if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5)
                 {
                     wIndicator = "Low birth weight";
@@ -1171,12 +1126,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (q2 != null && q2.Question == GGSettings.QuestionLength)
             {
-
-                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-
-                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender, false);
-
                 if (lIndicator == "Severely stunted")
                 {
                     lColor = StatusColours.Red;
@@ -1238,7 +1187,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     comment = GGSettings.refer_to_clinic_urgently;
                     AddVisitDataStatus(q3, comment, mColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
 
-
+                     _ = _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId);
                 }
                 else if (questionAnswer >= 11.5 && questionAnswer < 12.5)
                 {
@@ -1284,6 +1233,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     comment += "<li>" + mIndicator + "</li>";
                 }
                 AddVisitDataStatus(q1, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
+
+                //Refer [[ChildFirstName]] to the clinic immediately and schedule additional visits with [[ChildFirstName]] & [[CaregiverFirstName]].
+                if (wIndicator == "Severely underweight" || lIndicator == "Severely stunted")
+                {
+                    var growthIssue = ""; 
+                    if (wIndicator == "Severely underweight" && lIndicator == "Severely stunted")
+                    {
+                        growthIssue = "Severely underweight & severely stunted";
+                    }
+                    else if (wIndicator == "Severely underweight")
+                    {
+                        growthIssue = wIndicator;
+                    }
+                    else if (lIndicator == "Severely stunted")
+                    {
+                        growthIssue = lIndicator;
+                    }
+                   
+                    _ = _notificationManager.SendGGChildGrowthIssueNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mothername, infantUserId, growthIssue);
+                }
+
             }
 
             if (wColor == StatusColours.Green && lColor == StatusColours.Green && mColor == StatusColours.Green)
@@ -2184,7 +2154,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (type == GGSettings.client_mother)
             {
 
-                vData =  (
+                vData = (
                     from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
                     join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Color == MetricsIconEnum.Error.ToString() && z.Comment == GGSettings.refer_to_clinic_urgently && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId

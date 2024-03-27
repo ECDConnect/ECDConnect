@@ -109,7 +109,7 @@ export const ReferralsTab: React.FC = () => {
   ).filter(
     (item) =>
       item?.message?.cta?.includes(
-        notificationTagConfig?.RedAlertReferral.cta ?? ''
+        notificationTagConfig?.RedAlertReferralMother.cta ?? ''
       ) && item?.message?.action?.includes(motherId)
   );
 
