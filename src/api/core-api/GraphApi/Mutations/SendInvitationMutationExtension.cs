@@ -49,18 +49,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (inviteToPortal)
             {
-                var userToInviteIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
-                if (userToInviteIsAdmin)
+                // Administrators and TLs get portal invite
+                var userToInviteHasRole = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
+                if (userToInviteHasRole)
                 {
                     var currentUserId = accessor.HttpContext.GetUser().Id;
                     var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-                    var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
-                    if (currentUserIsAdmin)
+                    var currentUserIsAdminOrTL = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
+                    if (currentUserIsAdminOrTL)
                         await notificationManager.SendAdminInvitationAsync(userToInvite, token);
                 }
             }
             else
             {
+                // HCW's notification
                 await notificationManager.SendInvitationAsync(userToInvite, token);
             }
 
@@ -95,8 +97,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         continue;
                     }
                     // Administrators and TLs get portal invite
-                    var userToInviteHasRole = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
-                    if (userToInviteHasRole)
+                    var currentUserIsAdminOrTL = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
+                    if (currentUserIsAdminOrTL)
                     {
                         await notificationManager.SendAdminInvitationAsync(userToInvite, token);
 
