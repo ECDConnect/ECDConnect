@@ -82,8 +82,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 try
                 {
                     var user = await userManager.FindByIdAsync(userId);
-                    var token = await invitationManager.GenerateTokenAsync(user);
+                    if (user == null)
+                    {
+                        result.Failed.Add(userId);
+                        continue;
+                    }
 
+                    var token = await invitationManager.GenerateTokenAsync(user);
                     if (string.IsNullOrWhiteSpace(token))
                     {
                         result.Failed.Add(user.Id.ToString());
