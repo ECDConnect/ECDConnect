@@ -72,46 +72,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
           [Service] ApplicationUserManager userManager,
-          [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)
         {
             // Create result
-            var result = new BulkInvitationResult() { Failed = userIds.ToList(), Success = new List<string>() };
+            var result = new BulkInvitationResult() { Failed = new List<string>(), Success = new List<string>() };
 
-            // Get current and other admins
-            var currentUserId = accessor.HttpContext.GetUser().Id;
-            var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
-            var admins = adminUsers?.Select(u => u.Id);
-            var guidUserIds = userIds.Select(x => Guid.Parse(x)).ToList();
-            var invitedAdmins = adminUsers.Where(a => guidUserIds.Contains(a.Id));
-            var currentUser = adminUsers.FirstOrDefault(u => u.Id == currentUserId);
-            var currentUserIsAdmin = currentUser is not null;
-
-            // Portal is for admins, so if there are no admins, no invitations can be sent
-            // Only admins can send invitations to admins
-            if (!currentUserIsAdmin || invitedAdmins?.Count() < 1)
-                return result;
-
-            // Add reqested users that aren't admins to failedInvitations
-            result.Failed = guidUserIds.Except(invitedAdmins.Select(a => a.Id)).Select(x => x.ToString()).ToList();
-
-            foreach (var invitedAdmin in invitedAdmins)
+            foreach (var userId in userIds)
             {
                 try
                 {
-                    var token = await invitationManager.GenerateTokenAsync(invitedAdmin);
+                    var user = await userManager.FindByIdAsync(userId);
+                    var token = await invitationManager.GenerateTokenAsync(user);
 
                     if (string.IsNullOrWhiteSpace(token))
                     {
-                        result.Failed.Add(invitedAdmin.Id.ToString());
+                        result.Failed.Add(user.Id.ToString());
                         continue;
                     }
-                    await notificationManager.SendAdminInvitationAsync(invitedAdmin, token);
-                    result.Success.Add(invitedAdmin.Id.ToString());
+                    await notificationManager.SendAdminInvitationAsync(user, token);
+                    result.Success.Add(user.Id.ToString());
                 }
                 catch
                 {
-                    result.Failed.Add(invitedAdmin.Id.ToString());
+                    result.Failed.Add(userId);
                 }
             }
 
