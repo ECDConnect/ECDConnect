@@ -11,6 +11,7 @@ export interface CheckboxProps<T extends FieldValues = {}>
   descriptionColor?: Colours;
   checkboxColor?: Colours;
   checked?: boolean;
+  indeterminate?: boolean;
   onCheckboxChange?: (e: CheckboxChange) => void;
   nameProp?: Path<T>;
   disabled?: boolean;
@@ -35,6 +36,7 @@ export const Checkbox = <T extends FieldValues>({
   value,
   id,
   name,
+  indeterminate,
 }: CheckboxProps<T>) => {
   const checkboxChange = (e: any) => {
     if (onCheckboxChange) {
@@ -76,6 +78,9 @@ export const Checkbox = <T extends FieldValues>({
                   `border-${checkboxColor}`
                 )}
                 checked={checked}
+                ref={(ref) => {
+                  if (ref) ref.indeterminate = !!indeterminate;
+                }}
                 onChange={(e) => checkboxChange(e)}
               />
             )}
