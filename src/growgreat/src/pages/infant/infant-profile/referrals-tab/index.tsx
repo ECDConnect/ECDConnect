@@ -110,6 +110,15 @@ export const ReferralsTab: React.FC = () => {
     getInfantCurrentVisitSelector(state, '')
   );
 
+  const redAlertNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.RedAlertReferralInfant.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
   const dangerSignsNotifications = useSelector(
     notificationsSelectors.getAllNotifications
   ).filter(
@@ -118,6 +127,16 @@ export const ReferralsTab: React.FC = () => {
         notificationTagConfig?.DangerSignsReferral.cta ?? ''
       ) && item?.message?.action?.includes(infantId)
   );
+
+  const growthIssuesNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.GrowthIssuesReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
   const previousVisit = useSelector((state: RootState) =>
     getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
@@ -235,6 +254,42 @@ export const ReferralsTab: React.FC = () => {
 
           if (dangerSignsNotifications && removeDangerSignNotification) {
             dangerSignsNotifications.forEach((x) => {
+              appDispatch(notificationActions.removeNotification(x!));
+              appDispatch(
+                disableBackendNotification({
+                  notificationId: x?.message?.reference ?? '',
+                })
+              );
+            });
+          }
+
+          const removeRedAlertNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes(
+                'was experiencing maternal distress'
+              )
+          );
+
+          if (redAlertNotifications && removeRedAlertNotification) {
+            redAlertNotifications.forEach((x) => {
+              appDispatch(notificationActions.removeNotification(x!));
+              appDispatch(
+                disableBackendNotification({
+                  notificationId: x?.message?.reference ?? '',
+                })
+              );
+            });
+          }
+
+          const removeGrowthIssueNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('is not growing well:')
+          );
+
+          if (growthIssuesNotifications && removeGrowthIssueNotification) {
+            growthIssuesNotifications.forEach((x) => {
               appDispatch(notificationActions.removeNotification(x!));
               appDispatch(
                 disableBackendNotification({

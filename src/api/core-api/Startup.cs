@@ -142,6 +142,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
+            services.AddTransient<ExtendedNotificationManager>();
             services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<CaregiverManager>();
             services.AddTransient<MotherManager>();

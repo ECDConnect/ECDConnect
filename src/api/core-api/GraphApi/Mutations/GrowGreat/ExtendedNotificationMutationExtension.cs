@@ -79,43 +79,40 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGExpectedMomDeliveryDateApproaching, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(1));
         }
 
-        public async Task<bool> SendGGRedAlertMaternalDistressNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string clientFirstName)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "ClientFirstName",
-                ReplacementValue = clientFirstName
-            });
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
-        }
         public async Task<bool> SendGGChildMUACNotification(
 [Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string childFirstName)
+[Service] INotificationService notificationService, string userId, string childFirstName, string infantUserId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "childFirstName",
                 ReplacementValue = childFirstName
+            });
+             replacements.Add(new TagsReplacements()
+            {
+                FindValue = "infantId",
+                ReplacementValue = infantUserId
             });
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
         }
         public async Task<bool> SendGGChildGrowthIssueNotification(
 [Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string childFirstName)
+[Service] INotificationService notificationService, string userId, string childFirstName, string infantUserId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
-                FindValue = "childFirstName",
+                FindValue = "ChildFirstName",
                 ReplacementValue = childFirstName
             });
-            var userToSend = await userManager.FindByIdAsync(userId);
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "infantId",
+                ReplacementValue = infantUserId
+            });
+            var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildGrowthIssue, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
         }
 
