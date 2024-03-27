@@ -81,21 +81,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 try
                 {
-                    var user = await userManager.FindByIdAsync(userId);
-                    if (user == null)
+                    var userToInvite = await userManager.FindByIdAsync(userId);
+                    if (userToInvite == null)
                     {
                         result.Failed.Add(userId);
                         continue;
                     }
 
-                    var token = await invitationManager.GenerateTokenAsync(user);
+                    var token = await invitationManager.GenerateTokenAsync(userToInvite);
                     if (string.IsNullOrWhiteSpace(token))
                     {
-                        result.Failed.Add(user.Id.ToString());
+                        result.Failed.Add(userToInvite.Id.ToString());
                         continue;
                     }
-                    await notificationManager.SendAdminInvitationAsync(user, token);
-                    result.Success.Add(user.Id.ToString());
+                    // Administrators and TLs get portal invite
+                    var userToInviteHasRole = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
+                    if (userToInviteHasRole)
+                    {
+                        await notificationManager.SendAdminInvitationAsync(userToInvite, token);
+
+                    } else
+                    {
+                        // HCW's notification
+                        await notificationManager.SendInvitationAsync(userToInvite, token);
+                    }
+
+                    result.Success.Add(userToInvite.Id.ToString());
                 }
                 catch
                 {
