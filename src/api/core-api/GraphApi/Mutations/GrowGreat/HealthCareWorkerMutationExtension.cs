@@ -45,7 +45,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 ClickedContactTab = false,
                 ClickedDashboardClientsTab = false,
                 ClickedDashboardVisitsTab = false,
-                ClickedDashboardHighlightsTab = false
+                ClickedDashboardHighlightsTab = false,
+                IsNewAtClinic = true,
             };
 
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
@@ -66,6 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var healthCareWorkerToUpdate = healthCareWorkerRepo.GetByUserId(userId);
 
             healthCareWorkerToUpdate.ClinicId = clinicId;
+            healthCareWorkerToUpdate.IsNewAtClinic = true;
             healthCareWorkerToUpdate.UpdatedDate = DateTime.Now;
             healthCareWorkerToUpdate.UpdatedBy = applicationUserId.ToString();
 
