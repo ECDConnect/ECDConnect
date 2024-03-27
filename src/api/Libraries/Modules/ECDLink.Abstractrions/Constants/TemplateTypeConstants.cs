@@ -80,7 +80,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string CoachSelfAssessmentFormReminder = "coach-fillin-self-asessment-form";
 
         //GG notifications
-        public const string GGWalkthroughNotification = "gg-walkthrough-notification";
+        public const string GGWalkthroughNotificationInfant = "gg-walkthrough-notification-infant";
+        public const string GGWalkthroughNotificationMother = "gg-walkthrough-notification-mother";
         public const string GGUploadRTHNotification = "gg-upload-rth";
         public const string GGExpectedMomDeliveryDateApproaching = "gg-expected-moms-delivery-date-approaching";
         public const string GGRedAlertMaternalDistress = "gg-redalert-maternal-distress";
@@ -90,7 +91,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGChildMUAC = "gg-child-muac";
         public const string GGChildGrowthIssue = "gg-child-growth-issue"; 
         public const string GGMultipleReferrals = "gg-multiple-referrals";
-        public const string GGReferralDangerSigns = "gg-referral-danger-signs";
+        public const string GGReferralDangerSignsMother = "gg-referral-danger-signs-mother";
+        public const string GGReferralDangerSignsInfant = "gg-referral-danger-signs-infant";
         public const string GGTwoVisitsMissed = "gg-two-visits-missed";
         public const string GGChildOlderThanFive = "gg-child-older-than-five";
         public const string GGReferDOHA = "gg-refer-home-affairs";
@@ -119,7 +121,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGBronzeTierPointsTeam = "gg-points-bronze-tier-team";
         public const string GGPointsTeamPlacement = "gg-points-placement-team";
         public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
-        public const string GGPointsTeamPlacementNotBottom75Perc = "gg-points-placement-team-bottom-75perc";
+        public const string GGPointsTeamPlacementBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
 
         //Bulk messaging

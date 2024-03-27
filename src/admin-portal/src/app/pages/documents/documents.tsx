@@ -161,7 +161,7 @@ export default function Documents() {
         ),
       });
     },
-    [panel, refetch, workflowStatuses.GetAllWorkflowStatus]
+    [panel, refetch, workflowStatuses?.GetAllWorkflowStatus]
   );
 
   const clearFilters = () => {

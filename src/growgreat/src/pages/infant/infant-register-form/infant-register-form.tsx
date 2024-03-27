@@ -235,6 +235,7 @@ export const InfantRegisterForm: React.FC = () => {
       if (!details?.isMother) {
         appDispatch(caregiverActions.createCaregiver(caregiverInput));
       }
+      const healthCareWorkerId = user?.id;
 
       if (multipleChildrenArray?.length >= 1) {
         for (const child of multipleChildrenArray) {
@@ -285,7 +286,7 @@ export const InfantRegisterForm: React.FC = () => {
             const documentInputModel: Document = {
               id: newGuid(),
               userId: childUserId,
-              createdUserId: user?.id ?? '',
+              createdUserId: healthCareWorkerId ?? '',
               workflowStatusId: workflowStatusId ?? '',
               documentTypeId: documentTypeId ?? '',
               name: fileName,
@@ -351,7 +352,7 @@ export const InfantRegisterForm: React.FC = () => {
           const documentInputModel: Document = {
             id: newGuid(),
             userId: childUserId,
-            createdUserId: user?.id ?? '',
+            createdUserId: healthCareWorkerId ?? '',
             workflowStatusId: workflowStatusId ?? '',
             documentTypeId: documentTypeId ?? '',
             name: fileName,

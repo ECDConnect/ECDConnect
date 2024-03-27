@@ -126,7 +126,7 @@ export const PregnantRegisterForm: React.FC = () => {
 
   const completeAllSteps = useCallback(() => {
     const motherId = newGuid();
-    const motherUserId = newGuid();
+    const motherUserId = motherId;
     const siteAddressDto: SiteAddressDto = {
       addressLine1: address?.address || address?.addressLine1 || '',
     };

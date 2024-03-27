@@ -43,6 +43,12 @@ import ROUTES from '@/routes/routes';
 import { useWalkthrough } from '@/context/walkthroughContext';
 import { referralsSteps } from './walkthrough/steps';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationTagConfig } from '@/constants/notifications';
 
 const HEADER_HEIGHT = 64;
 
@@ -98,6 +104,24 @@ export const ReferralsTab: React.FC = () => {
     getMotherById(state, motherId)
   );
 
+  const redAlertNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.RedAlertReferral.cta ?? ''
+      ) && item?.message?.action?.includes(motherId)
+  );
+
+  const dangerSignsNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.DangerSignsReferral.cta ?? ''
+      ) && item?.message?.action?.includes(motherId)
+  );
+
   const currentVisit = useSelector((state: RootState) =>
     getMotherCurrentVisitSelector(state, '')
   );
@@ -129,7 +153,7 @@ export const ReferralsTab: React.FC = () => {
       appDispatch(
         motherThunkActions.getReferralsForMother({
           motherId: motherId,
-          visitId: previousVisit.id,
+          visitId: '',
         })
       ).unwrap();
     } else if (currentVisit) {
@@ -286,12 +310,52 @@ export const ReferralsTab: React.FC = () => {
           appDispatch(
             motherThunkActions.updateVisitDataStatus({ input: newState })
           ).unwrap();
-        }
 
+          const removeRedAlertNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes(
+                'was experiencing maternal distress'
+              )
+          );
+
+          if (redAlertNotifications && removeRedAlertNotification) {
+            redAlertNotifications.forEach((x) => {
+              appDispatch(notificationActions.removeNotification(x!));
+              appDispatch(
+                disableBackendNotification({
+                  notificationId: x?.message?.reference ?? '',
+                })
+              );
+            });
+          }
+
+          const removeDangerSignNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('was experiencing:')
+          );
+
+          if (dangerSignsNotifications && removeDangerSignNotification) {
+            dangerSignsNotifications.forEach((x) => {
+              appDispatch(notificationActions.removeNotification(x!));
+              appDispatch(
+                disableBackendNotification({
+                  notificationId: x?.message?.reference ?? '',
+                })
+              );
+            });
+          }
+        }
         return newState;
       });
     },
-    [appDispatch, referralsForMother?.length]
+    [
+      appDispatch,
+      dangerSignsNotifications,
+      redAlertNotifications,
+      referralsForMother?.length,
+    ]
   );
 
   const onOptionSelected = useCallback(
@@ -306,8 +370,8 @@ export const ReferralsTab: React.FC = () => {
 
       const updatedQuestions = { ...questions, [index]: updatedAnswers };
       const formattedQuestions = updatedAnswers.map((item) => {
-        const { id, isCompleted } = item;
-        return { id, isCompleted };
+        const { id, isCompleted, comment } = item;
+        return { id, isCompleted, comment };
       });
 
       handleSetReferrals?.(formattedQuestions);

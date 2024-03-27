@@ -19,10 +19,19 @@ import {
   getLeagueById,
 } from '@/store/community/community.actions';
 import { communitySelectors } from '@/store/community';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { calculateClinicLeaguePositionPercentiles } from '@/utils/community/league-position';
-import { useSnackbar } from '@ecdlink/core';
+import {
+  getCommunityQuarterDescription,
+  getStringFromClassNameOrId,
+  useSnackbar,
+} from '@ecdlink/core';
 import { NoCommunityFound } from '../0-components/no-community-found';
+import {
+  COMMUNITY_WALKTHROUGH_STEPS,
+  communityWalkthroughSteps,
+} from '../walkthrough/steps';
+import { useWalkthrough } from '@/context/walkthroughContext';
+import { useWindowSize } from '@reach/window-size';
 
 export const LeagueTab: React.FC = () => {
   const [showAbove, setShowAbove] = useState<number>(1);
@@ -35,7 +44,11 @@ export const LeagueTab: React.FC = () => {
 
   const { showMessage } = useSnackbar();
 
+  const { height } = useWindowSize();
+
   const today = new Date();
+
+  const { walkthroughState } = useWalkthrough();
 
   const {
     isLoading: isLoadingLeague,
@@ -207,7 +220,7 @@ export const LeagueTab: React.FC = () => {
     }
   }, [appDispatch, currentClinic?.league?.id]);
 
-  if (isLoading) {
+  if (isLoading && !walkthroughState?.isTourActive) {
     return (
       <LoadingSpinner
         className="mt-6"
@@ -223,7 +236,10 @@ export const LeagueTab: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col p-4 pt-6">
+    <div
+      className="flex flex-col p-4 pt-6"
+      style={walkthroughState?.isTourActive ? { height } : {}}
+    >
       <Typography type="h2" text={`${league?.name ?? ''} scoreboard`} />
       <Typography
         type="h4"
@@ -247,6 +263,10 @@ export const LeagueTab: React.FC = () => {
           {/* Show top clinic if not already included */}
           {!!league && userClinicPosition - showAbove > 0 && (
             <PointsDetailsCard
+              id={getStringFromClassNameOrId(
+                communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.TWO]
+                  .target
+              )}
               pointsEarned={
                 isEndOfTheYear
                   ? league?.clinics[0].pointsTotalForYear
@@ -300,67 +320,75 @@ export const LeagueTab: React.FC = () => {
               }
             />
           )}
-          {/* Show main group around users clinic */}
-          {clinics
-            .slice(
-              Math.max(userClinicPosition - showAbove, 0),
-              userClinicPosition + showBelow + 1
-            )
-            .map((clinic) => {
-              const leagueRanking = isEndOfTheYear
-                ? clinic.leagueRankingForYear
-                : clinic.leagueRankingForQuarter;
+          <div
+            id={getStringFromClassNameOrId(
+              communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.TWO].target
+            )}
+          >
+            {/* Show main group around users clinic */}
+            {clinics
+              .slice(
+                Math.max(userClinicPosition - showAbove, 0),
+                walkthroughState?.isTourActive
+                  ? 2
+                  : userClinicPosition + showBelow + 1
+              )
+              .map((clinic) => {
+                const leagueRanking = isEndOfTheYear
+                  ? clinic.leagueRankingForYear
+                  : clinic.leagueRankingForQuarter;
 
-              return (
-                <div key={clinic.clinicId}>
-                  <PointsDetailsCard
-                    pointsEarned={
-                      isEndOfTheYear
-                        ? clinic.pointsTotalForYear
-                        : clinic.pointsTotalForQuarter
-                    }
-                    activityCount={leagueRanking}
-                    hideActivityCount={!isToShowRanking}
-                    title={clinic.clinicName}
-                    size="medium"
-                    className={
-                      clinic.clinicId === currentClinic?.id
-                        ? 'mb-3 mt-2'
-                        : 'mb-1'
-                    }
-                    textColour={
-                      clinic.clinicId === currentClinic?.id
-                        ? 'white'
-                        : 'textMid'
-                    }
-                    colour={
-                      clinic.clinicId === currentClinic?.id
-                        ? 'successMain'
-                        : leagueRanking <= 3 && isToShowRanking
-                        ? 'successBg'
-                        : 'uiBg'
-                    }
-                    badgeTextColour={
-                      clinic.clinicId === currentClinic?.id
-                        ? 'successMain'
-                        : 'white'
-                    }
-                    badgeImage={
-                      <Badge
-                        className="absolute z-0 h-full w-full"
-                        fill={
-                          clinic.clinicId === currentClinic?.id
-                            ? '#FFFFFF'
-                            : leagueRanking <= 3 && isToShowRanking
-                            ? 'var(--successMain)'
-                            : 'var(--primary)'
-                        }
-                      />
-                    }
-                  />
-                </div>
-              );
-            })}
+                return (
+                  <div key={clinic.clinicId}>
+                    <PointsDetailsCard
+                      pointsEarned={
+                        isEndOfTheYear
+                          ? clinic.pointsTotalForYear
+                          : clinic.pointsTotalForQuarter
+                      }
+                      activityCount={leagueRanking}
+                      hideActivityCount={!isToShowRanking}
+                      title={clinic.clinicName}
+                      size="medium"
+                      className={
+                        clinic.clinicId === currentClinic?.id
+                          ? 'mb-3 mt-2'
+                          : 'mb-1'
+                      }
+                      textColour={
+                        clinic.clinicId === currentClinic?.id
+                          ? 'white'
+                          : 'textMid'
+                      }
+                      colour={
+                        clinic.clinicId === currentClinic?.id
+                          ? 'successMain'
+                          : leagueRanking <= 3 && isToShowRanking
+                          ? 'successBg'
+                          : 'uiBg'
+                      }
+                      badgeTextColour={
+                        clinic.clinicId === currentClinic?.id
+                          ? 'successMain'
+                          : 'white'
+                      }
+                      badgeImage={
+                        <Badge
+                          className="absolute z-0 h-full w-full"
+                          fill={
+                            clinic.clinicId === currentClinic?.id
+                              ? '#FFFFFF'
+                              : leagueRanking <= 3 && isToShowRanking
+                              ? 'var(--successMain)'
+                              : 'var(--primary)'
+                          }
+                        />
+                      }
+                    />
+                  </div>
+                );
+              })}
+          </div>
           {/* Show select more button if we are not already at the bottom */}
           {!!league &&
             userClinicPosition + showBelow < league.clinics.length - 1 && (

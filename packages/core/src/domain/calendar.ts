@@ -4,6 +4,7 @@ export interface CalendarEventParticipantModel {
   participantUser: {
     firstName: string;
     surname: string;
+    type?: 'infant' | 'mother' | 'clinic' | 'teamLead' | 'healthCareWorker';
   };
 }
 

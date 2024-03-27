@@ -373,6 +373,7 @@ export function ViewUser(props: any) {
       idNumber: chwDataForm?.idNumber,
       phoneNumber: chwDataForm?.phoneNumber,
       email: adminDataForm?.email,
+      userName: chwDataForm?.idNumber,
     };
 
     await updateUser({
@@ -388,7 +389,6 @@ export function ViewUser(props: any) {
         if (userData?.phoneNumber) refetch();
 
         if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
-          console.log('refetchCHW');
           refetchCHW();
         }
 

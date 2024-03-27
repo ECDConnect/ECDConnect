@@ -22,6 +22,8 @@ import { useUser } from '../../hooks/useUser';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { PasswordInput } from '../../components/password-input/password-input';
+import { AdminTypes } from '../users/sub-pages/application-admins/applications-admins.types';
+import { SuperAdminProfile } from './components/superAdminProfile';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
@@ -66,6 +68,12 @@ export function Profile(props: any) {
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
+  const isAdministrator = userData?.userById?.roles?.find(
+    (item) => item?.name === AdminTypes.Administrator
+  );
+  const isSuperAdmin = userData?.userById?.roles?.find(
+    (item) => item?.name === AdminTypes.SuperAdmin
+  );
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
@@ -186,47 +194,58 @@ export function Profile(props: any) {
 
             <div className="flex h-full " style={{ minHeight: '30rem' }}>
               <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
-                <div
-                  className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6  "
-                  style={{ width: '50rem' }}
-                >
-                  <ProfileAvatar
-                    dataUrl={avatarFile ?? userData?.userById?.profileImageUrl}
-                    size={'header'}
-                    onPressed={displayProfilePicturePrompt}
-                    hasConsent={true}
-                  />
+                {!isSuperAdmin && (
+                  <div
+                    className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6  "
+                    style={{ width: '50rem' }}
+                  >
+                    <ProfileAvatar
+                      dataUrl={
+                        avatarFile ?? userData?.userById?.profileImageUrl
+                      }
+                      size={'header'}
+                      onPressed={displayProfilePicturePrompt}
+                      hasConsent={true}
+                    />
 
-                  <div className="flex w-full flex-col">
+                    <div className="flex w-full flex-col">
+                      <div>
+                        <FormField
+                          label={'First Name *'}
+                          nameProp={'firstName'}
+                          register={register}
+                          error={errors.firstName?.message}
+                        />
+                      </div>
+
+                      <div className="w-full pt-10">
+                        <FormField
+                          label={'Surname *'}
+                          nameProp={'surname'}
+                          register={register}
+                          error={errors.surname?.message}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="flex w-full flex-col pt-6">
+                  {isSuperAdmin && (
+                    <div>
+                      <SuperAdminProfile user={user} />
+                    </div>
+                  )}
+                  {!isAdministrator && !isSuperAdmin && (
                     <div>
                       <FormField
-                        label={'First Name *'}
-                        nameProp={'firstName'}
+                        label={'Email address *'}
+                        nameProp={'email'}
                         register={register}
-                        error={errors.firstName?.message}
+                        disabled
+                        error={errors.email?.message}
                       />
                     </div>
-
-                    <div className="w-full pt-10">
-                      <FormField
-                        label={'Surname *'}
-                        nameProp={'surname'}
-                        register={register}
-                        error={errors.surname?.message}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex w-full flex-col pt-6">
-                  <div>
-                    <FormField
-                      label={'Email address *'}
-                      nameProp={'email'}
-                      register={register}
-                      disabled
-                      error={errors.email?.message}
-                    />
-                  </div>
+                  )}
 
                   <div className="space-y-2 pt-6 pb-4">
                     <PasswordInput

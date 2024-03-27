@@ -39,6 +39,9 @@ const notificationsState = createSlice({
         message,
       }));
       state.notifications.push(...newNotifications);
+      state.notificationReferences.push(
+        ...newNotifications.map((n) => n.message.reference)
+      );
     },
     markAllNotificationsRead: (state) => {
       const notificationsCopy = [...state.notifications].map((x) => ({

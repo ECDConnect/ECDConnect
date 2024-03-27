@@ -1,5 +1,5 @@
 import { useHistory } from 'react-router';
-import { MessageRoutes } from '../../app.routes';
+import { MessageRoutes } from '../../routes/app.routes';
 import { useEffect } from 'react';
 
 export default function Messaging() {

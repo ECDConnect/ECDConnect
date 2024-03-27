@@ -12,6 +12,7 @@ export interface TabProps extends ComponentBaseProps {
 }
 
 export function Tab({
+  id,
   title,
   tabIndex,
   activeIndex,
@@ -43,6 +44,7 @@ export function Tab({
 
   return (
     <div
+      id={id}
       data-tab-index={tabIndex}
       key={`${title}-tab-` + tabIndex}
       className={styles.getTabClass(
@@ -51,7 +53,7 @@ export function Tab({
         isOnlyTab
       )}
       onClick={() => selectTabReceived(tabIndex)}
-      style={{ minWidth: 120 }}
+      style={{ width: '-webkit-fill-available' }}
     >
       <Typography
         type={isOnlyTab ? 'h2' : 'h4'}

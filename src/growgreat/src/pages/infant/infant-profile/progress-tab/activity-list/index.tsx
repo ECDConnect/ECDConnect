@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { useHistory, useParams, useLocation } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
@@ -87,18 +87,11 @@ export const INFANT_PROFILE_TABS = {
 
 export const currentActivityKey = 'selectedOption';
 
-export interface ActivityListRouteState {
-  displayHelp?: boolean;
-}
-
 export const ActivityList: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
-  const location = useLocation<ActivityListRouteState>();
-  const [displayHelp, setDisplayHelp] = useState(
-    location.state?.displayHelp || false
-  );
+  const [displayHelp, setDisplayHelp] = useState(false);
   const relations = useSelector(staticDataSelectors.getRelations);
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
   const previousSelectedOption = usePrevious(selectedOption) as
@@ -390,6 +383,16 @@ export const ActivityList: React.FC = () => {
     isKangarooMotherCare,
   ].some((item) => !!item);
 
+  const isDisplayCareForMom = [
+    isShowClinicCheckUps,
+    isDangerSignsFollowUpForMom,
+    isChildBefore49Days,
+    isSelfCareAndSupport,
+    isMaternalDistress,
+    isMaternalDistressFollowUp,
+    isMaternalDistressScreening,
+  ].some((item) => !!item);
+
   const is6Week = ageDays >= 49 && ageDays <= 56;
   const is10Week = ageDays >= 57 && ageMonths <= 3;
   const is14Week = ageMonths === 4;
@@ -487,6 +490,7 @@ export const ActivityList: React.FC = () => {
         (item.id === activitiesTypes.careForMom &&
           infant?.caregiver?.relation?.description !==
             motherType?.description) ||
+        (item.id === activitiesTypes.careForMom && !isDisplayCareForMom) ||
         (item.id === activitiesTypes.pillar3 && !isDisplayPillar3) ||
         (item.id === activitiesTypes.pillar5 && !isDisplayPillar5)
       )
@@ -502,6 +506,7 @@ export const ActivityList: React.FC = () => {
     isDisplayPillar2,
     isDisplayCareForBaby,
     infant?.caregiver?.relation?.description,
+    isDisplayCareForMom,
     isDisplayPillar3,
     isDisplayPillar5,
   ]);
@@ -730,15 +735,6 @@ export const ActivityList: React.FC = () => {
                 color="textMid"
                 className="mb-4"
               />
-              <div className="flex items-center justify-center gap-2">
-                {renderIcon('GiftIcon', 'text-primary w-4 h-4')}
-                <Typography
-                  type="body"
-                  align="center"
-                  text={`You earned X points!`}
-                  color="textDark"
-                />
-              </div>
               <Button
                 className="mt-20 w-full"
                 color="primary"

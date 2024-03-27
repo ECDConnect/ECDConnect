@@ -7,6 +7,7 @@ import { IncompletePractitionerInformationNotificationValidator } from './valida
 import { UserDto } from '@ecdlink/core';
 import { UserLastLoginNotificationValidator } from './validators/user/userLastLoginNotificationValidator';
 import { BackendNotificationsValidator } from './validators/backend-notifications/backendNotificationsValidador';
+import { VisitsNotCompletedNotificationValidator } from './validators/visits/visitsNotCompletedNotificationValidator';
 
 export class NotificationService {
   interval: number;
@@ -72,6 +73,7 @@ export class NotificationService {
     this.validators = [
       new IncompletePractitionerInformationNotificationValidator(store),
       new UserLastLoginNotificationValidator(store, currentDate),
+      new VisitsNotCompletedNotificationValidator(store),
     ];
   };
 }

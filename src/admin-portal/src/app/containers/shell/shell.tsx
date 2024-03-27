@@ -16,13 +16,14 @@ import {
 } from '@heroicons/react/outline';
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
-import { AuthRoutes } from '../../app.routes';
+import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
+import { TenantContext } from '../../utils/constants';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -92,8 +93,8 @@ export default function Shell() {
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
       if (
-        user.roles.some((x) => x.name === 'Administrator') ||
-        user.roles.some((x) => x.name === 'Super Admin')
+        user?.roles?.some((x) => x.name === 'Administrator') ||
+        user?.roles?.some((x) => x.name === 'Super Admin')
       ) {
         const sorted = navigationList
           .slice()
@@ -116,7 +117,7 @@ export default function Shell() {
     if (
       theme &&
       theme.images &&
-      data?.tenantContext.applicationName !== 'GrowGreat'
+      data?.tenantContext.applicationName !== TenantContext.GrowGreat
     ) {
       return theme.images.logoUrl;
     } else {
@@ -231,7 +232,7 @@ export default function Shell() {
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
                 {navigation?.map((item) => (
-                  <div>
+                  <div key={`${item} + ${Math.random()}`}>
                     <MenuItem
                       key={`${item.name}-${new Date().getTime()}`}
                       item={item}

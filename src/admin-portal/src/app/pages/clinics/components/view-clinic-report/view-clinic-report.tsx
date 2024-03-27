@@ -1,9 +1,9 @@
-import { Button, ScoreCard, StatusChip, Typography } from '@ecdlink/ui';
+import { Button, Typography } from '@ecdlink/ui';
 import { useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
 import { usePanel } from '@ecdlink/core';
-import { useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetClinicPointsData,
   GetClinicVisitReportData,
@@ -13,17 +13,20 @@ import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
+import DatePicker from 'react-datepicker';
+import { useEffect, useState } from 'react';
+import { sub } from 'date-fns';
 
 export interface PointsReportSummaryDto {
   childrenRankingPerc: number;
   childrenTargetPerc: number;
   childrenTargetPercColor: string;
-  childrenTopTeamPerc: number;
+  childrenTopLeagueTeamPerc: number;
   leagueRanking: number;
   momsRankingPerc: number;
   momsTargetPerc: number;
   momsTargetPercColor: string;
-  momsTopTeamPerc: number;
+  momsTopLeagueTeamPerc: number;
   pointsTotal: number;
   totalHCWs: number;
 }
@@ -32,15 +35,25 @@ export const ViewClinicReport = () => {
   const location = useLocation<ClinicsRouteState>();
   const panel = usePanel();
   const clinic = location?.state?.clinic;
-
-  const { data: clinicReportData } = useQuery(GetClinicVisitReportData, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      clinicId: clinic?.id,
-      startDate: '2022-11-30T22:56:30.085Z',
-      endDate: '2023-11-30T22:56:30.085Z',
-    },
+  const today = new Date();
+  const initialBefore30Days = sub(today, {
+    days: 30,
   });
+
+  const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
+  const [startDate, endDate] = dateRange;
+
+  const [fetchVisitInformation, { data: clinicReportData }] = useLazyQuery(
+    GetClinicVisitReportData,
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        clinicId: clinic?.id,
+        startDate: startDate,
+        endDate: endDate,
+      },
+    }
+  );
 
   const { data: clinicPointsData } = useQuery(GetClinicPointsData, {
     fetchPolicy: 'cache-and-network',
@@ -50,6 +63,19 @@ export const ViewClinicReport = () => {
   });
 
   const dataFromClinicPointsData = clinicPointsData?.clinicPointsData;
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      fetchVisitInformation({
+        fetchPolicy: 'cache-and-network',
+        variables: {
+          clinicId: clinic?.id,
+          startDate: startDate,
+          endDate: endDate,
+        },
+      });
+    }
+  }, [clinic?.id, endDate, fetchVisitInformation, startDate]);
 
   const displayEditPanel = () => {
     panel({
@@ -63,10 +89,6 @@ export const ViewClinicReport = () => {
           clinic={clinic}
           closeDialog={(clinicCreated: boolean) => {
             onSubmit();
-
-            // if (clinicCreated) {
-            //   refetch();
-            // }
           }}
         />
       ),
@@ -237,7 +259,10 @@ export const ViewClinicReport = () => {
             targetPercColor={
               clinicPointsData?.clinicPointsData?.momsTargetPercColor
             }
-            topTeamPerc={clinicPointsData?.clinicPointsData?.momsTopTeamPerc}
+            topTeamPerc={
+              clinicPointsData?.clinicPointsData?.momsTopLeagueTeamPerc
+            }
+            targetRanking={clinicPointsData?.clinicPointsData?.momsRankingPerc}
             title={'Pregnant moms'}
             icon={Pregnant}
           />
@@ -248,7 +273,10 @@ export const ViewClinicReport = () => {
               clinicPointsData?.clinicPointsData?.childrenTargetPercColor
             }
             topTeamPerc={
-              clinicPointsData?.clinicPointsData?.childrenTopTeamPerc
+              clinicPointsData?.clinicPointsData?.childrenTopLeagueTeamPerc
+            }
+            targetRanking={
+              clinicPointsData?.clinicPointsData?.childrenRankingPerc
             }
             title={'Children'}
             icon={Infant}
@@ -256,14 +284,27 @@ export const ViewClinicReport = () => {
         </div>
       </div>
       <div className="mt-8">
-        <div>
+        <div className="flex w-full items-center justify-around">
           <Typography
-            type="h4"
+            type="h3"
             weight="bold"
             color="textDark"
             text={`Visit information`}
             align="left"
+            className="w-full"
           />
+          <div className="w-56">
+            <DatePicker
+              selectsRange={true}
+              startDate={startDate}
+              endDate={endDate}
+              maxDate={today}
+              onChange={(update) => {
+                setDateRange(update);
+              }}
+              className="bg-secondary w-56 rounded-xl text-white"
+            />
+          </div>
         </div>
         <div>
           <ClientRegistration

@@ -12,3 +12,20 @@ export interface TeamLeadDto {
   user?: UserDto;
   clinic?: ClinicDto;
 }
+
+export interface TeamLeadSummaryDto {
+  clinicNames?: string;
+  firstName?: string;
+  surname?: string;
+  idNumber?: string;
+  lastSeen?: string;
+  location?: string;
+  phoneNumber?: string;
+  totalChildren?: number;
+  totalClinics?: number;
+  totalHealthCareWorkers?: number;
+  totalInFieldVisitsCompleted?: number;
+  totalMeetingReportsSubmitted?: number;
+  totalPregnantMoms?: number;
+  whatsAppNumber?: string;
+}

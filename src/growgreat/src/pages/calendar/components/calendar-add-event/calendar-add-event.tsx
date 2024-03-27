@@ -40,14 +40,21 @@ import { calendarConvert } from '@/store/calendar/calendar.util';
 import CalendarSearchParticipant from '../calendar-search-participant/calendar-search-participant';
 import * as styles from './calendar-add-event.styles';
 import { userSelectors } from '@/store/user';
-import { ListDataItem } from '../calendar.types';
+import { ListDataItem, ParticipantType } from '../calendar.types';
 import {
-  mapPractitionerToListDataItem,
+  mapClinicMemberToListDataItemList,
+  mapIdsToCalendarEventParticipants,
+  mapInfantToListDataItem,
+  mapMotherToListDataItem,
+  mapTeamLeadToListDataItem,
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CalendarActions } from '@/store/calendar/calendar.actions';
+import { motherSelectors } from '@/store/mother';
+import { infantSelectors } from '@/store/infant';
+import { communitySelectors } from '@/store/community';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
@@ -63,7 +70,9 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     useState<boolean>(false);
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  //const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const mothers = useSelector(motherSelectors.getMothers);
+  const infants = useSelector(infantSelectors.getInfants);
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
   const { isLoading, wasLoading } = useThunkFetchCall(
     'calendar',
@@ -80,26 +89,18 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     }
   }, [isLoading, isNewEvent, model, onUpdated, wasLoading]);
 
-  const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
-    eventProps?.participantUserIds?.map((pid) => {
-      // const practitioner = practitioners?.find((x) => x.userId === pid);
-      // return {
-      //   id: newGuid(),
-      //   participantUserId: pid,
-      //   participantUser: {
-      //     firstName: practitioner?.user?.firstName || '',
-      //     surname: practitioner?.user?.surname || '',
-      //   },
-      // };
-      return {
-        id: newGuid(),
-        participantUserId: pid,
-        participantUser: {
-          firstName: '',
-          surname: '',
-        },
-      };
-    });
+  const matchEventPropParticipants = (
+    participantUserIds: string[] | undefined
+  ): CalendarEventParticipantModel[] | undefined => {
+    if (participantUserIds === undefined || participantUserIds === null)
+      return undefined;
+    return mapIdsToCalendarEventParticipants(
+      participantUserIds,
+      infants,
+      mothers,
+      clinicDetails
+    );
+  };
 
   const event: CalendarEventModel = useSelector(
     calendarSelectors.getCalendarEventById(eventProps?.id || '')
@@ -111,7 +112,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     eventType: eventProps?.eventType || '',
     name: eventProps?.name || '',
     start: eventProps?.start || '',
-    participants: eventPropParticipants || [],
+    participants:
+      matchEventPropParticipants(eventProps?.participantUserIds) || [],
     action: eventProps?.action || null,
     userId: currentUser.id || '',
     user: {
@@ -129,8 +131,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     useState<boolean>(false);
   const [hasChangesOnEvent, setHasChangesOnEvent] = useState<boolean>(false);
   const currentDate = new Date();
-  const startDate = new Date(event.start);
-  const endDate = new Date(event.end);
+  const startDate = !event.start ? undefined : new Date(event.start);
+  const endDate = !event.end ? undefined : new Date(event.end);
   const minDate = !!eventProps?.minDate
     ? new Date(eventProps.minDate)
     : new Date(
@@ -143,28 +145,30 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     : undefined;
   const defaultValues: CalendarAddEventFormModel = {
     name: event.name || '',
-    start: event.allDay
-      ? new Date(
-          startDate.getFullYear(),
-          startDate.getMonth(),
-          startDate.getDate(),
-          12,
-          0,
-          0,
-          0
-        )
-      : startDate,
-    end: event.allDay
-      ? new Date(
-          endDate.getFullYear(),
-          endDate.getMonth(),
-          endDate.getDate(),
-          12,
-          0,
-          0,
-          0
-        )
-      : endDate,
+    start:
+      event.allDay && !!startDate
+        ? new Date(
+            startDate.getFullYear(),
+            startDate.getMonth(),
+            startDate.getDate(),
+            12,
+            0,
+            0,
+            0
+          )
+        : startDate,
+    end:
+      event.allDay && !!endDate
+        ? new Date(
+            endDate.getFullYear(),
+            endDate.getMonth(),
+            endDate.getDate(),
+            12,
+            0,
+            0,
+            0
+          )
+        : endDate,
     allDay: event.allDay,
     description: event.description || '',
     eventType: !event.eventType ? undefined : event.eventType,
@@ -172,7 +176,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       userId: p.participantUserId,
       firstName: p.participantUser.firstName,
       surname: p.participantUser.surname,
-      isClub: false,
+      type: p.participantUser.type || 'mother',
     })),
   };
   const {
@@ -232,13 +236,13 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         allDay: formValues.allDay,
         description: formValues.description,
         end: formValues.allDay
-          ? new Date(formValues.end.setHours(12, 0, 0, 0)).toISOString()
-          : formValues.end.toISOString(),
+          ? new Date(formValues.end!.setHours(12, 0, 0, 0)).toISOString()
+          : formValues.end!.toISOString(),
         eventType: formValues.eventType || '',
         name: formValues.name,
         start: formValues.allDay
-          ? new Date(formValues.start.setHours(12, 0, 0, 0)).toISOString()
-          : formValues.start.toISOString(),
+          ? new Date(formValues.start!.setHours(12, 0, 0, 0)).toISOString()
+          : formValues.start!.toISOString(),
         participants: participants,
         action: event.action,
         userId: currentUser.id || '',
@@ -277,36 +281,35 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const onSearchParticipantDone = useCallback(
     async (participantUsers: CalendarAddEventParticipantFormModel[]) => {
-      /*
-      const clubIds: string[] = participantUsers
-        .filter((x) => x.isClub)
-        .map((x) => x.userId);
-
-      if (clubIds.length > 0) {
-        const clubMembers = await appDispatch(
-          clubThunkActions.getClubsMembers({ clubIds })
-        ).unwrap();
-        if (!!clubMembers && clubMembers.length > 0) {
-          const clubUsers = clubMembers
-            .filter(
-              (x) =>
-                !!x.practitioner &&
-                !!x.practitioner.user &&
-                x.practitioner.user.isActive
-            )
-            .map((x) => {
-              return {
-                userId: x.practitioner?.user?.id || '',
-                firstName: x.practitioner?.user?.firstName || '',
-                surname: x.practitioner?.user?.surname || '',
-                isClub: false,
-              };
-            });
-          if (clubUsers.length > 0) participantUsers.push(...clubUsers);
-        }
+      const clinicSelected = participantUsers.find(
+        (x) => x.type === 'clinic' && x.userId === clinicDetails?.id
+      );
+      if (!!clinicSelected && !!clinicDetails) {
+        const members: CalendarAddEventParticipantFormModel[] = [];
+        members.push(
+          ...clinicDetails.teamLeads.map((tl) => ({
+            userId: tl.id,
+            firstName: tl.firstName,
+            surname: tl.surname,
+            type: 'teamLead' as ParticipantType,
+          }))
+        );
+        members.push(
+          ...clinicDetails.clinicMembers.map((m) => ({
+            userId: m.healthCareWorkerId,
+            firstName: m.firstName,
+            surname: m.surname,
+            type: 'healthCareWorker' as ParticipantType,
+          }))
+        );
+        participantUsers.push(
+          ...members.filter(
+            (m) => !participantUsers.find((p) => p.userId === m.userId)
+          )
+        );
       }
-      */
-      participantUsers = participantUsers.filter((p) => !p.isClub);
+
+      participantUsers = participantUsers.filter((p) => p.type !== 'clinic');
 
       setSearchParticipantsVisible(false);
       setEventFormValue('participants', participantUsers);
@@ -338,23 +341,48 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       participantUsers: CalendarAddEventParticipantFormModel[]
     ): ListDataItem[] => {
       const list: ListDataItem[] = [];
-      // if (!!practitioners) {
-      //   list.push(
-      //     ...practitioners
-      //       .filter(
-      //         (p) =>
-      //           participantUsers.findIndex((u) => u.userId === p.userId) >= 0
-      //       )
-      //       .map((p) => mapPractitionerToListDataItem(p))
-      //   );
-      //   list.forEach((x) => (x.rightIcon = 'XIcon'));
-      //   sortListDataItems(list);
-      // }
+      if (!!mothers && !!infants && !!clinicDetails) {
+        list.push(
+          ...infants
+            .filter(
+              (i) => participantUsers.findIndex((u) => u.userId === i.id) >= 0
+            )
+            .map((i) => mapInfantToListDataItem(i))
+        );
+        list.push(
+          ...mothers
+            .filter(
+              (m) =>
+                participantUsers.findIndex((u) => u.userId === m.user?.id) >= 0
+            )
+            .map((p) => mapMotherToListDataItem(p))
+        );
+        list.push(
+          ...clinicDetails.teamLeads
+            .filter(
+              (m) =>
+                participantUsers.findIndex((u) => u.userId === m.user?.id) >= 0
+            )
+            .map((p) => mapTeamLeadToListDataItem(p))
+        );
+        list.push(
+          ...clinicDetails.clinicMembers
+            .filter(
+              (m) =>
+                participantUsers.findIndex(
+                  (u) => u.userId === m.healthCareWorkerId
+                ) >= 0
+            )
+            .map((p) => mapClinicMemberToListDataItemList(p))
+        );
+        list.forEach((x) => (x.rightIcon = 'XIcon'));
+        sortListDataItems(list);
+      }
       const cu = mapUserToListDataItem(currentUser);
       cu.noClick = true;
       return [cu, ...list];
     },
-    [/*practitioners,*/ currentUser]
+    [infants, mothers, clinicDetails, currentUser]
   );
 
   const formValue_end = getEventFormValues().end;
@@ -362,21 +390,29 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const onChangeStartDate = useCallback(
     (start: Date) => {
-      const duration = formValue_end.getTime() - formValue_start.getTime();
-      const end = addMilliseconds(start, duration);
-      setEventFormValue('start', start);
-      setEventFormValue('end', end);
+      if (!!formValue_end && !!formValue_start) {
+        const duration = formValue_end.getTime() - formValue_start.getTime();
+        const end = addMilliseconds(start, duration);
+        setEventFormValue('start', start);
+        setEventFormValue('end', end);
+      } else {
+        setEventFormValue('start', start);
+      }
     },
     [formValue_end, formValue_start, setEventFormValue]
   );
 
   const onChangeEndDate = useCallback(
     (end: Date) => {
-      const duration = formValue_end.getTime() - formValue_start.getTime();
-      setEventFormValue('end', end);
-      if (formValue_start.getTime() > end.getTime()) {
-        const start = subMilliseconds(end, duration);
-        setEventFormValue('start', start);
+      if (!!formValue_end && !!formValue_start) {
+        const duration = formValue_end.getTime() - formValue_start.getTime();
+        setEventFormValue('end', end);
+        if (formValue_start.getTime() > end.getTime()) {
+          const start = subMilliseconds(end, duration);
+          setEventFormValue('start', start);
+        }
+      } else {
+        setEventFormValue('end', end);
       }
     },
     [formValue_end, formValue_start, setEventFormValue]
@@ -389,13 +425,13 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         backgroundColour={'white'}
         renderBorder={true}
         title={isNewEvent ? 'Add event' : 'Update event'}
-        subTitle={format(startDate, 'EEEE, d LLLL yyyy')}
+        subTitle={!!startDate ? format(startDate, 'EEEE, d LLLL yyyy') : ''}
         color={'primary'}
         onBack={() => exitUpdateEvent()}
         onClose={() => exitUpdateEvent()}
         displayOffline={!isOnline}
       >
-        <div className={'px-4 pt-4'}>
+        <div className={'mb-24 px-4 pt-4'}>
           <FormInput<CalendarAddEventFormModel>
             className="mb-4"
             label="Name your event"

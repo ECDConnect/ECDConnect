@@ -46,6 +46,7 @@ export default function UiTable({
   onBulkActionCallback,
   languages,
   noBulkSelection,
+  refetchData,
 }: UiTableProps) {
   const [inviteRows, setInviteRows] = useState<boolean>(false);
   const { setNotification } = useNotifications();
@@ -63,6 +64,14 @@ export default function UiTable({
 
   const [searchRows, setSearchRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const isAllInactive = selectedUsers.every((obj) => obj?.isActive === false);
+  const registeredOrInactiveUsers = selectedUsers?.filter(
+    (item) => item?.isRegistered === true || item?.isActive === false
+  );
+  const disableBulkButtons =
+    selectedUsers?.length <= registeredOrInactiveUsers?.length;
+
   const searchKeys = useRef(columns.map(({ field }) => field));
   const fuseOptions = {
     keys: searchKeys.current,
@@ -70,8 +79,8 @@ export default function UiTable({
     threshold: 0,
     distance: 0,
   };
-  const fuse = useRef(new Fuse(rows, fuseOptions));
 
+  const fuse = useRef(new Fuse(rows, fuseOptions));
   const dialog = useDialog();
 
   const [sendInvitations, { loading: invitationsLoading }] = useMutation(
@@ -115,12 +124,16 @@ export default function UiTable({
             title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
             variant: NOTIFICATION.SUCCESS,
           });
-          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
-            setNotification({
-              title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
-              variant: NOTIFICATION.ERROR,
-            });
-          }
+          setSelectedRows([]);
+          setSelectedUsers([]);
+        }
+        if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedRows([]);
+          setSelectedUsers([]);
         }
       })
       .catch((err) => {
@@ -138,26 +151,96 @@ export default function UiTable({
       },
     })
       .then((res) => {
-        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+        console.log({ res });
+        if (res.data?.bulkDeleteUser?.success.length > 0) {
           setNotification({
-            title: ` Successfully Deactivated ${res.data?.sendBulkInviteToPortal?.success.length} Users!`,
+            title: ` Successfully Deactivated ${res.data?.bulkDeleteUser?.success.length} Users!`,
             variant: NOTIFICATION.SUCCESS,
           });
-          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
-            setNotification({
-              title: ` Failed to Deactivate ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
-              variant: NOTIFICATION.ERROR,
-            });
-          }
+          refetchData();
+          setSelectedRows([]);
+          setSelectedUsers([]);
+        }
+        if (res.data?.bulkDeleteUser?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Deactivate ${res.data?.bulkDeleteUser?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedRows([]);
+          setSelectedUsers([]);
         }
       })
       .catch((err) => {
         setNotification({
-          title: 'Failed to send invitations',
+          title: 'Failed to deactivate',
           variant: NOTIFICATION.ERROR,
         });
       });
-  }, [deactivateUsers, selectedRows, setNotification]);
+  }, [deactivateUsers, selectedRows, setNotification, refetchData]);
+
+  const handleBulkDelete = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <AlertModal
+          title={`Deactivate $selectedRows?.length - registeredOrInactiveUsers?.length} CHWs?`}
+          message={`Are you sure you want to deactivate these CHWs? CHWs will lose their access to CHW Connect immediately. Make sure you have communicated this to CHWs before deactivating them.`}
+          btnText={['Yes, deactivate CHWs', 'No, Cancel']}
+          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          alertMessage={`Note: ${registeredOrInactiveUsers?.length} CHWs selected have already been deactivated.`}
+          alertType="error"
+          onCancel={() => {
+            onCancel();
+            setSelectedRows([]);
+            setSelectedUsers([]);
+          }}
+          onSubmit={() => {
+            deactivateUser();
+            onSubmit();
+          }}
+        />
+      ),
+    });
+  }, [
+    deactivateUser,
+    dialog,
+    isAllInactive,
+    registeredOrInactiveUsers?.length,
+    selectedRows?.length,
+  ]);
+
+  const handleBulkInvitation = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <AlertModal
+          title={`Resend invitation to ${
+            selectedRows?.length - registeredOrInactiveUsers?.length
+          } CHWs?`}
+          message={`Are you sure you want to send the invitation to the 4 CHWs selected?`}
+          btnText={['Yes, resend', 'No, Cancel']}
+          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          alertMessage={`Note: ${registeredOrInactiveUsers?.length} selected CHWs are already registered or have been deactivated so you cannot resend these invitations.`}
+          alertType="error"
+          onCancel={() => {
+            onCancel();
+            setSelectedRows([]);
+            setSelectedUsers([]);
+          }}
+          onSubmit={() => {
+            inviteUsers();
+            onSubmit();
+          }}
+        />
+      ),
+    });
+  }, [
+    dialog,
+    selectedRows?.length,
+    isAllInactive,
+    registeredOrInactiveUsers?.length,
+    inviteUsers,
+  ]);
 
   const deleteCoachingCircleTopics = useCallback(() => {
     deleteCoachingCircleTopicsMutation({
@@ -236,27 +319,37 @@ export default function UiTable({
     return [...columnsWithSelect, ...columns];
   };
 
-  const handleRowSelect = (
-    event: ChangeEvent<HTMLInputElement>,
-    row: { id: any }
-  ) => {
-    const selectedRowId = row.id;
-    const isChecked = event.target.checked;
+  const handleRowSelect = useCallback(
+    (event: ChangeEvent<HTMLInputElement>, row: { id: any }) => {
+      const selectedRowId = row.id;
+      const isChecked = event.target.checked;
 
-    if (selectedRows.length === 0) {
-      setInviteRows(!inviteRows);
-    }
-
-    setSelectedRows((prevSelectedRows) => {
-      if (isChecked) {
-        return [...prevSelectedRows, selectedRowId];
-      } else {
-        return prevSelectedRows.filter(
-          (selectedRow) => selectedRow !== selectedRowId
-        );
+      if (selectedRows.length === 0) {
+        setInviteRows(!inviteRows);
       }
-    });
-  };
+
+      setSelectedRows((prevSelectedRows) => {
+        if (isChecked) {
+          return [...prevSelectedRows, selectedRowId];
+        } else {
+          return prevSelectedRows.filter(
+            (selectedRow) => selectedRow !== selectedRowId
+          );
+        }
+      });
+
+      setSelectedUsers((prevSelectedRows) => {
+        if (isChecked) {
+          return [...prevSelectedRows, row];
+        } else {
+          return prevSelectedRows.filter(
+            (selectedRow) => selectedRow?.id !== selectedRowId
+          );
+        }
+      });
+    },
+    [inviteRows, selectedRows.length]
+  );
 
   const makeRows = () => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
@@ -511,9 +604,9 @@ export default function UiTable({
           className="mr-4 rounded-xl px-6 py-0"
           type="filled"
           isLoading={invitationsLoading}
-          disabled={invitationsLoading}
+          disabled={invitationsLoading || disableBulkButtons || isAllInactive}
           color="secondary"
-          onClick={inviteUsers}
+          onClick={handleBulkInvitation}
         >
           <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
           <Typography type="help" color="white" text="Resend Invitations" />
@@ -523,13 +616,11 @@ export default function UiTable({
           className="rounded-xl px-6 py-0"
           type="outlined"
           isLoading={deactivating}
-          disabled={deactivating}
+          disabled={deactivating || disableBulkButtons || isAllInactive}
           color="tertiary"
-          onClick={deactivateUser}
+          onClick={handleBulkDelete}
         >
-          <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-            {' '}
-          </TrashIcon>
+          <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
             color="tertiary"
@@ -540,12 +631,14 @@ export default function UiTable({
     );
   }, [
     component,
-    deactivateUser,
-    deactivating,
-    deleteDialog,
-    deletingCoachingCircleTopics,
     invitationsLoading,
-    inviteUsers,
+    disableBulkButtons,
+    isAllInactive,
+    handleBulkInvitation,
+    deactivating,
+    handleBulkDelete,
+    deletingCoachingCircleTopics,
+    deleteDialog,
   ]);
 
   if (isLoading) {

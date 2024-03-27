@@ -6,6 +6,7 @@ import {
   Dropdown,
   SearchDropDown,
   SearchDropDownOption,
+  Typography,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -51,7 +52,7 @@ export default function ApplicationUsers() {
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
 
   const dateDropdownValue = useMemo(
     () =>
@@ -106,7 +107,7 @@ export default function ApplicationUsers() {
     };
   };
 
-  const [getAllUsers, { data }] = useLazyQuery(UserList, {
+  const [getAllUsers, { data, loading }] = useLazyQuery(UserList, {
     variables: getVariables(searchValue, sortDescending, selectedPage, 100),
     fetchPolicy: 'network-only',
   });
@@ -215,6 +216,23 @@ export default function ApplicationUsers() {
     }
   }, [endDate]);
 
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () => statusFilter?.length + hasDateFilter,
+    [statusFilter?.length, hasDateFilter]
+  );
+
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
+
   if (tableData) {
     return (
       <div>
@@ -304,18 +322,37 @@ export default function ApplicationUsers() {
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    className={`${
+                      numberOfFilters
+                        ? ' bg-secondary'
+                        : 'border-secondary border-2 bg-white'
+                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      numberOfFilters ? 'text-white' : 'text-textMid'
+                    } hover:bg-gray-300 focus:ring-2`}
                     type="button"
                   >
-                    <div className="flex gap-1">
-                      Filter
+                    <div className="flex items-center gap-1">
+                      <Typography
+                        className="truncate"
+                        type="help"
+                        color={numberOfFilters ? 'white' : 'textLight'}
+                        text={renderFilterButtonText}
+                      />
                       {!showFilter ? (
                         <span>
-                          <ChevronDownIcon className="h-6 w-6 text-white" />
+                          <ChevronDownIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       ) : (
                         <span>
-                          <ChevronUpIcon className="h-6 w-6 text-white" />
+                          <ChevronUpIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       )}
                     </div>
@@ -351,6 +388,8 @@ export default function ApplicationUsers() {
                   }
                   component={'administrators'}
                   viewRow={viewSelectedRow}
+                  noBulkSelection
+                  isLoading={loading}
                 />
               </div>
             </div>

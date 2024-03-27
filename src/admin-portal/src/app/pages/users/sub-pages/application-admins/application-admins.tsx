@@ -1,7 +1,7 @@
-import { useLazyQuery, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
 import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
-import { SortEnumType, UserList } from '@ecdlink/graphql';
+import { UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import { useUser } from '../../../../hooks/useUser';
@@ -12,18 +12,25 @@ import {
   PlusIcon,
   SearchIcon,
 } from '@heroicons/react/solid';
-import { Dropdown, SearchDropDown, SearchDropDownOption } from '@ecdlink/ui';
+import {
+  Dropdown,
+  SearchDropDown,
+  SearchDropDownOption,
+  Typography,
+} from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import ReactDatePicker from 'react-datepicker';
 import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
 import UiTable from './components/ui-table';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import { GrowGreatRoles } from '../../../../utils/constants';
 
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   AdminTypes?.ContentManager,
   AdminTypes?.SuperAdmin,
   AdminTypes?.DesignManager,
+  AdminTypes?.Administrator,
 ].map((item) => ({
   id: item,
   label: item,
@@ -40,7 +47,10 @@ export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
 }));
 
 export default function ApplicationAdmins() {
-  const { hasPermission } = useUser();
+  const { hasPermission, user } = useUser();
+  const isSuperAdmin = user?.roles?.some(
+    (role: any) => role.name === AdminTypes.SuperAdmin
+  );
 
   const [searchValue, setSearchValue] = useState('');
   const [tableData, setTableData] = useState<any[]>([]);
@@ -48,12 +58,12 @@ export default function ApplicationAdmins() {
   const panel = usePanel();
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([]);
+  >([sortByClientStatusOptions[0]]);
   const [showFilter, setShowFilter] = useState(false);
 
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
-  const [types, setTypes] = useState<SearchDropDownOption<string>[]>();
+  const [types, setTypes] = useState<SearchDropDownOption<string>[]>([]);
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
@@ -118,6 +128,7 @@ export default function ApplicationAdmins() {
             displayColumnIdPassportEmail:
               obj?.email || obj?.userName || obj?.idNumber || '',
           };
+
           const { __typename: _, roles, ...rest } = newUserData;
           const modifiedRoles = roles.map(
             (role: { [x: string]: any; __typename: any }) => {
@@ -209,6 +220,9 @@ export default function ApplicationAdmins() {
   const history = useHistory();
 
   const viewSelectedRow = (selectedRow: any) => {
+    const role = selectedRow?.roles?.filter(
+      (item) => item?.name !== GrowGreatRoles.HealthCareWorker
+    );
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -216,7 +230,7 @@ export default function ApplicationAdmins() {
     history.push({
       pathname: '/users/view-user',
       state: {
-        component: 'administrators',
+        component: role?.[0]?.name,
         userId: selectedRow?.userId,
       },
     });
@@ -232,6 +246,23 @@ export default function ApplicationAdmins() {
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
+
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () => statusFilter?.length + types?.length + hasDateFilter,
+    [statusFilter?.length, types?.length, hasDateFilter]
+  );
+
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
 
   if (tableData) {
     return (
@@ -341,18 +372,37 @@ export default function ApplicationAdmins() {
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    className={`${
+                      numberOfFilters
+                        ? ' bg-secondary'
+                        : 'border-secondary border-2 bg-white'
+                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      numberOfFilters ? 'text-white' : 'text-textMid'
+                    } hover:bg-gray-300 focus:ring-2`}
                     type="button"
                   >
-                    <div className="flex gap-1">
-                      Filter
+                    <div className="flex items-center gap-1">
+                      <Typography
+                        className="truncate"
+                        type="help"
+                        color={numberOfFilters ? 'white' : 'textLight'}
+                        text={renderFilterButtonText}
+                      />
                       {!showFilter ? (
                         <span>
-                          <ChevronDownIcon className="h-6 w-6 text-white" />
+                          <ChevronDownIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       ) : (
                         <span>
-                          <ChevronUpIcon className="h-6 w-6 text-white" />
+                          <ChevronUpIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
                         </span>
                       )}
                     </div>
@@ -362,7 +412,7 @@ export default function ApplicationAdmins() {
             </div>
 
             <div className="mt-3 justify-end sm:mt-0 sm:ml-4">
-              {hasPermission(PermissionEnum.create_user) && (
+              {hasPermission(PermissionEnum.create_user) && isSuperAdmin && (
                 <button
                   onClick={displayUserPanel}
                   type="button"
@@ -396,7 +446,6 @@ export default function ApplicationAdmins() {
                       : tableData
                   }
                   sendRow={true}
-                  searchInput={searchValue}
                   options={{
                     per_page: selectedPageSize,
                     rows: tableData?.length,

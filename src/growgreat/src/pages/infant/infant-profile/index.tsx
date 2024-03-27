@@ -73,6 +73,8 @@ export const InfantProfile: React.FC = () => {
 
   const previousActiveTab = usePrevious(state?.activeTabIndex);
 
+  const showWelcomeDialog = state?.displayHelp || false;
+
   const { isOnline } = useOnlineStatus();
 
   const dialog = useDialog();
@@ -231,7 +233,9 @@ export const InfantProfile: React.FC = () => {
         !infant?.clickedProgressTab) ||
       (currentTab === INFANT_PROFILE_TABS.REFERRALS &&
         !infant?.clickedReferralsTab) ||
-      (currentTab === INFANT_PROFILE_TABS.CONTACT && !infant?.clickedContactTab)
+      (currentTab === INFANT_PROFILE_TABS.CONTACT &&
+        !infant?.clickedContactTab) ||
+      showWelcomeDialog
     ) {
       let tabName = '';
 
@@ -293,9 +297,13 @@ export const InfantProfile: React.FC = () => {
     }
   }, [
     dialog,
-    infant,
+    infant?.clickedContactTab,
+    infant?.clickedProgressTab,
+    infant?.clickedReferralsTab,
+    infant?.clickedVisitTab,
     onHelp,
     setIsWalkthroughSession,
+    showWelcomeDialog,
     state?.activeTabIndex,
     updateClickedTab,
   ]);
@@ -306,10 +314,15 @@ export const InfantProfile: React.FC = () => {
   }, [appDispatch, infantId]);
 
   useEffect(() => {
-    if (previousActiveTab !== state?.activeTabIndex) {
+    if (previousActiveTab !== state?.activeTabIndex || showWelcomeDialog) {
       handleWelcomeDialog();
     }
-  }, [handleWelcomeDialog, previousActiveTab, state?.activeTabIndex]);
+  }, [
+    handleWelcomeDialog,
+    previousActiveTab,
+    showWelcomeDialog,
+    state?.activeTabIndex,
+  ]);
 
   return (
     <>

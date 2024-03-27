@@ -1,10 +1,12 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.Helpers;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -20,8 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ECDLink.Abstractrions.Constants;
-using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -207,6 +207,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 auditFields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber, ValueAfter = input.IdNumber });
                 user.IdNumber = input.IdNumber;
+                auditFields.Add(new AuditChanges() { FieldName = "Username", ValueBefore = user.UserName, ValueAfter = input.UserName });
+                user.UserName = input.UserName;
             }
 
             if (input.IsSouthAfricanCitizen is not null 
@@ -327,13 +329,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // If userId is null, you're prob. an admin, admins are allowed to log into any tenant. Management.
             user.TenantId = user.TenantId == null ? null : tenantId;
-
-            if (!string.IsNullOrWhiteSpace(input.IdNumber)
-                && input.IdNumber != user.IdNumber)
-            {
-                auditFields.Add(new AuditChanges() { FieldName = "UserName", ValueBefore = user.UserName, ValueAfter = input.IdNumber });
-                user.UserName = input.IdNumber;
-            }
 
             // If the user changing the email, is different to the user being changed
             // Don't allow changing email address without verification first.

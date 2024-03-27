@@ -80,7 +80,9 @@ module.exports = {
         primaryGG: '#FAAB35',
         secondaryGG: '#8CDBDF',
         tertiaryGG: '#FF9D7B',
-        quaternaryGG: '#D8C498'
+        quaternaryGG: '#D8C498',
+        pointsCardBg: '#FEEED7',
+        pointsCardBarBg: '#FCCF8C'
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',

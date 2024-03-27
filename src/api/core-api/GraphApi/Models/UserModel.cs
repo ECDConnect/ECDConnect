@@ -15,6 +15,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             Id = user.Id.ToString();
             IsSouthAfricanCitizen = user.IsSouthAfricanCitizen;
             IdNumber = user.IdNumber;
+            UserName = user.UserName;
             VerifiedByHomeAffairs = user.VerifiedByHomeAffairs;
             DateOfBirth = user.DateOfBirth;
             GenderId = user.GenderId;
@@ -41,6 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Id { get; set; }
         public bool? IsSouthAfricanCitizen { get; set; }
         public string IdNumber { get; set; }
+        public string UserName { get; set; }
         public bool? VerifiedByHomeAffairs { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public Guid? GenderId { get; set; }

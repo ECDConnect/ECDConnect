@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   LoadingSpinner,
   MenuListDataItem,
@@ -16,7 +17,6 @@ import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { CommunityRouteState } from '../community.types';
 import { useWindowSize } from '@reach/window-size';
-import { getCommunityQuarterDescription } from '@/utils/community/community-quarters.utils';
 import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useSelector } from 'react-redux';
@@ -32,10 +32,19 @@ import {
 import { LeagueType } from '@/constants/Community';
 
 import { NoCommunityFound } from '../0-components/no-community-found';
-import { useSnackbar } from '@ecdlink/core';
-import { TeamTabState } from './types';
+import {
+  getCommunityQuarterDescription,
+  getStringFromClassNameOrId,
+  useSnackbar,
+} from '@ecdlink/core';
+import { TeamTabProps, TeamTabState } from './types';
+import {
+  COMMUNITY_WALKTHROUGH_STEPS,
+  communityWalkthroughSteps,
+} from '../walkthrough/steps';
+import { useWalkthrough } from '@/context/walkthroughContext';
 
-export const TeamTab: React.FC = () => {
+export const TeamTab: React.FC<TeamTabProps> = ({ forceReload }) => {
   const hcw = useSelector(healthCareWorkerSelectors.getHealthCareWorker);
   const clinicDetails = useSelector(communitySelectors.getClinicSelector);
   const league = useSelector(communitySelectors.getLeagueSelector);
@@ -49,6 +58,8 @@ export const TeamTab: React.FC = () => {
   const { showMessage } = useSnackbar();
 
   const { state } = useLocation<TeamTabState>();
+
+  const { walkthroughState, walkthroughDispatch } = useWalkthrough();
 
   const {
     isLoading: isLoadingClinic,
@@ -85,7 +96,7 @@ export const TeamTab: React.FC = () => {
       clinicDetails?.points?.leagueRanking ?? 0
     );
 
-  const headerHeight = 122;
+  const headerHeight = walkthroughState?.isTourActive ? 0 : 122;
 
   const today = new Date();
 
@@ -106,18 +117,18 @@ export const TeamTab: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!!hcw?.clinicId) {
+    if (!!hcw?.clinicId && !isLoadingClinic) {
       appDispatch(
         communityThunkActions.getClinicById({
           clinicId: hcw?.clinicId,
-          forceReload: state?.forceReload ?? true,
+          forceReload: state?.forceReload ?? forceReload ?? true,
         })
       );
     }
 
     // trigger only once
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [forceReload]);
 
   const leaders: UserAlertListDataItem[] =
     clinicDetails?.teamLeads?.map((leader) => ({
@@ -143,9 +154,14 @@ export const TeamTab: React.FC = () => {
       title: `in the league ${isTop25PercentInTheLeague ? '🥳' : ''}`,
       titleStyle: 'text-textDark',
       onActionClick: () => {
-        history.push(ROUTES.COMMUNITY.ROOT, {
-          activeTabIndex: 1,
-        } as CommunityRouteState);
+        walkthroughState?.isTourActive
+          ? walkthroughDispatch?.({
+              type: 'SET_STEP',
+              payload: COMMUNITY_WALKTHROUGH_STEPS.TWO,
+            })
+          : history.push(ROUTES.COMMUNITY.ROOT, {
+              activeTabIndex: 1,
+            } as CommunityRouteState);
       },
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
@@ -167,11 +183,14 @@ export const TeamTab: React.FC = () => {
       clinicDetails?.points?.leagueRanking,
       history,
       isTop25PercentInTheLeague,
-      leaguePointsColours,
+      leaguePointsColours.backgroundColour,
+      leaguePointsColours.mainColour,
+      walkthroughDispatch,
+      walkthroughState?.isTourActive,
     ]
   );
 
-  if (isLoading) {
+  if (isLoading && !walkthroughState?.isTourActive) {
     return (
       <LoadingSpinner
         className="mt-6"
@@ -221,11 +240,19 @@ export const TeamTab: React.FC = () => {
               text="League position & points"
             />
             <StackedList
+              id={getStringFromClassNameOrId(
+                communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.ONE]
+                  .target
+              )}
               isFullHeight={false}
               type={'MenuList' as StackedListType}
               listItems={[leagueCard]}
             />
             <ScoreCard
+              id={getStringFromClassNameOrId(
+                communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.THREE]
+                  .target
+              )}
               className="mt-2"
               mainText={String(clinicDetails?.points?.pointsTotal ?? 0)}
               hint="points"
@@ -247,17 +274,28 @@ export const TeamTab: React.FC = () => {
                 text: tierName,
               }}
               textColour="black"
-              onClick={() => history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)}
+              onClick={() =>
+                walkthroughState?.isTourActive
+                  ? walkthroughDispatch?.({
+                      type: 'SET_STEP',
+                      payload: COMMUNITY_WALKTHROUGH_STEPS.FOUR,
+                    })
+                  : history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)
+              }
             />
           </div>
         )}
-        {!!leaders.length && (
-          <>
-            <Typography
-              className="mb-5"
-              type="h3"
-              text={`Team leader${leaders.length > 1 ? 's' : ''}`}
-            />
+        <div
+          id={getStringFromClassNameOrId(
+            communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.FIVE].target
+          )}
+        >
+          <Typography
+            className="mb-5"
+            type="h3"
+            text={`Team leader${leaders.length > 1 ? 's' : ''}`}
+          />
+          {!!leaders.length ? (
             <div className="mb-4">
               <StackedList
                 className="flex flex-col gap-2"
@@ -266,10 +304,15 @@ export const TeamTab: React.FC = () => {
                 listItems={leaders}
               />
             </div>
-          </>
-        )}
-        <div className={`mt-auto flex flex-col gap-4`}>
+          ) : (
+            <Alert type="warning" title="No team leader" />
+          )}
+        </div>
+        <div className={`mt-auto flex flex-col gap-4 pt-4`}>
           <Button
+            id={getStringFromClassNameOrId(
+              communityWalkthroughSteps[COMMUNITY_WALKTHROUGH_STEPS.SIX].target
+            )}
             icon="UserGroupIcon"
             type="filled"
             textColor="white"

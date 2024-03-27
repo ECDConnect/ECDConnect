@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { ClinicDto, PermissionEnum, usePanel } from '@ecdlink/core';
-import { GetAllClinic } from '@ecdlink/graphql';
+import { GetAllPortalClinics } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -8,7 +8,7 @@ import { useUser } from '../../../../hooks/useUser';
 import ClinicPanelCreate from './clinic-panel-create/clinic-panel-create';
 
 export default function Clinics() {
-  const { data, refetch } = useQuery(GetAllClinic, {
+  const { data, refetch } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
   const [tableData, setTableData] = useState<any[]>([]);
@@ -16,8 +16,8 @@ export default function Clinics() {
   const panel = usePanel();
 
   useEffect(() => {
-    if (data && data.GetAllClinic) {
-      const copyItems = data.GetAllClinic.map((item: ClinicDto) => ({
+    if (data && data.allPortalClinics) {
+      const copyItems = data.allPortalClinics.map((item: ClinicDto) => ({
         ...item,
         fullName: item.name,
         // isActive: item.isActive,

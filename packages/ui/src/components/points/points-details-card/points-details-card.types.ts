@@ -1,6 +1,7 @@
 import { Colours, ComponentBaseProps } from '../../../models';
 
 export interface PointsDetailsCardProps extends ComponentBaseProps {
+  id?: string;
   pointsEarned: number;
   activityCount: number;
   title: string;

@@ -17,6 +17,7 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -29,6 +30,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -63,6 +65,13 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
 
         private readonly IGenericRepository<Clinic, Guid> _clinicRepo;
+        private readonly IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
+        private readonly IGenericRepository<Mother, Guid> _motherRepo;
+        private readonly IGenericRepository<Infant, Guid> _infantRepo;
+
+        private IGenericRepository<Visit, Guid> _visitRepo;
+        private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
+
         private readonly IGenericRepository<League, Guid> _leagueRepo;
 
         private readonly MonthlyAttendanceReport _monthlyAttendanceReportService;
@@ -89,7 +98,7 @@ namespace EcdLink.Api.CoreApi.Services
             _hierarchyEngine = hierarchyEngine;
             _monthlyAttendanceReportService = monthlyAttendanceReportService;
             _childService = childService;
-            _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().GetValueOrDefault());
+            _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault());
 
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
             _pointsCategoryRepo = _repositoryFactory.CreateGenericRepository<PointsCategory>(userContext: _uId);
@@ -119,6 +128,13 @@ namespace EcdLink.Api.CoreApi.Services
             _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
 
             _clinicRepo = _repositoryFactory.CreateGenericRepository<Clinic>(userContext: _uId);
+            _healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: _uId);
+            _motherRepo = _repositoryFactory.CreateGenericRepository<Mother>(userContext: _uId);
+            _infantRepo = _repositoryFactory.CreateGenericRepository<Infant>(userContext: _uId);
+
+            _visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
+            _visitDataStatusRepo = _repositoryFactory.CreateGenericRepository<VisitDataStatus>(userContext: _uId);
+
             _leagueRepo = _repositoryFactory.CreateGenericRepository<League>(userContext: _uId);
 
             _visitManager = visitManager;
@@ -141,14 +157,24 @@ namespace EcdLink.Api.CoreApi.Services
             return _pointsLibraryRepo.GetAll().Where(x => x.TenantId == tenantId).ToList();
         }
 
-        public List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null)
+        public List<PointsUserSummary> GetOldSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null)
         {
             return _pointsUserSummaryRepo.GetAll().Where(
-                x => x.UserId.ToString() == userId &&
+                x => x.UserId == userId &&
                 // After the start
                 (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)) &&
                 // Before the end or no end date
                 (!endDate.HasValue || x.Year < endDate.Value.Year || (x.Year == endDate.Value.Year && x.Month <= endDate.Value.Month))).ToList();
+        }
+
+        public List<PointsUserSummary> GetSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null)
+        {
+            return _pointsUserSummaryRepo.GetAll().Where(
+                x => x.UserId == userId &&
+                // After the start
+                (x.DateScored >= startDate) &&
+                // Before the end or no end date
+                (!endDate.HasValue || x.DateScored <= endDate)).ToList();
         }
 
         public PointsUserSummary InsertIndividualSummaryUserPoints(PointsUserSummary input)
@@ -477,6 +503,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         /// <summary>
         /// Gets the percentile standing of a user within relative to others within the club
+        /// 
+        /// NOTE: Old standings for Smart Start, can remove
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
@@ -560,7 +588,93 @@ namespace EcdLink.Api.CoreApi.Services
                 PercentageMembersWithMorePointsForCurrentYear = (int)percentageWithMorePointsThisYear
             };
         }
-       
+
+        /// <summary>
+        /// Gets the percentile standing of a user within relative to others within the team/clinic
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public TeamStandingModel GetHealthCareWorkerTeamStanding(Guid userId)
+        {
+            var clinicId = _healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.UserId.HasValue && x.UserId.Value == userId).Select(x => x.ClinicId).FirstOrDefault();
+
+            if (!clinicId.HasValue)
+            {
+                return new TeamStandingModel();
+            }
+
+            var teamUserIds = _healthCareWorkerRepo.GetAll()
+                .Where(x => x.ClinicId == clinicId.Value && x.IsActive)
+                .Select(x => x.UserId)
+                .ToList();
+
+            var startDate = new DateTime(DateTime.Now.Year, 1, 1);
+
+            var usersPoints = _pointsUserSummaryRepo.GetAll()
+                .Where(x => teamUserIds.Contains(x.UserId) && x.DateScored >= startDate)
+                .GroupBy(x => x.UserId)
+                .Select(x => new { x.First().UserId, PointsSummaries = x.Select(y => new { y.DateScored.Month, y.PointsTotal }) })
+                .ToList();
+
+            var usersByMonth = usersPoints
+                .Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Where(y => y.Month == DateTime.Now.Month).Sum(z => z.PointsTotal) })
+                .OrderByDescending(x => x.PointsTotal)
+                .ToList();
+
+            var usersByYear = usersPoints
+                .Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Sum(y => y.PointsTotal) })
+                .OrderByDescending(x => x.PointsTotal)
+                .ToList();
+
+
+            var totalMembers = teamUserIds.Count();
+
+            var userMonthPoints = usersByMonth.FirstOrDefault(x => x.UserId.HasValue && x.UserId.Value == userId)?.PointsTotal ?? 0;
+            var userYearPoints = usersByYear.FirstOrDefault(x => x.UserId.HasValue && x.UserId.Value == userId)?.PointsTotal ?? 0;
+
+            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints && userId != x.UserId).Count();
+            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints && userId != x.UserId).Count();
+
+            var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / (totalMembers - 1) * 100;
+
+            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId).Count();
+            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId).Count();
+
+            if (userMonthPoints > 0)
+            {
+                userWithFewerPointsThisMonth += teamUserIds.Where(x => x != userId && !usersByMonth.Any(y => y.UserId == x)).Count();
+            }
+
+            if (userYearPoints > 0)
+            {
+                userWithFewerPointsThisYear += teamUserIds.Where(x => x != userId && !usersByYear.Any(y => y.UserId == x)).Count();
+            }
+
+            var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithFewerPointsThisYear = (double)userWithFewerPointsThisYear / (totalMembers - 1) * 100;
+
+
+            // Offset for first place ties
+            if (percentageWithFewerPointsThisMonth == 100 && usersByMonth.Count() > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisMonth = 99;
+            }
+
+            if (percentageWithFewerPointsThisYear == 100 && usersByYear.Count() > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisYear = 99;
+            }
+
+            return new TeamStandingModel
+            {
+                PercentageMembersWithFewerPointsForCurrentMonth = (int)percentageWithFewerPointsThisMonth,
+                PercentageMembersWithFewerPointsForCurrentYear = (int)percentageWithFewerPointsThisYear,
+                PercentageMembersWithMorePointsForCurrentMonth = (int)percentageWithMorePointsThisMonth,
+                PercentageMembersWithMorePointsForCurrentYear = (int)percentageWithMorePointsThisYear
+            };
+        }
+
         // TODO - Can probably remove all this
         #region Clubs
 
@@ -1201,7 +1315,7 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
-        public LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId)
+        public LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId, DateTime? quarterStart = null, DateTime? quarterEnd = null)
         {
             var league = _leagueRepo.GetAll()
                 .Where(x => x.Id == leagueId)
@@ -1232,13 +1346,271 @@ namespace EcdLink.Api.CoreApi.Services
                 && x.DateScored >= league.StartDate
                 && x.DateScored <= league.EndDate).ToList();
 
+            if (!quarterStart.HasValue)
+            {
+                quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
+            }
+
+            if(!quarterEnd.HasValue)
+            {
+                quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
+            }
+
+            var clinicList = new List<LeagueClinicPointsModel>();
+            foreach (var clinic in clinicsWithUsers)
+            {
+                var pointsTotalForYear = 
+                    allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
+
+                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal);
+
+                clinicList.Add(new LeagueClinicPointsModel()
+                {
+                    ClinicId = clinic.ClinicId,
+                    ClinicName = clinic.ClinicName,
+                    PointsTotalForYear = pointsTotalForYear,
+                    PointsTotalForQuarter = pointsTotalForQuarter,
+                });
+            }
+
+            // Set league ranks for year, keeping highest rank for all that have equal points
+            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForYear).ToList();
+            clinicList[0].LeagueRankingForYear = 1;
+            for (int i = 1; i < clinicList.Count; i++)
+            {
+                if (clinicList[i].PointsTotalForYear == clinicList[i - 1].PointsTotalForYear)
+                {
+                    clinicList[i].LeagueRankingForYear = clinicList[i - 1].LeagueRankingForYear;
+                }
+                else
+                {
+                    clinicList[i].LeagueRankingForYear = i + 1;
+                }
+            }
+
+            // Set league ranks for year, keeping highest rank for all that have equal points
+            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForQuarter).ToList();
+            clinicList[0].LeagueRankingForQuarter = 1;
+            for (int i = 1; i < clinicList.Count; i++)
+            {
+                if (clinicList[i].PointsTotalForQuarter == clinicList[i - 1].PointsTotalForQuarter)
+                {
+                    clinicList[i].LeagueRankingForQuarter = clinicList[i - 1].LeagueRankingForQuarter;
+                }
+                else
+                {
+                    clinicList[i].LeagueRankingForQuarter = i + 1;
+                }
+            }
+
+            return new LeagueClinicsModel()
+            {
+                Id = league.Id,
+                StartDate = league.StartDate.HasValue ? league.StartDate.Value : DateTime.Now,
+                EndDate = league.EndDate.HasValue ? league.EndDate.Value : DateTime.Now,
+                LeagueTypeId = league.LeagueTypeId,
+                LeagueTypeName = league.LeagueType.Name,
+                Name = league.Name,
+                Clinics = clinicList
+            };
+        }
+
+        public List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId)
+        {
+            var pointsTodoItems = new List<PointsPointsTodoItemModel>();
+
+            //_visitManager.GetTotalVisitsOverdueForPeriod
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+
+            #region Complete due visits
+
+            var dueVisits = _visitRepo.GetAll().Where(x => x.Attended == false
+                    && x.DueDate <= monthEnd
+                    && (
+                        (
+                            x.Mother.IsActive == true
+                            && x.Mother.HealthCareWorker.Id == healthCareWorkerId
+                        )
+                        || (
+                            x.Infant.IsActive
+                            && x.Infant.Caregiver.HealthCareWorkerId.HasValue
+                            && x.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId)))
+                .Select(x => new { x.Id, IsInfantVisit = x.InfantId.HasValue })
+                .ToList();
+
+            if(dueVisits.Any() )
+            {
+                var visitsCompletedThisMonth = _visitRepo.GetAll().Where(x => x.Attended == true
+                    && x.DueDate >= monthStart
+                    && x.DueDate <= monthEnd
+                    && (
+                        (
+                            x.Mother.IsActive == true
+                            && x.Mother.HealthCareWorker.Id == healthCareWorkerId
+                        )
+                        || (
+                            x.Infant.IsActive
+                            && x.Infant.Caregiver.HealthCareWorkerId.HasValue
+                            && x.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId)))
+                .Count();
+
+                var dueInfantVisits = dueVisits.Where(x => x.IsInfantVisit).Count();
+                var dueMotherVisits = dueVisits.Where(x => !x.IsInfantVisit).Count();
+
+                var count = dueInfantVisits + dueMotherVisits;
+
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Complete {count} visits due this month",
+                    Points = (dueInfantVisits > 0 ? 260 : 0) + (dueMotherVisits > 0 ? 200 : 0),
+                    Count = count,
+                    PercentageComplete = (int)((float)visitsCompletedThisMonth / (count + visitsCompletedThisMonth) * 100),
+                });
+            }
+
+            #endregion
+
+            #region Complete referrals
+
+            var motherReferrals = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Mother.HealthCareWorkerId == healthCareWorkerId
+                    && (x.VisitData.VisitSection == GGSettings.MaternalDistressScreening
+                        || x.VisitData.VisitSection == GGSettings.MotherNutritionMUACMeasurement)
+                    && x.Type == GGSettings.visit_data_client_referral
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => new { x.Id, x.VisitData.VisitSection, x.IsCompleted })
+                .Distinct()
+                .ToList();
+
+            var infantReferrals = _visitDataStatusRepo.GetAll()
+                .Where(x =>
+                    x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.HasValue 
+                    && x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId
+                    && (x.VisitData.Question == GGSettings.QuestionLength
+                        || x.VisitData.Question == GGSettings.QuestionWeight
+                        || x.VisitData.Question == GGSettings.QuestionMUAC)
+                    && (x.Section == GGSettings.refer_to_clinic || x.Section == GGSettings.refer_to_clinic_urgently)
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd)
+                .Select(x => new { x.Id, x.VisitData.Question, x.IsCompleted })
+                .Distinct()
+                .ToList();
+
+            var missedReferrals = motherReferrals.Count(x => !x.IsCompleted) + infantReferrals.Count(x => !x.IsCompleted);
+            if (missedReferrals > 0)
+            {
+                var motherMissedReferralTypes = motherReferrals.Select(x => x.VisitSection).Distinct().Count();
+                var infantMissedReferralTypes = infantReferrals.Select(x => x.Question).Distinct().Count();
+
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Make {missedReferrals} referrals",
+                    Points = (motherMissedReferralTypes * 20) + (infantMissedReferralTypes * 20),
+                    Count = missedReferrals,
+                    PercentageComplete = (int)((float)missedReferrals / (infantReferrals.Count() + motherReferrals.Count()) * 100),
+                });
+            }
+
+            #endregion
+
+            #region Open mother folder
+
+            var mothers = _motherRepo.GetAll()
+                .Where(x => x.HealthCareWorker.Id == healthCareWorkerId
+                    && x.IsActive == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd
+                    && x.ExpectedDateOfDelivery != null)
+                .Count();
+
+            if (mothers < 2)
+            {
+                var count = 2 - mothers;
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Open {count} pregnant mom folders",
+                    Points = 50,
+                    Count = count,
+                    PercentageComplete = (int)((float)mothers / 2 * 100),
+                });
+            }
+
+
+            #endregion
+
+            #region Open infant folder
+
+            var twoYearsAgo = DateTime.Now.AddYears(-2);
+            var infants = _infantRepo.GetAll()
+                .Where(x => x.Caregiver.HealthCareWorkerId.HasValue
+                    && x.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId
+                    && x.IsActive == true
+                    && x.InsertedDate >= monthStart
+                    && x.InsertedDate <= monthEnd
+                    && x.User.DateOfBirth > twoYearsAgo).Count();
+
+            if (infants < 5)
+            {
+                var count = 5 - infants;
+                pointsTodoItems.Add(new PointsPointsTodoItemModel
+                {
+                    Message = $"Open {count} child folders",
+                    Points = 100,
+                    Count = count,
+                    PercentageComplete = (int)((float)infants / 5 * 100),
+                });
+            }
+
+            #endregion
+
+            return pointsTodoItems;
+        }
+
+        public LeagueClinicsModel GetClinicRankingsForOpeningFolders(Guid leagueId, Guid pointsActivityId, Guid pointsCategoryId)
+        {
+            var league = _leagueRepo.GetAll()
+                .Where(x => x.Id == leagueId)
+                .Include(x => x.LeagueType)
+                .FirstOrDefault();
+
+            var clinicsWithUsers = _clinicRepo.GetAll()
+                .Where(x => x.Leagues.Any(y => y.LeagueId == league.Id && y.IsActive))
+                .Select(x => new { ClinicId = x.Id, ClinicName = x.Name, UserIds = x.HealthCareWorkers.Select(x => x.UserId) })
+                .ToList();
+
+            var allUserIds = clinicsWithUsers
+                .SelectMany(x => x.UserIds)
+                .Where(x => x.HasValue)
+                .Select(x => x.Value)
+                .ToList();
+
+            var allUserPoints = _pointsUserSummaryRepo.GetAll().Where(x
+                => x.UserId.HasValue
+                && allUserIds.Contains(x.UserId.Value)
+                && x.PointsActivityId == pointsActivityId
+                && x.DateScored >= league.StartDate
+                && x.DateScored <= league.EndDate)
+                .ToList();
+
+            // Get clinic points
+            var allClinicPoints = _pointsClinicSummaryRepo.GetAll().Where(x =>
+                clinicsWithUsers.Select(x => x.ClinicId).Contains(x.ClinicId)
+                && x.PointsCategoryId == pointsCategoryId
+                && x.DateScored >= league.StartDate
+                && x.DateScored <= league.EndDate).ToList();
+
             var quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
             var quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
 
             var clinicList = new List<LeagueClinicPointsModel>();
             foreach (var clinic in clinicsWithUsers)
             {
-                var pointsTotalForYear = 
+                var pointsTotalForYear =
                     allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
                     + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
 
@@ -1295,5 +1667,6 @@ namespace EcdLink.Api.CoreApi.Services
                 Clinics = clinicList
             };
         }
+
     }
 }

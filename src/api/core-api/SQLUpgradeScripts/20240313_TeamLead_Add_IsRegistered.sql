@@ -1,0 +1,1 @@
+ALTER TABLE public."TeamLead" ADD "IsRegistered" bool not null default false;
