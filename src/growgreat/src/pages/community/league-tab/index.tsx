@@ -50,6 +50,8 @@ export const LeagueTab: React.FC = () => {
 
   const { walkthroughState } = useWalkthrough();
 
+  const headerHeight = walkthroughState?.isTourActive ? 0 : 122;
+
   const {
     isLoading: isLoadingLeague,
     wasLoading: wasLoadingLeague,
@@ -237,8 +239,8 @@ export const LeagueTab: React.FC = () => {
 
   return (
     <div
-      className="flex flex-col p-4 pt-6"
-      style={walkthroughState?.isTourActive ? { height } : {}}
+      className="flex flex-col overflow-auto p-4 pt-6"
+      style={{ height: height - headerHeight }}
     >
       <Typography type="h2" text={`${league?.name ?? ''} scoreboard`} />
       <Typography
