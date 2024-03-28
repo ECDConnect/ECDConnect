@@ -137,12 +137,16 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                 // Mother with more than 20 of 40 weeks remaining from today to expected delivery
                 var motherssLessThat20WeeksPregnant = mothers.Where(x => (x.ExpectedDateOfDelivery - DateTime.Now).Value.TotalDays > 120).Count();
 
-                var pointsTotal = 0;
+                if (motherssLessThat20WeeksPregnant == 0)
+                {
+                    return;
+                }
 
                 // (NOTE: CHW can get either 0, 50, or 200 points should be awarded for this item)
 
                 // Registered 1 - 2 pregnant clients who are less than 20 weeks into pregnancy (50 points)
                 // Register 3 or more pregnant clients who are less than 20 weeks into pregnancy (200 points)
+                var pointsTotal = 0;
                 if (motherssLessThat20WeeksPregnant <= 2)
                 {
                     pointsTotal = 50;
