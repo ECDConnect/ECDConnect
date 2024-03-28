@@ -125,12 +125,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                                                    x.Name == GGSettings.VisitTypeAdditionalVisit).
                                                                    OrderBy(x => x.NormalizedName).FirstOrDefault();
 
-                ManageVisitDataStatusForInfant(allVisitData, infant.User.FirstName, infant.Id.ToString(), infant.Gender.Description, infant.User.DateOfBirth, motherName, infant.UserId.ToString());
+                ManageVisitDataStatusForInfant(allVisitData, infant.User.FirstName, infant.Id.ToString(), infant.Gender.Description, infant.User.DateOfBirth, motherName, infant.UserId.ToString(), infant.WeightAtBirth.ToString());
             }
 
             return true;
         }
-        private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob, string motherName, string infantUserId)
+        private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob, string motherName, string infantUserId, string weightAtBirth)
         {
 
             var comment = "";
@@ -332,6 +332,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .Select(x => x.QuestionAnswer)
                         .FirstOrDefault();
 
+                    if (previousVisitWeight == null)
+                    {
+                        previousVisitWeight = weightAtBirth; 
+                    }
                     growthData.Add(vData);
                 }
                 else if (vData.Question == GGSettings.QuestionLength)
@@ -1011,7 +1015,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             double? previousWeight = null;
-            if (previousVisitWeight != "undefined" && previousVisitWeight != "")
+            if (previousVisitWeight != "undefined" && previousVisitWeight != "" && previousVisitWeight != null)
             {
                 previousWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
             }
