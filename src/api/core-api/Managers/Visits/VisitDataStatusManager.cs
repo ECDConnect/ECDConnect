@@ -1774,7 +1774,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                     else
                     {
-                        indicator = "Unknown";
+                        indicator = "Normal";
                     }
                 }
             }
