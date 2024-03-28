@@ -16,7 +16,10 @@ import { activitiesTypes } from './activity-list/activities-list';
 import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
 import { useWalkthrough } from '@/context/walkthroughContext';
 import { visitThunkActions } from '@/store/visit';
-import { getMotherNearestPreviousVisitByOrderDate } from '@/store/mother/mother.selectors';
+import {
+  getMotherNearestPreviousVisitByOrderDate,
+  getMotherCurrentVisitSelector,
+} from '@/store/mother/mother.selectors';
 
 const HEADER_HEIGHT = { filled: 470, empty: 540 };
 
@@ -49,12 +52,16 @@ export const ProgressTab = () => {
     motherSelectors.getMotherById(state, pregnantId)
   );
 
+  const currentVisit = useSelector((state: RootState) =>
+    getMotherCurrentVisitSelector(state, '')
+  );
+
   const previousVisitData = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
 
-  const previousVisitByOrderDate = useSelector(
-    getMotherNearestPreviousVisitByOrderDate
+  const previousVisitByOrderDate = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
   const walkthroughData: FollowUpWalkthroughData = {
