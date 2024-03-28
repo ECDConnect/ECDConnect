@@ -481,8 +481,8 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     .Where(x => 
                         x.Mother.HealthCareWorker.UserId == userId
                         && x.DueDate.HasValue
-                        && x.InsertedDate >= monthStart
-                        && x.InsertedDate <= monthEnd)
+                        && x.DueDate >= monthStart
+                        && x.DueDate <= monthEnd)
                     .Select(x => new { Id = x.Id, Type = x.VisitType.Name, x.Attended })
                     .ToList();
 
@@ -535,7 +535,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             var childrenDewormingUpToDateActivity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildrenDewormingUpToDateActivityId);
             var childrenImmunisationsUpToDateActivity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildrenImmunisationsUpToDateActivityId);
 
-            foreach (var userId in healthCareWorkerUserIds.Where(x => x.ToString() == "2a5df3f3-e013-47b5-b73b-52fe42b361b3"))// TODO remove filter
+            foreach (var userId in healthCareWorkerUserIds)
             {
                 var infantIds = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == userId && x.IsActive == true).Select(x => x.Id).ToList();
 
@@ -587,8 +587,9 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                 var visitsByChild = _visitRepo.GetAll()
                     .Where(x =>
                         x.DueDate.HasValue
-                        && x.DueDate < monthEnd
-                        && x.InfantId.HasValue                        
+                        && x.DueDate <= monthEnd                        
+                        && x.InfantId.HasValue 
+                        && x.DueDate >= x.Infant.InsertedDate // Restrict to visits after they were created, so not penalised for visits that could never be completed
                         && infantIds.Contains(x.InfantId.Value)
                         && x.VisitType.Name != GGSettings.VisitTypeAdditionalVisit)
                     .Select(x => new PointsVisit 
@@ -677,18 +678,18 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                             x.InfantId.HasValue
                             && infantIds.Contains(x.InfantId.Value)
                             && x.VisitData.Any(y => y.Question == GGSettings.QuestionDeworming))
-                        // Group by child
-                        .GroupBy(x => x.InfantId)
-                        // Take only the latest visit
-                        .Select(x => x.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault())
-                        // Select the CSG status
                         .Select(x => new
                         {
                             InfantId = x.InfantId.Value,
+                            ActualVisitDate = x.ActualVisitDate,
                             UpToDate = x.VisitData.Any(y =>
                                 y.Question == GGSettings.QuestionDeworming
                                 && y.QuestionAnswer == GGSettings.AnswerYes)
                         })
+                        // Group by child
+                        .GroupBy(x => x.InfantId)
+                        // Take only the latest visit
+                        .Select(x => x.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault())
                         .ToList();
 
                     var totalDewormingChildren = childLatestDewormingAnswer.Count();
@@ -720,18 +721,18 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                             x.InfantId.HasValue
                             && infantIds.Contains(x.InfantId.Value)
                             && x.VisitData.Any(y => y.Question == GGSettings.QuestionDeworming))
-                        // Group by child
-                        .GroupBy(x => x.InfantId)
-                        // Take only the latest visit
-                        .Select(x => x.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault())
-                        // Select the CSG status
                         .Select(x => new
                         {
                             InfantId = x.InfantId.Value,
+                            ActualVisitDate = x.ActualVisitDate,
                             UpToDate = x.VisitData.Any(y =>
                                 y.Question == GGSettings.QuestionDeworming
                                 && y.QuestionAnswer == GGSettings.AnswerYes)
                         })
+                        // Group by child
+                        .GroupBy(x => x.InfantId)
+                        // Take only the latest visit
+                        .Select(x => x.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault())
                         .ToList();
 
                     var totalImmunisationChildren = childImmunisationAnswer.Count();
