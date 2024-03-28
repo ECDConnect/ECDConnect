@@ -19,6 +19,7 @@ using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
 using Microsoft.EntityFrameworkCore;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using System.Text;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -138,7 +139,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var growthData = new List<VisitData>();
             var feedingData = new List<VisitData>();
             var immunisationsData = new List<VisitData>();
-            var previousVisitWeight = "";
+            string? previousVisitWeight = null;
             DateTime today = DateTime.Today;
             var totalMonthsOld = ((today.Year - dob.Year) * 12) + today.Month - dob.Month;
             var totalDaysOld = (today - dob).TotalDays;
@@ -319,16 +320,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (vData.Question == GGSettings.QuestionWeight)
                 {
-
-                    previousVisitWeight = (
-                         from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == infantId && x.Attended == true).OrderBy(x => x.InsertedDate)
-                         join visitData in _visitDataRepo.GetAll().Where(y => y.Question == GGSettings.QuestionWeight) on visit.Id equals visitData.VisitId
-                         select visitData.QuestionAnswer
-                     ).LastOrDefault();
-                    if (previousVisitWeight == null)
-                    {
-                        previousVisitWeight = "0";
-                    }
+                    // Set previous weight needed for weight calcs
+                    previousVisitWeight = _visitDataRepo.GetAll()
+                        .Where(x =>
+                            x.Visit.Attended
+                            && x.Visit.InfantId.HasValue
+                            && x.Visit.InfantId == Guid.Parse(infantId)
+                            && x.VisitId != vData.VisitId
+                            && x.Question == GGSettings.QuestionWeight)
+                        .OrderByDescending(x => x.Visit.ActualVisitDate)
+                        .Select(x => x.QuestionAnswer)
+                        .FirstOrDefault();
 
                     growthData.Add(vData);
                 }
@@ -610,7 +612,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (growthData.Count > 0)
             {
-                ManageGrowthData(growthData, firstName, infantId, gender, totalMonthsOld, totalDaysOld, previousVisitWeight, motherName, infantUserId);
+                ManageGrowthData(growthData, firstName, infantId, gender, (int)totalDaysOld, previousVisitWeight, motherName, infantUserId);
             }
 
             if (feedingData.Count > 0)
@@ -987,304 +989,311 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-        private Boolean ManageGrowthData(List<VisitData> growthData, string firstName, string infantId, string gender, int totalMonthsOld, double totalDaysOld, string previousVisitWeight, string mothername, string infantUserId)
+        private void ManageGrowthData(List<VisitData> growthData, string firstName, string infantId, string gender, int totalDaysOld, string previousVisitWeight, string mothername, string infantUserId)
         {
-            var comment = "";
+            var weightIndicator = "Normal";
+            var lengthIndicator = "Normal";
+            var muacIndicator = "Normal";
 
-            var wIndicator = "Normal";
-            var lIndicator = "Normal";
-            var mIndicator = "Normal";
+            var weightColor = "";
+            var lengthColor = "";
+            var muacColor = "";
 
-            var wColor = "";
-            var lColor = "";
-            var mColor = "";
+            var weightQuestion = growthData.Where(x => x.Question == GGSettings.QuestionWeight && x.VisitName != GGSettings.CareForBaby).OrderBy(x => x.Id).FirstOrDefault();
+            var lengthQuestion = growthData.Where(x => x.Question == GGSettings.QuestionLength && x.VisitName != GGSettings.CareForBaby).OrderBy(x => x.Id).FirstOrDefault();
+            var muacQuestion = growthData.Where(x => x.Question == GGSettings.QuestionMUAC).OrderBy(x => x.Id).FirstOrDefault();
 
-            var q1 = growthData.Where(x => x.Question == GGSettings.QuestionWeight && x.VisitName != GGSettings.CareForBaby).OrderBy(x => x.Id).FirstOrDefault();
-            var q2 = growthData.Where(x => x.Question == GGSettings.QuestionLength && x.VisitName != GGSettings.CareForBaby).OrderBy(x => x.Id).FirstOrDefault();
-            var q3 = growthData.Where(x => x.Question == GGSettings.QuestionMUAC).OrderBy(x => x.Id).FirstOrDefault();
-
-            var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-            var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-
-            var _prevWeight = 0.0;
-            if (previousVisitWeight != "undefined" && previousVisitWeight != "")
+            // Check what measurements we have
+            double? weight = null;
+            if (weightQuestion != null && weightQuestion.QuestionAnswer != "undefined" && weightQuestion.QuestionAnswer != "")
             {
-                _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
+                weight = double.Parse(weightQuestion.QuestionAnswer, CultureInfo.InvariantCulture);
             }
 
-            Boolean weightIncreased = _weight >= _prevWeight;
-            wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
-            lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender, false);
-
-            if (q1 != null && q1.Question == GGSettings.QuestionWeight)
+            double? previousWeight = null;
+            if (previousVisitWeight != "undefined" && previousVisitWeight != "")
             {
-                if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5)
-                {
-                    wIndicator = "Low birth weight";
-                    wColor = StatusColours.Amber;
+                previousWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
+            }
 
-                    // Is this meant to save any data?
+            var weightIncreased = weight >= previousWeight;
+
+            double? height = null;
+            if (lengthQuestion != null && lengthQuestion.QuestionAnswer != "undefined" && lengthQuestion.QuestionAnswer != "")
+            {
+                height = double.Parse(lengthQuestion.QuestionAnswer, CultureInfo.InvariantCulture);
+            }
+
+            var hasMuacMeasurement = false;
+            if (muacQuestion != null && muacQuestion.QuestionAnswer != "undefined" && muacQuestion.QuestionAnswer != "")
+            {
+                hasMuacMeasurement = true;
+            }
+
+            // If no growth questions answered, just return
+            if (!weight.HasValue && !height.HasValue && !hasMuacMeasurement)
+            { 
+                return; 
+            }
+
+            // This should probably check if we have the previous weight, but then all weight calcs depend on having current and previous
+            if (weight.HasValue)
+            {
+                weightIndicator = GetWeightIndicator(totalDaysOld, weight.Value, height, gender, weightIncreased);
+            }
+
+            if (height.HasValue) 
+            { 
+                lengthIndicator = GetHeightIndicator(totalDaysOld, height.Value, gender);
+            }
+
+            if (weight.HasValue && weightIndicator != "Unknown")
+            {
+                if (totalDaysOld < 7 && previousWeight == 0 && weight < 2.5)
+                {
+                    weightIndicator = "Low birth weight";
+                    weightColor = StatusColours.Amber;
+
+                    // In this case we only add a referral at the end
                 }
-                else if (totalDaysOld < 7 && _prevWeight == 0 && _weight >= 2.5)
+                else if (totalDaysOld < 7 && previousWeight == 0 && weight >= 2.5)
                 {
-                    wIndicator = "Normal";
-                    wColor = StatusColours.Green;
+                    weightIndicator = "Normal";
+                    weightColor = StatusColours.Green;
 
-                    // Is this meant to save any data?
+                    // In this case we only add a referral at the end
                 }
                 else
                 {
-                    if (wIndicator == "Severely underweight")
+                    if (weightIndicator == "Severely underweight")
                     {
-                        wColor = StatusColours.Red;
+                        weightColor = StatusColours.Red;
 
                         // Red progress
-                        comment = GGSettings.severely_underweight;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_progress, q1.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.severely_underweight, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
                         // additional visit
                         AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.severely_underweight);
 
                         // Red G4
-                        comment = GGSettings.refer_to_clinic_urgently;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.refer_to_clinic_urgently, weightColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
                     }
-                    else if (wIndicator == "Underweight")
+                    else if (weightIndicator == "Underweight")
                     {
-                        wColor = StatusColours.Amber;
+                        weightColor = StatusColours.Amber;
 
                         // Amber progress
-                        comment = wIndicator;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_progress, q1.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, weightIndicator, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, GGSettings.client_child, wIndicator);
+                        AddAdditionalVisit(infantId, GGSettings.client_child, weightIndicator);
 
                         // Amber G4
-                        comment = GGSettings.refer_to_clinic;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.refer_to_clinic, weightColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
                     }
-                    else if (wIndicator == "Growth faltering" && !weightIncreased)
+                    else if (weightIndicator == "Growth faltering" && !weightIncreased)
                     {
-                        wColor = StatusColours.Amber;
+                        weightColor = StatusColours.Amber;
 
                         // Amber progress
-                        comment = GGSettings.growth_faltering;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_progress, q1.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.growth_faltering, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, GGSettings.client_child, wIndicator);
+                        AddAdditionalVisit(infantId, GGSettings.client_child, weightIndicator);
 
                         // Amber G4
-                        comment = GGSettings.refer_to_clinic;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.refer_to_clinic, weightColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
                     }
-                    else if (wIndicator == "Obese")
+                    else if (weightIndicator == "Obese")
                     {
-                        wColor = StatusColours.Amber;
+                        weightColor = StatusColours.Amber;
 
                         // Amber progress
-                        comment = wIndicator;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_progress, q1.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, weightIndicator, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, GGSettings.client_child, wIndicator);
+                        AddAdditionalVisit(infantId, GGSettings.client_child, weightIndicator);
 
                         // Amber G4
-                        comment = GGSettings.refer_to_clinic;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.refer_to_clinic, weightColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
                     }
-                    else if (wIndicator == "Overweight")
+                    else if (weightIndicator == "Overweight")
                     {
-                        wColor = StatusColours.Amber;
+                        weightColor = StatusColours.Amber;
 
                         // Amber progress
-                        comment = wIndicator;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_progress, q1.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, weightIndicator, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, GGSettings.client_child, wIndicator);
+                        AddAdditionalVisit(infantId, GGSettings.client_child, weightIndicator);
 
                         // Amber G4
-                        comment = GGSettings.refer_to_clinic;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.refer_to_clinic, weightColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
                     }
-                    else if (wIndicator == "Normal" && weightIncreased)
+                    else if (weightIndicator == "Normal" && weightIncreased)
                     {
-                        wColor = StatusColours.Green;
+                        weightColor = StatusColours.Green;
 
                         // Green progress
-                        comment = wIndicator;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_progress, q1.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, weightIndicator, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
-                        // Green G4 
-                        comment = firstName + GGSettings.growing_well;
-                        AddVisitDataStatus(q1, comment, wColor, GGSettings.visit_data_client_dashboard, q1.VisitSection, false);
+                        // Green G4
+                        AddVisitDataStatus(weightQuestion, $"{firstName}{GGSettings.growing_well}", weightColor, GGSettings.visit_data_client_dashboard, weightQuestion.VisitSection, false);
                     }
                 }
             }
 
-            if (q2 != null && q2.Question == GGSettings.QuestionLength)
+            if (height.HasValue)
             {
-                if (lIndicator == "Severely stunted")
+                if (lengthIndicator == "Severely stunted")
                 {
-                    lColor = StatusColours.Red;
+                    lengthColor = StatusColours.Red;
 
                     // Red progress
-                    comment = lIndicator;
-                    AddVisitDataStatus(q2, comment, lColor, GGSettings.visit_data_client_progress, q2.VisitSection, false);
+                    AddVisitDataStatus(lengthQuestion, lengthIndicator, lengthColor, GGSettings.visit_data_client_progress, lengthQuestion.VisitSection, false);
 
                     // additional visit
-                    AddAdditionalVisit(infantId, GGSettings.client_child, lIndicator);
+                    AddAdditionalVisit(infantId, GGSettings.client_child, lengthIndicator);
 
                     // Red G4
-                    comment = GGSettings.refer_to_clinic_urgently;
-                    AddVisitDataStatus(q2, comment, lColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
+                    AddVisitDataStatus(lengthQuestion, GGSettings.refer_to_clinic_urgently, lengthColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
 
                 }
-                else if (lIndicator == "Stunted")
+                else if (lengthIndicator == "Stunted")
                 {
-                    lColor = StatusColours.Amber;
+                    lengthColor = StatusColours.Amber;
 
                     // Amber progress
-                    comment = lIndicator;
-                    AddVisitDataStatus(q2, comment, lColor, GGSettings.visit_data_client_progress, q2.VisitSection, false);
+                    AddVisitDataStatus(lengthQuestion, lengthIndicator, lengthColor, GGSettings.visit_data_client_progress, lengthQuestion.VisitSection, false);
 
                     // additional visit
-                    AddAdditionalVisit(infantId, GGSettings.client_child, lIndicator);
+                    AddAdditionalVisit(infantId, GGSettings.client_child, lengthIndicator);
 
                     // Amber G4
-                    comment = GGSettings.refer_to_clinic;
-                    AddVisitDataStatus(q2, comment, lColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
-
+                    AddVisitDataStatus(lengthQuestion, GGSettings.refer_to_clinic, lengthColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic, false);
                 }
-                else if (lIndicator == "Normal")
+                else if (lengthIndicator == "Normal")
                 {
-                    lColor = StatusColours.Green;
+                    lengthColor = StatusColours.Green;
 
                     // Green progress
-                    comment = lIndicator;
-                    AddVisitDataStatus(q2, comment, lColor, GGSettings.visit_data_client_progress, q2.VisitSection, false);
+                    AddVisitDataStatus(lengthQuestion, lengthIndicator, lengthColor, GGSettings.visit_data_client_progress, lengthQuestion.VisitSection, false);
                 }
             }
 
-            if (q3 != null && q3.Question == GGSettings.QuestionMUAC)
+            if (hasMuacMeasurement)
             {
-                var questionAnswer = q3.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
-                mIndicator = "Normal";
+                var questionAnswer = Int32.Parse(muacQuestion.QuestionAnswer);
+                muacIndicator = "Normal";
                 if (questionAnswer < 11.5)
                 {
-                    mIndicator = GGSettings.severe_acute_malnutrition;
-                    mColor = StatusColours.Red;
+                    muacIndicator = GGSettings.severe_acute_malnutrition;
+                    muacColor = StatusColours.Red;
 
                     // Red progress
-                    AddVisitDataStatus(q3, mIndicator, mColor, GGSettings.visit_data_client_progress, q3.VisitSection, false);
+                    AddVisitDataStatus(muacQuestion, muacIndicator, muacColor, GGSettings.visit_data_client_progress, muacQuestion.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.severe_acute_malnutrition);
 
                     // Red G4
-                    comment = GGSettings.refer_to_clinic_urgently;
-                    AddVisitDataStatus(q3, comment, mColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
+                    AddVisitDataStatus(muacQuestion, GGSettings.refer_to_clinic_urgently, muacColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
                 }
                 else if (questionAnswer >= 11.5 && questionAnswer < 12.5)
                 {
-                    mIndicator = GGSettings.moderate_acute_malnutrition;
-                    mColor = StatusColours.Amber;
+                    muacIndicator = GGSettings.moderate_acute_malnutrition;
+                    muacColor = StatusColours.Amber;
 
                     // Amber progress
-                    AddVisitDataStatus(q3, mIndicator, mColor, GGSettings.visit_data_client_progress, q3.VisitSection, false);
+                    AddVisitDataStatus(muacQuestion, muacIndicator, muacColor, GGSettings.visit_data_client_progress, muacQuestion.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.moderate_acute_malnutrition);
 
                     // Amber G4
-                    comment = GGSettings.refer_to_clinic_urgently;
-                    AddVisitDataStatus(q3, comment, mColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
+                    AddVisitDataStatus(muacQuestion, GGSettings.refer_to_clinic_urgently, muacColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
 
                 }
                 else if (questionAnswer >= 12.5)
                 {
-                    mIndicator = "Normal";
-                    mColor = StatusColours.Green;
+                    muacIndicator = "Normal";
+                    muacColor = StatusColours.Green;
 
                     // Green progress
-                    AddVisitDataStatus(q3, mIndicator, mColor, GGSettings.visit_data_client_progress, q3.VisitSection, false);
+                    AddVisitDataStatus(muacQuestion, muacIndicator, muacColor, GGSettings.visit_data_client_progress, muacQuestion.VisitSection, false);
                 }
             }
 
             // REFERRALS && G9 FOR ALL
-            if (wIndicator != "Normal" || lIndicator != "Normal" || mIndicator != "Normal")
+            if (
+                (weight.HasValue && weightIndicator != "Normal" && weightIndicator != "Unknown") 
+                || (height.HasValue && lengthIndicator != "Normal") 
+                || (hasMuacMeasurement && muacIndicator != "Normal"))
             {
                 // Referrals
-                comment = firstName + GGSettings.growth_referral;
-                if (wIndicator != "Normal")
+                var comment = new StringBuilder($"{firstName}{GGSettings.growth_referral}");
+                if (weight.HasValue && weightIndicator != "Normal" && weightIndicator != "Unknown")
                 {
-                    comment += "<li>" + wIndicator + "</li>";
+                    comment.AppendLine($"<li>{weightIndicator}</li>");
                 }
-                if (lIndicator != "Normal")
+                if (height.HasValue && lengthIndicator != "Normal")
                 {
-                    comment += "<li>" + lIndicator + "</li>";
+                    comment.AppendLine($"<li>{lengthIndicator}</li>");
                 }
-                if (mIndicator != "Normal")
+                if (hasMuacMeasurement && muacIndicator != "Normal")
                 {
-                    comment += "<li>" + mIndicator + "</li>";
+                    comment.AppendLine($"<li>{muacIndicator}</li>");
                 }
-                AddVisitDataStatus(q1, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
+                AddVisitDataStatus(weightQuestion, comment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
 
                 //Refer [[ChildFirstName]] to the clinic immediately and schedule additional visits with [[ChildFirstName]] & [[CaregiverFirstName]].
-                if (wIndicator == "Severely underweight" || lIndicator == "Severely stunted")
+                if (weightIndicator == "Severely underweight" || lengthIndicator == "Severely stunted")
                 {
                     var growthIssue = ""; 
-                    if (wIndicator == "Severely underweight" && lIndicator == "Severely stunted")
+                    if (weightIndicator == "Severely underweight" && lengthIndicator == "Severely stunted")
                     {
                         growthIssue = "Severely underweight & severely stunted";
                     }
-                    else if (wIndicator == "Severely underweight")
+                    else if (weightIndicator == "Severely underweight")
                     {
-                        growthIssue = wIndicator;
+                        growthIssue = weightIndicator;
                     }
-                    else if (lIndicator == "Severely stunted")
+                    else if (lengthIndicator == "Severely stunted")
                     {
-                        growthIssue = lIndicator;
+                        growthIssue = lengthIndicator;
                     }
-                    _ = _notificationManager.SendGGChildGrowthIssueNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mothername, infantUserId, growthIssue);
-                } else
+                    _notificationManager.SendGGChildGrowthIssueNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mothername, infantUserId, growthIssue).Wait();
+                } 
+                else
                 {
-                    _ = _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId);
+                    _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId).Wait();
                 }
 
             }
 
-            if (wColor == StatusColours.Green && lColor == StatusColours.Green && mColor == StatusColours.Green)
+            if (weightColor == StatusColours.Green && lengthColor == StatusColours.Green && muacColor == StatusColours.Green)
             {
                 // add green item to G9 client summary: ""Themba is growing well""
-                comment = firstName + GGSettings.growing_well;
-                AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_summary, GGSettings.growth_section, false);
+                AddVisitDataStatus(muacQuestion, $"{firstName}{GGSettings.growing_well}", StatusColours.Green, GGSettings.visit_data_client_summary, GGSettings.growth_section, false);
 
                 // Green G4 
-                comment = firstName + GGSettings.growing_well;
-                AddVisitDataStatus(q3, comment, mColor, GGSettings.visit_data_client_dashboard, q3.VisitSection, false);
+                AddVisitDataStatus(muacQuestion, $"{firstName}{GGSettings.growing_well}", muacColor, GGSettings.visit_data_client_dashboard, muacQuestion.VisitSection, false);
             }
             else
             {
-
-                if (wColor == StatusColours.Red || lColor == StatusColours.Red || mColor == StatusColours.Red)
+                if (weightColor == StatusColours.Red || lengthColor == StatusColours.Red || muacColor == StatusColours.Red)
                 {
                     // add red item to G9 client summary: ""Themba is not growing well""
-                    comment = firstName + GGSettings.not_growing;
-                    AddVisitDataStatus(q3, comment, StatusColours.Red, GGSettings.visit_data_client_summary, GGSettings.growth_section, false);
+                    AddVisitDataStatus(muacQuestion, $"{firstName}{GGSettings.not_growing}", StatusColours.Red, GGSettings.visit_data_client_summary, GGSettings.growth_section, false);
                 }
-                else if (wColor == StatusColours.Amber || lColor == StatusColours.Amber || mColor == StatusColours.Amber)
+                else if (weightColor == StatusColours.Amber || lengthColor == StatusColours.Amber || muacColor == StatusColours.Amber)
                 {
                     // add amber item to G9 client summary: ""Themba is not growing well""
-                    comment = firstName + GGSettings.not_growing;
-                    AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, GGSettings.growth_section, false);
+                    AddVisitDataStatus(muacQuestion, $"{firstName}{GGSettings.not_growing}", StatusColours.Amber, GGSettings.visit_data_client_summary, GGSettings.growth_section, false);
                 }
             }
-
-            return true;
         }
+
         private Boolean ManageFeedingData(List<VisitData> feedingData, string firstName, string infantId)
         {
             var q1 = feedingData.Where(x => x.Question == GGSettings.q_eat_drink).OrderBy(x => x.Id).FirstOrDefault();
@@ -1710,84 +1719,87 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return result;
         }
-        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender, Boolean weightIncreased)
+
+        public string GetWeightIndicator(int totalDaysOld, double weight, double? height, string gender, bool weightIncreased)
         {
             var indicator = "Normal";
-
-            if (isWeightCalc)
+            if (weight > 0)
             {
-                if (weight > 0)
+                var ageSectionPrimary = (gender == GGSettings.male ? GGSettings.weightForAgeBoys : GGSettings.weightForAgeGirls);
+                var ageSectionSecondary = "";
+                if (totalDaysOld < 730)
                 {
-                    string ageSection_primary = (gender == GGSettings.male ? GGSettings.weightForAgeBoys : GGSettings.weightForAgeGirls);
-                    var ageSection_secondary = "";
-                    if (totalDaysOld < 730)
+                    ageSectionSecondary = (gender == GGSettings.male ? GGSettings.weightForLengthBoys : GGSettings.weightForLengthGirls);
+                }
+                else
+                {
+                    ageSectionSecondary = (gender == GGSettings.male ? GGSettings.weightForHeightBoys : GGSettings.weightForHeightGirls);
+                }
+
+                var recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSectionPrimary && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
+
+                if (recordsForAge != null)
+                {
+                    if (weight <= recordsForAge.SD3neg)
                     {
-                        ageSection_secondary = (gender == GGSettings.male ? GGSettings.weightForLengthBoys : GGSettings.weightForLengthGirls);
+                        indicator = "Severely underweight"; // priority 1
+                    }
+                    else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                    {
+                        indicator = "Underweight"; // priority 2
+                    }
+                    else if (weight > recordsForAge.SD2neg && weightIncreased == false)
+                    {
+                        indicator = "Growth faltering"; // priority 3
+                    }
+                    else if (height.HasValue && height.Value > 0) 
+                    {
+                        var recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSectionSecondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
+
+                        if (recordsForWeight != null)
+                        {
+                            if (weight >= recordsForWeight.SD3)
+                            {
+                                indicator = "Obese"; // priority 4
+                            }
+                            else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
+                            {
+                                indicator = "Overweight"; // priority 5
+                            }
+                        }
                     }
                     else
                     {
-                        ageSection_secondary = (gender == GGSettings.male ? GGSettings.weightForHeightBoys : GGSettings.weightForHeightGirls);
-                    }
-
-                    VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
-
-                    if (recordsForAge != null)
-                    {
-                        if (weight <= recordsForAge.SD3neg)
-                        {
-                            indicator = "Severely underweight"; // priority 1
-                        }
-                        else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
-                        {
-                            indicator = "Underweight"; // priority 2
-                        }
-                        else if (weight > recordsForAge.SD2neg && weightIncreased == false)
-                        {
-                            indicator = "Growth faltering"; // priority 3
-                        }
-
-                        if (indicator == "Normal")  // priority 6
-                        {
-                            VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
-
-                            if (recordsForWeight != null)
-                            {
-                                if (weight >= recordsForWeight.SD3)
-                                {
-                                    indicator = "Obese"; // priority 4
-                                }
-                                else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
-                                {
-                                    indicator = "Overweight"; // priority 5
-                                }
-                            }
-                        }
-
+                        indicator = "Unknown";
                     }
                 }
-
             }
-            else
-            {
-                if (height > 0)
-                {
-                    string heightSection = (gender == GGSettings.male ? GGSettings.lengthHeightForAgeBoys : GGSettings.lengthHeightForAgeGirls);
-                    var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
-                    if (recordsForHeight != null)
+            return indicator;
+        }
+
+        public string GetHeightIndicator(int totalDaysOld, double height, string gender)
+        {
+            var indicator = "Normal";
+                        
+            if (height > 0)
+            {
+                string heightSection = (gender == GGSettings.male ? GGSettings.lengthHeightForAgeBoys : GGSettings.lengthHeightForAgeGirls);
+                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
+
+                if (recordsForHeight != null)
+                {
+                    if (height <= recordsForHeight.SD3neg)
                     {
-                        if (height <= recordsForHeight.SD3neg)
-                        {
-                            indicator = "Severely stunted"; // priority 1
-                        }
-                        else if (height > recordsForHeight.SD3neg && height <= recordsForHeight.SD2neg)
-                        {
-                            indicator = "Stunted"; // priority 2
-                        }
-                        else if (height > recordsForHeight.SD2neg)
-                        {
-                            indicator = "Normal"; // priority 3
-                        }
+                        indicator = "Severely stunted"; // priority 1
+                    }
+                    else if (height > recordsForHeight.SD3neg && height <= recordsForHeight.SD2neg)
+                    {
+                        indicator = "Stunted"; // priority 2
+                    }
+                    else if (height > recordsForHeight.SD2neg)
+                    {
+                        indicator = "Normal"; // priority 3
                     }
                 }
             }
