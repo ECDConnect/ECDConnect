@@ -32,7 +32,6 @@ export const IndividualPointsInfoPage = () => {
 
   const history = useHistory();
 
-  // TODO: replace with real section name
   const section = 'Community - CHW - Points';
 
   const languagesOptions = useMemo(
