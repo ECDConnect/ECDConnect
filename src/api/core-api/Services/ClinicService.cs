@@ -325,13 +325,13 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Infants
             var infants = _infantRepo.GetAll().Where(x => caregiversIds.Contains((Guid)x.CaregiverId) && x.IsActive).ToList();
-            var infantIds = infants.Select(x => x.Id).ToList();
+            var infantIds = infants.Select(x => x.Id).Distinct().ToList();
 
             // Mothers
             IEnumerable<Mother> mothers = new List<Mother>();
             var motherRecords = clinic.HealthCareWorkers.Where(x => x.Mothers.Count > 0).Select(x => x.Mothers).ToList();
             mothers = motherRecords.Aggregate(mothers, (current, list) => current.Concat(list)).ToList();
-            var motherIds = mothers.Select(x => x.Id).ToList();
+            var motherIds = mothers.Select(x => x.Id).Distinct().ToList();
 
             ClinicVisitReportModel clinicVisitReportModel = new ClinicVisitReportModel();
             clinicVisitReportModel.ClientRegistration = GetClientRegistration(mothers, infants, startDate.Date, endDate.Date);
@@ -345,7 +345,7 @@ namespace EcdLink.Api.CoreApi.Services
         private ClientRegistrationModel GetClientRegistration(IEnumerable<Mother> mothers, List<Infant> infants, DateTime startDate, DateTime endDate)
         {
             var totalChildFoldersOpened = infants.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
-            var totalMotherFoldersOpened = 0;
+            var totalMotherFoldersOpened = mothers.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
             var totalMotherFoldersBefore20WeeksOpened = 0;
 
             // Mothers
@@ -353,11 +353,9 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 if (mother.InsertedDate.Date >= startDate && mother.InsertedDate.Date <= endDate)
                 {
-                    totalMotherFoldersOpened++;
-
                     var diffOfDates = (DateTime)mother.ExpectedDateOfDelivery - (DateTime)mother.InsertedDate;
                     var diffWeeks = diffOfDates.Days / 7;
-                    if (diffWeeks <= 20)
+                    if (diffWeeks < 21)
                     {
                         totalMotherFoldersBefore20WeeksOpened++;
                     }
@@ -399,9 +397,10 @@ namespace EcdLink.Api.CoreApi.Services
 
             var totalSupportGrant = visitData.Where(x => x.Question == Constants.GGSettings.QuestionReceivingCSG &&
                                                          x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.QuestionLength || x.Question == Constants.GGSettings.QuestionWeight || x.Question == Constants.GGSettings.QuestionMUAC) &&
-                                                            x.VisitSection != Constants.GGSettings.child_road_to_health &&
-                                                            x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
+            var totalGrowthMonitored = visitData.Where(x => (x.Question == Constants.GGSettings.QuestionLength || 
+                                                             x.Question == Constants.GGSettings.QuestionWeight || 
+                                                             x.Question == Constants.GGSettings.QuestionMUAC) &&
+                                                             x.VisitSection != Constants.GGSettings.child_road_to_health).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.q_immunisation &&
                                                          x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateDeworming = visitData.Where(x => x.Question == Constants.GGSettings.QuestionDeworming &&

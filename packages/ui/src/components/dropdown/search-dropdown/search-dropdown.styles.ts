@@ -21,6 +21,7 @@ export const overlay = (overlayTopOffset?: string) =>
 export const infoWrapper = 'px-4 py-3 border-b border-uiBg';
 export const getButtonStyles = (
   colour: Colours,
+  bgColour: Colours,
   open: boolean,
   hasSelectedItems: boolean,
   touched: boolean
@@ -29,11 +30,16 @@ export const getButtonStyles = (
     'mt-1 flex flex-row items-center truncate justify-between origin-top-right right-0 rounded-md border-2 pl-4 pr-1 leading-5 py-2 active:bg-secondary';
 
   if (!touched && !hasSelectedItems) {
-    return classNames(baseStyles, 'border-uiBg', 'bg-white');
+    return classNames(baseStyles, 'border-uiBg', `bg-${bgColour}`);
   }
 
   if (open) {
-    return classNames(baseStyles, 'bg-white', `border-${colour}`, 'text-white');
+    return classNames(
+      baseStyles,
+      `bg-${bgColour}`,
+      `border-${colour}`,
+      'text-white'
+    );
   }
 
   if (hasSelectedItems) {

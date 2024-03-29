@@ -1421,27 +1421,28 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var pointsTodoItems = new List<PointsPointsTodoItemModel>();
 
-            //_visitManager.GetTotalVisitsOverdueForPeriod
             var monthStart = DateTime.Now.GetStartOfMonth();
             var monthEnd = DateTime.Now.GetEndOfMonth();
 
             #region Complete due visits
 
-            var dueVisits = _visitRepo.GetAll().Where(x => x.Attended == false
-                    && x.DueDate <= monthEnd
-                    && (
-                        (
+            var dueVisits = _visitRepo.GetAll().Where(x => x.Attended == false                    
+                    && ((
+                            // Any incomplete visits to a mother due before the end of the month (including past visits)
                             x.Mother.IsActive == true
                             && x.Mother.HealthCareWorker.Id == healthCareWorkerId
-                        )
-                        || (
+                            && x.DueDate <= monthEnd
+                        ) || (
+                            // Any incomplete infant visits due within the current month
                             x.Infant.IsActive
                             && x.Infant.Caregiver.HealthCareWorkerId.HasValue
-                            && x.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId)))
+                            && x.Infant.Caregiver.HealthCareWorkerId.Value == healthCareWorkerId
+                            && x.DueDate >= monthStart
+                            && x.DueDate <= monthEnd)))
                 .Select(x => new { x.Id, IsInfantVisit = x.InfantId.HasValue })
                 .ToList();
 
-            if(dueVisits.Any() )
+            if(dueVisits.Any())
             {
                 var visitsCompletedThisMonth = _visitRepo.GetAll().Where(x => x.Attended == true
                     && x.DueDate >= monthStart

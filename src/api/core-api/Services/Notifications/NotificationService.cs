@@ -175,7 +175,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             } catch (Exception ex)
             {
-                _logger.LogError("Issue in DailyUserOfflineNotification" + ex.Message, ex);
+                _logger.LogError("Issue in SendNotificationAsync for template " + templatetype + " message: " + ex.Message, ex);
                 return false;
             }
             return true;
