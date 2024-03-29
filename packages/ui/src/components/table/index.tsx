@@ -176,31 +176,35 @@ export const Table = ({
     <>
       <div className="flex  flex-col">
         <div className="mb-8 flex w-full flex-row items-center justify-between">
-          <div className="flex w-3/5 items-center gap-4">
-            <FormInput
-              {...search}
-              startIcon="SearchIcon"
-              color="adminPortalBg"
-              className="h-auto w-3/4"
-              isAdminPortalField
-            />
-            {!!filters?.length && (
-              <Button
-                type="filled"
+          {search && (
+            <div className="flex w-3/5 items-center gap-4">
+              <FormInput
+                {...search}
+                startIcon="SearchIcon"
                 color="adminPortalBg"
-                textColor="textMid"
-                className="text-textMid  mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
-                onClick={() => setOpenFilters(!openFilters)}
-              >
-                {!!selectedFilters?.length ? `${selectedFilters?.length} ` : ''}
-                Filter
-                {renderIcon(
-                  openFilters ? 'ChevronUpIcon' : 'ChevronDownIcon',
-                  'text-textMid h-6 w-6'
-                )}
-              </Button>
-            )}
-          </div>
+                className="h-auto w-3/4"
+                isAdminPortalField
+              />
+              {!!filters?.length && (
+                <Button
+                  type="filled"
+                  color="adminPortalBg"
+                  textColor="textMid"
+                  className="text-textMid  mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
+                  onClick={() => setOpenFilters(!openFilters)}
+                >
+                  {!!selectedFilters?.length
+                    ? `${selectedFilters?.length} `
+                    : ''}
+                  Filter
+                  {renderIcon(
+                    openFilters ? 'ChevronUpIcon' : 'ChevronDownIcon',
+                    'text-textMid h-6 w-6'
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
           {!!actionButton && (
             <Button
               type="filled"

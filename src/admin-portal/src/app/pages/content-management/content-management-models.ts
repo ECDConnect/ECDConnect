@@ -36,6 +36,13 @@ export enum ActivitiesTitles {
   SmallLargeGroupActivities = 'Small/large group activities',
 }
 
+export enum NatalTypes {
+  Info = 'Info',
+  HealthPromotion = 'Health promotion',
+  Video = 'Video',
+  Infographic = 'Infographic',
+}
+
 export interface DynamicFormTemplate {
   title: string;
   fields: FormTemplateField[];

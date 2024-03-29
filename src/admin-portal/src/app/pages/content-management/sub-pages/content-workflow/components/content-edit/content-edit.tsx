@@ -90,7 +90,7 @@ export default function ContentEdit({
     errors: errors,
     control: control,
   };
-
+  console.log({ contentValues });
   const { type: formType } = useWatch({ control });
 
   const mutationName = `update${contentType?.name}`;
@@ -460,39 +460,39 @@ export default function ContentEdit({
                     content?.name ?? content?.type ?? content?.title
                   )}
               </h3>
-              {selectedTab === 2 || selectedTab === 3}{' '}
-              {
-                <>
-                  <div className="flex items-center gap-2">
-                    <Typography
-                      className="truncate"
-                      type="h4"
-                      weight="bold"
-                      color="textMid"
-                      text={'Section:'}
-                    />
-                    <Typography
-                      type="h4"
-                      color="textMid"
-                      text={content?.section}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Typography
-                      className="truncate"
-                      type="h4"
-                      weight="bold"
-                      color="textMid"
-                      text={'Section:'}
-                    />
-                    <Typography
-                      type="h4"
-                      color="textMid"
-                      text={content?.childType}
-                    />
-                  </div>
-                </>
-              }
+              {selectedTab === 2 ||
+                (selectedTab === 3 && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Typography
+                        className="truncate"
+                        type="h4"
+                        weight="bold"
+                        color="textMid"
+                        text={'Section:'}
+                      />
+                      <Typography
+                        type="h4"
+                        color="textMid"
+                        text={content?.section}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Typography
+                        className="truncate"
+                        type="h4"
+                        weight="bold"
+                        color="textMid"
+                        text={'Section:'}
+                      />
+                      <Typography
+                        type="h4"
+                        color="textMid"
+                        text={content?.childType}
+                      />
+                    </div>
+                  </>
+                ))}
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               {!!cancelCompare && (

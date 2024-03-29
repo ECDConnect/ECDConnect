@@ -13,9 +13,9 @@ import { ContentLoader } from '../../../../components/content-loader/content-loa
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
-  ActivitiesTitles,
   ContentManagementView,
   FieldType,
+  NatalTypes,
 } from '../../content-management-models';
 import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import {
@@ -26,6 +26,8 @@ import { BulkActionStatus } from '../../../../components/ui-table/type';
 import { LanguageId } from '../../../../constants/language';
 import { GetNatalRecordsForType, GetTenantContext } from '@ecdlink/graphql';
 import { TenantContext } from '../../../../utils/constants';
+import { LoadingSpinner, Table } from '@ecdlink/ui';
+import { formatDate } from '../../../../utils/date-utils/date-utils';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -254,25 +256,6 @@ export default function ContentList({
           (item: { type: string }) => item.type === 'antenatal'
         );
 
-        if (
-          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
-        ) {
-          setTableData(
-            moreInforItems?.filter(
-              (item) =>
-                item?.type === 'Small group' || item?.type === 'Large group'
-            )
-          );
-          return;
-        }
-
-        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
-          setTableData(
-            moreInforItems?.filter((item) => item?.type === 'Story time')
-          );
-          return;
-        }
-
         setTableData(
           anteNatalData?.length > 0 ? anteNatalData : moreInforItems
         );
@@ -344,6 +327,25 @@ export default function ContentList({
 
   const viewSelectedRow = useCallback(
     (item?: any) => {
+      if (selectedTab === 2 || selectedTab === 3) {
+        const selecteditem = natalData?.natalRecordsForType?.find(
+          (record) => record?.title === item?.title
+        );
+        const currentType = dataTypes.contentTypes.find(
+          (x: ContentTypeDto) =>
+            Number(x.id) === Number(selecteditem?.childContentTypeId)
+        );
+        setSelectedType(currentType);
+        setNatalType(Number(selecteditem?.childContentTypeId));
+        const model: ContentManagementView = {
+          content: selecteditem,
+          languageId: languageId,
+        };
+
+        viewContent(model);
+
+        return;
+      }
       const currentType = dataTypes.contentTypes.find(
         (x: ContentTypeDto) => x.id === item?.childContentTypeId
       );
@@ -359,6 +361,8 @@ export default function ContentList({
     [
       dataTypes.contentTypes,
       languageId,
+      natalData?.natalRecordsForType,
+      selectedTab,
       setNatalType,
       setSelectedType,
       viewContent,
@@ -376,6 +380,83 @@ export default function ContentList({
     },
     [languageId, refetchContent, refreshParent]
   );
+  const natalDataFiltered = useMemo(() => {
+    return searchValue !== 'Search by title or content...'
+      ? filterByValue(natalData?.natalRecordsForType, searchValue)
+      : natalData?.natalRecordsForType;
+  }, [filterByValue, natalData?.natalRecordsForType, searchValue]);
+
+  const columns = useMemo(
+    () => [
+      { field: 'title', use: 'Title' },
+      { field: 'section', use: 'Section' },
+      { field: `availableLanguages`, use: 'Languages' },
+      { field: 'childType', use: 'Type' },
+      { field: 'updatedDate', use: 'Last updated' },
+    ],
+    []
+  );
+
+  const chipColor = (type?: string) => {
+    switch (type) {
+      case NatalTypes.HealthPromotion:
+        return 'bg-secondary';
+      case NatalTypes.Info:
+        return 'bg-tertiary';
+      case NatalTypes.Infographic:
+        return 'bg-infographicBg';
+      case NatalTypes.Video:
+        return 'bg-successMain';
+      default:
+        return 'bg-primary';
+    }
+  };
+
+  const handleTypesStyles = useCallback((type: string) => {
+    return (
+      <div
+        className={
+          `${chipColor(type)}` +
+          ' m-1 rounded-full py-1 px-3 text-xs text-white'
+        }
+      >
+        {type}
+      </div>
+    );
+  }, []);
+
+  const rows =
+    tenantData &&
+    tenantData.tenantContext &&
+    tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+    natalData &&
+    natalData?.natalRecordsForType &&
+    natalDataFiltered &&
+    natalDataFiltered?.map((item) => ({
+      title: item?.title,
+      section: item?.section,
+      availableLanguages: (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {item?.availableLanguages?.map((item: any, index: number) => {
+            const language = languages?.find(
+              (language) => language?.id === item?.id || language?.id === item
+            );
+            return (
+              <div
+                key={`language_` + item?.id}
+                className={' text-textMid m-1 rounded-full py-1 text-xs'}
+              >
+                {index === item?.availableLanguages?.length - 1
+                  ? `${language?.locale}`
+                  : `${language?.locale};`}
+              </div>
+            );
+          })}
+        </div>
+      ),
+      childType: handleTypesStyles(item?.childType),
+      updatedDate: formatDate(item?.updatedDate),
+    }));
 
   const renderTables = useMemo(() => {
     if (
@@ -387,22 +468,10 @@ export default function ContentList({
       (selectedTab === 2 || selectedTab === 3)
     ) {
       return (
-        <UiTable
-          columns={[
-            { field: 'title', use: 'Title' },
-            { field: 'section', use: 'Section' },
-            { field: `availableLanguages`, use: 'Languages' },
-            { field: 'childType', use: 'Type' },
-            { field: 'updatedDate', use: 'Last updated' },
-          ]}
-          rows={
-            searchValue !== 'Search by title or content...'
-              ? filterByValue(natalData?.natalRecordsForType, searchValue)
-              : natalData?.natalRecordsForType
-          }
-          viewRow={hasPermission(PermissionEnum.update_user) && viewSelectedRow}
-          noBulkSelection={true}
-          languages={languages}
+        <Table
+          columns={columns}
+          rows={rows?.length > 0 ? rows : []}
+          onClickRow={(item) => viewSelectedRow(item)}
         />
       );
     } else {
@@ -440,6 +509,7 @@ export default function ContentList({
       );
     }
   }, [
+    columns,
     displayFields,
     filterByValue,
     hasPermission,
@@ -447,6 +517,7 @@ export default function ContentList({
     loadingContent,
     natalData,
     onBulkActionCallback,
+    rows,
     searchValue,
     selectedTab,
     tableData,
@@ -472,10 +543,10 @@ export default function ContentList({
               />
             </div>
             {hasPermission(PermissionEnum.create_static) &&
-              contentType?.name !== 'Consent' &&
-              contentType?.name !== 'MoreInformation' &&
-              contentType?.name !== 'ProgressTrackingLevel' &&
-              contentType?.name !== 'ProgressTrackingCategory' && (
+              contentType?.name !== ContentTypes.CONSENT &&
+              contentType?.name !== ContentTypes.MORE_INFORMATION &&
+              contentType?.name !== ContentTypes.POSTNATAL &&
+              contentType?.name !== ContentTypes.ANTENATAL && (
                 <button
                   onClick={() => {
                     hasPermission(PermissionEnum.update_static) &&
