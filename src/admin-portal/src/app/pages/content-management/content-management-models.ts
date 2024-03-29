@@ -13,6 +13,7 @@ export enum FieldType {
   StaticLink = 'staticLink',
   ColorPicker = 'color-picker',
   DatePicker = 'date-picker',
+  video = 'video',
 }
 
 export enum ContentName {

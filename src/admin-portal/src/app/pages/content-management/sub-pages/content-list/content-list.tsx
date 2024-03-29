@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useQuery } from '@apollo/client';
+import { gql, useLazyQuery, useQuery } from '@apollo/client';
 import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
@@ -37,6 +37,10 @@ export interface ContentListProps {
   onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   searchValue?: string;
   choosedSectionTitle?: string;
+  specialType?: string;
+  setNatalType?: (item: number) => void;
+  setSelectedType?: (item: ContentTypeDto) => void;
+  dataTypes?: any;
 }
 
 export default function ContentList({
@@ -49,13 +53,17 @@ export default function ContentList({
   onSearch,
   searchValue,
   choosedSectionTitle,
+  specialType,
+  setNatalType,
+  setSelectedType,
+  dataTypes,
 }: ContentListProps) {
   const { hasPermission } = useUser();
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
   const [buttonText, setButtonText] = useState(contentType.name);
-  console.log({ contentType });
+
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
   const filterByValue = useCallback((array, value) => {
@@ -181,11 +189,14 @@ export default function ContentList({
     },
   });
 
-  const {
-    data: natalData,
-    refetch: refetchNatalContent,
-    loading: loadingNatalContent,
-  } = useQuery(GetNatalRecordsForType, {
+  const [
+    natalQuery,
+    {
+      data: natalData,
+      refetch: refetchNatalContent,
+      loading: loadingNatalContent,
+    },
+  ] = useLazyQuery(GetNatalRecordsForType, {
     fetchPolicy: 'cache-and-network',
     variables: {
       contentTypeId: 29,
@@ -194,11 +205,31 @@ export default function ContentList({
     },
   });
 
+  useEffect(() => {
+    if (selectedTab === 2) {
+      natalQuery({
+        variables: {
+          contentTypeId: 29,
+          natalType: 'postnatal',
+          localeId: languageId,
+        },
+      });
+    }
+
+    if (selectedTab === 3) {
+      natalQuery({
+        variables: {
+          contentTypeId: 29,
+          natalType: 'antenatal',
+          localeId: languageId,
+        },
+      });
+    }
+  }, [languageId, natalQuery, selectedTab]);
+
   const { data: tenantData } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
-
-  console.log({ natalData });
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
@@ -311,30 +342,49 @@ export default function ContentList({
     });
   };
 
-  const viewSelectedRow = (item?: any) => {
-    const model: ContentManagementView = {
-      content: item,
-      languageId: languageId,
-    };
+  const viewSelectedRow = useCallback(
+    (item?: any) => {
+      const currentType = dataTypes.contentTypes.find(
+        (x: ContentTypeDto) => x.id === item?.childContentTypeId
+      );
+      setSelectedType(currentType);
+      setNatalType(Number(item?.childContentTypeId));
+      const model: ContentManagementView = {
+        content: item,
+        languageId: languageId,
+      };
 
-    viewContent(model);
-  };
+      viewContent(model);
+    },
+    [
+      dataTypes.contentTypes,
+      languageId,
+      setNatalType,
+      setSelectedType,
+      viewContent,
+    ]
+  );
 
-  const onBulkActionCallback = (status: BulkActionStatus) => {
-    if (status !== 'success') return;
+  const onBulkActionCallback = useCallback(
+    (status: BulkActionStatus) => {
+      if (status !== 'success') return;
 
-    refetchContent({
-      localeId: languageId.toString(),
-    });
-    refreshParent();
-  };
+      refetchContent({
+        localeId: languageId.toString(),
+      });
+      refreshParent();
+    },
+    [languageId, refetchContent, refreshParent]
+  );
 
   const renderTables = useMemo(() => {
     if (
       tenantData &&
       tenantData.tenantContext &&
       tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
-      contentType.name === 'sdf'
+      natalData &&
+      natalData?.natalRecordsForType &&
+      (selectedTab === 2 || selectedTab === 3)
     ) {
       return (
         <UiTable
@@ -342,6 +392,7 @@ export default function ContentList({
             { field: 'title', use: 'Title' },
             { field: 'section', use: 'Section' },
             { field: `availableLanguages`, use: 'Languages' },
+            { field: 'childType', use: 'Type' },
             { field: 'updatedDate', use: 'Last updated' },
           ]}
           rows={
@@ -389,13 +440,12 @@ export default function ContentList({
       );
     }
   }, [
-    contentType.name,
     displayFields,
     filterByValue,
     hasPermission,
     languages,
     loadingContent,
-    natalData?.natalRecordsForType,
+    natalData,
     onBulkActionCallback,
     searchValue,
     selectedTab,

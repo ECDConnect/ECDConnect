@@ -17,6 +17,8 @@ import { CombinedDatePickers } from '../../../../components/combined-date-picker
 import { ContentForms } from '../../../../constants/content-management';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
+const acceptedVideoFormats = ['mp4', 'mov'];
+const allowedVideoFileSize = 13631488;
 
 export interface DynamicFormProps {
   template: DynamicFormTemplate;
@@ -166,99 +168,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
       switch (type) {
         case FieldType.Text:
-          if (propName === 'subType' && isSmallLargeGroup) {
-            return null;
-          }
-          if (
-            propName === 'type' &&
-            choosedSectionTitle === ActivitiesTitles.StoryActivities
-          ) {
-            return null;
-          }
-          if (
-            propName === 'type' &&
-            isSmallLargeGroup &&
-            template?.title === ContentForms.ACTIVITY_FROM
-          ) {
-            return (
-              <div key={propName} className={contentWrapper}>
-                <label
-                  htmlFor={propName}
-                  className="mb-1 block text-lg font-medium text-gray-800"
-                >
-                  {field?.title}
-                </label>
-                {disableActivitiesInputs && (
-                  <Alert
-                    className="mt-2 mb-4 rounded-md"
-                    message={`To edit this field, go to the English version.`}
-                    type="warning"
-                  />
-                )}
-                <div
-                  className={`bg-uiBg sm:col-span-12 ${
-                    disableActivitiesInputs
-                      ? 'pointer-events-none opacity-25'
-                      : ''
-                  }`}
-                >
-                  <ButtonGroup
-                    options={smallLargeGroupOptions}
-                    onOptionSelected={(value: string | string[]) => {
-                      onStateChange(propName, value);
-                    }}
-                    color="tertiary"
-                    selectedOptions={
-                      field.contentValue
-                        ? field.contentValue.value
-                        : contentView?.content?.[propName]
-                    }
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full rounded-2xl'}
-                    multiple={false}
-                  />
-                </div>
-                {isRequired &&
-                  initialValues?.hasOwnProperty(propName) &&
-                  !initialValues[propName] && (
-                    <Typography
-                      type="help"
-                      color="errorMain"
-                      text={requiredMessage}
-                    />
-                  )}
-              </div>
-            );
-          }
-          if (
-            propName === 'type' &&
-            template?.title === ContentForms.ACTIVITY_FROM &&
-            template?.fields?.find((item) => item?.propName === 'name')
-              ?.contentValue !== undefined
-          ) {
-            return null;
-          }
-          if (
-            propName === 'subType' &&
-            choosedSectionTitle === ActivitiesTitles.StoryActivities
-          ) {
-            return (
-              <div key={propName} className={contentWrapper}>
-                <div className="sm:col-span-12">
-                  <DynamicSelector
-                    title={isRequired ? field.title + ' *' : field.title}
-                    isReview={false}
-                    contentValue={field.contentValue}
-                    languageId={defaultLanguageId}
-                    optionDefinition={field.optionDefinition}
-                    setSelectedItems={(value) => onStateChange(propName, value)}
-                    isSkillType={true}
-                    choosedSectionTitle={choosedSectionTitle}
-                  />
-                </div>
-              </div>
-            );
-          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -368,120 +277,38 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               </div>
             </div>
           );
-        case FieldType.Link: {
-          const englishCatValues = contentView?.content?.[propName]
-            ?.map((item) => item?.id)
-            .toString();
-          let subCategoriesValue = template?.fields.find(
-            (item) => item?.propName === propName
-          );
-          subCategoriesValue = {
-            ...subCategoriesValue,
-            contentValue: {
-              localeId: defaultLanguageId,
-              value: englishCatValues,
-              contentTypeFieldId: '1',
-              contentTypeField: {
-                fieldTypeId: '1',
-                displayMainTable: true,
-                displayName: 'GT - Skills',
-                displayPage: 1,
-                fieldName: 'subCategories',
-                fieldOrder: 6,
-                isRequired: true,
-                isActive: true,
-                dataLinkName: '',
-                fieldType: {
-                  name: 'fieldType',
-                  description: '',
-                  dataType: '',
-                  assemblyDataType: '',
-                  graphQLDataType: '',
-                },
-              },
-            },
-          };
-
-          if (title === 'G T -  Skills' || title === 'Skills') {
-            if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
-              return null;
-            }
-
-            if (contentView?.content && disableActivitiesInputs) {
-              const valueFormattedToArray = initialValues[propName]?.split(',');
-              setSmallLargeGroupsSkills(valueFormattedToArray);
-              return (
-                <div key={propName} className={contentWrapper}>
-                  {disableActivitiesInputs && (
-                    <Alert
-                      className="mt-2 mb-4 rounded-md"
-                      message={`To edit this field, go to the English version.`}
-                      type="warning"
-                    />
-                  )}
-                  <div
-                    className={`sm:col-span-12 ${
-                      disableActivitiesInputs
-                        ? 'pointer-events-none opacity-25'
-                        : ''
-                    }`}
-                  >
-                    <DynamicSelector
-                      title={isRequired ? field.title + ' *' : field.title}
-                      isReview={false}
-                      contentValue={
-                        field.contentValue || subCategoriesValue?.contentValue
-                      }
-                      languageId={defaultLanguageId}
-                      optionDefinition={field.optionDefinition}
-                      setSelectedItems={(value) =>
-                        onStateChange(propName, value)
-                      }
-                      isSkillType={true}
-                    />
-                  </div>
-                  {((isRequired &&
-                    initialValues?.hasOwnProperty(propName) &&
-                    !initialValues[propName]) ||
-                    valueFormattedToArray?.length < 2) && (
+        case FieldType.video: {
+          return (
+            <div key={propName} className={contentWrapper}>
+              <Typography type="h4" color="textDark" text={'Upload video'} />
+              <div className="sm:col-span-12">
+                <FormFileInput
+                  acceptedFormats={acceptedVideoFormats}
+                  label={isRequired ? title + ' *' : title}
+                  nameProp={propName}
+                  contentUrl={
+                    field.contentValue ? field.contentValue.value : undefined
+                  }
+                  returnFullUrl={true}
+                  setValue={setValue}
+                  allowedFileSize={allowedVideoFileSize}
+                  isImage={false}
+                  isVideoInput={true}
+                />
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
                     <Typography
                       type="help"
                       color="errorMain"
                       text={requiredMessage}
                     />
                   )}
-                </div>
-              );
-            }
-            const skills = initialValues[propName];
-            const skillsArray = skills?.split(',');
-            setSmallLargeGroupsSkills(skillsArray);
-            return (
-              <div key={propName} className={contentWrapper}>
-                <div className="sm:col-span-12">
-                  <DynamicSelector
-                    title={field.title}
-                    isReview={false}
-                    contentValue={field.contentValue}
-                    languageId={defaultLanguageId}
-                    optionDefinition={field.optionDefinition}
-                    setSelectedItems={(value) => onStateChange(propName, value)}
-                    isSkillType={true}
-                  />
-                </div>
-                {((isRequired &&
-                  initialValues?.hasOwnProperty(propName) &&
-                  !initialValues[propName]) ||
-                  skillsArray?.length < 2) && (
-                  <Typography
-                    type="help"
-                    color="errorMain"
-                    text={requiredMessage}
-                  />
-                )}
               </div>
-            );
-          }
+            </div>
+          );
+        }
+        case FieldType.Link: {
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
