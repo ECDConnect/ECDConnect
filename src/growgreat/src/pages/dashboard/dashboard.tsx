@@ -128,12 +128,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [healthCareWorker, isFromLogin]);
 
-  useEffect(() => {
-    if (!healthCareWorker?.isRegistered || !healthCareWorker.languageId) {
-      stopService();
-    }
-  }, []);
-
   function onNavigation(navItem: any) {
     history.push(navItem.href, navItem.params);
   }
