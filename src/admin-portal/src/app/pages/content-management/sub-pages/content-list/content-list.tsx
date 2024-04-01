@@ -505,6 +505,7 @@ export default function ContentList({
           }
           onBulkActionCallback={onBulkActionCallback}
           languages={languages}
+          noBulkSelection={true}
         />
       );
     }
@@ -539,7 +540,6 @@ export default function ContentList({
                 className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
                 placeholder={searchText}
                 onChange={onSearch}
-                // value={searchValue}
               />
             </div>
             {hasPermission(PermissionEnum.create_static) &&
