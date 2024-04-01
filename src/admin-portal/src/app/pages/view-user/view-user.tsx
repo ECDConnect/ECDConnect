@@ -4,6 +4,7 @@ import {
   ProfileAvatar,
   classNames,
   StatusChip,
+  Dropdown,
 } from '@ecdlink/ui';
 import {
   JSXElementConstructor,
@@ -15,7 +16,6 @@ import {
 import { useHistory } from 'react-router-dom';
 import { ArrowLeftIcon, ThumbUpIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useQuery } from '@apollo/client';
-import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   GetHealthCareWorkerByUserId,
   GetTenantContext,
@@ -23,7 +23,7 @@ import {
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
 } from '@ecdlink/graphql';
-import { subDays } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   UsersRolesTypeEnum,
   UsersRouteRedirectTypeEnum,
@@ -38,6 +38,7 @@ import { HealthCareWorkerIssues } from './components/health-care-worker-issues/h
 import { HalthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
 import { GrowGreatRoles, TenantContext } from '../../utils/constants';
+import ReactDatePicker from 'react-datepicker';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -67,8 +68,8 @@ const showNotification = (
 
 export function ViewUser(props: any) {
   const currentDate = new Date();
-  const startDate = subDays(currentDate, 30);
-  const endDate = currentDate;
+  const startDate1 = subDays(currentDate, 30);
+  const endDate1 = currentDate;
   const connectUsage = props?.location?.state?.connectUsage;
   const connectUsageColor = props?.location?.state?.connectUsageColor;
   const hcwId = props?.location?.state?.hcwId;
@@ -80,14 +81,32 @@ export function ViewUser(props: any) {
   const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
-  const [selectedRange, setSelectedRange] = useState<Date[]>([
-    startDate,
-    endDate,
-  ]);
+  // const [selectedRange, setSelectedRange] = useState<Date[]>([
+  //   startDate,
+  //   endDate,
+  // ]);
 
-  const handleDateChange = (range: Date[]) => {
-    setSelectedRange(range);
+  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const [startDate, setStartDate] = useState(startDate1);
+  const [endDate, setEndDate] = useState(endDate1);
+
+  const onChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+    if (start && end) {
+      setFilterDateAdded((prevState) => !prevState);
+    }
   };
+
+  const dateDropdownValue = useMemo(
+    () =>
+      startDate && endDate
+        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
+        : '',
+    [endDate, startDate]
+  );
+
   const history = useHistory();
 
   let userId = localStorage.getItem('selectedUser');
@@ -131,11 +150,18 @@ export function ViewUser(props: any) {
           chwData?.GetHealthCareWorkerById?.user?.id ??
           props.location.state.userId ??
           userId,
-        startDate: selectedRange[0]?.toISOString() ?? startDate.toISOString(),
-        endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
+        startDate: startDate?.[0]?.toISOString() ?? startDate?.toISOString(),
+        endDate: endDate?.[1]?.toISOString() ?? endDate?.toISOString(),
       },
     });
-  }, [selectedRange]);
+  }, [
+    chwData?.GetHealthCareWorkerById?.user?.id,
+    endDate,
+    getHealthCareWorkerSummaryForPeriod,
+    props.location.state.userId,
+    startDate,
+    userId,
+  ]);
 
   const [getTeamLeadSummary, { data: teamLeadSummary }] = useLazyQuery(
     GetTeamLeadSummary,
@@ -300,9 +326,7 @@ export function ViewUser(props: any) {
           type="button"
           className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
         >
-          <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
-            {' '}
-          </ArrowLeftIcon>
+          <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
           Back
           <span className="px-1 text-gray-400">
             {' '}
@@ -411,10 +435,37 @@ export function ViewUser(props: any) {
           data.tenantContext.applicationName === TenantContext.GrowGreat && (
             <div className=" flex justify-end">
               <div>
-                <CustomDateRangePicker
-                  handleDateChange={handleDateChange}
-                  selectedRange={selectedRange}
-                />
+                {!filterDateAdded && (
+                  <div
+                    onClick={() => setFilterDateAdded(!filterDateAdded)}
+                    className="mr-1"
+                  >
+                    <Dropdown
+                      fillType="filled"
+                      textColor={'textLight'}
+                      fillColor={endDate ? 'secondary' : 'white'}
+                      placeholder={dateDropdownValue || 'Date invited'}
+                      labelColor={endDate ? 'white' : 'textLight'}
+                      list={[]}
+                      onChange={(item) => {}}
+                      className="w-full text-sm text-white"
+                    />
+                  </div>
+                )}
+
+                {filterDateAdded && (
+                  <div>
+                    <ReactDatePicker
+                      selected={startDate}
+                      onChange={onChange}
+                      startDate={startDate}
+                      endDate={endDate}
+                      selectsRange={true}
+                      inline
+                      shouldCloseOnSelect={true}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
