@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         {
             List<PortalNatalModel> results = new List<PortalNatalModel>();
             var allNatal = contentRepo.GetAll(contentTypeId, localeId);
-            var natalTypeId = natalType == "postnatal" ? GetPostnatalId(contentRepo, localeId) : GetAntenatalId(contentRepo, localeId);
+            var natalTypeId = natalType.ToLower() == "postnatal" ? GetPostnatalId(contentRepo, localeId) : GetAntenatalId(contentRepo, localeId);
 
             foreach (var natalItem in allNatal)
             {

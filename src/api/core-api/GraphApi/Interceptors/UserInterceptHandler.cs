@@ -1,9 +1,6 @@
 ﻿using ECDLink.Core.Models;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Interceptors;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Interceptors

@@ -1,17 +1,13 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Managers;
 using HotChocolate;
-using HotChocolate.Types;
-using ECDLink.Security.Helpers;
-using ECDLink.Tenancy.Context;
-using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
 {

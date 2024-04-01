@@ -6533,7 +6533,6 @@ export type Mutation = {
   sendAnyGGNotificationWithReplacements: Scalars['Boolean'];
   sendAnyNotification: Scalars['Boolean'];
   sendAnyNotificationWithReplacements: Scalars['Boolean'];
-  sendBulkInviteToApp?: Maybe<BulkInvitationResult>;
   sendBulkInviteToPortal?: Maybe<BulkInvitationResult>;
   sendClubleaderRoleAssignedNotification: Scalars['Boolean'];
   sendCoachAddresUpdatedScheduleVisitNotification: Scalars['Boolean'];
@@ -6566,7 +6565,6 @@ export type Mutation = {
   sendGGPointsTeamPlacementNotification: Scalars['Boolean'];
   sendGGPointsYearlySummaryNotification: Scalars['Boolean'];
   sendGGPregnantMomLowMUACNotification: Scalars['Boolean'];
-  sendGGRedAlertMaternalDistressNotification: Scalars['Boolean'];
   sendGGReferDOHANotification: Scalars['Boolean'];
   sendGGReferSASSANotification: Scalars['Boolean'];
   sendGGReferralDangerSignsNotification: Scalars['Boolean'];
@@ -8587,10 +8585,6 @@ export type MutationSendAnyNotificationWithReplacementsArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendBulkInviteToAppArgs = {
-  userIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type MutationSendBulkInviteToPortalArgs = {
   userIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -8761,11 +8755,6 @@ export type MutationSendGgPointsYearlySummaryNotificationArgs = {
 
 export type MutationSendGgPregnantMomLowMuacNotificationArgs = {
   caregiverFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgRedAlertMaternalDistressNotificationArgs = {
-  clientFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -11059,6 +11048,7 @@ export type PortalUserHcwModel = {
 export type PortalUserModel = {
   __typename?: 'PortalUserModel';
   connectUsage?: Maybe<Scalars['String']>;
+  connectUsageColor?: Maybe<Scalars['String']>;
   contactPreference?: Maybe<Scalars['String']>;
   dateOfBirth?: Maybe<Scalars['DateTime']>;
   email?: Maybe<Scalars['String']>;
@@ -11083,6 +11073,7 @@ export type PortalUserModel = {
 export type PortalUserModelFilterInput = {
   and?: InputMaybe<Array<PortalUserModelFilterInput>>;
   connectUsage?: InputMaybe<StringOperationFilterInput>;
+  connectUsageColor?: InputMaybe<StringOperationFilterInput>;
   contactPreference?: InputMaybe<StringOperationFilterInput>;
   dateOfBirth?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   email?: InputMaybe<StringOperationFilterInput>;
@@ -11107,6 +11098,7 @@ export type PortalUserModelFilterInput = {
 
 export type PortalUserModelSortInput = {
   connectUsage?: InputMaybe<SortEnumType>;
+  connectUsageColor?: InputMaybe<SortEnumType>;
   contactPreference?: InputMaybe<SortEnumType>;
   dateOfBirth?: InputMaybe<SortEnumType>;
   email?: InputMaybe<SortEnumType>;
@@ -12801,6 +12793,7 @@ export type Query = {
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   districtsAndStats?: Maybe<Array<Maybe<DistrictStatsModel>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
+  downloadGGStatsFile?: Maybe<FileModel>;
   entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
