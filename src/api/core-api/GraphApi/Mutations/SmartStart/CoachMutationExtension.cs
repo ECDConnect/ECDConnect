@@ -31,12 +31,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
           [Service] ApplicationUserManager userManager,
-          [Service] IHttpContextAccessor accessor,
           string userId)
         {
             // TODO: Make a service for invitations.
             SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, accessor, userId);
+            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]

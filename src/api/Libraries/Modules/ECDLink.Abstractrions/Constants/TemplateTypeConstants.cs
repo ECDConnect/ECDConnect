@@ -15,6 +15,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string VerifyEmailAddress = "verify-email-address";
         public const string SuperadminNotifyEmailChanged = "superadmin-notify-email-changed";
         public const string AdminPortalInvitation = "admin-portal-invitation";
+        public const string TeamLeadInvitation = "team-lead-portal-invitation";
         public const string ForgotPasswordPortal = "forgot-password-portal";
 
         //app notifications

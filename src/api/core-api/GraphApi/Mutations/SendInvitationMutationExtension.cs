@@ -29,44 +29,47 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
           [Service] ApplicationUserManager userManager,
-          [Service] IHttpContextAccessor accessor,
           string userId,
           bool inviteToPortal = false)
         {
-            var userToInvite = await userManager.FindByIdAsync(userId);
-
-            if (userToInvite is default(ApplicationUser))
-            {
-                return false;
-            }
-
-            var token = await invitationManager.GenerateTokenAsync(userToInvite);
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                return false;
-            }
-
             if (inviteToPortal)
             {
-                // Administrators and TLs get portal invite
-                var userToInviteHasRole = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
-                if (userToInviteHasRole)
+                var userToInvite = await userManager.FindByIdAsync(userId);
+
+                if (userToInvite is default(ApplicationUser))
                 {
-                    var currentUserId = accessor.HttpContext.GetUser().Id;
-                    var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-                    var currentUserIsAdminOrTL = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
-                    if (currentUserIsAdminOrTL)
-                        await notificationManager.SendAdminInvitationAsync(userToInvite, token);
+                    return false;
+                }
+
+                var token = await invitationManager.GenerateTokenAsync(userToInvite);
+
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return false;
+                }
+            
+                var userIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
+                var userIsTL = await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
+                var userIsHCW = await userManager.IsInRoleAsync(userToInvite, RolesGG.HEALTH_CARE_WORKER);
+                if (userIsAdmin)
+                {
+                    await notificationManager.SendAdminInvitationAsync(userToInvite, token);
+                } 
+                else if (userIsTL)
+                {
+                    await notificationManager.SendTeamLeadInvitationAsync(userToInvite, token);
+                }
+                else if (userIsHCW)
+                {
+                    await notificationManager.SendInvitationAsync(userToInvite, token);
+                }
+                else
+                {
+                    await notificationManager.SendInvitationAsync(userToInvite, token);
                 }
             }
-            else
-            {
-                // HCW's notification
-                await notificationManager.SendInvitationAsync(userToInvite, token);
-            }
 
-            return true;
+            return inviteToPortal;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
@@ -96,15 +99,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         result.Failed.Add(userToInvite.Id.ToString());
                         continue;
                     }
-                    // Administrators and TLs get portal invite
-                    var currentUserIsAdminOrTL = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
-                    if (currentUserIsAdminOrTL)
+
+                    var userIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
+                    var userIsTL = await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
+                    var userIsHCW = await userManager.IsInRoleAsync(userToInvite, RolesGG.HEALTH_CARE_WORKER);
+                    if (userIsAdmin)
                     {
                         await notificationManager.SendAdminInvitationAsync(userToInvite, token);
-
-                    } else
+                    }
+                    else if (userIsTL)
                     {
-                        // HCW's notification
+                        await notificationManager.SendTeamLeadInvitationAsync(userToInvite, token);
+                    }
+                    else if (userIsHCW)
+                    {
+                        await notificationManager.SendInvitationAsync(userToInvite, token);
+                    }
+                    else
+                    {
                         await notificationManager.SendInvitationAsync(userToInvite, token);
                     }
 
@@ -113,55 +125,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 catch
                 {
                     result.Failed.Add(userId);
-                }
-            }
-
-            return result;
-        }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public async Task<BulkInvitationResult> SendBulkInviteToApp(
-          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-          [Service] InvitationNotificationManager notificationManager,
-          [Service] ApplicationUserManager userManager,
-          [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
-          [Service] IHttpContextAccessor accessor,
-          IEnumerable<string> userIds)
-        {
-            // Create result
-            var result = new BulkInvitationResult() { Failed = userIds.ToList(), Success = new List<string>() };
-
-            // Get current and other admins
-            var currentUserId = accessor.HttpContext.GetUser().Id;
-            var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-            var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
-            var guidUserIds = userIds.Select(x => Guid.Parse(x)).ToList();
-            var inviteUsers = await userManager.Users.Where(u => guidUserIds.Contains(u.Id) && u.TenantId == TenantExecutionContext.Tenant.Id).ToListAsync();
-
-            // Only admins can send invitations to admins
-            if (!currentUserIsAdmin)
-                return result;
-
-            // Add reqested users that aren't in the list to failedInvitations
-            result.Failed = guidUserIds.Except(inviteUsers.Select(u => u.Id)).Select(x => x.ToString()).ToList();
-
-            foreach (var invitedUser in inviteUsers)
-            {
-                try
-                {
-                    var token = await invitationManager.GenerateTokenAsync(invitedUser);
-
-                    if (string.IsNullOrWhiteSpace(token))
-                    {
-                        result.Failed.Add(invitedUser.Id.ToString());
-                        continue;
-                    }
-                    await notificationManager.SendInvitationAsync(invitedUser, token);
-                    result.Success.Add(invitedUser.Id.ToString());
-                }
-                catch
-                {
-                    result.Failed.Add(invitedUser.Id.ToString());
                 }
             }
 

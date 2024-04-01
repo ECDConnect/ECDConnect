@@ -1,7 +1,6 @@
 import {
   Config,
   initialRegisterValues,
-  LocalStorageKeys,
   RegisterRequestModel,
   registerSchema,
   useTheme,
@@ -52,37 +51,38 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   const termsState = watch('acceptedTerms');
   const acceptedTerms = termsState && isValid;
 
-  console.log(resetToken);
+  console.log('resetToken', resetToken);
+  console.log('Config', Config);
 
   const registerNewUser = async () => {
-    if (isValid) {
-      setIsLoading(true);
-      const body: RegisterRequestModel = {
-        username: formValues.username,
-        password: formValues.password,
-        token: resetToken,
-        // acceptedTerms: formValues.acceptedTerms,
-      };
-      const isAuthenticated = await registerUser(body, Config.authApi).catch(
-        () => {
-          setDisplayError(true);
-          setIsLoading(false);
-        }
-      );
-
-      if (isAuthenticated) {
-        setIsLoading(false);
-        logout();
-        history.push('/');
-      } else {
-        setIsLoading(false);
+    //  if (isValid) {
+    setIsLoading(true);
+    const body: RegisterRequestModel = {
+      username: formValues.username,
+      password: formValues.password,
+      token: resetToken,
+      // acceptedTerms: formValues.acceptedTerms,
+    };
+    const isAuthenticated = await registerUser(body, Config.authApi).catch(
+      () => {
         setDisplayError(true);
+        setIsLoading(false);
       }
+    );
 
-      setTimeout(() => {
-        setDisplayError(false);
-      }, 5000);
+    if (isAuthenticated) {
+      setIsLoading(false);
+      logout();
+      history.push('/');
+    } else {
+      setIsLoading(false);
+      setDisplayError(true);
     }
+
+    setTimeout(() => {
+      setDisplayError(false);
+    }, 5000);
+    // }
   };
 
   const getLogoUrl = () => {
@@ -111,10 +111,10 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   nameProp={'username'}
                   type="email"
                   register={register}
-                  error={errors.username?.message}
-                  instructions={[
-                    'Make sure to use the same address where you received the invitation email.',
-                  ]}
+                  // error={errors.username?.message}
+                  // instructions={[
+                  //   'Make sure to use the same address where you received the invitation email.',
+                  // ]}
                   placeholder="e.g. work@email.com"
                 />
               </div>
@@ -158,7 +158,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  disabled={!acceptedTerms}
+                  // disabled={!acceptedTerms}
                   onClick={registerNewUser}
                 >
                   <Typography
