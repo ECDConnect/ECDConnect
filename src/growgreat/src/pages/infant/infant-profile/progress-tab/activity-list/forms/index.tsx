@@ -110,7 +110,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   );
 
   const isChildOlderthan6Months = useMemo(
-    () => !ageYears && ageMonths >= 6,
+    () => (!ageYears && ageMonths >= 6) || ageYears! >= 1,
     [ageMonths, ageYears]
   );
 

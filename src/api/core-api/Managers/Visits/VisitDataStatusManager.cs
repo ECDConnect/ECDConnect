@@ -1187,7 +1187,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (hasMuacMeasurement)
             {
-                var questionAnswer = Int32.Parse(muacQuestion.QuestionAnswer);
+                var questionAnswer = double.Parse(muacQuestion.QuestionAnswer, CultureInfo.InvariantCulture);
                 muacIndicator = "Normal";
                 if (questionAnswer < 11.5)
                 {
@@ -1270,7 +1270,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 } 
                 else
                 {
-                    _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId).Wait();
+                    if (muacIndicator == GGSettings.severe_acute_malnutrition)
+                    {
+                        _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId).Wait();
+                    }else
+                    {
+                        _notificationManager.SendGGChildMUACMalnutritionNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId).Wait();
+                    }
+                    
                 }
 
             }
