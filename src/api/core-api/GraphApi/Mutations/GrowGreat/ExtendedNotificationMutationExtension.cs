@@ -302,20 +302,6 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPregnantMomLowMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
         }
 
-        public async Task<bool> SendGGChildMUACMalnutritionNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string childFirstName)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>(){
-                new TagsReplacements()
-            {
-                FindValue = "ChildFirstName",
-                ReplacementValue = childFirstName
-            } };
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
-
         public async Task<bool> SendGGyoungerthan20Notification(
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string caregiverFirstName)

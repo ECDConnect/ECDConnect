@@ -164,5 +164,25 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistressInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null, infantUserId);
         }
+
+        public async Task<bool> SendGGChildMUACMalnutritionNotification(
+        [Service] ApplicationUserManager userManager,
+        [Service] INotificationService notificationService, string userId, string childFirstName, string infantUserId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "ChildFirstName",
+                ReplacementValue = childFirstName
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "infantId",
+                ReplacementValue = infantUserId
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, false, null, infantUserId);
+        }
+
     }
 }
