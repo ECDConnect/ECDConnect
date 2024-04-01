@@ -107,9 +107,6 @@ export function ViewUser(props: any) {
     [endDate, startDate]
   );
 
-  // const handleDateChange = (range: Date[]) => {
-  //   setSelectedRange(range);
-  // };
   const history = useHistory();
 
   let userId = localStorage.getItem('selectedUser');

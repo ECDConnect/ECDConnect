@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 
 function CustomDateRangePicker(props: any) {
   const [showCalendar, setShowCalendar] = useState(false);
-  console.log({ props });
+
   const toggleCalendar = () => {
     setShowCalendar((prevShowCalendar) => !prevShowCalendar);
   };
