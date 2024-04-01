@@ -6,6 +6,7 @@ using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -193,7 +194,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.PendingPhoneNumber = null;
             }
 
-            if (input.WhatsAppNumber is not null
+            if (input.WhatsAppNumber != null
                 && input.WhatsAppNumber != user.WhatsAppNumber)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
@@ -242,23 +243,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input?.RaceId is not null 
                 && input.RaceId != user.RaceId)
             {
-                
-                    auditFields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId != null ? user.RaceId.ToString() : null), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
+                auditFields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId != null ? user.RaceId.ToString() : null), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
                 user.RaceId = input.RaceId;
             }
 
-            if (input.LanguageId is not null)
+            if (input.LanguageId is not null 
+                && input.LanguageId != user.LanguageId)
             {
-                if (input.LanguageId != user.LanguageId)
-                    auditFields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId != null ? input.LanguageId.ToString() : null) });
+                auditFields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId != null ? input.LanguageId.ToString() : null) });
                 user.LanguageId = input.LanguageId;
             }
 
             if (input.FirstName is not null
                 && input.FirstName != user.FirstName)
             {
-                if (input.FirstName != user.FirstName)
-                    auditFields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
+                auditFields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
                 user.FirstName = input.FirstName;
                 user.FullName = $"{input.FirstName} {user.Surname}"; //use existing surname incase surname unchanged
             }
@@ -313,18 +312,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.NextOfKinSurname = input.NextOfKinSurname;
             }
 
-            if (input.NextOfKinContactNumber != null)
+            if (input.NextOfKinContactNumber != null
+                && input.NextOfKinContactNumber != user.NextOfKinContactNumber)
             {
-                if (input.NextOfKinContactNumber != user.NextOfKinContactNumber)
-                    auditFields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
+                auditFields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
                 user.NextOfKinContactNumber = input.NextOfKinContactNumber;
-            }
-
-            if (input.WhatsAppNumber != null
-                && input.WhatsAppNumber != user.WhatsAppNumber)
-            {
-                auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
-                user.WhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
             }
 
             // If userId is null, you're prob. an admin, admins are allowed to log into any tenant. Management.
@@ -373,13 +365,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 auditFields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
+
+            if (!string.IsNullOrWhiteSpace(input.WelcomeMessage))
+            {
+                var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
+                if (userIsTL)
+                {
+                    var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: currentUserId);
+                    var teamLead = teamLeadRepo.GetByUserId(user.Id);
+                    teamLead.WelcomeMessage = input.WelcomeMessage;
+                    teamLead.UpdatedDate = DateTime.Now;
+                    teamLead.UpdatedBy = currentUserId.ToString();
+                    teamLeadRepo.Update(teamLead);
+                }
+            }
           
             user.UpdatedDate = DateTime.UtcNow;
             var updateResult = await userManager.UpdateAsync(user);
 
             if (auditFields.Count > 0)
             {
-
                 DoAudit(currentUserId.Value, repoFactory, auditFields, Guid.Parse(id));
 
                 if (!updateResult.Succeeded)

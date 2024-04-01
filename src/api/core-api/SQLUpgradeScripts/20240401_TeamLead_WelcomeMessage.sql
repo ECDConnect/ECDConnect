@@ -1,0 +1,1 @@
+ALTER TABLE public."TeamLead" ADD "WelcomeMessage" text NULL;
