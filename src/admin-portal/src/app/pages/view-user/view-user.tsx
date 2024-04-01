@@ -84,7 +84,7 @@ export function ViewUser(props: any) {
     startDate,
     endDate,
   ]);
-  console.log({ connectUsageColor });
+
   const handleDateChange = (range: Date[]) => {
     setSelectedRange(range);
   };
