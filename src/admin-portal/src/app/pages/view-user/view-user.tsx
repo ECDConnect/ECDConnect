@@ -1,8 +1,5 @@
 import {
   Alert,
-  Button,
-  DialogPosition,
-  Typography,
   AlertType,
   ProfileAvatar,
   classNames,
@@ -16,25 +13,16 @@ import {
   useState,
 } from 'react';
 import { useHistory } from 'react-router-dom';
-import { TrashIcon, ArrowLeftIcon, ThumbUpIcon } from '@heroicons/react/solid';
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import {
-  NOTIFICATION,
-  PermissionEnum,
-  useDialog,
-  useNotifications,
-} from '@ecdlink/core';
-import AlertModal from '../../components/dialog-alert/dialog-alert';
+import { ArrowLeftIcon, ThumbUpIcon } from '@heroicons/react/solid';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import CustomDateRangePicker from '../../components/date-picker/index';
 import {
-  DeleteUser,
   GetHealthCareWorkerByUserId,
   GetTenantContext,
   GetUserById,
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
 } from '@ecdlink/graphql';
-import { useUser } from '../../hooks/useUser';
 import { subDays } from 'date-fns';
 import {
   UsersRolesTypeEnum,
@@ -82,6 +70,7 @@ export function ViewUser(props: any) {
   const startDate = subDays(currentDate, 30);
   const endDate = currentDate;
   const connectUsage = props?.location?.state?.connectUsage;
+  const connectUsageColor = props?.location?.state?.connectUsageColor;
   const hcwId = props?.location?.state?.hcwId;
   const teamLeadId = props?.location?.state?.teamLeadId;
   const isTeamLead =
@@ -100,7 +89,6 @@ export function ViewUser(props: any) {
     setSelectedRange(range);
   };
   const history = useHistory();
-  const [deleteUser] = useMutation(DeleteUser);
 
   let userId = localStorage.getItem('selectedUser');
   const { data } = useQuery(GetTenantContext, {
@@ -177,56 +165,9 @@ export function ViewUser(props: any) {
       });
   }, [userId]);
 
-  const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
-  const dialog = useDialog();
-
   const isNotLockedOut = (user) => {
     if (!user) return true;
     return !user?.lockoutEnd || user?.lockoutEnd < new Date();
-  };
-
-  const deactivateUser = async () => {
-    dialog({
-      // blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Deactivate User"
-          btnText={['Yes, Deactivate User', 'No, Cancel']}
-          message={`${
-            chwData?.GetHealthCareWorkerById?.user?.firstName ??
-            userData.userById.fullName
-          } will lose their access to ${
-            data?.tenantContext.applicationName
-          } App immediately. Make sure you have communicated with them before deactivating them.`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            deleteUser({
-              variables: {
-                id:
-                  userData?.userById?.id ?? chwData.GetHealthCareWorkerById.id,
-              },
-            })
-              .then((response: any) => {
-                if (response.data.deleteUser) {
-                  setNotification({
-                    title: 'Successfully Deactivated User!',
-                    variant: NOTIFICATION.SUCCESS,
-                  });
-                }
-              })
-              .catch((error) => {
-                setNotification({
-                  title: 'Failed to Delete User!',
-                  variant: NOTIFICATION.ERROR,
-                });
-              });
-          }}
-        />
-      ),
-    });
   };
 
   let isCHW = userData?.userById?.roles?.some(
@@ -293,8 +234,8 @@ export function ViewUser(props: any) {
           <div>
             <StatusChip
               className="ml-auto self-center py-2"
-              borderColour="infoMain"
-              backgroundColour="infoMain"
+              borderColour={connectUsageColor}
+              backgroundColour={connectUsageColor}
               textColour="white"
               text={connectUsage}
             />
@@ -305,8 +246,8 @@ export function ViewUser(props: any) {
           <div>
             <StatusChip
               className="ml-auto self-center py-2"
-              borderColour="errorMain"
-              backgroundColour="errorMain"
+              borderColour={connectUsageColor}
+              backgroundColour={connectUsageColor}
               textColour="white"
               text={connectUsage}
             />
@@ -317,8 +258,8 @@ export function ViewUser(props: any) {
           <div>
             <StatusChip
               className="ml-auto self-center py-2"
-              borderColour="darkBlue"
-              backgroundColour="darkBlue"
+              borderColour={connectUsageColor}
+              backgroundColour={connectUsageColor}
               textColour="white"
               text={connectUsage}
             />
@@ -329,8 +270,8 @@ export function ViewUser(props: any) {
           <div>
             <StatusChip
               className="ml-auto self-center py-2"
-              borderColour="darkBlue"
-              backgroundColour="darkBlue"
+              borderColour={connectUsageColor}
+              backgroundColour={connectUsageColor}
               textColour="white"
               text={connectUsage}
             />
@@ -341,8 +282,8 @@ export function ViewUser(props: any) {
           <div>
             <StatusChip
               className="ml-auto self-center py-2"
-              borderColour="errorMain"
-              backgroundColour="errorMain"
+              borderColour={connectUsageColor}
+              backgroundColour={connectUsageColor}
               textColour="white"
               text={connectUsage}
             />
