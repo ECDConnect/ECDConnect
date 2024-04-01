@@ -19,6 +19,7 @@ import {
   ContentManagementView,
   DynamicFormTemplate,
   FormTemplateField,
+  TemplateTypenames,
 } from '../../../../content-management-models';
 import { Alert, DialogPosition, Typography } from '@ecdlink/ui';
 import {
@@ -90,7 +91,7 @@ export default function ContentEdit({
     errors: errors,
     control: control,
   };
-  console.log({ contentValues });
+
   const { type: formType } = useWatch({ control });
 
   const mutationName = `update${contentType?.name}`;
@@ -193,6 +194,8 @@ export default function ContentEdit({
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues = getValues();
   const [smallLargeGroupsSkills, setSmallLargeGroupsSkills] = useState([]);
+  const [dangerSignsDisableInputs, setDangerSignsDisableInputs] =
+    useState(false);
 
   const disableButton =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
@@ -442,6 +445,15 @@ export default function ContentEdit({
     }
   };
 
+  useEffect(() => {
+    if (
+      template?.title === TemplateTypenames.DanngerSigns &&
+      template?.fields?.[0]?.selectedLanguageId === defaultLanguageId
+    ) {
+      setDangerSignsDisableInputs(true);
+    }
+  }, [defaultLanguageId, template?.fields, template?.title]);
+
   if (
     contentType &&
     contentValues &&
@@ -456,9 +468,16 @@ export default function ContentEdit({
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 {cancelEdit &&
+                  content?.__typename !== 'DangerSign' &&
                   camelCaseToSentanceCase(
-                    content?.name ?? content?.type ?? content?.title
+                    content?.name ??
+                      content?.type ??
+                      content?.title ??
+                      content?.section
                   )}
+                {cancelEdit &&
+                  content?.__typename === 'DangerSign' &&
+                  camelCaseToSentanceCase(content?.section || '')}
               </h3>
               {selectedTab === 2 ||
                 (selectedTab === 3 && (
@@ -545,51 +564,66 @@ export default function ContentEdit({
               />
             )}
 
-            <DynamicForm
-              template={template}
-              handleform={handleform}
-              setValue={setValue}
-              defaultLanguageId={defaultLanguageId}
-              acceptedFileFormats={acceptedFileFormats}
-              allowedFileSize={allowedFileSize}
-              formType={formType}
-              choosedSectionTitle={choosedSectionTitle}
-              getValues={getValues}
-              requiredMessage={requiredMessage}
-              useWatch={useWatch}
-              contentView={contentView}
-              setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
-            />
+            {dangerSignsDisableInputs && (
+              <Alert
+                className={'mt-5 mb-3'}
+                title="You cannot edit the English version."
+                message={
+                  'To add or edit a translation, please choose a different language tab above.'
+                }
+                type={'warning'}
+              />
+            )}
+
+            {!dangerSignsDisableInputs && (
+              <DynamicForm
+                template={template}
+                handleform={handleform}
+                setValue={setValue}
+                defaultLanguageId={defaultLanguageId}
+                acceptedFileFormats={acceptedFileFormats}
+                allowedFileSize={allowedFileSize}
+                formType={formType}
+                choosedSectionTitle={choosedSectionTitle}
+                getValues={getValues}
+                requiredMessage={requiredMessage}
+                useWatch={useWatch}
+                contentView={contentView}
+                setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
+              />
+            )}
           </div>
 
-          <div className="flex flex-row">
-            <button
-              type="submit"
-              className={disbleButtonStyles}
-              disabled={
-                choosedSectionTitle ===
-                ActivitiesTitles.SmallLargeGroupActivities
-                  ? disableButton?.length > 0 &&
-                    smallLargeGroupsSkills?.length < 2
-                  : disableButton?.length > 0
-              }
-            >
-              <SaveIcon width="22px" className="mr-2" />
-              Save & publish
-            </button>
-            {content?.id &&
-              content?.__typename !== ContentTypes.PROGRESS_TRACKING_SKILL &&
-              content?.__typename !== ContentTypes.MORE_INFORMATION &&
-              content?.__typename !== ContentTypes.CONSENT && (
-                <button
-                  onClick={deleteAndRefresh}
-                  className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
-                >
-                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
-                  Delete {content?.name}
-                </button>
-              )}
-          </div>
+          {!dangerSignsDisableInputs && (
+            <div className="flex flex-row">
+              <button
+                type="submit"
+                className={disbleButtonStyles}
+                disabled={
+                  choosedSectionTitle ===
+                  ActivitiesTitles.SmallLargeGroupActivities
+                    ? disableButton?.length > 0 &&
+                      smallLargeGroupsSkills?.length < 2
+                    : disableButton?.length > 0
+                }
+              >
+                <SaveIcon width="22px" className="mr-2" />
+                Save & publish
+              </button>
+              {content?.id &&
+                content?.__typename !== ContentTypes.PROGRESS_TRACKING_SKILL &&
+                content?.__typename !== ContentTypes.MORE_INFORMATION &&
+                content?.__typename !== ContentTypes.CONSENT && (
+                  <button
+                    onClick={deleteAndRefresh}
+                    className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+                  >
+                    <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
+                    Delete {content?.name}
+                  </button>
+                )}
+            </div>
+          )}
         </form>
       </div>
     );
