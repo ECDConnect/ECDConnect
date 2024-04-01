@@ -43,6 +43,10 @@ export enum NatalTypes {
   Infographic = 'Infographic',
 }
 
+export enum TemplateTypenames {
+  DanngerSigns = 'DangerSign Form',
+}
+
 export interface DynamicFormTemplate {
   title: string;
   fields: FormTemplateField[];

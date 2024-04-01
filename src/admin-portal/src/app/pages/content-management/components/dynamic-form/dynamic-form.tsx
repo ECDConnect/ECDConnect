@@ -11,6 +11,7 @@ import {
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
+  TemplateTypenames,
 } from '../../content-management-models';
 import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
@@ -55,14 +56,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 }) => {
   const { register, control, errors } = handleform;
 
-  const smallLargeGroupOptions = [
-    { text: 'Small group', value: 'Small group' },
-    { text: 'Large group', value: 'Large group' },
-  ];
-
-  const isSmallLargeGroup =
-    choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities;
-  const [disableActivitiesInputs, setDisableActivitiesInputs] = useState(false);
+  const [disableInputs, setDisableInputs] = useState(false);
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -91,39 +85,32 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [template, watchFields]);
 
-  const setStoriesGeneralInputsValues = useCallback(() => {
-    onStateChange('type', contentView?.content?.['type']);
-    onStateChange('image', contentView?.content?.['image']);
-    onStateChange(
-      'subCategories',
-      contentView?.content?.['subCategories']
-        ?.map((item) => item?.id)
-        ?.toString()
-    );
-    setDisableActivitiesInputs(true);
+  const setDangerSignsInputsValues = useCallback(() => {
+    onStateChange('section', contentView?.content?.['section']);
+    setDisableInputs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentView?.content]);
 
   const setContentInputValues = useCallback(() => {
     onStateChange('image', contentView?.content?.['image']);
-    setDisableActivitiesInputs(true);
+    setDisableInputs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentView?.content]);
 
   useEffect(() => {
     if (
-      isSmallLargeGroup &&
+      template?.title === TemplateTypenames.DanngerSigns &&
       template?.fields?.[0]?.selectedLanguageId !== defaultLanguageId &&
       contentView?.content
     ) {
-      setStoriesGeneralInputsValues();
+      setDangerSignsInputsValues();
     }
   }, [
     defaultLanguageId,
-    isSmallLargeGroup,
     template?.fields,
     contentView?.content,
-    setStoriesGeneralInputsValues,
+    setDangerSignsInputsValues,
+    template?.title,
   ]);
 
   useEffect(() => {
@@ -189,6 +176,36 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Markdown:
+          if (disableInputs) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <Editor
+                    label={
+                      isRequired
+                        ? `${title} "${contentView?.content?.[
+                            propName
+                          ]?.replace(/<[^>]*>?/gm, '')}" *`
+                        : title
+                    }
+                    currentValue={
+                      field.contentValue ? field.contentValue.value : undefined
+                    }
+                    onStateChange={(data) => onStateChange(propName, data)}
+                  />
+                </div>
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
+              </div>
+            );
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -212,7 +229,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Image:
-          if (propName === 'image' && disableActivitiesInputs) {
+          if (propName === 'image' && disableInputs) {
             return (
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
@@ -221,9 +238,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     message={`To edit this field, go to the English version.`}
                     type="warning"
                   />
-                  <div
-                    className={`${disableActivitiesInputs ? 'opacity-25' : ''}`}
-                  ></div>
+                  <div className={`${disableInputs ? 'opacity-25' : ''}`}></div>
                   <FormFileInput
                     acceptedFormats={acceptedFileFormats || acceptedFormats}
                     label={isRequired ? title + ' *' : title}
@@ -236,7 +251,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     returnFullUrl={true}
                     setValue={setValue}
                     allowedFileSize={allowedFileSize}
-                    disabled={disableActivitiesInputs}
+                    disabled={disableInputs}
                   />
                   {isRequired &&
                     initialValues?.hasOwnProperty(propName) &&
