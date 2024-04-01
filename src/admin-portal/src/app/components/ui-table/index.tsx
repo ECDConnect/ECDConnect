@@ -516,7 +516,7 @@ export default function UiTable({
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => {
             const language = languages?.find(
-              (language) => language?.id === item?.id
+              (language) => language?.id === item?.id || language?.id === item
             );
             return (
               <div

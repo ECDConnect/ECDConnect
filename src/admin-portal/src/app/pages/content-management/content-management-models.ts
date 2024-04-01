@@ -13,6 +13,7 @@ export enum FieldType {
   StaticLink = 'staticLink',
   ColorPicker = 'color-picker',
   DatePicker = 'date-picker',
+  video = 'video',
 }
 
 export enum ContentName {
@@ -33,6 +34,13 @@ export enum ActivitiesTitles {
   StoryActivities = 'Story activities',
   Storybooks = 'Storybooks',
   SmallLargeGroupActivities = 'Small/large group activities',
+}
+
+export enum NatalTypes {
+  Info = 'Info',
+  HealthPromotion = 'Health promotion',
+  Video = 'Video',
+  Infographic = 'Infographic',
 }
 
 export interface DynamicFormTemplate {

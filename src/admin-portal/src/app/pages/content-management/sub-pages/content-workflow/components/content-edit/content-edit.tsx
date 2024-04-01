@@ -3,6 +3,7 @@ import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
+  ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
   NOTIFICATION,
@@ -19,7 +20,7 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
-import { Alert, DialogPosition } from '@ecdlink/ui';
+import { Alert, DialogPosition, Typography } from '@ecdlink/ui';
 import {
   BookOpenIcon,
   SaveIcon,
@@ -50,6 +51,8 @@ export interface ContentViewProps {
   choosedSectionTitle?: string;
   setSearchValue?: (item: string) => void;
   contentView?: ContentManagementView;
+  postNatalType?: ContentTypeDto;
+  selectedTab?: number;
 }
 
 export interface RequirementProps {
@@ -70,6 +73,8 @@ export default function ContentEdit({
   choosedSectionTitle,
   setSearchValue,
   contentView,
+  postNatalType,
+  selectedTab,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -85,7 +90,7 @@ export default function ContentEdit({
     errors: errors,
     control: control,
   };
-
+  console.log({ contentValues });
   const { type: formType } = useWatch({ control });
 
   const mutationName = `update${contentType?.name}`;
@@ -226,6 +231,34 @@ export default function ContentEdit({
         } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   useEffect(() => {
+    if (selectedTab === 2 || selectedTab === 3) {
+      const t: DynamicFormTemplate = {
+        title: `${postNatalType?.name} Form`,
+        fields: [],
+      };
+
+      const copy: ContentTypeFieldDto[] = Object.assign(
+        [],
+        postNatalType?.fields
+      );
+
+      const orderedList = copy?.sort(function (a, b) {
+        return a.fieldOrder - b.fieldOrder;
+      });
+
+      orderedList.forEach((item: ContentTypeFieldDto) => {
+        if (item.displayPage) {
+          const renderedField = getRenderField(item);
+
+          if (renderedField) t.fields.push(renderedField);
+        }
+      });
+
+      setTemplate(t);
+
+      return;
+    }
+
     if (contentType && contentValues && selectedLanguageId) {
       const t: DynamicFormTemplate = {
         title: `${contentType?.name} Form`,
@@ -423,8 +456,43 @@ export default function ContentEdit({
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 {cancelEdit &&
-                  camelCaseToSentanceCase(content?.name ?? content?.type)}
+                  camelCaseToSentanceCase(
+                    content?.name ?? content?.type ?? content?.title
+                  )}
               </h3>
+              {selectedTab === 2 ||
+                (selectedTab === 3 && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Typography
+                        className="truncate"
+                        type="h4"
+                        weight="bold"
+                        color="textMid"
+                        text={'Section:'}
+                      />
+                      <Typography
+                        type="h4"
+                        color="textMid"
+                        text={content?.section}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Typography
+                        className="truncate"
+                        type="h4"
+                        weight="bold"
+                        color="textMid"
+                        text={'Section:'}
+                      />
+                      <Typography
+                        type="h4"
+                        color="textMid"
+                        text={content?.childType}
+                      />
+                    </div>
+                  </>
+                ))}
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               {!!cancelCompare && (
@@ -464,6 +532,18 @@ export default function ContentEdit({
                 type="info"
               />
             ) : null}
+
+            {Number(postNatalType?.id) === ContentTypeEnum?.NatalVideo && (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                title="Make sure you do the following:"
+                list={[
+                  `Upload the correct language version (English)`,
+                  `Restrict the video size to standard smartphone resolution (300dpi) and make sure videos are 360px wide, 640px high at 15 frames per second. If the video is too large users will not be able to load the page.`,
+                ]}
+                type="warning"
+              />
+            )}
 
             <DynamicForm
               template={template}

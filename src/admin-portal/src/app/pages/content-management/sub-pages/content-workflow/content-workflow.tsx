@@ -28,6 +28,9 @@ export interface ContentWorkflowProps {
   savedContent: () => void;
   choosedSectionTitle?: string;
   setSearchValue?: (item: string) => void;
+  natalType?: number;
+  postNatalType?: ContentTypeDto;
+  selectedTab?: number;
 }
 
 export default function ContentWorkflow({
@@ -39,6 +42,9 @@ export default function ContentWorkflow({
   savedContent,
   choosedSectionTitle,
   setSearchValue,
+  natalType,
+  postNatalType,
+  selectedTab,
 }: ContentWorkflowProps) {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
     contentView.languageId
@@ -66,15 +72,29 @@ export default function ContentWorkflow({
       contentView &&
       contentView.content
     ) {
+      if (postNatalType) {
+        const c = contentType.content.find(
+          (x) =>
+            x.id === contentView.content.id ||
+            Number(x?.id) === Number(contentView.content?.childId)
+        );
+        setCurrentContent(c);
+        setViewKey(Math.random());
+        return;
+      }
+
       const c = contentType.content.find(
-        (x) => x.id === contentView.content.id
+        (x) =>
+          x.id === contentView.content.id ||
+          Number(x?.id) === Number(contentView.content?.childId)
       );
+
       if (c) {
         setCurrentContent(c);
         setViewKey(Math.random());
       }
     }
-  }, [contentType, contentView]);
+  }, [contentType, contentView, postNatalType]);
 
   useEffect(() => {
     if (
@@ -84,7 +104,9 @@ export default function ContentWorkflow({
       contentView.content
     ) {
       const c = contentType.content.find(
-        (x) => x.id === contentView.content.id
+        (x) =>
+          x.id === contentView.content.id ||
+          Number(x?.id) === Number(contentView.content?.childId)
       );
       if (c) {
         setCurrentContent(c);
@@ -293,6 +315,8 @@ export default function ContentWorkflow({
                             choosedSectionTitle={choosedSectionTitle}
                             setSearchValue={setSearchValue}
                             contentView={contentView}
+                            postNatalType={postNatalType}
+                            selectedTab={selectedTab}
                           />
                         </div>
                       </div>
