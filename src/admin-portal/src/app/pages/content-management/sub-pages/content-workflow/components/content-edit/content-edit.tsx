@@ -453,7 +453,7 @@ export default function ContentEdit({
       setDangerSignsDisableInputs(true);
     }
   }, [defaultLanguageId, template?.fields, template?.title]);
-  console.log({ selectedTab });
+
   if (
     contentType &&
     contentValues &&
