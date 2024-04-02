@@ -373,7 +373,7 @@ export default function ContentEdit({
       }
     });
 
-    if (!content?.id) {
+    if (!content?.id && !content?.childId) {
       await createContent({
         variables: {
           input: { ...model },
@@ -385,7 +385,7 @@ export default function ContentEdit({
     } else {
       await updateContent({
         variables: {
-          id: content.id.toString(),
+          id: content?.id?.toString() || content?.childId?.toString(),
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
