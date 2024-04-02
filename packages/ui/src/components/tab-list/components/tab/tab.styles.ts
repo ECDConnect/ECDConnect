@@ -12,7 +12,8 @@ export const tabActive = (isOnlyTab: boolean) =>
 export const getTabClass = (
   activeTab: boolean,
   className: string,
-  isOnlyTab: boolean = false
+  isOnlyTab: boolean = false,
+  activeTabClassName?: string
 ) => {
   let tabClassName = isOnlyTab ? 'pl-4 ' : ' ';
   tabClassName += activeTab ? tabActive(isOnlyTab) : tabInactive(isOnlyTab);
@@ -27,5 +28,5 @@ export const getTabClass = (
       .replace('border-b-4', '');
   }
 
-  return tabClassName;
+  return activeTab && activeTabClassName ? activeTabClassName : tabClassName;
 };

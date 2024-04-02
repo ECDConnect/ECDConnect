@@ -51,3 +51,35 @@ export interface PointsCategoryDto {
   pointsTotal: string;
   categoryName: string;
 }
+
+interface ClientRegistrationReport {
+  totalChildFoldersOpened?: number;
+  totalMotherFoldersOpened?: number;
+  totalMotherFoldersBefore20WeeksOpened?: number;
+}
+
+interface PregnantMomsReport {
+  totalMaternalDistress?: number;
+  totalMaternalMalnutrition?: number;
+  totalAlcoholAbuse?: number;
+}
+
+interface ChildClientsReport {
+  totalSupportGrant?: number;
+  totalGrowthMonitored?: number;
+  totalUpToDateImmunisations?: number;
+  totalUpToDateVitaminA?: number;
+  totalUpToDateDeworming?: number;
+}
+
+interface BreastFeedingClubReport {
+  totalClubsHeld?: number;
+  totalCaregiversAttended?: number;
+}
+
+export interface ClinicVisitReportDto {
+  clientRegistration?: ClientRegistrationReport;
+  pregnantMoms?: PregnantMomsReport;
+  childClients?: ChildClientsReport;
+  breastFeedingClub?: BreastFeedingClubReport;
+}

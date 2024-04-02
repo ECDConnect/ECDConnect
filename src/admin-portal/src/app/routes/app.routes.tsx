@@ -44,11 +44,12 @@ import TermsPage from '../pages/terms/terms';
 import Messaging from '../pages/messaging/messaging';
 import MessagePanel from '../pages/messaging/components/message-panel';
 import MessageList from '../pages/messaging/components/messaging-list';
-import ClinicsMainPage from '../pages/clinics/clinics';
+import { ClinicsMainPage } from '../pages/clinics/clinics';
 import ClinicsSubPage from '../pages/clinics/sub-pages/clinics-sub-page/clinics-sub-page';
 import DistrictsSubPage from '../pages/clinics/sub-pages/districts-sub-page/districts-sub-page';
 import SubDistrictsSubPage from '../pages/clinics/sub-pages/sub-districts-sub-page/sub-districts-sub-page';
 import { ViewClinicReport } from '../pages/clinics/components/view-clinic-report/view-clinic-report';
+import ROUTES from './app.routes-constants';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -79,7 +80,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/profile`} component={Profile}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
-      <Route path={`/clinics`} component={ClinicsMainPage}></Route>
+      <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
@@ -112,9 +113,12 @@ const SettingsRoutes: React.FC = () => {
 const ClinicsRoutes: React.FC = () => {
   return (
     <Switch>
-      <Route path={`/clinics/clinics`} component={ClinicsSubPage}></Route>
       <Route
-        path={`/clinics/view-clinics`}
+        path={ROUTES.CLINICS.ALL_CLINICS}
+        component={ClinicsSubPage}
+      ></Route>
+      <Route
+        path={ROUTES.CLINICS.VIEW_CLINICS}
         component={ViewClinicReport}
       ></Route>
       <Route path={`/clinics/districts`} component={DistrictsSubPage}></Route>
