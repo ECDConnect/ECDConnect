@@ -184,14 +184,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input.ResetData is not null) {
                 user.ResetData = input.ResetData;
-            }    
+            }
+
+            // Phone Number
+
+            // If the user changing the PhoneNumber, is different to the user being changed
+            // If the user is changing their own phone number (changes from portal must be verified)
+
+
 
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {
-                auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
-                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-                user.PendingPhoneNumber = null;
+                if (user.Id != currentUserId)
+                {
+                    auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
+                    user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+                    user.PendingPhoneNumber = null;
+                } 
+                else
+                {
+                    var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
+                    if (userIsTL)
+                    {
+                        user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+                        user.PhoneNumberConfirmed = false;
+                        try
+                        {
+                            var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
+                            await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
+                        }
+                        catch (Exception exception)
+                        {
+                            logger?.LogError("Could not send cellphone number verification for change of user cellphone number.", new { userId = user.Id, exception });
+                        }
+                    }
+                }
             }
 
             if (input.WhatsAppNumber != null
@@ -200,7 +228,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
                 var normalizedWhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
                 user.WhatsAppNumber = UserHelper.NormalizePhoneNumber(normalizedWhatsAppNumber);
-                user.PendingPhoneNumber = null;
             }
 
             if (input.IdNumber is not null 
@@ -368,11 +395,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (!string.IsNullOrWhiteSpace(input.WelcomeMessage))
             {
-                var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
-                if (userIsTL)
+                var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: currentUserId);
+                var teamLead = teamLeadRepo.GetByUserId(user.Id);
+                if (teamLead != null)
                 {
-                    var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: currentUserId);
-                    var teamLead = teamLeadRepo.GetByUserId(user.Id);
+                    auditFields.Add(new AuditChanges() { FieldName = "WelcomeMessage", ValueBefore = teamLead.WelcomeMessage, ValueAfter = input.WelcomeMessage });
                     teamLead.WelcomeMessage = input.WelcomeMessage;
                     teamLead.UpdatedDate = DateTime.Now;
                     teamLead.UpdatedBy = currentUserId.ToString();
