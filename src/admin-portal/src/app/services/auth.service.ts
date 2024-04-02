@@ -63,3 +63,16 @@ export async function RegisterNewUser(
     }
   );
 }
+
+export async function RegisterNewTeamLead(
+  baseEndPoint: string,
+  body: RegisterRequestModel
+) {
+  return await api(baseEndPoint).post(
+    APIs.acceptTeamLeadInvitation,
+    JSON.stringify(body),
+    {
+      headers: headers,
+    }
+  );
+}

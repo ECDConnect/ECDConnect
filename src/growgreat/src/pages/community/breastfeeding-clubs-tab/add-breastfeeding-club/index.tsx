@@ -22,6 +22,13 @@ import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CommunityActions } from '@/store/community/community.actions';
 import { useSnackbar } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const AddBreastfeedingClub: React.FC = () => {
   const [date, setDate] = useState<Date | null>();
@@ -71,6 +78,12 @@ export const AddBreastfeedingClub: React.FC = () => {
   const month = format(today, 'MMMM');
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
+  const addClubNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter((item) =>
+    item?.message?.cta?.includes(notificationTagConfig?.AddClub.cta ?? '')
+  );
+
   const uniqueCaregivers = availableCaregivers
     ?.filter(
       (caregiver, index, self) =>
@@ -111,6 +124,17 @@ export const AddBreastfeedingClub: React.FC = () => {
     };
 
     await appDispatch(communityThunkActions.addBreastFeedingClub(input));
+
+    if (addClubNotifications) {
+      addClubNotifications.forEach((x) => {
+        appDispatch(notificationActions.removeNotification(x!));
+        appDispatch(
+          disableBackendNotification({
+            notificationId: x?.message?.reference ?? '',
+          })
+        );
+      });
+    }
   };
 
   const onBack = () => {

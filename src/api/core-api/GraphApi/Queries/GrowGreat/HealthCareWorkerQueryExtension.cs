@@ -455,7 +455,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
           [Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory)
         {
-
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user.Id;
 

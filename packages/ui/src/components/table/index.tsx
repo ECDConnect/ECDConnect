@@ -1,0 +1,273 @@
+import ReactTailwindTable, { Icolumn, Irow } from 'react-tailwind-table';
+import { TableProps } from './types';
+import { getStyles } from './styles';
+import { useEffect, useState } from 'react';
+import { Checkbox, FormInput } from '../form-fields';
+import Button from '../button/button';
+import { classNames, renderIcon } from '../../utils';
+import SearchDropDown from '../dropdown/search-dropdown/search-dropdown';
+
+export const Table = ({
+  rows,
+  columns,
+  rowsPerPage = 10,
+  search,
+  actionButton,
+  bulkActions,
+  filters,
+  onClearFilters,
+  onClickRow,
+  onChangePage,
+}: TableProps) => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const [selectedRows, setSelectedRows] = useState<Irow[]>([]);
+  const [openFilters, setOpenFilters] = useState<boolean>(false);
+
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+  const selectedFilters = filters?.filter(
+    (filter) => filter.selectedOptions?.length
+  );
+
+  const rowsWithKey = rows?.map((row, index) => ({ ...row, key: index }));
+
+  const handleRowSelect = (row: Irow) => {
+    const rowIndex = selectedRows.findIndex(
+      (selectedRow) => selectedRow.key === row.key
+    );
+
+    if (rowIndex > -1) {
+      setSelectedRows(selectedRows.filter((_, index) => index !== rowIndex));
+    } else {
+      setSelectedRows([...selectedRows, row]);
+    }
+  };
+
+  const handleColumnSelect = () => {
+    if (selectedRows.length) {
+      return setSelectedRows([]);
+    }
+
+    return setSelectedRows(rowsWithKey);
+  };
+
+  const customRowElements = (
+    row: Irow,
+    column: Icolumn,
+    displayValue: string
+  ) => {
+    if (column.field === 'select') {
+      return displayValue;
+    }
+
+    if (!!onClickRow) {
+      return <button onClick={() => onClickRow(row)}>{displayValue}</button>;
+    }
+
+    return <div>{displayValue}</div>;
+  };
+
+  const mergedColumns = bulkActions?.length
+    ? ([
+        {
+          field: 'select',
+          use: (
+            <Checkbox
+              checkboxColor="textLight"
+              indeterminate={
+                selectedRows.length > 0 && selectedRows.length < rows.length
+              }
+              checked={selectedRows.length === rows.length}
+              onCheckboxChange={handleColumnSelect}
+            />
+          ),
+        },
+        ...columns,
+      ] as Icolumn[])
+    : columns;
+
+  const mergedRows = bulkActions?.length
+    ? rowsWithKey?.map((row) => {
+        return {
+          select: (
+            <Checkbox
+              checkboxColor="textLight"
+              checked={selectedRows?.some(
+                (selectedRow) => selectedRow.key === row.key
+              )}
+              onCheckboxChange={() => handleRowSelect(row)}
+            />
+          ),
+          ...row,
+        };
+      })
+    : rowsWithKey;
+
+  useEffect(() => {
+    const nextButton = document.querySelector('.next-button');
+
+    const handleNextButtonClick = () => {
+      if (currentPage < totalPages) {
+        const value = currentPage + 1;
+        setCurrentPage(value);
+        onChangePage?.(value);
+      }
+    };
+
+    if (nextButton) {
+      nextButton.addEventListener('click', handleNextButtonClick);
+    }
+
+    return () => {
+      if (nextButton) {
+        nextButton.removeEventListener('click', handleNextButtonClick);
+      }
+    };
+  }, [currentPage, totalPages, onChangePage]);
+
+  useEffect(() => {
+    const backButton = document.querySelector('.back-button');
+
+    const handleNextButtonClick = () => {
+      if (currentPage > 1) {
+        const value = currentPage - 1;
+        setCurrentPage(value);
+        onChangePage?.(value);
+      }
+    };
+
+    if (backButton) {
+      backButton.addEventListener('click', handleNextButtonClick);
+    }
+
+    return () => {
+      if (backButton) {
+        backButton.removeEventListener('click', handleNextButtonClick);
+      }
+    };
+  }, [currentPage, onChangePage]);
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = (event.target as Element).closest('.page-numbers');
+
+      if (target) {
+        const pElement = target.querySelector('p');
+
+        if (pElement) {
+          const value = parseInt(pElement?.textContent || '');
+          if (!isNaN(value)) {
+            setCurrentPage(value);
+            onChangePage?.(value);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, [onChangePage]);
+
+  return (
+    <>
+      <div className="flex  flex-col">
+        <div className="mb-8 flex w-full flex-row items-center justify-between">
+          {search && (
+            <div className="flex w-3/5 items-center gap-4">
+              <FormInput
+                {...search}
+                startIcon="SearchIcon"
+                color="adminPortalBg"
+                className="h-auto w-3/4"
+                isAdminPortalField
+              />
+              {!!filters?.length && (
+                <Button
+                  type="filled"
+                  color="adminPortalBg"
+                  textColor="textMid"
+                  className="text-textMid  mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
+                  onClick={() => setOpenFilters(!openFilters)}
+                >
+                  {!!selectedFilters?.length
+                    ? `${selectedFilters?.length} `
+                    : ''}
+                  Filter
+                  {renderIcon(
+                    openFilters ? 'ChevronUpIcon' : 'ChevronDownIcon',
+                    'text-textMid h-6 w-6'
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
+          {!!actionButton && (
+            <Button
+              type="filled"
+              color="secondary"
+              textColor="white"
+              className="hover:bg-secondaryGG mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
+              {...actionButton}
+            />
+          )}
+        </div>
+        {openFilters && (
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex gap-2">
+              {filters?.map((filterProps, index) => (
+                <SearchDropDown<string>
+                  key={`filter-${index}`}
+                  bgColor="adminPortalBg"
+                  color="secondary"
+                  displayMenuOverlay
+                  {...filterProps}
+                />
+              ))}
+            </div>
+            <Button
+              type="filled"
+              color="transparent"
+              className="text-secondary hover:text-secondaryGG mt-1 w-full rounded-xl p-2 shadow-none lg:w-auto"
+              onClick={onClearFilters}
+            >
+              Clear all
+            </Button>
+          </div>
+        )}
+      </div>
+      {!!selectedRows?.length && (
+        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2 px-4">
+          <p className="text-md w-4/12 text-white">
+            {selectedRows?.length} Selected
+          </p>
+          <div className="flex w-6/12 flex-row items-center justify-end gap-2">
+            {bulkActions?.map((buttonProps, index) => (
+              <Button
+                {...buttonProps}
+                key={buttonProps?.text || '' + index}
+                className={classNames('rounded-xl p-2', buttonProps.className)}
+                onClick={() => buttonProps?.onClick?.(selectedRows)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      <ReactTailwindTable
+        striped={false}
+        show_search={false}
+        should_export={false}
+        bordered
+        columns={mergedColumns}
+        rows={mergedRows}
+        styling={getStyles({ rows, rowsPerPage })}
+        per_page={rowsPerPage}
+        row_render={customRowElements}
+        no_content_text="-"
+      />
+    </>
+  );
+};

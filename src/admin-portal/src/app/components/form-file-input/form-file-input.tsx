@@ -3,6 +3,7 @@ import {
   DesktopComputerIcon,
   PhotographIcon,
   UploadIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/solid';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
@@ -16,15 +17,6 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { videoExtensions } from '../../utils/constants';
-
-import womanEmoji from '../../../assets/emojis/womanEmoji.png';
-import manEmoji from '../../../assets/emojis/manEmoji.png';
-import duckEmoji from '../../../assets/emojis/avatar_duck.png';
-import catEmoji from '../../../assets/emojis/avatar_cat.png';
-import leopardEmoji from '../../../assets/emojis/avatar_leopard.png';
-import dogEmoji from '../../../assets/emojis/avatar_dog.png';
-import penguinEmoji from '../../../assets/emojis/penguinEmoji.png';
-import monkeyEmoji from '../../../assets/emojis/avatar_monkey.png';
 import themesIcons from './components/themeIcons/themeIcons';
 import { SearchCircleIcon } from '@heroicons/react/outline';
 
@@ -48,6 +40,7 @@ export interface FormFileInputProps {
   isIconInput?: boolean;
   onChange?: (item: any) => void;
   isThemeFormFile?: boolean;
+  isVideoInput?: boolean;
 }
 
 const containerBaseStyle =
@@ -78,6 +71,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   isIconInput,
   onChange,
   isThemeFormFile,
+  isVideoInput,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -326,8 +320,21 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
       {isPdfExtension && acceptedFormats?.length === 1 && (
         <p className="text-textMid mb-2 text-sm">
-          Size limit: <span className="text-errorMain font-semibold">5</span>{' '}
+          Size limit:{' '}
+          <span className="text-errorMain font-semibold">
+            {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
+          </span>{' '}
           MB. Convert the file(s) to a single pdf before uploading.
+        </p>
+      )}
+
+      {isVideoInput && acceptedFormats?.length === 2 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit:{' '}
+          <span className="text-errorMain font-semibold">
+            {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
+          </span>{' '}
+          MB.
         </p>
       )}
       <label
@@ -401,9 +408,23 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
               <div>
                 {!isThemeFormFile ? (
                   <>
-                    <PhotographIcon
-                      className={classNames(getIconStyle(), iconBaseStyle, '')}
-                    />
+                    {isVideoInput ? (
+                      <VideoCameraIcon
+                        className={classNames(
+                          getIconStyle(),
+                          iconBaseStyle,
+                          ''
+                        )}
+                      />
+                    ) : (
+                      <PhotographIcon
+                        className={classNames(
+                          getIconStyle(),
+                          iconBaseStyle,
+                          ''
+                        )}
+                      />
+                    )}
                     <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
                       <DesktopComputerIcon className="mr-4 h-5 w-5">
                         {' '}

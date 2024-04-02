@@ -254,7 +254,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
          [Service] InvitationNotificationManager notificationManager,
          [Service] ApplicationUserManager userManager,
          [Service] ShortUrlManager shortUrlManager,
-         [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
             var inviteCount = shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
@@ -264,7 +263,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 // TODO: Make service for invitations
                 SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, httpContextAccessor, userId);
+                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
             }
 
             return false;

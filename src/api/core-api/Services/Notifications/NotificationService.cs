@@ -175,7 +175,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             } catch (Exception ex)
             {
-                _logger.LogError("Issue in DailyUserOfflineNotification" + ex.Message, ex);
+                _logger.LogError("Issue in SendNotificationAsync for template " + templatetype + " message: " + ex.Message, ex);
                 return false;
             }
             return true;
@@ -238,7 +238,7 @@ namespace EcdLink.Api.CoreApi.Services
                         Message = notification.Message,
                         Subject = notification.Subject,
                         MessageDate = notification.MessageDate.Value,
-                        MessageEndDate = (notification.MessageEndDate.HasValue ? notification.MessageEndDate : notification.MessageDate.Value.AddDays(1).Date), //midnight the next day
+                        MessageEndDate = notification.MessageEndDate, //midnight the next day
                         Status = notification.Status,
                         SentByUserId = notification.FromUserId,
                         CTA = notification.CTA,

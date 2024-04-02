@@ -198,7 +198,8 @@ export const IndividualPointsMonthView = () => {
       const childFolders = {
         imageUrl: Infant,
         description: childFoldersItem.message,
-        currentPoints: childFoldersItem.percentageComplete,
+        currentPoints:
+          (childFoldersItem.percentageComplete / 100) * childFoldersItem.points,
         maxPoints: childFoldersItem.points,
       };
 
@@ -209,7 +210,8 @@ export const IndividualPointsMonthView = () => {
       const momFolders = {
         imageUrl: Pregnant,
         description: momFoldersItem.message,
-        currentPoints: momFoldersItem.percentageComplete,
+        currentPoints:
+          (momFoldersItem.percentageComplete / 100) * momFoldersItem.points,
         maxPoints: momFoldersItem.points,
       };
 
@@ -220,7 +222,8 @@ export const IndividualPointsMonthView = () => {
       const visits = {
         icon: 'HomeIcon',
         description: visitsItem.message,
-        currentPoints: visitsItem.percentageComplete,
+        currentPoints:
+          (visitsItem.percentageComplete / 100) * visitsItem.points,
         maxPoints: visitsItem.points,
       };
 
@@ -231,7 +234,8 @@ export const IndividualPointsMonthView = () => {
       const referrals = {
         icon: 'ClipboardListIcon',
         description: referralsItem.message,
-        currentPoints: referralsItem.percentageComplete,
+        currentPoints:
+          (referralsItem.percentageComplete / 100) * referralsItem.points,
         maxPoints: referralsItem.points,
       };
 

@@ -25,6 +25,7 @@ export interface SearchDropDownProps<T> extends ComponentBaseProps {
   multiple?: boolean;
   selectedOptions?: SearchDropDownOption<T>[];
   color?: Colours;
+  bgColor?: Colours;
   menuItemClassName?: string;
   displayMenuOverlay?: boolean;
   overlayTopOffset?: string;
@@ -47,6 +48,7 @@ export function SearchDropDown<T>({
   menuItemClassName,
   overlayTopOffset,
   color = 'primary',
+  bgColor = 'white',
 }: SearchDropDownProps<T>) {
   const [selectedLabel, setSelectedLabel] = useState('');
   const [touched, setTouched] = useState(false);
@@ -147,7 +149,13 @@ export function SearchDropDown<T>({
               id={id}
               className={classNames(
                 className,
-                styles.getButtonStyles(color, open, hasSelectedValue(), touched)
+                styles.getButtonStyles(
+                  color,
+                  bgColor,
+                  open,
+                  hasSelectedValue(),
+                  touched
+                )
               )}
               disabled={disabled}
             >

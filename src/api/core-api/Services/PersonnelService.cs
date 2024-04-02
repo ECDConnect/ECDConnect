@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -60,6 +61,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<Coach, Guid> _coachRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
+        private IGenericRepository<TeamLead, Guid> _teamLeadRepo;
         private AuthenticationDbContext _dbContext;
         private IGenericRepository<CalendarEventParticipant, Guid> _calendarEventParticipantRepo;
         private IGenericRepository<StatementsStartupSupport, Guid> _statementStartupSupportRepo;
@@ -110,6 +112,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
             _statementStartupSupportRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
+            _teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: _applicationUserId);
             _dbContext = dbContext;
 
             _visitDataManager = visitDataManager;
@@ -1225,6 +1228,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _dbContext.Classrooms.RemoveRange(classrooms);
             _dbContext.SaveChanges();
             return true;
+        }
+
+        public TeamLead RegisterTeamLead(Guid userId)
+        {
+            var teamLead = _teamLeadRepo.GetByUserId(userId);
+
+            teamLead.IsRegistered = true;
+            teamLead.UpdatedDate = DateTime.Now;
+            teamLead.UpdatedBy = _applicationUserId.ToString();
+            return _teamLeadRepo.Update(teamLead);
         }
     }
 }
