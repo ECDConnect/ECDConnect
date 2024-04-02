@@ -501,7 +501,7 @@ export default function ContentEdit({
                       type="h4"
                       weight="bold"
                       color="textMid"
-                      text={'Section:'}
+                      text={'Type:'}
                     />
                     <Typography
                       type="h4"
