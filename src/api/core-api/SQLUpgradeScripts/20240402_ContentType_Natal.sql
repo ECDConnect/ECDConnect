@@ -5,6 +5,8 @@ update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "C
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =30 and "FieldName" ='title';
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =30 and "FieldName" ='section';
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =30 and "FieldName" ='type';
+update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =30 and "FieldName" ='pollyTipText';
+update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =30 and "FieldName" ='pollyTipContent';
 
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =31 and "FieldName" ='title';
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =31 and "FieldName" ='section';
@@ -17,3 +19,6 @@ update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "C
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =33 and "FieldName" ='title';
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =33 and "FieldName" ='section';
 update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =33 and "FieldName" ='type';
+
+update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =35 and "FieldName" ='section';
+update "ContentTypeField" set "DisplayPage" = false, "IsRequired"=false where "ContentTypeId" =35 and "FieldName" ='type';
