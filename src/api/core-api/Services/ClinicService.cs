@@ -401,7 +401,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                              x.Question == Constants.GGSettings.QuestionWeight || 
                                                              x.Question == Constants.GGSettings.QuestionMUAC) &&
                                                              x.VisitSection != Constants.GGSettings.child_road_to_health).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.q_immunisation &&
+            var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.QuestionImmunisation &&
                                                          x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateDeworming = visitData.Where(x => x.Question == Constants.GGSettings.QuestionDeworming &&
                                                          x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();

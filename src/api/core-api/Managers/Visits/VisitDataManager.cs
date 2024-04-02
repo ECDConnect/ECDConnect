@@ -771,7 +771,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // re-issued the SmartSpace licence (ie the use case 18 scenario);
 
                     if (rating.OverallScore > 42 ||
-                        (step11_q1 != null && step11_q1.QuestionAnswer == Constants.GGSettings.answer_no) ||
+                        (step11_q1 != null && step11_q1.QuestionAnswer == Constants.GGSettings.AnswerNo) ||
                         (step14_q1 != null && step14_q1.QuestionAnswer == Constants.SSSettings.answer_yes))
                     {
                         rating.OverallRatingColor = MetricsColorEnum.Success.ToString();
@@ -783,7 +783,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // 2. if user selected ""No"" to the second question in use case 21(ie, ""Is the SmartStart programme being implemented for long enough?""
                     // 3. if user selected ""Yes"" to the third question in use case 21(ie, ""Are there too many children attending the SmartStart programme ? "")
                     if (rating.OverallScore >= 18 && rating.OverallScore <= 42 ||
-                        (step16_q3 != null && step16_q3.QuestionAnswer == Constants.GGSettings.answer_no) ||
+                        (step16_q3 != null && step16_q3.QuestionAnswer == Constants.GGSettings.AnswerNo) ||
                         (step16_q4 != null && step16_q4.QuestionAnswer == Constants.SSSettings.answer_yes))
                     {
                         rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
@@ -797,7 +797,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // (4.note that if the user selected ""Yes"" to the first question in use case 21, then the scenario in use case 23 applies - please see use case 23 above for that red rating case, not covered here) 
 
                     if (rating.OverallScore < 18 || (step5Score > 0 && step5Score < 5) ||
-                        (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.answer_no) ||
+                        (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.AnswerNo) ||
                         (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes) ||
                         (step12 != null && step12_count <= 12))
                     {

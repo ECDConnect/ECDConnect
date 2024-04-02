@@ -582,7 +582,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_moving6 = "Walks alone";
             public const string q_moving7 = "Uses fingers to feed themselves";
 
-            public const string q_immunisation = "Did the baby have the {age} immunisation?";
+            public const string QuestionImmunisation = "Did the baby have the {age} immunisation?";
             public const string QuestionVitaminA = "Is Vitamin A up to date?";
             public const string QuestionDeworming = "Is deworming up to date?";
             public const string q_birth_certificate = "Does {client} have a birth certificate?";
@@ -641,7 +641,7 @@ namespace EcdLink.Api.CoreApi
 
             // Answers
             public const string AnswerYes = "true";
-            public const string answer_no = "false";
+            public const string AnswerNo = "false";
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";
