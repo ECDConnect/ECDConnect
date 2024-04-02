@@ -13,6 +13,8 @@ export const ContentTypes = {
   CONSENT: 'Consent',
   MORE_INFORMATION: 'MoreInformation',
   INFO_PAGES: 'Info Pages',
+  POSTNATAL: 'Postnatal',
+  ANTENATAL: 'Antenatal',
 };
 
 export const ContentForms = {

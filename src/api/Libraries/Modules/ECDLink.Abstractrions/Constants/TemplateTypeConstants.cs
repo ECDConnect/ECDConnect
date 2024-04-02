@@ -15,6 +15,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string VerifyEmailAddress = "verify-email-address";
         public const string SuperadminNotifyEmailChanged = "superadmin-notify-email-changed";
         public const string AdminPortalInvitation = "admin-portal-invitation";
+        public const string TeamLeadInvitation = "team-lead-portal-invitation";
         public const string ForgotPasswordPortal = "forgot-password-portal";
 
         //app notifications
@@ -84,7 +85,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGWalkthroughNotificationMother = "gg-walkthrough-notification-mother";
         public const string GGUploadRTHNotification = "gg-upload-rth";
         public const string GGExpectedMomDeliveryDateApproaching = "gg-expected-moms-delivery-date-approaching";
-        public const string GGRedAlertMaternalDistress = "gg-redalert-maternal-distress";
+        public const string GGRedAlertMaternalDistressMother = "gg-redalert-maternal-distress-mother";
+        public const string GGRedAlertMaternalDistressInfant = "gg-redalert-maternal-distress-infant";
         public const string GGMaternalDistress = "gg-maternal-distress";
 
         public const string GGVisitOverdue = "gg-visit-overdue";

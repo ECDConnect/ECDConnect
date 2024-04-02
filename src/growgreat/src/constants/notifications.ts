@@ -6,9 +6,17 @@ interface NotificationTagConfigParams {
   AcceptAgreement: Partial<Message>;
   SeeWalkthrough: Partial<Message>;
   CompleteProfile: Partial<Message>;
-  RedAlertReferral: Partial<Message>;
+  RedAlertReferralMother: Partial<Message>;
+  RedAlertReferralInfant: Partial<Message>;
   DangerSignsReferral: Partial<Message>;
+  GrowthIssuesReferral: Partial<Message>;
+  SevereChildMuacReferral: Partial<Message>;
+  ModerateChildMuacReferral: Partial<Message>;
+  AddClub: Partial<Message>;
+  SeeScoreBoard: Partial<Message>;
+  SeePoints: Partial<Message>;
 }
+
 export const notificationTagConfig: NotificationTagConfigParams = {
   AcceptAgreement: {
     routeConfig: {
@@ -22,11 +30,32 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   CompleteProfile: {
     cta: 'CompleteProfile',
   },
-  RedAlertReferral: {
-    cta: 'SeeReferralsRedAlert',
+  RedAlertReferralMother: {
+    cta: 'SeeReferralsRedAlertMother',
+  },
+  RedAlertReferralInfant: {
+    cta: 'SeeReferralsRedAlertInfant',
   },
   DangerSignsReferral: {
     cta: 'SeeReferralsDangerSigns',
+  },
+  GrowthIssuesReferral: {
+    cta: 'SeeReferralsGrowthIssues',
+  },
+  SevereChildMuacReferral: {
+    cta: 'SeeReferralsChildMuac',
+  },
+  ModerateChildMuacReferral: {
+    cta: 'SeeReferralsChildMuacM',
+  },
+  AddClub: {
+    cta: 'AddClub',
+  },
+  SeeScoreBoard: {
+    cta: 'SeeScoreboard',
+  },
+  SeePoints: {
+    cta: 'SeePoints',
   },
 };
 

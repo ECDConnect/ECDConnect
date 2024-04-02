@@ -16,7 +16,6 @@ import {
   Dialog,
   LoadingSpinner,
   MenuListDataItem,
-  renderIcon,
   StackedList,
   Typography,
 } from '@ecdlink/ui';
