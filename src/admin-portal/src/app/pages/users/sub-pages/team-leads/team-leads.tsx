@@ -122,6 +122,9 @@ export default function TeamLeads() {
   const history = useHistory();
 
   const viewSelectedRow = (selectedRow: any) => {
+    const user = tableData?.find(
+      (item) => item?.userId === selectedRow?.userId
+    );
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -135,6 +138,7 @@ export default function TeamLeads() {
         connectUsage: selectedRow?.connectUsage,
         isRegistered: selectedRow?.isRegistered,
         clinicIds: selectedRow?.clinicIds,
+        connectUsageColor: user?.user?.connectUsageColor,
       },
     });
   };

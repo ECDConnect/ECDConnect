@@ -345,11 +345,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 .Select(x => new { x.Id, x.MotherId, x.InfantId, x.Attended, x.PlannedVisitDate, x.ActualVisitDate, x.VisitType.Type })
                 .ToList();
 
-            var motherVisitsCompletedThisMonth = visits.Where(x => x.MotherId.HasValue && x.Attended && x.PlannedVisitDate.Month == DateTime.Now.Month).Count();
-            var motherVisitsCompletedThisYear = visits.Where(x => x.MotherId.HasValue && x.Attended && x.PlannedVisitDate.Year == DateTime.Now.Year).Count();
+            var motherVisitsCompletedThisMonth = visits.Where(x => x.MotherId.HasValue && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Month == DateTime.Now.Month).Count();
+            var motherVisitsCompletedThisYear = visits.Where(x => x.MotherId.HasValue && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == DateTime.Now.Year).Count();
 
-            var childVisitsCompletedThisMonth = visits.Where(x => x.InfantId.HasValue && x.Attended && x.PlannedVisitDate.Month == DateTime.Now.Month).Count();
-            var childVisitsCompletedThisYear = visits.Where(x => x.InfantId.HasValue && x.Attended && x.PlannedVisitDate.Year == DateTime.Now.Year).Count();
+            var childVisitsCompletedThisMonth = visits.Where(x => x.InfantId.HasValue && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Month == DateTime.Now.Month).Count();
+            var childVisitsCompletedThisYear = visits.Where(x => x.InfantId.HasValue && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == DateTime.Now.Year).Count();
 
             var motherOverDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date <= DateTime.Today).Count();
 

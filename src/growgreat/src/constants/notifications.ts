@@ -10,6 +10,8 @@ interface NotificationTagConfigParams {
   RedAlertReferralInfant: Partial<Message>;
   DangerSignsReferral: Partial<Message>;
   GrowthIssuesReferral: Partial<Message>;
+  SevereChildMuacReferral: Partial<Message>;
+  ModerateChildMuacReferral: Partial<Message>;
   AddClub: Partial<Message>;
   SeeScoreBoard: Partial<Message>;
   SeePoints: Partial<Message>;
@@ -39,6 +41,12 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   GrowthIssuesReferral: {
     cta: 'SeeReferralsGrowthIssues',
+  },
+  SevereChildMuacReferral: {
+    cta: 'SeeReferralsChildMuac',
+  },
+  ModerateChildMuacReferral: {
+    cta: 'SeeReferralsChildMuacM',
   },
   AddClub: {
     cta: 'AddClub',

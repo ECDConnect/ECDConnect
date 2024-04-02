@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useQuery } from '@apollo/client';
+import { gql, useLazyQuery, useQuery } from '@apollo/client';
 import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
@@ -8,14 +8,14 @@ import {
   LanguageDto,
   PermissionEnum,
 } from '@ecdlink/core';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
-  ActivitiesTitles,
   ContentManagementView,
   FieldType,
+  NatalTypes,
 } from '../../content-management-models';
 import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import {
@@ -24,6 +24,10 @@ import {
 } from '../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../components/ui-table/type';
 import { LanguageId } from '../../../../constants/language';
+import { GetNatalRecordsForType, GetTenantContext } from '@ecdlink/graphql';
+import { TenantContext } from '../../../../utils/constants';
+import { LoadingSpinner, Table } from '@ecdlink/ui';
+import { formatDate } from '../../../../utils/date-utils/date-utils';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -35,6 +39,10 @@ export interface ContentListProps {
   onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   searchValue?: string;
   choosedSectionTitle?: string;
+  specialType?: string;
+  setNatalType?: (item: number) => void;
+  setSelectedType?: (item: ContentTypeDto) => void;
+  dataTypes?: any;
 }
 
 export default function ContentList({
@@ -47,6 +55,10 @@ export default function ContentList({
   onSearch,
   searchValue,
   choosedSectionTitle,
+  specialType,
+  setNatalType,
+  setSelectedType,
+  dataTypes,
 }: ContentListProps) {
   const { hasPermission } = useUser();
   const [tableData, setTableData] = useState<any[]>([]);
@@ -57,7 +69,7 @@ export default function ContentList({
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
   const filterByValue = useCallback((array, value) => {
-    return array.filter(
+    return array?.filter(
       (data) =>
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
@@ -179,6 +191,48 @@ export default function ContentList({
     },
   });
 
+  const [
+    natalQuery,
+    {
+      data: natalData,
+      refetch: refetchNatalContent,
+      loading: loadingNatalContent,
+    },
+  ] = useLazyQuery(GetNatalRecordsForType, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      contentTypeId: 29,
+      natalType: 'postnatal',
+      localeId: languageId,
+    },
+  });
+
+  useEffect(() => {
+    if (selectedTab === 2) {
+      natalQuery({
+        variables: {
+          contentTypeId: 29,
+          natalType: 'postnatal',
+          localeId: languageId,
+        },
+      });
+    }
+
+    if (selectedTab === 3) {
+      natalQuery({
+        variables: {
+          contentTypeId: 29,
+          natalType: 'antenatal',
+          localeId: languageId,
+        },
+      });
+    }
+  }, [languageId, natalQuery, selectedTab]);
+
+  const { data: tenantData } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
       const moreInforItems = contentData[getAllCall].map((item: any) => ({
@@ -201,25 +255,6 @@ export default function ContentList({
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
-
-        if (
-          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
-        ) {
-          setTableData(
-            moreInforItems?.filter(
-              (item) =>
-                item?.type === 'Small group' || item?.type === 'Large group'
-            )
-          );
-          return;
-        }
-
-        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
-          setTableData(
-            moreInforItems?.filter((item) => item?.type === 'Story time')
-          );
-          return;
-        }
 
         setTableData(
           anteNatalData?.length > 0 ? anteNatalData : moreInforItems
@@ -290,23 +325,206 @@ export default function ContentList({
     });
   };
 
-  const viewSelectedRow = (item?: any) => {
-    const model: ContentManagementView = {
-      content: item,
-      languageId: languageId,
-    };
+  const viewSelectedRow = useCallback(
+    (item?: any) => {
+      if (selectedTab === 2 || selectedTab === 3) {
+        const selecteditem = natalData?.natalRecordsForType?.find(
+          (record) => record?.title === item?.title
+        );
+        const currentType = dataTypes.contentTypes.find(
+          (x: ContentTypeDto) =>
+            Number(x.id) === Number(selecteditem?.childContentTypeId)
+        );
+        setSelectedType(currentType);
+        setNatalType(Number(selecteditem?.childContentTypeId));
+        const model: ContentManagementView = {
+          content: selecteditem,
+          languageId: languageId,
+        };
 
-    viewContent(model);
+        viewContent(model);
+
+        return;
+      }
+      const currentType = dataTypes.contentTypes.find(
+        (x: ContentTypeDto) => x.id === item?.childContentTypeId
+      );
+      setSelectedType(currentType);
+      setNatalType(Number(item?.childContentTypeId));
+      const model: ContentManagementView = {
+        content: item,
+        languageId: languageId,
+      };
+
+      viewContent(model);
+    },
+    [
+      dataTypes.contentTypes,
+      languageId,
+      natalData?.natalRecordsForType,
+      selectedTab,
+      setNatalType,
+      setSelectedType,
+      viewContent,
+    ]
+  );
+
+  const onBulkActionCallback = useCallback(
+    (status: BulkActionStatus) => {
+      if (status !== 'success') return;
+
+      refetchContent({
+        localeId: languageId.toString(),
+      });
+      refreshParent();
+    },
+    [languageId, refetchContent, refreshParent]
+  );
+  const natalDataFiltered = useMemo(() => {
+    return searchValue !== 'Search by title or content...'
+      ? filterByValue(natalData?.natalRecordsForType, searchValue)
+      : natalData?.natalRecordsForType;
+  }, [filterByValue, natalData?.natalRecordsForType, searchValue]);
+
+  const columns = useMemo(
+    () => [
+      { field: 'title', use: 'Title' },
+      { field: 'section', use: 'Section' },
+      { field: `availableLanguages`, use: 'Languages' },
+      { field: 'childType', use: 'Type' },
+      { field: 'updatedDate', use: 'Last updated' },
+    ],
+    []
+  );
+
+  const chipColor = (type?: string) => {
+    switch (type) {
+      case NatalTypes.HealthPromotion:
+        return 'bg-secondary';
+      case NatalTypes.Info:
+        return 'bg-tertiary';
+      case NatalTypes.Infographic:
+        return 'bg-infographicBg';
+      case NatalTypes.Video:
+        return 'bg-successMain';
+      default:
+        return 'bg-primary';
+    }
   };
 
-  const onBulkActionCallback = (status: BulkActionStatus) => {
-    if (status !== 'success') return;
+  const handleTypesStyles = useCallback((type: string) => {
+    return (
+      <div
+        className={
+          `${chipColor(type)}` +
+          ' m-1 rounded-full py-1 px-3 text-xs text-white'
+        }
+      >
+        {type}
+      </div>
+    );
+  }, []);
 
-    refetchContent({
-      localeId: languageId.toString(),
-    });
-    refreshParent();
-  };
+  const rows =
+    tenantData &&
+    tenantData.tenantContext &&
+    tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+    natalData &&
+    natalData?.natalRecordsForType &&
+    natalDataFiltered &&
+    natalDataFiltered?.map((item) => ({
+      title: item?.title,
+      section: item?.section,
+      availableLanguages: (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {item?.availableLanguages?.map((item: any, index: number) => {
+            const language = languages?.find(
+              (language) => language?.id === item?.id || language?.id === item
+            );
+            return (
+              <div
+                key={`language_` + item?.id}
+                className={' text-textMid m-1 rounded-full py-1 text-xs'}
+              >
+                {index === item?.availableLanguages?.length - 1
+                  ? `${language?.locale}`
+                  : `${language?.locale};`}
+              </div>
+            );
+          })}
+        </div>
+      ),
+      childType: handleTypesStyles(item?.childType),
+      updatedDate: formatDate(item?.updatedDate),
+    }));
+
+  const renderTables = useMemo(() => {
+    if (
+      tenantData &&
+      tenantData.tenantContext &&
+      tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+      natalData &&
+      natalData?.natalRecordsForType &&
+      (selectedTab === 2 || selectedTab === 3)
+    ) {
+      return (
+        <Table
+          columns={columns}
+          rows={rows?.length > 0 ? rows : []}
+          onClickRow={(item) => viewSelectedRow(item)}
+        />
+      );
+    } else {
+      return (
+        <UiTable
+          isLoading={!tableData.length && loadingContent}
+          columns={displayFields?.map((item) => {
+            return {
+              field:
+                typeof item.fieldName === 'string'
+                  ? item.fieldName
+                  : JSON?.stringify(item.fieldName),
+              use:
+                typeof item.displayName === 'string'
+                  ? item.displayName
+                  : JSON?.stringify(item.displayName),
+            };
+          })}
+          rows={
+            searchValue !== 'Search by title or content...'
+              ? filterByValue(tableData, searchValue)
+              : tableData
+          }
+          component={
+            selectedTab === ContentManagementTabs.COMMUNITY.id
+              ? ContentTypes.COACHING_CIRCLE_TOPICS
+              : 'cms'
+          }
+          viewRow={
+            hasPermission(PermissionEnum.update_static) && viewSelectedRow
+          }
+          onBulkActionCallback={onBulkActionCallback}
+          languages={languages}
+          noBulkSelection={true}
+        />
+      );
+    }
+  }, [
+    columns,
+    displayFields,
+    filterByValue,
+    hasPermission,
+    languages,
+    loadingContent,
+    natalData,
+    onBulkActionCallback,
+    rows,
+    searchValue,
+    selectedTab,
+    tableData,
+    tenantData,
+    viewSelectedRow,
+  ]);
 
   if (tableData && displayFields) {
     return (
@@ -322,14 +540,13 @@ export default function ContentList({
                 className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
                 placeholder={searchText}
                 onChange={onSearch}
-                // value={searchValue}
               />
             </div>
             {hasPermission(PermissionEnum.create_static) &&
-              contentType?.name !== 'Consent' &&
-              contentType?.name !== 'MoreInformation' &&
-              contentType?.name !== 'ProgressTrackingLevel' &&
-              contentType?.name !== 'ProgressTrackingCategory' && (
+              contentType?.name !== ContentTypes.CONSENT &&
+              contentType?.name !== ContentTypes.MORE_INFORMATION &&
+              contentType?.name !== ContentTypes.POSTNATAL &&
+              contentType?.name !== ContentTypes.ANTENATAL && (
                 <button
                   onClick={() => {
                     hasPermission(PermissionEnum.update_static) &&
@@ -346,37 +563,7 @@ export default function ContentList({
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                <UiTable
-                  isLoading={!tableData.length && loadingContent}
-                  columns={displayFields.map((item) => {
-                    return {
-                      field:
-                        typeof item.fieldName === 'string'
-                          ? item.fieldName
-                          : JSON?.stringify(item.fieldName),
-                      use:
-                        typeof item.displayName === 'string'
-                          ? item.displayName
-                          : JSON?.stringify(item.displayName),
-                    };
-                  })}
-                  rows={
-                    searchValue !== 'Search by title or content...'
-                      ? filterByValue(tableData, searchValue)
-                      : tableData
-                  }
-                  component={
-                    selectedTab === ContentManagementTabs.COMMUNITY.id
-                      ? ContentTypes.COACHING_CIRCLE_TOPICS
-                      : 'cms'
-                  }
-                  viewRow={
-                    hasPermission(PermissionEnum.update_static) &&
-                    viewSelectedRow
-                  }
-                  onBulkActionCallback={onBulkActionCallback}
-                  languages={languages}
-                />
+                {renderTables}
               </div>
             </div>
           </div>

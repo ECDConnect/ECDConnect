@@ -168,6 +168,10 @@ export default function HealthCareWorkers() {
   );
 
   const viewSelectedRow = (selectedRow: any) => {
+    const user = tableData?.find(
+      (item) => item?.userId === selectedRow?.userId
+    );
+
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -181,6 +185,7 @@ export default function HealthCareWorkers() {
         hcwId: selectedRow?.id,
         isRegistered: selectedRow?.isRegistered,
         connectUsage: selectedRow?.connectUsage,
+        connectUsageColor: user?.user?.connectUsageColor,
       },
     });
   };

@@ -48,6 +48,7 @@ import {
 } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationTagConfig } from '@/constants/notifications';
+import { Notification } from '@/store/notifications/notifications.types';
 
 const HEADER_HEIGHT = 64;
 interface GroupedData {
@@ -106,34 +107,44 @@ export const ReferralsTab: React.FC = () => {
     getInfantById(state, infantId)
   );
 
+  const notifications = useSelector(notificationsSelectors.getAllNotifications);
+
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, '')
   );
 
-  const redAlertNotifications = useSelector(
-    notificationsSelectors.getAllNotifications
-  ).filter(
+  const redAlertNotifications = notifications?.filter(
     (item) =>
       item?.message?.cta?.includes(
         notificationTagConfig?.RedAlertReferralInfant.cta ?? ''
       ) && item?.message?.action?.includes(infantId)
   );
 
-  const dangerSignsNotifications = useSelector(
-    notificationsSelectors.getAllNotifications
-  ).filter(
+  const dangerSignsNotifications = notifications?.filter(
     (item) =>
       item?.message?.cta?.includes(
         notificationTagConfig?.DangerSignsReferral.cta ?? ''
       ) && item?.message?.action?.includes(infantId)
   );
 
-  const growthIssuesNotifications = useSelector(
-    notificationsSelectors.getAllNotifications
-  ).filter(
+  const growthIssuesNotifications = notifications?.filter(
     (item) =>
       item?.message?.cta?.includes(
         notificationTagConfig?.GrowthIssuesReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
+  const moderateChildMuacNotifications = notifications?.filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.ModerateChildMuacReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
+  const severeChildMuacNotifications = notifications?.filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.SevereChildMuacReferral.cta ?? ''
       ) && item?.message?.action?.includes(infantId)
   );
 
@@ -212,6 +223,20 @@ export const ReferralsTab: React.FC = () => {
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
 
+  const removeNotifications = useCallback(
+    (notifications: Notification[]) => {
+      notifications.forEach((x) => {
+        appDispatch(notificationActions.removeNotification(x!));
+        appDispatch(
+          disableBackendNotification({
+            notificationId: x?.message?.reference ?? '',
+          })
+        );
+      });
+    },
+    [appDispatch]
+  );
+
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
       setReferralsInput((prevState) => {
@@ -253,14 +278,7 @@ export const ReferralsTab: React.FC = () => {
           );
 
           if (dangerSignsNotifications && removeDangerSignNotification) {
-            dangerSignsNotifications.forEach((x) => {
-              appDispatch(notificationActions.removeNotification(x!));
-              appDispatch(
-                disableBackendNotification({
-                  notificationId: x?.message?.reference ?? '',
-                })
-              );
-            });
+            removeNotifications(dangerSignsNotifications);
           }
 
           const removeRedAlertNotification = newState.find(
@@ -272,38 +290,60 @@ export const ReferralsTab: React.FC = () => {
           );
 
           if (redAlertNotifications && removeRedAlertNotification) {
-            redAlertNotifications.forEach((x) => {
-              appDispatch(notificationActions.removeNotification(x!));
-              appDispatch(
-                disableBackendNotification({
-                  notificationId: x?.message?.reference ?? '',
-                })
-              );
-            });
+            removeNotifications(redAlertNotifications);
           }
 
           const removeGrowthIssueNotification = newState.find(
             (item) =>
               item.isCompleted &&
-              String(item.comment).includes('is not growing well:')
+              (String(item.comment).includes('underweight') ||
+                String(item.comment).includes('stunted'))
           );
 
           if (growthIssuesNotifications && removeGrowthIssueNotification) {
-            growthIssuesNotifications.forEach((x) => {
-              appDispatch(notificationActions.removeNotification(x!));
-              appDispatch(
-                disableBackendNotification({
-                  notificationId: x?.message?.reference ?? '',
-                })
-              );
-            });
+            removeNotifications(growthIssuesNotifications);
+          }
+
+          const removeModerateChildMuacNotifications = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('Moderate acute malnutrition')
+          );
+
+          if (
+            moderateChildMuacNotifications &&
+            removeModerateChildMuacNotifications
+          ) {
+            removeNotifications(moderateChildMuacNotifications);
+          }
+
+          const removeSevereChildMuacNotifications = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('Severe acute malnutrition')
+          );
+
+          if (
+            severeChildMuacNotifications &&
+            removeSevereChildMuacNotifications
+          ) {
+            removeNotifications(severeChildMuacNotifications);
           }
         }
 
         return newState;
       });
     },
-    [appDispatch, dangerSignsNotifications, referralsForInfant?.length]
+    [
+      appDispatch,
+      dangerSignsNotifications,
+      growthIssuesNotifications,
+      moderateChildMuacNotifications,
+      redAlertNotifications,
+      referralsForInfant?.length,
+      removeNotifications,
+      severeChildMuacNotifications,
+    ]
   );
 
   // group data under sections
