@@ -1323,7 +1323,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .FirstOrDefault();
 
             var clinicsWithUsers = _clinicRepo.GetAll()
-                .Where(x => x.Leagues.Any(y => y.LeagueId == league.Id && y.IsActive))
+                .Where(x => x.IsActive && x.Leagues.Any(y => y.LeagueId == league.Id && y.IsActive))
                 .Select(x => new { ClinicId = x.Id, ClinicName = x.Name, UserIds = x.HealthCareWorkers.Select(x => x.UserId) })
                 .ToList();
 
