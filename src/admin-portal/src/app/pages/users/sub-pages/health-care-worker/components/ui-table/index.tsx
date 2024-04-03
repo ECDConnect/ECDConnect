@@ -636,7 +636,11 @@ export default function UiTable({
           <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
-            color="tertiary"
+            color={
+              deactivating || disableBulkButtons || isAllInactive
+                ? 'textMid'
+                : 'tertiary'
+            }
             text={'Deactivate User'}
           ></Typography>
         </Button>
