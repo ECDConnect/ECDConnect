@@ -69,6 +69,15 @@ export default function UiTable({
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const usersWithoutPhoneNumber = selectedUsers?.filter(
+    (item) => !item?.user?.phoneNumber
+  );
+  const usersWithoutPhoneNumberIds = usersWithoutPhoneNumber?.map(
+    (item) => item?.userId
+  );
+  const filteredRowsByPhoneNumber = selectedRows.filter(
+    (item) => !usersWithoutPhoneNumberIds.includes(item)
+  );
   const disableBulkButtons =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
 
@@ -115,7 +124,7 @@ export default function UiTable({
   const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
-        userIds: selectedRows,
+        userIds: filteredRowsByPhoneNumber,
       },
     })
       .then((res) => {
@@ -142,7 +151,7 @@ export default function UiTable({
           variant: NOTIFICATION.ERROR,
         });
       });
-  }, [selectedRows, sendInvitations, setNotification]);
+  }, [filteredRowsByPhoneNumber, sendInvitations, setNotification]);
 
   const deactivateUser = useCallback(() => {
     deactivateUsers({
@@ -206,7 +215,6 @@ export default function UiTable({
     dialog,
     isAllInactive,
     registeredOrInactiveUsers?.length,
-    selectedRows?.length,
   ]);
 
   const handleBulkInvitation = useCallback(() => {

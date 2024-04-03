@@ -73,7 +73,7 @@ export default function ContentWorkflow({
       contentView.content
     ) {
       if (postNatalType) {
-        const c = contentType.content.find(
+        const c = postNatalType.content.find(
           (x) =>
             x.id === contentView.content.id ||
             Number(x?.id) === Number(contentView.content?.childId)
@@ -307,7 +307,9 @@ export default function ContentWorkflow({
                             contentValues={getOrderedContentValues(
                               currentContent?.contentValues
                             )}
-                            contentType={contentType}
+                            contentType={
+                              postNatalType ? postNatalType : contentType
+                            }
                             cancelEdit={() => goBack()}
                             savedContent={savedContent}
                             defaultLanguageId={defaultLanguageId}
@@ -333,7 +335,7 @@ export default function ContentWorkflow({
               languages={languages}
               selectedLanguageId={selectedLanguageId}
               defaultLanguageId={defaultLanguageId}
-              contentType={contentType}
+              contentType={postNatalType ? postNatalType : contentType}
               cancelCompare={() => setIsCompareMode(!isCompareMode)}
               savedContent={savedContent}
               choosedSectionTitle={choosedSectionTitle}

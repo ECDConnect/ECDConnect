@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { gql, useLazyQuery, useQuery } from '@apollo/client';
 import {
-  camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
   ContentTypeFieldDto,
   LanguageDto,
   PermissionEnum,
+  camelCaseToSentanceCase,
 } from '@ecdlink/core';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -16,8 +16,14 @@ import {
   ContentManagementView,
   FieldType,
   NatalTypes,
+  sortByNatalTypeOptions,
 } from '../../content-management-models';
-import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusIcon,
+  SearchIcon,
+} from '@heroicons/react/solid';
 import {
   ContentManagementTabs,
   ContentTypes,
@@ -26,8 +32,16 @@ import { BulkActionStatus } from '../../../../components/ui-table/type';
 import { LanguageId } from '../../../../constants/language';
 import { GetNatalRecordsForType, GetTenantContext } from '@ecdlink/graphql';
 import { TenantContext } from '../../../../utils/constants';
-import { LoadingSpinner, Table } from '@ecdlink/ui';
+import {
+  Dropdown,
+  SearchDropDown,
+  SearchDropDownOption,
+  Table,
+  Typography,
+} from '@ecdlink/ui';
 import { formatDate } from '../../../../utils/date-utils/date-utils';
+import { format } from 'date-fns';
+import ReactDatePicker from 'react-datepicker';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -67,6 +81,53 @@ export default function ContentList({
   const [buttonText, setButtonText] = useState(contentType.name);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
+  const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+
+  const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
+    (item) => ({
+      id: item?.id,
+      label: item?.description,
+      value: item?.id,
+    })
+  );
+
+  const [languageFilter, setLanguageFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
+  const languageFilterValues = useMemo(
+    () => languageFilter?.map((item) => item?.value),
+    [languageFilter]
+  );
+  const typeFilterValues = useMemo(
+    () => typeFilter?.map((item) => item?.value),
+    [typeFilter]
+  );
+  const [showFilter, setShowFilter] = useState(false);
+
+  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  const onChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+
+    if (start && end) {
+      setFilterDateAdded((prevState) => !prevState);
+    }
+  };
+
+  const dateDropdownValue = useMemo(
+    () =>
+      startDate && endDate
+        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
+        : '',
+    [endDate, startDate]
+  );
 
   const filterByValue = useCallback((array, value) => {
     return array?.filter(
@@ -386,6 +447,74 @@ export default function ContentList({
       : natalData?.natalRecordsForType;
   }, [filterByValue, natalData?.natalRecordsForType, searchValue]);
 
+  const filteredData = useMemo(() => {
+    const filteredByDate = natalDataFiltered?.filter((d) => {
+      return (
+        new Date(d?.updatedDate).getTime() >= new Date(startDate)?.getTime() &&
+        new Date(d?.updatedDate).getTime() <= new Date(endDate)?.getTime()
+      );
+    });
+
+    if (startDate && endDate) {
+      const filteredByType =
+        typeFilterValues?.length > 0
+          ? filteredByDate?.filter((el) => {
+              return typeFilterValues?.some((f) => {
+                return f === el.childType;
+              });
+            })
+          : filteredByDate;
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = filteredByType.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return filteredByType;
+    }
+
+    if (typeFilterValues?.length > 0) {
+      const typeFilterValue = natalDataFiltered?.filter((el) => {
+        return typeFilterValues?.some((f) => {
+          return f === el.childType;
+        });
+      });
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = typeFilterValue.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return typeFilterValue;
+    }
+
+    if (languageFilter?.length > 0) {
+      const filteredbyLanguageObjects = natalDataFiltered.filter((item) =>
+        item.availableLanguages.some((languageId) =>
+          languageFilterValues.includes(languageId)
+        )
+      );
+      return filteredbyLanguageObjects;
+    }
+
+    return natalDataFiltered;
+  }, [
+    endDate,
+    languageFilter?.length,
+    languageFilterValues,
+    natalDataFiltered,
+    startDate,
+    typeFilterValues,
+  ]);
+
   const columns = useMemo(
     () => [
       { field: 'title', use: 'Title' },
@@ -432,7 +561,7 @@ export default function ContentList({
     natalData &&
     natalData?.natalRecordsForType &&
     natalDataFiltered &&
-    natalDataFiltered?.map((item) => ({
+    filteredData?.map((item) => ({
       title: item?.title,
       section: item?.section,
       availableLanguages: (
@@ -526,6 +655,37 @@ export default function ContentList({
     viewSelectedRow,
   ]);
 
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () => typeFilter?.length + hasDateFilter,
+    [hasDateFilter, typeFilter?.length]
+  );
+
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
+
+  const clearFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setTypeFilter([]);
+    setLanguageFilter([]);
+  };
+
+  useEffect(() => {
+    if (selectedTab) {
+      clearFilters();
+      setShowFilter(false);
+    }
+  }, [selectedTab]);
+
   if (tableData && displayFields) {
     return (
       <div>
@@ -546,7 +706,9 @@ export default function ContentList({
               contentType?.name !== ContentTypes.CONSENT &&
               contentType?.name !== ContentTypes.MORE_INFORMATION &&
               contentType?.name !== ContentTypes.POSTNATAL &&
-              contentType?.name !== ContentTypes.ANTENATAL && (
+              contentType?.name !== ContentTypes.ANTENATAL &&
+              contentType?.name !== ContentTypes.NATALINFO &&
+              contentType?.name !== ContentTypes.DANGERSIGN && (
                 <button
                   onClick={() => {
                     hasPermission(PermissionEnum.update_static) &&
@@ -559,7 +721,145 @@ export default function ContentList({
                   Add {camelCaseToSentanceCase(buttonText)}
                 </button>
               )}
+            <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
+              {(selectedTab === 2 || selectedTab === 3) && (
+                <div className="pr-2 ">
+                  <span className=" text-lg font-medium leading-6 text-gray-900">
+                    <button
+                      onClick={() => setShowFilter(!showFilter)}
+                      id="dropdownHoverButton"
+                      className={`${
+                        numberOfFilters
+                          ? ' bg-secondary'
+                          : 'border-secondary border-2 bg-white'
+                      } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                        numberOfFilters ? 'text-white' : 'text-textMid'
+                      } hover:bg-gray-300 focus:ring-2`}
+                      type="button"
+                    >
+                      <div className="flex items-center gap-1">
+                        <Typography
+                          className="truncate"
+                          type="help"
+                          color={numberOfFilters ? 'white' : 'textLight'}
+                          text={renderFilterButtonText}
+                        />
+                        {!showFilter ? (
+                          <span>
+                            <ChevronDownIcon
+                              className={`h-6 w-6 ${
+                                numberOfFilters
+                                  ? 'text-white'
+                                  : 'text-textLight'
+                              }`}
+                            />
+                          </span>
+                        ) : (
+                          <span>
+                            <ChevronUpIcon
+                              className={`h-6 w-6 ${
+                                numberOfFilters
+                                  ? 'text-white'
+                                  : 'text-textLight'
+                              }`}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
+          <div className="pb-5 sm:flex sm:items-center sm:justify-between"></div>
+          {showFilter && (
+            <div className="mb-4 grid auto-cols-min grid-cols-5 items-center">
+              {!filterDateAdded && (
+                <div
+                  onClick={() => setFilterDateAdded(!filterDateAdded)}
+                  className="mr-1"
+                >
+                  <Dropdown
+                    fillType="filled"
+                    textColor={'textLight'}
+                    fillColor={endDate ? 'secondary' : 'adminPortalBg'}
+                    placeholder={dateDropdownValue || 'Last updated'}
+                    labelColor={endDate ? 'white' : 'textLight'}
+                    list={[]}
+                    onChange={(item) => {}}
+                    className="w-full text-sm text-white"
+                  />
+                </div>
+              )}
+
+              {filterDateAdded && (
+                <div>
+                  <ReactDatePicker
+                    selected={startDate}
+                    onChange={onChange}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selectsRange={true}
+                    inline
+                    shouldCloseOnSelect={true}
+                  />
+                </div>
+              )}
+              <div className="mr-2 flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByNatalTypeOptions}
+                  selectedOptions={typeFilter}
+                  onChange={setTypeFilter}
+                  placeholder={'Types'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `Types:`,
+                  }}
+                  bgColor="adminPortalBg"
+                />
+              </div>
+
+              <div className="mr-2 flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByLanguageOptions}
+                  selectedOptions={languageFilter}
+                  onChange={setLanguageFilter}
+                  placeholder={'Languages'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `Languages:`,
+                  }}
+                  bgColor="adminPortalBg"
+                />
+              </div>
+
+              <div className=" flex-end flex">
+                <button
+                  onClick={clearFilters}
+                  type="button"
+                  className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
+                >
+                  Clear All
+                </button>
+              </div>
+              <div></div>
+            </div>
+          )}
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">

@@ -156,7 +156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
                     // User last online more than 20 days ago - red
                     if (user.LastSeen.Date <= twentyDays.Date)
                     {
-                        this.ConnectUsageColor = Constants.PortalSettings.usage_green;
+                        this.ConnectUsageColor = Constants.PortalSettings.usage_red;
                     }
                 }
             }

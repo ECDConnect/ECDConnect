@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -149,7 +149,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (vData.Question == GGSettings.q_postnatal_check_up)
                 {
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
 
                         // referral: add ""Missed clinic visit"" to referrals list
@@ -180,7 +180,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (vData.Question == GGSettings.q_postnatal_6_weeks)
                 {
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
 
                         // referral: add ""Missed clinic visit"" to referrals list
@@ -473,12 +473,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         vData.Question == GGSettings.q_moving6 ||
                         vData.Question == GGSettings.q_moving7)
                 {
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
                         developmentScreening.Add(vData);
                     }
                 }
-                else if (vData.Question == GGSettings.q_immunisation ||
+                else if (vData.Question == GGSettings.QuestionImmunisation ||
                             vData.Question == GGSettings.QuestionVitaminA ||
                             vData.Question == GGSettings.QuestionDeworming)
                 {
@@ -570,7 +570,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 else if (vData.Question == GGSettings.q_birth_certificate)
                 {
 
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
                         // Add referral under ""Home Affairs referrals"" = ""Themba does not have a birth certificate""
                         comment = firstName + GGSettings.no_birth_certificate;
@@ -648,7 +648,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (visitData.Question == GGSettings.q_first_antenatal_visit)
                 {
-                    if (visitData.QuestionAnswer == GGSettings.answer_no)
+                    if (visitData.QuestionAnswer == GGSettings.AnswerNo)
                     {
 
                         // this should add a referral to the list(""Pregnancy not booked"")
@@ -681,7 +681,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (visitData.Question == GGSettings.q_antenatal_visits)
                 {
-                    if (visitData.QuestionAnswer == GGSettings.answer_no)
+                    if (visitData.QuestionAnswer == GGSettings.AnswerNo)
                     {
                         // add an ""amber"" item to the progress: ""Clinic visits not up to date""
                         comment = GGSettings.clinic_visits_not_up_to_date;
@@ -864,7 +864,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else
             {
-                if (q3.QuestionAnswer == GGSettings.answer_no && (q1.QuestionAnswer == GGSettings.AnswerYes || q2.QuestionAnswer == GGSettings.AnswerYes))
+                if (q3.QuestionAnswer == GGSettings.AnswerNo && (q1.QuestionAnswer == GGSettings.AnswerYes || q2.QuestionAnswer == GGSettings.AnswerYes))
                 {
                     comment = firstName + GGSettings.maternal_distress;
                     AddVisitDataStatus(q3, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
@@ -879,7 +879,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
                 }
 
-                if (q3.QuestionAnswer == GGSettings.answer_no && q1.QuestionAnswer == GGSettings.answer_no && q2.QuestionAnswer == GGSettings.answer_no)
+                if (q3.QuestionAnswer == GGSettings.AnswerNo && q1.QuestionAnswer == GGSettings.AnswerNo && q2.QuestionAnswer == GGSettings.AnswerNo)
                 {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
                     comment = firstName + GGSettings.was_coping;
@@ -889,7 +889,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     comment = GGSettings.coping_well;
                     AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
                 }
-                if (q3.QuestionAnswer == GGSettings.answer_no)
+                if (q3.QuestionAnswer == GGSettings.AnswerNo)
                 {
                     if (clientType == GGSettings.client_child)
                     {
@@ -966,7 +966,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var q1 = idDocs.Where(x => x.Question == GGSettings.q_ID_doc).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = idDocs.Where(x => x.Question == GGSettings.q_citizen).OrderBy(x => x.Id).FirstOrDefault();
 
-            if (q1.QuestionAnswer == GGSettings.answer_no && q2.QuestionAnswer == GGSettings.AnswerYes)
+            if (q1.QuestionAnswer == GGSettings.AnswerNo && q2.QuestionAnswer == GGSettings.AnswerYes)
             {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list under Department of Home Affairs referrals(""Lethabo doesn't have an ID book)
                 comment = firstName + GGSettings.no_id_book;
@@ -1461,9 +1461,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     answeredItems.Add(item);
 
-                    if (item.Question == GGSettings.q_immunisation)
+                    if (item.Question == GGSettings.QuestionImmunisation)
                     {
-                        if (item.QuestionAnswer == GGSettings.answer_no)
+                        if (item.QuestionAnswer == GGSettings.AnswerNo)
                         {
                             hasImmunisation = false;
                             // - if ""No"" to immunisation question only, add referral: ""Immunisations not up to date""
@@ -1494,7 +1494,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                     if (item.Question == GGSettings.QuestionVitaminA)
                     {
-                        if (item.QuestionAnswer == GGSettings.answer_no)
+                        if (item.QuestionAnswer == GGSettings.AnswerNo)
                         {
                             hasVitaminA = false;
                             // if ""No"" to Vitamin A question only, add referral: ""Vitamin A not up to date""
@@ -1524,7 +1524,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                     if (item.Question == GGSettings.QuestionDeworming)
                     {
-                        if (item.QuestionAnswer == GGSettings.answer_no)
+                        if (item.QuestionAnswer == GGSettings.AnswerNo)
                         {
                             hasDeworm = false;
                             // if ""No"" to deworming question only, add referral: ""Deworming not up to date""
