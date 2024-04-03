@@ -1,4 +1,4 @@
-import { Button, LoadingSpinner, Typography } from '@ecdlink/ui';
+import { Button, DatePicker, Typography } from '@ecdlink/ui';
 import { useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../main-view/admin-view/clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
@@ -13,7 +13,6 @@ import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
-import DatePicker from 'react-datepicker';
 import { useEffect, useState } from 'react';
 import { format, sub } from 'date-fns';
 import { ViewClinicReportProps } from './view-clinic-report.types';
@@ -110,10 +109,6 @@ export const ViewClinicReport = ({
       ),
     });
   };
-
-  if (loading) {
-    <LoadingSpinner size="big" spinnerColor="white" backgroundColor="uiMid" />;
-  }
 
   return (
     <div>
@@ -231,33 +226,34 @@ export const ViewClinicReport = ({
           />
         </div>
       </div>
-      <div className="mt-8">
-        <div className="flex w-full items-center justify-around">
-          <Typography
-            type="h1"
-            weight="bold"
-            color="textDark"
-            text={`Visit information`}
-            align="left"
-            className="w-full"
-          />
-          <div className="w-56">
-            <DatePicker
-              selectsRange={true}
-              startDate={startDate}
-              endDate={endDate}
-              maxDate={today}
-              onChange={(update) => {
-                setDateRange(update);
-              }}
-              className="bg-secondary w-56 rounded-xl text-white"
-            />
-          </div>
-        </div>
-        <ClientRegistration
-          clinicReportData={clinicReportData?.clinicVisitReportData}
+      <div className="mt-8 flex w-full items-center justify-between">
+        <Typography
+          type="h1"
+          weight="bold"
+          color="textDark"
+          text={`Visit information`}
+          align="left"
+        />
+        <DatePicker
+          isFullWidth={false}
+          showChevronIcon
+          hideCalendarIcon
+          className="w-64 rounded-xl"
+          selectsRange
+          startDate={startDate}
+          endDate={endDate}
+          maxDate={today}
+          colour="secondary"
+          textColour="white"
+          onChange={(update) => {
+            setDateRange(update);
+          }}
         />
       </div>
+      <ClientRegistration
+        isLoading={loading}
+        clinicReportData={clinicReportData?.clinicVisitReportData}
+      />
     </div>
   );
 };

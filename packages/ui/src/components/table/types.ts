@@ -3,15 +3,33 @@ import { Irow, Icolumn } from 'react-tailwind-table';
 import { ButtonProps } from '../button/button.types';
 import { FormFieldProps } from '../form-fields/form-input/form-input';
 import { SearchDropDownProps } from '../dropdown/search-dropdown/search-dropdown';
+import { DatePickerRangeProps, DatePickerSingleProps } from '../date-picker';
 
 interface BulkAction extends Omit<ButtonProps, 'onClick'> {
   onClick?: (selected: Irow[]) => void;
 }
 
-interface ActionButton extends Omit<ButtonProps, 'type' | 'color'> {
+interface IButton extends Omit<ButtonProps, 'type' | 'color'> {
+  actionType?: 'button';
   type?: ButtonProps['type'];
   color?: ButtonProps['color'];
 }
+
+interface ISearchDropDown extends SearchDropDownProps<string> {
+  type?: 'search-dropdown';
+}
+
+type IDatePickerFilter = {
+  type?: 'date-picker';
+} & (DatePickerSingleProps | DatePickerRangeProps);
+
+type IDatePicker = {
+  actionType?: 'date-picker';
+} & (DatePickerSingleProps | DatePickerRangeProps);
+
+type Filter = ISearchDropDown | IDatePickerFilter;
+
+type ActionButton = IButton | IDatePicker;
 
 export interface TableProps {
   columns: Icolumn[];
@@ -20,7 +38,7 @@ export interface TableProps {
   search?: FormFieldProps<FieldValues>;
   actionButton?: ActionButton;
   bulkActions?: BulkAction[];
-  filters?: SearchDropDownProps<string>[];
+  filters?: Filter[];
   onClearFilters?: () => void;
   onClickRow?: (row: Irow) => void;
   onChangePage?: (page: number) => void;
