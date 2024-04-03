@@ -13,7 +13,7 @@ import {
   FormTemplateField,
   TemplateTypenames,
 } from '../../content-management-models';
-import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import { Alert, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 import { ContentForms } from '../../../../constants/content-management';
 
@@ -157,6 +157,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         case FieldType.Text:
           return (
             <div key={propName} className={contentWrapper}>
+              {propName === 'pollyTipText' && (
+                <div className="mb-4">
+                  <Typography type="h4" color="textDark" text={'Polley tip'} />
+                  <Typography type="body" color="textLight" text={'Optional'} />
+                </div>
+              )}
               <div className="sm:col-span-12">
                 <FormField
                   label={isRequired ? title + ' *' : title}
