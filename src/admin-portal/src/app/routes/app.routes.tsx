@@ -49,12 +49,18 @@ import ClinicsSubPage from '../pages/clinics/sub-pages/clinics-sub-page/clinics-
 import DistrictsSubPage from '../pages/clinics/sub-pages/districts-sub-page/districts-sub-page';
 import SubDistrictsSubPage from '../pages/clinics/sub-pages/sub-districts-sub-page/sub-districts-sub-page';
 import { ViewClinicReport } from '../pages/clinics/components/view-clinic-report/view-clinic-report';
+import RegisterTeamLead from '../components/auth/register-team-lead/register-team-lead';
 
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
       <Route exact path="/register/:resetToken" component={Register} />
+      <Route
+        exact
+        path="/register-team-lead/:resetToken"
+        component={RegisterTeamLead}
+      />
       <Route exact path="/forgot-password" component={ForgotPassword} />
       <Route exact path="/reset/:resetToken" component={ResetPassword} />
       <Route path={`/ecd-terms`} component={TermsPage}></Route>

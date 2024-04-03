@@ -17,4 +17,8 @@ export interface RegisterRequestModel {
   password: string;
   token: string;
   acceptedTerms?: boolean;
+  passportField?: string | undefined;
+  idField?: string | undefined;
+  preferId?: boolean | undefined;
+  phoneNumber?: string;
 }
