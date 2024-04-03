@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
-            _applicationUserId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _districtRepo = _repositoryFactory.CreateGenericRepository<District>(userContext: _applicationUserId);
             _subDistrictRepo = _repositoryFactory.CreateGenericRepository<SubDistrict>(userContext: _applicationUserId);
@@ -345,20 +345,21 @@ namespace EcdLink.Api.CoreApi.Services
         private ClientRegistrationModel GetClientRegistration(IEnumerable<Mother> mothers, List<Infant> infants, DateTime startDate, DateTime endDate)
         {
             var totalChildFoldersOpened = infants.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
-            var totalMotherFoldersOpened = mothers.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
+            var filteredMothers = mothers.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).ToList();
+            var totalMotherFoldersOpened = filteredMothers.Count();
             var totalMotherFoldersBefore20WeeksOpened = 0;
 
-            // Mothers
-            foreach (var mother in mothers)
+            foreach (var mother in filteredMothers)
             {
-                if (mother.InsertedDate.Date >= startDate && mother.InsertedDate.Date <= endDate)
+                // Calculation: Pregnancy term calculated: "expected delivery date" - "280 days (40 weeks)"
+                var endTermDate = mother.ExpectedDateOfDelivery.Value;
+                var startTermDate = endTermDate.AddDays(-280);
+
+                var diffOfDates = (DateTime)mother.InsertedDate - (DateTime)startTermDate;
+                var diffWeeks = diffOfDates.Days / 7;
+                if (diffWeeks < 21)
                 {
-                    var diffOfDates = (DateTime)mother.ExpectedDateOfDelivery - (DateTime)mother.InsertedDate;
-                    var diffWeeks = diffOfDates.Days / 7;
-                    if (diffWeeks < 21)
-                    {
-                        totalMotherFoldersBefore20WeeksOpened++;
-                    }
+                    totalMotherFoldersBefore20WeeksOpened++;
                 }
             }
 
@@ -401,7 +402,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                              x.Question == Constants.GGSettings.QuestionWeight || 
                                                              x.Question == Constants.GGSettings.QuestionMUAC) &&
                                                              x.VisitSection != Constants.GGSettings.child_road_to_health).Select(x => x.Visit.InfantId).Distinct().Count();
-            var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.q_immunisation &&
+            var totalUpToDateImmunisations = visitData.Where(x => x.Question == Constants.GGSettings.QuestionImmunisation &&
                                                          x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();
             var totalUpToDateDeworming = visitData.Where(x => x.Question == Constants.GGSettings.QuestionDeworming &&
                                                          x.QuestionAnswer == Constants.GGSettings.AnswerYes).Select(x => x.Visit.InfantId).Distinct().Count();

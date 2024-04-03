@@ -68,6 +68,15 @@ export default function UiTable({
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const usersWithoutPhoneNumber = selectedUsers?.filter(
+    (item) => !item?.user?.phoneNumber
+  );
+  const usersWithoutPhoneNumberIds = usersWithoutPhoneNumber?.map(
+    (item) => item?.userId
+  );
+  const filteredRowsByPhoneNumber = selectedRows.filter(
+    (item) => !usersWithoutPhoneNumberIds.includes(item)
+  );
   const disableBulkButtons =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
   const searchKeys = useRef(columns.map(({ field }) => field));
@@ -113,7 +122,7 @@ export default function UiTable({
   const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
-        userIds: selectedRows,
+        userIds: filteredRowsByPhoneNumber,
       },
     })
       .then((res) => {

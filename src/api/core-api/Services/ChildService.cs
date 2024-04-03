@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.Services
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine)
         {
-            var applicationUserId = (contextAccessor.HttpContext != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
+            var applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
 
             _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: applicationUserId);
             _classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: applicationUserId);

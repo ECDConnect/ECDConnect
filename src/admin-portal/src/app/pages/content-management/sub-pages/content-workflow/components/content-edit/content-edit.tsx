@@ -373,7 +373,7 @@ export default function ContentEdit({
       }
     });
 
-    if (!content?.id) {
+    if (!content?.id && !content?.childId) {
       await createContent({
         variables: {
           input: { ...model },
@@ -385,7 +385,7 @@ export default function ContentEdit({
     } else {
       await updateContent({
         variables: {
-          id: content.id.toString(),
+          id: content?.id?.toString() || content?.childId?.toString(),
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
@@ -479,39 +479,38 @@ export default function ContentEdit({
                   content?.__typename === 'DangerSign' &&
                   camelCaseToSentanceCase(content?.section || '')}
               </h3>
-              {selectedTab === 2 ||
-                (selectedTab === 3 && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Typography
-                        className="truncate"
-                        type="h4"
-                        weight="bold"
-                        color="textMid"
-                        text={'Section:'}
-                      />
-                      <Typography
-                        type="h4"
-                        color="textMid"
-                        text={content?.section}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Typography
-                        className="truncate"
-                        type="h4"
-                        weight="bold"
-                        color="textMid"
-                        text={'Section:'}
-                      />
-                      <Typography
-                        type="h4"
-                        color="textMid"
-                        text={content?.childType}
-                      />
-                    </div>
-                  </>
-                ))}
+              {(selectedTab === 2 || selectedTab === 3) && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Typography
+                      className="truncate"
+                      type="h4"
+                      weight="bold"
+                      color="textMid"
+                      text={'Section:'}
+                    />
+                    <Typography
+                      type="h4"
+                      color="textMid"
+                      text={content?.section}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Typography
+                      className="truncate"
+                      type="h4"
+                      weight="bold"
+                      color="textMid"
+                      text={'Type:'}
+                    />
+                    <Typography
+                      type="h4"
+                      color="textMid"
+                      text={content?.childType}
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               {!!cancelCompare && (
@@ -613,7 +612,8 @@ export default function ContentEdit({
               {content?.id &&
                 content?.__typename !== ContentTypes.PROGRESS_TRACKING_SKILL &&
                 content?.__typename !== ContentTypes.MORE_INFORMATION &&
-                content?.__typename !== ContentTypes.CONSENT && (
+                content?.__typename !== ContentTypes.CONSENT &&
+                content?.__typename !== ContentTypes.DANGERSIGN && (
                   <button
                     onClick={deleteAndRefresh}
                     className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"

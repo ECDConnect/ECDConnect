@@ -15,6 +15,8 @@ export const ContentTypes = {
   INFO_PAGES: 'Info Pages',
   POSTNATAL: 'Postnatal',
   ANTENATAL: 'Antenatal',
+  NATALINFO: 'NatalInfo',
+  DANGERSIGN: 'DangerSign',
 };
 
 export const ContentForms = {
