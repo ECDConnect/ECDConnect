@@ -356,7 +356,6 @@ namespace EcdLink.Api.CoreApi.Services
                 var startTermDate = endTermDate.AddDays(-280);
 
                 var diffOfDates = (DateTime)mother.InsertedDate - (DateTime)startTermDate;
-                var diffDays = diffOfDates.Days;
                 var diffWeeks = diffOfDates.Days / 7;
                 if (diffWeeks < 21)
                 {
