@@ -345,20 +345,22 @@ namespace EcdLink.Api.CoreApi.Services
         private ClientRegistrationModel GetClientRegistration(IEnumerable<Mother> mothers, List<Infant> infants, DateTime startDate, DateTime endDate)
         {
             var totalChildFoldersOpened = infants.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
+            var filteredMothers = mothers.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).ToList();
             var totalMotherFoldersOpened = mothers.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
             var totalMotherFoldersBefore20WeeksOpened = 0;
 
-            // Mothers
-            foreach (var mother in mothers)
+
+            foreach (var mother in filteredMothers)
             {
-                if (mother.InsertedDate.Date >= startDate && mother.InsertedDate.Date <= endDate)
+                // Calculation: Pregnancy term calculated: "expected delivery date" - "280 days (40 weeks)"
+                var endTermDate = mother.ExpectedDateOfDelivery.Value;
+                var startTermDate = endTermDate.AddDays(-280);
+
+                var diffOfDates = (DateTime)startTermDate - (DateTime)mother.InsertedDate;
+                var diffWeeks = diffOfDates.Days / 7;
+                if (diffWeeks < 21)
                 {
-                    var diffOfDates = (DateTime)mother.ExpectedDateOfDelivery - (DateTime)mother.InsertedDate;
-                    var diffWeeks = diffOfDates.Days / 7;
-                    if (diffWeeks < 21)
-                    {
-                        totalMotherFoldersBefore20WeeksOpened++;
-                    }
+                    totalMotherFoldersBefore20WeeksOpened++;
                 }
             }
 
