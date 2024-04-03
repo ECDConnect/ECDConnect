@@ -52,7 +52,7 @@ namespace EcdLink.Api.CoreApi.Services
             _userManager = userManager;
             _pdfConverter = pdfConverter;
 
-            _applicationUserId = (contextAccessor.HttpContext != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetIntegrationUserId().GetValueOrDefault());
+            _applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetIntegrationUserId().GetValueOrDefault());
         }
 
 

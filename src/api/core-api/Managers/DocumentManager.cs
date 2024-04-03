@@ -47,7 +47,7 @@ namespace EcdLink.Api.CoreApi.Managers
             _repoFactory = repoFactory;
             _fileService = fileService;
 
-            _uId = contextAccessor.HttpContext != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _uId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _uId);
             _documentTypeRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: _uId);
