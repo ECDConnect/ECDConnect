@@ -150,7 +150,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
       await sendInviteToApplication({
         variables: {
           userId: userId,
-          inviteToPortal: false,
+          inviteToPortal: true,
         },
       }).catch((err) => [
         setNotification({
