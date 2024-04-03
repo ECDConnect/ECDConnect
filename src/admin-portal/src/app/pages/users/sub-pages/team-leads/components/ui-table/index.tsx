@@ -68,6 +68,15 @@ export default function UiTable({
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const usersWithoutPhoneNumber = selectedUsers?.filter(
+    (item) => !item?.user?.phoneNumber
+  );
+  const usersWithoutPhoneNumberIds = usersWithoutPhoneNumber?.map(
+    (item) => item?.userId
+  );
+  const filteredRowsByPhoneNumber = selectedRows.filter(
+    (item) => !usersWithoutPhoneNumberIds.includes(item)
+  );
   const disableBulkButtons =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
   const searchKeys = useRef(columns.map(({ field }) => field));
@@ -113,7 +122,7 @@ export default function UiTable({
   const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
-        userIds: selectedRows,
+        userIds: filteredRowsByPhoneNumber,
       },
     })
       .then((res) => {
@@ -614,7 +623,11 @@ export default function UiTable({
           <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
-            color="tertiary"
+            color={
+              deactivating || disableBulkButtons || isAllInactive
+                ? 'textMid'
+                : 'tertiary'
+            }
             text={'Deactivate User'}
           ></Typography>
         </Button>

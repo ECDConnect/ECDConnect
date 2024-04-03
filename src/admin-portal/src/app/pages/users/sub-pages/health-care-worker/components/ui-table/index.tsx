@@ -69,6 +69,15 @@ export default function UiTable({
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const usersWithoutPhoneNumber = selectedUsers?.filter(
+    (item) => !item?.user?.phoneNumber
+  );
+  const usersWithoutPhoneNumberIds = usersWithoutPhoneNumber?.map(
+    (item) => item?.userId
+  );
+  const filteredRowsByPhoneNumber = selectedRows.filter(
+    (item) => !usersWithoutPhoneNumberIds.includes(item)
+  );
   const disableBulkButtons =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
 
@@ -115,7 +124,7 @@ export default function UiTable({
   const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
-        userIds: selectedRows,
+        userIds: filteredRowsByPhoneNumber,
       },
     })
       .then((res) => {
@@ -142,7 +151,7 @@ export default function UiTable({
           variant: NOTIFICATION.ERROR,
         });
       });
-  }, [selectedRows, sendInvitations, setNotification]);
+  }, [filteredRowsByPhoneNumber, sendInvitations, setNotification]);
 
   const deactivateUser = useCallback(() => {
     deactivateUsers({
@@ -183,7 +192,9 @@ export default function UiTable({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title={`Deactivate $selectedRows?.length - registeredOrInactiveUsers?.length} CHWs?`}
+          title={`Deactivate ${
+            selectedRows?.length - registeredOrInactiveUsers?.length
+          } CHWs?`}
           message={`Are you sure you want to deactivate these CHWs? CHWs will lose their access to CHW Connect immediately. Make sure you have communicated this to CHWs before deactivating them.`}
           btnText={['Yes, deactivate CHWs', 'No, Cancel']}
           hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
@@ -217,7 +228,9 @@ export default function UiTable({
           title={`Resend invitation to ${
             selectedRows?.length - registeredOrInactiveUsers?.length
           } CHWs?`}
-          message={`Are you sure you want to send the invitation to the 4 CHWs selected?`}
+          message={`Are you sure you want to send the invitation to the ${
+            selectedRows?.length - registeredOrInactiveUsers?.length
+          } CHWs selected?`}
           btnText={['Yes, resend', 'No, Cancel']}
           hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
           alertMessage={`Note: ${registeredOrInactiveUsers?.length} selected CHWs are already registered or have been deactivated so you cannot resend these invitations.`}
@@ -623,7 +636,11 @@ export default function UiTable({
           <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
-            color="tertiary"
+            color={
+              deactivating || disableBulkButtons || isAllInactive
+                ? 'textMid'
+                : 'tertiary'
+            }
             text={'Deactivate User'}
           ></Typography>
         </Button>

@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
-            _applicationUserId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _districtRepo = _repositoryFactory.CreateGenericRepository<District>(userContext: _applicationUserId);
             _subDistrictRepo = _repositoryFactory.CreateGenericRepository<SubDistrict>(userContext: _applicationUserId);

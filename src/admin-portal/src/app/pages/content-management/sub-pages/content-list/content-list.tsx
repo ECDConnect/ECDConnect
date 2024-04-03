@@ -84,6 +84,23 @@ export default function ContentList({
   const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
     []
   );
+
+  const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
+    (item) => ({
+      id: item?.id,
+      label: item?.description,
+      value: item?.id,
+    })
+  );
+
+  const [languageFilter, setLanguageFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
+  const languageFilterValues = useMemo(
+    () => languageFilter?.map((item) => item?.value),
+    [languageFilter]
+  );
   const typeFilterValues = useMemo(
     () => typeFilter?.map((item) => item?.value),
     [typeFilter]
@@ -111,10 +128,6 @@ export default function ContentList({
         : '',
     [endDate, startDate]
   );
-
-  const handleSetDateFilter = useCallback(() => {
-    setFilterDateAdded(!filterDateAdded);
-  }, [filterDateAdded]);
 
   const filterByValue = useCallback((array, value) => {
     return array?.filter(
@@ -452,19 +465,55 @@ export default function ContentList({
             })
           : filteredByDate;
 
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = filteredByType.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
       return filteredByType;
     }
 
     if (typeFilterValues?.length > 0) {
-      return natalDataFiltered?.filter((el) => {
+      const typeFilterValue = natalDataFiltered?.filter((el) => {
         return typeFilterValues?.some((f) => {
           return f === el.childType;
         });
       });
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = typeFilterValue.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return typeFilterValue;
+    }
+
+    if (languageFilter?.length > 0) {
+      const filteredbyLanguageObjects = natalDataFiltered.filter((item) =>
+        item.availableLanguages.some((languageId) =>
+          languageFilterValues.includes(languageId)
+        )
+      );
+      return filteredbyLanguageObjects;
     }
 
     return natalDataFiltered;
-  }, [endDate, natalDataFiltered, startDate, typeFilterValues]);
+  }, [
+    endDate,
+    languageFilter?.length,
+    languageFilterValues,
+    natalDataFiltered,
+    startDate,
+    typeFilterValues,
+  ]);
 
   const columns = useMemo(
     () => [
@@ -627,6 +676,7 @@ export default function ContentList({
     setStartDate('');
     setEndDate('');
     setTypeFilter([]);
+    setLanguageFilter([]);
   };
 
   useEffect(() => {
@@ -722,24 +772,7 @@ export default function ContentList({
               )}
             </div>
           </div>
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            {/* <div className="text-body w-full sm:flex  ">
-              <div className="text-body w-full flex-col sm:flex sm:justify-around">
-                <div className="relative w-full">
-                  <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                    {searchValue === '' && (
-                      <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                    )}
-                  </span>
-                  <input
-                    className="focus:outline-none sm:text-md block w-full rounded-md bg-adminPortalBg py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="      Search by id number or name..."
-                    // onChange={search}
-                  />
-                </div>
-              </div>
-            </div> */}
-          </div>
+          <div className="pb-5 sm:flex sm:items-center sm:justify-between"></div>
           {showFilter && (
             <div className="mb-4 grid auto-cols-min grid-cols-5 items-center">
               {!filterDateAdded && (
@@ -751,7 +784,7 @@ export default function ContentList({
                     fillType="filled"
                     textColor={'textLight'}
                     fillColor={endDate ? 'secondary' : 'adminPortalBg'}
-                    placeholder={dateDropdownValue || 'Date invited'}
+                    placeholder={dateDropdownValue || 'Last updated'}
                     labelColor={endDate ? 'white' : 'textLight'}
                     list={[]}
                     onChange={(item) => {}}
@@ -789,6 +822,27 @@ export default function ContentList({
                   color={'secondary'}
                   info={{
                     name: `Types:`,
+                  }}
+                  bgColor="adminPortalBg"
+                />
+              </div>
+
+              <div className="mr-2 flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByLanguageOptions}
+                  selectedOptions={languageFilter}
+                  onChange={setLanguageFilter}
+                  placeholder={'Languages'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `Languages:`,
                   }}
                   bgColor="adminPortalBg"
                 />
