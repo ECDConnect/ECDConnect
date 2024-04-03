@@ -346,9 +346,8 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var totalChildFoldersOpened = infants.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
             var filteredMothers = mothers.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).ToList();
-            var totalMotherFoldersOpened = mothers.Where(x => x.InsertedDate.Date >= startDate && x.InsertedDate.Date <= endDate).Count();
+            var totalMotherFoldersOpened = filteredMothers.Count();
             var totalMotherFoldersBefore20WeeksOpened = 0;
-
 
             foreach (var mother in filteredMothers)
             {
@@ -356,7 +355,7 @@ namespace EcdLink.Api.CoreApi.Services
                 var endTermDate = mother.ExpectedDateOfDelivery.Value;
                 var startTermDate = endTermDate.AddDays(-280);
 
-                var diffOfDates = (DateTime)startTermDate - (DateTime)mother.InsertedDate;
+                var diffOfDates = (DateTime)mother.InsertedDate - (DateTime)startTermDate;
                 var diffWeeks = diffOfDates.Days / 7;
                 if (diffWeeks < 21)
                 {
