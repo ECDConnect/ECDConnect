@@ -56,7 +56,7 @@ namespace EcdLink.Api.CoreApi.Services
             _options = optionAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
-            _uId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _uId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _templateRepo = _repositoryFactory.CreateGenericRepository<MessageTemplate>(userContext: _uId);
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _uId);
             _userManager = userManager;

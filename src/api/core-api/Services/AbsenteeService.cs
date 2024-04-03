@@ -42,7 +42,7 @@ namespace ECDLink.Api.CoreApi.Services
             _notificationService = notificationService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = contextAccessor.HttpContext != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+            _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _absenteeRepo = repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
         }
 
