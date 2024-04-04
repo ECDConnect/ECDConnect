@@ -54,17 +54,7 @@ namespace ECDLink.AutomatedJobs.Jobs.Integration
                     }
                     catch (Exception ex)
                     {
-                        try
-                        {
-                            _logger.LogInformation("CronJobs: {0} Work {1} Start", _name, mi.Name);
-                            var task = (Task)mi.Invoke(service, null);
-                            await task;
-                            _logger.LogInformation("CronJobs: {0} Work {1} End", _name, mi.Name);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "CronJobs: {0} Work {1} Failed: {2}", _name, mi.Name, ex.Message);
-                        }
+                        _logger.LogError(ex, "CronJobs: {0} Work {1} Failed: {2}", _name, mi.Name, ex.Message);
                     }
                 }
             }

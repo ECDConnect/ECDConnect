@@ -103,17 +103,6 @@ namespace ECDLink.SmartStart.Services
             return learners;
         }
 
-        public List<Learner> GetLearnersActiveDuringTimePeriod(Guid classgroupId, DateTime startDate, DateTime endTime)
-        {
-            var learners = _dbContext.Learners
-                .Include(x => x.User)
-                .Where(x => x.ClassroomGroupId == classgroupId)
-                .Where(x => x.StartedAttendance < endTime && (!x.StoppedAttendance.HasValue || x.StoppedAttendance.Value > startDate))
-                .ToList();
-
-            return learners;
-        }
-
         public Classroom GetUserClassroom(string userId, Guid classroomId = default(Guid))
         {
             Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => Guid.Parse(userId) == x.UserId);
