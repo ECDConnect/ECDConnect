@@ -8,7 +8,8 @@ import { classNames, renderIcon } from '../../utils';
 import SearchDropDown, {
   SearchDropDownProps,
 } from '../dropdown/search-dropdown/search-dropdown';
-import { DatePicker } from '../date-picker';
+import { DatePicker, DatePickerProps } from '../date-picker';
+import { ButtonProps } from '../button/button.types';
 
 export const Table = ({
   rows,
@@ -218,18 +219,17 @@ export const Table = ({
           <div className="ml-auto flex">
             {!!actionButton && actionButton.actionType !== 'date-picker' && (
               <Button
+                // @ts-ignore
                 type="filled"
+                // @ts-ignore
                 color="secondary"
                 textColor="white"
                 className="hover:bg-secondaryGG mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
-                {...actionButton}
+                {...(actionButton as ButtonProps)}
               />
             )}
             {actionButton?.actionType === 'date-picker' && (
-              <DatePicker
-                // className="w-56"
-                {...actionButton}
-              />
+              <DatePicker {...(actionButton as DatePickerProps)} />
             )}
           </div>
         </div>
