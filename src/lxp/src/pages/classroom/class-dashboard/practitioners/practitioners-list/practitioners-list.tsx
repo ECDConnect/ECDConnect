@@ -173,9 +173,7 @@ export const PractitionersList: React.FC = () => {
               type: 'outlined',
               onClick: () => {
                 onCancel();
-                history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
-                  a: 'hello',
-                });
+                history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
               },
               leadingIcon: 'ViewGridAddIcon',
             },
@@ -205,8 +203,6 @@ export const PractitionersList: React.FC = () => {
                   type={'UserAlertList'}
                 ></StackedList>
               </div>
-              {/* EC-1909 - Suppress ticket */}
-              {/*
               <Card className={styles.absentCard}>
                 <div className={styles.absentCardTitle}>
                   <Typography
@@ -242,7 +238,6 @@ export const PractitionersList: React.FC = () => {
                   </div>
                 </div>
               </Card>
-              */}
               <div className="flex w-11/12 justify-center">
                 <Button
                   type="outlined"

@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Managers;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
@@ -7,9 +8,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 {
     public class PasswordManager : IPasswordManager<ApplicationUser>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
-        public PasswordManager(UserManager<ApplicationUser> userManager)
+        public PasswordManager(ApplicationUserManager userManager)
         {
             _userManager = userManager;
         }

@@ -2,13 +2,13 @@ import {
   ActivityDto,
   getAvatarColor,
   StoryBookDto,
+  LanguageDto,
   useDialog,
 } from '@ecdlink/core/';
 import {
   Alert,
   BannerWrapper,
   Button,
-  DialogPosition,
   Divider,
   RoundIcon,
   StatusChip,
@@ -16,7 +16,7 @@ import {
   URL,
   stripPTag,
 } from '@ecdlink/ui/';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
@@ -28,6 +28,10 @@ import StoryActivityCard from '../story-activity-card/story-activity-card';
 import StoryCard from '../story-card/story-card';
 import { StoryActivityDetailsProps } from './story-activity-details.types';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { staticDataSelectors } from '@/store/static-data';
+import { ContentStoryBookService } from '@/services/ContentStoryBookService';
+import { authSelectors } from '@store/auth';
+import { ContentActivityService } from '@/services/ContentActivityService';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
@@ -64,7 +68,7 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
       title={title}
       subTitle={subTitle}
       color={'primary'}
-      backgroundColour="uiBg"
+      backgroundColour="white"
       onBack={onBack}
       displayOffline={!isOnline}
     >
@@ -112,8 +116,18 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   isSelected,
   linkedActivity,
 }) => {
-  const storyBookParts = [...(storyBook?.storyBookParts || [])].sort((a, b) =>
-    +a.part >= +b.part ? 1 : -1
+  const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
+  const [currentStoryBook, setCurrentStoryBook] = useState(storyBook);
+  const [currentStoryBookParts, setCurrentStoryBookParts] = useState(
+    [...(storyBook?.storyBookParts || [])].sort((a, b) =>
+      +a.part >= +b.part ? 1 : -1
+    )
+  );
+  const { isOnline } = useOnlineStatus();
+  const authUser = useSelector(authSelectors.getAuthUser);
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  const defaultLanguage = languages?.find(
+    (item: LanguageDto) => item?.locale === 'en-za'
   );
 
   const onBookLocationClicked = (bookLocation: string) => {
@@ -123,14 +137,55 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
     }
   };
 
+  const getDataByLanguage = async (language: LanguageDto) => {
+    const hasTranslations = storyBook?.availableLanguages?.some(
+      (item) => item.id === language.id
+    );
+
+    if (hasTranslations && language.locale !== 'en-za') {
+      let storyBooks: StoryBookDto[] | undefined;
+
+      storyBooks = await new ContentStoryBookService(
+        authUser?.auth_token || ''
+      ).getStoryBooks(language.locale);
+
+      const translatedBook = storyBooks?.find(
+        (item) => item.id === currentStoryBook.id
+      );
+      setCurrentStoryBook(translatedBook || storyBook);
+      if (translatedBook?.storyBookParts) {
+        setCurrentStoryBookParts(
+          [...(translatedBook?.storyBookParts || [])].sort((a, b) =>
+            +a.part >= +b.part ? 1 : -1
+          )
+        );
+      }
+    }
+  };
+
   return (
     <div className={'flex flex-col bg-white'}>
       <div className={'flex flex-col items-start justify-start'}>
-        <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
-
+        <LanguageSelector
+          currentLocale={'en-za'}
+          availableLanguages={
+            storyBook?.availableLanguages || [defaultLanguage]
+          }
+          selectLanguage={getDataByLanguage}
+        />
+        {isOnlineOnlyAlert && (
+          <div className="absolute  z-10 flex h-full items-center ">
+            <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
+              <OnlineOnlyModal
+                onSubmit={() => setOnlineOnlyAlert(false)}
+              ></OnlineOnlyModal>
+            </div>
+            <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
+          </div>
+        )}
         <div className={'items-stetch flex w-full flex-col justify-start p-4'}>
           <Typography
-            text={storyBook.name}
+            text={currentStoryBook.name}
             type={'h1'}
             color={'textDark'}
             className={'mt-2'}
@@ -141,7 +196,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             }
           >
             <Typography
-              text={`Author: ${storyBook.author}`}
+              text={`Author: ${currentStoryBook.author}`}
               type={'h4'}
               color={'textDark'}
               className={'mt-2'}
@@ -151,7 +206,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               borderColour={'primaryAccent2'}
               textColour={'primary'}
               textType={'help'}
-              text={storyBook.type}
+              text={currentStoryBook.type}
             />
           </div>
           {!disabled &&
@@ -190,16 +245,20 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 selected={true}
                 buttonIcon={'SwitchVerticalIcon'}
                 buttonText={'Change activity'}
-                onSelected={() => onActivitySwitched && onActivitySwitched()}
+                onSelected={() =>
+                  onActivitySwitched && isOnline
+                    ? onActivitySwitched()
+                    : setOnlineOnlyAlert(true)
+                }
                 onCleared={() => {}}
               />
             </div>
           )}
         </div>
 
-        {storyBook?.type !== StoryBookTypes.other && (
+        {currentStoryBook?.type !== StoryBookTypes.other && (
           <div className={'bg-white p-4'}>
-            {storyBook?.type === StoryBookTypes.storyBook && (
+            {currentStoryBook?.type === StoryBookTypes.storyBook && (
               <>
                 <Typography
                   text={'Where can you find a copy of this story book'}
@@ -209,16 +268,16 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 <ul className={'ml-4 mt-4 list-disc'}>
                   <li>
                     <Typography
-                      text={storyBook.bookLocation}
+                      text={currentStoryBook.bookLocation}
                       type={'unspecified'}
                       underline
                       color={
-                        stripPTag(storyBook.bookLocation).match(URL)
+                        stripPTag(currentStoryBook.bookLocation).match(URL)
                           ? 'infoBb'
                           : 'black'
                       }
                       onClick={() => {
-                        onBookLocationClicked(storyBook.bookLocation);
+                        onBookLocationClicked(currentStoryBook.bookLocation);
                       }}
                       fontSize={'14'}
                     />
@@ -230,7 +289,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   className={'bold mt-4'}
                 />
                 <div className={'flex flex-row flex-wrap'}>
-                  {storyBook.keywords.split(',')?.map((keyword) => (
+                  {currentStoryBook.keywords.split(',')?.map((keyword) => (
                     <StatusChip
                       key={keyword}
                       text={keyword}
@@ -244,7 +303,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               </>
             )}
 
-            {storyBook?.type === StoryBookTypes.readAloud && (
+            {currentStoryBook?.type === StoryBookTypes.readAloud && (
               <>
                 <Typography
                   text={
@@ -255,17 +314,17 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 <ul className={'ml-4 mt-4 list-disc'}>
                   <li>
                     <Typography
-                      text={storyBook.bookLocation}
+                      text={currentStoryBook.bookLocation}
                       type={'unspecified'}
                       underline
                       hasMarkup
                       color={
-                        stripPTag(storyBook.bookLocation).match(URL)
+                        stripPTag(currentStoryBook.bookLocation).match(URL)
                           ? 'primary'
                           : 'black'
                       }
                       onClick={() => {
-                        onBookLocationClicked(storyBook.bookLocation);
+                        onBookLocationClicked(currentStoryBook.bookLocation);
                       }}
                       fontSize={'14'}
                     />
@@ -277,142 +336,143 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
         )}
 
         <div className={'bg-uiBg flex w-full flex-col px-4'}>
-          {storyBook?.type === StoryBookTypes.other && (
-            <div className={'flex flex-col items-start justify-start'}>
-              <Typography
-                text={'Ideas for finding story books for this week’s theme:'}
-                type={'unspecified'}
-              />
-              <ul className={'ml-4 mt-4 list-disc'}>
-                <li>
-                  <Typography
-                    text={'Visit your local library'}
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Join a book club or ask your club or community to share books'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-              </ul>
+          {currentStoryBook?.type === StoryBookTypes.other &&
+            !currentStoryBookParts && (
+              <div className={'flex flex-col items-start justify-start'}>
+                <Typography
+                  text={'Ideas for finding story books for this week’s theme:'}
+                  type={'unspecified'}
+                />
+                <ul className={'ml-4 mt-4 list-disc'}>
+                  <li>
+                    <Typography
+                      text={'Visit your local library'}
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Join a book club or ask your club or community to share books'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                </ul>
 
-              <Typography
-                className={'mt-2'}
-                text={'Use an online resource'}
-                type={'unspecified'}
-              />
+                <Typography
+                  className={'mt-2'}
+                  text={'Use an online resource'}
+                  type={'unspecified'}
+                />
 
-              <Typography
-                className={'mt-4'}
-                text={'SmartStart ->'}
-                color={'primary'}
-                fontSize={'12'}
-                type={'unspecified'}
-                onClick={() => {
-                  window.open('www.google.com', '_blank');
-                }}
-              />
-              <Typography
-                className={'mt-4'}
-                text={'Bookdash ->'}
-                color={'primary'}
-                fontSize={'12'}
-                type={'unspecified'}
-                onClick={() => {
-                  window.open('www.google.com', '_blank');
-                }}
-              />
-              <Typography
-                className={'mt-4'}
-                text={"Nal'ibali ->"}
-                color={'primary'}
-                fontSize={'12'}
-                type={'unspecified'}
-                onClick={() => {
-                  window.open('www.google.com', '_blank');
-                }}
-              />
-
-              <Button
-                className={'mt-4'}
-                color={'primary'}
-                type={'outlined'}
-                size={'small'}
-                onClick={() => {}}
-              >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  className={'text-primary mr-1 h-5 w-5'}
-                  alt="whatsapp"
+                <Typography
+                  className={'mt-4'}
+                  text={'SmartStart ->'}
+                  color={'primary'}
+                  fontSize={'12'}
+                  type={'unspecified'}
+                  onClick={() => {
+                    window.open('www.google.com', '_blank');
+                  }}
                 />
                 <Typography
+                  className={'mt-4'}
+                  text={'Bookdash ->'}
                   color={'primary'}
-                  type={'small'}
-                  text={`Get Nal’ibali stories on Whatsapp`}
+                  fontSize={'12'}
+                  type={'unspecified'}
+                  onClick={() => {
+                    window.open('www.google.com', '_blank');
+                  }}
                 />
-              </Button>
+                <Typography
+                  className={'mt-4'}
+                  text={"Nal'ibali ->"}
+                  color={'primary'}
+                  fontSize={'12'}
+                  type={'unspecified'}
+                  onClick={() => {
+                    window.open('www.google.com', '_blank');
+                  }}
+                />
 
-              <Alert
-                className={'my-4'}
-                type={'info'}
-                message={
-                  'WhatsApps will be charged at your standard carrier rates.'
-                }
-              />
+                <Button
+                  className={'mt-4'}
+                  color={'primary'}
+                  type={'outlined'}
+                  size={'small'}
+                  onClick={() => {}}
+                >
+                  <img
+                    src={getLogo(LogoSvgs.whatsapp)}
+                    className={'text-primary mr-1 h-5 w-5'}
+                    alt="whatsapp"
+                  />
+                  <Typography
+                    color={'primary'}
+                    type={'small'}
+                    text={`Get Nal’ibali stories on Whatsapp`}
+                  />
+                </Button>
 
-              <Typography
-                text={'Ideas for making your own stories:'}
-                type={'unspecified'}
-              />
-              <ul className={'ml-4 mt-4 list-disc'}>
-                <li>
-                  <Typography
-                    text={`Find pictures of this week's theme in a magazine and make your own book for the children`}
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Use your imagination to make up your own story and use expressions'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Use objects or toys such as puppets, dolls, or items related to this week’s theme'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-                <li>
-                  <Typography
-                    text={
-                      'Ask children for ideas to make a story - ask them for characters, what happens in the story and use these ideas to plan a story for the following day'
-                    }
-                    type={'unspecified'}
-                    fontSize={'14'}
-                  />
-                </li>
-              </ul>
-            </div>
-          )}
+                <Alert
+                  className={'my-4'}
+                  type={'info'}
+                  message={
+                    'WhatsApps will be charged at your standard carrier rates.'
+                  }
+                />
 
-          {storyBook &&
-            storyBook.type !== StoryBookTypes.other &&
-            storyBookParts &&
-            storyBookParts?.map((bookPart) => (
+                <Typography
+                  text={'Ideas for making your own stories:'}
+                  type={'unspecified'}
+                />
+                <ul className={'ml-4 mt-4 list-disc'}>
+                  <li>
+                    <Typography
+                      text={`Find pictures of this week's theme in a magazine and make your own book for the children`}
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Use your imagination to make up your own story and use expressions'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Use objects or toys such as puppets, dolls, or items related to this week’s theme'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                  <li>
+                    <Typography
+                      text={
+                        'Ask children for ideas to make a story - ask them for characters, what happens in the story and use these ideas to plan a story for the following day'
+                      }
+                      type={'unspecified'}
+                      fontSize={'14'}
+                    />
+                  </li>
+                </ul>
+              </div>
+            )}
+
+          {currentStoryBook &&
+            currentStoryBookParts &&
+            currentStoryBookParts.sort((a, b) => a.id - b.id) &&
+            currentStoryBookParts?.map((bookPart) => (
               <div
                 key={bookPart.id}
                 className={
@@ -423,7 +483,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   <div className={'mr-4 flex w-1/12 flex-row justify-center'}>
                     <div
                       className={
-                        'flex h-9 w-9 flex-shrink-0 flex-col items-center justify-center rounded-full'
+                        'flex h-10 w-14 flex-shrink-0 flex-col items-center justify-center rounded-full'
                       }
                       style={{ backgroundColor: getAvatarColor() }}
                     >
@@ -523,37 +583,76 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   onActivitySwitched,
   onStorySwitched,
 }) => {
-  const { isOnline } = useOnlineStatus();
-  const dialog = useDialog();
+  const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
+  const [currentActivity, setCurrentActivity] = useState(activity);
+  const authUser = useSelector(authSelectors.getAuthUser);
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  const defaultLanguage = languages?.find(
+    (item: LanguageDto) => item?.locale === 'en-za'
+  );
 
-  const showOnlineOnly = () => {
-    dialog({
-      color: 'bg-white',
-      position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
-  };
+  const { isOnline } = useOnlineStatus();
 
   const handleActivitySwitched = () => {
     if (isOnline) {
       onActivitySwitched?.();
     } else {
-      showOnlineOnly();
+      setOnlineOnlyAlert(true);
+    }
+  };
+
+  const regex = /(<([^>]+)>)/gi;
+  const secondRegEx = /((&nbsp;))*/gim;
+
+  const getDataByLanguage = async (language: LanguageDto) => {
+    const hasTranslations = activity?.availableLanguages?.some(
+      (item) => item.id === language.id
+    );
+
+    if (hasTranslations && language.locale !== 'en-za') {
+      let activities: ActivityDto[] | undefined;
+
+      activities = await new ContentActivityService(
+        authUser?.auth_token || ''
+      ).getActivities(language.locale);
+
+      const translatedActivity = activities?.find(
+        (item) => item.id === currentActivity.id
+      );
+      setCurrentActivity(translatedActivity || activity);
     }
   };
 
   return (
     <div className={'flex flex-col'}>
       <div className={'flex flex-col pb-24'}>
-        <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
+        <LanguageSelector
+          currentLocale={'en-za'}
+          availableLanguages={activity?.availableLanguages || [defaultLanguage]}
+          selectLanguage={getDataByLanguage}
+        />
+        {isOnlineOnlyAlert && (
+          <div className="absolute  z-10 flex h-full items-center ">
+            <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
+              <OnlineOnlyModal
+                onSubmit={() => setOnlineOnlyAlert(false)}
+              ></OnlineOnlyModal>
+            </div>
+            <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
+          </div>
+        )}
         <Divider />
         <Typography
-          className="px-4"
-          text={activity.name}
+          className="mt-2 px-4"
+          text={currentActivity.name}
           type={'h1'}
           color={'primary'}
+        />
+        <Typography
+          className="mt-2 px-4"
+          type="markdown"
+          fontSize="14"
+          text={currentActivity.materials}
         />
         {!disabled &&
           (isSelected ? (
@@ -572,7 +671,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           ) : (
             <Button
               type={'filled'}
-              className={'mt-4'}
+              className={'mx-4 mt-4'}
               color={'primary'}
               textColor={'white'}
               text={'Choose this activity'}
@@ -581,38 +680,77 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
               onClick={onActivitySelected}
             />
           ))}
+        <Divider dividerType="dashed" className={'mx-4 mt-4'} />
         {!disabled && linkedStory && (
-          <div className={'bg-uiBg flex flex-col'}>
-            <Typography type={'body'} text={'Linked story'} />
+          <div className={'flex flex-col bg-white'}>
+            <div className="mt-4 px-4">
+              <Typography
+                text={`Story chosen:`}
+                type={'h2'}
+                color={'textDark'}
+              />
+            </div>
             <StoryCard
               title={linkedStory.name}
               storyBookId={linkedStory.id}
               type={linkedStory.type}
               languages={linkedStory.availableLanguages}
-              selected={true}
+              selected={false}
               hideDetails={true}
               buttonIcon={'SwitchVerticalIcon'}
               buttonText={'Change story'}
-              onSelected={() => onStorySwitched && onStorySwitched()}
-              onCleared={() => onStorySwitched && onStorySwitched()}
+              onSelected={() => {}}
+              onCleared={() => {}}
+              radioEnabled={false}
+              className={'mx-4'}
             />
           </div>
         )}
-
         <div className="mt-4 px-4">
           <Typography
             type="markdown"
             fontSize="14"
-            text={activity.description}
+            text={currentActivity.description}
           />
         </div>
-        <div className="mt-2 p-4">
-          <Typography
-            className="mt-2 p-4"
-            type="markdown"
-            text={activity.notes}
-          />
-        </div>
+        {currentActivity.notes && (
+          <div className="mt-2 p-4">
+            <Alert
+              title={'Tips'}
+              className={'mt-4'}
+              type={'info'}
+              message={currentActivity.notes
+                .replace(regex, '')
+                .replace(secondRegEx, '')}
+            />
+          </div>
+        )}
+        {!disabled &&
+          (isSelected ? (
+            <div className="pl-4 pr-4">
+              <Button
+                type={'filled'}
+                className={'mt-4 w-full'}
+                color={'primary'}
+                textColor={'white'}
+                text={'Change activity'}
+                icon={'SwitchVerticalIcon'}
+                iconPosition={'start'}
+                onClick={handleActivitySwitched}
+              />
+            </div>
+          ) : (
+            <Button
+              type={'filled'}
+              className={'mx-4 mt-4'}
+              color={'primary'}
+              textColor={'white'}
+              text={'Choose this activity'}
+              icon={'CheckCircleIcon'}
+              iconPosition={'start'}
+              onClick={onActivitySelected}
+            />
+          ))}
       </div>
     </div>
   );

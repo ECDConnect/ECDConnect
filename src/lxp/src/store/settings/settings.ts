@@ -10,7 +10,7 @@ const initialState: SettingsState = {
   childInitialObservationPeriod: 30,
   lastDataSync: format(new Date(), 'MM/dd/yyyy hh:mm aa'),
   lastDataSyncUnformatted: formatISO(new Date()),
-  notificationPollInterval: 3600000 * 24, //
+  notificationPollInterval: 1800000,
   applicationVersion: undefined,
   settings: undefined,
 };

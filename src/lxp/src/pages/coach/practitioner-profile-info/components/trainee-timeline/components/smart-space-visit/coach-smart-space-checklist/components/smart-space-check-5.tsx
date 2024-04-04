@@ -13,16 +13,18 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { QuestionAnswersProps } from './smart-space-check-3';
 import { coachSelectors } from '@/store/coach';
 import { authSelectors } from '@/store/auth';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
-interface SmartSpaceCheck1Props {
-  practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+interface SmartSpaceCheck5Props {
+  coachSmartSpaceVisitId: string;
+  traineeChecklistVisitId: string;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -37,15 +39,16 @@ export const getGroupColor = (count: number): Colours => {
   return 'successMain';
 };
 
-export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
-  practitioner,
-  programmeName,
-  setSectionQuestions,
+export const SmartSpaceCheck5: React.FC<SmartSpaceCheck5Props> = ({
+  coachSmartSpaceVisitId,
+  traineeChecklistVisitId,
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
+  const visitSection = `Calculate programme capacity`;
+
   const numberOfAssistants = useSelector(
-    traineeSelectors.getCoachVisitDataAssitantsNumber
+    traineeSelectors.getVisitDataAssitantsNumber(coachSmartSpaceVisitId)
   );
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(authSelectors.getAuthUser);
@@ -53,12 +56,17 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   const [enableButton, setEnableButton] = useState(false);
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
-    traineeSelectors.getTraineeProgrammeType
+    traineeSelectors.getTraineeProgrammeType(traineeChecklistVisitId)
   );
   const traineeProgrammeTypeObject = programData?.find(
     (item) => item?.id === traineeProgrammeType
   );
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
 
   const renderAlert = useMemo(() => {
     if (traineeProgrammeTypeObject?.description === 'Day Mother') {
@@ -105,117 +113,57 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
     return null;
   }, [traineeProgrammeTypeObject?.description]);
 
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection,
       question: 'How many cm is the short side of the room?',
-      answer: '',
+      questionAnswer: '',
     },
     {
+      visitSection,
       question: 'How many cm is the long side of the room?',
-      answer: '',
+      questionAnswer: '',
     },
     {
+      visitSection,
       question: 'Capacity',
-      answer: '',
+      questionAnswer: '',
     },
   ]);
 
-  const visitSection = `Calculate programme capacity`;
   const twoMeasuresFilled = useMemo(
-    () => questions[0].answer !== '' && questions[1].answer !== '',
+    () =>
+      questions[0].questionAnswer !== '' && questions[1].questionAnswer !== '',
     [questions]
   );
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   useEffect(() => {
-    if (!isCoach) {
-      const previousData = questions.map((item) => {
-        const previousAnswer = visitData?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        });
-
-        if (previousAnswer) {
-          return {
-            ...item,
-            answer: previousAnswer?.questionAnswer!,
-          };
-        }
-
-        return item;
-      });
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: previousData,
-        },
-      ]);
-
-      setAnswers(previousData as QuestionAnswersProps[]);
-      return;
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
     }
-
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.find(
-        (item: any) =>
-          item?.answer !== '' || Boolean(item?.answer) !== undefined
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer?.answer,
-        };
-      }
-      return item;
-    });
-
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
   }, []);
 
   useEffect(() => {
-    if (questions.every((item) => item.answer !== '')) {
+    if (questions.every((item) => item.questionAnswer !== '')) {
       return setEnableButton?.(true);
     }
     setEnableButton(false);
@@ -224,12 +172,16 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   const maximumCapacity = useMemo(() => {
     if (traineeProgrammeTypeObject?.description === 'Preschool') {
       if (
-        (Number(questions[1].answer) * Number(questions[0].answer)) / 10000 <
+        (Number(questions[1].questionAnswer) *
+          Number(questions[0].questionAnswer)) /
+          10000 <
         20
       ) {
         return String(
           Math.floor(
-            (Number(questions[1].answer) * Number(questions[0].answer)) / 10000
+            (Number(questions[1].questionAnswer) *
+              Number(questions[0].questionAnswer)) /
+              10000
           )
         );
       }
@@ -241,12 +193,16 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
 
     if (traineeProgrammeTypeObject?.description === 'Day Mother') {
       if (
-        (Number(questions[1].answer) * Number(questions[0].answer)) / 10000 <
+        (Number(questions[1].questionAnswer) *
+          Number(questions[0].questionAnswer)) /
+          10000 <
         6
       ) {
         return String(
           Math.floor(
-            (Number(questions[1].answer) * Number(questions[0].answer)) / 10000
+            (Number(questions[1].questionAnswer) *
+              Number(questions[0].questionAnswer)) /
+              10000
           )
         );
       }
@@ -255,12 +211,16 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
 
     if (traineeProgrammeTypeObject?.description === 'Playgroup') {
       if (
-        (Number(questions[1].answer) * Number(questions[0].answer)) / 10000 <
+        (Number(questions[1].questionAnswer) *
+          Number(questions[0].questionAnswer)) /
+          10000 <
         12
       ) {
         return String(
           Math.floor(
-            (Number(questions[1].answer) * Number(questions[0].answer)) / 10000
+            (Number(questions[1].questionAnswer) *
+              Number(questions[0].questionAnswer)) /
+              10000
           )
         );
       }
@@ -305,10 +265,10 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
               className="mt-4"
               label={item?.question}
               placeholder={'e.g. 410'}
-              value={item.answer}
+              value={item.questionAnswer}
               onChange={(e) => onOptionSelected(e.target.value, index)}
-              {...(!!item.answer &&
-                Number(item.answer) < 50 && {
+              {...(!!item.questionAnswer &&
+                Number(item.questionAnswer) < 50 && {
                   error: {
                     type: 'max',
                     message: 'Please enter a number that is more 49.',
@@ -332,7 +292,8 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
             <Typography
               type={'body'}
               text={`${
-                (Number(questions[1].answer) * Number(questions[0].answer)) /
+                (Number(questions[1].questionAnswer) *
+                  Number(questions[0].questionAnswer)) /
                 10000
               }`}
               color={'primary'}
@@ -366,8 +327,8 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
+                saveSmartSpaceCheckData(questions, visitSection);
                 handleNextSection();
-                saveSmartSpaceCheckData();
               }}
               disabled={!enableButton && isCoach}
             >

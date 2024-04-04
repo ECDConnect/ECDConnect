@@ -133,16 +133,24 @@ export const MomActivityList: React.FC = () => {
 
   useLayoutEffect(() => {
     if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!previousCurrentVisit &&
+      previousCurrentVisit?.id !== currentVisit?.id &&
       !!currentVisit
-    )
+    ) {
       appDispatch(
         visitThunkActions.getPreviousVisitInformationForMother({
-          visitId: currentVisit?.id,
+          visitId: previousCurrentVisit?.id,
         })
       );
+    } else {
+      if (!previousCurrentVisit && !!currentVisit) {
+        appDispatch(
+          visitThunkActions.getPreviousVisitInformationForMother({
+            visitId: currentVisit?.id,
+          })
+        );
+      }
+    }
   }, [
     appDispatch,
     visitId,
@@ -438,15 +446,6 @@ export const MomActivityList: React.FC = () => {
                 color="textMid"
                 className="mb-4"
               />
-              <div className="flex items-center justify-center gap-2">
-                {renderIcon('GiftIcon', 'text-primary w-4 h-4')}
-                <Typography
-                  type="body"
-                  align="center"
-                  text={`You earned X points!`}
-                  color="textDark"
-                />
-              </div>
               <Button
                 className="mt-20 w-full"
                 color="primary"

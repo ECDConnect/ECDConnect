@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security.Helpers;
@@ -12,6 +13,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public async Task<ChildTokenAccessModel> OpenAccessAddChildDetail(
             [Service] SecurityManager securityManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             IGenericRepositoryFactory repoFactory,
             string token)
@@ -49,7 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
  
             if (classGroup == null)
             {
-                classRoom = classroomRepo.GetAll().Where(x => x.UserId.Equals(tokenModel.AddedByUserId)).OrderBy(x => x.Id).FirstOrDefault();
+                classRoom = classroomRepo.GetAll().Where(x => x.UserId == Guid.Parse(tokenModel.AddedByUserId)).OrderBy(x => x.Id).FirstOrDefault();
             }
             else
             {
@@ -65,7 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     Firstname = appUser.FirstName,
                     Surname = appUser.Surname,
                     GroupName = classRoom?.Name ?? classGroup.Name,
-                    UserId = appUser.Id,
+                    UserId = appUser.Id.ToString(),
                     GroupFeeAmount = classRoom?.PreschoolFeeAmount,
                 },
                 Practitoner = new TokenAccessPractitionerDetailModel

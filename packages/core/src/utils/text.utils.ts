@@ -1,9 +1,13 @@
 export const camelCaseToSentanceCase = (text: string): string => {
-  const result = text.replace(/([A-Z])/g, ' $1');
-  let finalResult = result.charAt(0).toUpperCase() + result.slice(1);
+  if (!text) {
+    return '';
+  }
 
-  if (finalResult.charAt(0) === ' ') {
-    finalResult = finalResult.substring(1);
+  const result = text?.replace(/([A-Z])/g, ' $1');
+  let finalResult = result?.charAt(0)?.toUpperCase() + result?.slice(1);
+
+  if (finalResult?.charAt(0) === ' ') {
+    finalResult = finalResult?.substring(1);
   }
 
   return finalResult;
@@ -74,4 +78,16 @@ export function formatStringWithFirstLetterCapitalized(input: string): string {
   const formattedString = words.join(' ');
 
   return formattedString;
+}
+
+export function formatTextToSlug(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, '-');
+}
+
+export function addPhoneNumberMask(phoneNumber: string): string {
+  const part1 = phoneNumber?.slice(0, 3);
+  const part2 = phoneNumber?.slice(3, 6);
+  const part3 = phoneNumber?.slice(6);
+
+  return `${part1} ${part2} ${part3}`;
 }

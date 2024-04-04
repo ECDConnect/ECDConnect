@@ -75,29 +75,19 @@ export const EditClass = ({
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p?.firstName && p?.surname) {
-          return {
-            label: `${p?.firstName} ${p?.surname}`,
-            value: p.userId,
-          };
+        if (p.firstName && p.surname) {
+          return { label: `${p.firstName} ${p.surname}`, value: p.userId };
         }
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
 
-    if (!user?.isImported) {
-      _list.push({
-        label: currentPractitioner?.user?.fullName || '',
-        value: currentPractitioner?.userId,
-      });
-    }
+    _list.push({
+      label: currentPractitioner?.user?.fullName || '',
+      value: currentPractitioner?.userId,
+    });
 
-    const filteredList = _list.filter(
-      (value, index, self) =>
-        index === self.findIndex((t) => t.value === value.value)
-    );
-
-    setPractitionersList(filteredList);
+    setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

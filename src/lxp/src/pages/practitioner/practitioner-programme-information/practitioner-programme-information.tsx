@@ -80,6 +80,17 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const { theme } = useTheme();
 
+  const missingProgramme =
+    (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
+    !practitioner?.principalHierarchy &&
+    !isPrincipal;
+
+  const hasAccepted =
+    ((practitioner?.isRegistered === null || practitioner?.isRegistered) &&
+      practitioner?.principalHierarchy &&
+      !isPrincipal) ||
+    (practitioner?.dateAccepted !== null && !practitioner?.isLeaving);
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -199,9 +210,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         subTitle:
           classroomForPractitionerAnyType?.id &&
           practitioner?.isPrincipal !== true &&
+          !missingProgramme &&
           practitioner?.isRegistered
             ? classroomForPractitionerAnyType?.name
-            : practitioner?.isRegistered
+            : practitioner?.isRegistered && !missingProgramme
             ? classroom?.name || 'None'
             : 'None',
         switchTextStyles: true,
@@ -227,8 +239,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     ];
 
     if (
-      practitioner?.isRegistered !== null ||
-      practitioner?.isLeaving !== null
+      (practitioner?.isRegistered !== null ||
+        practitioner?.isLeaving !== null) &&
+      !missingProgramme
     ) {
       stackedActionList.push(
         {
@@ -249,9 +262,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
 
     if (
-      practitioner?.isRegistered !== null ||
-      isPrincipal !== false ||
-      practitioner?.isLeaving !== null
+      (practitioner?.isRegistered !== null ||
+        isPrincipal !== false ||
+        practitioner?.isLeaving !== null) &&
+      !missingProgramme
     ) {
       if (isPrincipal) {
         practitionersList?.push(practitioner);
@@ -277,7 +291,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       });
     }
 
-    if (classroomGroups.length > 0) {
+    if (classroomGroups.length > 0 && !missingProgramme) {
       stackedActionList.push({
         title: 'Classes',
         subTitle: classroomGroups
@@ -288,7 +302,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         actionName: isPrincipal ? 'Edit' : 'View',
         actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
         },
       });
     }
@@ -360,58 +374,53 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        {practitioner?.isRegistered === null &&
-          practitioner?.principalHierarchy &&
-          !isPrincipal && (
-            <div className="flex justify-center">
-              <Alert
-                type="info"
-                title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
-                list={[`Edit your profile to accept or disagree. `]}
-                className={'mt-4 w-11/12'}
-                button={
-                  <Button
-                    text="Edit profile"
-                    icon="PencilIcon"
-                    type={'filled'}
-                    color={'primary'}
-                    textColor={'white'}
-                    onClick={() =>
-                      history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
-                    }
-                  />
-                }
-              />
-            </div>
-          )}
 
-        {practitioner?.isRegistered === null &&
-          !practitioner?.principalHierarchy &&
-          !isPrincipal && (
-            <div className="flex justify-center">
-              <Alert
-                type="error"
-                title={`You have not been added to a programme.`}
-                list={[
-                  `Ask the principal/owner of your programme to add you to Funda App. `,
-                  `If you are the principal/owner of the programme, edit your profile. `,
-                ]}
-                className={'mt-4 w-11/12'}
-                button={
-                  <Button
-                    text="Edit profile"
-                    icon="PencilIcon"
-                    type={'filled'}
-                    color={'primary'}
-                    textColor={'white'}
-                    onClick={() =>
-                      history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)
-                    }
-                  />
-                }
-              />
-            </div>
-          )}
+        {!isPrincipal && !hasAccepted && !missingProgramme && (
+          <div className="flex justify-center">
+            <Alert
+              type="info"
+              title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
+              list={[`Edit your profile to accept or disagree. `]}
+              className={'mt-4 w-11/12'}
+              button={
+                <Button
+                  text="Edit profile"
+                  icon="PencilIcon"
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  onClick={() =>
+                    history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+                  }
+                />
+              }
+            />
+          </div>
+        )}
+
+        {!isPrincipal && missingProgramme && (
+          <div className="flex justify-center">
+            <Alert
+              type="error"
+              title={`You have not been added to a programme.`}
+              list={[
+                `Ask the principal/owner of your programme to add you to Funda App. `,
+                `If you are the principal/owner of the programme, edit your profile. `,
+              ]}
+              className={'mt-4 w-11/12'}
+              button={
+                <Button
+                  text="Edit profile"
+                  icon="PencilIcon"
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  onClick={() => history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)}
+                />
+              }
+            />
+          </div>
+        )}
         <StackedList
           className="px-4"
           listItems={listItems}

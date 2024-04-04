@@ -1,4 +1,5 @@
 import {
+  getInfantCurrentVisitSelector,
   getInfantById,
   getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
@@ -53,13 +54,34 @@ export const ProgressTab = () => {
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
+
+  const currentVisit = useSelector((state: RootState) =>
+    getInfantCurrentVisitSelector(state, '')
+  );
+
   const previousVisitData = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
 
-  const previousVisitByOrderDate = useSelector(
-    getInfantNearestPreviousVisitByOrderDate
+  const previousVisitByOrderDate = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
+
+  useLayoutEffect(() => {
+    if (previousVisitByOrderDate?.id && previousVisitByOrderDate?.attended) {
+      appDispatch(
+        getPreviousVisitInformationForInfant({
+          visitId: previousVisitByOrderDate?.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetInfantSummaryByPriority({
+          visitId: previousVisitByOrderDate?.id || '',
+        })
+      );
+    } else {
+    }
+  }, [appDispatch, previousVisitByOrderDate]);
 
   const infantName = useMemo(
     () => infant?.user?.firstName || '',
@@ -113,22 +135,6 @@ export const ProgressTab = () => {
       activeTabIndex: INFANT_PROFILE_TABS.PROGRESS,
     });
   }, [history, location.pathname]);
-
-  useLayoutEffect(() => {
-    if (previousVisitByOrderDate?.id && previousVisitByOrderDate?.attended) {
-      appDispatch(
-        getPreviousVisitInformationForInfant({
-          visitId: previousVisitByOrderDate?.id,
-        })
-      );
-      appDispatch(
-        visitThunkActions.GetInfantSummaryByPriority({
-          visitId: previousVisitByOrderDate?.id || '',
-        })
-      );
-    } else {
-    }
-  }, [appDispatch, previousVisitByOrderDate]);
 
   if (isLoading) {
     return (

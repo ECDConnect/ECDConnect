@@ -60,7 +60,9 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
     setNotificationStep('');
   };
 
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
 
   const completedSteps = timelineSteps(
     timeline!,

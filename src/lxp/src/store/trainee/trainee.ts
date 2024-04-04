@@ -1,4 +1,3 @@
-import { PractitionerDto, TraineeDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -6,18 +5,26 @@ import {
   getTraineeById,
   getTraineeTimeline,
   getTraineeVisitData,
+  syncCoachSmartSpaceVisitData,
+  submitCoachSmartSpaceVisitData,
   updateTraineeOnboardTimelineSSVisitEvent,
+  submitTraineeFranchisorAgreementData as submitFranchiseeAgreementData,
+  syncTraineeFranchisorAgreementData as syncFranchiseeAgreementData,
 } from './trainee.actions';
-import { TraineeState } from './trainee.types';
+import {
+  SmartSpaceVisitData,
+  SmartSpaceVisit,
+  TraineeState,
+} from './trainee.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { UpdateVisitPlannedVisitDateModelInput } from '@ecdlink/graphql';
 
 const initialState: TraineeState = {
   trainee: undefined,
-  traineeOnboardTimeline: undefined,
-  traineeVisitData: undefined,
-  coachSmartSpaceCheckData: undefined,
-  coachFranchisorAgreementData: undefined,
+  traineeOnboardTimeline: {},
+  traineeChecklistVisitData: {},
+  coachSmartSpaceVisitData: {},
+  franchiseeAgreementData: {},
 };
 
 const traineeSlice = createSlice({
@@ -27,24 +34,47 @@ const traineeSlice = createSlice({
     resetPractitionerState: (state) => {
       state.trainee = initialState.trainee;
     },
-    saveCoachSmartSpaceCheckData: (state, action) => {
-      const checkData = state.coachSmartSpaceCheckData?.filter(
-        (item) => item?.visitSection !== action.payload?.[0]?.visitSection
-      );
-      checkData?.push(...action?.payload);
-      state.coachSmartSpaceCheckData = checkData ? checkData : action.payload;
+    saveCoachSmartSpaceVisitData: (
+      state,
+      action: PayloadAction<SmartSpaceVisit>
+    ) => {
+      state.coachSmartSpaceVisitData = {
+        ...state.coachSmartSpaceVisitData,
+        [action.payload.visitId]: action.payload,
+      };
     },
-    resetCoachSmartSpaceVisitData: (state) => {
-      state.coachSmartSpaceCheckData = initialState?.coachSmartSpaceCheckData;
+    setCoachSmartSpaceVisitSyncId: (
+      state,
+      action: PayloadAction<{ visitId: string; syncId: string }>
+    ) => {
+      state.coachSmartSpaceVisitData = {
+        ...state.coachSmartSpaceVisitData,
+        [action.payload.visitId]: {
+          ...state.coachSmartSpaceVisitData[action.payload.visitId],
+          syncId: action.payload.syncId,
+        },
+      };
     },
-    saveCoachFranchisorAgreementData: (state, action) => {
-      const checkData = state.coachFranchisorAgreementData?.filter(
-        (item) => item?.visitSection !== action.payload?.[0]?.visitSection
-      );
-      checkData?.push(...action?.payload);
-      state.coachFranchisorAgreementData = checkData
-        ? checkData
-        : action.payload;
+    saveFranchiseeAgreementData: (
+      state,
+      action: PayloadAction<SmartSpaceVisit>
+    ) => {
+      state.franchiseeAgreementData = {
+        ...state.franchiseeAgreementData,
+        [action.payload.visitId]: action.payload,
+      };
+    },
+    setFranchiseeAgreementVisitSyncId: (
+      state,
+      action: PayloadAction<{ visitId: string; syncId: string }>
+    ) => {
+      state.franchiseeAgreementData = {
+        ...state.franchiseeAgreementData,
+        [action.payload.visitId]: {
+          ...state.franchiseeAgreementData[action.payload.visitId],
+          syncId: action.payload.syncId,
+        },
+      };
     },
     updateTraineeOnboardTimelineSSVisitEvent: (
       state,
@@ -63,14 +93,37 @@ const traineeSlice = createSlice({
       state.trainee = action.payload;
     });
     builder.addCase(getTraineeTimeline.fulfilled, (state, action) => {
-      state.traineeOnboardTimeline = action.payload;
+      state.traineeOnboardTimeline = {
+        ...state.traineeOnboardTimeline,
+        [action.meta.arg.userId]: action.payload,
+      };
     });
     builder.addCase(getTraineeVisitData.fulfilled, (state, action) => {
-      state.traineeVisitData = action.payload;
+      state.traineeChecklistVisitData = {
+        ...state.traineeChecklistVisitData,
+        [action.meta.arg.visitId]: action.payload,
+      };
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getCoachSmartSpaceVisitData.fulfilled, (state, action) => {
-      state.coachSmartSpaceCheckData = action.payload;
+      const mappedData: SmartSpaceVisitData[] = action.payload.map((item) => {
+        return {
+          visitSection: item.visitSection!,
+          question: item.question!,
+          questionAnswer: item.questionAnswer || undefined,
+        };
+      });
+
+      state.coachSmartSpaceVisitData = {
+        ...state.coachSmartSpaceVisitData,
+        [action.meta.arg.visitId]: {
+          visitId: action.meta.arg.visitId,
+          traineeId: '',
+          coachId: '',
+          visitData: mappedData,
+        },
+      };
+
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(
@@ -86,6 +139,54 @@ const traineeSlice = createSlice({
         }
       }
     );
+    builder.addCase(
+      submitCoachSmartSpaceVisitData.fulfilled,
+      (state, action) => {
+        state.coachSmartSpaceVisitData = {
+          ...state.coachSmartSpaceVisitData,
+          [action.meta.arg]: {
+            ...state.coachSmartSpaceVisitData[action.meta.arg],
+            syncId: undefined,
+          },
+        };
+      }
+    );
+    builder.addCase(syncCoachSmartSpaceVisitData.fulfilled, (state, action) => {
+      const updatedVisits = state.coachSmartSpaceVisitData;
+      const visitIdsToRemove = Object.values(state.coachSmartSpaceVisitData)
+        .filter((item) => !!item.syncId)
+        .map((item) => item.visitId);
+
+      visitIdsToRemove.forEach(
+        (visitId) => (updatedVisits[visitId].syncId = undefined)
+      );
+
+      state.coachSmartSpaceVisitData = updatedVisits;
+    });
+    builder.addCase(
+      submitFranchiseeAgreementData.fulfilled,
+      (state, action) => {
+        state.franchiseeAgreementData = {
+          ...state.franchiseeAgreementData,
+          [action.meta.arg]: {
+            ...state.franchiseeAgreementData[action.meta.arg],
+            syncId: undefined,
+          },
+        };
+      }
+    );
+    builder.addCase(syncFranchiseeAgreementData.fulfilled, (state, action) => {
+      const updatedVisits = state.franchiseeAgreementData;
+      const visitIdsToRemove = Object.values(state.franchiseeAgreementData)
+        .filter((item) => !!item.syncId)
+        .map((item) => item.visitId);
+
+      visitIdsToRemove.forEach(
+        (visitId) => (updatedVisits[visitId].syncId = undefined)
+      );
+
+      state.franchiseeAgreementData = updatedVisits;
+    });
   },
 });
 

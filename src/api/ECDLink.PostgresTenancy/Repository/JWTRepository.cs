@@ -16,7 +16,7 @@ namespace ECDLink.PostgresTenancy.Repository
         private DbSet<JWTUserTokensEntity> entities;
         private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
 
-        protected string _userId;
+        protected Guid _userId;
 
         protected string errorMessage = string.Empty;
 
@@ -38,7 +38,7 @@ namespace ECDLink.PostgresTenancy.Repository
                 return false;
             }
 
-            return entities.Where(g => string.Equals(g.TenantId, _tenantId)).Any(e => string.Equals(e.TokenKey, key));
+            return entities.Where(g => g.TenantId == _tenantId).Any(e => string.Equals(e.TokenKey, key));
         }
 
         public IQueryable<JWTUserTokensEntity> GetAll()
@@ -46,11 +46,11 @@ namespace ECDLink.PostgresTenancy.Repository
             return entities;
         }
 
-        public virtual JWTUserTokensEntity GetByUserId(string id)
+        public virtual JWTUserTokensEntity GetByUserId(Guid id)
         {
             return entities
-                    .Where(e => string.Equals(e.UserId, id))
-                    .Where(g => string.Equals(g.TenantId, _tenantId))
+                    .Where(e => e.UserId == id)
+                    .Where(g => g.TenantId == _tenantId)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
@@ -59,7 +59,7 @@ namespace ECDLink.PostgresTenancy.Repository
         {
             return entities
                     .Where(e => string.Equals(e.TokenKey, key))
-                    .Where(g => string.Equals(g.TenantId, _tenantId))
+                    .Where(g => g.TenantId == _tenantId)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
@@ -68,7 +68,7 @@ namespace ECDLink.PostgresTenancy.Repository
         {
             return entities
                     .Where(e => string.Equals(e.Token, token))
-                    .Where(g => string.Equals(g.TenantId, _tenantId))
+                    .Where(g => g.TenantId == _tenantId)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
@@ -87,15 +87,15 @@ namespace ECDLink.PostgresTenancy.Repository
         public void Delete(string key)
         {
             if (key == null) throw new ArgumentNullException("entity");
-            JWTUserTokensEntity entity = entities.Where(x => x.TokenKey.Equals(key)).Where(g => string.Equals(g.TenantId, _tenantId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            JWTUserTokensEntity entity = entities.Where(x => x.TokenKey.Equals(key)).Where(g => g.TenantId == _tenantId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             entities.Remove(entity);
             _context.SaveChanges();
 
         }
 
-        public bool DeleteAllTokensById(string id)
+        public bool DeleteAllTokensById(Guid id)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            //if (id == null) throw new ArgumentNullException("id");
 
             List<JWTUserTokensEntity> tokens = entities.Where(
                 x => x.UserId == id

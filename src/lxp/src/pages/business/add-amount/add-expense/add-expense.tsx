@@ -55,14 +55,12 @@ export const AddExpense: React.FC = () => {
 
   const onSubmit = useCallback(
     (expenseItem: StatementsExpensesInput) => {
-      if (isOnline) {
-        appDispatch(
-          statementsThunkActions.addExpenseItem({
-            input: expenseItem,
-            firstAttempt: true,
-          })
-        );
-      }
+      appDispatch(
+        statementsThunkActions.addExpenseItem({
+          input: expenseItem,
+          firstAttempt: true,
+        })
+      );
     },
     [userAuth]
   );

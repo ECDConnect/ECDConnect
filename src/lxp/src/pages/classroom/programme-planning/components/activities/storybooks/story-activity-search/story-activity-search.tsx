@@ -44,8 +44,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const allStories = useSelector(storyBookSelectors.getStoryBooks);
+  const allActivities = useSelector(activitySelectors.getActivities);
   const [filteredStories, setFilteredStories] =
     useState<StoryBookDto[]>(allStories);
+  const [filteredActivities, setFilteredActivities] =
+    useState<ActivityDto[]>(allActivities);
   const [selectedStory, setSelectedStory] = useState<StoryBookDto>();
   const [selectedActivity, setSelectedActivity] = useState<ActivityDto>();
   const preSelectedActivity = useSelector(
@@ -111,6 +114,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     filterName: 'Theme',
     filterHint: 'You can select a theme to filter by',
   };
+
+  useEffect(() => {
+    selectedActivity ? setShowNextButton(true) : setShowNextButton(false);
+  }, [selectedActivity]);
+
   useEffect(() => {
     const theme = allThemes?.find((x) => x.name === programme?.name);
 
@@ -148,16 +156,21 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
   }, [preSelectedStoryId, preSelectedActivityId]);
 
   useEffect(() => {
-    applyFilters(allStories);
+    applyFilters(allStories, allActivities);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedLanguageFilterOptions,
     selectedThemeFilterOptions,
     selectedTypeFilterOptions,
+    selectedStory,
   ]);
 
-  const applyFilters = (allStories: StoryBookDto[]) => {
+  const applyFilters = (
+    allStories: StoryBookDto[],
+    allActivities: ActivityDto[]
+  ) => {
     let allStoriesCopy = [...allStories];
+    let allActivitiesCopy = [...allActivities];
     if (selectedThemeFilterOptions && selectedThemeFilterOptions.length > 0) {
       const selectedTheme = allThemes.find(
         (theme) => theme.id === selectedThemeFilterOptions[0].value
@@ -169,12 +182,22 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 
     if (
       selectedLanguageFilterOptions &&
-      selectedLanguageFilterOptions.length > 0
+      selectedLanguageFilterOptions.length > 0 &&
+      selectedLanguageFilterOptions[0].value !== 'en-za'
     ) {
-      allStoriesCopy = allStoriesCopy.filter((story) =>
-        story.availableLanguages.some(
-          (x) => x.id === selectedLanguageFilterOptions[0].id
-        )
+      allStoriesCopy = allStoriesCopy.filter(
+        (story) =>
+          story.availableLanguages &&
+          story.availableLanguages.some(
+            (x) => x.id === selectedLanguageFilterOptions[0].id
+          )
+      );
+      allActivitiesCopy = allActivitiesCopy.filter(
+        (activity) =>
+          activity.availableLanguages &&
+          activity.availableLanguages.some(
+            (x) => x.id === selectedLanguageFilterOptions[0].id
+          )
       );
     }
 
@@ -188,7 +211,16 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       );
     }
 
+    if (selectedStory) {
+      allActivitiesCopy = allActivitiesCopy.filter(
+        (act) =>
+          act.subType &&
+          act.subType?.toLowerCase()?.includes(selectedStory.type.toLowerCase())
+      );
+    }
+
     setFilteredStories(allStoriesCopy);
+    setFilteredActivities(allActivitiesCopy);
   };
 
   const onHelp = () => {
@@ -197,7 +229,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 
   const onSearchChange = (value: string) => {
     if (!value) {
-      applyFilters(allStories);
+      applyFilters(allStories, allActivities);
       return;
     }
 
@@ -262,13 +294,13 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             onSelected={() => {
               setSelectedStory(item);
               setSearchTextActive(false);
-              applyFilters(allStories);
+              applyFilters(allStories, allActivities);
             }}
             onCleared={() => {
               setSelectedStory(undefined);
               setSelectedActivity(undefined);
               setSearchTextActive(false);
-              applyFilters(allStories);
+              applyFilters(allStories, allActivities);
             }}
             onActivityCleared={() => setSelectedActivity(undefined)}
             selected={selectedStory?.id === item.id}
@@ -301,14 +333,14 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           heading={'Story books'}
           onBack={() => {
             setSearchTextActive(false);
-            applyFilters(allStories);
+            applyFilters(allStories, allActivities);
           }}
           onSearchButtonClick={() => setSearchTextActive(true)}
           alternativeSearchItemRender={alternativeSearchHeaderItems}
         >
           <SearchDropDown<number>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 '}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             className={'mr-1'}
             options={categoriesDropDownOptions}
@@ -325,7 +357,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           <SearchDropDown<string>
             className={'mr-1'}
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             options={languagesDropDownOptions}
             selectedOptions={selectedLanguageFilterOptions}
@@ -340,7 +372,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 
           <SearchDropDown<StoryBookTypes>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             options={StoryTypeOptions}
             selectedOptions={selectedTypeFilterOptions}
@@ -354,11 +386,15 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           />
         </SearchHeader>
         <div className="bg-white px-4 pt-2">
-          <Typography
-            type="body"
-            text={`Choose a ${title}`}
-            className={'mt-4'}
-          />
+          {!selectedStory ? (
+            <Typography
+              type="h2"
+              text={`Choose a ${title}`}
+              className={'mt-4'}
+            />
+          ) : (
+            ''
+          )}
           {!selectedStory && (
             <Typography type="body" text="Step 1 of 2" className={'mt-4'} />
           )}
@@ -391,6 +427,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
                 setSelectedActivity(activity);
               }}
               setSelectedStory={setSelectedStory}
+              filteredActivities={filteredActivities}
             />
           )}
           <Divider className="my-2" />
@@ -400,10 +437,13 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             className="mb-32 w-full"
             color="primary"
             icon="SaveIcon"
-            text={!selectedStory ? submitButtonText : 'Save'}
+            text={!selectedActivity ? submitButtonText : 'Save'}
             textColor="white"
             iconPosition="start"
-            onClick={() => onButtonClick()}
+            onClick={() => {
+              onButtonClick();
+              setShowNextButton(false);
+            }}
             disabled={!showNextButton}
           />
         </div>

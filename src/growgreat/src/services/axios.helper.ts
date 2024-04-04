@@ -6,9 +6,8 @@ import { store } from '@store';
 import { refreshToken } from '@store/auth/auth.actions';
 
 const disableGraphqlErrorAlert =
-  `${process.env.REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT}` || '';
-const disableGraphqlLogging =
-  `${process.env.REACT_APP_DISABLE_GRAPHQL_LOGGING}` || '';
+  process.env.REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT;
+const disableGraphqlLogging = process.env.REACT_APP_DISABLE_GRAPHQL_LOGGING;
 
 const logGraphQL = (
   logFunc: (message?: string, ...optionalParams: any[]) => void,
@@ -18,18 +17,20 @@ const logGraphQL = (
   result: any
 ) => {
   if (!!disableGraphqlLogging) return;
-  logFunc(`GRAPHQL: ${statusText}[${status}] `, {
-    query: query,
-    result: result,
-  });
+  // logFunc(`GRAPHQL: ${statusText}[${status}] `, {
+  //   query: query,
+  //   result: result,
+  // });
 };
 
 const alertGraphQL = () => {
-  // temporary alert message - to be replaced with nicer UI.
   if (!!disableGraphqlErrorAlert) return;
-  alert(
-    'Error communicating with the server.\nSee the browser console for more details.'
-  );
+  window.dispatchEvent(new CustomEvent('graphql-error', {})); // AppErrorHandler listens for the event.
+};
+
+const alertTimeout = () => {
+  if (!!disableGraphqlErrorAlert) return;
+  window.dispatchEvent(new CustomEvent('timeout-error', {})); // AppErrorHandler listens for the event.
 };
 
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
@@ -57,6 +58,16 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
 
   axiosInstance.interceptors.request.use(
     async (config) => {
+      if (!navigator.onLine) {
+        return new Promise((resolve) => {
+          resolve({
+            data: null,
+            status: 'offline',
+            statusText: 'Browser is offline',
+          });
+        });
+      }
+
       if (store && !blacklistCheckup(config.url ?? '', blackList)) {
         const user = store?.getState()?.auth?.userAuth;
 
@@ -113,7 +124,11 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           );
         }
         if (response.status >= 400) {
-          alertGraphQL();
+          if (response.status === 408 || response.status === 504) {
+            alertTimeout();
+          } else {
+            alertGraphQL();
+          }
         }
       }
       return response;
@@ -127,7 +142,11 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           error.config.data,
           error.response?.data
         );
-        alertGraphQL();
+        if (error.message === 'Network Error') {
+          alertTimeout();
+        } else {
+          alertGraphQL();
+        }
       }
       return Promise.reject(error);
     }

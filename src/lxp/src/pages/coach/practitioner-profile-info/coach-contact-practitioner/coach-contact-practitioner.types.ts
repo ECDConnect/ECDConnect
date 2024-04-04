@@ -1,5 +1,6 @@
 export interface PractitionerProfileRouteState {
   practitionerId: string;
+  removePractitioner?: boolean;
 }
 
 export interface PractitionerDashboardModel {

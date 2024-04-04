@@ -1,3 +1,5 @@
+import { HelpSection } from '.';
+
 export interface ActivityHelpRouteState {
-  activityId: string;
+  helpSection: HelpSection;
 }

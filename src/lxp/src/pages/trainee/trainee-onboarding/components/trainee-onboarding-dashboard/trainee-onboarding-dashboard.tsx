@@ -23,6 +23,13 @@ import ROUTES from '@/routes/routes';
 import { CoachVisitInfo } from './components/coach-visit-info';
 import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
 import { PractitionerDto } from '@ecdlink/core';
+import { useAppDispatch } from '@/store';
+import { notificationTagConfig } from '@/constants/notifications';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
@@ -36,7 +43,7 @@ export const OnboardingTraineeDashboard: React.FC<
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const today = format(new Date(), 'EEEE, d LLLL');
-
+  const appDispatch = useAppDispatch();
   const { width } = useWindowSize();
   const [showInfo, setShowInfo] = useState(false);
 
@@ -44,7 +51,23 @@ export const OnboardingTraineeDashboard: React.FC<
     setShowInfo(true);
   };
 
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const getStartedNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(
+      notificationTagConfig?.GetStartedTrainee.cta ?? ''
+    )
+  );
+
+  const startJourneyNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(notificationTagConfig?.StartJourney.cta ?? '')
+  );
+
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
   const [showSteps, setShowSteps] = useState(true);
   const [showCoachVisit, setShowCoachVisit] = useState(false);
 
@@ -80,7 +103,11 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'SmartSpace Licence'
   );
 
-  const completedSteps = steps?.filter((item) => item?.type === 'completed');
+  const completedSteps = steps?.filter(
+    (item) =>
+      item?.type === 'completed' ||
+      item?.title === 'Consolidation meeting attended'
+  );
 
   const stepperCount = steps?.length;
 
@@ -97,8 +124,8 @@ export const OnboardingTraineeDashboard: React.FC<
 
   useEffect(() => {
     if (
-      (practitioner?.isOnStipend && completedSteps?.length === 7) ||
-      (practitioner?.isOnStipend !== true && completedSteps.length === 6)
+      (practitioner?.isOnStipend && completedSteps?.length === 8) ||
+      (practitioner?.isOnStipend !== true && completedSteps.length === 7)
     ) {
       setShowSteps(false);
     }
@@ -160,9 +187,9 @@ export const OnboardingTraineeDashboard: React.FC<
           type={'h2'}
           text={'Trainee onboarding'}
         />
-        {((practitioner?.isOnStipend && completedSteps.length === 7) ||
+        {((practitioner?.isOnStipend && completedSteps.length === 8) ||
           (practitioner?.isOnStipend !== true &&
-            completedSteps.length === 6)) && (
+            completedSteps.length === 7)) && (
           <>
             <div className="bg-successBg grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
               <div className="flex">
@@ -201,8 +228,34 @@ export const OnboardingTraineeDashboard: React.FC<
                 color="primary"
                 className="mt-4 mb-2 w-full"
                 onClick={() => {
-                  history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
-                  //  window.location.reload();
+                  if (getStartedNotification) {
+                    appDispatch(
+                      notificationActions.removeNotification(
+                        getStartedNotification
+                      )
+                    );
+                    appDispatch(
+                      disableBackendNotification({
+                        notificationId:
+                          getStartedNotification?.message?.reference ?? '',
+                      })
+                    );
+                  }
+                  if (startJourneyNotification) {
+                    appDispatch(
+                      notificationActions.removeNotification(
+                        startJourneyNotification
+                      )
+                    );
+                    appDispatch(
+                      disableBackendNotification({
+                        notificationId:
+                          startJourneyNotification?.message?.reference ?? '',
+                      })
+                    );
+                  }
+                  history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+                  //window.location.reload();
                 }}
               >
                 {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
@@ -235,9 +288,9 @@ export const OnboardingTraineeDashboard: React.FC<
         )}
         {showSteps && (
           <>
-            {((practitioner?.isOnStipend && completedSteps?.length < 7) ||
+            {((practitioner?.isOnStipend && completedSteps?.length < 8) ||
               (practitioner?.isOnStipend !== true &&
-                completedSteps.length < 6)) && (
+                completedSteps.length < 7)) && (
               <StackedList
                 isFullHeight={false}
                 className={'flex flex-col gap-2'}

@@ -14,6 +14,8 @@ export default function UiTable({
   editRow,
   deleteRow,
   viewRow,
+  showSearch = true,
+  searchInput,
 }: UiTableProps) {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -37,12 +39,13 @@ export default function UiTable({
   useEffect(() => {
     setSearchRows(getSearchResults());
     setLastUpdate(Date.now());
+    if (!showSearch) setSearchValue(searchInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
+  }, [searchValue, searchInput]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-  }, 150);
+  }, 350);
 
   const getSearchResults = () => {
     if (!searchValue) {
@@ -205,30 +208,32 @@ export default function UiTable({
 
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
-      <div className="relative bg-gray-50 p-2 px-4 text-gray-400 focus-within:text-gray-600">
-        <input
-          className="focus:outline-none focus:ring-offset-primary block w-full rounded-md border border-gray-200 bg-white py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 sm:text-sm"
-          placeholder="Search..."
-          onChange={search}
-        />
-        <span className="input-group-text absolute inset-y-1/2 left-6 flex items-center whitespace-nowrap rounded text-center text-base font-normal text-gray-600">
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            data-prefix="fas"
-            data-icon="search"
-            className="w-4"
-            role="img"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 512 512"
-          >
-            <path
-              fill="currentColor"
-              d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
-            ></path>
-          </svg>
-        </span>
-      </div>
+      {showSearch && (
+        <div className="relative bg-gray-50 p-2 px-4 text-gray-400 focus-within:text-gray-600">
+          <input
+            className="focus:outline-none focus:ring-offset-primary block w-full rounded-md border border-gray-200 bg-white py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 sm:text-sm"
+            placeholder="Search..."
+            onChange={search}
+          />
+          <span className="input-group-text absolute inset-y-1/2 left-6 flex items-center whitespace-nowrap rounded text-center text-base font-normal text-gray-600">
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fas"
+              data-icon="search"
+              className="w-4"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+            >
+              <path
+                fill="currentColor"
+                d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
+              ></path>
+            </svg>
+          </span>
+        </div>
+      )}
       <Table
         key={`table-${lastUpdate}`}
         row_render={renderFormat}

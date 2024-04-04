@@ -61,6 +61,24 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
               .SendMessageAsync();
         }
 
+        public async Task SendTeamLeadInvitationAsync(ApplicationUser user, string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+
+            var invitationUrl = $"{_options.Value.AdminSignup}{encodedToken}";
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.TeamLeadInvitation)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
         public async Task SendSMSAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);

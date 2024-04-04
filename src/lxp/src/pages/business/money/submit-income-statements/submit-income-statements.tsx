@@ -10,6 +10,8 @@ import {
   Alert,
   renderIcon,
   CelebrationCard,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { differenceInDays, format } from 'date-fns';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -36,8 +38,12 @@ import {
   setStorageItem,
 } from '@/utils/common/local-storage.utils';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
+import { InfoPage } from './components/info-page';
+import { CoachInfo } from '../../components/coach-info';
 
 export const SubmitIncomeStatements: React.FC = () => {
+  const [isLearnMore, setIsLearnMore] = useState(false);
+
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
@@ -63,10 +69,17 @@ export const SubmitIncomeStatements: React.FC = () => {
     [statements]
   );
 
-  const isLastMonthSubmitted = useMemo<boolean>(
-    () => !!statements?.find((x) => x.month === new Date().getMonth()),
-    [statements]
-  );
+  const isLastMonthSubmitted = useMemo(() => {
+    var currentMonth = new Date().getMonth();
+
+    if (currentMonth === 0) {
+      return !!statements?.find(
+        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
+      );
+    }
+
+    return !!statements?.find((x) => x.month === currentMonth);
+  }, [statements]);
 
   const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
     useState<number>(0);
@@ -88,7 +101,11 @@ export const SubmitIncomeStatements: React.FC = () => {
       date.getDate() <= IncomeStatementDates.SubmitEndDay &&
       !isLastMonthSubmitted
     ) {
-      const nextSubmit = new Date(date.getFullYear(), date.getMonth(), 7);
+      const nextSubmit = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        IncomeStatementDates.SubmitEndDay
+      );
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
     } else {
       const nextMonth = getNextMonth(date);
@@ -110,10 +127,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       return <></>;
     }
 
-    const lastTwoStatementsBalance =
-      lastMonthStatement.balance + previousMonthStatement.balance;
-
-    if (lastTwoStatementsBalance < 0) {
+    if (lastMonthStatement.balance < 0 && previousMonthStatement.balance < 0) {
       return (
         <Alert
           type="warning"
@@ -125,7 +139,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               type={'filled'}
               color={'primary'}
               textColor={'white'}
-              onClick={() => {}}
+              onClick={() => setIsLearnMore(true)}
             />
           }
           customIcon={
@@ -136,7 +150,9 @@ export const SubmitIncomeStatements: React.FC = () => {
         />
       );
     }
-    if (lastTwoStatementsBalance > 0) {
+    if (lastMonthStatement.balance > 0 && previousMonthStatement.balance > 0) {
+      const lastTwoStatementsBalance =
+        lastMonthStatement.balance + previousMonthStatement.balance;
       return (
         <Alert
           type="success"
@@ -190,7 +206,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     if (isThisMonthSubmitted) {
       return format(getNextMonth(date), 'MMM yyyy');
     }
-
     if (
       !isLastMonthSubmitted &&
       date.getDate() <= IncomeStatementDates.SubmitEndDay
@@ -252,10 +267,10 @@ export const SubmitIncomeStatements: React.FC = () => {
   }, [stepIndex]);
 
   // POINTS LOGIC
-  const [
-    pointsSubmitStatementsMessageDismissed,
-    setPointsSubmitStatementsMessageDismissed,
-  ] = useState<boolean>(false);
+  const [pointsMessageDismissedDate, setPointsMessageDismissedDate] = useState<
+    string | undefined
+  >(undefined);
+
   const submitStatementConsecutivePointLibrary = useSelector(
     pointsSelectors.getPointsLibraryById(
       SmartStartPointsLibrary.SUBMIT_STATEMENTS_CONSECUTIVE
@@ -264,7 +279,8 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const submitStatementPoints = useSelector(
     pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS
+      SmartStartPointsLibrary.SUBMIT_STATEMENTS,
+      13 // Need to get last 13 months, in case we are in the next month but still the submit window
     )
   );
   const submitPreschoolFeesPoints = useSelector(
@@ -279,34 +295,83 @@ export const SubmitIncomeStatements: React.FC = () => {
   );
 
   useEffect(() => {
-    const storageItem = getStorageItem<number>(
+    const storageItem = getStorageItem<string>(
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
 
-    if (!!storageItem && currentDate.getMonth() === storageItem) {
-      setPointsSubmitStatementsMessageDismissed(true);
-    } else {
-      setPointsSubmitStatementsMessageDismissed(false);
+    if (storageItem) {
+      setPointsMessageDismissedDate(new Date(storageItem).toDateString());
     }
   }, []);
 
   const onDismissCelebration = useCallback(() => {
+    const dismissedDate = new Date();
     setStorageItem(
-      new Date().getMonth(),
+      JSON.stringify(dismissedDate),
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
-    setPointsSubmitStatementsMessageDismissed(true);
+    setPointsMessageDismissedDate(dismissedDate.toDateString());
   }, []);
 
   const celebrationCard = useMemo<JSX.Element>(() => {
-    if (!isThisMonthSubmitted || pointsSubmitStatementsMessageDismissed) {
-      console.log('No message to display');
+    const messageDismissedDate = !!pointsMessageDismissedDate
+      ? new Date(pointsMessageDismissedDate)
+      : undefined;
+
+    if (
+      currentDate.getDate() < IncomeStatementDates.SubmitStartDay &&
+      currentDate.getDate() > IncomeStatementDates.SubmitEndDay
+    ) {
       return <></>;
     }
 
+    if (
+      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
+      !isThisMonthSubmitted
+    ) {
+      return <></>;
+    }
+
+    if (
+      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
+      isThisMonthSubmitted &&
+      !!messageDismissedDate &&
+      messageDismissedDate.getMonth() === currentDate.getMonth() &&
+      messageDismissedDate.getDate() >= IncomeStatementDates.SubmitStartDay
+    ) {
+      return <></>;
+    }
+
+    if (
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
+      !isLastMonthSubmitted
+    ) {
+      return <></>;
+    }
+
+    if (
+      currentDate.getDate() < IncomeStatementDates.SubmitEndDay &&
+      isLastMonthSubmitted &&
+      !!messageDismissedDate &&
+      ((messageDismissedDate.getMonth() ===
+        getPreviousMonth(currentDate).getMonth() &&
+        messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay) ||
+        (messageDismissedDate.getMonth() === currentDate.getMonth() &&
+          messageDismissedDate.getDate() <= IncomeStatementDates.SubmitEndDay))
+    ) {
+      return <></>;
+    }
+
+    // Check depending on window if we need to try display last months message
+    // We can just add an offset of 1 to the logic below to ignore this months points if we want to show for last month
+    var offset =
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
+        ? 1 // Last month
+        : 0; // Current month
+
     let submittedMonthsInARow = 0;
     for (
-      let i = 0;
+      let i = offset;
       i < submitStatementPoints.length &&
       submitStatementPoints[i].pointsTotal !== 0;
       i++
@@ -320,7 +385,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
     let monthsSinceConsecutiveBonus = 0;
     for (
-      let i = 0;
+      let i = offset;
       i < submitStatementConsecutivePoints.length &&
       submitStatementConsecutivePoints[i].pointsTotal === 0;
       i++
@@ -328,11 +393,11 @@ export const SubmitIncomeStatements: React.FC = () => {
       monthsSinceConsecutiveBonus++;
     }
 
-    const submittedPointsThisMonth = submitStatementPoints[0].pointsTotal;
+    const submittedPointsThisMonth = submitStatementPoints[offset].pointsTotal;
     const submittedWithFeesPointsThisMonth =
-      submitPreschoolFeesPoints[0].pointsTotal;
+      submitPreschoolFeesPoints[offset].pointsTotal;
     const submitConsecutiveBonusPointsThisMonth =
-      submitStatementConsecutivePoints[0]?.pointsTotal;
+      submitStatementConsecutivePoints[offset]?.pointsTotal;
     const monthTotal =
       submittedPointsThisMonth +
       submittedWithFeesPointsThisMonth +
@@ -343,7 +408,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     const consecutiveBonusMessage = ' You earned 25 bonus points.';
 
     // Improved messaging and colours for 12+ months submitted in a row
-    if (submittedMonthsInARow >= 12) {
+    if (submittedMonthsInARow === 12) {
       return (
         <CelebrationCard
           image={<EmojiYellowBigSmile className="mr-2 h-16 w-16" />}
@@ -362,13 +427,12 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     // Only the last month submitted
-    // EC-1909 - Suppress ticket
     if (submittedMonthsInARow === 1) {
       return (
         <CelebrationCard
           image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
           primaryMessage={`Great jobl! You have submitted your ${format(
-            new Date(),
+            offset === 0 ? new Date() : getPreviousMonth(new Date()),
             'MMMM'
           )} statement${
             submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
@@ -385,7 +449,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     // Multiple months, but less than 12
-    // EC-1909 - Suppress ticket
     return (
       <CelebrationCard
         image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -402,7 +465,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         backgroundColour="successBg"
         onDismiss={onDismissCelebration}
         secondaryMessage={
-          monthsSinceConsecutiveBonus >= 2
+          monthsSinceConsecutiveBonus === 2
             ? `Submit you next statement to earn ${submitStatementConsecutivePointLibrary?.points} bonus points.`
             : ''
         }
@@ -410,7 +473,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       />
     );
   }, [
-    pointsSubmitStatementsMessageDismissed,
+    pointsMessageDismissedDate,
     submitStatementPoints,
     submitPreschoolFeesPoints,
     submitStatementConsecutivePoints,
@@ -445,32 +508,32 @@ export const SubmitIncomeStatements: React.FC = () => {
         )}
         {hasIncomeStatements && (
           <div id="statementsDashboard">
-            {isOnline &&
+            {((isOnline &&
               !isThisMonthSubmitted &&
               isSubmitWindowOpen &&
-              !isSubmittingStatement && (
-                <div className="flex items-center" id="howMayDaysToSubmit">
-                  <StatusChip
-                    backgroundColour={
-                      daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                    }
-                    borderColour={
-                      daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                    }
-                    text={`${daysUntilFinalSubmission} days`}
-                    textColour={'white'}
-                    className={'mr-2'}
-                  />
-                  <Typography
-                    className="truncate"
-                    type="h4"
-                    weight="bold"
-                    color="textDark"
-                    text={'To submit next income statement'}
-                  />
-                </div>
-              )}
-
+              !isSubmittingStatement) ||
+              (tourActive && stepIndex === 8)) && (
+              <div className="flex items-center" id="howMayDaysToSubmit">
+                <StatusChip
+                  backgroundColour={
+                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
+                  }
+                  borderColour={
+                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
+                  }
+                  text={`${daysUntilFinalSubmission} days`}
+                  textColour={'white'}
+                  className={'mr-2'}
+                />
+                <Typography
+                  className="truncate"
+                  type="h4"
+                  weight="bold"
+                  color="textDark"
+                  text={'To submit next income statement'}
+                />
+              </div>
+            )}
             {!!celebrationCard && celebrationCard}
 
             {((isOnline &&
@@ -666,6 +729,16 @@ export const SubmitIncomeStatements: React.FC = () => {
           id="startStatements"
         />
       </div>
+      <Dialog fullScreen visible={isLearnMore} position={DialogPosition.Full}>
+        <InfoPage
+          title="Ideas for making a profit"
+          section="Business - Money tab, Learn more"
+          childrenPosition="bottom"
+          onClose={() => setIsLearnMore(false)}
+        >
+          <CoachInfo />
+        </InfoPage>
+      </Dialog>
     </>
   );
 };

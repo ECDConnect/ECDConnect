@@ -11,7 +11,8 @@ export type FormFieldType = 'text' | 'number' | 'password';
 export type TextInputType = 'input' | 'textarea' | 'date' | 'moneyInput';
 import CurrencyInput from 'react-currency-input-field';
 
-interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
+export interface FormFieldProps<T extends FieldValues>
+  extends ComponentBaseProps {
   label?: string;
   subLabel?: string;
   nameProp?: Path<T>;
@@ -22,11 +23,16 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   disabled?: boolean;
   prefixIcon?: boolean;
   suffixIcon?: string;
+  startIcon?: string;
+  startIconColor?: Colours;
   sufficIconColor?: Colours;
+  color?: Colours;
   visible?: boolean;
   placeholder?: string;
+  name?: string;
   value?: string | number;
   hint?: string;
+  isAdminPortalField?: boolean;
   register?: UseFormRegister<T>;
   maxLength?: number;
   min?: number;
@@ -57,6 +63,10 @@ export const FormInput = <T extends FieldValues>({
   hint,
   maxLength,
   prefixIcon,
+  startIcon,
+  startIconColor,
+  color,
+  isAdminPortalField,
   ...restProps
 }: FormFieldProps<T>) => {
   const getInputStyle = () => {
@@ -65,7 +75,14 @@ export const FormInput = <T extends FieldValues>({
     }
 
     if (disabled) {
+      if (isAdminPortalField) {
+        return styles.portalDisabledInputStyle;
+      }
       return styles.disabledInputStyle;
+    }
+
+    if (isAdminPortalField) {
+      return styles.portalDdefaultInputStyle;
     }
 
     return styles.defaultInputStyle;
@@ -86,6 +103,9 @@ export const FormInput = <T extends FieldValues>({
               className={getInputStyle()}
               defaultValue={''}
               onKeyDown={(e: any) => {}}
+              style={{
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
+              }}
               {...restProps}
             />
           );
@@ -99,6 +119,9 @@ export const FormInput = <T extends FieldValues>({
               maxLength={maxLength}
               className={getInputStyle()}
               defaultValue={value ?? ''}
+              style={{
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
+              }}
               {...restProps}
             />
           );
@@ -120,7 +143,11 @@ export const FormInput = <T extends FieldValues>({
               className={
                 error ? styles.errorStyle : styles.defaultMoneyInputStyle
               }
-              style={prefixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              style={
+                prefixIcon || startIcon
+                  ? { paddingRight: 38 }
+                  : { paddingRight: 16 }
+              }
               {...restProps}
             />
           );
@@ -142,7 +169,7 @@ export const FormInput = <T extends FieldValues>({
               }
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
-                paddingLeft: prefixIcon ? 20 : 16,
+                paddingLeft: prefixIcon || startIcon ? 20 : 16,
               }}
               {...restProps}
             />
@@ -162,7 +189,10 @@ export const FormInput = <T extends FieldValues>({
               className={getInputStyle()}
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
-                paddingLeft: prefixIcon ? 20 : 16,
+                paddingLeft: prefixIcon ? 20 : startIcon ? 50 : 16,
+                backgroundColor: isAdminPortalField
+                  ? 'adminPortalBg'
+                  : `var(--${color})`,
               }}
               {...restProps}
             />
@@ -174,16 +204,15 @@ export const FormInput = <T extends FieldValues>({
               placeholder={placeholder}
               disabled={disabled}
               type={type}
-              value={value ?? ''}
               maxLength={maxLength}
               className={classNames(
                 styles.getBorderClass(value, maxCharacters),
                 getInputStyle()
               )}
-              // onKeyDown={}
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
-                paddingLeft: prefixIcon ? 20 : 16,
+                paddingLeft: prefixIcon ? 20 : startIcon ? 50 : 16,
+                backgroundColor: `var(--${color})`,
               }}
               {...restProps}
             />
@@ -212,7 +241,9 @@ export const FormInput = <T extends FieldValues>({
           {hint && <label className={styles.hintStyle}>{hint}</label>}
           <div className={styles.inputWrapper}>
             {getInputToRender()}
-            <div className={styles.iconWrapperLeft} onClick={suffixIconAction}>
+            <div className={styles.iconWrapperLeft}>
+              {!!startIcon &&
+                renderIcon(startIcon, `ml-4 h-5 w-5 text-${startIconColor}`)}
               {!!prefixIcon && (
                 <span
                   className={`text-${

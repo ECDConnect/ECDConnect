@@ -10,6 +10,9 @@ import {
   updatePractitionerUsePhotoInReport,
   updatePractitionerBusinessWalkThrough,
   getPractitionerByUserId,
+  updatePractitionerShareInfo,
+  updatePrincipalInvitation,
+  getPractitionerDisplayMetrics,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -21,6 +24,7 @@ const initialState: PractitionerState = {
   practitioner: undefined,
   practitioners: undefined,
   principalPractitioners: undefined,
+  practitionersMetrics: undefined,
 };
 
 const practitionerSlice = createSlice({
@@ -43,9 +47,42 @@ const practitionerSlice = createSlice({
         state.practitioner = action.payload;
       }
     },
+    updateClubForPractitioner: (
+      state,
+      action: PayloadAction<{ practitionerId: string; clubId: string }>
+    ) => {
+      if (!state.practitioners) {
+        return;
+      }
+
+      const practitioner = state.practitioners.find(
+        (practitioner) => practitioner.id === action.payload.practitionerId
+      );
+
+      if (!!practitioner) {
+        state.practitioners = [
+          ...state.practitioners?.filter(
+            (practitioner) => practitioner.id !== action.payload.practitionerId
+          ),
+          {
+            ...practitioner,
+            clubId: action.payload.clubId,
+          },
+        ];
+      }
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
+    setThunkActionStatus(builder, getPractitionerDisplayMetrics);
+    builder.addCase(
+      getPractitionerDisplayMetrics.fulfilled,
+      (state, action) => {
+        state.practitionersMetrics = action.payload;
+
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
     });
@@ -58,11 +95,23 @@ const practitionerSlice = createSlice({
     builder.addCase(updatePractitionerRegistered.fulfilled, (state) => {
       state.practitioner = { ...state.practitioner, isRegistered: true };
     });
+    builder.addCase(updatePractitionerShareInfo.fulfilled, (state) => {
+      state.practitioner = { ...state.practitioner, shareInfo: true };
+    });
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
       state.practitioner = { ...state.practitioner, progress: action.payload };
     });
+    builder.addCase(updatePrincipalInvitation.fulfilled, (state, action) => {
+      state.practitioner = {
+        ...state.practitioner,
+        dateAccepted: action.payload?.acceptedDate,
+      };
+    });
     builder.addCase(deActivatePractitioner.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
+      state.practitioners = state.practitioners?.filter(
+        (x) => x.userId !== action.meta.arg.userId
+      );
     });
     builder.addCase(
       updatePractitionerBusinessWalkThrough.fulfilled,

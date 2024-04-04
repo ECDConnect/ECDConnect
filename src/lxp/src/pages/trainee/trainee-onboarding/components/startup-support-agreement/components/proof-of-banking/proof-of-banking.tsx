@@ -23,8 +23,8 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
-  setSectionQuestions?: (value?: SectionQuestions[]) => void;
-  sectionQuestions?: SectionQuestions[];
+  setSectionQuestions: (value: SectionQuestions[]) => void;
+  sectionQuestions: SectionQuestions[];
   onAllStepsComplete?: any;
   setShowProofOfBanking?: any;
 }

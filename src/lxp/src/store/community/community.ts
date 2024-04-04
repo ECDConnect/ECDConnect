@@ -4,14 +4,11 @@ import { ThunkStateStatus } from '../types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 import { CommunityState } from './community.types';
-import {
-  getAllCommunitySectionItemSS,
-  getCommunitySectionSS,
-} from './community.actions';
+import { getAllConnect, getAllConnectItem } from './community.actions';
 
 const initialState: CommunityState & ThunkStateStatus = {
-  connectSectionData: [],
-  connectSectionItemData: [],
+  connect: [],
+  connectItem: [],
 };
 
 const communitySlice = createSlice({
@@ -19,19 +16,19 @@ const communitySlice = createSlice({
   initialState,
   reducers: {
     resetCommunityConnectState: (state) => {
-      state.connectSectionData = initialState.connectSectionData;
+      state.connect = initialState.connect;
     },
   },
   extraReducers: (builder) => {
-    setThunkActionStatus(builder, getCommunitySectionSS);
-    setThunkActionStatus(builder, getAllCommunitySectionItemSS);
+    setThunkActionStatus(builder, getAllConnect);
+    setThunkActionStatus(builder, getAllConnectItem);
 
-    builder.addCase(getCommunitySectionSS.fulfilled, (state, action) => {
-      state.connectSectionData = action.payload;
+    builder.addCase(getAllConnect.fulfilled, (state, action) => {
+      state.connect = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
-    builder.addCase(getAllCommunitySectionItemSS.fulfilled, (state, action) => {
-      state.connectSectionItemData = action.payload;
+    builder.addCase(getAllConnectItem.fulfilled, (state, action) => {
+      state.connectItem = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
   },

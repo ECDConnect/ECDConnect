@@ -16,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
             _provider = serviceProvider;
         }
 
-        public IGenericRepository<T, Guid> CreateRepository<T>(AuthenticationDbContext CustomScope = null, string userContext = null)
+        public IGenericRepository<T, Guid> CreateRepository<T>(AuthenticationDbContext CustomScope = null, Guid? userContext = null)
           where T : EntityBase<Guid>
         {
             IGenericRepository<T, Guid> repo;
@@ -38,22 +38,47 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
                 repo.SetCustomScope(CustomScope);
             }
 
-            if (!string.IsNullOrWhiteSpace(userContext))
+            if (userContext.HasValue && userContext.Value != Guid.Empty)
             {
                 repo.SetUserContext(userContext);
             }
 
             return repo;
         }
-        public IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope = null, string userContext = null)
+
+        public IGenericRepository<T, Guid> CreateRepository<T>(string userContext)
+          where T : EntityBase<Guid>
+        {
+            return CreateRepository<T>(userContext: string.IsNullOrEmpty(userContext) ? null : Guid.Parse(userContext));
+        }
+
+        public IGenericRepository<T, Guid> CreateRepository<T>(AuthenticationDbContext CustomScope, string userContext)
+          where T : EntityBase<Guid>
+        {
+            return CreateRepository<T>(CustomScope, string.IsNullOrEmpty(userContext) ? null : Guid.Parse(userContext));
+        }
+
+        public IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope = null, Guid? userContext = null)
           where T : EntityBase<Guid>
         {
             IGenericRepository<T, Guid> repo = _provider.GetService<GenericRepository<T>>();
-            if (!string.IsNullOrWhiteSpace(userContext))
+            if (userContext.HasValue && userContext.Value != Guid.Empty)
             {
                 repo.SetUserContext(userContext);
             }
             return repo;
+        }
+
+        public IGenericRepository<T, Guid> CreateGenericRepository<T>(string userContext)
+          where T : EntityBase<Guid>
+        {
+            return CreateGenericRepository<T>(userContext: string.IsNullOrEmpty(userContext) ? null : Guid.Parse(userContext));
+        }
+
+        public IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope, string userContext)
+            where T : EntityBase<Guid>
+        {
+            return CreateGenericRepository<T>(CustomScope, string.IsNullOrEmpty(userContext) ? null : Guid.Parse(userContext));
         }
     }
 }

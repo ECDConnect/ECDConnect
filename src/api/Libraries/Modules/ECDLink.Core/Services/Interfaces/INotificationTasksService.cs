@@ -6,22 +6,9 @@ namespace ECDLink.Core.Services.Interfaces
     public interface INotificationTasksService
     {
         //daily
-        public Task DailyUnassignedClassesNotification();
-        Task DailyChildrenRegistrationsIncompleteNotification();
-        Task Daily3WeekLogonCheck();
-        Task DailyChildrenNotAssignedToClassNotification();
-        Task DailyUnassignedProgrammesNotification();
-        Task DailyAttendanceNotTrackedNotification();
-
-        //other
-        Task MonthlyStatementsReminderAsync();
-        Task WeeklyAttendancesReminderAsync();
-        Task WeeklyCoachTraineesCheckReminderAsync();
-        Task ProgressReportsReminderAsync();
-        Task YearlyPreschoolFeeReminderAsync();
-        Task MonthlyStartupSupportEndReminderAsync();
-        Task MonthlyPlanningReminderAsync();
-        Task MonthlyAttendanceSLSyncAsync();
-
+        Task MonthlyTopPointsEarnerNotification();
+        Task MonthlyEarnMorePointsNotification();
+        Task YearlyPointsSummaryNotification();
+        Task DailyUserOfflineNotification();
     }
 }

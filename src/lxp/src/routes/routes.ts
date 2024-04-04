@@ -37,7 +37,7 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
-    HELP: '/help/:activityId',
+    HELP: '/help/:helpSection',
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
@@ -56,22 +56,24 @@ const ROUTES = {
       USER_PROFILE: addPrefix('/user-profile', {
         COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
+        SUPPORT_ROLE: '/support-role/:supportRoleId',
         MEMBER: '/member/:practitionerId',
       }),
       POINTS: addPrefix('/points', {
         MEET_REGULARLY: addPrefix('/meet-regularly', {
           MEETING_DETAILS: '/:meetingId/meeting-details',
+          MISSING_MEETING_REGISTERS: '/missing-meeting-registers',
         }),
         BE_CREATIVE: '/be-creative',
         HOST_FAMILY_EVENT: '/host-family-event',
         LEAVE_NO_ONE_BEHIND: '/leave-no-one-behind',
         CAPTURE_CHILD_ATTENDANCE: '/capture-child-attendance',
         COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
-        HELP: '/help/:activityId',
+        HELP: '/help/:helpSection',
       }),
     }),
     LEAGUE: addPrefix('/league/:leagueId', {
-      HELP: '/help/:activityId',
+      HELP: '/help/:helpSection',
     }),
   }),
   CHILD: addPrefix('/child', {
@@ -79,6 +81,7 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  PRACTITIONER_PROGRESS_REPORT_SUMMARY: '/progress-summary-report',
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
   PRINCIPAL: addPrefix('/principal', {
@@ -92,6 +95,7 @@ const ROUTES = {
     PRACTITIONER_REMOVE_FROM_PROGRAMME: '/remove-practitioner-from-programme',
     SWAP_PRINCIPAL: '/swap-principal',
     NOTES: '/notes',
+    CONTACT_PRACTITIONER: '/contact-practitioner',
   }),
   PRACTITIONER: addPrefix('/practitioner', {
     ABOUT: addPrefix('/about', {
@@ -116,7 +120,9 @@ const ROUTES = {
           EDIT: '/edit',
         }),
         MEETING: addPrefix('/meeting', {
-          ADD_MEETING: '/add',
+          ADD_MEETING: addPrefix('/add', {
+            UPCOMING_MEETING: '/:eventId',
+          }),
         }),
         FAMILY_DAY_EVENT: addPrefix('/family-day-event', {
           ADD_EVENT: '/add',
@@ -164,6 +170,7 @@ const ROUTES = {
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
     PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
+    PRACTITIONER_POINTS: '/practitioner-points/:userId',
     PRACTITIONER_BUSINESS: addPrefix('/practitioner-business', {
       BUSINESS: '/:userId',
       LIST_STATEMENTS: '/:userId/previous-statements-list',

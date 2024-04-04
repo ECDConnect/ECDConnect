@@ -22,7 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
         public string Reason { get; set; }
         public DateTime AbsentDate { get; set; }
         public DateTime? AbsentDateEnd { get; set; }
@@ -39,6 +39,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [GraphQLIgnore, ForeignKey(nameof(PractitionerRemovalHistoryId))]
         public virtual PractitionerRemovalHistory PractitionerRemovalHistory { get; set; }
+
+        public DateTime? CompletedDate { get; set; }
+        public DateTime? AssignedDate { get; set; }
+        public bool IsRoleAssign { get; set; }
 
     }
 
@@ -61,6 +65,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public string ReassignedToPerson { get; set; }
         public string ReassignedToUserId { get; set; }
+
+        public string LoggedByPerson { get; set; }
+        public string LoggedByUserId { get; set; }
 
     }
 }

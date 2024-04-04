@@ -6,7 +6,6 @@ import {
   Typography,
   SA_CELL_REGEX,
   SA_ID_REGEX,
-  Dropdown,
   AlertType,
   Avatar,
   ProfileAvatar,
@@ -44,7 +43,6 @@ import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
-  UpdateHealthCareWorker,
   GetHealthCareWorkerHighlights,
   GetTenantContext,
   GetUserById,
@@ -240,7 +238,7 @@ export function ViewUser(props: any) {
   };
 
   let isAdminUser = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Administrator'
+    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
   );
 
   const sendInvite = async () => {
@@ -375,6 +373,7 @@ export function ViewUser(props: any) {
       idNumber: chwDataForm?.idNumber,
       phoneNumber: chwDataForm?.phoneNumber,
       email: adminDataForm?.email,
+      userName: chwDataForm?.idNumber,
     };
 
     await updateUser({
@@ -390,7 +389,6 @@ export function ViewUser(props: any) {
         if (userData?.phoneNumber) refetch();
 
         if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
-          console.log('refetchCHW');
           refetchCHW();
         }
 

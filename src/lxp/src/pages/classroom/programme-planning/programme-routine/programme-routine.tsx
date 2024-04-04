@@ -316,7 +316,7 @@ export const ProgrammeRoutine: React.FC = () => {
 
   const showOnlineOnly = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit) => {
         return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
       },

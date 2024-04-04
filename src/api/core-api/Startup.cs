@@ -1,3 +1,5 @@
+using DinkToPdf;
+using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
@@ -11,7 +13,8 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
-using ECDLink.Api.CoreApi.Services;
+using EcdLink.Api.CoreApi.Services.Interfaces;
+using EcdLink.Api.CoreApi.Services.PointsEngine;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
@@ -34,6 +37,7 @@ using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
 using ECDLink.SmartStart.Services;
+using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
@@ -42,15 +46,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Data;
 using System.Diagnostics;
-using ECDLink.AutomatedJobs.Services;
-using ECDLink.AutomatedJobs.Services.Interfaces;
-using EcdLink.Api.CoreApi.Managers.Integration;
-using ECDLink.SmartStart.Services.Interfaces;
-using Castle.Core.Logging;
-using DinkToPdf.Contracts;
-using DinkToPdf;
-using EcdLink.Api.CoreApi.Services.Interfaces;
+using System.Linq;
+using System.Reflection;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -201,6 +200,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
+            services.AddTransient<ExtendedNotificationManager>();
             services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<CaregiverManager>();
             services.AddTransient<MotherManager>();
@@ -214,27 +214,32 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<IPersonnelService, PersonnelService>();
-            services.AddTransient<ChildManager>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
+            services.AddTransient<UserAnonymiseService, UserAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
-            services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
-            services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
-            services.AddTransient<IAbsenteeService, AbsenteeService>();
+            services.AddTransient<IPointsService, PointsEngineService>();
+            services.AddTransient<IGrowGreatPointsCalculationsService, GrowGreatPointsCalculationService>();
             services.AddTransient<IClubService, ClubService>();
-            services.AddTransient<IntegrationAPIManager>();
-            services.AddTransient<IntegrationLogManager>();
-            services.AddTransient<IntegrationHelperManager>();
+            services.AddTransient<IChildService, ChildService>();
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
+            services.AddTransient<IClinicService, ClinicService>();
+
+            // Notification tasks (All will be run daily)
+            foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()
+                 .Where(x => x.GetInterfaces().Contains(typeof(INotificationTask))))
+            {
+                services.Add(new ServiceDescriptor(typeof(INotificationTask), notificationTask, ServiceLifetime.Transient));
+            }
 
             services.AddSingleton<IConverter, SynchronizedConverter>(serviceProvider =>
             {

@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
@@ -48,7 +49,7 @@ namespace ECDLink.EGraphQL
               .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
-              .RegisterService<UserManager<ApplicationUser>>(ServiceKind.Synchronized)
+              .RegisterService<ApplicationUserManager>(ServiceKind.Synchronized)
               .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);
 
             builder = builder

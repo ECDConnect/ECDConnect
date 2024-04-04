@@ -24,7 +24,7 @@ namespace ECDLink.Notifications.Factories
         public IMessageTemplate GetMessageTemplate(MessageProtocolEnum messageProtocol, TemplateTypeEnum templateType)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var query = _entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
+            var query = _entities.Where(e => e.TenantId == null || e.TenantId == tenantId).AsQueryable();
 
             query = FilterTypes(query, messageProtocol);
             query = AssignTemplate(query, templateType);

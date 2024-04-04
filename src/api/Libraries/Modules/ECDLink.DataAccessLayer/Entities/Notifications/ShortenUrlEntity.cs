@@ -14,7 +14,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
     public class ShortenUrlEntity<TKey> : EntityBase<TKey>, IUserScoped
          where TKey : IEquatable<TKey>
     {
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
         public string MessageType { get; set; }
         public string URL { get; set; }
         public int Clicked { get; set; } = 0;

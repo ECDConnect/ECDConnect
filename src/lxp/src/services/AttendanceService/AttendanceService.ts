@@ -101,10 +101,6 @@ class AttendanceService {
       },
     });
 
-    console.log(
-      'response.data.data.classroomAttendanceOverviewReport',
-      response
-    );
     if (response.status !== 200) {
       throw new Error(
         'Get Monthly Attendance Report failed - Server connection error'
@@ -131,12 +127,14 @@ class AttendanceService {
           userId: $userId
           classroomId: $classroomId
           startMonth: $startMonth
-          endMonth: $endMonth
+          endMonth: $endMonth          
         ) {
           month
           monthOfYear
           year
           percentageAttendance
+          numberOfSessions
+          totalScheduledSessions
         }
       }
       `,

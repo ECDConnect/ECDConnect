@@ -11,5 +11,65 @@ namespace ECDLink.Core.Helpers
 
             return dateTimeVal;
         }
+
+        public static DateTime GetCurrentGrowGreatQuarterStart()
+        {
+            return GetGrowGreatQuarterStart(DateTime.Now.Month);
+        }
+
+        public static DateTime GetGrowGreatQuarterStart(int month)
+        {
+            switch (month)
+            {
+                case 10:
+                case 11:
+                case 12:
+                    return new DateTime(DateTime.Now.Year - 1, 10, 1);
+                case 1:
+                case 2:
+                case 3:
+                    return new DateTime(DateTime.Now.Year, 1, 1);
+                case 4:
+                case 5:
+                case 6:
+                    return new DateTime(DateTime.Now.Year, 4, 1);
+                case 7:
+                case 8:
+                case 9:
+                    return new DateTime(DateTime.Now.Year, 7, 1);
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static DateTime GetCurrentGrowGreatQuarterEnd()
+        {
+            return GetGrowGreatQuarterEnd(DateTime.Now.Month);
+        }
+
+        public static DateTime GetGrowGreatQuarterEnd(int month)
+        {
+            switch (month)
+            {
+                case 10:
+                case 11:
+                case 12:
+                    return new DateTime(DateTime.Now.Year - 1, 12, 31, 11, 59, 59);
+                case 1:
+                case 2:
+                case 3:
+                    return new DateTime(DateTime.Now.Year, 3, 31, 11, 59, 59);
+                case 4:
+                case 5:
+                case 6:
+                    return new DateTime(DateTime.Now.Year, 6, 30, 11, 59, 59);
+                case 7:
+                case 8:
+                case 9:
+                    return new DateTime(DateTime.Now.Year, 9, 30, 11, 59, 59);
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }

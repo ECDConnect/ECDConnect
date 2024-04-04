@@ -29,7 +29,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         public DateTime? ExpectedDateOfDelivery { get; set; }
 
@@ -38,7 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string WhatsAppNumber { get; set; }
 
         [ForeignKey(nameof(LinkedCaregiverId))]
-        public virtual Caregiver.Caregiver Caregiver { get; set; }
+        public virtual Caregiver Caregiver { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
         public Boolean? ClickedVisitTab { get; set; }
         public Boolean? ClickedProgressTab { get; set; }

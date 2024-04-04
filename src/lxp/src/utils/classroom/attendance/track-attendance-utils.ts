@@ -51,7 +51,7 @@ export const isValidAttendableDate = (
 ) => {
   let isValid = isWorkingDay(date, holidays);
 
-  if (!isValid) return false;
+  if (!isValid || programmeAttendanceDays.length === 0) return false;
 
   isValid = isAttendableDay(date, programmeAttendanceDays);
 
@@ -140,16 +140,34 @@ export const getMissedClassAttendance = (
     return programStartDateDay === dateDay
       ? (x.meetingDay || -1) === currentDayFilter
       : (x.meetingDay || -1) <= currentDayFilter &&
-          isBefore(programStartDateDay, dateDay);
+          programStartDate.getTime() < date.getTime();
+  });
+
+  const meetingDays = getClassroomGroupSchoolDays(
+    classProgrammesUpToCurrentDay
+  );
+
+  const startOfWeekDate = startOfWeek(new Date().setHours(23, 59, 59, 999), {
+    weekStartsOn: 1,
   });
 
   if (classProgrammesUpToCurrentDay)
     for (const programme of classProgrammesUpToCurrentDay) {
+      const missedDayDate = addDays(startOfWeekDate, programme.meetingDay - 1);
+
       const classGroups = classRoomGroups.filter((x) => {
         return x.id === programme.classroomGroupId;
       });
       const classLearners = classroomGroupLearners?.filter((x) => {
-        return classGroups.some((item) => item.id === x.classroomGroupId);
+        const isValidDay =
+          isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
+          missedDayDate.getTime() >= new Date(x.startedAttendance).getTime();
+
+        return (
+          isValidDay &&
+          !Boolean(x.stoppedAttendance) &&
+          classGroups.some((item) => item.id === x.classroomGroupId)
+        );
       });
       if (
         classLearners &&
@@ -278,6 +296,13 @@ export const getMonthName = (monthOfYear: number) => {
   if (monthOfYear < 0 || monthOfYear > 12) return 'Invalid month';
   return format(new Date().setMonth(monthOfYear), 'MMMM');
 };
+
+export const getPrevMonth = () => {
+  let prevMonth = new Date();
+  prevMonth.setMonth(prevMonth.getMonth() - 1);
+  return prevMonth;
+};
+
 export function getMonthRange(monthName: string) {
   const year = new Date().getFullYear();
   // Parse the month name and get the corresponding month number
@@ -322,7 +347,24 @@ export const getMissedAttendanceSummaryGroups = (
   currentDate: Date,
   classroomGroupLearners: LearnerDto[]
 ) => {
-  const meetingDays = getClassroomGroupSchoolDays(classProgrammes);
+  const dayOfWeek = getDay(currentDate);
+  const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+  const classProgrammesUpToCurrentDay = classProgrammes?.filter((x) => {
+    const programStartDate =
+      typeof x.programmeStartDate !== 'undefined'
+        ? new Date(x.programmeStartDate)
+        : new Date();
+
+    return programStartDate.getUTCDate() === currentDate.getUTCDate()
+      ? (x.meetingDay || -1) === currentDayFilter
+      : (x.meetingDay || -1) <= currentDayFilter &&
+          programStartDate.getTime() < currentDate.getTime();
+  });
+
+  const meetingDays = getClassroomGroupSchoolDays(
+    classProgrammesUpToCurrentDay
+  );
 
   if (classroomGroups?.length > 0) {
     const attendanceToDoList: MissedAttendanceGroups[] = [];

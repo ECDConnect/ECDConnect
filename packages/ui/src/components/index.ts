@@ -52,3 +52,7 @@ export * from './points/celebration-card/celebration-card';
 export * from './points/points-details-card/points-details-card';
 export * from './more-information-page/more-information-page';
 export * from './points/points-progress-card/points-progress-card';
+export * from './date-picker';
+
+export * from './stacked-list/components/title-list-item/title-list-item';
+export * from './table';

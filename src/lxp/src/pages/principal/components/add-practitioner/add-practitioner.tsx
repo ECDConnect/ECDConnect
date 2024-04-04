@@ -30,6 +30,8 @@ import {
 import { userSelectors } from '@store/user';
 import { SearchIcon } from '@heroicons/react/solid';
 import { classroomsSelectors } from '@/store/classroom';
+import { useAppDispatch } from '@/store';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -51,6 +53,7 @@ export const AddPractitioner = ({
     mode: 'onChange',
   });
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
   const [isPrincipal, setIsPrincipal] = useState<boolean>(false);
@@ -150,6 +153,9 @@ export const AddPractitioner = ({
     await new PractitionerService(
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
 
     history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
   };

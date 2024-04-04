@@ -10,24 +10,15 @@ namespace ECDLink.AutomatedJobs.Anonymise
 {
     public class ChildAnonymiseJob : CronJobService
     {
-        private readonly IServiceScopeFactory _scopeFactory;
-
         public ChildAnonymiseJob(IServiceScopeFactory scopeFactory, CronJobConfig<ChildAnonymiseJob> config, ILogger<ChildAnonymiseJob> logger)
-            : base(config, logger)
+            : base(scopeFactory, config, logger)
         {
-            _scopeFactory = scopeFactory;
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                TenancyContext.SetTenantContext(scope);
-
-                var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
-
-                anonChildService.AnonymiseChild();
-            }
+            var anonChildService = Scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
+            anonChildService.AnonymiseChild();
         }
     }
 }

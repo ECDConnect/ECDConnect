@@ -31,9 +31,7 @@ export const PointsYearView: React.FC = () => {
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const children = useSelector(childrenSelectors.getChildren);
-  const userStanding = useSelector(
-    pointsSelectors.getCurrentClubPercentileStandingForYear()
-  );
+  const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
 
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
@@ -45,9 +43,7 @@ export const PointsYearView: React.FC = () => {
     currentMonth === 0
   );
 
-  const currentMonthPoints = useSelector(
-    pointsSelectors.getPointsSummaryWithLibrary(new Date())
-  );
+  const yearSummaries = useSelector(pointsSelectors.getPointsSummaryForYear());
 
   const pointsTotalForYear = useSelector(
     pointsSelectors.getPointsTotalForYear()
@@ -66,10 +62,9 @@ export const PointsYearView: React.FC = () => {
     setLoadNextMonthDisabled(nextMonthToLoad === 0);
   }, [monthsLoaded, setMonthsLoaded, setLoadNextMonthDisabled]);
 
-  //TODO - Update this to use club data to set messages when available
   const celebrationCard = useMemo(() => {
-    if (!!userStanding) {
-      if (userStanding === 100) {
+    if (!!userStanding && !!practitioner?.clubId) {
+      if (userStanding.percentageMembersWithFewerPointsForCurrentYear === 100) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -81,7 +76,7 @@ export const PointsYearView: React.FC = () => {
           />
         );
       }
-      if (userStanding > 75) {
+      if (userStanding.percentageMembersWithFewerPointsForCurrentYear > 75) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -93,24 +88,26 @@ export const PointsYearView: React.FC = () => {
           />
         );
       }
-      if (userStanding >= 50) {
-        <CelebrationCard
-          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-          secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
-          primaryTextColour="secondary"
-          secondaryTextColour="black"
-          backgroundColour="infoBb"
-        />;
+      if (userStanding.percentageMembersWithFewerPointsForCurrentYear >= 50) {
+        return (
+          <CelebrationCard
+            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
+            secondaryMessage="So far this year, you have more points than most other SmartStarters in your club!"
+            primaryTextColour="secondary"
+            secondaryTextColour="black"
+            backgroundColour="infoBb"
+          />
+        );
       }
-      if (userStanding < 50) {
+      if (userStanding.percentageMembersWithMorePointsForCurrentYear > 50) {
         return (
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-            primaryTextColour="errorMain"
-            backgroundColour="errorBg"
-            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
+            primaryTextColour="alertMain"
+            backgroundColour="alertBg"
+            secondaryMessage={`Most of the SmartStarters in your club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
             secondaryTextColour="black"
           />
         );
@@ -128,7 +125,9 @@ export const PointsYearView: React.FC = () => {
           backgroundColour="alertBg"
         />
       );
-    } else if (percentageScore < 60) {
+    }
+
+    if (percentageScore < 60) {
       return (
         <CelebrationCard
           image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
@@ -139,7 +138,9 @@ export const PointsYearView: React.FC = () => {
           backgroundColour="alertBg"
         />
       );
-    } else if (percentageScore < 80) {
+    }
+
+    if (percentageScore < 80) {
       return (
         <CelebrationCard
           image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
@@ -150,26 +151,28 @@ export const PointsYearView: React.FC = () => {
           backgroundColour="infoBb"
         />
       );
-    } else {
-      return (
-        <CelebrationCard
-          image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Well done ${practitioner?.user?.firstName}!`}
-          secondaryMessage="You're doing well, keep it up!"
-          primaryTextColour="successMain"
-          secondaryTextColour="successMain"
-          backgroundColour="successBg"
-        />
-      );
     }
-  }, [pointsTotalForYear, percentageScore, practitioner]);
+
+    return (
+      <CelebrationCard
+        image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+        primaryMessage={`Well done ${practitioner?.user?.firstName}!`}
+        secondaryMessage="You're doing well, keep it up!"
+        primaryTextColour="successMain"
+        secondaryTextColour="successMain"
+        backgroundColour="successBg"
+      />
+    );
+  }, [
+    userStanding,
+    pointsTotalForYear,
+    percentageScore,
+    practitioner?.user?.firstName,
+  ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
-  const filteredPointsSummaries = currentMonthPoints.filter(
-    (x) => x.pointsYTD > 0
-  );
 
   return (
     <BannerWrapper
@@ -187,8 +190,7 @@ export const PointsYearView: React.FC = () => {
           color="black"
           text={format(new Date(), 'MMM yyyy')}
         />
-        {/* EC-1909 - Suppress ticket */}
-        {/* <ScoreCard
+        <ScoreCard
           className="mt-5"
           mainText={`${pointsTotalForYear}`}
           secondaryText="points"
@@ -209,7 +211,7 @@ export const PointsYearView: React.FC = () => {
           }
           bgColour="uiBg"
           textColour="black"
-        /> */}
+        />
         {celebrationCard}
         {pointsTotalForYear > 0 && (
           <>
@@ -288,10 +290,12 @@ export const PointsYearView: React.FC = () => {
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Year"
-          pointsSummaries={filteredPointsSummaries}
+          pointsSummaries={yearSummaries}
           userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
           childCount={children?.length || 0}
-          clubStanding={userStanding}
+          clubStanding={
+            userStanding?.percentageMembersWithFewerPointsForCurrentYear || 0
+          }
           clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>

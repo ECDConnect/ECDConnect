@@ -1,4 +1,10 @@
-import { BannerWrapper, Button, Typography, renderIcon } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Typography,
+  renderIcon,
+  LoadingSpinner,
+} from '@ecdlink/ui';
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { useEffect, useState } from 'react';
@@ -79,10 +85,12 @@ export const ViewChildProgressObservationReport: React.FC = () => {
 
   useEffect(() => {
     const getReport = async () => {
+      setLoading(true);
       const report = await appDispatch(
         contentReportThunkActions.getDetailedProgressReport(routeState.reportId)
       ).unwrap();
       setCurrentReport(report);
+      setLoading(false);
     };
     getReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,6 +101,16 @@ export const ViewChildProgressObservationReport: React.FC = () => {
       ? currentReport?.dateCreated
       : currentReport?.reportingDate) || 0
   ).toLocaleString('en-za', DateFormats.shortMonthNameAndYear)}`;
+
+  if (loading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+      />
+    );
+  }
 
   return (
     <BannerWrapper

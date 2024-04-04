@@ -1,4 +1,5 @@
 import {
+  PractitionerProgressReportSummaryDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -10,19 +11,23 @@ import { RootState, ThunkApiType } from '../types';
 
 export const getProgressTrackingCategories = createAsyncThunk<
   ProgressTrackingCategoryDto[],
-  { locale: string },
+  { locale: string; force?: boolean },
   ThunkApiType<RootState>
 >(
   'getProgressTrackingCategories',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, force }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { progressTrackingCategories },
       user: { userLocalePreference },
     } = getState();
 
-    if (!progressTrackingCategories || userLocalePreference !== locale) {
+    if (
+      !progressTrackingCategories ||
+      userLocalePreference !== locale ||
+      force
+    ) {
       try {
         let categories: ProgressTrackingCategoryDto[] | undefined;
 
@@ -51,19 +56,23 @@ export const getProgressTrackingCategories = createAsyncThunk<
 export const getProgressTrackingSubCategories = createAsyncThunk<
   ProgressTrackingSubCategoryDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string },
+  { locale: string; force?: boolean },
   ThunkApiType<RootState>
 >(
   'getProgressTrackingSubCategories',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, force }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { progressTrackingSubCategories },
       user: { userLocalePreference },
     } = getState();
 
-    if (!progressTrackingSubCategories || userLocalePreference !== locale) {
+    if (
+      !progressTrackingSubCategories ||
+      userLocalePreference !== locale ||
+      force
+    ) {
       try {
         let subCategories: ProgressTrackingSubCategoryDto[] | undefined;
 
@@ -94,19 +103,19 @@ export const getProgressTrackingSubCategories = createAsyncThunk<
 export const getProgressTrackingSkills = createAsyncThunk<
   ProgressTrackingSkillDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string },
+  { locale: string; force?: boolean },
   ThunkApiType<RootState>
 >(
   'getProgressTrackingSkills',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, force }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { progressTrackingSkills },
       user: { userLocalePreference },
     } = getState();
 
-    if (!progressTrackingSkills || userLocalePreference !== locale) {
+    if (!progressTrackingSkills || userLocalePreference !== locale || force) {
       try {
         let skills: ProgressTrackingSkillDto[] | undefined;
 
@@ -135,18 +144,19 @@ export const getProgressTrackingSkills = createAsyncThunk<
 export const getProgressTrackingLevels = createAsyncThunk<
   ProgressTrackingLevelDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string },
+  { locale: string; force?: boolean },
   ThunkApiType<RootState>
 >(
   'getProgressTrackingLevels',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale }, { getState, rejectWithValue }) => {
+  async ({ locale, force }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { progressTrackingLevels },
+      user: { userLocalePreference },
     } = getState();
 
-    if (!progressTrackingLevels) {
+    if (!progressTrackingLevels || userLocalePreference !== locale || force) {
       try {
         let levels: ProgressTrackingLevelDto[] | undefined;
 
@@ -168,6 +178,41 @@ export const getProgressTrackingLevels = createAsyncThunk<
       }
     } else {
       return progressTrackingLevels;
+    }
+  }
+);
+
+export const getPractitionerProgressReportSummary = createAsyncThunk<
+  PractitionerProgressReportSummaryDto,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { reportingPeriod: string },
+  ThunkApiType<RootState>
+>(
+  'getPractitionerProgressReportSummary',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ reportingPeriod }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let summary: PractitionerProgressReportSummaryDto | undefined;
+
+      if (userAuth?.auth_token) {
+        summary = await new ProgressTrackingService(
+          userAuth?.auth_token
+        ).practitionerProgressReportSummary(reportingPeriod);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!summary) {
+        return rejectWithValue('Error getting progress tracking skills');
+      }
+
+      return summary;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

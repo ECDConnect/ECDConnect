@@ -1,5 +1,6 @@
 import { classNames } from '../../utils';
 import { ProgressBar } from '../progress-bar';
+import StatusChip from '../status-chip/status-chip';
 import * as styles from './score-card.styles';
 import { ScoreCardProps } from './score-card.types';
 import { ChevronRightIcon } from '@heroicons/react/solid';
@@ -20,11 +21,19 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
   barBgColour,
   textColour,
   onClick,
+  onClickClassName,
+  statusChip,
+  barSize,
+  barStatusChip,
+  barDivides,
+  hideProgressBar,
+  id,
 }) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
 
   return (
     <div
+      id={id}
       className={classNames(className, `${styles.wrapper} bg-${bgColour}`)}
       onClick={() => {
         !!onClick && onClick();
@@ -32,12 +41,10 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
     >
       <div className={styles.content}>
         {!!image && image}
-        <div
-          className={classNames(progressBarClassName, 'w-full')}
-          style={{ height: 80 }}
-        >
+        <div className={classNames(progressBarClassName, 'relative w-full')}>
           <ProgressBar
-            className="h-2"
+            className={classNames(!!onClick ? 'pr-4' : '', '')}
+            style={{ marginTop: '-14px' }}
             label={mainText}
             subLabel={secondaryText || ''}
             hint={hint}
@@ -47,9 +54,22 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
             primaryColour={barColour}
             secondaryColour={barBgColour}
             textColour={textColour}
+            size={barSize}
+            divides={barDivides}
+            statusChip={barStatusChip}
+            isHiddenBar={hideProgressBar}
           />
+          {statusChip && (
+            <div className="absolute right-4" style={{ top: 1.5 }}>
+              <StatusChip {...statusChip} />
+            </div>
+          )}
         </div>
-        {!!onClick && <ChevronRightIcon className={styles.menuChevron} />}
+        {!!onClick && (
+          <ChevronRightIcon
+            className={classNames(styles.menuChevron, onClickClassName)}
+          />
+        )}
       </div>
     </div>
   );

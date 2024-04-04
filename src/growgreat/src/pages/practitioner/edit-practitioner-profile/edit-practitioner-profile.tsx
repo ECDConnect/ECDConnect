@@ -16,9 +16,14 @@ import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@store';
 import {
   healthCareWorkerActions,
-  healthCareWorkerSelectors,
   healthCareWorkerThunkActions,
 } from '@/store/healthCareWorker';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@store/notifications';
+import { notificationTagConfig } from '@/constants/notifications';
+import { UpdateHealthCareWorkerInputModelInput } from '@ecdlink/graphql';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -28,13 +33,17 @@ export const EditPractitionerProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(userSelectors.getUser);
-  const healthCareWorker = useSelector(
-    healthCareWorkerSelectors?.getHealthCareWorker
-  );
-
   const [label, setLabel] = useState('');
   const [activeStep, setActiveStep] = useState(EditPractitionerSteps.WELCOME);
   const [language, setLanguage] = useState<string>();
+
+  const completeProfileNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(
+      notificationTagConfig?.CompleteProfile.cta ?? ''
+    )
+  );
 
   useEffect(() => {
     if (activeStep === EditPractitionerSteps.WELCOME) {
@@ -63,78 +72,27 @@ export const EditPractitionerProfile: React.FC = () => {
   };
 
   const onAllStepsComplete = async () => {
-    const copy = Object.assign({}, healthCareWorker);
-
-    const siteAddress = copy?.teamLead?.clinic?.siteAddress;
-
-    const copyUpdated: any = {
-      userId: copy?.id,
+    const input: UpdateHealthCareWorkerInputModelInput = {
       isRegistered: true,
       languageId: language,
-      teamLead: {
-        JobTitle: copy?.teamLead?.jobTitle,
-        IsActive: true,
-        Clinic: {
-          Name: copy?.teamLead?.clinic?.name,
-          PhoneNumber: copy?.teamLead?.clinic?.phoneNumber,
-          SiteAddress: {
-            AddressLine1: siteAddress?.addressLine1,
-            AddressLine2: siteAddress?.addressLine2,
-            AddressLine3: siteAddress?.addressLine3,
-            Name: siteAddress?.name,
-            PostalCode: siteAddress?.postalCode,
-            Province: {
-              Description: siteAddress?.province?.description,
-              IsActive: true,
-            },
-            IsActive: true,
-          },
-          IsActive: true,
-        },
-        User: {
-          firstName: copy?.teamLead?.user?.firstName,
-          surname: copy?.teamLead?.user?.surname,
-          phoneNumber: copy?.teamLead?.user?.phoneNumber,
-          emailConfirmed: true,
-          phoneNumberConfirmed: true,
-          twoFactorEnabled: false,
-          isSouthAfricanCitizen: true,
-          verifiedByHomeAffairs: true,
-          dateOfBirth: new Date(),
-          isActive: true,
-          lastSeen: new Date(),
-        },
-      },
-      user: copy?.user,
     };
-    if (copy) {
-      copy.languageId = language;
-      copy.isRegistered = true;
 
+    await appDispatch(healthCareWorkerActions.updateHealthCareWorker(input));
+    if (isOnline) {
       await appDispatch(
-        healthCareWorkerActions.updateHealthCareWorker(copyUpdated)
-      );
-      await appDispatch(
-        healthCareWorkerThunkActions.updateHealthCareWorkerById({
+        healthCareWorkerThunkActions.updateHealthCareWorker({
           userId: user?.id!,
-          input: copyUpdated,
-        })
-      );
-      await appDispatch(
-        healthCareWorkerThunkActions.getHealthCareWorkerByUserId({
-          userId: user?.id!,
+          input: input,
         })
       );
 
-      if (isOnline) {
-        //   await healthCareWorkerThunkActions?.updateHealthCareWorkerById({
-        // id: user?.id!, input: copy}
-        //   )
-      } else {
-        showOnlineOnly();
+      if (completeProfileNotification) {
+        appDispatch(
+          notificationActions.removeNotification(completeProfileNotification!)
+        );
       }
-      history.push(ROUTES.ROOT);
     }
+    history.push(ROUTES.ROOT);
   };
 
   const steps = (step: EditPractitionerSteps) => {

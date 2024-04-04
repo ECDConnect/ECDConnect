@@ -1,130 +1,174 @@
-import { useLazyQuery, useQuery } from '@apollo/client';
-import { ClinicDto, PermissionEnum, ProvinceDto } from '@ecdlink/core';
+import { useQuery } from '@apollo/client';
+import { PermissionEnum, usePanel } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
-import { usePanel } from '@ecdlink/core/lib/services/panel/PanelService';
 import {
-  GetAllClinic,
+  GetAllPortalClinics,
   GetAllProvince,
-  GetAllTeamLeadAdminList,
-  getTeamLeadCount,
-  SortEnumType,
-  TeamLeadSortInput,
+  GetAllTeamLead,
+  GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
-import { useEffect, useState } from 'react';
+import ReactDatePicker from 'react-datepicker';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 
-import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
-import { Dropdown } from '@ecdlink/ui';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusIcon,
+  SearchIcon,
+} from '@heroicons/react/solid';
+import {
+  ActionModal,
+  Dialog,
+  DialogPosition,
+  Dropdown,
+  SearchDropDown,
+  SearchDropDownOption,
+  Typography,
+} from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
-import { Menu } from '@headlessui/react';
 import { useHistory } from 'react-router';
+import UiTable from './components/ui-table';
+import { ConenctUsage } from './team-leads.types';
+import { format } from 'date-fns';
+import { Status } from '../application-admins/applications-admins.types';
+import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-panel-create';
+import ROUTES from '../../../../routes/app.routes-constants';
+import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
+
+export const sortByConnectUsage: SearchDropDownOption<string>[] = [
+  ConenctUsage?.InvitationActive,
+  ConenctUsage?.InvitationExpired,
+  ConenctUsage?.LastOnlineOver6Months,
+  ConenctUsage?.LastOnlineWithinPast6Months,
+  ConenctUsage?.Removed,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
+  Status?.ACTIVE,
+  Status?.INACTIVE,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export default function TeamLeads() {
   const [tableData, setTableData] = useState<any[]>([]);
-  const panel = usePanel();
   const { hasPermission } = useUser();
-  const [statusFilter, setStatusFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('');
+  const [handleAdduser, setHandleAdduser] = useState(false);
+  const panel = usePanel();
 
-  const [sortDescending, setSortDescending] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+  const [provincesFiltered, setProvincesFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredProvinces = useMemo(
+    () => provincesFiltered?.map((item) => item?.id),
+    [provincesFiltered]
+  );
+
+  const [clinics, setClinics] = useState<SearchDropDownOption<string>[]>([]);
+  const [clinicsFiltered, setClinicsFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredClinics = useMemo(
+    () => clinicsFiltered?.map((item) => item?.label),
+    [clinicsFiltered]
+  );
+
+  const [subDistricts, setSubDistricts] =
+    useState<SearchDropDownOption<string>[]>();
+  const [subDistrictsFiltered, setSubDistrictsFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredSubDistricts = useMemo(
+    () => subDistrictsFiltered?.map((item) => item?.id),
+    [subDistrictsFiltered]
+  );
+
+  const [statusFilter, setStatusFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([sortByClientStatusOptions[0]]);
+
+  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  const onChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  const [connectUsageFilter, setConnectUsageFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredConnectUsage = useMemo(
+    () => connectUsageFilter?.map((item) => item?.id),
+    [connectUsageFilter]
+  );
 
   const history = useHistory();
-  const { data: teamCountData } = useQuery(getTeamLeadCount, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      search: '',
-      clinicSearch: '',
-      provinceSearch: '',
-    },
-  });
 
   const viewSelectedRow = (selectedRow: any) => {
+    const user = tableData?.find(
+      (item) => item?.userId === selectedRow?.userId
+    );
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/users/view-user',
+      pathname: ROUTES.VIEW_USERS,
       state: {
-        component: 'team-leads',
-        userId: selectedRow?.userId,
+        component: UsersRouteRedirectTypeEnum.teamLeads,
+        userId: selectedRow?.user?.id,
+        teamLeadId: selectedRow?.id,
+        connectUsage: selectedRow?.connectUsage,
+        isRegistered: selectedRow?.isRegistered,
+        clinicIds: selectedRow?.clinicIds,
+        connectUsageColor: user?.user?.connectUsageColor,
       },
     });
   };
 
-  const getVariables = (
-    search: string,
-    province: string,
-    clinic: string,
-    sortDescending: boolean,
-    currentPage: number,
-    pageSize: number
-  ) => {
-    return {
-      provinceSearch: province,
-      clinicSearch: clinic,
-      search: search,
+  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
+    variables: {
+      search: '',
+      clinicSearch: filteredClinics,
+      provinceSearch: filteredProvinces,
+      subDistrictSearch: filteredSubDistricts,
+      visitSearch: [],
+      connectUsageSearch: filteredConnectUsage,
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
       order: [
         {
-          insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc,
-        } as TeamLeadSortInput,
+          insertedDate: 'DESC',
+        },
       ],
-      pagingInput: {
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      },
-    };
-  };
-
-  const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(
-    GetAllTeamLeadAdminList,
-    {
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        sortDescending,
-        currentPage,
-        pageSize
-      ),
-      fetchPolicy: 'network-only',
-    }
-  );
-
-  useEffect(() => {
-    console.log(teamCountData);
-    GetAllTeamLeads({
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        sortDescending,
-        currentPage,
-        teamCountData?.countTeamLeads
-      ),
-    });
-  }, [
-    provinceFilter,
-    searchValue,
-    clinicFilter,
-    sortDescending,
-    currentPage,
-    pageSize,
-    teamCountData,
-  ]);
+    },
+    fetchPolicy: 'network-only',
+  });
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const { data: clinicData } = useQuery(GetAllClinic, {
+  const { data: clinicData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -132,25 +176,79 @@ export default function TeamLeads() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
-    return {
-      label: x.name,
-      value: x.name,
-    };
-  });
-
-  const provinces = provinceData?.GetAllProvince.map((x: ProvinceDto) => {
-    return {
-      label: x.description,
-      value: x.description,
-    };
+  const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
   });
 
   const clearFilters = () => {
-    setStatusFilter('');
-    setClinicFilter('');
-    setProvinceFilter('');
+    setProvincesFiltered([]);
+    setStatusFilter([]);
+    setClinicsFiltered([]);
+    setConnectUsageFilter([]);
+    setSubDistrictsFiltered([]);
+    setStartDate('');
+    setEndDate('');
   };
+
+  useEffect(() => {
+    if (clinicData?.allPortalClinics?.length > 0) {
+      const clinicsSorted = clinicData?.allPortalClinics
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+
+      setClinics(
+        clinicsSorted?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+            id: item?.id,
+          };
+        })
+      );
+    }
+  }, [clinicData?.allPortalClinics]);
+
+  useEffect(() => {
+    if (subDistrictData?.subDistrictsAndStats?.length > 0) {
+      const subDistrictSorted = subDistrictData?.subDistrictsAndStats
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+      setSubDistricts(
+        subDistrictSorted?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+            id: item?.id,
+          };
+        })
+      );
+    }
+  }, [subDistrictData]);
+
+  useEffect(() => {
+    if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
+      setProvinces(
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+              id: item?.id,
+            };
+          })
+      );
+    }
+  }, [provinceData?.GetAllProvince]);
 
   useEffect(() => {
     if (data && data.allTeamLeads) {
@@ -159,11 +257,125 @@ export default function TeamLeads() {
         fullName: `${item.user?.fullName}`,
         isActive: item.user?.isActive,
         idNumber: item.user?.idNumber,
+        connectUsage: item?.user?.connectUsage,
         _url: undefined,
       }));
+
+      const filteredByDateData = copyItems?.filter((d) => {
+        return (
+          new Date(d?.insertedDate).getTime() >=
+            new Date(startDate)?.getTime() &&
+          new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
+        );
+      });
+
+      if (startDate && endDate) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = filteredByDateData?.filter(
+              (item) => item?.isActive
+            );
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = filteredByDateData?.filter(
+              (item) => !item?.isActive
+            );
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+        setTableData(filteredByDateData);
+        return;
+      }
+
+      if (statusFilter) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = copyItems?.filter(
+              (item) => item?.isActive
+            );
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = copyItems?.filter(
+              (item) => !item?.isActive
+            );
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+      }
       setTableData(copyItems);
     }
-  }, [data]);
+  }, [data, endDate, startDate, statusFilter]);
+
+  const dateDropdownValue = useMemo(
+    () =>
+      startDate && endDate
+        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
+        : '',
+    [endDate, startDate]
+  );
+
+  const handleSetDateFilter = useCallback(() => {
+    setFilterDateAdded(!filterDateAdded);
+  }, [filterDateAdded]);
+
+  useEffect(() => {
+    if (endDate) {
+      handleSetDateFilter();
+    }
+  }, [endDate]);
+
+  const displayPanel = () => {
+    panel({
+      noPadding: true,
+      title: '',
+      render: (onSubmit: any) => (
+        <TeamLeadPanelCreate
+          key={`userPanelCreate`}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
+
+            if (userCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () =>
+      statusFilter?.length +
+      connectUsageFilter?.length +
+      provincesFiltered?.length +
+      clinicsFiltered?.length +
+      subDistrictsFiltered?.length +
+      hasDateFilter,
+    [
+      statusFilter?.length,
+      connectUsageFilter?.length,
+      provincesFiltered?.length,
+      clinicsFiltered?.length,
+      subDistrictsFiltered?.length,
+      hasDateFilter,
+    ]
+  );
+
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
 
   if (tableData) {
     return (
@@ -179,7 +391,7 @@ export default function TeamLeads() {
                     )}
                   </span>
                   <input
-                    className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                     placeholder="      Search by id number or name..."
                     onChange={search}
                   />
@@ -193,25 +405,40 @@ export default function TeamLeads() {
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    className={`${
+                      numberOfFilters
+                        ? ' bg-secondary'
+                        : 'border-secondary border-2 bg-white'
+                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      numberOfFilters ? 'text-white' : 'text-textMid'
+                    } hover:bg-gray-300 focus:ring-2`}
                     type="button"
                   >
-                    Filter
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      aria-hidden="true"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
+                    <div className="flex items-center gap-1">
+                      <Typography
+                        className="truncate"
+                        type="help"
+                        color={numberOfFilters ? 'white' : 'textLight'}
+                        text={renderFilterButtonText}
+                      />
+                      {!showFilter ? (
+                        <span>
+                          <ChevronDownIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
+                        </span>
+                      ) : (
+                        <span>
+                          <ChevronUpIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
+                        </span>
+                      )}
+                    </div>
                   </button>
                 </span>
               </div>
@@ -220,18 +447,11 @@ export default function TeamLeads() {
               <div className="flex  flex-row">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
-                    onClick={() => {
-                      history.push({
-                        pathname: '/upload-users',
-                        state: {
-                          component: 'team-leads',
-                        },
-                      });
-                    }}
+                    onClick={() => setHandleAdduser(true)}
                     type="button"
                     className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
                   >
-                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
+                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
                     Add Team Leads
                   </button>
                 )}
@@ -240,47 +460,121 @@ export default function TeamLeads() {
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
-              <div className="relative inline-block pr-2 text-left">
-                <Dropdown
-                  showSearch
-                  fillType="outlined"
-                  fillColor="secondary"
-                  placeholder="Province"
-                  selectedValue={provinceFilter}
-                  list={provinces}
-                  onChange={(item) => setProvinceFilter(item)}
-                />
-              </div>
-              <div className="relative inline-block pr-2 text-left">
-                <Dropdown
-                  showSearch
-                  fillType="outlined"
-                  fillColor="secondary"
-                  placeholder="Clinic"
-                  selectedValue={clinicFilter}
-                  list={clinics}
-                  onChange={(item) => setClinicFilter(item)}
-                />
-              </div>
-              <div>
-                <Dropdown
-                  fillType="filled"
-                  textColor="white"
-                  fillColor="secondary"
-                  placeholder="Filter"
-                  labelColor="white"
-                  selectedValue={statusFilter}
-                  list={[
-                    { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'inactive' },
-                  ]}
-                  onChange={(item) => {
-                    setStatusFilter(item);
+              <div className="flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-0.5'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByConnectUsage}
+                  selectedOptions={connectUsageFilter}
+                  onChange={setConnectUsageFilter}
+                  placeholder={'CHW Connect usage'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `CHW Connect usage:`,
                   }}
-                  className="p-2"
                 />
               </div>
+              {!filterDateAdded && (
+                <div
+                  className="mr-1 flex items-center"
+                  onClick={() => setFilterDateAdded(!filterDateAdded)}
+                >
+                  <Dropdown
+                    fillType="filled"
+                    textColor={'textLight'}
+                    fillColor={endDate ? 'secondary' : 'white'}
+                    placeholder={dateDropdownValue || 'Date invited'}
+                    labelColor={endDate ? 'white' : 'textLight'}
+                    list={[]}
+                    onChange={(item) => {}}
+                    className="w-56 text-sm text-white"
+                  />
+                </div>
+              )}
 
+              {filterDateAdded && (
+                <ReactDatePicker
+                  selected={startDate}
+                  onChange={onChange}
+                  startDate={startDate}
+                  endDate={endDate}
+                  selectsRange={true}
+                  inline
+                  shouldCloseOnSelect={true}
+                />
+              )}
+              <div className="w-6/12">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={provinces}
+                  selectedOptions={provincesFiltered}
+                  onChange={setProvincesFiltered}
+                  placeholder={'Province'}
+                  multiple={true}
+                  color={'secondary'}
+                />
+              </div>
+              <div className="w-6/12">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={clinics}
+                  selectedOptions={clinicsFiltered}
+                  onChange={setClinicsFiltered}
+                  placeholder={'Clinic'}
+                  multiple={true}
+                  color={'secondary'}
+                />
+              </div>
+              <div className="w-6/12">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={subDistricts}
+                  selectedOptions={subDistrictsFiltered}
+                  onChange={setSubDistrictsFiltered}
+                  placeholder={'Sub-district'}
+                  multiple={true}
+                  color={'secondary'}
+                />
+              </div>
+              <div className="mr-2 flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByClientStatusOptions}
+                  selectedOptions={statusFilter}
+                  onChange={setStatusFilter}
+                  placeholder={'Status'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `Status:`,
+                  }}
+                />
+              </div>
               <div className="flex w-full justify-end">
                 <div className="">
                   <button
@@ -303,19 +597,66 @@ export default function TeamLeads() {
                     columns={[
                       { field: 'idNumber', use: 'id / Passport' },
                       { field: 'fullName', use: 'name' },
+                      { field: 'connectUsage', use: 'CHW Connect uage' },
                       { field: 'insertedDate', use: 'Date Invited' },
                       { field: 'isActive', use: 'Active' },
                     ]}
-                    rows={tableData}
-                    searchInput={searchValue}
+                    rows={
+                      searchValue !== 'Search by title or content...'
+                        ? filterByValue(tableData, searchValue)
+                        : tableData
+                    }
                     component="team-leads"
                     viewRow={viewSelectedRow}
+                    isLoading={loading}
+                    refetchData={refetch}
                   />
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <Dialog
+          className="absolute left-56 bottom-96 mb-44 w-6/12"
+          stretch
+          visible={handleAdduser}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'ExclamationCircleIcon'}
+            iconColor="white"
+            iconBorderColor="infoMain"
+            importantText={`Would you like to add one Team Lead or multiple?`}
+            actionButtons={[
+              {
+                text: 'Add multiple Team Leads',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () =>
+                  history.push({
+                    pathname: ROUTES.UPLOAD_USERS,
+                    state: {
+                      component: 'team-leads',
+                    },
+                  }),
+                leadingIcon: 'UsersIcon',
+              },
+              {
+                text: 'Add one Team Lead',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  displayPanel();
+                  setHandleAdduser(false);
+                },
+                leadingIcon: 'UserIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </div>
     );
   } else {

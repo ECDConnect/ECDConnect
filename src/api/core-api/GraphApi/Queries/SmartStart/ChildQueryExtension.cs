@@ -11,6 +11,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Child GetChildByUserId([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-        string userId)
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
@@ -36,21 +37,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Child> GetChildrenByClassroomId([Service] IHttpContextAccessor contextAccessor,
-    IGenericRepositoryFactory repoFactory,
-string classroomId)
+            IGenericRepositoryFactory repoFactory,
+            string classroomId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var classroomGrooupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             List<Child> children = new List<Child>();
-            List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.Classroom.Id.Equals(classroomId)).ToList();
+            List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.Classroom.Id == Guid.Parse(classroomId)).ToList();
             foreach (var groupItem in group)
             {
                 if (groupItem.Learners.Any())
                 {
                     foreach (var item in groupItem.Learners)
                     {
-                        List<Child> learnerChildren = dbRepo.GetAll().Where(x => x.UserId.Contains(item.UserId)).ToList();
+                        List<Child> learnerChildren = dbRepo.GetAll().Where(x => x.UserId.ToString().Contains(item.UserId.ToString())).ToList();
                         children.AddRange(learnerChildren);
                     }
                 }
@@ -79,17 +80,17 @@ string classroomId)
                         foreach (var practitioner in practitioners)
                         {
                             bool childExists = false;
-                            var pracChildren = personnelManager.GetAllChildrenForPractitioner(practitioner.UserId).ToList();
+                            var pracChildren = personnelManager.GetAllChildrenForPractitioner(practitioner.UserId.ToString()).ToList();
                             if (pracChildren.Count > 0)
                             {
                                 childExists = pracChildren.Where(x => x.Equals(child)).Any();
                             }
                             if (childExists)
                             {
-                                var programmeName = personnelManager.GetSiteNameForPractitioner(practitioner.UserId);
+                                var programmeName = personnelManager.GetSiteNameForPractitioner(practitioner.UserId.ToString());
                                 return new ChildCreatedByDetail()
                                 {
-                                    ChildUserId = child.UserId,
+                                    ChildUserId = child.UserId.ToString(),
                                     FullName = child.User.FirstName + " " + child.User.Surname,
                                     CreatedByName = child.InsertedBy,
                                     CreatedById = child.UpdatedBy,
@@ -98,7 +99,7 @@ string classroomId)
                                     DateOfBirth = child.User.DateOfBirth,
                                     ProfileImageUrl = child.User.ProfileImageUrl,
                                     ProgrammeName = (!string.IsNullOrWhiteSpace(programmeName) ? programmeName : "N/A"),
-                                    PractitionerUserId = practitioner.UserId
+                                    PractitionerUserId = practitioner.UserId.ToString()
                                 };
                             }
                         }

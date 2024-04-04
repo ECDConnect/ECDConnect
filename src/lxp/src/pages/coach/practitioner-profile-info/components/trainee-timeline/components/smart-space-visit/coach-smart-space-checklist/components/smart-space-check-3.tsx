@@ -1,5 +1,6 @@
-import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
-import { PractitionerDto, useDialog } from '@ecdlink/core';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
+import { PractitionerDto, useDialog, CalendarEventModel } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -14,21 +15,31 @@ import {
 } from '@ecdlink/ui';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { traineeActions, traineeSelectors } from '@/store/trainee';
+import {
+  traineeActions,
+  traineeSelectors,
+  traineeThunkActions,
+} from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import { coachSelectors, coachThunkActions } from '@/store/coach';
 import { authSelectors } from '@/store/auth';
+import { addDays, addMinutes } from 'date-fns';
+import { UpdateVisitPlannedVisitDateModelInput } from '@ecdlink/graphql';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 interface SmartSpaceCheck1Props {
+  coachSmartSpaceVisitId: string;
   practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
   onSubmit: () => void;
+  setNotificationStep: (value: string) => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -49,13 +60,15 @@ export interface QuestionAnswersProps {
 }
 
 export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
+  coachSmartSpaceVisitId,
   practitioner,
-  programmeName,
-  setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,
   onSubmit,
+  setNotificationStep,
 }) => {
+  const visitSection = `Discuss next steps`;
+
   const dispatch = useAppDispatch();
   const dialog = useDialog();
   const history = useHistory();
@@ -63,17 +76,39 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   const user = useSelector(authSelectors.getAuthUser);
   const isCoach = coach?.user?.id === user?.id;
   const [enableButton, setEnableButton] = useState(false);
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const practitionerUserId = practitioner?.userId || '';
+
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitionerUserId)
+  );
+  const visitId: string = timeline?.sSCoachVisitId || '';
+  const visitEventId: string = timeline?.sSCoachVisitEventId || '';
+  const plannedVisitDate: string = timeline?.sSCoachVisitDate || '';
+  const calendarAddEvent = useCalendarAddEvent();
+
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
   const visitData1Completed = useSelector(
-    traineeSelectors.getCoachSmartSpaceSection1VisitDataCount
+    traineeSelectors.getCoachSmartSpaceSectionScore(visitId, 'SmartSpace check')
   );
   const visitData2Completed = useSelector(
-    traineeSelectors.getCoachSmartSpaceSection2VisitDataCount
+    traineeSelectors.getCoachSmartSpaceSectionScore(
+      visitId,
+      'Additional standards'
+    )
   );
 
   const coachSmartSpaceVisit1DataNotAttendedStandards = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandards
+    traineeSelectors.getCoachSmartSpaceSectionFailedQuestions(
+      visitId,
+      'SmartSpace check'
+    )
   );
+
   const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
     coachSmartSpaceVisit1DataNotAttendedStandards?.length! > 0
       ? coachSmartSpaceVisit1DataNotAttendedStandards?.map((item: any) => {
@@ -82,7 +117,10 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
       : [];
 
   const coachSmartSpaceVisit2DataNotAttendedStandards = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
+    traineeSelectors.getCoachSmartSpaceSectionFailedQuestions(
+      visitId,
+      'Additional standards'
+    )
   );
   const coachSmartSpaceVisit2DataNotAttendedStandardsFormatted =
     coachSmartSpaceVisit2DataNotAttendedStandards?.length! > 0
@@ -91,17 +129,15 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         })
       : [];
 
-  const question =
-    'Together with the SmartStarter, agree on what next steps can be taken and note them here:';
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection: visitSection,
       question:
         'Together with the SmartStarter, agree on what next steps can be taken and note them here:',
-      answer: '',
+      questionAnswer: '',
     },
   ]);
 
-  const visitSection = `Discuss next steps`;
   const allStandardsAttended = useMemo(
     () =>
       Number(visitData1Completed) === 17 && Number(visitData2Completed) === 5,
@@ -109,101 +145,99 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
-    if (!isCoach) {
-      const previousData = questions.map((item) => {
-        const previousAnswer = visitData?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        });
-
-        if (previousAnswer) {
-          return {
-            ...item,
-            answer: previousAnswer?.questionAnswer!,
-          };
-        }
-
-        return item;
-      });
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: previousData,
-        },
-      ]);
-
-      setAnswers(previousData as QuestionAnswersProps[]);
-      return;
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
     }
+  }, []);
 
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
+  const onChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const value = event.target.value;
 
-      const previousHasTrueAnswer = previousAnswer?.find(
-        (item: any) =>
-          item?.answer !== '' || Boolean(item?.answer) !== undefined
-      );
-
-      if (previousAnswer) {
-        setEnableButton(true);
-        return {
-          ...item,
-          answer: previousHasTrueAnswer?.answer,
-        };
-      }
-      return item;
-    });
-
-    setSectionQuestions?.([
+    setAnswers([
       {
-        visitSection,
-        questions: previousData,
+        ...questions[0],
+        questionAnswer: value,
       },
     ]);
 
-    setAnswers(previousData);
-  }, []);
+    if (value !== '') {
+      setEnableButton(true);
+    } else {
+      setEnableButton(false);
+    }
+  };
 
-  const onChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = event.target.value;
-      setSectionQuestions?.([
-        { visitSection, questions: [{ answer: value, question }] },
-      ]);
-
-      if (value !== '') {
-        setEnableButton?.(true);
-      } else {
-        setEnableButton?.(false);
-      }
-    },
-    [setSectionQuestions, visitSection]
-  );
-
-  const declineSmartSpaceLicence = useCallback(async () => {
-    await dispatch(
-      coachThunkActions.declineSmartSpaceLicenseForTrainee({
-        userId: practitioner?.userId!,
-        dateDeclined: new Date(),
-        nextStepsComments: questions[0].answer,
-      })
+  const onSchedule = () => {
+    const today = addDays(new Date(), 1);
+    const start = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      today.getHours(),
+      0,
+      0,
+      0
     );
-    await onSubmit();
-    await dispatch(traineeActions.resetCoachSmartSpaceVisitData());
-  }, [dispatch, onSubmit, practitioner?.userId, questions]);
+    const event: CalendarAddEventInfo = !!visitEventId
+      ? {
+          id: visitEventId,
+        }
+      : {
+          id: '',
+          eventType: 'SmartSpace',
+          allDay: false,
+          start: start.toISOString(),
+          end: addMinutes(start, 30).toISOString(),
+          minDate: new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          ).toISOString(),
+          maxDate: new Date(plannedVisitDate).toISOString(),
+          name: '',
+          description: '',
+          participantUserIds: [practitionerUserId],
+          action: {
+            buttonName: 'Start visit',
+            buttonIcon: 'ArrowCircleRightIcon',
+            url: ROUTES.COACH_SMARTSPACE_CHECK,
+            state: {
+              practitionerUserId: practitioner?.userId || '',
+            },
+          },
+        };
 
-  const exitCoachSmartSpaceVisit = useCallback(() => {
+    calendarAddEvent({
+      event,
+      onUpdated: (isNew: boolean, event: CalendarEventModel) => {
+        const payload: UpdateVisitPlannedVisitDateModelInput = {
+          visitId: visitId,
+          plannedVisitDate: event.start,
+          eventId: event.id,
+        };
+        dispatch(
+          traineeActions.updateTraineeOnboardTimelineSSVisitEvent(payload)
+        );
+        dispatch(
+          traineeThunkActions.updateTraineeOnboardTimelineSSVisitEvent(payload)
+        );
+        saveSmartSpaceCheckData(questions, visitSection);
+        onSubmit();
+        history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+          practitionerId: practitioner?.userId,
+        });
+      },
+      onCancel: () => {},
+    });
+  };
+
+  // TODO - figure out why this only works the second time it gets opened...
+  const exitCoachSmartSpaceVisit = () => {
     dialog({
       position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
+      render: (onCancel) => (
         <ActionModal
           icon={'InformationCircleIcon'}
           iconColor="alertMain"
@@ -217,9 +251,9 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                onSubmit();
+                onSchedule();
               },
-              disabled: true,
+              disabled: !visitId,
               leadingIcon: 'CalendarIcon',
             },
             {
@@ -228,11 +262,10 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
               colour: 'primary',
               type: 'outlined',
               onClick: async () => {
-                await declineSmartSpaceLicence();
-                await onCancel();
                 history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
                   practitionerId: practitioner?.userId,
                 });
+                await onCancel();
               },
               leadingIcon: 'ClockIcon',
             },
@@ -240,9 +273,9 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         />
       ),
     });
-  }, [dialog, history]);
+  };
 
-  const renderButton = useMemo(() => {
+  const renderButton = () => {
     if (Number(visitData1Completed) === 17) {
       return (
         <div className="mt-2 space-y-4">
@@ -253,12 +286,12 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
                 color="primary"
                 className="mt-1 mb-2 w-full"
                 onClick={() => {
+                  if (isCoach) {
+                    saveSmartSpaceCheckData(questions, visitSection);
+                  }
                   handleNextSection();
-                  saveSmartSpaceCheckData();
                 }}
-                disabled={
-                  (!enableButton || Number(visitData1Completed) < 17) && isCoach
-                }
+                disabled={!enableButton && isCoach}
               >
                 {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                 <Typography type={'help'} text={'Next'} color={'white'} />
@@ -276,24 +309,21 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
               type="filled"
               color="primary"
               className="mt-1 mb-2 w-full"
-              onClick={
-                !isCoach
-                  ? () => {
-                      saveSmartSpaceCheckData();
-                      handleNextSection();
-                    }
-                  : () => {
-                      handleNextSection();
-                      saveSmartSpaceCheckData();
-                      exitCoachSmartSpaceVisit();
-                    }
-              }
+              onClick={() => {
+                if (!isCoach) {
+                  setNotificationStep('');
+                } else {
+                  saveSmartSpaceCheckData(questions, visitSection);
+                  onSubmit();
+                  exitCoachSmartSpaceVisit();
+                }
+              }}
               disabled={!enableButton && isCoach}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography
                 type={'help'}
-                text={!isCoach ? 'Next' : 'Save & next'}
+                text={isCoach ? 'Save & exit' : 'Exit'}
                 color={'white'}
               />
             </Button>
@@ -301,14 +331,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         </div>
       </div>
     );
-  }, [
-    enableButton,
-    exitCoachSmartSpaceVisit,
-    handleNextSection,
-    isCoach,
-    saveSmartSpaceCheckData,
-    visitData1Completed,
-  ]);
+  };
 
   return (
     <div className="p-4">
@@ -380,9 +403,9 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
       <FormInput
         className="mt-4"
         textInputType="textarea"
-        label={question}
+        label={questions[0].question}
         placeholder={'e.g. create a list of emergency numbers'}
-        value={questions[0].answer}
+        value={questions[0].questionAnswer}
         onChange={onChange}
         disabled={!isCoach}
       />
@@ -400,7 +423,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
             type={'error'}
           />
         )}
-      {renderButton}
+      {renderButton()}
     </div>
   );
 };

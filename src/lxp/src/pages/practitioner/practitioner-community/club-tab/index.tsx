@@ -12,7 +12,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ClubActivities,
   LeagueType,
@@ -22,7 +22,7 @@ import {
 import PositiveEmoticon from '@/assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useDialog } from '@ecdlink/core';
+import { useDialog, usePrevious } from '@ecdlink/core';
 import { AddEventOrMeetingDialog } from './0-components/add-event-or-meeting-dialog';
 import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
@@ -35,38 +35,180 @@ import { isCurrentPointsAtLeast80PercentOfTotal } from '@/pages/community/clubs-
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { userSelectors } from '@/store/user';
 import { coachSelectors } from '@/store/coach';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useAppDispatch } from '@/store';
+import { clubSelectors, clubThunkActions } from '@/store/club';
+import { getTermNumberForCurrentMonth, shouldShowPoints } from '@/utils/club';
+import { OfflineAlert } from '@/components/offline-alert';
+import { SupportRoleAlert } from './0-components/support-role-alert';
+import { getAllNotifications } from '@/store/notifications/notifications.selectors';
+import { notificationTagConfig } from '@/constants/notifications';
+import { PractitionerCommunityRouteState } from '../index.types';
+import { CaregiverMeeting } from '@/pages/community/clubs-tab/club/club-points/activities/0-components/caregiver-meeting';
+import { Notification } from '@/store/notifications';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
   const user = useSelector(userSelectors.getUser);
   const coach = useSelector(coachSelectors.getCoach);
+
+  const [caregiverMeetingNotification, setCaregiverMeetingNotification] =
+    useState<Notification | undefined>();
+
+  const previousClub = usePrevious(club);
+
+  const clubId = club?.id ?? '';
+
+  const detailsMeetRegular = useSelector(
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
+  );
+  const detailsHostFamily = useSelector(
+    clubSelectors.getActivityHostFamilyDetailsSelector(clubId)
+  );
+  const notifications = useSelector(getAllNotifications);
+  const clubRankingPercentage = useSelector(
+    clubSelectors.getClubRankingPercentageSelector(clubId)
+  );
+
   const history = useHistory();
 
   const dialog = useDialog();
 
-  const { isLoading } = useThunkFetchCall(
+  const appDispatch = useAppDispatch();
+
+  const { isOnline } = useOnlineStatus();
+
+  const { isLoading: isLoadingClub } = useThunkFetchCall(
     'clubs',
     ClubActions.GET_CLUB_FOR_USER
   );
+  const { isLoading: isLoadingMeetRegular } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS
+  );
+  const { isLoading: isLoadingHostFamily } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
+  );
 
-  const clubId = club?.id ?? '';
+  const isLoading =
+    isLoadingClub || isLoadingMeetRegular || isLoadingHostFamily;
+
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+
+  const addedMeetingRegularThisMonth = detailsMeetRegular?.pastMeetings?.some(
+    (meeting) =>
+      new Date(meeting?.meetingDate).getMonth() === currentMonth &&
+      new Date(meeting?.meetingDate).getFullYear() === currentYear
+  );
+
+  const addedFamilyDayThisQuarter = getTermNumberForCurrentMonth()
+    ? detailsHostFamily?.terms
+        ?.find((term) => term?.termNr === getTermNumberForCurrentMonth())
+        ?.documentStatus?.toLocaleLowerCase() !== 'not completed'
+    : false;
+
   const isClubInALeague = !!club?.league;
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
   const isLeader = club?.clubLeader?.userId === user?.id;
+  const isLeaderRequest = notifications?.some((notification) =>
+    notification?.message?.cta?.includes(
+      notificationTagConfig.AcceptAgreement?.cta!
+    )
+  );
+  const isSupportRole = club?.clubSupport?.userId === user?.id;
+  const isToShowPointsScreen = shouldShowPoints();
+  const isTop25Percent =
+    (club?.leagueRanking && club?.leagueRanking <= 3) ||
+    (clubRankingPercentage && clubRankingPercentage <= 25);
 
-  // TODO: add integration
-  const isLeaderRequest = false;
+  const termNumber = getTermNumberForCurrentMonth();
+
+  // From EC-1515
+  //////////////////////////////////////////////
+  const isScenario1 =
+    !addedMeetingRegularThisMonth && (addedFamilyDayThisQuarter || !termNumber);
+  const isScenario2 =
+    addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter && termNumber;
+  const isScenario3 =
+    !addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter && termNumber;
+  //////////////////////////////////////////////
 
   const onAddMeetingOrEvent = () => {
-    return dialog({
-      position: DialogPosition.Middle,
-      blocking: false,
-      render: (onClose) => {
-        return <AddEventOrMeetingDialog onClose={onClose} />;
-      },
-    });
+    if (isScenario1) {
+      return history.push(
+        ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT
+      );
+    }
+
+    if (isScenario2) {
+      return history.push(
+        ROUTES.PRACTITIONER.COMMUNITY.CLUB.FAMILY_DAY_EVENT.ADD_EVENT
+      );
+    }
+
+    if (isScenario3) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onClose) => {
+          return <AddEventOrMeetingDialog onClose={onClose} />;
+        },
+      });
+    }
+
+    return;
   };
+
+  const showSupportRoleAlert = useCallback(() => {
+    if (
+      isSupportRole &&
+      club?.clubSupport?.isNewInSupportRole &&
+      !previousClub
+    ) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <SupportRoleAlert
+              practitionerId={club?.clubSupport?.practitionerId ?? ''}
+              onClose={onClose}
+            />
+          );
+        },
+      });
+    }
+  }, [
+    club?.clubSupport?.isNewInSupportRole,
+    club?.clubSupport?.practitionerId,
+    dialog,
+    isSupportRole,
+    previousClub,
+  ]);
+
+  useEffect(() => {
+    showSupportRoleAlert();
+  }, [showSupportRoleAlert]);
+
+  useEffect(() => {
+    if (isOnline && (isLeader || isSupportRole)) {
+      appDispatch(
+        clubThunkActions.getActivityMeetRegularDetails({
+          forceReload: false,
+          args: {
+            clubId,
+            month: 0,
+            year: currentYear,
+          },
+        })
+      );
+      appDispatch(clubThunkActions.getActivityHostFamilyDetails({ clubId }));
+    }
+  }, [clubId, currentYear, isLeader, isOnline, isSupportRole]);
 
   const coachItem: UserAlertListDataItem = {
     title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
@@ -79,30 +221,56 @@ export const ClubTab: React.FC = () => {
     alertSeverity: 'none',
     hideAlertSeverity: true,
     onActionClick: () => {
-      // TODO: update user profile to handle with coach view and practitioner view
-      // history.push(
-      //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH
-      //     .replace(':clubId', clubId)
-      //     .replace(':coachId', coacd?.user?.id ?? ''))
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH.replace(
+          ':clubId',
+          clubId
+        ).replace(':coachId', coach?.user?.id ?? '')
+      );
     },
   };
 
-  const clubSupportRole: UserAlertListDataItem = {
-    title: `${club?.clubSupport?.firstName} ${club?.clubSupport?.surname}`,
+  const leader: UserAlertListDataItem = {
+    title: `${club?.clubLeader?.firstName ?? ''} ${
+      club?.clubLeader?.surname ?? ''
+    }`,
     titleStyle: 'text-textDark',
-    profileDataUrl: '',
-    profileText:
-      (club?.clubSupport?.firstName[0] || '') +
-      (club?.clubSupport?.surname[0] || ''),
+    profileDataUrl: club?.clubLeader?.profileImageUrl ?? '',
+    profileText: `${club?.clubLeader?.firstName ?? ''} ${
+      club?.clubLeader?.surname ?? ''
+    }`,
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
     onActionClick: () => {
-      // TODO: update user profile to handle with coach view and practitioner view
-      // history.push(
-      // ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER
-      //   .replace(':clubId', clubId)
-      //   .replace(':practitionerId', user?.id ?? ''))
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+          ':clubId',
+          clubId
+        ).replace(':leaderId', club?.clubLeader?.practitionerId ?? '')
+      );
+    },
+  };
+
+  const clubSupportRole: UserAlertListDataItem = {
+    title: `${club?.clubSupport?.firstName ?? ''} ${
+      club?.clubSupport?.surname ?? ''
+    }`,
+    titleStyle: 'text-textDark',
+    profileDataUrl: '',
+    profileText:
+      (club?.clubSupport?.firstName?.[0] || '') +
+      (club?.clubSupport?.surname?.[0] || ''),
+    avatarColor: 'var(--primaryAccent2)',
+    alertSeverity: 'none',
+    hideAlertSeverity: true,
+    onActionClick: () => {
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.SUPPORT_ROLE.replace(
+          ':clubId',
+          clubId
+        ).replace(':supportRoleId', club?.clubSupport?.userId ?? '')
+      );
     },
   };
 
@@ -114,7 +282,7 @@ export const ClubTab: React.FC = () => {
           title={`Accept the club leader agreement!`}
           type="warning"
           list={[
-            'Your coach selected you for the {clubName} club leader role.',
+            `Your coach selected you for the ${club?.name} club leader role.`,
             'If you do not want to accept the agreement, please contact your coach.',
           ]}
           button={
@@ -124,7 +292,11 @@ export const ClubTab: React.FC = () => {
               textColor="white"
               icon="ClipboardCheckIcon"
               text="Accept agreement"
-              onClick={() => {}}
+              onClick={() =>
+                history.push(
+                  ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+                )
+              }
             />
           }
         />
@@ -147,18 +319,22 @@ export const ClubTab: React.FC = () => {
     }
 
     return <></>;
-  }, [isLeader, isLeaderRequest]);
+  }, [club?.name, history, isLeader, isLeaderRequest]);
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: club?.league?.name ?? '',
+      title: 'in the league',
       titleStyle: 'text-textDark',
-      onActionClick: () => {}, // TODO: add integration
+      onActionClick: () => {
+        history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+          activeTabIndex: 1,
+        } as PractitionerCommunityRouteState);
+      },
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
             className="absolute z-0 h-auto w-auto"
-            fill={`var(--${true ? 'successMain' : 'secondary'})`}
+            fill={`var(--${isTop25Percent ? 'successMain' : 'secondary'})`}
           />
           <Typography
             className="relative z-10"
@@ -168,9 +344,9 @@ export const ClubTab: React.FC = () => {
           />
         </div>
       ),
-      backgroundColor: true ? 'successBg' : 'infoBb',
+      backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
     }),
-    [club?.league?.name, club?.leagueRanking]
+    [club?.leagueRanking, history, isTop25Percent]
   );
 
   const activities: MenuListDataItem[] = [
@@ -246,8 +422,22 @@ export const ClubTab: React.FC = () => {
     onActionClick: () => history.push(item.route),
   }));
 
+  useEffect(() => {
+    if (notifications.length > 0 && isPurpleLeague) {
+      const notification = notifications?.find(
+        (notification) =>
+          notification?.isNew &&
+          notification?.message?.title?.includes(
+            "Well done, you've created progress reports for all children!"
+          )
+      );
+
+      setCaregiverMeetingNotification(notification);
+    }
+  }, [appDispatch, isPurpleLeague, notifications]);
+
   const renderLeagueContent = useMemo(() => {
-    if (isClubInALeague) {
+    if (isClubInALeague && isToShowPointsScreen) {
       return (
         <div className="mt-7 mb-5">
           <Typography
@@ -255,48 +445,54 @@ export const ClubTab: React.FC = () => {
             type="h3"
             text="League position & points"
           />
-          <StackedList
-            isFullHeight={false}
-            type={'MenuList' as StackedListType}
-            listItems={[leagueCard]}
-          />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
-            className="mt-2"
-            mainText={String(club?.pointsTotal ?? 0)}
-            hint="points"
-            currentPoints={club?.pointsTotal || 18}
-            maxPoints={club?.maxPointsTotal ?? 0}
-            barBgColour="uiLight"
-            barColour={
-              isCurrentPointsAtLeast80PercentOfTotal(
-                club?.pointsTotal || 0,
-                club?.maxPointsTotal || 0
-              )
-                ? 'successMain'
-                : 'secondary'
-            }
-            bgColour="uiBg"
-            textColour="black"
-            onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
-          /> */}
+          {isOnline ? (
+            <>
+              <StackedList
+                isFullHeight={false}
+                type={'MenuList' as StackedListType}
+                listItems={[leagueCard]}
+              />
+              <ScoreCard
+                className="mt-2"
+                mainText={String(club?.pointsTotal ?? 0)}
+                hint="points"
+                currentPoints={club?.pointsTotal || 18}
+                maxPoints={club?.maxPointsTotal ?? 0}
+                barBgColour="uiLight"
+                barColour={
+                  isCurrentPointsAtLeast80PercentOfTotal(
+                    club?.pointsTotal || 0,
+                    club?.maxPointsTotal || 0
+                  )
+                    ? 'successMain'
+                    : 'secondary'
+                }
+                bgColour="uiBg"
+                textColour="black"
+                onClick={() =>
+                  history.push(
+                    ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
+                  )
+                }
+              />
+            </>
+          ) : (
+            <OfflineAlert />
+          )}
         </div>
       );
     }
 
-    return (
-      <Alert
-        className="mt-5 mb-7"
-        type="info"
-        title="This club is not in a league."
-      />
-    );
+    return <></>;
   }, [
-    club?.maxPointsTotal,
-    club?.pointsTotal,
-    history,
     isClubInALeague,
+    isToShowPointsScreen,
+    isOnline,
     leagueCard,
+    club?.pointsTotal,
+    club?.maxPointsTotal,
+    history,
+    clubId,
   ]);
 
   const renderActivitiesContent = useMemo(() => {
@@ -305,17 +501,21 @@ export const ClubTab: React.FC = () => {
     return (
       <div className="mt-7 mb-5">
         <Typography className="mb-2" type="h3" text="Activities" />
-        <StackedList
-          className="flex flex-col gap-2"
-          type={'MenuList' as StackedListType}
-          listItems={activities}
-        />
+        {isOnline ? (
+          <StackedList
+            className="flex flex-col gap-2"
+            type={'MenuList' as StackedListType}
+            listItems={activities}
+          />
+        ) : (
+          <OfflineAlert />
+        )}
       </div>
     );
-  }, [activities, isClubInALeague]);
+  }, [activities, isClubInALeague, isOnline]);
 
   return (
-    <div className="p-4 pt-6">
+    <div className="h-full overflow-auto p-4 pt-6">
       {isLoading ? (
         <LoadingSpinner
           className="mt-4"
@@ -324,7 +524,7 @@ export const ClubTab: React.FC = () => {
           backgroundColor="uiLight"
         />
       ) : (
-        <>
+        <div className="flex h-full flex-col">
           <Typography type="h2" text={club?.name ?? ''} />
           <div className="mt-4 flex gap-2">
             {isPurpleLeague && (
@@ -346,7 +546,7 @@ export const ClubTab: React.FC = () => {
           {renderLeagueContent}
           {!!coach && (
             <>
-              <Typography className="mb-2" type="h3" text="Coach" />
+              <Typography className="my-2" type="h3" text="Coach" />
               <div>
                 <StackedList
                   isFullHeight={false}
@@ -356,22 +556,36 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          {!!club?.clubSupport && (
+          {!!club?.clubLeader?.userId && !isLeader && (
             <>
+              <Typography className="mb-2 mt-6" type="h3" text="Club leader" />
+              <div>
+                <StackedList
+                  isFullHeight={false}
+                  type={'UserAlertList' as StackedListType}
+                  listItems={[leader]}
+                />
+              </div>
+            </>
+          )}
+          {!!club?.clubSupport?.userId && (
+            <div>
               <div className="mb-2 mt-6 flex items-center justify-between">
                 <Typography type="h3" text="Club support role" />
-                <Button
-                  type="outlined"
-                  color="primary"
-                  textColor="primary"
-                  text={'Change'}
-                  icon="RefreshIcon"
-                  onClick={() =>
-                    history.push(
-                      ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
-                    )
-                  }
-                />
+                {(isLeader || isSupportRole) && (
+                  <Button
+                    type="outlined"
+                    color="primary"
+                    textColor="primary"
+                    text="Change"
+                    icon="RefreshIcon"
+                    onClick={() =>
+                      history.push(
+                        ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                      )
+                    }
+                  />
+                )}
               </div>
               <Typography
                 className="mb-4"
@@ -384,29 +598,43 @@ export const ClubTab: React.FC = () => {
                 type={'UserAlertList' as StackedListType}
                 listItems={[clubSupportRole]}
               />
-            </>
+            </div>
           )}
           {renderActivitiesContent}
-          <div className="mt-auto flex flex-col">
-            <Button
-              icon="PlusCircleIcon"
-              className="mb-4 mt-8"
-              type="filled"
-              textColor="white"
-              color="primary"
-              text="Add a meeting or event"
-              onClick={onAddMeetingOrEvent}
-            />
+          <div className={`mt-auto flex flex-col py-4`}>
+            {(isLeader || isSupportRole) &&
+              (isScenario1 || isScenario2 || isScenario3) && (
+                <Button
+                  icon="PlusCircleIcon"
+                  className="mb-4 mt-8"
+                  type="filled"
+                  textColor="white"
+                  color="primary"
+                  text="Add a meeting or event"
+                  onClick={onAddMeetingOrEvent}
+                />
+              )}
             <Button
               icon="UserGroupIcon"
-              type="outlined"
-              textColor="primary"
+              type={isLeader || isSupportRole ? 'outlined' : 'filled'}
+              textColor={isLeader || isSupportRole ? 'primary' : 'white'}
               color="primary"
               text="See club members"
-              onClick={() => {}}
+              onClick={() =>
+                history.push(
+                  ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', clubId)
+                )
+              }
             />
           </div>
-        </>
+        </div>
+      )}
+
+      {!!caregiverMeetingNotification && (
+        <CaregiverMeeting
+          isToShowWellDoneMessage={true}
+          onClose={() => setCaregiverMeetingNotification(undefined)}
+        />
       )}
     </div>
   );

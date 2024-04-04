@@ -18,10 +18,13 @@ export const StoryActivitySelectView: React.FC<
   onActivityCleared,
   onClearStory,
   setSelectedStory,
+  filteredActivities,
 }) => {
-  const storyActivities = useSelector(
+  const allStoryActivities = useSelector(
     activitySelectors.getStoryActivitiesByType(story.type)
   );
+
+  const storyActivities = filteredActivities || allStoryActivities;
 
   const programme = useSelector(
     programmeSelectors.getProgrammeById(programmeId)
@@ -35,9 +38,9 @@ export const StoryActivitySelectView: React.FC<
     <div className={'flex flex-col'}>
       <Typography
         text={`Story chosen: ${story.name}`}
-        hasMarkup
+        className={'mt-4'}
         color={'textDark'}
-        type={'h1'}
+        type={'h2'}
         onClick={handleClearStory}
       />
       <Button
@@ -90,6 +93,7 @@ export const StoryActivitySelectView: React.FC<
               onStoryCleared={() => onClearStory()}
               selected={selectedActivityId === activity.id}
               title={activity.name}
+              storyBookId={story.id}
             />
           );
         })}

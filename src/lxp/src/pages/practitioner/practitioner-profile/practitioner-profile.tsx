@@ -15,7 +15,7 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal, LogoutModal } from '../../../modals';
@@ -31,6 +31,7 @@ import { PractitionerJourney } from './practitioner-journey';
 import { usePrevious } from 'react-use';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
+import { PractitionerProfileRouteState } from './practitioner-profile.types';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -50,9 +51,14 @@ export const PractitionerProfile: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
 
+  const location = useLocation<PractitionerProfileRouteState>();
+
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
 
-  const selectedTab = wasJourneyFormOpen && !isJourneyFormOpen ? 1 : undefined;
+  const selectedTab =
+    wasJourneyFormOpen && !isJourneyFormOpen
+      ? 1
+      : location.state?.tabIndex || undefined;
   // const sync = async () => {
   //   if (practitioner?.isPrincipal === true) {
   //     await appDispatch(syncThunkActions.syncOfflineData({}));
@@ -194,6 +200,7 @@ export const PractitionerProfile: React.FC = () => {
         onActionClick: () => {
           dialog({
             position: DialogPosition.Bottom,
+            blocking: true,
             render: (onSubmit, onCancel) => {
               return (
                 <OfflineSyncModal
@@ -278,29 +285,46 @@ export const PractitionerProfile: React.FC = () => {
     return stackedMenuList;
   };
 
-  const tabItem: TabItem[] = [
-    {
-      title: 'Profile',
-      initActive: true,
-      child: (
-        <div>
-          {practitioner?.progress !== 0 ? null : <CompleteProfile />}
-          <StackedList
-            listItems={getStackedMenuList()}
-            type={'MenuList'}
-            className={'flex flex-col gap-1 px-4 pt-1'}
-          ></StackedList>
-        </div>
-      ),
-    },
-    {
-      title: 'Journey',
-      initActive: false,
-      // EC-1909 - Suppress ticket
-      //child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
-      child: 'Coming Soon!',
-    },
-  ];
+  const tabItem: TabItem[] = isTrainee
+    ? [
+        {
+          title: 'Profile',
+          initActive: true,
+          child: (
+            <div>
+              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
+              <StackedList
+                listItems={getStackedMenuList()}
+                type={'MenuList'}
+                className={'flex flex-col gap-1 px-4 pt-1'}
+              ></StackedList>
+            </div>
+          ),
+        },
+      ]
+    : [
+        {
+          title: 'Profile',
+          initActive: true,
+          child: (
+            <div>
+              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
+              <StackedList
+                listItems={getStackedMenuList()}
+                type={'MenuList'}
+                className={'flex flex-col gap-1 px-4 pt-1'}
+              ></StackedList>
+            </div>
+          ),
+        },
+        {
+          title: 'Journey',
+          initActive: false,
+          child: (
+            <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />
+          ),
+        },
+      ];
 
   if (isJourneyFormOpen) {
     return <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />;
@@ -328,10 +352,8 @@ export const PractitionerProfile: React.FC = () => {
           type={'error'}
         />
       )}
-      {/*
       {practitioner?.isPrincipal && (
-        // EC-1909 - Suppress ticket
-        {/* <Card className={'bg-uiBg mt-4 ml-4 mb-8 w-11/12 rounded-xl pt-2'}>
+        <Card className={'bg-uiBg mt-4 ml-4 mb-8 w-11/12 rounded-xl pt-2'}>
           <div className={'mt-6 ml-4'}>
             <Typography
               type={'h1'}
@@ -366,9 +388,7 @@ export const PractitionerProfile: React.FC = () => {
             </div>
           </div>
         </Card>
-         
-    )}
-     */}
+      )}
     </BannerWrapper>
   );
 };

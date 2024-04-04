@@ -4,6 +4,7 @@ import {
   renderIcon,
   Card,
   Typography,
+  DialogPosition,
 } from '@ecdlink/ui/';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import { activitySelectors } from '@store/content/activity';
@@ -14,10 +15,18 @@ import {
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
 import BaseListItemUpdated from '../base-list-item-updated/base-list-item-updated';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { storyBookSelectors } from '@/store/content/story-book';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
-> = ({ routineItem, onClick, day }) => {
+> = ({ routineItem, onClick, day, selectedDate, storyBookId }) => {
+  const dialog = useDialog();
+
+  const { isOnline } = useOnlineStatus();
+
   const routineType = getRoutineItemType(routineItem.name);
   const canLinkActionToType =
     routineType === DailyRoutineItemType.smallGroup ||
@@ -31,6 +40,38 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       getActivityIdForRoutineItem(routineItem.name, day)
     )
   );
+  const storyBook = useSelector(
+    storyBookSelectors.getStoryBookById(storyBookId)
+  );
+
+  const isPastDay = () => {
+    if (selectedDate) {
+      if (selectedDate.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  };
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleOnClick = () => {
+    if (isPastDay()) {
+      return;
+    } else if (isOnline || (!isOnline && !!activity?.name)) {
+      return onClick();
+    }
+    return showOnlineOnly();
+  };
 
   const getTitle = () => {
     if (
@@ -83,7 +124,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
 
   const getRoutineItemPostSlotRender = () => {
     if (
-      // routineItem.name === DailyRoutineItemType.messageBoard ||
+      routineItem.name === DailyRoutineItemType.messageBoard ||
       routineItem.name === DailyRoutineItemType.greeting ||
       routineItem.name === DailyRoutineItemType.freePlay
     ) {
@@ -108,7 +149,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
         </Card>
       );
     }
-    if (!activity?.name) {
+    if (!activity?.name && !isPastDay()) {
       return (
         <Card className="border-secondary w-full rounded-xl border-2 bg-white py-4 px-2">
           <div
@@ -123,16 +164,42 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
           </div>
         </Card>
       );
+    } else if (!activity?.name && isPastDay()) {
+      return (
+        <Card className="bg-primaryAccent2 w-full rounded-xl py-4 px-2">
+          <div
+            className={
+              'ml-4 flex w-full flex-row items-center justify-start gap-4'
+            }
+          >
+            <Typography type={'h1'} text={'+'} color={'primaryAccent1'} />
+            <Typography
+              type={'h4'}
+              text={'Add Activity'}
+              color={'primaryAccent1'}
+            />
+          </div>
+        </Card>
+      );
     } else {
       return (
         <Card className="bg-secondary w-full rounded-xl py-4 px-2">
           <div className={'flex w-full flex-row items-center justify-between'}>
-            <Typography
-              type={'help'}
-              // className={'text-white'}
-              text={activity ? activity.name : ''}
-              color={'white'}
-            />
+            {routineItem.name === 'Story book' ? (
+              <Typography
+                type={'help'}
+                // className={'text-white'}
+                text={storyBook ? storyBook.name : ''}
+                color={'white'}
+              />
+            ) : (
+              <Typography
+                type={'help'}
+                // className={'text-white'}
+                text={activity ? activity.name : ''}
+                color={'white'}
+              />
+            )}
             <StatusChip
               className={'mr-2'}
               padding={'px-2 py-1'}
@@ -207,7 +274,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       overwritePostSlotRender={getRoutineItemPostSlotRender}
       dividerType={'solid'}
       dividerColor={'uiLight'}
-      onClick={onClick}
+      onClick={handleOnClick}
       routineItem={routineItem}
     />
   );

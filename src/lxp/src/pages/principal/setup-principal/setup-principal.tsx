@@ -162,6 +162,12 @@ export const SetupPrincipal: React.FC = () => {
       ).PromotePractitionerToPrincipal(user?.id);
 
       await appDispatch(
+        practitionerThunkActions.updatePractitionerShareInfo({
+          practitionerId: user.id,
+        })
+      );
+
+      await appDispatch(
         practitionerThunkActions.updatePractitionerRegistered({
           practitionerId: user.id,
           status: true,

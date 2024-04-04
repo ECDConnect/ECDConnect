@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
@@ -14,19 +15,17 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class TeamLead<TKey> : EntityBase<TKey>,
-        ApplicationUserJoin,
-        ClinicJoin<Guid?>
+        ApplicationUserJoin
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
 
-        [ForeignKey(nameof(ClinicId))]
-        public virtual Clinic Clinic { get; set; }
-        public Guid? ClinicId { get; set; }
+        public virtual ICollection<ClinicTeamLead> Clinics { get; set; }
 
         public string JobTitle { get; set; }
+        public bool IsRegistered { get; set; }
     }
 
     public interface TeamLeadJoin<TKey>

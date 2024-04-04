@@ -1,6 +1,7 @@
 import { InfantDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
 import { EventRecordType, VisitDataStatus } from '@ecdlink/graphql';
+import { addMonths } from 'date-fns';
 
 export const getInfants = (state: RootState): InfantDto[] =>
   state.infants.infants || [];
@@ -92,6 +93,28 @@ export const getIsInfantSecondVisitSelector = (state: RootState): boolean => {
   );
 
   return attendedVisits?.length === 1;
+};
+
+export const getIsInfantFirstVisitForAgeSelector = (
+  state: RootState,
+  dob: Date,
+  monthsAfter: number,
+  monthsBefore: number
+): boolean => {
+  const visits = state.infants.visits;
+
+  const dateAfter = new Date(addMonths(dob, monthsAfter));
+  const dateBefore = new Date(addMonths(dob, monthsBefore));
+
+  const attendedVisits = visits?.filter(
+    (item) =>
+      item.visitType?.name !== 'additional_visit' &&
+      !!item.attended &&
+      new Date(item.plannedVisitDate).getTime() >= dateAfter.getTime() &&
+      new Date(item.plannedVisitDate).getTime() <= dateBefore.getTime()
+  );
+
+  return attendedVisits?.length === 0;
 };
 
 export const getInfantVisitByVisitIdSelector = (
@@ -231,3 +254,28 @@ export function getInfantNearestPreviousVisitByOrderDate(
 
   return nearestDateObject;
 }
+
+export const getInfantLastVisitSelector = (
+  state: RootState,
+  visitId?: string
+): VisitDto | undefined => {
+  const visits = state.infants.visits || [];
+  const lastAttended = visits?.filter((item) => item.attended) || [];
+
+  if (visitId && visitId !== '') {
+    const visits = state.infants.visits || [];
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) {
+        return visits[i];
+      }
+    }
+  } else {
+    return lastAttended.length
+      ? lastAttended.reduce((prev, curr) =>
+          (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+            ? prev
+            : curr
+        )
+      : undefined;
+  }
+};

@@ -41,14 +41,18 @@ export const Alert: React.FC<AlertProps> = ({
           (customIcon || <div className={styles.iconWrapper}>{icon}</div>)}
         {leftChip && (
           <StatusChip
-            className="ml-auto self-center"
+            className="self-center"
             borderColour={chipBackground}
             backgroundColour={chipBackground}
             textColour="white"
             text={leftChip}
           />
         )}
-        <div className={styles.contentWrapper}>
+        <div
+          className={styles.contentWrapper(
+            !!title && !message && !list?.length
+          )}
+        >
           <div className={styles.messageWrapper}>
             {title && (
               <Typography

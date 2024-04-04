@@ -1,23 +1,18 @@
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { useEffect, useMemo } from 'react';
-import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useAppDispatch } from '@/store';
-import { Divider, Typography } from '@ecdlink/ui';
+import { Divider, RoundIcon, Typography } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
-import OpenLink from '@/assets/openLink.svg';
-import OpenBook from '@/assets/openBook.svg';
-import { CommunitySectionItemGg } from '@ecdlink/graphql/lib';
-
-export const COMMUNITY_TABS = {
-  CONNECT: 0,
-};
+import { ConnectItem } from '@ecdlink/graphql';
+import { communitySelectors, communityThunkActions } from '@/store/community';
+import { ExternalLinkIcon } from '@heroicons/react/solid';
 
 const HEADER_HEIGHT = 222;
 
-export interface ConnectItem {
+export interface iConnectItem {
   name?: string;
-  children?: CommunitySectionItemGg[];
+  children?: ConnectItem[];
 }
 
 export const Connect: React.FC = () => {
@@ -25,59 +20,57 @@ export const Connect: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { height } = useWindowSize();
 
-  const connectSections = useSelector(
-    communitySelectors.getCommunityConnectDataForGGSelector
-  );
+  const connectData = useSelector(communitySelectors.getConnectData);
 
-  const connectSectionItems = useSelector(
-    communitySelectors.GetCommunitySectionItemsGGSelector
-  );
+  const connectItemData = useSelector(communitySelectors.getConnectItems);
 
   useEffect(() => {
-    if (isOnline) {
+    if (isOnline && connectData?.length === 0) {
       appDispatch(
-        communityThunkActions.getCommunitySectionGG({
+        communityThunkActions.getAllConnect({
           locale: 'en-za',
         })
       );
     }
-  }, [isOnline, appDispatch]);
+  }, [isOnline, appDispatch, connectData]);
 
   useEffect(() => {
-    if (isOnline) {
+    if (isOnline && connectItemData?.length === 0) {
       appDispatch(
-        communityThunkActions.getAllCommunitySectionItemGG({
+        communityThunkActions.getAllConnectItem({
           locale: 'en-za',
         })
       );
     }
-  }, [isOnline, appDispatch]);
+  }, [isOnline, appDispatch, connectItemData]);
 
-  function getChildren(name: string) {
-    let children: any = [];
+  const { connectItems } = useMemo(() => {
+    function getChildren(name: string) {
+      let children: any = [];
 
-    connectSectionItems?.forEach((element) => {
-      if (element?.linkedSection && element?.linkedSection[0]?.name === name) {
-        children.push({ buttonText: element.buttonText, link: element.link });
-      }
-    });
+      connectItemData?.forEach((element: ConnectItem) => {
+        if (
+          element?.linkedConnect &&
+          element?.linkedConnect[0]?.name === name
+        ) {
+          children.push({ buttonText: element.buttonText, link: element.link });
+        }
+      });
 
-    return children;
-  }
-
-  const { sectionItems } = useMemo(() => {
-    const sectionItems = connectSections?.map(
-      (item): ConnectItem => ({
+      return children;
+    }
+    const connectItems = connectData?.map(
+      (item): iConnectItem => ({
         name: item.name || '',
         children: getChildren(item?.name || ''),
       })
     );
-    sectionItems?.reverse();
-    return { sectionItems };
-  }, [connectSections, connectSectionItems, getChildren]);
+    return { connectItems };
+  }, [connectData, connectItemData]);
 
   const onLinkClicked = (link: string) => {
-    window.open(link, '_blank');
+    const newWindow = window.open(link, '_blank', 'noopener,noreferrer');
+    if (newWindow) newWindow.opener = null;
   };
 
   return (
@@ -85,47 +78,46 @@ export const Connect: React.FC = () => {
       className="flex flex-col p-4"
       style={{ height: height - HEADER_HEIGHT }}
     >
-      <div className="flex items-center gap-3 rounded-2xl p-4">
-        <img className={''} src={OpenBook} alt="" />
-        <Typography
-          type="body"
-          weight="bold"
-          lineHeight="snug"
-          color="textDark"
-          className="text-3xl"
-          text="Links & resoures"
-        />
+      <div className="flex items-center gap-3 rounded-2xl py-4">
+        <RoundIcon icon="BookOpenIcon" backgroundColor="secondary" />
+        <Typography type="h2" color="textDark" text="Links & resoures" />
       </div>
       <Divider className="mb-4" dividerType="dashed" />
 
-      {sectionItems?.map((section) => (
-        <div key={section?.name}>
+      {connectItems?.map((item, index) => (
+        <div key={item.name}>
           <Typography
-            type="h2"
+            type="h3"
             weight="bold"
             lineHeight="snug"
-            color="textMid"
-            className="mb-2"
-            text={section?.name || ''}
+            color="textDark"
+            className="mb-4"
+            text={item?.name || ''}
           />
 
-          {section.children?.map((item) => (
+          {item?.children?.map((child) => (
             <div
-              className="bg-uiBg mb-2 flex items-center gap-1 rounded-2xl p-4"
-              key={item?.id}
+              className="bg-uiBg text-textDark mb-2 flex items-center gap-1 rounded-2xl p-4 font-semibold"
+              key={child?.id}
             >
-              <table className="border border-gray-100" width={`100%`}>
+              <table
+                className="border border-gray-100"
+                width={`100%`}
+                key={child?.link}
+              >
                 <tbody>
                   <tr>
-                    <td width={`90%`}>{item?.buttonText}</td>
+                    <td width={`90%`}>{child?.buttonText}</td>
                     <td width={`10%`}>
                       <a
-                        href={item?.link || ''}
+                        href={child?.link || ''}
                         onClick={() => {
-                          onLinkClicked(item?.link || '');
+                          onLinkClicked(child?.link || '');
                         }}
+                        target="_blank"
+                        rel="noreferrer"
                       >
-                        <img className={''} src={OpenLink} alt="" />
+                        <ExternalLinkIcon className="text-primary h-6 w-6" />
                       </a>
                     </td>
                   </tr>
@@ -133,8 +125,9 @@ export const Connect: React.FC = () => {
               </table>
             </div>
           ))}
-
-          <Divider className="p-4" dividerType="dashed" />
+          {connectItems?.length !== index + 1 && (
+            <Divider className="p-4" dividerType="dashed" />
+          )}
         </div>
       ))}
     </div>

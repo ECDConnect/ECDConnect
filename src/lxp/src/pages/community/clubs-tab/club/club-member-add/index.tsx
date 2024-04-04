@@ -10,15 +10,26 @@ import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { useHistory, useParams } from 'react-router';
 import { ClubsRouteState } from '../../index.types';
-import { practitionerSelectors } from '@/store/practitioner';
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  practitionerActions,
+  practitionerSelectors,
+} from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
+import { NewClubMemberInput } from '@ecdlink/graphql';
+import { ClubActions, addNewClubMembers } from '@/store/club/club.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useSnackbar } from '@ecdlink/core';
 
 export const ClubMemberAdd: React.FC = () => {
-  const [selectedClub, setSelectedClub] = useState<DetailClubDto>();
+  const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
+
+  const [selectedClubId, setSelectedClubId] = useState<string | undefined>(
+    undefined
+  );
 
   const allClubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
-
-  const history = useHistory();
 
   const { practitionerId } = useParams<ClubsRouteState>();
 
@@ -26,6 +37,43 @@ export const ClubMemberAdd: React.FC = () => {
     practitionerSelectors.getPractitionerByUserId(practitionerId ?? '')
   );
   const firstName = practitioner?.user?.firstName ?? '';
+
+  const onSubmit = async () => {
+    if (!!selectedClubId && !!practitioner) {
+      const payload: NewClubMemberInput = {
+        clubId: selectedClubId,
+        practitionerIds: [practitioner.id],
+      };
+
+      appDispatch(addNewClubMembers({ input: payload })).then((result) => {
+        if (result.meta.requestStatus === 'rejected') {
+          showMessage({
+            message: `Error adding ${firstName} to club`,
+            type: 'error',
+          });
+        } else {
+          showMessage({
+            message: `${firstName} added to club`,
+            type: 'success',
+          });
+
+          appDispatch(
+            practitionerActions.updateClubForPractitioner({
+              practitionerId: practitioner.id!,
+              clubId: selectedClubId,
+            })
+          );
+
+          history.goBack();
+        }
+      });
+    }
+  };
+
+  const { isLoading: isLoadingAddMember } = useThunkFetchCall(
+    'clubs',
+    ClubActions.ADD_NEW_CLUB_MEMBERS
+  );
 
   return (
     <BannerWrapper
@@ -37,22 +85,21 @@ export const ClubMemberAdd: React.FC = () => {
       onBack={() => history.goBack()}
     >
       <Typography type="h2" text={`Add ${firstName} to a club`} />
-      <Dropdown<DetailClubDto>
-        label="Which club would you like to add Bulelwa Mahlangu to?"
+      <Dropdown<string>
+        label={`Which club would you like to add ${firstName} to?`}
         placeholder="Tap to select club..."
         list={allClubs.map((item) => ({
           label: item.name,
-          value: item,
+          value: item.id,
         }))}
-        selectedValue={selectedClub}
-        onChange={(club) => setSelectedClub?.(club)}
+        selectedValue={selectedClubId}
+        onChange={(club) => setSelectedClubId(club)}
         className="my-4"
       />
       <Alert
         type="info"
         title={`${firstName} will be added & notified immediately.`}
       />
-      {/* TODO: add backend integration */}
       <Button
         className="mt-auto"
         icon="SaveIcon"
@@ -60,8 +107,8 @@ export const ClubMemberAdd: React.FC = () => {
         color="primary"
         textColor="white"
         text="Save"
-        disabled
-        onClick={() => {}}
+        disabled={!selectedClubId || isLoadingAddMember}
+        onClick={onSubmit}
       />
     </BannerWrapper>
   );

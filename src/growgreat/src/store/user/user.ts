@@ -1,8 +1,9 @@
 import { UserConsentDto, UserDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getUser, getUserConsents } from './user.actions';
+import { getUser, getUserConsents, updateUser } from './user.actions';
 import { UserState } from './user.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: UserState = {
   user: undefined,
@@ -36,10 +37,13 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateUser);
+    builder.addCase(updateUser.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getUser.fulfilled, (state, action) => {
       state.user = action.payload;
     });
-
     builder.addCase(getUserConsents.fulfilled, (state, action) => {
       state.userConsent = action.payload;
     });

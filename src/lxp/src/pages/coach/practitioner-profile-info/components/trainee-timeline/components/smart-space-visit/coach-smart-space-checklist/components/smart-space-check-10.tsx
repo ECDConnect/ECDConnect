@@ -5,7 +5,6 @@ import {
   Button,
   CheckboxGroup,
   Colours,
-  Divider,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
@@ -17,15 +16,18 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { coachSelectors } from '@/store/coach';
 import { authSelectors } from '@/store/auth';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 interface SmartSpaceCheck1Props {
+  coachSmartSpaceVisitId: string;
   practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
   onSubmit: () => void;
-  setNotificationStep: any;
+  setNotificationStep: (value: string) => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -41,123 +43,60 @@ export const getGroupColor = (count: number): Colours => {
 };
 
 export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
+  coachSmartSpaceVisitId,
   practitioner,
-  programmeName,
-  setSectionQuestions,
-  handleNextSection,
   saveSmartSpaceCheckData,
   onSubmit,
   setNotificationStep,
 }) => {
+  const visitSection = 'SmartSpace licence awarded';
+
   const history = useHistory();
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(authSelectors.getAuthUser);
   const isCoach = coach?.user?.id === user?.id;
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-  const [questions, setAnswers] = useState([
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection,
       question: 'I have issued a SmartSpace Certificate for this SmartStarter',
-      answer: false,
+      questionAnswer: 'false',
     },
   ]);
 
-  const visitSection = 'SmartSpace licence awarded';
-
   const trueAnswers = useMemo(() => {
-    const answers = questions?.every((item) => item?.answer === true);
+    const answers = questions.every((item) => item.questionAnswer === 'true');
     return answers;
   }, [questions]);
 
   useEffect(() => {
-    if (!isCoach) {
-      const previousData = questions.map((item) => {
-        const previousAnswer = visitData?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        });
-
-        const previousHasTrueAnswer =
-          Boolean(previousAnswer?.questionAnswer) === true ||
-          previousAnswer?.questionAnswer === 'true';
-
-        if (previousAnswer) {
-          return {
-            ...item,
-            answer: previousHasTrueAnswer!,
-          };
-        }
-
-        return item;
-      });
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: previousData,
-        },
-      ]);
-
-      setAnswers(previousData);
-      return;
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
     }
-
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.some(
-        (item: any) => item?.answer === 'true' || Boolean(item?.answer) === true
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer!,
-        };
-      }
-
-      return item;
-    });
-
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
   }, []);
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   return (
@@ -209,10 +148,16 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
           description={item.question}
           checked={questions?.some(
             (option) =>
-              option.question === item.question && option?.answer === true
+              option.question === item.question &&
+              option.questionAnswer === 'true'
           )}
           value={item.question}
-          onChange={() => onOptionSelected(!item.answer, index)}
+          onChange={() =>
+            onOptionSelected(
+              item.questionAnswer === 'true' ? 'false' : 'true',
+              index
+            )
+          }
           className="mb-1"
           disabled={!isCoach}
         />
@@ -233,18 +178,17 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
               type="filled"
               color="primary"
               className="mt-1 mb-2 w-full"
-              onClick={
-                !isCoach
-                  ? setNotificationStep('')
-                  : () => {
-                      handleNextSection();
-                      saveSmartSpaceCheckData();
-                      onSubmit();
-                      history.push(ROUTES.COACH_FRANCHISE_AGREEMENT, {
-                        practitioner: practitioner,
-                      });
-                    }
-              }
+              onClick={() => {
+                if (!isCoach) {
+                  setNotificationStep('');
+                } else {
+                  saveSmartSpaceCheckData(questions, visitSection);
+                  onSubmit();
+                  history.push(ROUTES.COACH_FRANCHISE_AGREEMENT, {
+                    practitioner: practitioner,
+                  });
+                }
+              }}
               disabled={!trueAnswers}
             >
               {renderIcon('DownloadIcon', 'mr-2 text-white w-5')}

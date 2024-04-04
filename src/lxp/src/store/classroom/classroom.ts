@@ -214,7 +214,11 @@ const classroomsSlice = createSlice({
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroups = action.payload;
+        state.classroomGroups = action.payload.filter(
+          (x: ClassroomGroupDto) => {
+            return x.isActive === true;
+          }
+        );
       }
     });
     builder.addCase(getClassroomProgrammes.fulfilled, (state, action) => {
@@ -224,7 +228,11 @@ const classroomsSlice = createSlice({
     });
     builder.addCase(getClassroomGroupLearners.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroupLearners = action.payload;
+        state.classroomGroupLearners = action.payload.filter(
+          (x: LearnerDto) => {
+            return x.isActive === true;
+          }
+        );
       }
     });
     builder.addCase(

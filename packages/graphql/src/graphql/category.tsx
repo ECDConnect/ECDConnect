@@ -52,3 +52,35 @@ export const DeleteProgressTrackingCategory = gql`
     deleteProgressTrackingCategory(id: $id)
   }
 `;
+
+export const bulkUpdateProgressTrackingCategoryImages = gql`
+  mutation BulkUpdateProgressTrackingCategoryImages(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $imageUrl: String
+  ) {
+    bulkUpdateProgressTrackingCategoryImages(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      imageUrl: $imageUrl
+    )
+  }
+`;
+
+export const bulkUpdateProgressTrackingSubCategoryImages = gql`
+  mutation BulkUpdateProgressTrackingSubCategoryImages(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $imageUrl: String
+  ) {
+    bulkUpdateProgressTrackingSubCategoryImages(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      imageUrl: $imageUrl
+    )
+  }
+`;

@@ -56,18 +56,19 @@ import {
   childrenForPractitionerActions,
   childrenForPractitionerThunkActions,
 } from './store/childrenForPractitioner';
+import { classroomsForCoachThunkActions } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
-import { pointsThunkActions } from './store/points';
 import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
+import { statementsThunkActions } from '@store/statements';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
   initStoreSetup: () => Promise<void>;
-  resetAppStore: (showLoading?: boolean) => Promise<void>;
+  resetAppStore: (showLoading?: boolean, isSync?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
@@ -91,7 +92,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const isPrincipal = practitioner?.isPrincipal;
 
   const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
   );
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
@@ -109,12 +110,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(authActions.resetAuthState());
   };
 
-  const resetAppStore = async (showLoading = true) => {
+  const resetAppStore = async (showLoading = true, isSync = false) => {
     if (showLoading) {
       setInitLoading(true);
     }
     await resetStaticStoreSetup();
-    await resetAdditionalStoreSetup();
+    await resetAdditionalStoreSetup(isSync);
     if (showLoading) {
       setInitLoading(false);
     }
@@ -128,16 +129,18 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(storyBookActions.resetStoryBookState());
     appDispatch(programmeThemeActions.resetProgrammeThemeState());
     appDispatch(contentConsentActions.resetContentConsentState());
-    appDispatch(notificationActions.resetFrontendNotificationState());
+    appDispatch(notificationActions.resetNotificationState());
     appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
     appDispatch(programmeActions.resetProgrammeState());
   };
 
-  const resetAdditionalStoreSetup = async () => {
+  const resetAdditionalStoreSetup = async (isSync?: boolean) => {
+    if (!isSync) {
+      appDispatch(userActions.resetUserState());
+    }
     appDispatch(notesActions.resetNotesState());
     appDispatch(classroomsActions.resetClassroomState());
-    appDispatch(userActions.resetUserState());
     appDispatch(coachActions.resetCoachState());
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
@@ -149,7 +152,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(documentActions.resetDocumentsState());
     appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(contentReportActions.resetContentReportState());
-    // appDispatch(clubActions.resetClubState());
+    appDispatch(clubActions.resetClubState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -174,7 +177,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
     setOtherLoading(true);
-    await appDispatch(notesThunkActions.getNotes({})).unwrap();
+    await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
     await appDispatch(
@@ -183,19 +186,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();
-    await appDispatch(userThunkActions.getUser({})).unwrap();
-    await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
-    await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
-    await appDispatch(documentThunkActions.getDocuments({})).unwrap();
-    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
-    await appDispatch(
-      contentReportThunkActions.getChildProgressReportSummary(50)
-    ).unwrap();
-    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
@@ -203,6 +194,18 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         weekOfYear: getWeek(new Date()),
       })
     ).unwrap();
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+    await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
+    await appDispatch(documentThunkActions.getDocuments({})).unwrap();
+    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
+    await appDispatch(
+      contentReportThunkActions.getChildProgressReportSummary(50)
+    ).unwrap();
+    await appDispatch(notesThunkActions.getNotes({})).unwrap();
+    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
+    await appDispatch(userThunkActions.getUserConsents({})).unwrap();
     await appDispatch(
       calendarThunkActions.getCalendarEvents({
         start: subMonths(
@@ -326,6 +329,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             userId: userData?.id || '',
           })
         ).unwrap())();
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionerDisplayMetrics({
+            userType: 'practitioner',
+          })
+        ).unwrap())();
     }
     if (userData) {
       if (isPrincipal) {
@@ -334,6 +343,23 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             childrenForPractitionerThunkActions?.getChildrenForPractitioner({
               id: userData?.id!,
             })
+          ).unwrap())();
+        const startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        (async () =>
+          await appDispatch(
+            statementsThunkActions.getIncomeStatements({
+              startDate: startDate,
+              endDate: undefined,
+            })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            statementsThunkActions.getUnsubmittedIncomeItems({})
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            statementsThunkActions.getUnsubmittedExpenseItems({})
           ).unwrap())();
       }
     }
@@ -397,6 +423,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               userId: userData?.id!,
             })
           ).unwrap())();
+        (async (id) =>
+          await appDispatch(
+            classroomsForCoachThunkActions.getClassroomForCoach({
+              id: userData?.id!,
+            })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            childrenThunkActions.getChildrenForCoach({})
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerDisplayMetrics({
+              userType: 'coach',
+            })
+          ).unwrap())();
       }
       if (!isCoach) {
         const currentDate = new Date();
@@ -407,25 +449,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           await appDispatch(
             getClubForUser({ userId: userData?.id! })
           ).unwrap())();
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: userData?.id!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
-            })
-          ).unwrap())();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appDispatch, userData, isCoach, practitioner]);
+  }, [appDispatch, userData, isCoach]);
 
   return (
     <IntialStoreSetupContext.Provider value={values}>

@@ -1,3 +1,6 @@
+using ECDLink.Abstractrions.Enums;
+using System;
+
 namespace EcdLink.Api.CoreApi
 {
     public static class Constants
@@ -76,22 +79,22 @@ namespace EcdLink.Api.CoreApi
 
             public const string step2_q2 = "Learning space";
             public const string step2_q2_a1 = "0 - The space was not divided into interest areas.";
-            public const string step2_q2_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q2_a2 = "1 - The space was divided into two interest areas.";
             public const string step2_q2_a3 = "2 - The space was divided into 3 or more interest areas.";
 
             public const string step2_q3 = "Using the toy kit";
             public const string step2_q3_a1 = "0 - The play kit was not unpacked into the learning space.";
-            public const string step2_q3_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q3_a2 = "1 - The play kit was only unpacked and available for children's use for a short time (less than 40 mins of the session).";
             public const string step2_q3_a3 = "2 - The play kit was unpacked and the materials were available for children's play for more than 40 mins of the session.";
 
             public const string step2_q4 = "Labelling (symbols or words)";
             public const string step2_q4_a1 = "0 - Interest areas and materials were not labelled.";
-            public const string step2_q4_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q4_a2 = "1 - Some interest areas and play materials were labelled.";
             public const string step2_q4_a3 = "2 - All interest areas and play materials were labelled.";
 
             public const string step2_q5 = "Toys & storybooks";
             public const string step2_q5_a1 = "0 - Toys and storybooks were kept out of children's reach.";
-            public const string step2_q5_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q5_a2 = "1 - Children could reach and get out some toys and storybooks without adult help.";
             public const string step2_q5_a3 = "2 - Children could reach and get out most of the toys and storybooks without adult help.";
 
             public const string step2_q6 = "Displays";
@@ -273,18 +276,21 @@ namespace EcdLink.Api.CoreApi
             public const string step12_q1_a5 = "Children cannot reach matches, lighters or paraffin.";
             public const string step12_q1_a6 = "Children cannot reach or step on sharp objects or other dangerous objects.";
             public const string step12_q1_a7 = "Children cannot reach hot cooker plates or pans on the cooker.";
-            public const string step12_q1_a8 = "There is open water (where children could fall and drown).";
+            public const string step12_q1_a8 = "There is no open water (where children could fall and drown).";
             public const string step12_q1_a9 = "There are no exposed electrical wires or electric sockets that children can reach.";
             public const string step12_q1_a10 = "There is no smoking or open fires in the venue.";
-            public const string step12_q1_a11 = "There are not heights or steps from which children could fall.";
+            public const string step12_q1_a11 = "There are no heights or steps from which children could fall.";
             public const string step12_q1_a12 = "No dangerous animals can approach the venue.";
             public const string step12_q1_a13 = "If children use an outdoor area, it is clean, with no litter or animal faeces.";
             public const string step12_q1_a14 = "The venue is in an area that is known as a safe place in the community.";
-            public const string step12_q1_a15 = "There is at minimum a bucket of sand available in case of fires or the fire blanket or extinguisher.";
+            public const string step12_q1_a15 = "There is at minimum a bucket of sand available in case of fires or fire blanket or extinguisher.";
+            public const string step12_q1_a15b = "There is at minimum a bucket of sand available in case of fires or the fire blanket or extinguisher.";
             public const string step12_q1_a16 = "There is a basic first aid kit in case of accidents.";
-            public const string step12_q1_a17 = "There is an emergency plan displayed on the wall (can use one from Start pack).";
+            public const string step12_q1_a17 = "There is an emergency plan displayed on the wall (can use one from Starter pack).";
+            public const string step12_q1_a18 = "There is an emergency plan displayed on the wall (can use one from Start pack).";
 
             public const string step13_q1 = "These standards are also required.  If they are not in place, SmartStarters should be able to show how they are working towards them.";
+
             public const string step13_q1_b = "Additional standards";
             public const string step13_q1_a1 = "The venue offers children enough space to play freely (about one square metre per child).";
             public const string step13_q1_a2 = "If children use an outdoor area, it is fenced with a lockable gate.";
@@ -292,7 +298,7 @@ namespace EcdLink.Api.CoreApi
             public const string step13_q1_a4 = "The venue has good natural ventilation (windows or doors that can open).";
             public const string step13_q1_a5 = "The programme does not exceed the maximum child number per programme type.";
 
-            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}’s venue?";
+            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}â€™s venue?";
             public const string step14_success = "{client} venue meets all the basic SmartSpace standards as well as the additional standards.";
             public const string step14_not_reissue = "You cannot reissue {client}'s SmartSpace Licence.";
             public const string step14_not_meet = "{client}'s venue does not meet the basic SmartSpace standards.";
@@ -312,7 +318,7 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
             public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
             public const string step8_re_accreditation_a3 = "Using the toy kit: the play kit is unpacked and children can reach toys and story books.";
-            public const string step8_re_accreditation_a4 = "Displays: the learning space is interesting with posters and children’s work on the walls.";
+            public const string step8_re_accreditation_a4 = "Displays: the learning space is interesting with posters and childrenï¿½s work on the walls.";
             public const string step8_re_accreditation_a5 = "SmartStart routine: the SmartStart routine is displayed at a height that children can reach.";
             public const string step8_re_accreditation_a6 = "SmartStart activities: all the activities in the SmartStart routine (below) were included today.";
             public const string step8_re_accreditation_a7 = "Free play: at least 45 minutes was set aside for free play.";
@@ -331,7 +337,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation_q5 = "Children are involved in solving conflicts.";
             public const string step_10_re_accreditation_q6 = "Adults create opportunities to talk with children, and listen and respond to their questions and ideas.";
             public const string step_10_re_accreditation_q7 = "Adults encourage children to make their own choices during the session and to do things for themselves where they can.";
-            public const string step_10_re_accreditation_q8 = "Adults join in as a partner in children’s play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
+            public const string step_10_re_accreditation_q8 = "Adults join in as a partner in childrenï¿½s play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
             public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
             public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
 
@@ -354,6 +360,12 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
+
+            public const string ss_programme = "Programme details";
+            public const string ss_health = "Health, sanitation & safety";
+            public const string ss_safety = "Safety - structure, space & area";
+            public const string ss_space = "Space & emergency planning";
+
             public const string coach_smartspace_check = "Coach smartspace check";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
             public const string pqa_follow_up = "Is {client} ready for a follow-up PQA observation visit?";
@@ -394,6 +406,21 @@ namespace EcdLink.Api.CoreApi
             public const string self_assessment = "Self-assessment completed";
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
+
+            // integration values
+            public const string own_property = "Do you own the property where you will run your SmartStart programme?";
+            public const string number_assistants = "How many assistants will attend every session?";
+            public const string capacity = "Capacity";
+            public const string observation_notes = "Observation notes";
+            public const string summary_discussion_notes = "Summary of discussion";
+            public const string total_children_present = "How many children are present today?";
+            public const string smart_space_check = "SmartSpace check";
+            public const string franchisee_agreement = "Franchisee agreement";
+
+            public const string franchisee_agreement_q1 = "I agree to take the actions described in the box above in order to meet & maintain all SmartSpace standards.";
+            public const string franchisee_agreement_q2 = "I understand that the Club Coach will visit again within 2 weeks to make sure changes have been made and that my Practice Licence may be withdrawn if they have not.";
+            public const string franchisee_agreement_q3 = "I understand that I cannot have more children in the programme than my space can accommodate.";
+
         }
         public static class GGSettings
         {
@@ -412,7 +439,7 @@ namespace EcdLink.Api.CoreApi
             public const string client_pregnant_mom_multiple_children = "Multiple children";
             public const string maternal_record_name = "maternalcaserecord.png";
             public const string upload_maternal_case_record = "Upload maternal case record";
-            public const string additional_visits = "additional_visits";
+            public const string VisitTypeAdditionalVisit = "additional_visits";
             public const string visit1 = "visit_1";
             public const string visit2 = "visit_2";
             public const string visit3 = "visit_3";
@@ -512,9 +539,9 @@ namespace EcdLink.Api.CoreApi
             // Infant Questions
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
             public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
-            public const string q_weight = "Weight";
-            public const string q_length = "Length";
-            public const string q_muac = "What is {client} MUAC today?";
+            public const string QuestionWeight = "Weight";
+            public const string QuestionLength = "Length";
+            public const string QuestionMUAC = "What is {client} MUAC today?";
             public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
             public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
@@ -555,13 +582,14 @@ namespace EcdLink.Api.CoreApi
             public const string q_moving6 = "Walks alone";
             public const string q_moving7 = "Uses fingers to feed themselves";
 
-            public const string q_immunisation = "Did the baby have the {age} immunisation?";
-            public const string q_vitamin_a = "Is Vitamin A up to date?";
-            public const string q_deworming = "Is deworming up to date?";
+            public const string QuestionImmunisation = "Did the baby have the {age} immunisation?";
+            public const string QuestionVitaminA = "Is Vitamin A up to date?";
+            public const string QuestionDeworming = "Is deworming up to date?";
             public const string q_birth_certificate = "Does {client} have a birth certificate?";
-            public const string q_csg_receiving = "Is {client} receiving the CSG?";
+            public const string QuestionReceivingCSG = "Is {client} receiving the CSG?";
             public const string q_csg_applied = "Has {client} applied for a CSG?";
-            public const string q_csg_qualify = "Does {client} qualify for CSG?";
+            public const string QuestionCSGQualification = "Does {client} qualify for CSG?";
+            public const string q_csg_not_applied = "Why has {client} not applied for a CSG?";
 
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
@@ -612,8 +640,8 @@ namespace EcdLink.Api.CoreApi
             public const string p1_8 = "Other fruits & vegetables";
 
             // Answers
-            public const string answer_yes = "true";
-            public const string answer_no = "false";
+            public const string AnswerYes = "true";
+            public const string AnswerNo = "false";
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";
@@ -623,7 +651,7 @@ namespace EcdLink.Api.CoreApi
             public const string breast_milk_only = "Breast milk only";
             public const string formula_milk_only = "Formula milk only";
             public const string mixed_feeding = "Mixed feeding";
-            public const string normal_comment = "Normal";
+            public const string NormalComment = "Normal";
 
             // Growth names
             public const string weightForAgeBoys = "weight-for-age-boys";
@@ -638,7 +666,7 @@ namespace EcdLink.Api.CoreApi
 
             // Visit names
             public const string careForMom = "Care for mom";
-            public const string careForBaby = "Care for baby";
+            public const string CareForBaby = "Care for baby";
 
             public const string pillar1_report = "Nutrition";
             public const string pillar1_db = "Pillar 1: Nutrition";
@@ -672,18 +700,18 @@ namespace EcdLink.Api.CoreApi
             public const string day_7 = "day_7";
             public const string week_2 = "week_2";
             public const string week_4 = "week_4";
-            public const string week_7_to_8 = "week_7_to_8";
-            public const string months_3 = "3_months";
-            public const string months_4 = "4_months";
-            public const string months_5 = "5_months";
-            public const string months_6 = "6_months";
-            public const string months_9 = "9_months";
-            public const string months_12 = "12_months";
-            public const string months_15 = "15_months";
-            public const string months_18 = "18_months";
-            public const string months_21 = "21_months";
-            public const string months_24 = "24_months";
-            public const string years_5 = "5_years";
+            public const string VisitTypeWeekSevenToEight = "week_7_to_8";
+            public const string VisitTypeThreeMonths = "3_months";
+            public const string VisitTypeFourMonths = "4_months";
+            public const string VisitTypeFiveMonths = "5_months";
+            public const string VisitTypeSixMonths = "6_months";
+            public const string VisitTypeNineMonths = "9_months";
+            public const string VisitTypeTwelveMonths = "12_months";
+            public const string VisitTypeFifteenMonths = "15_months";
+            public const string VisitTypeEighteenMonths = "18_months";
+            public const string VisitTypeTwentyOneMonths = "21_months";
+            public const string VisitTypeTwentyFourMonths = "24_months";
+            public const string VisitTypeYearFive = "5_years";
 
             //record events
             public const string caregiverIsPregnant = "caregiver_is_pregnant";
@@ -691,13 +719,12 @@ namespace EcdLink.Api.CoreApi
             public const string caregiverHasChanged = "caregiver_has_changed";
 
             //sections
-            public const string maternal_distress_screening = "Maternal distress screening";
-            public const string mother_growth = "Mother growth monitoring (Mid-upper arm circumference)";
+            public const string MaternalDistressScreening = "Maternal distress screening";
+            public const string MotherNutritionMUACMeasurement = "Mother growth monitoring (Mid-upper arm circumference)";
             public const string alcohol_use = "Alcohol use";
             public const string child_docs = "Child documentation";
             public const string child_road_to_health = "Road to Health Book";
         }
-
         public static class SSIntegrationSettings
         {
             //Franchisee Queries
@@ -744,6 +771,8 @@ namespace EcdLink.Api.CoreApi
             //ChildAttendanceRegister Queries
             public const string SSChildAttendanceRegister = "Attendance";
             public const string SLChildAttendanceRegister = "ChildAttendanceRegister";
+            // Child Progress
+            public const string SSChildProgressReport = "ChildProgressReport";
             //Note Queries
             public const string SSNote = "Note";
             public const string SLNote = "Note";
@@ -757,9 +786,14 @@ namespace EcdLink.Api.CoreApi
             //PQA
             public const string SSPQA = "PQA";
             public const string SLPQA = "PQA";
+            //Re-accreditation
+            public const string SSAnnualAccreditation = "AnnualAccreditation";
+            public const string SLAnnualAccreditation = "AnnualAccreditation";
             //SmartSpaceVisits
             public const string SSSmartSpaceVisit = "SmartSpaceVisit";
             public const string SLSmartSpaceVisit = "SmartSpaceVisit";
+
+            public const string SLLeagues = "League";
 
             //Additional API Switches
             public const string QueryAll = "/Query";
@@ -775,7 +809,6 @@ namespace EcdLink.Api.CoreApi
             public const string Upsert = "/Upsert";
 
         }
-
         public static class PointsEngineSettings
         {
             public const string client_registration = "Client Registration";
@@ -821,6 +854,53 @@ namespace EcdLink.Api.CoreApi
             public const string income_statement_ac3 = "Monthly income statement submitted by the deadline";
             public const string income_statement_ac4 = "Practitioner submits 3 consecutive months' income statements";
 
+            public const int monthly_points_max_practitioner = 100;
+            public const int monthly_points_max_principal_or_admin = 150;
+        }
+
+        public static class PointsCategoryConstants
+        {
+            public static readonly Guid BreastFeedingClubCategoryId = new Guid("5f8fd37a-d2f5-44bc-9670-0513a47b88e5");
+        }
+
+        public static class PointsActivityConstants
+        {
+            public static readonly Guid ChildFoldersOpenedActivityId = new Guid("92c06990-7428-4a8f-8cfe-e1dfca83fb3e");
+            public static readonly Guid PregnantMomFolderOpenedActivityId = new Guid("f20f0917-b497-440c-836e-aa54cf2d10f0");
+            public static readonly Guid EarlyPregnacyIdentificationActivityId = new Guid("f5a72c31-5aa6-4852-9903-c9685420ab4b");
+            public static readonly Guid PregnantMotherReferralForMaternalDistressActivityId = new Guid("868743ae-a750-420b-94df-c00945c56367");
+            public static readonly Guid PregnantMotherReferralForMaternalMalnutritionActivityId = new Guid("3e4d346d-8190-439f-b000-a54d2b19f852");
+
+
+            public static readonly Guid ChildWeightMeasuredActivityId = new Guid("3075e510-6f2d-43f9-9171-9561a213b935");
+            public static readonly Guid ChildWeightMeasuredActionTakenOrNotRequiredActivityId = new Guid("6fe4149b-cfb6-4193-be04-c7ad6b091b8b");
+            public static readonly Guid ChildLengthMeasuredActivityId = new Guid("1a2fdde9-5644-4977-9acd-58957c9f30ac");
+            public static readonly Guid ChildLengthMeasuredActionTakenOrNotRequiredActivityId = new Guid("7ae6cfcb-85a3-4962-af8e-39901dc19848");
+            public static readonly Guid ChildMuacMeasuredActivityId = new Guid("78ed5347-3877-49f2-bf00-a6673df363a3");
+            public static readonly Guid ChildMuacMeasuredActionTakenOrNotRequiredActivityId = new Guid("1b0c8486-99e5-4670-a162-a4586d4a4c46");
+
+            public static readonly Guid MotherMaternalStressVisitsUpToDateActivityId = new Guid("05ffdb20-d420-458d-af15-8706ed8c8084");
+            public static readonly Guid MotherAlcoholAbuseVisitsUpToDateActivityId = new Guid("bd5bd8c7-0fda-464c-8f9d-2ed8f51ef69f");
+            public static readonly Guid MotherMalnutritionVisitsUpToDateActivityId = new Guid("91c0eeda-3acd-463d-90b8-808703d9b5c8");
+
+            public static readonly Guid ChildrenAllReceivingCSGActivityId = new Guid("4d57d1e6-976c-4220-a075-465042c7ddb4");
+            public static readonly Guid ChildrenDevelopmentScreeningUpToDateActivityId = new Guid("5be4e1ac-248c-41d0-9b0a-c4f820a49e83");
+            public static readonly Guid ChildrenVitaminAUpToDateActivityId = new Guid("ecbda3f8-9bd6-472d-a4c3-ec0f10c20797");
+            public static readonly Guid ChildrenDewormingUpToDateActivityId = new Guid("31b8633f-aeac-4970-99cf-e72745c963b7");
+            public static readonly Guid ChildrenImmunisationsUpToDateActivityId = new Guid("b3be1d39-c4e3-4fbc-bfb4-80099320436c");
+        }
+
+        public static class GrowGreatPointsAmounts
+        {
+            public const int MontlyPointsMaxForHealthCareWorker = 785;
+        }
+        
+        public static class StatusColours
+        {
+            public static readonly string Green = MetricsColorEnum.Success.ToString();
+            public static readonly string Amber = MetricsColorEnum.Warning.ToString();
+            public static readonly string Red = MetricsColorEnum.Error.ToString();
+            public static readonly string None = MetricsColorEnum.None.ToString();
         }
 
         public static class CoachingCircleSettings
@@ -837,7 +917,10 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_story_day = "story_day";
             public const string meeting_type_end_of_year_celebration = "end_of_year_celebration";
             public const string meeting_type_open_day = "open_day";
+            public const string meeting_type_caregiver_meeting = "caregiver_meeting";
             public const string meeting_type_other = "other";
+
+            public const string calendar_club_monthly_meeting = "Club Monthly Meeting";
 
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
@@ -862,6 +945,9 @@ namespace EcdLink.Api.CoreApi
             public const string name_rising_stars = "Rising Stars";
             public const string top_of_the_league = "Top of the league";
             public const string points_earned = " points earned in ";
+            public const string coach_meeting_attended = ", Attend club meeting";
+            public const string coach_attend_first_meeting = ", Attend first club meeting";
+            public const string first_meeting_attended = ", Attended first club meeting";
             public const int purple_club_max_points = 2200;
             public const int non_purple_club_max_points = 2000;
 
@@ -871,9 +957,16 @@ namespace EcdLink.Api.CoreApi
             public const string capture_child_attendance = "Capture child attendance";
             public const string meet_regularly = "Meet regularly";
             public const string be_creative = "Be creative";
+            public const string sub_caregiver_meeting = "Caregiver meeting";
+            public const string sub_progress_tracking = "Progress tracking";
 
             public const string document_success = "Image completed";
-            public const string document_no_success = "Image incompleted";
+            public const string document_verified = "Image verified";
+            public const string document_in_complete = "Image incomplete";
+            public const string document_waiting_verified = "Image uploaded, waiting for verification";
+            public const string document_images_add = "Images added";
+
+            public const string not_completed = "Not completed";
 
             public static readonly int[] allowed_months = { 4,5,6,7,8,9,10,11 };
 
@@ -890,9 +983,29 @@ namespace EcdLink.Api.CoreApi
             public const string upload_type_be_creative = "BeCreative";
             public const string upload_type_family_days = "FamilyDays";
 
+            public const string first_reporting_period = "\"reportingPeriod\":\"First\"";
 
         }
 
+
+        public static class PortalSettings
+        {
+            public const string visit_high_activity = "High activity (at least 20 visits in past month)";
+            public const string visit_medium_activity = "Medium activity (at least 10 visits in past month)";
+            public const string visit_low_activity = "Low activity (no home visits in the past month)";
+
+            public const string usage_invitation_active = "Invitation active";
+            public const string usage_invitation_expired = "Invitation expired";
+            public const string usage_last_online_past_6_months = "Last online within past 6 months";
+            public const string usage_last_online_over_6_months = "Last online over 6 months ago";
+            public const string usage_removed = "Removed (users who have been removed from CHW Connect)";
+
+            public const string usage_green = "successMain";
+            public const string usage_orange = "alertMain";
+            public const string usage_red = "errorMain";
+            public const string usage_blue = "infoMain";
+
+        }
     }
 }
 

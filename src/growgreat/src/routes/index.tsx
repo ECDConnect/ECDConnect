@@ -11,9 +11,9 @@ import { PregnantRegister } from '@/pages/mom/pregnant-register/pregnant-registe
 import { PregnantRegisterForm } from '@/pages/mom/pregnant-register-form/pregnant-register-form';
 import { InfantRegister } from '@/pages/infant/infant-register/infant-register';
 import { InfantRegisterForm } from '@/pages/infant/infant-register-form/infant-register-form';
-import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
-import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
-import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
+import { PractitionerAbout } from '@/pages/practitioner/practitioner-about/practitioner-about';
+import PractitionerAccount from '@/pages/practitioner/practitioner-account/practitioner-account';
+import { PractitionerProfile } from '@/pages/practitioner/practitioner-profile/practitioner-profile';
 import ROUTES from '@/routes/routes';
 import ClassDashboard from '@/pages/client/client-dashboard/class-dashboard';
 import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
@@ -21,20 +21,15 @@ import { Training } from '@/pages/training/training';
 import { StartVisitFromVisitDashboard } from '@/pages/client/visits-tab/start-visit';
 import PregnancyVisits from '@/pages/client/visits-tab/pregnancy-visits';
 import ChildVisits from '@/pages/client/visits-tab/child-visits';
-import BookVisitFromVisitDashboard from '@/pages/client/visits-tab/book-visit';
 import { PregnantProfile } from '@/pages/mom/pregnant-profile';
 import { RecordEvent } from '@/pages/mom/pregnant-profile/visits/record-event';
 import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';
-import { BookVisit } from '@/pages/mom/pregnant-profile/visits/book-visit';
 import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
 import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
-import PointsSummary from '@/pages/client/highlights-tab/points-summary';
-import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
 import { InfantProfile } from '@/pages/infant/infant-profile';
 import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
 import { MomActivityList } from '@/pages/mom/pregnant-profile/progress-tab/activity-list';
 import { RecordEvent as InfantRecordEvent } from '@/pages/infant/infant-profile/visits-tab/record-event';
-import { BookVisit as InfantBookVisit } from '@/pages/infant/infant-profile/visits-tab/book-visit';
 import { PastVisits as InfantPastVisits } from '@/pages/infant/infant-profile/visits-tab/past-visits';
 import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-address';
 import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
@@ -44,6 +39,20 @@ import { MultipleChildren } from '@/pages/infant/multiple-children';
 import { InfantBackReferralUpdate } from '@/pages/infant/infant-profile/referrals-tab/update-back-referral';
 import { MotherBackReferralUpdate } from '@/pages/mom/pregnant-profile/referrals-tab/update-back-referral';
 import { Community } from '@/pages/community/community';
+import Calendar from '@/pages/calendar/calendar-home';
+import { CommunityWelcome } from '@/pages/community/welcome';
+import { TeamTabInfoPage } from '@/pages/community/team-tab/team/info-page';
+import { TeamPoints } from '@/pages/community/team-tab/team/points';
+import { TeamPointsActivityDetails } from '@/pages/community/team-tab/team/points/activity-details';
+import { TeamMembers } from '@/pages/community/team-tab/team/members';
+import { TeamMemberProfile } from '@/pages/community/team-tab/team/members/member-profile';
+import { TeamLeaderProfile } from '@/pages/community/team-tab/team/members/leader-profile';
+import { AddBreastfeedingClub } from '@/pages/community/breastfeeding-clubs-tab/add-breastfeeding-club';
+import {
+  IndividualPointsMonthView,
+  IndividualPointsYearView,
+} from '@/pages/practitioner/individual-points';
+import { IndividualPointsInfoPage } from '@/pages/practitioner/individual-points/info-page';
 
 function PublicRoutes() {
   return (
@@ -124,11 +133,6 @@ function AuthRoutes() {
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT}
-        component={BookVisit}
-      />
-      <Route
-        exact
         path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.PAST_VISITS}
         component={PastVisits}
       />
@@ -159,11 +163,6 @@ function AuthRoutes() {
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.BOOK_VISIT}
-        component={InfantBookVisit}
-      />
-      <Route
-        exact
         path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.PAST_VISITS}
         component={InfantPastVisits}
       />
@@ -179,11 +178,6 @@ function AuthRoutes() {
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.VISIT_TAB.BOOK_VISIT}
-        component={BookVisitFromVisitDashboard}
-      />
-      <Route
-        exact
         path={ROUTES.CLIENTS.VISIT_TAB.PREGNANCY_VISITS}
         component={PregnancyVisits}
       />
@@ -192,18 +186,6 @@ function AuthRoutes() {
         path={ROUTES.CLIENTS.VISIT_TAB.CHILD_VISITS}
         component={ChildVisits}
       />
-
-      <Route
-        exact
-        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.POINTS_SUMMARY}
-        component={PointsSummary}
-      />
-      <Route
-        exact
-        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
-        component={UpcomingVisit}
-      />
-
       <Route
         exact
         path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS}
@@ -257,7 +239,63 @@ function AuthRoutes() {
         component={EditPractitionerProfile}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
-      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
+      <Route path={ROUTES.COMMUNITY.ROOT} component={Community} exact />
+      <Route
+        path={ROUTES.COMMUNITY.WELCOME}
+        component={CommunityWelcome}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.INFO_PAGE}
+        component={TeamTabInfoPage}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.POINTS.ROOT}
+        component={TeamPoints}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.POINTS.ACTIVITY_DETAILS}
+        component={TeamPointsActivityDetails}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.MEMBERS.ROOT}
+        component={TeamMembers}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.MEMBERS.MEMBER_PROFILE}
+        component={TeamMemberProfile}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.TEAM.MEMBERS.LEADER_PROFILE}
+        component={TeamLeaderProfile}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.BREASTFEEDING_CLUBS.ADD}
+        component={AddBreastfeedingClub}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.ROOT}
+        component={IndividualPointsMonthView}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.YEAR_VIEW}
+        component={IndividualPointsYearView}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.INDIVIDUAL_POINTS.INFO_PAGE}
+        component={IndividualPointsInfoPage}
+        exact
+      />
+      <Route exact path={ROUTES.CALENDAR} component={Calendar} />
     </Switch>
   );
 }

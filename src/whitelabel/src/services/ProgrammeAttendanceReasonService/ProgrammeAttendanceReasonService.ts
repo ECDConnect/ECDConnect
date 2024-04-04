@@ -14,12 +14,12 @@ class ProgrammeAttendanceReasonService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query {
-          GetAllProgrammeAttendanceReason {
-            id
-            reason      
-          }
+      query GetAllProgrammeAttendanceReason($isActive: Boolean = true){
+        GetAllProgrammeAttendanceReason(where: { isActive: { eq: $isActive } }) {
+          id
+          reason      
         }
+      }
           `,
     });
 

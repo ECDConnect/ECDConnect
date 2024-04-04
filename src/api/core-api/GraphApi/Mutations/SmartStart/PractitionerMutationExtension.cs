@@ -10,7 +10,10 @@ using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -22,6 +25,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -106,7 +110,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if ((bool)input.IsTrainee)
                         {
                             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
-                            var trainee = traineeRepo.GetByUserId(input.UserId);
+                            var trainee = traineeRepo.GetByUserId(practitioner.UserId.Value);
                             if (trainee == null)
                             {
                                 //create Trainee record
@@ -125,7 +129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
         }
 
-        public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
+        public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor, [Service] INotificationService notificationService,
             IGenericRepositoryFactory repoFactory,
             string practitionerId)
         {
@@ -139,6 +143,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     practitioner.ShareInfo = true;
                     practitionerRepo.Update(practitioner);
+                    //deactivate notifications
+                    notificationService.ExpireNotificationsTypesForUser(practitionerId, TemplateTypeConstants.PrincipalFAAChanged, null, null, practitionerId);
+
                     return true;
                 }
             }
@@ -229,7 +236,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
     IGenericRepositoryFactory repoFactory,
-    [Service] UserManager<ApplicationUser> userManager,
+    [Service] ApplicationUserManager userManager,
     string userId, string firstname, string surname, string contactno)
 
         {
@@ -245,19 +252,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> SendPractitionerInviteToApplication(
          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
          [Service] InvitationNotificationManager notificationManager,
-         [Service] UserManager<ApplicationUser> userManager,
+         [Service] ApplicationUserManager userManager,
          [Service] ShortUrlManager shortUrlManager,
-         [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
-            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
+            var inviteCount = shortUrlManager.GetMessageCountForUser(Guid.Parse(userId), TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
             {
                 // TODO: Make service for invitations
                 SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, httpContextAccessor, userId);
+                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
             }
 
             return false;
@@ -268,7 +274,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] PersonnelService personnelService,
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             string practitionerUserId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -285,7 +291,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 if (reassignment.ClassroomGroupId != null || reassignment.PractitionerId != null)
                 {
-                    reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
+                    reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId.ToString(), reassignment.ClassroomGroupId, true);
                 }               
             }
 
@@ -307,6 +313,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IAbsenteeService absenteeService,
+            [Service] INotificationService notificationService,
+            ApplicationUserManager userManager,
             string practitionerUserId, string classroomId, string reasonForPractitionerLeavingProgrammeId, string reasonDetails, DateTime dateOfRemoval, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -314,7 +322,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             // Save the removal history
             var history = new PractitionerRemovalHistory
             {
-                UserId = practitionerUserId,
+                UserId = Guid.Parse(practitionerUserId),
                 ClassroomId = Guid.Parse(classroomId),
                 RemovedByUserId = uId,
                 ReasonForPractitionerLeavingProgrammeId = Guid.Parse(reasonForPractitionerLeavingProgrammeId),
@@ -332,8 +340,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     return false;
                 }
-                absenteeService.AddAbsenteeForPractitioner(uId, practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId,null, removalHistory.Id);
+                absenteeService.AddAbsenteeForPractitioner(practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false, null, null, null, removalHistory.Id);
             }
+            var userToSend = userManager.FindByIdAsync(practitionerUserId).Result;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var classRoom = classroomRepo.GetById(Guid.Parse(classroomId));
+            if (classRoom != null)
+            {
+                var principalUser = userManager.FindByIdAsync(classRoom.UserId.ToString()).Result;
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = classRoom.Name
+                });
+
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PrincipalName",
+                    ReplacementValue = principalUser.FirstName + " " + principalUser.Surname
+                });
+
+                //principaluser to send
+                if (principalUser != null && userToSend != null)
+                {
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, principalUser, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = userToSend.FirstName } }, DateTime.Now.AddDays(7), false, true, null, practitionerUserId);
+                }
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false,true,null, practitionerUserId);
+            }
+
+
 
             return true;
         }
@@ -364,7 +400,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 if(reassignment.Id == null)
                 {
-                    absenteeService.AddAbsenteeForPractitioner(uId, removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, removal.Id);
+                    absenteeService.AddAbsenteeForPractitioner(removal.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId.ToString(), reassignment.ClassroomGroupId, null, false,null,null,null, removal.Id);
                 }
                 else
                 {

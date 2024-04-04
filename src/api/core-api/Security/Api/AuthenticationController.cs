@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Tenancy.Context;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -33,7 +35,7 @@ namespace ECDLink.Security.Api
         [HttpPost("login")]
         public async Task<IActionResult> Post(
             [FromServices] IHttpContextAccessor _httpContextAccessor,
-            [FromServices] UserManager<ApplicationUser> _userManager,
+            [FromServices] ApplicationUserManager _userManager,
             [FromBody] LoginRequestModel login)
         {
             if (!ModelState.IsValid)
@@ -73,15 +75,22 @@ namespace ECDLink.Security.Api
                 TenantExecutionContext.Tenant.AdminTestSiteAddress,
                 _httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (_httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
 
+            var userRoles = await _userManager.GetRolesAsync(user);
+
             if (isAdminPortal)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
+            {   
                 var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
                 if (!hasAccess)
                 {
                     var organisationName = TenantExecutionContext.Tenant.OrganisationName;
                     // TODO: Callcenter number should be in the tenant config?
                     return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+                }
+            } else
+            {
+                if (!userRoles.Any())
+                {
+                    return Unauthorized(new { Error = "You do not have access. Please contact the SmartStart call centre to find out more: 0800 014 817" });
                 }
             }
 

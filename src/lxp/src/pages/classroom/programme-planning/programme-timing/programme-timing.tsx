@@ -1,4 +1,9 @@
-import { LanguageDto, getWeekDate, useDialog } from '@ecdlink/core';
+import {
+  LanguageDto,
+  getWeekDate,
+  useDialog,
+  getFirstFriday,
+} from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -33,6 +38,7 @@ import { programmeThunkActions } from '@/store/programme';
 import { addDays, format } from 'date-fns';
 import { practitionerSelectors } from '@/store/practitioner';
 import walktroughImage from '../../../../assets/walktroughImage.png';
+import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
@@ -101,7 +107,7 @@ const ProgrammeTiming: React.FC = () => {
   };
 
   const handleDialogClick = useCallback(() => {
-    var friday = getWeekDate('friday');
+    var friday = getFirstFriday(new Date());
 
     if (isPrincipal && practitioners?.length! >= 1) {
       history.push(ROUTES.CLASSROOM.ROOT, {
@@ -251,6 +257,7 @@ const ProgrammeTiming: React.FC = () => {
       onBack={handleBack}
       displayOffline={!isOnline}
     >
+      <ProgrammeWrapper />
       <div className="px-4 py-2">
         <div className="mt-3 flex">
           <StatusChip
@@ -277,75 +284,78 @@ const ProgrammeTiming: React.FC = () => {
           />
         )}
 
-        <Typography
-          className="mt-4"
-          type="body"
-          text="When would you like to start this programme?"
-        />
+        <div id="walkthrough-theme-timing">
+          <Typography
+            className="mt-4"
+            type="body"
+            text="When would you like to start this programme?"
+          />
 
-        <DatePicker
-          placeholderText={`Please select a date`}
-          className="border-uiLight text-textMid w-full rounded-md"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
-          onChange={(date: Date) => {
-            setValue('date', date ? date.toString() : '');
-          }}
-          dateFormat="EEE, dd MMM yyyy"
-          minDate={new Date()}
-        />
+          <DatePicker
+            placeholderText={`Please select a date`}
+            className="border-uiLight text-textMid w-full rounded-md"
+            selected={selectedDate ? new Date(selectedDate) : undefined}
+            onChange={(date: Date) => {
+              setValue('date', date ? date.toString() : '');
+            }}
+            dateFormat="EEE, dd MMM yyyy"
+            minDate={new Date()}
+          />
 
-        <Typography
-          className="mt-4"
-          type="body"
-          text="When would you like to end this programme?"
-        />
-        <DatePicker
-          disabled={selectedDate == null}
-          placeholderText={`Please select a date`}
-          className="border-uiLight text-textMid w-full rounded-md"
-          selected={endDate ? new Date(endDate) : undefined}
-          onChange={(date: Date) => {
-            setValue('endDate', date ? date.toString() : '');
-            setAlert(date);
-          }}
-          dateFormat="EEE, dd MMM yyyy"
-          minDate={addDays(new Date(), 1)}
-          maxDate={getThemedProgrammeEndDate(validStartdDate!)}
-        />
+          <Typography
+            className="mt-4"
+            type="body"
+            text="When would you like to end this programme?"
+          />
+          <DatePicker
+            disabled={selectedDate == null}
+            placeholderText={`Please select a date`}
+            className="border-uiLight text-textMid w-full rounded-md"
+            selected={endDate ? new Date(endDate) : undefined}
+            onChange={(date: Date) => {
+              setValue('endDate', date ? date.toString() : '');
+              setAlert(date);
+            }}
+            dateFormat="EEE, dd MMM yyyy"
+            minDate={selectedDate ? new Date(selectedDate) : undefined}
+            maxDate={getThemedProgrammeEndDate(validStartdDate!)}
+          />
+        </div>
 
         {alertState && <Alert className="mt-4" {...alertState} />}
-
-        <Typography
-          className="mt-4"
-          type="body"
-          text="What is your preferred classroom language?"
-        />
-        <Typography
-          type="body"
-          text="You can change languages while you plan. When your chosen language isn’t available, activities or stories will be shown in English."
-          color={'textLight'}
-        />
-        <Dropdown
-          fullWidth
-          fillType="clear"
-          placeholder="Tap to choose language"
-          selectedValue={selectedLanguage}
-          list={
-            (languages &&
-              languages
-                .filter((x) => x.locale?.length > 0)
-                .map((language: LanguageDto) => {
-                  return {
-                    label: language.description,
-                    value: language.locale,
-                  };
-                })) ||
-            []
-          }
-          onChange={(item) => {
-            setValue('language', item, { shouldValidate: true });
-          }}
-        />
+        <div id="walkthrough-classroom-language">
+          <Typography
+            className="mt-4"
+            type="body"
+            text="What is your preferred classroom language?"
+          />
+          <Typography
+            type="body"
+            text="You can change languages while you plan. When your chosen language isn’t available, activities or stories will be shown in English."
+            color={'textLight'}
+          />
+          <Dropdown
+            fullWidth
+            fillType="clear"
+            placeholder="Tap to choose language"
+            selectedValue={selectedLanguage}
+            list={
+              (languages &&
+                languages
+                  .filter((x) => x.locale?.length > 0)
+                  .map((language: LanguageDto) => {
+                    return {
+                      label: language.description,
+                      value: language.locale,
+                    };
+                  })) ||
+              []
+            }
+            onChange={(item) => {
+              setValue('language', item, { shouldValidate: true });
+            }}
+          />
+        </div>
         <Divider className="mt-4" />
         <FADButton
           title={'Save'}

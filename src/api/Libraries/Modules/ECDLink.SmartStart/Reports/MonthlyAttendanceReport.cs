@@ -3,8 +3,6 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
@@ -43,7 +41,6 @@ namespace ECDLink.SmartStart.Reports
             //retrieve only groups the user is allowed to see            
             List<ClassroomGroup> groups = _attendanceService.GetUserClassroomGroups(userId);
 
-            var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
             var attendanceForPeriod = GetAttendanceRecordsForPeriod(classroom, userId, startMonth, endMonth);
             var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
@@ -54,14 +51,17 @@ namespace ECDLink.SmartStart.Reports
                 // Nest into class per month on only groups user is allowed to see
                 foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
                 {
+                    var validClassDays = GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
+
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
                         var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
                         
                         if(daysOfClass.Count() > 0)
                         {
+                            // TODO - I think this needs to check the year as well
                             var attendedClasses = attendanceForPeriod
-                                              .Where(x => string.Equals(x.UserId, userId)
+                                              .Where(x => x.UserId == Guid.Parse(userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
                                               && x.MonthOfYear == dt.Month);
@@ -100,7 +100,9 @@ namespace ECDLink.SmartStart.Reports
                     MonthOfYear = item.Key.Month,
                     Month = item.Key.ToString("MMMM"),
                     Year = item.Key.Year,
-                    PercentageAttendance = reportPercentage > 100 ? 100 : (reportPercentage < 0 ? 0 : reportPercentage)
+                    PercentageAttendance = reportPercentage > 100 ? 100 : (reportPercentage < 0 ? 0 : reportPercentage),
+                    NumberOfSessions = actualAttendance,
+                    TotalScheduledSessions = totalAttendance,
                 });
             }
 

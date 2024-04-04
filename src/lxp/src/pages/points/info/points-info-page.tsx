@@ -18,7 +18,7 @@ export const PointsInfoPage: React.FC<PointsInfoPageProps> = ({ onClose }) => {
 
   useEffect(() => {
     new InfoService()
-      .getMoreInformation('Points Info Page', selectedLanguage)
+      .getMoreInformation('Individual points', selectedLanguage)
       .then((info) => setData(info));
   }, [selectedLanguage, userAuth?.auth_token]);
 
@@ -30,7 +30,7 @@ export const PointsInfoPage: React.FC<PointsInfoPageProps> = ({ onClose }) => {
       moreInformation={!!data ? data[0] : {}}
       title="Points Info"
       subTitle="How to earn points"
-      name="Do I need this???"
+      name=""
       onClose={onClose}
       setSelectedLanguage={setSelectedLanguage}
     />

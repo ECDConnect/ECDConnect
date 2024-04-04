@@ -1,26 +1,32 @@
-import { Button, Typography, classNames } from '@ecdlink/ui';
+import {
+  Button,
+  DialogPosition,
+  LoadingSpinner,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 import Fuse from 'fuse.js';
 import {
   ChangeEvent,
-  Key,
-  ReactChild,
-  ReactFragment,
-  ReactPortal,
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
 import Table from 'react-tailwind-table';
-import Icon from '../icon';
-import { Link, useHistory } from 'react-router-dom';
-import { useLazyQuery, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import {
   sentInviteToMultipleUsers,
   deleteMultipleUsers,
+  bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
-import { ReactI18NextChild } from 'react-i18next';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
-import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
+import { ContentTypes } from '../../constants/content-management';
+import { UiTableProps } from './type';
+import AlertModal from '../dialog-alert/dialog-alert';
+import { StoryActivitiesTypes } from '../../pages/content-management/content-management-models';
 
 export default function UiTable({
   columns = [],
@@ -30,15 +36,34 @@ export default function UiTable({
   searchInput,
   component,
   viewRow,
+  isLoading,
+  onBulkActionCallback,
+  languages,
+  noBulkSelection,
 }: UiTableProps) {
-  const history = useHistory();
   const [inviteRows, setInviteRows] = useState<boolean>(false);
-  const { setNotification, clearNotification } = useNotifications();
+  const { setNotification } = useNotifications();
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
+  const [confirmationTitle, setConfirmTitle] = useState(
+    'Are you sure you want to delete this content?'
+  );
+  const [confirmationMessage, setConfirmMessage] = useState(
+    'You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously.'
+  );
+  const [confirmationTrue, setConfirmTrue] = useState('Delete');
+  const [confirmationFalse, setConfirmFalse] = useState('Keep editing');
+
   const [searchRows, setSearchRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const isAllInactive = selectedUsers.every((obj) => obj?.isActive === false);
+  const registeredOrInactiveUsers = selectedUsers?.filter(
+    (item) => item?.isRegistered === true || item?.isActive === false
+  );
+  const disableBulkButtons =
+    selectedUsers?.length <= registeredOrInactiveUsers?.length;
   const searchKeys = useRef(columns.map(({ field }) => field));
   const fuseOptions = {
     keys: searchKeys.current,
@@ -47,6 +72,8 @@ export default function UiTable({
     distance: 0,
   };
   const fuse = useRef(new Fuse(rows, fuseOptions));
+
+  const dialog = useDialog();
 
   const [sendInvitations, { loading: invitationsLoading }] = useMutation(
     sentInviteToMultipleUsers,
@@ -67,7 +94,17 @@ export default function UiTable({
     }
   );
 
-  const inviteUsers = () => {
+  const [
+    deleteCoachingCircleTopicsMutation,
+    { loading: deletingCoachingCircleTopics },
+  ] = useMutation(bulkDeleteCoachingCircleTopics, {
+    variables: {
+      contentIds: [],
+    },
+    fetchPolicy: 'network-only',
+  });
+
+  const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
         userIds: selectedRows,
@@ -93,9 +130,9 @@ export default function UiTable({
           variant: NOTIFICATION.ERROR,
         });
       });
-  };
+  }, [selectedRows, sendInvitations, setNotification]);
 
-  const deactivateUser = () => {
+  const deactivateUser = useCallback(() => {
     deactivateUsers({
       variables: {
         ids: selectedRows,
@@ -121,7 +158,43 @@ export default function UiTable({
           variant: NOTIFICATION.ERROR,
         });
       });
-  };
+  }, [deactivateUsers, selectedRows, setNotification]);
+
+  const deleteCoachingCircleTopics = useCallback(() => {
+    deleteCoachingCircleTopicsMutation({
+      variables: {
+        contentIds: selectedRows,
+      },
+    })
+      .then((res) => {
+        if (res.data?.bulkDeleteCoachingCircleTopics?.success.length > 0) {
+          setNotification({
+            title: ` Successfully deleted ${res.data?.bulkDeleteCoachingCircleTopics?.success.length} topics!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          onBulkActionCallback?.('success');
+        }
+        if (res.data?.bulkDeleteCoachingCircleTopics?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to delete ${res.data?.bulkDeleteCoachingCircleTopics?.failed.length} topics!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          onBulkActionCallback?.('failed');
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to delete topics',
+          variant: NOTIFICATION.ERROR,
+        });
+        onBulkActionCallback?.('failed');
+      });
+  }, [
+    deleteCoachingCircleTopicsMutation,
+    onBulkActionCallback,
+    selectedRows,
+    setNotification,
+  ]);
 
   useEffect(() => {
     fuse.current = new Fuse(rows, fuseOptions);
@@ -130,19 +203,20 @@ export default function UiTable({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
 
-  useEffect(() => {
-    setSearchRows(getSearchResults());
-    setLastUpdate(Date.now());
-    setSearchValue(searchInput);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
-
-  const getSearchResults = () => {
+  const getSearchResults = useCallback(() => {
     if (!searchValue) {
       return rows;
     }
     return fuse.current.search(searchValue).map((result) => result.item);
-  };
+  }, [rows, searchValue]);
+
+  useEffect(() => {
+    setSearchRows(getSearchResults());
+    setLastUpdate(Date.now());
+    if (searchInput) {
+      setSearchValue(searchInput);
+    }
+  }, [getSearchResults, searchInput]);
 
   const makeColumns = (cols: any[] = []) => {
     const selectColumn = {
@@ -152,6 +226,10 @@ export default function UiTable({
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
+
+    if (noBulkSelection) {
+      return columns;
+    }
     if (component === 'cms' || component === 'roles') {
       return [...columns];
     }
@@ -179,6 +257,16 @@ export default function UiTable({
         );
       }
     });
+
+    setSelectedUsers((prevSelectedRows) => {
+      if (isChecked) {
+        return [...prevSelectedRows, row];
+      } else {
+        return prevSelectedRows.filter(
+          (selectedRow) => selectedRow?.id !== selectedRowId
+        );
+      }
+    });
   };
 
   const makeRows = () => {
@@ -188,11 +276,9 @@ export default function UiTable({
 
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
-      const rowWithCheckbox = {
-        ...row,
-      };
 
       ++rowKey;
+
       return row;
     });
   };
@@ -239,8 +325,25 @@ export default function UiTable({
           )}
         </div>
       );
+    } else if (display_value === 'RoadToHealthBook') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (display_value === 'MaternalCaseRecord') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
     } else if (
-      column.field.match(/created|createdAt|updated|insertedDate|updatedAt/)
+      column.field.match(/created|createdAt|updated|insertedDate|updatedAt/) &&
+      column.field !== 'createdByName'
     ) {
       rowValue = (
         <span
@@ -252,25 +355,212 @@ export default function UiTable({
           {formatDate(display_value)}
         </span>
       );
-    } else if (column.field === 'roles') {
+    } else if (display_value === 'Small group') {
       rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
-          {display_value?.map((item: any) => (
-            <div
-              key={item?.id}
-              className={
-                `${
-                  item[column.displayProperty] === 'Administrator'
-                    ? 'bg-tertiary'
-                    : item[column.displayProperty] === 'Practitioner'
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (display_value === 'Large group') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (
+      column.field === 'subType' &&
+      (display_value
+        .toString()
+        .toLowerCase()
+        .indexOf(StoryActivitiesTypes.Storybook.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.ReadAloud.toLowerCase()) !== -1 ||
+        display_value
+          .toString()
+          .toLowerCase()
+          .indexOf(StoryActivitiesTypes.Other.toLowerCase()) !== -1)
+    ) {
+      // remove duplicates and trim
+      var arr = display_value.split(',');
+      display_value = arr
+        .filter(function (value, index, self) {
+          return self.indexOf(value.trim()) === index;
+        })
+        .join(',');
+
+      const splitValues = display_value?.split(',');
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer gap-1">
+          {splitValues?.map((item, index) => {
+            return (
+              <div
+                key={'sb_' + index}
+                className={`${
+                  item.toString().toLowerCase() ===
+                  StoryActivitiesTypes.Storybook.toLowerCase()
                     ? 'bg-secondary'
-                    : 'bg-primary'
-                }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
-              }
-            >
-              {item[column?.displayProperty]}
+                    : item.toString().toLowerCase() ===
+                      StoryActivitiesTypes.ReadAloud.toLowerCase()
+                    ? 'bg-darkBlue'
+                    : 'bg-successMain'
+                } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+              >
+                <span className="text-xs">
+                  {item.toString().charAt(0).toUpperCase() + item.slice(1)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    } else if (
+      column.field === 'subCategories' &&
+      (column?.use === 'GT - Skills' || column?.use === 'Skills')
+    ) {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div key={`cat_` + index} className="ml-1 flex cursor-pointer">
+              <div
+                className={`${
+                  item?.imageHexColor ? '' : 'bg-tertiary'
+                } flex h-9 w-9 items-center justify-center rounded-full`}
+                style={{
+                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
+                }}
+              >
+                <img
+                  alt="skill"
+                  src={item?.imageUrl}
+                  className="h-6 w-6 object-contain"
+                />
+              </div>
             </div>
           ))}
+        </div>
+      );
+    } else if (
+      column?.field === 'subCategories' ||
+      column?.field === 'subDistricts'
+    ) {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div
+              key={`subCategories_` + item?.id}
+              className={' text-textMid m-1 rounded-full py-1 text-xs'}
+            >
+              {index === display_value?.length - 1
+                ? `${item?.name}`
+                : `${item?.name};`}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (column.field === 'teamLeads') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div
+              key={`teamLeads_` + item?.id + Math.random()}
+              className={' text-textMid m-1 rounded-full py-1 text-xs'}
+            >
+              {`${item?.teamLead?.user?.firstName}, `}
+            </div>
+          ))}
+        </div>
+      );
+    } else if (column.field === 'province' && column?.use === 'Province') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.description}
+          </div>
+        </div>
+      );
+    } else if (column.field === 'district' && column?.use === 'District') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.name}
+          </div>
+        </div>
+      );
+    } else if (
+      column.field === 'subDistrict' &&
+      column?.use === 'Sub-district'
+    ) {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.name}
+          </div>
+        </div>
+      );
+    } else if (column.field === 'district' && column?.use === 'Province') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
+            {display_value?.province?.description}
+          </div>
+        </div>
+      );
+    } else if (column.field === 'availableLanguages') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => {
+            const language = languages?.find(
+              (language) => language?.id === item?.id || language?.id === item
+            );
+            return (
+              <div
+                key={`language_` + item?.id}
+                className={' text-textMid m-1 rounded-full py-1 text-xs'}
+              >
+                {index === display_value?.length - 1
+                  ? `${language?.locale}`
+                  : `${language?.locale};`}
+              </div>
+            );
+          })}
+        </div>
+      );
+    } else if (column.field === 'roles') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer items-center">
+          {display_value?.map((item: any) => {
+            const chipColor = (role?: string) => {
+              switch (role) {
+                case 'Administrator':
+                  return 'bg-infoMain';
+                case 'Practitioner':
+                  return 'bg-secondary';
+                case 'Community Health Worker':
+                  return 'bg-secondary';
+                default:
+                  return 'bg-primary';
+              }
+            };
+            return (
+              <div
+                key={`role_` + item?.id}
+                className={
+                  `${chipColor(item[column.displayProperty])}` +
+                  ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                }
+              >
+                {item[column?.displayProperty] === 'Community Health Worker'
+                  ? 'CHW'
+                  : item[column?.displayProperty]}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (column.type === 'workflowStatus') {
@@ -307,43 +597,126 @@ export default function UiTable({
     );
   };
 
+  useEffect(() => {
+    if (component === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      setConfirmTitle(
+        'Are you sure you want to delete ' + selectedRows.length + ' items?'
+      );
+      setConfirmMessage(
+        'Coaches will no longer be able to see this content in the app.'
+      );
+      setConfirmTrue('Yes, delete');
+      setConfirmFalse('No, cancel');
+    }
+  }, [component, selectedRows.length]);
+
+  const deleteDialog = useCallback(() => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title={confirmationTitle}
+          message={confirmationMessage}
+          onCancel={onClose}
+          btnText={[`${confirmationTrue}`, `${confirmationFalse}`]}
+          onSubmit={() => {
+            deleteCoachingCircleTopics();
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [
+    confirmationFalse,
+    confirmationMessage,
+    confirmationTitle,
+    confirmationTrue,
+    deleteCoachingCircleTopics,
+    dialog,
+  ]);
+
+  const renderBulkActions = useMemo(() => {
+    if (component === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      return (
+        <Button
+          className="rounded-2xl px-2"
+          type="filled"
+          color="errorBg"
+          textColor="tertiary"
+          text="Delete"
+          icon="TrashIcon"
+          iconPosition="end"
+          isLoading={deletingCoachingCircleTopics}
+          disabled={deletingCoachingCircleTopics}
+          onClick={deleteDialog}
+        />
+      );
+    }
+
+    return (
+      <>
+        <Button
+          className="mr-4 rounded-xl px-6 py-0"
+          type="filled"
+          isLoading={invitationsLoading}
+          disabled={invitationsLoading || disableBulkButtons || isAllInactive}
+          color="secondary"
+          onClick={inviteUsers}
+        >
+          <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
+          <Typography type="help" color="white" text="Resend Invitations" />
+        </Button>
+
+        <Button
+          className="rounded-xl px-6 py-0"
+          type="outlined"
+          isLoading={deactivating}
+          disabled={deactivating || disableBulkButtons || isAllInactive}
+          color="tertiary"
+          onClick={deactivateUser}
+        >
+          <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
+          <Typography
+            type="help"
+            color="tertiary"
+            text={'Deactivate User'}
+          ></Typography>
+        </Button>
+      </>
+    );
+  }, [
+    component,
+    deactivateUser,
+    deactivating,
+    deleteDialog,
+    deletingCoachingCircleTopics,
+    invitationsLoading,
+    inviteUsers,
+  ]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="infoMain"
+        backgroundColor="uiBg"
+        className="my-4"
+      />
+    );
+  }
+
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
       {selectedRows?.length >= 1 && (
-        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2">
+        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2 px-4">
           <div className="w-4/12">
-            <p className="text-md pl-4 text-white">
+            <p className="text-md text-white">
               {selectedRows?.length} Selected
             </p>
           </div>
-          <div className="flex w-6/12 flex-row items-center">
-            <Button
-              className="mr-4 rounded-xl px-6 py-0"
-              type="filled"
-              isLoading={invitationsLoading}
-              color="secondary"
-              onClick={inviteUsers}
-            >
-              <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
-              <Typography type="help" color="white" text="Resend Invitations" />
-            </Button>
-
-            <Button
-              className="mr-4 rounded-xl px-6 py-0"
-              type="outlined"
-              isLoading={deactivating}
-              color="tertiary"
-              onClick={deactivateUser}
-            >
-              <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-                {' '}
-              </TrashIcon>
-              <Typography
-                type="help"
-                color="tertiary"
-                text={'Deactivate User'}
-              ></Typography>
-            </Button>
+          <div className="flex w-6/12 flex-row items-center justify-end">
+            {renderBulkActions}
           </div>
         </div>
       )}
@@ -364,12 +737,12 @@ export default function UiTable({
           main: 'rounded-lg',
           table_head: {
             table_row: ` mb-10 border-b-2 border-secondary `,
-            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-infoBb text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
+            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
             main: ``,
             // table_row: 'border-none bg-secondary ',
-            table_row: 'border-none py-6 bg-infoBb',
+            table_row: 'border-none py-6 bg-white',
 
             table_data:
               'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
@@ -387,9 +760,9 @@ export default function UiTable({
         }}
         columns={makeColumns()}
         rows={makeRows()}
-        per_page={10}
+        per_page={20}
         no_content_text="-"
-        striped
+        striped={false}
         bordered
       />
     </div>

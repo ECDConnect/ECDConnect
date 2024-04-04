@@ -93,3 +93,44 @@ export const DeleteContent = gql`
     deleteContent(id: $id)
   }
 `;
+
+export const UpdateSubCategorySkills = gql`
+  mutation UpdateSubCategorySkills(
+    $subCategories: [ProgressSubCategoryModelInput]
+    $localeId: UUID!
+  ) {
+    updateSubCategorySkills(subCategories: $subCategories, localeId: $localeId)
+  }
+`;
+
+export const UpdateStoryBookAndParts = gql`
+  mutation UpdateStoryBookAndParts(
+    $storyBookParts: [StoryBookModelInput]
+    $storyBookContentId: Int!
+    $localeId: UUID!
+    $currentBookPartsIds: String!
+  ) {
+    updateStoryBookAndParts(
+      storyBookParts: $storyBookParts
+      storyBookContentId: $storyBookContentId
+      localeId: $localeId
+      currentBookPartsIds: $currentBookPartsIds
+    )
+  }
+`;
+
+export const BulkUpdateConsentImages = gql`
+  mutation BulkUpdateConsentImages(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $imageUrl: String
+  ) {
+    bulkUpdateConsentImages(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      imageUrl: $imageUrl
+    )
+  }
+`;

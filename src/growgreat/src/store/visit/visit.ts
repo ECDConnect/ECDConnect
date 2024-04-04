@@ -24,7 +24,6 @@ import {
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
 const initialState: VisitState & ThunkStateStatus = {
-  visitStatus: {},
   visitFormData: [],
   visitFormDataForMother: [],
 };
@@ -244,22 +243,29 @@ const visitSlice = createSlice({
     builder.addCase(getVisitAnswersForMother.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
-      const visitId = action.meta.arg.visitId;
-      const newData = {
-        ...action.payload?.[0],
-        visitId: action.meta.arg.visitId,
-      };
+      const newItems = action.payload;
 
-      const mergedDate = !!state.visitAnswersForMother?.length
-        ? [
-            ...state.visitAnswersForMother.filter(
-              (item) => item.visitId !== visitId
-            ),
-            newData,
-          ]
-        : [newData];
+      if (state.visitAnswersForMother?.length) {
+        newItems.forEach((newItem) => {
+          const isDuplicate = state?.visitAnswersForMother?.some(
+            (existingItem) => {
+              return (
+                existingItem.visitId === newItem.visitId &&
+                existingItem.question === newItem.question
+              );
+            }
+          );
 
-      state.visitAnswersForMother = mergedDate;
+          if (!isDuplicate) {
+            state.visitAnswersForMother = [
+              ...(state.visitAnswersForMother ?? []),
+              newItem,
+            ];
+          }
+        });
+      } else {
+        state.visitAnswersForMother = newItems;
+      }
     });
     builder.addCase(
       getHealthCareWorkerHighlights.fulfilled,

@@ -16,83 +16,74 @@ namespace ECDLink.AutomatedJobs.Notifications
 {
     public class RequestLogOnNotification : CronJobService
     {
-        private readonly IServiceScopeFactory _scopeFactory;
-
         public RequestLogOnNotification(IServiceScopeFactory scopeFactory, CronJobConfig<RequestLogOnNotification> config, ILogger<RequestLogOnNotification> logger)
-            : base(config, logger)
+            : base(scopeFactory, config, logger)
         {
-            _scopeFactory = scopeFactory;
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                TenancyContext.SetTenantContext(scope);
+            var dbContext = Scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
 
-                
-                var dbContext = scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
+            var twoOne = DateTime.UtcNow.AddDays(-21).Date;
+            var threeZero = DateTime.UtcNow.AddDays(-30).Date;
 
-                var twoOne = DateTime.UtcNow.AddDays(-21).Date;
-                var threeZero = DateTime.UtcNow.AddDays(-30).Date;
+            var users = dbContext.Users.Where(x => x.IsActive)
+                                        .Where(x => x.LastSeen.Date == twoOne || x.LastSeen.Date == threeZero)
+                                        .ToList();
 
-                var users = dbContext.Users.Where(x => x.IsActive)
-                                            .Where(x => x.LastSeen.Date == twoOne || x.LastSeen.Date == threeZero)
+            var existingNotifications = dbContext.JobNotifications
+                                            .Where(x => x.TemplateType == TemplateTypeEnum.ThreeWeekNotLoggedOn
+                                            || x.TemplateType == TemplateTypeEnum.FourWeekNotLoggedOn)
                                             .ToList();
 
-                var existingNotifications = dbContext.JobNotifications
-                                                .Where(x => x.TemplateType == TemplateTypeEnum.ThreeWeekNotLoggedOn
-                                                || x.TemplateType == TemplateTypeEnum.FourWeekNotLoggedOn)
-                                                .ToList();
-
-                foreach (var user in users)
+            foreach (var user in users)
+            {
+                // If an existing notification exists
+                if (existingNotifications.Any(x => x.UserId == user.Id))
                 {
-                    // If an existing notification exists
-                    if (existingNotifications.Any(x => string.Equals(x.UserId, user.Id)))
-                    {
-                        continue;
-                    }
-
-                    //do larger age first so taht user does not get too many messages
-                    if (user.LastSeen.Date <= threeZero)
-                    {
-                        dbContext.JobNotifications.Add(new JobNotification
-                        {
-                            UserId = user.Id,
-                            UserLastSeen = user.LastSeen,
-                            Protocol = user.ContactPreference,
-                            TemplateType = TemplateTypeEnum.FourWeekNotLoggedOn,
-                            TenantId = user.TenantId,
-                            InsertedDate = DateTime.UtcNow
-                        });
-
-                        continue;
-                    }
-
-                    //make sure user doesnt get notification fopr 30 and 21
-                    if (existingNotifications.Any(x => string.Equals(x.UserId, user.Id)))
-                    {
-                        continue;
-                    }
-
-                    if (user.LastSeen.Date <= twoOne) { 
-                        dbContext.JobNotifications.Add(new JobNotification
-                        {
-                            UserId = user.Id,
-                            UserLastSeen = user.LastSeen,
-                            Protocol = user.ContactPreference,
-                            TemplateType = TemplateTypeEnum.ThreeWeekNotLoggedOn,
-                            TenantId = user.TenantId,
-                            InsertedDate = DateTime.UtcNow
-                        });
-
-                        continue;
-                    }
-
+                    continue;
                 }
 
-                dbContext.SaveChanges();
+                //do larger age first so taht user does not get too many messages
+                if (user.LastSeen.Date <= threeZero)
+                {
+                    dbContext.JobNotifications.Add(new JobNotification
+                    {
+                        UserId = user.Id,
+                        UserLastSeen = user.LastSeen,
+                        Protocol = user.ContactPreference,
+                        TemplateType = TemplateTypeEnum.FourWeekNotLoggedOn,
+                        TenantId = user.TenantId,
+                        InsertedDate = DateTime.UtcNow
+                    });
+
+                    continue;
+                }
+
+                //make sure user doesnt get notification fopr 30 and 21
+                if (existingNotifications.Any(x => x.UserId == user.Id))
+                {
+                    continue;
+                }
+
+                if (user.LastSeen.Date <= twoOne) { 
+                    dbContext.JobNotifications.Add(new JobNotification
+                    {
+                        UserId = user.Id,
+                        UserLastSeen = user.LastSeen,
+                        Protocol = user.ContactPreference,
+                        TemplateType = TemplateTypeEnum.ThreeWeekNotLoggedOn,
+                        TenantId = user.TenantId,
+                        InsertedDate = DateTime.UtcNow
+                    });
+
+                    continue;
+                }
+
             }
+
+            dbContext.SaveChanges();
         }
     }
 }

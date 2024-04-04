@@ -28,6 +28,8 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public DateTime? MessageEndDate { get; set; }
         public DateTime? ReadDate { get; set; }
         public string ToGroups { get; set; }
+        public string Action { get; set; }
+        public string RelatedToUserId { get; set; }
 
         [ForeignKey(nameof(Id))]
         public virtual MessageTemplate MessageTemplate { get; set; }
@@ -61,6 +63,9 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public DateTime? MessageEndDate { get; set; }
         public DateTime? ReadDate { get; set; }
         public string ToGroups { get; set; }
+        public int Ordering { get; set; }
+        public string Action { get; set; }
+        public string RelatedToUserId { get; set; }
     }
 
     public class TagsReplacements

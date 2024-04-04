@@ -1,8 +1,10 @@
 import { Typography, Card } from '@ecdlink/ui';
 import * as styles from './classroom-attendance.styles';
 import { ClassroomAttendanceProps } from './classroom-attendance.types';
-import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import { getMonth, getYear } from 'date-fns';
+import {
+  getMonthName,
+  getPrevMonth,
+} from '@utils/classroom/attendance/track-attendance-utils';
 
 export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
   practitionerClassroomGroups,
@@ -18,9 +20,9 @@ export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
         <div className="ml-4 mt-4">
           <Typography
             text={`Attendance: ${getMonthName(
-              getMonth(new Date()) - 1
+              getPrevMonth().getMonth()
               // eslint-disable-next-line no-useless-concat
-            )}\u00A0${getYear(new Date())}`}
+            )}\u00A0${getPrevMonth().getFullYear()}`}
             type="body"
             className="mb-4"
           />
@@ -33,7 +35,8 @@ export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
 
             let percentageClassname =
               'mt-4 mb-3 text-4xl font-semibold text-successMain';
-            const randomPercentage = classroomMetrics?.attendancePercentage;
+            const randomPercentage =
+              classroomMetrics?.attendancePercentage || 0;
             if (randomPercentage <= 75) {
               percentageClassname =
                 'mt-4 mb-3 text-4xl font-semibold text-alertMain';

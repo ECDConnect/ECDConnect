@@ -2,20 +2,24 @@ import { PractitionerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  getChildProgressReportsStatusForUser,
   getPractitionerById,
   getPractitionersForCoach,
   getUserExpensesForCoach,
   getUserIncomeForCoach,
   getUserStatementsForCoach,
+  updateUserContactStatusForStatement,
 } from './practitionerForCoach.actions';
 import { PractitionerForCoachState } from './practitionerForCoach.types';
 import { getUserPointsSummaryForCoach } from '../points/points.actions';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: PractitionerForCoachState = {
   practitionerForCoach: undefined,
   practitionersForCoach: undefined,
   pointsForPractitionerUser: {},
   statementsForPractitionerUser: {},
+  childProgressReportStatusForPractitionerUser: {},
 };
 
 const practitionerForCoachSlice = createSlice({
@@ -32,8 +36,46 @@ const practitionerForCoachSlice = createSlice({
         state.practitionerForCoach = action.payload;
       }
     },
+    updateStatementForPractitioner: (
+      state,
+      action: PayloadAction<{ userId: string; statementId: string }>
+    ) => {
+      if (!state.statementsForPractitionerUser) {
+        return;
+      }
+
+      const statement = state.statementsForPractitionerUser[
+        action.payload.userId
+      ]?.statements?.find(
+        (statement) => statement.id === action.payload.statementId
+      );
+
+      if (!!statement) {
+        const updatedStatements = [
+          ...state.statementsForPractitionerUser[
+            action.payload.userId
+          ]?.statements?.filter(
+            (statement) => statement.id !== action.payload.statementId
+          ),
+          {
+            ...statement,
+            contactedByCoach: true,
+          },
+        ];
+
+        state.statementsForPractitionerUser = {
+          ...state.statementsForPractitionerUser,
+          [action.payload.userId]: {
+            ...state.statementsForPractitionerUser[action.payload.userId],
+            statements: updatedStatements,
+          },
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, getChildProgressReportsStatusForUser);
+
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitionerForCoach = action.payload;
     });
@@ -70,6 +112,13 @@ const practitionerForCoachSlice = createSlice({
       };
     });
 
+    builder.addCase(
+      updateUserContactStatusForStatement.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
+
     builder.addCase(getUserIncomeForCoach.fulfilled, (state, action) => {
       state.statementsForPractitionerUser = {
         ...state.statementsForPractitionerUser,
@@ -91,6 +140,17 @@ const practitionerForCoachSlice = createSlice({
         },
       };
     });
+
+    builder.addCase(
+      getChildProgressReportsStatusForUser.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+        state.childProgressReportStatusForPractitionerUser = {
+          ...state.childProgressReportStatusForPractitionerUser,
+          [action.meta.arg.userId]: action.payload,
+        };
+      }
+    );
   },
 });
 

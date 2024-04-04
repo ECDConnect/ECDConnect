@@ -4,9 +4,13 @@ import {
   ChildProgressObservationReport,
   capitalizeFirstLetter,
   ProgressTrackingSkillDto,
+  LanguageDto,
+  ContentTypeEnum,
+  useDialog,
 } from '@ecdlink/core';
 import {
   Alert,
+  ActionModal,
   BannerWrapper,
   Button,
   Dialog,
@@ -22,7 +26,7 @@ import { useHistory, useLocation } from 'react-router';
 import { ChildProgressNoteCard } from '../components/child-progress-note-card/child-progress-note-card';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
-
+import { ContentService } from '@services/ContentService';
 import {
   getProgressTrackingCategories,
   getProgressTrackingSkills,
@@ -34,7 +38,7 @@ import {
   isInReportPeriod,
 } from '@utils/child/child-profile-utils';
 import { newGuid } from '@utils/common/uuid.utils';
-
+import { progressTrackingThunkActions } from '@/store/progress-tracking';
 import * as styles from './child-progress-observation.styles';
 import { ChildProgressObservationPageState } from './child-progress-observation.types';
 import { ChildProgressAssessmentSteps } from '../child-progress-assessment/child-progress-assessment.types';
@@ -64,10 +68,13 @@ import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.pn
 import { CompleteFirstObservationsPrompt } from '../components/progress-tracking-prompts/complete-first-observations-prompt/complete-first-observations-prompt';
 import { UsePreviousReportPrompt } from '../components/progress-tracking-prompts/use-previous-report-prompt/use-previous-report-prompt';
 import LanguageSelector from '@/components/language-selector/language-selector';
+import { authSelectors } from '@store/auth';
 
 export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const { state: routeState } =
     useLocation<ChildProgressObservationPageState>();
@@ -85,7 +92,6 @@ export const ChildProgressObservationPage: React.FC = () => {
     ? new Date(routeState.reportingDate)
     : new Date();
   const reportingPeriod = getReportingPeriod(reportingDate, firstObservation);
-
   const child = useSelector(childrenSelectors.getChildById(routeState.childId));
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
@@ -259,6 +265,74 @@ export const ChildProgressObservationPage: React.FC = () => {
     });
   };
 
+  const changeLanguage = async (language: LanguageDto) => {
+    const hasTranslations = await new ContentService(
+      userAuth?.auth_token ?? ''
+    ).hasContentTypeBeenTranslated(
+      ContentTypeEnum.ProgressTrackingCategory,
+      language.id ?? ''
+    );
+
+    if (hasTranslations) {
+      await appDispatch(
+        progressTrackingThunkActions.getProgressTrackingCategories({
+          locale: language.locale,
+          force: true,
+        })
+      ).unwrap();
+      await appDispatch(
+        progressTrackingThunkActions.getProgressTrackingSubCategories({
+          locale: language.locale,
+          force: true,
+        })
+      ).unwrap();
+      await appDispatch(
+        progressTrackingThunkActions.getProgressTrackingSkills({
+          locale: language.locale,
+          force: true,
+        })
+      ).unwrap();
+      await appDispatch(
+        progressTrackingThunkActions.getProgressTrackingLevels({
+          locale: language.locale,
+          force: true,
+        })
+      ).unwrap();
+    } else {
+      presentUnavailableAlert();
+    }
+  };
+
+  const presentUnavailableAlert = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, close) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="No content found"
+            paragraphs={[
+              'Could not find any content for the selected language, please select another.',
+            ]}
+            icon={'InformationCircleIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'primary',
+                onClick: close,
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const saveAndCompleteFirstObservations = async () => {
     setCompleteFirstObservationsPromptActive(false);
     if (!!currentReport) {
@@ -383,11 +457,10 @@ export const ChildProgressObservationPage: React.FC = () => {
             )}
           <div className={styles.languageWrapper}>
             <LanguageSelector
-              disabled={true}
               labelText="Progress tracker language:"
               labelClassName="font-medium font-body text-textDark pr-2 mt-1"
               currentLocale="en-za"
-              selectLanguage={(data) => {}}
+              selectLanguage={(data) => changeLanguage(data)}
             />
           </div>
           {isComplete && firstObservation && (

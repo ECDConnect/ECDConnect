@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ComponentBaseProps } from '../../../../models/ComponentBaseProps';
 import Typography from '../../../typography/typography';
 import * as styles from './tab.styles';
@@ -11,6 +12,7 @@ export interface TabProps extends ComponentBaseProps {
 }
 
 export function Tab({
+  id,
   title,
   tabIndex,
   activeIndex,
@@ -24,8 +26,26 @@ export function Tab({
     }
   };
 
+  useEffect(() => {
+    // center the selected tab
+    setTimeout(() => {
+      const activeTabElement = document.querySelector(
+        `[data-tab-index="${activeIndex}"]`
+      );
+      if (activeTabElement) {
+        activeTabElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest',
+        });
+      }
+    }, 0);
+  }, [activeIndex]);
+
   return (
     <div
+      id={id}
+      data-tab-index={tabIndex}
       key={`${title}-tab-` + tabIndex}
       className={styles.getTabClass(
         tabIndex === activeIndex,
@@ -33,7 +53,7 @@ export function Tab({
         isOnlyTab
       )}
       onClick={() => selectTabReceived(tabIndex)}
-      style={{ minWidth: 120 }}
+      style={{ width: '-webkit-fill-available' }}
     >
       <Typography
         type={isOnlyTab ? 'h2' : 'h4'}

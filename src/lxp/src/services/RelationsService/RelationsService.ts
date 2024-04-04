@@ -12,12 +12,12 @@ class RelationsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query {
-          GetAllRelation {
-            id
-            description
-          }
+      query GetAllRelation($isActive: Boolean = true){
+        GetAllRelation(where: { isActive: { eq: $isActive } }) {
+          id
+          description
         }
+      }
           `,
     });
 

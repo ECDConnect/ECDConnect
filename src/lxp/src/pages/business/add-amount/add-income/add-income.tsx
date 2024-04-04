@@ -48,14 +48,12 @@ export const AddIncome: React.FC = () => {
 
   const onSubmit = useCallback(
     (incomeItem: StatementsIncomeInput) => {
-      if (isOnline) {
-        appDispatch(
-          statementsThunkActions.addIncomeItem({
-            input: incomeItem,
-            firstAttempt: true,
-          })
-        );
-      }
+      appDispatch(
+        statementsThunkActions.addIncomeItem({
+          input: incomeItem,
+          firstAttempt: true,
+        })
+      );
     },
     [userAuth]
   );

@@ -1,7 +1,9 @@
 import { ActionModal, Button, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
+import LanguageSelector, {
+  LanguageSelectorProps,
+} from '@/components/language-selector/language-selector';
 import { useWindowSize } from '@reach/window-size';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -18,7 +20,9 @@ export interface WalkthroughInfoPageProps {
   sectionName: string;
   onHelp: () => void;
   onClose: () => void;
+  disableContentFromPortal?: boolean;
   extraElement?: ReactElement;
+  availableLanguages?: LanguageSelectorProps['availableLanguages'];
 }
 
 export const WalkthroughInfoPage = ({
@@ -26,6 +30,8 @@ export const WalkthroughInfoPage = ({
   onHelp,
   onClose,
   extraElement,
+  disableContentFromPortal,
+  availableLanguages,
 }: WalkthroughInfoPageProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
 
@@ -134,7 +140,7 @@ export const WalkthroughInfoPage = ({
   ]);
 
   const getContent = useCallback(async () => {
-    if (!isOnline) return;
+    if (!isOnline || disableContentFromPortal) return;
 
     appDispatch(
       visitThunkActions.getMoreInformation({
@@ -142,7 +148,13 @@ export const WalkthroughInfoPage = ({
         locale: language.locale,
       })
     );
-  }, [appDispatch, isOnline, language.locale, sectionName]);
+  }, [
+    appDispatch,
+    isOnline,
+    language.locale,
+    sectionName,
+    disableContentFromPortal,
+  ]);
 
   useEffect(() => {
     getContent();
@@ -162,7 +174,11 @@ export const WalkthroughInfoPage = ({
   return (
     <>
       <div className="bg-uiBg px-4 pb-2 pt-1">
-        <LanguageSelector selectLanguage={setLanguage} />
+        <LanguageSelector
+          availableLanguages={availableLanguages}
+          showOfflineAlert={!disableContentFromPortal}
+          selectLanguage={setLanguage}
+        />
       </div>
       <div
         className="flex flex-col p-4"

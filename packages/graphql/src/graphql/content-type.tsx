@@ -33,6 +33,9 @@ export const contentTypes = gql`
             fieldOrder
             fieldName
             displayName
+            displayMainTable
+            displayPage
+            isRequired
           }
         }
       }
@@ -44,6 +47,10 @@ export const contentTypes = gql`
           dataType
         }
         dataLinkName
+        displayName
+        displayMainTable
+        displayPage
+        isRequired
       }
     }
   }
@@ -86,6 +93,9 @@ export const contentTypesWithLanguage = gql`
           contentTypeField {
             fieldOrder
             fieldName
+            displayName
+            displayMainTable
+            displayPage
           }
         }
       }
@@ -117,6 +127,10 @@ export const contentDefinitions = gql`
         fieldTypeId
         graphDataTypeName
         assemblyDataTypeName
+        displayName
+        displayMainTable
+        displayPage
+        isRequired
       }
     }
   }

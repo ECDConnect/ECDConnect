@@ -1,6 +1,8 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -29,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var userId = httpContextAccessor.HttpContext.GetUser().Id;
 
-            var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
+            var attendance = trackingRepository.GetAllAttendancesByParentId(userId.ToString())
               .Where(x => x.Year == year);
 
             if (monthOfYear != null && monthOfYear > 0)
@@ -51,11 +53,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public IEnumerable<Attendance> GetWeeklyAttendance(
-    [Service] AttendanceTrackingRepository trackingRepository,
-    string userId,
-    int year,
-    int? monthOfYear,
-    int? weekOfYear)
+            [Service] AttendanceTrackingRepository trackingRepository,
+            string userId,
+            int year,
+            int? monthOfYear,
+            int? weekOfYear)
         {
             var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
                 .Where(x => x.Year == year);
@@ -79,9 +81,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public IEnumerable<Attendance> GetDailyAttendance(
-[Service] AttendanceTrackingRepository trackingRepository,
-string userId,
-DateTime attendanceDate)
+            [Service] AttendanceTrackingRepository trackingRepository,
+            string userId,
+            DateTime attendanceDate)
         {
             var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
               .Where(x => x.Year == attendanceDate.Year);

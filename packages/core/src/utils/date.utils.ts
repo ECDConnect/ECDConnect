@@ -34,6 +34,13 @@ export function getWeekDate(
   return date;
 }
 
+export function getFirstFriday(startDate) {
+  var resultDate = startDate;
+  resultDate.setDate(startDate.getDate() + ((7 + 5 - startDate.getDay()) % 7));
+
+  return resultDate;
+}
+
 export function getPreviousAndNextMonths(
   currentDate: Date | string,
   period: number

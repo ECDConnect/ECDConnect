@@ -11,26 +11,16 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 
 public class WeeklyNotificationChecks : CronJobService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
     public WeeklyNotificationChecks(IServiceScopeFactory scopeFactory, CronJobConfig<WeeklyNotificationChecks> config, ILogger<WeeklyNotificationChecks> logger)
-            : base(config, logger)
+            : base(scopeFactory, config, logger)
     {
-        _scopeFactory = scopeFactory;
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
+        var service = Scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
-            TenancyContext.SetTenantContext(scope);
-
-            if (DateTime.Now.Hour >= 4)
-            { //run weekly attendance reminder
-                await service.WeeklyAttendancesReminderAsync();
-            }
-            await service.WeeklyCoachTraineesCheckReminderAsync();
-        }
+            //run weekly attendance reminder
+        //await service.WeeklyAttendancesReminderAsync();
     }
 }

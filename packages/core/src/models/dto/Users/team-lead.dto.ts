@@ -1,12 +1,31 @@
-import { EntityBase } from '../entity-base';
+import { ClinicDto } from '../Community';
 import { UserDto } from './user.dto';
-import {} from '../StaticData/education-level.dto';
-import { ClinicDto } from './clinic.dto';
 
-export interface TeamLeadDto extends EntityBase {
+export interface TeamLeadDto {
+  id: string;
+  firstName: string;
+  surname: string;
+  jobTitle: string;
+  phoneNumber: string;
+  whatsAppNumber: string;
+  welcomeMessage: string;
   user?: UserDto;
-  userId?: string;
-  jobTitle?: string;
   clinic?: ClinicDto;
-  clinicId?: string;
+}
+
+export interface TeamLeadSummaryDto {
+  clinicNames?: string;
+  firstName?: string;
+  surname?: string;
+  idNumber?: string;
+  lastSeen?: string;
+  location?: string;
+  phoneNumber?: string;
+  totalChildren?: number;
+  totalClinics?: number;
+  totalHealthCareWorkers?: number;
+  totalInFieldVisitsCompleted?: number;
+  totalMeetingReportsSubmitted?: number;
+  totalPregnantMoms?: number;
+  whatsAppNumber?: string;
 }

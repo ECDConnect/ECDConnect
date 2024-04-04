@@ -30,6 +30,7 @@ import { getUser } from '@/store/user/user.selectors';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
+  TabsItemForPrincipal,
   TabsItems,
   TabsItemsWithAttendance,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
@@ -57,15 +58,18 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const user = useSelector(getUser);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
-  const isPrincipal = user?.principalObjectData?.isPrincipal;
+  const isPrincipal = practitioner?.isPrincipal;
   const isCoachView = user?.roles?.some(
     (role) => role.name === UserTypeEnum.Coach
   );
   const isPractitionerView =
     user?.roles?.some((role) => role.name === UserTypeEnum.Practitioner) ||
     isPrincipal;
-  const hasAttendanceRoute = isPrincipal && practitioners?.length! > 0;
+  const hasAttendanceRoute =
+    (isPrincipal && practitioners?.length! > 0) ||
+    (practitioner && !practitioner?.isTrainee);
 
   const practitionerId = location?.state?.practitionerId;
 
@@ -102,7 +106,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const showOnlineOnly = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit) => {
         return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
       },
@@ -110,13 +114,21 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   const onExit = () => {
-    isPractitionerView
-      ? history.push(ROUTES.CLASSROOM.ROOT, {
+    if (isPractitionerView) {
+      if (isPrincipal) {
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItemForPrincipal.CHILDREN,
+        } as ClassDashboardRouteState);
+      } else {
+        history.push(ROUTES.CLASSROOM.ROOT, {
           activeTabIndex: hasAttendanceRoute
             ? TabsItemsWithAttendance.CHILDREN
             : TabsItems.CHILDREN,
-        } as ClassDashboardRouteState)
-      : history.push(ROUTES.COACH.PRACTITIONERS);
+        } as ClassDashboardRouteState);
+      }
+    } else {
+      history.push(ROUTES.COACH.PRACTITIONERS);
+    }
   };
 
   const createLink = async () => {
@@ -255,7 +267,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   return (
-    <div className="bg-uiBg flex h-full w-full flex-col p-4">
+    <div className="flex h-full w-full flex-col bg-white p-4">
       <Typography
         type="unspecified"
         weight="normal"

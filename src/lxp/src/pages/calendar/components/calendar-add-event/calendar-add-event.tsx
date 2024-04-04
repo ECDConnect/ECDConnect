@@ -8,7 +8,7 @@ import {
   CalendarAddEventParticipantFormModel,
 } from './calendar-add-event.types';
 import { useSelector } from 'react-redux';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -48,12 +48,21 @@ import {
   sortListDataItems,
 } from '../calendar.utils';
 import { clubThunkActions } from '@/store/club';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CalendarActions } from '@/store/calendar/calendar.actions';
+import { useWindowSize } from '@reach/window-size';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
+  guests,
+  optionsToHide,
+  eventTypeDisabled,
+  hideAddParticipantsButton,
   onUpdated,
   onCancel,
 }) => {
+  const [model, setModel] = useState<CalendarEventModel>();
+
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
@@ -63,7 +72,27 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
+  const { isLoading, wasLoading } = useThunkFetchCall(
+    'calendar',
+    CalendarActions.UPDATE_CALENDAR_EVENT
+  );
+
   const isNewEvent = !eventProps?.id;
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      if (onUpdated && !!model) {
+        onUpdated(isNewEvent, model);
+      }
+    }
+  }, [isLoading, isNewEvent, model, onUpdated, wasLoading]);
+
+  const filteredGuests = useMemo(
+    () =>
+      guests?.filter((guest) => guest.extraData?.userId !== currentUser.id) ??
+      [],
+    [currentUser.id, guests]
+  );
 
   const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
     eventProps?.participantUserIds?.map((pid) => {
@@ -95,6 +124,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       firstName: currentUser.firstName || '',
       surname: currentUser.surname || '',
     },
+    visit: null,
   };
 
   const calendarEventTypes = useSelector(
@@ -171,6 +201,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     defaultValue: defaultValues,
   });
 
+  const { height } = useWindowSize();
+
   useEffect(() => {
     if (JSON.stringify(defaultValues) !== JSON.stringify(watchValues)) {
       setHasChangesOnEvent(true);
@@ -203,7 +235,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             };
           });
 
-      const model: CalendarEventModel = {
+      const currentModel: CalendarEventModel = {
         id: id,
         allDay: formValues.allDay,
         description: formValues.description,
@@ -222,15 +254,17 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           firstName: currentUser.firstName || '',
           surname: currentUser.surname || '',
         },
+        visit: null,
       };
+
+      setModel(currentModel);
       appDispatch(
         calendarThunkActions.updateCalendarEvent(
-          calendarConvert.CalendarEventModel.CalendarEventModelInputModel(model)
+          calendarConvert.CalendarEventModel.CalendarEventModelInputModel(
+            currentModel
+          )
         )
       );
-      if (onUpdated) {
-        onUpdated(isNewEvent, model);
-      }
     }
   };
 
@@ -251,6 +285,11 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const onSearchParticipantDone = useCallback(
     async (participantUsers: CalendarAddEventParticipantFormModel[]) => {
+      if (!!filteredGuests?.length) {
+        setSearchParticipantsVisible(false);
+        return setEventFormValue('participants', participantUsers);
+      }
+
       const clubIds: string[] = participantUsers
         .filter((x) => x.isClub)
         .map((x) => x.userId);
@@ -283,7 +322,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       setSearchParticipantsVisible(false);
       setEventFormValue('participants', participantUsers);
     },
-    [setEventFormValue]
+    [appDispatch, filteredGuests, setEventFormValue]
   );
 
   const onAddParticipant = useCallback(() => {
@@ -309,6 +348,18 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     (
       participantUsers: CalendarAddEventParticipantFormModel[]
     ): ListDataItem[] => {
+      const mappedCurrentUser = mapUserToListDataItem(currentUser);
+      mappedCurrentUser.noClick = true;
+
+      if (!!filteredGuests?.length) {
+        return [
+          mappedCurrentUser,
+          ...(filteredGuests?.filter((participant) =>
+            participantUsers.some((user) => user.userId === participant.id)
+          ) ?? []),
+        ];
+      }
+
       const list: ListDataItem[] = [];
       if (!!practitioners) {
         list.push(
@@ -322,11 +373,10 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         list.forEach((x) => (x.rightIcon = 'XIcon'));
         sortListDataItems(list);
       }
-      const cu = mapUserToListDataItem(currentUser);
-      cu.noClick = true;
-      return [cu, ...list];
+
+      return [mappedCurrentUser, ...list];
     },
-    [practitioners, currentUser]
+    [currentUser, filteredGuests, practitioners]
   );
 
   const formValue_end = getEventFormValues().end;
@@ -355,7 +405,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   );
 
   return (
-    <>
+    <div className="overflow-auto" style={{ height }}>
       <BannerWrapper
         size={'small'}
         backgroundColour={'white'}
@@ -366,84 +416,90 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         onBack={() => exitUpdateEvent()}
         onClose={() => exitUpdateEvent()}
         displayOffline={!isOnline}
+        className="px-4 pt-4"
       >
-        <div className={'px-4 pt-4'}>
-          <FormInput<CalendarAddEventFormModel>
-            className="mb-4"
-            label="Name your event"
-            register={eventFormRegister}
-            nameProp={'name'}
-            maxLength={50}
-            placeholder="Name your event"
-          />
-          <Dropdown
-            className="mb-4"
-            placeholder={'Tap to choose event type'}
-            list={calendarEventTypes.map((et) => ({
+        <FormInput<CalendarAddEventFormModel>
+          className="mb-4"
+          label="Name your event"
+          register={eventFormRegister}
+          nameProp={'name'}
+          maxLength={50}
+          placeholder="Name your event"
+        />
+        <Dropdown
+          className="mb-4"
+          placeholder={'Tap to choose event type'}
+          list={calendarEventTypes
+            .filter(
+              (type) => !optionsToHide?.some((option) => option === type.name)
+            )
+            .map((et) => ({
               label: et.name,
               value: et.name,
             }))}
-            fillType="clear"
-            fullWidth={true}
-            label={'Choose event type'}
-            selectedValue={getEventFormValues().eventType}
-            onChange={(item: string) => {
-              setEventFormValue('eventType', item);
-            }}
+          fillType="clear"
+          fullWidth={true}
+          label={'Choose event type'}
+          disabled={eventProps?.eventTypeDisabled || eventTypeDisabled}
+          selectedValue={getEventFormValues().eventType}
+          onChange={(item: string) => {
+            setEventFormValue('eventType', item);
+          }}
+        />
+        <div className="text-md text-textDark mb-4 block font-semibold">
+          <Checkbox<CalendarAddEventFormModel>
+            register={eventFormRegister}
+            nameProp="allDay"
+            className="flex-1"
+            description="All day"
           />
-          <div className="text-md text-textDark mb-4 block font-semibold">
-            <Checkbox<CalendarAddEventFormModel>
-              register={eventFormRegister}
-              nameProp="allDay"
-              className="flex-1"
-              description="All day"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="text-md text-textDark mb-1 block font-semibold">
-              {`Start date${getEventFormValues().allDay ? '' : ' and time'}`}
-            </label>
-            <DatePicker
-              className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-              wrapperClassName="text-center"
-              selected={getEventFormValues().start}
-              onChange={onChangeStartDate}
-              dateFormat={
-                getEventFormValues().allDay
-                  ? 'EEE, dd MMM yyyy'
-                  : 'EEE, dd MMM yyyy  HH:mm'
-              }
-              minDate={minDate}
-              maxDate={maxDate}
-              showTimeInput={!getEventFormValues().allDay}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="text-md text-textDark block font-semibold">
-              {`End date${getEventFormValues().allDay ? '' : ' and time'}`}
-            </label>
-            <DatePicker
-              wrapperClassName="text-center"
-              className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-              selected={getEventFormValues().end}
-              onChange={onChangeEndDate}
-              dateFormat={
-                getEventFormValues().allDay
-                  ? 'EEE, dd MMM yyyy'
-                  : 'EEE, dd MMM yyyy  HH:mm'
-              }
-              minDate={minDate}
-              maxDate={maxDate}
-              showTimeInput={!getEventFormValues().allDay}
-            />
-          </div>
-          <div className="mb-4">
-            <StackedList
-              className={styles.stackedList}
-              listItems={getParticipantList(getEventFormValues().participants)}
-              type={'UserAlertList'}
-              onClickItem={onRemoveParticipant}
-            />
+        </div>
+        <div className="mb-4">
+          <label className="text-md text-textDark mb-1 block font-semibold">
+            {`Start date${getEventFormValues().allDay ? '' : ' and time'}`}
+          </label>
+          <DatePicker
+            className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
+            wrapperClassName="text-center"
+            selected={getEventFormValues().start}
+            onChange={onChangeStartDate}
+            dateFormat={
+              getEventFormValues().allDay
+                ? 'EEE, dd MMM yyyy'
+                : 'EEE, dd MMM yyyy  HH:mm'
+            }
+            minDate={minDate}
+            maxDate={maxDate}
+            showTimeInput={!getEventFormValues().allDay}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="text-md text-textDark block font-semibold">
+            {`End date${getEventFormValues().allDay ? '' : ' and time'}`}
+          </label>
+          <DatePicker
+            wrapperClassName="text-center"
+            className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
+            selected={getEventFormValues().end}
+            onChange={onChangeEndDate}
+            dateFormat={
+              getEventFormValues().allDay
+                ? 'EEE, dd MMM yyyy'
+                : 'EEE, dd MMM yyyy  HH:mm'
+            }
+            minDate={minDate}
+            maxDate={maxDate}
+            showTimeInput={!getEventFormValues().allDay}
+          />
+        </div>
+        <div className="mb-4">
+          <StackedList
+            className={styles.stackedList}
+            listItems={getParticipantList(getEventFormValues().participants)}
+            type={'UserAlertList'}
+            onClickItem={onRemoveParticipant}
+          />
+          {!hideAddParticipantsButton && (
             <Button
               size="small"
               type="filled"
@@ -459,7 +515,9 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
                 className={'w-full whitespace-nowrap'}
               />
             </Button>
-          </div>
+          )}
+        </div>
+        <div className="mb-4">
           <FormInput<CalendarAddEventFormModel>
             label={'Describe the event'}
             subLabel="Optional"
@@ -469,24 +527,25 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             nameProp={'description'}
             placeholder={'Describe the event...'}
           />
-          <div>
-            <Button
-              onClick={() => handleFormSubmit(getEventFormValues())}
-              className="w-full"
-              size="small"
-              color="primary"
-              type="filled"
-              disabled={!isValid}
-            >
-              {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
-              <Typography
-                type="h6"
-                className="ml-2"
-                text={isNewEvent ? 'Create event' : 'Update event'}
-                color="white"
-              />
-            </Button>
-          </div>
+        </div>
+        <div className="mb-4">
+          <Button
+            onClick={() => handleFormSubmit(getEventFormValues())}
+            className="w-full"
+            size="small"
+            color="primary"
+            type="filled"
+            disabled={!isValid || isLoading}
+            isLoading={isLoading}
+          >
+            {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text={isNewEvent ? 'Create event' : 'Update event'}
+              color="white"
+            />
+          </Button>
         </div>
       </BannerWrapper>
       <Dialog
@@ -526,12 +585,13 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         position={DialogPosition.Full}
       >
         <CalendarSearchParticipant
+          customList={filteredGuests}
           currentParticipantUsers={getEventFormValues().participants}
           onBack={onSearchParticipantClose}
           onDone={onSearchParticipantDone}
         />
       </Dialog>
-    </>
+    </div>
   );
 };
 
@@ -542,17 +602,20 @@ export const useCalendarAddEvent = (): ((
   return (options: CalendarAddEventOptions) => {
     dialog({
       position: DialogPosition.Full,
+      blocking: true,
       render: (onSubmit: () => void, onCancel: () => void) => {
         return (
           <CalendarAddEvent
             event={options.event}
+            guests={options.guests}
             onUpdated={(isNew: boolean, event: CalendarEventModel) => {
               if (!!options.onUpdated) options.onUpdated(isNew, event);
               onSubmit();
             }}
+            optionsToHide={options.optionsToHide}
             onCancel={() => {
               if (!!options.onCancel) options.onCancel();
-              onCancel();
+              onSubmit();
             }}
           />
         );
@@ -576,6 +639,8 @@ export const useCalendarEditEvent = (): ((
               if (!!options.onUpdated) options.onUpdated(event);
               onSubmit();
             }}
+            eventTypeDisabled={options.eventTypeDisabled}
+            hideAddParticipantsButton={options.hideAddParticipantsButton}
             onCancel={() => {
               if (!!options.onCancel) options.onCancel();
               onCancel();

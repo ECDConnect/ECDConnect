@@ -12,12 +12,14 @@ import { BannerHeaderSizes } from './models';
 import { StatusChip } from '../../components/status-chip/status-chip';
 import SideMenu from '../side-menu/side-menu';
 import React, { useState } from 'react';
+import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 export interface BannerWrapperProps extends ComponentBaseProps {
   title?: string;
   subTitle?: string;
   avatar?: JSX.Element;
   color?: Colours;
+  isLoading?: boolean;
   showBackground?: boolean;
   backgroundColour?: Colours;
   backgroundUrl?: string;
@@ -44,6 +46,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
   title,
   subTitle,
   avatar,
+  isLoading,
   showBackground = false,
   color = 'primary',
   size = 'normal',
@@ -67,6 +70,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
   version,
   id,
   helpId,
+  style,
 }) => {
   const showMenu = (menuItems?.length || 0) > 0;
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -79,6 +83,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
         `bg-${backgroundColour}`,
         renderOverflow ? 'h-full' : ''
       )}
+      style={style}
     >
       {showBackground && (
         <div className={styles.backgroundImageWrapper(size, color)}>
@@ -174,22 +179,31 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
           text={'offline'}
         />
       )}
-      <div className={classNames(styles.content(renderOverflow), className)}>
-        {showMenu ? (
-          <SideMenu
-            version={version}
-            logoUrl={menuLogoUrl}
-            navigation={menuItems || []}
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-            onNavigation={onNavigation}
-          >
-            {children}
-          </SideMenu>
-        ) : (
-          children
-        )}
-      </div>
+      {isLoading ? (
+        <LoadingSpinner
+          size="medium"
+          className="mt-4"
+          spinnerColor="primary"
+          backgroundColor="uiLight"
+        />
+      ) : (
+        <div className={classNames(styles.content(renderOverflow), className)}>
+          {showMenu ? (
+            <SideMenu
+              version={version}
+              logoUrl={menuLogoUrl}
+              navigation={menuItems || []}
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+              onNavigation={onNavigation}
+            >
+              {children}
+            </SideMenu>
+          ) : (
+            children
+          )}
+        </div>
+      )}
     </div>
   );
 };

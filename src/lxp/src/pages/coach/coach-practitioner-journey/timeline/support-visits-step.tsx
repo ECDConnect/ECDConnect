@@ -26,10 +26,22 @@ export const SupportVisits = ({
   const practitioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(practitionerId)
   );
-  const mergedVisits = [
-    ...(timeline?.supportVisits ?? []),
-    ...(timeline?.requestedCoachVisits ?? []),
-  ];
+  const mergedVisits = [...(timeline?.supportVisits ?? [])];
+  if (
+    !!timeline?.requestedCoachVisits &&
+    timeline?.requestedCoachVisits.length > 0
+  ) {
+    if (!!timeline?.supportVisits && timeline?.supportVisits.length > 0) {
+      mergedVisits.push(
+        ...timeline.requestedCoachVisits.filter(
+          (v) =>
+            !!v && !timeline.supportVisits?.find((x) => !!x && x.id === v.id)
+        )
+      );
+    } else {
+      mergedVisits.push(...timeline.requestedCoachVisits);
+    }
+  }
 
   return (
     <>
@@ -50,18 +62,19 @@ export const SupportVisits = ({
               color="textDark"
               className="w-6/12 font-bold"
               text={
-                item?.visitType?.name?.includes('practitioner')
+                item?.visitType?.name?.includes('requested')
                   ? `${practitioner?.user?.firstName} requested a ${
                       item?.visitType?.name ===
                       generalSupportVisitTypes.practitioner_visit
                         ? 'visit'
                         : 'call'
                     }`
+                  : !!item?.eventId
+                  ? `Scheduled ${item?.visitType?.description || ''}`
                   : item?.visitType?.description || ''
               }
             />
-            {item?.visitType?.name?.includes('practitioner') &&
-              !item?.attended &&
+            {!item?.attended &&
               (!mergedVisits[index - 1] ||
                 !!mergedVisits[index - 1]?.attended) && (
                 <Button

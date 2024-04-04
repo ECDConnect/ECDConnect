@@ -14,6 +14,7 @@ import {
   DialogServiceProvider,
   SnackbarProvider,
   useDialog,
+  usePrevious,
 } from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
 
@@ -29,6 +30,12 @@ import { LoginModal } from '@/pages/auth/login-modal/login-modal';
 
 import '@/styles.css';
 
+import { AppErrorHandler } from '@ecdlink/core';
+import { stopReportingRuntimeErrors } from 'react-error-overlay';
+if (process.env.NODE_ENV === 'development') {
+  stopReportingRuntimeErrors();
+}
+
 function App() {
   const dialog = useDialog();
   const user = useSelector(authSelectors.getAuthUser);
@@ -36,6 +43,8 @@ function App() {
   const applicationSettings = useSelector(
     settingSelectors.getApplicationSettings
   );
+
+  const wasUserExpired = usePrevious(userExpired);
 
   const clearSiteData = useClearSiteData();
 
@@ -76,7 +85,7 @@ function App() {
   }, [applicationSettings]);
 
   useEffect(() => {
-    if (userExpired) {
+    if (userExpired && userExpired !== wasUserExpired) {
       dialog({
         blocking: true,
         position: DialogPosition.Middle,
@@ -85,7 +94,7 @@ function App() {
         },
       });
     }
-  });
+  }, [dialog, userExpired, wasUserExpired]);
 
   useEffect(() => {
     if (!user) {
@@ -96,7 +105,9 @@ function App() {
   return (
     <IonApp className="m-auto max-w-4xl bg-white">
       <IonReactRouter>
-        <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+        <AppErrorHandler>
+          <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+        </AppErrorHandler>
       </IonReactRouter>
     </IonApp>
   );

@@ -22,6 +22,8 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using Microsoft.AspNetCore.Http;
 using ECDLink.Security.Extensions;
 using HotChocolate.Data;
+using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -39,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         // TODO: Builder pattern for query?
         [UseSorting]
         public async Task<IQueryable<ApplicationUser>> GetUsersAsync(
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             PagedQueryInput? pagingInput = null,
@@ -47,9 +49,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
             var usersQuery = userManager.Users
                 .Where(u => u.TenantId == tenantId)
@@ -79,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(UserManager<ApplicationUser> userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
+        private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(ApplicationUserManager userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
         {
             if (!userIsAdmin)
             {
@@ -99,7 +101,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
         public async Task<int> GetCountUsersAsync(
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             PagedQueryInput? pagingInput = null,
@@ -107,8 +109,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
             var usersQuery = userManager.Users
@@ -186,7 +188,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         // TODO: add logic to comply with, Admins can see admins, but other users can't see admins
         private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             ECDLink.Abstractrions.GraphQL.Attributes.PagedQueryInput pagingInput,
             IQueryable<ApplicationUser> usersQuery)
         {
@@ -214,8 +216,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<ApplicationUser> GetUserById(
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] ApplicationUserManager userManager,
+            [Service] ApplicationRoleManager roleManager,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -272,17 +274,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             //TODO: Add Teamlead object / indicator
 
             //Child
-            if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
-            {
-                var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
-                user.childObjectData = childRepo.GetByUserId(user.Id);
-            }
+            //if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
+            //{
+            //    var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
+            //    user.childObjectData = childRepo.GetByUserId(user.Id);
+            //}
 
             return user;
         }
 
         public UserByToken GetUserByToken(
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             string token)
         {
@@ -294,7 +296,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var tokenusr = shortUrlRepo.GetAll().Where(x => x.URL.Contains(token)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
                 if (tokenusr != null)
                 {
-                    var user = userManager.FindByIdAsync(tokenusr.UserId).Result;
+                    var user = userManager.FindByIdAsync(tokenusr.UserId.ToString()).Result;
 
                     if (user is null)
                     {
@@ -310,7 +312,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     tokenuser.FullName = user.FullName;
                     tokenuser.PhoneNumber = user.PhoneNumber;
-                    tokenuser.UserId = user.Id;
+                    tokenuser.UserId = user.Id.ToString();
                     tokenuser.RoleName = (user.practitionerObjectData != null
                         ? Roles.PRACTITIONER
                         : user.principalObjectData != null
@@ -327,7 +329,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public string getMoodleSessionForUserId(
             [Service] MoodleManager moodleManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             string userId)
         {
             string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;
@@ -355,6 +357,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // create session for moodle user
             // return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
         }
+
+
+        
 
     }
 }

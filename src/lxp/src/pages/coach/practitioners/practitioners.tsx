@@ -11,7 +11,7 @@ import {
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '../../../components/search-header/search-header';
 import { format } from 'date-fns';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import * as styles from './practitioners.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
@@ -19,11 +19,13 @@ import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { practitionerSelectors } from '@/store/practitioner';
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
-import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
 import { userSelectors } from '@store/user';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { NotificationDisplay } from '@ecdlink/graphql';
+import { useAppDispatch } from '@/store';
+import { getClubsForCoach } from '@/store/club/club.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
+import { PractitionersRouteState } from './practitioners-types';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
@@ -64,10 +66,12 @@ const sortOptions: SearchSortOptions = {
 };
 
 export const Practitioners: React.FC = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const location = useLocation<PractitionersRouteState>();
+  const stateFilter = location.state?.filter;
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
@@ -75,10 +79,10 @@ export const Practitioners: React.FC = () => {
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
+  const practitionersMessages = useSelector(
+    practitionerSelectors.getPractitionersMetrics
+  );
 
-  const [practitionersMessages, setPractitionersMessages] =
-    useState<NotificationDisplay[]>();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerUserListData, setPractitionerUserListData] =
     useState<ListDataItem[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -104,19 +108,29 @@ export const Practitioners: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
 
-  const [loading, setLoading] = useState(false);
+  const { isLoading } = useThunkFetchCall(
+    'practitioner',
+    PractitionerActions.GET_PRACTITIONERS_DISPLAY_METRICS
+  );
 
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
       history.push('practitioner-profile-info', {
-        practitionerId,
+        practitionerId: practitionerId,
       });
     } else {
       history.push('practitioner-info-dashboard', {
-        practitionerId,
+        practitionerId: practitionerId,
       });
     }
   };
+
+  // Need to load clubs so we have the names when viewing each practitioner
+  useEffect(() => {
+    if (userData?.id && isOnline) {
+      appDispatch(getClubsForCoach({ userId: userData?.id }));
+    }
+  }, [appDispatch, isOnline, userData?.id]);
 
   useEffect(() => {
     if (
@@ -139,29 +153,16 @@ export const Practitioners: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersList?.length, practitionersMessages]);
 
-  const practionersDetailsFor = async (target = 'practitioner') => {
-    setLoading(true);
-
-    const practitionersMessageData = await new PractitionerService(
-      userAuth?.auth_token!
-    ).displayMetrics(target ?? 'practitioner');
-
-    setPractitionersMessages(practitionersMessageData);
-    setLoading(false);
-    return practitionersMessageData;
-  };
-
   useEffect(() => {
-    if (isOnline) {
-      if (isCoach) {
-        practionersDetailsFor('coach');
-      }
-      if (!isCoach) {
-        practionersDetailsFor('practitioner');
-      }
+    applyFilter();
+  }, [taskFilterOptions]);
+
+  const applyFilter = () => {
+    if (stateFilter && taskFilterOptions.length > 0) {
+      const newFilter = taskFilterOptions.filter((o) => o.id == stateFilter);
+      setFilterByTask(newFilter);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -197,16 +198,14 @@ export const Practitioners: React.FC = () => {
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
-      ...(isOnline
-        ? { subTitle: `${currentPractitionerMessage?.subject}` }
-        : {}),
-      alertSeverity: !isOnline
-        ? 'none'
-        : currentPractitionerMessage?.color === 'Success'
-        ? 'success'
-        : currentPractitionerMessage?.color === 'Warning'
-        ? 'warning'
-        : 'error',
+      subTitle: `${currentPractitionerMessage?.subject}`,
+      hideAlertSeverity: !currentPractitionerMessage?.subject,
+      alertSeverity:
+        currentPractitionerMessage?.color === 'Success'
+          ? 'success'
+          : currentPractitionerMessage?.color === 'Warning'
+          ? 'warning'
+          : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
       extraData: {
@@ -397,7 +396,7 @@ export const Practitioners: React.FC = () => {
         </SearchHeader>
         {practitionersList !== undefined && practitionersList?.length > 0 ? (
           <div className="flex justify-center">
-            {loading && isOnline ? (
+            {isLoading && isOnline ? (
               <LoadingSpinner
                 className="mt-6"
                 size={'medium'}

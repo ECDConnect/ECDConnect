@@ -13,6 +13,7 @@ interface DialogProps extends ComponentBaseProps {
   position: DialogPosition;
   fullScreen?: boolean;
   borderRadius?: DialogBorderRadiusType;
+  zIndex?: number;
 }
 
 export const Dialog: React.FC<DialogProps> = ({
@@ -25,13 +26,25 @@ export const Dialog: React.FC<DialogProps> = ({
   borderRadius = 'rounded',
   fullScreen = false,
   className = '',
+  zIndex,
 }) => {
+  if (visible) console.log(`zIndex: ${zIndex}`);
   return (
     <>
       {visible && (
         <>
           <div
-            className={classNames(styles.getWrapperStyle(position), className)}
+            ref={
+              !zIndex
+                ? undefined
+                : (el) =>
+                    el &&
+                    el.style.setProperty('z-index', `${zIndex}`, 'important')
+            }
+            className={classNames(
+              styles.getWrapperStyle(position, zIndex),
+              className
+            )}
             data-testid="dialog-wrapper"
           >
             <div
@@ -45,8 +58,21 @@ export const Dialog: React.FC<DialogProps> = ({
             </div>
           </div>
           <div
+            ref={
+              !zIndex
+                ? undefined
+                : (el) =>
+                    el &&
+                    el.style.setProperty(
+                      'z-index',
+                      `${zIndex - 1}`,
+                      'important'
+                    )
+            }
             className={classNames(
-              solidBackdrop ? styles.bottomDivSolid : styles.bottomDiv,
+              solidBackdrop
+                ? styles.getBottomDivSolidStyle(zIndex)
+                : styles.getBottomDivStyle(zIndex),
               `bg-${backdropColour}`
             )}
           ></div>

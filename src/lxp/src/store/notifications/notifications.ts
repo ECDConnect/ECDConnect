@@ -14,6 +14,10 @@ const notificationsState = createSlice({
   name: 'notifications',
   initialState,
   reducers: {
+    resetNotificationState: (state) => {
+      state.notifications = initialState.notifications;
+      state.notificationReferences = initialState.notificationReferences;
+    },
     resetFrontendNotificationState: (state) => {
       const backendNotifications = state.notifications.filter(
         (item) => item.message.isFromBackend
@@ -45,6 +49,18 @@ const notificationsState = createSlice({
         message: x.message,
       }));
       state.notifications = notificationsCopy;
+    },
+    markNotificationRead: (
+      state,
+      action: PayloadAction<{ reference: string }>
+    ) => {
+      const notification = state.notifications.find(
+        (n) => n.message.reference === action.payload.reference
+      );
+
+      if (notification) {
+        notification.isNew = false;
+      }
     },
     removeNotification: (state, action: PayloadAction<Notification>) => {
       const notificationIndex = state.notifications.findIndex(

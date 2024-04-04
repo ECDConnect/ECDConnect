@@ -65,7 +65,6 @@ export const MonthStatements: React.FC = () => {
 
   const signature = practitioner?.signingSignature ?? '';
 
-  console.log('practitioner', practitioner);
   const tableTopContent = {
     pageTitle: `Income Statement`,
     subtitle: '',

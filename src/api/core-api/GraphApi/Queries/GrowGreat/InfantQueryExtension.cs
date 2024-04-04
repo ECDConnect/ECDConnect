@@ -49,8 +49,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
 
-            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
-            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
+            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == Guid.Parse(id) && x.IsActive.Equals(true)).ToList();
+            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == Guid.Parse(id) && x.IsActive.Equals(true)).ToList();
 
             if (visitType == Constants.GGSettings.visitType_due)
             {
@@ -106,11 +106,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var childCount = 0;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
-            List<Infant> childrenCaregiver = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(userId) &&
+            List<Infant> childrenCaregiver = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == Guid.Parse(userId) &&
                                                                            x.IsActive.Equals(true) &&
                                                                            x.InsertedDate.Month == today.Month &&
                                                                            x.InsertedDate.Year == today.Year).ToList();
-            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(userId) &&
+            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == Guid.Parse(userId) &&
                                                                         x.IsActive.Equals(true) &&
                                                                         x.InsertedDate.Month == today.Month &&
                                                                         x.InsertedDate.Year == today.Year).ToList();
@@ -183,9 +183,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }
 
             sumObj = new ClientSummary();
-            sumObj.VisitName = Constants.GGSettings.careForBaby;
+            sumObj.VisitName = Constants.GGSettings.CareForBaby;
             sumObj.Order = 2;
-            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.careForBaby);
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.CareForBaby);
             if (sumObj.SummaryData != null)
             {
                 summary.Add(sumObj);
