@@ -122,6 +122,7 @@ export const FormInput = <T extends FieldValues>({
               style={{
                 backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
               }}
+              value={value}
               {...restProps}
             />
           );
@@ -209,6 +210,7 @@ export const FormInput = <T extends FieldValues>({
                 styles.getBorderClass(value, maxCharacters),
                 getInputStyle()
               )}
+              value={value}
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon ? 20 : startIcon ? 50 : 16,
