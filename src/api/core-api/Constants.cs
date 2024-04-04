@@ -457,7 +457,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_stop_worry = "Felt unable to stop worrying or thinking too much?";
             public const string q_felt_down = "Felt down, depressed or hopeless?";
             public const string q_suicide = "Had thoughts and plans to harm yourself or commit suicide?";
-            public const string q_T = "(T) Tolerance: how many drinks does it take to make you high?";
+            public const string QuestionAlcoholTolerance = "(T) Tolerance: how many drinks does it take to make you high?";
             public const string q_A = "(A) Have people annoyed you by criticizing your drinking?";
             public const string q_C = "(C) Have you ever felt you need to cut down on your drinking?";
             public const string q_E = "(E) Eye-opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?";
@@ -478,11 +478,11 @@ namespace EcdLink.Api.CoreApi
             public const string sassa_refferals = "Refer to SASSA";
             public const string missed_clinic_visit = "You missed a clinic visit - make sure you go as soon as possible!";
             public const string all_clinic_visit = "You are up to date with your clinic visits!";
-            public const string underweight = "May be underweight - MUAC less than 22cm";
+            public const string IndicatorMotherUnderweight = "May be underweight - MUAC less than 22cm";
             public const string underweight2 = "You might be underweight: eat 3 meals every day";
-            public const string underweight3 = "Underweight";
-            public const string overweight = "Overweight";
-            public const string obese = "Obese";
+            public const string IndicatorUnderweight = "Underweight";
+            public const string IndicatorOverweight = "Overweight";
+            public const string IndicatorObese = "Obese";
             public const string muac_over_22 = "MUAC over 22cm";
             public const string healthy_weight = "According to your mid-upper arm circumference, you are a healthy weight";
             public const string urgent_care = "You need urgent care for some serious health issues";
@@ -506,12 +506,12 @@ namespace EcdLink.Api.CoreApi
             public const string not_growing = " is not growing well";
             public const string growing_well = " is growing well";
             public const string health_issues = "You have some health issues";
-            public const string severely_underweight = "Severely underweight";
-            public const string severely_stunted = "Severely stunted";
-            public const string stunted = "Stunted";
-            public const string severe_acute_malnutrition = "Severe acute malnutrition";
-            public const string moderate_acute_malnutrition = "Moderate acute malnutrition";
-            public const string growth_faltering = "Growth faltering: weight has not increased ";
+            public const string IndicatorSeverelyUnderweight = "Severely underweight";
+            public const string IndicatorSeverelyStunted = "Severely stunted";
+            public const string IndicatorStunted = "Stunted";
+            public const string IndicatorSevereAcuteMalnutrition = "Severe acute malnutrition";
+            public const string IndicatorModerateAcuteMalnutrition = "Moderate acute malnutrition";
+            public const string IndicatorGrowthFaltering = "Growth faltering: weight has not increased ";
             public const string great_job_breastfeeding = "You're doing a great job breastfeeding!";
             public const string great_job_formula_feeding = "You're doing a great job formula feeding!";
             public const string try_to_make_sure = "Try to make sure you give ";
@@ -522,9 +522,9 @@ namespace EcdLink.Api.CoreApi
             public const string give_client_food_most = "You are giving {client} foods from most of the groups!";
             public const string dev_is_struggling = "{client} is struggling with ";
             public const string dev_might_struggling = "{client} might be having issues with: ";
-            public const string immunisations_not_up_to_date = "Immunisations not up to date";
-            public const string vitamin_not_up_to_date = "Vitamin A not up to date";
-            public const string deworming_not_up_to_date = "Deworming not up to date";
+            public const string ImmunisationsNotUpToDate = "Immunisations not up to date";
+            public const string VitaminANotUpToDate = "Vitamin A not up to date";
+            public const string DewormingNotUpToDate = "Deworming not up to date";
             public const string not_up_to_date = "Immunisations, deworming and Vitamin A not up to date";
             public const string missed_immunisations = "{client} missed an immunisation, deworming and Vitamin A supplement";
             public const string all_up_to_date = "All immunisations, Vitamin A and deworming are up to date";
@@ -594,7 +594,8 @@ namespace EcdLink.Api.CoreApi
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
             public const string p4_name = "Pillar 4: Healthcare";
-            public const string low_birth_weight = "Low birth weight";
+            public const string IndicatorLowBirthWeight = "Low birth weight";
+            public const string IndicatorLowBirthLength = "Low birth length";
 
             // Infant referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
             public const string infant_missed_clinic_visit = "Missed clinic visit";
@@ -888,6 +889,36 @@ namespace EcdLink.Api.CoreApi
             public static readonly Guid ChildrenVitaminAUpToDateActivityId = new Guid("ecbda3f8-9bd6-472d-a4c3-ec0f10c20797");
             public static readonly Guid ChildrenDewormingUpToDateActivityId = new Guid("31b8633f-aeac-4970-99cf-e72745c963b7");
             public static readonly Guid ChildrenImmunisationsUpToDateActivityId = new Guid("b3be1d39-c4e3-4fbc-bfb4-80099320436c");
+        }
+
+        public static class ReferralTypes
+        {
+            public const string EarlyIdentificationOfPregnancy = "Early identification of pregnancy";
+            public const string ChildSupportGrant = "Child support grant";
+            public const string DevelopmentalDelays = "Developmental delays";
+            public const string MaternalDistress = "Maternal distress";
+            public const string SeverlyUnderweight = "Severly underweight";
+            public const string VitaminANotUpToDate = "Vitamin A not up to date";
+            public const string ClinicVisitsNotUpToDate = "Clinic visits not up to date";
+            public const string DangerSignsChildsMother = "Danger signs - child's mother";
+            public const string DangerSignsPregnantMom = "Danger signs - pregnant mom";
+            public const string MaternalMalnutrition = "Maternal malnutrition";
+            public const string SubstanceAbuse = "Substance abuse";
+            public const string DangerSignsChild = "Danger signs - child";
+            public const string CaregiverIDBook = "Caregiver ID book";
+            public const string SevereAcuteMalnutrition = "Severe acute malnutrition";
+            public const string SeverlyStunted = "Severly stunted";
+            public const string LowBirthWeight = "Low birth weight";
+            public const string GrowthFaltering = "Growth faltering";
+            public const string Underweight = "Underweight";
+            public const string Overweight = "Overweight";
+            public const string Obese = "Obese";
+            public const string LowBirthLength = "Low birth length";
+            public const string Stunted = "Stunted";
+            public const string ModerateAcuteMalnutrition = "Moderate acute malnutrition";
+            public const string DewormingNotUpToDate = "Deworming not up to date";
+            public const string ImmunisationNotUpToDate = "Immunisation not up to date";
+            public const string ChildBirthCertificate = "Child birth certificate";
         }
 
         public static class GrowGreatPointsAmounts

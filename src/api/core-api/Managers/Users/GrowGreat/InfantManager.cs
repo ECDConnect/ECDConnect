@@ -480,7 +480,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     {
                         statusInfo.Color = MetricsIconEnum.Warning.ToString();
                         statusInfo.Icon = MetricsIconEnum.Warning.ToString();
-                        statusInfo.Subject = Constants.GGSettings.low_birth_weight;
+                        statusInfo.Subject = Constants.GGSettings.IndicatorLowBirthWeight;
                     }
                     else
                     {
