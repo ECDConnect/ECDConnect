@@ -1,4 +1,4 @@
-import { Divider, Typography } from '@ecdlink/ui';
+import { Divider, LoadingSpinner, Typography } from '@ecdlink/ui';
 import Pregnant from '../../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../../assets/gg-icons/infant.svg';
 import Nutrition from '../../../../../../assets/gg-icons/nutrition.svg';
@@ -8,10 +8,12 @@ import { ClinicVisitReportDto } from '@ecdlink/core';
 import { Fragment } from 'react';
 
 interface ClientRegistrationProps {
+  isLoading?: boolean;
   clinicReportData: ClinicVisitReportDto;
 }
 
 export const ClientRegistration: React.FC<ClientRegistrationProps> = ({
+  isLoading,
   clinicReportData,
 }) => {
   const totalCaregiversAttended =
@@ -152,56 +154,64 @@ export const ClientRegistration: React.FC<ClientRegistrationProps> = ({
 
   return (
     <div className="mt-8 rounded-2xl bg-white p-8">
-      {visitInformation.map((info) => (
-        <Fragment key={info.title}>
-          <Typography
-            type="h2"
-            color="textDark"
-            text={info.title}
-            align="left"
-          />
-          <Typography
-            type="help"
-            color="textMid"
-            text={info.subTitle}
-            align="left"
-            className="w-44"
-          />
-          <Divider className="mt-4" dividerType="dashed" />
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {info?.children?.map((child) => (
-              <Fragment key={child.name}>
-                <div className="mb-8 flex items-start gap-4">
-                  <div>
-                    <div
-                      className={`bg-${
-                        child?.iconColor ?? 'primaryGG'
-                      } flex h-9 w-9 items-center justify-center rounded-full p-2`}
-                    >
-                      <img src={child.icon} alt="icon" className="h-9 w-9" />
+      {isLoading && (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor="adminPortalBg"
+          backgroundColor="secondary"
+        />
+      )}
+      {!isLoading &&
+        visitInformation.map((info) => (
+          <Fragment key={info.title}>
+            <Typography
+              type="h2"
+              color="textDark"
+              text={info.title}
+              align="left"
+            />
+            <Typography
+              type="help"
+              color="textMid"
+              text={info.subTitle}
+              align="left"
+              className="w-44"
+            />
+            <Divider className="mt-4" dividerType="dashed" />
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {info?.children?.map((child) => (
+                <Fragment key={child.name}>
+                  <div className="mb-8 flex items-start gap-4">
+                    <div>
+                      <div
+                        className={`bg-${
+                          child?.iconColor ?? 'primaryGG'
+                        } flex h-9 w-9 items-center justify-center rounded-full p-2`}
+                      >
+                        <img src={child.icon} alt="icon" className="h-9 w-9" />
+                      </div>
+                    </div>
+                    <div>
+                      <Typography
+                        type="h1"
+                        color="textDark"
+                        text={String(child.value)}
+                        align="left"
+                      />
+                      <Typography
+                        type="help"
+                        color="textMid"
+                        text={child.name}
+                        align="left"
+                        className="w-44"
+                      />
                     </div>
                   </div>
-                  <div>
-                    <Typography
-                      type="h1"
-                      color="textDark"
-                      text={String(child.value)}
-                      align="left"
-                    />
-                    <Typography
-                      type="help"
-                      color="textMid"
-                      text={child.name}
-                      align="left"
-                      className="w-44"
-                    />
-                  </div>
-                </div>
-              </Fragment>
-            ))}
-          </div>
-        </Fragment>
-      ))}
+                </Fragment>
+              ))}
+            </div>
+          </Fragment>
+        ))}
     </div>
   );
 };
