@@ -9,7 +9,8 @@ interface BulkAction extends Omit<ButtonProps, 'onClick'> {
   onClick?: (selected: Irow[]) => void;
 }
 
-interface IButton extends Omit<ButtonProps, 'type' | 'color'> {
+interface IButton extends Omit<ButtonProps, 'type' | 'color' | 'icon'> {
+  icon?: string;
   actionType?: 'button';
   type?: ButtonProps['type'];
   color?: ButtonProps['color'];
