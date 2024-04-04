@@ -1,17 +1,8 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  ButtonGroup,
-  ButtonGroupTypes,
-  Typography,
-  DialogPosition,
-  Dialog,
-} from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
-import { TipCard } from '@/pages/mom/pregnant-profile/components';
-import { HealthPromotion } from '../../../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
 
 export const idDocumentFirstQuestion = 'Does {client} have an ID document?';
@@ -21,8 +12,6 @@ export const idDocumentSecondQuestion =
 export const IdDocumentStep = ({
   mother,
   sectionQuestions: questions,
-  isTipPage,
-  setIsTip,
   setEnableButton,
   setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
@@ -60,23 +49,6 @@ export const IdDocumentStep = ({
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
 
-  if (isTipPage) {
-    return (
-      <Dialog
-        fullScreen={true}
-        visible={isTipPage}
-        position={DialogPosition.Full}
-      >
-        <HealthPromotion
-          title={`Discuss with ${name}`}
-          subTitle={visitSection}
-          section={visitSection}
-          onClose={() => setIsTip && setIsTip(false)}
-        />
-      </Dialog>
-    );
-  }
-
   return (
     <>
       <Header
@@ -85,11 +57,6 @@ export const IdDocumentStep = ({
         title={visitSection}
       />
       <div className="flex flex-col gap-4 p-4">
-        <TipCard
-          buttonText="Health promotion"
-          buttonIcon="ChatIcon"
-          onClick={() => setIsTip && setIsTip(true)}
-        />
         <div className="mt-2 flex flex-col gap-2">
           <Typography
             type="body"
