@@ -41,6 +41,7 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { VisitModelInput } from '@ecdlink/graphql';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { visitSteps as walkthroughSteps } from './walkthrough/steps';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 
 const HEADER_HEIGHT = 64;
 
@@ -68,6 +69,8 @@ export const VisitsTab: React.FC = () => {
   const dialog = useDialog();
 
   const { errorDialog } = useRequestResponseDialog();
+
+  const calendarAddEvent = useCalendarAddEvent();
 
   const { id: infantId } = useParams<InfantProfileParams>();
 
@@ -111,8 +114,12 @@ export const VisitsTab: React.FC = () => {
   // const isWeekDeadline = dateToCheck && dateToCheck >= currentDate; // && dateToCheck <= next7Days;
 
   // EC-685 - only show start visit button if today falls between planned and due date for current visit
-  const currentDate = useMemo(() => new Date(), []);
-  currentDate?.setHours(0, 0, 0, 0);
+  const todayEndOfTheDay = new Date();
+  todayEndOfTheDay.setHours(23, 59, 59, 999);
+  const todayDateWithoutTimeZone = getDateWithoutTimeZone(
+    todayEndOfTheDay.toISOString()
+  );
+
   const plannedVisitDate =
     currentVisit && new Date(currentVisit?.plannedVisitDate);
   plannedVisitDate?.setHours(0, 0, 0, 0);
@@ -121,11 +128,11 @@ export const VisitsTab: React.FC = () => {
   const isWeekDeadline =
     plannedVisitDate &&
     dueDate &&
-    currentDate >= plannedVisitDate &&
-    currentDate <= dueDate;
+    todayEndOfTheDay >= plannedVisitDate &&
+    todayDateWithoutTimeZone! <= dueDate;
 
   const infantAgeDays = infant?.user?.dateOfBirth
-    ? differenceInDays(currentDate, new Date(infant?.user?.dateOfBirth))
+    ? differenceInDays(todayEndOfTheDay, new Date(infant?.user?.dateOfBirth))
     : 0;
 
   const infantInsertedDate = useMemo(
@@ -158,8 +165,6 @@ export const VisitsTab: React.FC = () => {
     },
     [currentVisit, isWeekDeadline, previousVisit?.attended]
   );
-
-  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
 
   const getSortedVisits = useCallback((visitsToSort: VisitDto[]) => {
     return visitsToSort.sort((a, b) => {
@@ -205,11 +210,11 @@ export const VisitsTab: React.FC = () => {
       const orderDate = getDateWithoutTimeZone(item.orderDate);
       const isAttend = item.attended;
       if (dueDate) {
-        return !isAttend && dueDate >= todayDate!;
+        return !isAttend && dueDate >= todayDateWithoutTimeZone!;
       }
 
       if (orderDate) {
-        return !isAttend && orderDate >= todayDate!;
+        return !isAttend && orderDate >= todayDateWithoutTimeZone!;
       }
 
       return !isAttend;
@@ -222,7 +227,6 @@ export const VisitsTab: React.FC = () => {
       const previousItem = index > 0 ? sortedVisits[index - 1] : undefined;
 
       const date = new Date(item.orderDate);
-      currentDate.setHours(0, 0, 0, 0);
       date.setHours(0, 0, 0, 0);
 
       const isAdditionalVisit =
@@ -231,7 +235,7 @@ export const VisitsTab: React.FC = () => {
       return {
         title: isAdditionalVisit
           ? 'Other visit'
-          : item.visitType?.normalizedName || 'Visit',
+          : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: getSubTitle(item, isAdditionalVisit, date),
         ...(isAdditionalVisit && {
           subTitleColor: 'alertDark',
@@ -271,14 +275,13 @@ export const VisitsTab: React.FC = () => {
 
     return array;
   }, [
-    currentDate,
     getSortedVisits,
     getSubTitle,
     getType,
     history,
     infantInsertedDate,
     location.pathname,
-    todayDate,
+    todayDateWithoutTimeZone,
     visits,
   ]);
 
@@ -286,6 +289,14 @@ export const VisitsTab: React.FC = () => {
     () => visitSteps.length === 1,
     [visitSteps.length]
   );
+
+  const onBookVisit = () => {
+    calendarAddEvent({
+      event: {
+        participantUserIds: [infantId],
+      },
+    });
+  };
 
   const onAddVisit = useCallback(() => {
     return dialog({
@@ -333,8 +344,8 @@ export const VisitsTab: React.FC = () => {
                 text: 'Book a visit',
                 colour: 'primary',
                 onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
                   onClose();
+                  onBookVisit();
                 },
                 type: 'outlined',
                 textColour: 'primary',

@@ -1,13 +1,11 @@
 import {
   Typography,
-  FADButton,
   LoadingSpinner,
   Dialog,
   DialogPosition,
   Button,
   renderIcon,
 } from '@ecdlink/ui';
-import * as styles from './money.styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
@@ -58,7 +56,7 @@ export const Money: React.FC = () => {
         );
       });
     }
-  }, []);
+  }, [appDispatch, isOnline, unsyncedIncome]);
 
   useEffect(() => {
     if (isOnline) {
@@ -71,7 +69,7 @@ export const Money: React.FC = () => {
         );
       });
     }
-  }, []);
+  }, [appDispatch, isOnline, unsyncedExpenses]);
 
   const fetchStatements = useCallback(async () => {
     if (userAuth?.auth_token && isOnline) {
@@ -125,7 +123,7 @@ export const Money: React.FC = () => {
     } else {
       setShowUpdatePreschoolFeeReminder(false);
     }
-  }, []);
+  }, [isPrincipalOrAdmin]);
 
   const onDismissFeeReminder = useCallback(() => {
     setStorageItem(
@@ -158,8 +156,7 @@ export const Money: React.FC = () => {
       {!isLoading && !isSubmittingStatement && (
         <>
           <SubmitIncomeStatements />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <Dialog
+          <Dialog
             visible={showUpdatePreschoolFeeReminder && !tourActive}
             position={DialogPosition.Middle}
           >
@@ -219,7 +216,7 @@ export const Money: React.FC = () => {
                 />
               </Button>
             </div>
-          </Dialog> */}
+          </Dialog>
         </>
       )}
     </>

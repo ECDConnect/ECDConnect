@@ -1,17 +1,19 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
@@ -24,7 +26,6 @@ using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -43,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IDocumentManagementService documentManagementService,
             string token,
@@ -52,7 +53,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             AddChildSiteAddressTokenModel siteAddress,
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
-            AddChildUserConsentTokenModel consent)
+            AddChildUserConsentTokenModel consent,
+            [Service]INotificationService _notificationService)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -70,6 +72,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var siteRepo = repoFactory.CreateRepository<SiteAddress>(scope, tokenModel.AddedByUserId);
             using var caregiverRepo = repoFactory.CreateRepository<Caregiver>(scope, tokenModel.AddedByUserId);
             using var childRepo = repoFactory.CreateRepository<Child>(scope, tokenModel.AddedByUserId);
+            using var practitionerRepo = repoFactory.CreateRepository<Practitioner>(scope, tokenModel.AddedByUserId);
+            using var pointsRepo = repoFactory.CreateRepository<PointsUserSummary>(scope, tokenModel.AddedByUserId);
+            using var pointsLibraryRepo = repoFactory.CreateRepository<PointsLibrary>(scope, tokenModel.AddedByUserId);
 
             try
             {
@@ -81,7 +86,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
-                appUser.UserName = appUser.Id;
+                appUser.UserName = appUser.Id.ToString();
                 appUser.GenderId = child.GenderId;
                 appUser.IsActive = true;
                 appUser.DateOfBirth = child.DateOfBirth;
@@ -98,6 +103,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (consent != null)
                 {
                     AddConsent(scope, consent, tokenModel);
+                }
+
+                // Add points for registering a child
+                var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
+                if (practitioner != null)
+                {
+                    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
+                    await _notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString());
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);
@@ -122,6 +135,95 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return true;
         }
 
+        #region Child registration points
+
+        private void AddRegistrationPoints(
+            IGenericRepository<PointsUserSummary, Guid> pointsUserSummaryRepo,
+            IGenericRepository<PointsLibrary, Guid> pointsLibraryRepo,
+            string userId, bool isPrincipalOrAdmin = false)
+        {
+            var currentDate = DateTime.Now;
+
+            var activity = pointsLibraryRepo.GetAll()
+                .Where(x => x.Activity == Constants.PointsEngineSettings.child_data_collection
+                    && x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1)
+                .Single();
+
+            var pointsScoredThisYear = pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).ToList();
+
+            // Get new totals, sum of current month or year, plus one more score
+            var monthsRecord = pointsScoredThisYear.Where(x => x.Month == currentDate.Month).FirstOrDefault();
+            var monthTotal = activity.Points;
+            var timesScored = 1;
+
+            if (monthsRecord != null)
+            {
+                timesScored += monthsRecord.TimesScored;
+                monthTotal += monthsRecord.PointsTotal;
+            }
+
+            int ytdTotal = pointsScoredThisYear.Select(x => x.PointsTotal).Sum() + activity.Points;
+
+            if (isPrincipalOrAdmin)
+            {
+                if (activity.MaxPointsPrincipalMonthly != 0 && monthTotal > activity.MaxPointsPrincipalMonthly)
+                {
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
+                }
+                if (activity.MaxPointsPrincipalYearly != 0 && ytdTotal > activity.MaxPointsPrincipalYearly)
+                {
+                    ytdTotal = activity.MaxPointsPrincipalYearly;
+                }
+            }
+            else
+            {
+                if (activity.MaxPointsIndividualMonthly != 0 && monthTotal > activity.MaxPointsIndividualMonthly)
+                {
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
+                }
+                if (activity.MaxPointsNonPrincipalYearly != 0 && ytdTotal > activity.MaxPointsNonPrincipalYearly)
+                {
+                    ytdTotal = activity.MaxPointsNonPrincipalYearly;
+                }
+            }
+
+            if (monthTotal > 0 && ytdTotal > 0)
+            {
+                var record = pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Month == currentDate.Month && x.Year == currentDate.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
+                if (record == null)
+                {
+                    pointsUserSummaryRepo.Insert(
+                        new PointsUserSummary
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedBy = userId,
+                            Month = currentDate.Month,
+                            Year = currentDate.Year,
+                            UserId = Guid.Parse(userId),
+                            PointsLibraryId = activity.Id,
+                            PointsTotal = monthTotal,
+                            PointsYTD = ytdTotal,
+                            TimesScored = timesScored,
+                        }
+                    );
+                }
+                else
+                {
+                    record.PointsTotal = monthTotal;
+                    record.PointsYTD = ytdTotal;
+                    record.UpdatedDate = DateTime.Now;
+                    record.UpdatedBy = userId;
+                    record.TimesScored = timesScored;
+
+                    pointsUserSummaryRepo.Update(record);
+                }
+            }
+        }
+
+        #endregion
+
         public bool CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, string userId)
         {
             return pointsEngineService.CalculateChildrenRegistrationRemoval(userId, DateTime.UtcNow);
@@ -136,8 +238,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 175,
                     ConsentType = "PhotoPermissions",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -152,8 +254,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 173,
                     ConsentType = "CommitmentAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -168,8 +270,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 172,
                     ConsentType = "ConsentAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -184,8 +286,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 174,
                     ConsentType = "IndemnityAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -200,8 +302,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Id = Guid.NewGuid(),
                     ConsentId = 171,
                     ConsentType = "PersonalInformationAgreement",
-                    UserId = consent.UserId,
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    UserId = new Guid(consent.UserId),
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -238,7 +340,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 ClassroomGroupId = tokenModel.ClassroomGroupId,
                 ProgrammeAttendanceReasonId = learner.attendanceReasonId,
                 OtherAttendanceReason = learner.otherAttendanceReason,
-                UserId = tokenModel.ChildUserId,
+                UserId = new Guid(tokenModel.ChildUserId),
                 StartedAttendance = DateTime.Now,
                 Hierarchy = child.Hierarchy
             });
@@ -280,7 +382,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var childEntity = new Child
             {
                 Id = tokenModel.ChildId,
-                UserId = tokenModel.ChildUserId,
+                UserId = new Guid(tokenModel.ChildUserId),
                 Allergies = child.Allergies,
                 Disabilities = child.Disabilities,
                 LanguageId = child.LanguageId,
@@ -298,17 +400,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<string> GenerateCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
-            [Service] IPointsEngineService pointsEngineService,
             string firstname,
             string surname,
             Guid classgroupId)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var userId = Guid.NewGuid();
             var appUser = new ApplicationUser
             {
+                Id = userId,
                 FirstName = firstname,
                 Surname = surname,
                 UserName = $"External_Edit_{Guid.NewGuid()}",
@@ -336,17 +439,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = addedByUser.Id,
+                AddedByUserId = addedByUser.Id.ToString(),
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = newChild.Id,
-                ChildUserId = appUser.Id
+                ChildUserId = appUser.Id.ToString()
             };         
 
             await userManager.AddToRoleAsync(appUser, "Child");
-
-            // Manage points for user
-            pointsEngineService.CalculateChildrenRegistrationAdd(addedByUser.Id, DateTime.UtcNow);
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
         }
@@ -354,7 +454,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<string> RefreshCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
             Guid childId,
@@ -378,7 +478,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 return string.Empty;
             }
 
-            var appUser = await userManager.FindByIdAsync(child.UserId);
+            var appUser = await userManager.FindByIdAsync(child.UserId.ToString());
 
             if (appUser == default)
             {
@@ -389,11 +489,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = httpContext.HttpContext.GetUser().Id,
+                AddedByUserId = httpContext.HttpContext.GetUser().Id.ToString(),
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = child.Id,
-                ChildUserId = appUser.Id
+                ChildUserId = appUser.Id.ToString()
             };
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
@@ -407,21 +507,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (childUserId != null && grantIds != null)
             {
                 //retrieve careGiverId from child
-                var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
+                var childObj = context.Children.Where(x => x.UserId.ToString() == childUserId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
                 if (childObj != null)
                 {
-                    Guid? caregiverId = childObj.CaregiverId;
+                    Guid caregiverId = (Guid)childObj.CaregiverId;
                     if (caregiverId != null)
                     {
                         var grantsToAdd = grantIds.Select(x => new UserGrant
                         {
                             GrantId = x,
-                            UserId = caregiverId.ToString(),
+                            UserId = caregiverId,
                             TenantId = _tenantId
                         });
 
                         var existingGrants = context.UserGrants
-                          .Where(x => x.UserId == caregiverId.ToString());
+                          .Where(x => x.UserId == caregiverId);
 
                         try
                         {

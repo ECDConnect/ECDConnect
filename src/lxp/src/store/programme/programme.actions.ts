@@ -180,7 +180,7 @@ export const updateProgrammes = createAsyncThunk<
             id: programme.id,
             classroomId: programme.classroomId || classroom?.id,
             classroomGroupId:
-              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id,
+              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id ?? null,
             name: programme.name,
             startDate: programme.startDate,
             endDate: programme.endDate,
@@ -214,7 +214,7 @@ export const formatDailyProgrammes = (
       messageBoardText: daily.messageBoardText,
       smallGroupActivityId: daily.smallGroupActivityId ?? 0,
       largeGroupActivityId: daily.largeGroupActivityId ?? 0,
-      storyBookId: daily.storyActivityId ?? 0,
+      storyBookId: daily.storyBookId ?? 0,
       storyActivityId: daily.storyActivityId ?? 0,
       isActive: isBefore(new Date(), new Date(programme.endDate)),
     };

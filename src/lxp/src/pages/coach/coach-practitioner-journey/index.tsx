@@ -34,6 +34,7 @@ import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
   PqaActions,
+  addCoachVisitInviteForPractitioner,
   getPractitionerTimeline,
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
@@ -68,6 +69,7 @@ import {
   PointsUserSummary,
   UpdateVisitPlannedVisitDateModelInput,
   Visit,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ExclamationIcon } from '@heroicons/react/solid';
@@ -77,6 +79,10 @@ import { isDateWithinThreeMonths } from './timeline/utils';
 import { getReAccreditationStepData } from './timeline/re-accreditation/step';
 import { getUserPointsSummaryForCoach } from '@/store/points/points.actions';
 import { pointsConstants } from '@/constants/points';
+import ROUTES from '@/routes/routes';
+import { coachSelectors } from '@/store/coach';
+import { notificationsSelectors } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -102,9 +108,25 @@ export const CoachPractitionerJourney = () => {
     'pqa',
     PqaActions.GET_PRACTITIONER_TIMELINE
   );
+  const { isLoading: isAddingSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
+  );
+  const { isLoading: isAddingRequestedSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_REQUESTED_SUPPORT_VISIT_FORM_DATA
+  );
+  const { isLoading: isAddingVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_VISIT_FORM_DATA
+  );
+
+  const isLoadingSyncData =
+    isAddingSupportVisit || isAddingRequestedSupportVisit || isAddingVisit;
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
+  const coach = useSelector(coachSelectors.getCoach);
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
@@ -170,7 +192,16 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const onSchedule = ({ eventType, visit, visitEventId }: ScheduleProps) => {
+  const getTimeline = useCallback(async () => {
+    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  }, [practitionerId]);
+
+  const onSchedule = ({
+    eventType,
+    visit,
+    visitEventId,
+    visitTypeName,
+  }: ScheduleProps) => {
     const today = new Date();
     const event: CalendarAddEventInfo = !!visitEventId
       ? {
@@ -203,7 +234,7 @@ export const CoachPractitionerJourney = () => {
             today.getMonth(),
             today.getDate()
           ).toISOString(),
-          maxDate: new Date(visit.plannedVisitDate).toISOString(),
+          //maxDate: new Date(visit.plannedVisitDate).toISOString(),
           name: '',
           description: '',
           participantUserIds: [practitionerId],
@@ -214,7 +245,7 @@ export const CoachPractitionerJourney = () => {
             state: {
               action: 'onStart',
               actionParams: {
-                visitName: visit.visitType?.name || '',
+                visitName: visitTypeName,
               },
             },
           },
@@ -223,16 +254,53 @@ export const CoachPractitionerJourney = () => {
     calendarAddEvent({
       event,
       onUpdated: (isNew: boolean, event: CalendarEventModel) => {
-        const payload: UpdateVisitPlannedVisitDateModelInput = {
-          visitId: visit.id,
-          plannedVisitDate: event.start,
-          eventId: event.id,
-        };
-        appDispatch(pqaActions.updateVisitPlannedVisitDate(payload));
-        appDispatch(pqaThunkActions.updateVisitPlannedVisitDate(payload));
+        if (!!visit) {
+          const payload: UpdateVisitPlannedVisitDateModelInput = {
+            visitId: visit.id,
+            plannedVisitDate: event.start,
+            eventId: event.id,
+          };
+          appDispatch(pqaActions.updateVisitPlannedVisitDate(payload));
+          appDispatch(pqaThunkActions.updateVisitPlannedVisitDate(payload));
+        } else {
+          if (visitTypeName === visitTypes.requestedVisit.description) {
+            const payload: VisitModelInput = {
+              practitionerId: practitionerId,
+              coachId: coach?.id,
+              attended: false,
+              eventId: event.id,
+              actualVisitDate: event.start,
+              plannedVisitDate: event.start,
+            };
+
+            appDispatch(addCoachVisitInviteForPractitioner(payload));
+            getTimeline();
+          }
+        }
       },
       onCancel: () => {},
     });
+  };
+
+  const scheduleVisitNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes('[[ScheduleVisit]]') &&
+      item?.message?.action?.includes(practitionerId) &&
+      item?.message?.title?.includes('requested a visit')
+  );
+
+  const removeNotifications = async () => {
+    if (scheduleVisitNotifications && scheduleVisitNotifications?.length > 0) {
+      scheduleVisitNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
   };
 
   const onScheduleOrStart = ({
@@ -240,6 +308,7 @@ export const CoachPractitionerJourney = () => {
     eventType,
     visit,
     visitEventId,
+    visitTypeName,
   }: ScheduleOrStartProps) => {
     dialog({
       position: DialogPosition.Middle,
@@ -259,7 +328,9 @@ export const CoachPractitionerJourney = () => {
               type: 'filled',
               onClick: () => {
                 onSubmit();
-                onSchedule({ visit, visitEventId, eventType });
+                removeNotifications();
+                onSchedule({ visit, visitEventId, eventType, visitTypeName });
+                syncData();
               },
               leadingIcon: 'CalendarIcon',
             },
@@ -270,7 +341,9 @@ export const CoachPractitionerJourney = () => {
               type: 'outlined',
               onClick: () => {
                 onSubmit();
-                onStart(visit.visitType?.name || '');
+                removeNotifications();
+                onStart(visitTypeName);
+                syncData();
               },
               leadingIcon: 'ArrowCircleRightIcon',
             },
@@ -288,6 +361,7 @@ export const CoachPractitionerJourney = () => {
   const filteredPqaVisits = timeline?.pQASiteVisits?.filter(
     (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
   );
+
   const uncompletedPqaVisits = filteredPqaVisits?.length
     ? filteredPqaVisits
     : [];
@@ -296,6 +370,7 @@ export const CoachPractitionerJourney = () => {
     (visit) =>
       !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
   );
+
   const uncompletedReAccreditationVisits =
     filteredReAccreditationVisits?.length &&
     isDateWithinThreeMonths(
@@ -304,7 +379,13 @@ export const CoachPractitionerJourney = () => {
       ? filteredReAccreditationVisits
       : [];
 
+  const incompleteCoachVisits =
+    !!timeline && !!timeline.requestedCoachVisits
+      ? timeline.requestedCoachVisits.filter((visit) => !visit?.attended)
+      : [];
+
   const uncompletedVisits = [
+    ...incompleteCoachVisits,
     ...uncompletedPrePqaVisits,
     ...(isUserEnableToStartPqaVisit
       ? [...uncompletedPqaVisits, ...uncompletedReAccreditationVisits]
@@ -347,6 +428,21 @@ export const CoachPractitionerJourney = () => {
         scheduleStartText:
           visitTypes.reaccreditation.followUp.scheduleStartText,
       };
+    if (visit.visitType?.name === visitTypes.prePqa.first.name)
+      return {
+        eventType: visitTypes.prePqa.first.eventType,
+        scheduleStartText: visitTypes.prePqa.first.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.prePqa.second.name)
+      return {
+        eventType: visitTypes.prePqa.second.eventType,
+        scheduleStartText: visitTypes.prePqa.second.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.supportVisit.name)
+      return {
+        eventType: visitTypes.supportVisit.eventType,
+        scheduleStartText: visitTypes.supportVisit.scheduleStartText,
+      };
   };
 
   const getScheduleOrStartProps = (
@@ -357,6 +453,7 @@ export const CoachPractitionerJourney = () => {
     return {
       visit: visit,
       visitEventId: visit.eventId,
+      visitTypeName: visit.visitType?.name || '',
       ...values,
     };
   };
@@ -398,22 +495,34 @@ export const CoachPractitionerJourney = () => {
     })
     .shift();
 
-  const onSupportVisit = (visitId?: string) => {
-    window.sessionStorage.setItem(
-      currentActivityKey,
-      visitId ? visitTypes.requestedVisit : visitTypes.supportVisit
-    );
-    if (visitId) {
+  const onStartRequestedSupportVisit = (visitId: string) => {
+    if (!!visitId) {
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visitTypes.supportVisit.name
+      );
       window.sessionStorage.setItem(visitIdKey, visitId);
+      setShowForm(true);
     }
-    setShowForm(true);
   };
 
-  const onFormBack = () => {
+  const onSupportVisit = () => {
+    const options: ScheduleOrStartProps = {
+      visitTypeName: visitTypes.requestedVisit.description,
+      eventType: visitTypes.supportVisit.eventType,
+      scheduleStartText: visitTypes.supportVisit.scheduleStartText,
+    };
+
+    onScheduleOrStart(options);
+  };
+
+  const onFormBack = async () => {
     window.sessionStorage.removeItem(currentActivityKey);
     window.sessionStorage.removeItem(visitIdKey);
     window.sessionStorage.setItem(isViewKey, 'false');
     setShowForm(false);
+
+    await appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   };
 
   const onView = async (visit: Visit) => {
@@ -429,7 +538,7 @@ export const CoachPractitionerJourney = () => {
     ) {
       window.sessionStorage.setItem(
         currentActivityKey,
-        visitTypes.supportVisit
+        visitTypes.supportVisit.name
       );
       window.sessionStorage.setItem(visitIdKey, visit.id);
     } else {
@@ -440,9 +549,15 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
-  const getTimeline = useCallback(() => {
-    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId]);
+  const syncData = useCallback(async () => {
+    if (!isOnline) return;
+
+    await appDispatch(pqaThunkActions.addSupportVisitFormData());
+    await appDispatch(pqaThunkActions.addRequestedSupportVisitFormData());
+    await appDispatch(pqaThunkActions.addVisitFormData());
+
+    getTimeline();
+  }, [getTimeline, isOnline]);
 
   useLayoutEffect(() => {
     if (selectedForm) {
@@ -450,15 +565,11 @@ export const CoachPractitionerJourney = () => {
     }
   }, [selectedForm]);
 
-  useLayoutEffect(() => {
-    getTimeline();
-  }, [getTimeline]);
-
   useEffect(() => {
     if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
-      getTimeline();
+      syncData();
     }
-  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
+  }, [getTimeline, isOnline, previousShowForm, showForm, syncData, wasOnline]);
 
   useEffect(() => {
     if (lastAttendedReAccreditationFollowUpVisit?.id) {
@@ -469,7 +580,7 @@ export const CoachPractitionerJourney = () => {
         })
       );
     }
-  }, [appDispatch, lastAttendedReAccreditationFollowUpVisit, practitionerId]);
+  }, [lastAttendedReAccreditationFollowUpVisit, practitionerId]);
 
   const renderAlert = () => {
     const isPqaRedRating =
@@ -656,14 +767,18 @@ export const CoachPractitionerJourney = () => {
         endDate: currentDate,
       })
     ).then((userPoints) => {
-      setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      if (Array.isArray(userPoints.payload)) {
+        setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+      } else {
+        setUserPointsSummaries([]);
+      }
     });
   }, [appDispatch, practitionerId]);
 
   const userPointsTotalForYear = useMemo(
     () =>
-      userPointsSummaries.reduce(
-        (total, current) => (total += current.pointsYTD),
+      userPointsSummaries?.reduce(
+        (total, current) => (total += current?.pointsYTD),
         0
       ),
     [userPointsSummaries]
@@ -695,14 +810,22 @@ export const CoachPractitionerJourney = () => {
       subTitle={`${practitionerFirstName} ${practitioner?.user?.surname}`}
       onBack={() => history.goBack()}
       className="p-4"
+      renderBorder
+      isLoading={isLoadingTimeline}
     >
-      {isLoadingTimeline ? (
-        <LoadingSpinner
-          size="medium"
-          spinnerColor="primary"
-          backgroundColor="uiLight"
-          className="tex pt-4"
-        />
+      {isLoadingSyncData ? (
+        <>
+          <LoadingSpinner
+            size="medium"
+            spinnerColor="primary"
+            backgroundColor="uiLight"
+          />
+          <Typography
+            className="mt-4 mb-2 text-center"
+            type="body"
+            text="Syncing journey..."
+          />
+        </>
       ) : (
         <>
           {!!currentVisit && (
@@ -712,8 +835,7 @@ export const CoachPractitionerJourney = () => {
               listItems={[currentVisit]}
             />
           )}
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={`${userPointsTotalForYear}`}
             hint={`points earned so far in ${new Date().getFullYear()}`}
@@ -729,7 +851,15 @@ export const CoachPractitionerJourney = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          /> */}
+            onClick={() =>
+              history.push(
+                ROUTES.COACH.PRACTITIONER_POINTS.replace(
+                  ':userId',
+                  practitioner?.userId || ''
+                )
+              )
+            }
+          />
           {renderAlert()}
           <Typography
             className="mt-4 mb-2"
@@ -759,7 +889,7 @@ export const CoachPractitionerJourney = () => {
             textColor="primary"
             icon="LocationMarkerIcon"
             text="Start support visit"
-            onClick={onSupportVisit}
+            onClick={() => onSupportVisit()}
           />
           {!!timeline && (
             <Steps
@@ -770,7 +900,7 @@ export const CoachPractitionerJourney = () => {
                 onStart,
                 onScheduleOrStart,
                 onStartRequestedSupportVisit(visitId) {
-                  onSupportVisit(visitId);
+                  onStartRequestedSupportVisit(visitId);
                 },
                 isLoading,
                 isOnline,

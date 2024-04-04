@@ -21,16 +21,20 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { TraineeService } from '@/services/TraineeService';
-import { TraineeAddressModelInput } from '@ecdlink/graphql';
+import { TraineeAddressModelInput, VisitData } from '@ecdlink/graphql';
 import { Step6Map } from './map/map';
 import { coachSelectors } from '@/store/coach';
+import { SmartSpaceVisitData } from '@/store/trainee/trainee.types';
 
 interface SmartSpaceCheck1Props {
+  coachSmartSpaceVisitId: string;
+  traineeChecklistVisitId: string;
   practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
-  setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  saveSmartSpaceCheckData: (
+    value: SmartSpaceVisitData[],
+    visitSection: string
+  ) => void;
+  handleNextSection: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -51,51 +55,61 @@ const options = [
 ];
 
 export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
+  coachSmartSpaceVisitId,
+  traineeChecklistVisitId,
   practitioner,
-  programmeName,
-  setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
+  const visitSection = `Property details`;
+
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const [answer, setAnswer] = useState('');
   const [newAddress, setNewAddress] = useState('');
   const [enableButton, setEnableButton] = useState(false);
   const traineeProgrammeType = useSelector(
-    traineeSelectors.getTraineeSmartSpaceAddress
+    traineeSelectors.getTraineeSmartSpaceAddress(traineeChecklistVisitId)
   );
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-  const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
+  const visitData = useSelector(
+    traineeSelectors.getCoachSmartSpaceSectionAnswers(
+      coachSmartSpaceVisitId,
+      visitSection
+    )
+  );
+  const traineeChecklistVisitData = useSelector(
+    traineeSelectors.getTraineeVisitData(traineeChecklistVisitId)
+  );
   const [showMap, setShowMap] = useState(false);
   const coach = useSelector(coachSelectors.getCoach);
   const isCoach = coach?.user?.id === userAuth?.id;
 
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<SmartSpaceVisitData[]>([
     {
+      visitSection,
       question: 'Is this address correct?',
-      answer: undefined,
+      questionAnswer: '',
     },
     {
+      visitSection,
       question: `I have checked that ${practitioner?.user?.firstName} has the required forms proving ownership/lease agreement/permission to use premises.`,
-      answer: false,
+      questionAnswer: 'false',
     },
     {
+      visitSection,
       question: 'Where is the programme site located?',
-      answer: '',
+      questionAnswer: '',
     },
   ]);
 
-  const visitSection = `Property details`;
-
-  const programmeDetailsSections = traineeVisitData
+  const programmeDetailsSections = traineeChecklistVisitData
     ?.filter((item) => item?.visitSection === 'Programme details')
     ?.filter(
       (item) =>
         item?.question ===
           'Do you own the property where you will run your SmartStart programme?' ||
         item?.question === 'Do you have the Title Deeds for the property?' ||
-        item?.question === 'Do you live at the property?'
+        item?.question === 'Do you live at the property?' ||
+        item?.question === 'Is the property on un-proclaimed land?'
     );
 
   const propertyOwnAnswer = useMemo(() => {
@@ -114,7 +128,10 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       programmeDetailsSections?.find(
         (item) => item?.question === 'Is the property on un-proclaimed land?'
       )?.questionAnswer === 'true';
-
+    const livesAtTheProperty =
+      programmeDetailsSections?.find(
+        (item) => item?.question === 'Do you live at the property?'
+      )?.questionAnswer === 'true';
     if (ownTheProperty && hasTheTitleDeeds) {
       return `${practitioner?.user?.firstName} owns the property and has the title deeds.`;
     }
@@ -123,87 +140,54 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       return `${practitioner?.user?.firstName} owns the property and the property is on un-proclaimed land.`;
     }
 
+    if (!ownTheProperty && !livesAtTheProperty) {
+      return `${practitioner?.user?.firstName} does not own the property and does not live at the property.`;
+    }
+
     return `${practitioner?.user?.firstName} does not own the property and lives at the property.`;
   }, [practitioner?.user?.firstName, programmeDetailsSections]);
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (value: string, index: number) => {
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question) => {
         if (question.question === currentQuestion.question) {
           return {
             ...question,
-            answer: value,
+            questionAnswer: value,
           };
         }
         return question;
       });
 
       setAnswers(updatedQuestions);
-      setSectionQuestions?.([
-        {
-          visitSection,
-          questions: updatedQuestions,
-        },
-      ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   useEffect(() => {
-    const previousData = questions.map((item) => {
-      const visitDataWithoutTypo = visitData as any;
-      const previousAnswer = visitDataWithoutTypo
-        ?.find((item: any) => {
-          const sectionData = item?.visitSection === visitSection;
-          return sectionData;
-        })
-        ?.questions?.filter((obj: any) => {
-          return obj.question === item.question;
-        });
-
-      const previousHasTrueAnswer = previousAnswer?.find(
-        (item: any) =>
-          item?.answer !== '' ||
-          item?.answer === true ||
-          Boolean(item?.answer) !== undefined
-      );
-
-      if (previousAnswer) {
-        return {
-          ...item,
-          answer: previousHasTrueAnswer?.answer,
-        };
-      }
-      return item;
-    });
-
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions: previousData,
-      },
-    ]);
-
-    setAnswers(previousData);
+    if (!!visitData && !!visitData.length) {
+      setAnswers(visitData);
+    }
   }, []);
 
   useEffect(() => {
     if (
-      (questions[0]?.answer === true && questions?.[1]?.answer === true) ||
-      (answer !== '' && questions?.[1]?.answer === true) ||
-      (newAddress !== '' && questions?.[1]?.answer === true)
+      (questions[0].questionAnswer === 'true' &&
+        questions[1].questionAnswer === 'true') ||
+      questions[1].questionAnswer === 'true' ||
+      (newAddress !== '' && questions[1].questionAnswer === 'true')
     ) {
-      return setEnableButton?.(true);
+      return setEnableButton(true);
     }
     setEnableButton(false);
-  }, [answer, newAddress, questions]);
+  }, [newAddress, questions]);
 
   const changeSmartSpaceCheckAddress = async () => {
-    if (questions[0].answer === false && answer !== '') {
+    if (questions[0].questionAnswer === 'false' && newAddress !== '') {
       const input = {
-        homeAddressLine1: answer,
+        homeAddressLine1: newAddress,
         homeAddressLine2: '',
         homeAddressLine3: '',
         homeAddressPostalCode: '',
@@ -258,18 +242,20 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
             color="secondary"
             type={ButtonGroupTypes.Button}
             options={options}
-            onOptionSelected={(value) => onOptionSelected(value, 0)}
-            selectedOptions={questions[0]?.answer as boolean}
+            onOptionSelected={(value) =>
+              onOptionSelected(!!value ? 'true' : 'false', 0)
+            }
+            selectedOptions={questions[0].questionAnswer === 'true'}
           />
         </div>
-        {isOnline && questions[0].answer === false && (
+        {isOnline && questions[0].questionAnswer === 'false' && (
           <FormInput
             onClick={() => setShowMap(true)}
             className="mt-4"
             textInputType="input"
             label={questions?.[2]?.question}
             placeholder={'e.g. street a'}
-            value={newAddress || (questions[2]?.answer as string)}
+            value={newAddress || questions[2]?.questionAnswer}
           />
         )}
         <Alert
@@ -298,14 +284,21 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         />
         <div
           className="flex items-start gap-2"
-          onClick={() => onOptionSelected(!questions?.[1].answer, 1)}
+          onClick={() =>
+            onOptionSelected(
+              questions[1].questionAnswer === 'true' ? 'false' : 'true',
+              1
+            )
+          }
         >
           <Checkbox
-            onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
-            checked={questions?.[1].answer === true}
+            onCheckboxChange={(e) =>
+              onOptionSelected(e.checked ? 'true' : 'false', 1)
+            }
+            checked={questions[1].questionAnswer === 'true'}
           />
           <Typography
-            text={questions?.[1]?.question}
+            text={questions[1].question}
             type="body"
             color="textMid"
           />
@@ -319,8 +312,8 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
+                saveSmartSpaceCheckData(questions, visitSection);
                 handleNextSection();
-                saveSmartSpaceCheckData();
                 changeSmartSpaceCheckAddress();
               }}
               disabled={!enableButton && isCoach}

@@ -11,6 +11,7 @@ import { LogoutInformation } from './logout-information';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { settingActions } from '@/store/settings';
+import ROUTES from '@/routes/routes';
 
 export type LogoutModalProps = {
   onSubmit: () => void;
@@ -34,14 +35,20 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ onSubmit, onCancel }) => {
     } else {
       await dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }
-    await dispatch(settingActions.setLastDataSync());
+
+    dispatch(settingActions.setLastDataSync());
   };
 
   const handleSync = async () => {
-    await sync();
-    await resetAppStore();
-    await resetAuth();
-    history.push('/');
+    if (isOnline) {
+      await sync();
+      await resetAppStore();
+      await resetAuth();
+      history.push('/');
+    } else {
+      history.push(ROUTES.LOGIN);
+      onCancel?.();
+    }
   };
 
   const handleOnErrorSubmit = () => {

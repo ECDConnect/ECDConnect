@@ -1,19 +1,11 @@
-import {
-  BannerWrapper,
-  Button,
-  Card,
-  DialogPosition,
-  Divider,
-  Typography,
-} from '@ecdlink/ui';
+import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { activitySelectors } from '@store/content/activity';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ActivitySubCategoryCard } from '../../components/activity-sub-category-card/activity-sub-category-card';
 import { ActivityDetailsProps } from './activity-details.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
@@ -24,6 +16,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   onActivitySelected,
   onBack,
 }) => {
+  const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const { isOnline } = useOnlineStatus();
   const activityDetail = useSelector(
     activitySelectors.getActivityById(activityId)
@@ -31,23 +24,11 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 
   const date = new Date();
 
-  const dialog = useDialog();
-
-  const showOnlineOnly = () => {
-    dialog({
-      color: 'bg-white',
-      position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
-  };
-
   const handleActivityChanged = () => {
     if (isOnline) {
       onActivityChanged();
     } else {
-      showOnlineOnly();
+      setOnlineOnlyAlert(true);
     }
   };
 
@@ -65,6 +46,16 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
       onBack={onBack}
       displayOffline={!isOnline}
     >
+      {isOnlineOnlyAlert && (
+        <div className="absolute  z-10 flex h-full items-center ">
+          <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
+            <OnlineOnlyModal
+              onSubmit={() => setOnlineOnlyAlert(false)}
+            ></OnlineOnlyModal>
+          </div>
+          <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
+        </div>
+      )}
       {activityDetail.image && activityDetail.image?.length > 0 && (
         <img
           src={activityDetail.image}
@@ -105,39 +96,40 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 
         <Divider dividerType="dashed" />
 
-        <Typography
-          type="body"
-          weight="bold"
-          fontSize={'18'}
-          text={'Skills'}
-          color={'textDark'}
-          className="mt-5"
-        />
-        <Card className="border-primary mt-2 rounded-lg border">
-          {activityDetail.subCategories?.map((subCategory, idx) => (
-            <ActivitySubCategoryCard
-              key={`activity-details-sub-category-${idx}`}
-              subCategory={subCategory}
-            />
-          ))}
-        </Card>
+        <div id="walkthrough-activity-detail">
+          <Typography
+            type="body"
+            weight="bold"
+            fontSize={'18'}
+            text={'Skills'}
+            color={'textDark'}
+            className="mt-5"
+          />
+          <Card className="border-primary mt-2 rounded-lg border">
+            {activityDetail.subCategories?.map((subCategory, idx) => (
+              <ActivitySubCategoryCard
+                key={`activity-details-sub-category-${idx}`}
+                subCategory={subCategory}
+              />
+            ))}
+          </Card>
 
-        <Typography
-          type="body"
-          fontSize={'18'}
-          weight="bold"
-          text={'What do I need?'}
-          color={'textDark'}
-          className="mt-5"
-        />
+          <Typography
+            type="body"
+            fontSize={'18'}
+            weight="bold"
+            text={'What do I need?'}
+            color={'textDark'}
+            className="mt-5"
+          />
 
-        <Typography
-          type="body"
-          fontSize={'16'}
-          text={activityDetail.materials}
-          color={'textMid'}
-        />
-
+          <Typography
+            type="body"
+            fontSize={'16'}
+            text={activityDetail.materials}
+            color={'textMid'}
+          />
+        </div>
         <Typography
           type="body"
           fontSize={'18'}

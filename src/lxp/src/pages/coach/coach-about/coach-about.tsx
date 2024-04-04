@@ -124,11 +124,16 @@ export const CoachAbout: React.FC = () => {
     register: coachAboutRegister,
     formState: coachAboutFormState,
     getValues: coachAboutFormGetValues,
+    watch: coachAboutFormWatch,
   } = useForm({
     resolver: yupResolver(coachAboutModelSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onChange',
   });
+
+  useEffect(() => {
+    coachAboutFormWatch();
+  }, [coachAboutFormWatch]);
 
   const formatSiteAddressAsText = (user: CoachDto): string => {
     if (!user || !coach?.siteAddress) return 'Add a work address';
@@ -409,10 +414,10 @@ export const CoachAbout: React.FC = () => {
         renderOverflow={true}
         onBack={() => {
           isFromCommunityWelcome
-            ? history.push(ROUTES.COACH.PROFILE.ROOT, {
+            ? history.goBack()
+            : history.push(ROUTES.COACH.PROFILE.ROOT, {
                 isFromCommunityWelcome: false,
-              } as CoachAboutRouteState)
-            : history.goBack();
+              } as CoachAboutRouteState);
         }}
         displayOffline={!isOnline}
         backgroundColour={'white'}

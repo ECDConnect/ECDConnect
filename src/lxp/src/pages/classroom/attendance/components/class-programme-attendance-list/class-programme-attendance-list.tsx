@@ -10,7 +10,6 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
-import { getDayOfYear } from 'date-fns';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -31,15 +30,21 @@ export const ClassProgrammeAttendanceList: React.FC<
     classroomsSelectors.getClassroomGroupLearners
   );
 
+  const todayDate = new Date();
+  todayDate.setHours(0, 0, 0, 0);
+
   useEffect(() => {
     if (!classroomGroup) return;
     const filteredLearners = [];
-    const _allLearners = allLearners.filter(
-      (x) =>
+    const _allLearners = allLearners.filter((x) => {
+      const startedAttendance = new Date(x.startedAttendance);
+      startedAttendance.setHours(0, 0, 0, 0);
+
+      return (
         !Boolean(x.stoppedAttendance) &&
-        getDayOfYear(attendanceDate) >=
-          getDayOfYear(new Date(x.startedAttendance))
-    );
+        attendanceDate.getTime() >= new Date(startedAttendance).getTime()
+      );
+    });
 
     const uniqueLearners = _allLearners.filter((object, index, array) => {
       return (
@@ -109,7 +114,7 @@ export const ClassProgrammeAttendanceList: React.FC<
           <Typography
             type={'help'}
             text={
-              isPrimaryClass
+              isPrimaryClass || attendanceDate.getTime() !== todayDate.getTime()
                 ? 'Mark attendance for all children'
                 : 'Only mark attendance for children who are here today'
             }

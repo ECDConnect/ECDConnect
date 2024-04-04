@@ -1,6 +1,7 @@
 import { Colours, ComponentBaseProps } from '../../../models';
 
 export interface PointsDetailsCardProps extends ComponentBaseProps {
+  id?: string;
   pointsEarned: number;
   activityCount: number;
   title: string;
@@ -9,4 +10,7 @@ export interface PointsDetailsCardProps extends ComponentBaseProps {
   colour?: Colours;
   isShare?: boolean;
   badgeImage: JSX.Element;
+  badgeTextColour?: Colours;
+  textColour?: Colours;
+  hideActivityCount?: boolean;
 }

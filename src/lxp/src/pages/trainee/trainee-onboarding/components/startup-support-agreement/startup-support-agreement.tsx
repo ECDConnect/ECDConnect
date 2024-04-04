@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { StartupAcceptAgreement1 } from './components/startup-accept-agreement1/startup-accept-agreement1';
 import { StartupAcceptAgreement2 } from './components/startup-accept-agreement2/startup-accept-agreement2';
 import { StartupAcceptAgreement3 } from './components/startup-accept-agreement3/startup-accept-agreement3';
-import { SectionQuestions } from '../smart-space-checklist/components/programme-details/programme-details.types';
 import { StartupAcceptAgreement4 } from './components/startup-accept-agreement4/startup-accept-agreement4';
 import {
   CmsVisitSectionInput,
@@ -16,8 +15,12 @@ import { traineeSelectors } from '@/store/trainee';
 import { practitionerSelectors } from '@/store/practitioner';
 import { TraineeService } from '@/services/TraineeService';
 import { authSelectors } from '@/store/auth';
-import { StartupAgreementSteps } from './startup-accept-agreement.types';
+import {
+  SectionQuestions,
+  StartupAgreementSteps,
+} from './startup-accept-agreement.types';
 import { ProofOfBanking } from './components/proof-of-banking/proof-of-banking';
+
 interface StartupSupportAgreementProps {
   setNotificationStep: any;
 }
@@ -30,16 +33,19 @@ export const StartupSupportAgreement: React.FC<
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [agreementStep, setAgreementStep] = useState(0);
   const [agreementStepCount, setAgreementStepCount] = useState('Step 1 of 4');
-  const [sectionQuestions, setSectionQuestions] =
-    useState<SectionQuestions[]>();
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const [sectionQuestions, setSectionQuestions] = useState<SectionQuestions[]>(
+    []
+  );
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
 
   const startupSupportAgreementSigned =
     timeline?.signStartUpSupportAgreementStatus ===
     'Start-up support agreement signed';
 
   const onAllStepsComplete = async () => {
-    const sections = sectionQuestions?.map((item, index) => ({
+    const sections = sectionQuestions.map((item, index) => ({
       ...item,
       questions: item.questions.map((question) => ({
         ...question,
@@ -116,6 +122,9 @@ export const StartupSupportAgreement: React.FC<
   };
 
   useEffect(() => {
+    if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT1) {
+      setAgreementStepCount('Step 1 of 4');
+    }
     if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT2) {
       setAgreementStepCount('Step 2 of 4');
     }
@@ -131,11 +140,16 @@ export const StartupSupportAgreement: React.FC<
   }, [agreementStep]);
 
   const handleBackButton = () => {
-    if (agreementStep > 1 && agreementStep !== 4) {
+    if (agreementStep === 0) {
+      setNotificationStep('');
+      return;
+    }
+
+    if ((agreementStep: number) => 1 && agreementStep !== 4) {
       setAgreementStep(agreementStep - 1);
       return;
     }
-    if (agreementStep > 1 && agreementStep === 4) {
+    if (agreementStep === 4) {
       setAgreementStep(agreementStep - 2);
       return;
     }

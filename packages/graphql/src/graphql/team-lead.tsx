@@ -3,21 +3,32 @@ import { gql } from '@apollo/client';
 export const GetAllTeamLead = gql`
   query (
     $search: String
-    $clinicSearch: String
-    $provinceSearch: String
+    $clinicSearch: [String]
+    $provinceSearch: [String]
+    $visitSearch: [String]
+    $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
-    $order: [TeamLeadSortInput!]
+    $order: [PortalUsersTLModelSortInput!]
+    $subDistrictSearch: [String]
   ) {
     allTeamLeads(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
+      visitSearch: $visitSearch
+      connectUsageSearch: $connectUsageSearch
       pagingInput: $pagingInput
       order: $order
+      subDistrictSearch: $subDistrictSearch
     ) {
       id
       insertedDate
+      isRegistered
+      clinicIds
       user {
+        id
+        connectUsage
+        connectUsageColor
         isActive
         userName
         email
@@ -32,19 +43,6 @@ export const GetAllTeamLead = gql`
         genderId
         phoneNumber
         lockoutEnd
-        roles {
-          id
-          name
-        }
-      }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
       }
     }
   }
@@ -74,30 +72,13 @@ export const GetAllTeamLeadAdminList = gql`
         idNumber
         fullName
       }
-
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
-          }
-        }
-      }
     }
   }
 `;
 
 export const CreateTeamLead = gql`
-  mutation addTeamLead($input: TeamLeadModelInput) {
+  mutation addTeamLead($input: AddTeamLeadInputModelInput) {
     addTeamLead(input: $input) {
-      id
-    }
-  }
-`;
-
-export const UpdateTeamLead = gql`
-  mutation updateTeamLead($input: TeamLeadModelInput, $id: UUID) {
-    updateTeamLead(id: $id, input: $input) {
       id
     }
   }
@@ -116,6 +97,16 @@ export const UploadTeamLeads = gql`
   }
 `;
 
+export const DeactivateTeamLead = gql`
+  mutation DeactivateTeamLead($teamLeadId: UUID!) {
+    deactivateTeamLead(teamLeadId: $teamLeadId) {
+      id
+      userId
+      isActive
+    }
+  }
+`;
+
 export const TeamLeadsTemplate = gql`
   query {
     teamLeadTemplateGenerator {
@@ -123,6 +114,28 @@ export const TeamLeadsTemplate = gql`
       base64File
       fileName
       extension
+    }
+  }
+`;
+
+export const GetTeamLeadSummary = gql`
+  query GetTeamLeadSummary($teamLeadId: UUID!) {
+    teamLeadSummary(teamLeadId: $teamLeadId) {
+      idNumber
+      phoneNumber
+      whatsAppNumber
+      firstName
+      surname
+      lastSeen
+      clinicNames
+      location
+      totalClinics
+      totalHealthCareWorkers
+      totalPregnantMoms
+      totalChildren
+      totalMeetingReportsSubmitted
+      totalInFieldVisitsCompleted
+      __typename
     }
   }
 `;
@@ -137,6 +150,7 @@ export const GetTeamLead = gql`
     GetAllTeamLead(where: { id: { eq: $teamLeadId } }) {
       id
       user {
+        id
         isActive
         userName
         email
@@ -154,15 +168,6 @@ export const GetTeamLead = gql`
         roles @include(if: $fetchRoles) {
           id
           name
-        }
-      }
-
-      clinic @include(if: $fetchClinic) {
-        name
-        siteAddress {
-          province {
-            description
-          }
         }
       }
     }

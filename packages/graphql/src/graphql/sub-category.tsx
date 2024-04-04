@@ -6,6 +6,7 @@ export const GetAllProgressTrackingSubCategory = gql`
       id
       title
       imageUrl
+      imageHexColor
       categoryId
       category {
         title

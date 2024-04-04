@@ -1,0 +1,61 @@
+import { gql } from '@apollo/client';
+
+export const GetSubDistrictsAndStats = gql`
+  query GetSubDistrictsAndStats {
+    subDistrictsAndStats {
+      id
+      name
+      insertedDate
+      district {
+        id
+        name
+        province {
+          id
+          description
+        }
+      }
+      totalClinics
+      totalTeamLeads
+      totalHCWs
+    }
+  }
+`;
+
+export const GetFilterSubDistricts = gql`
+  query GetAllSubDistrict($isActive: Boolean = true) {
+    GetAllSubDistrict(where: { isActive: { eq: $isActive } }) {
+      id
+      name
+    }
+  }
+`;
+
+export const AddSubDistrict = gql`
+  mutation AddSubDistrict($input: SubDistrictInputModelInput) {
+    addSubDistrict(input: $input) {
+      id
+      name
+      districtId
+    }
+  }
+`;
+
+export const EditSubDistrict = gql`
+  mutation EditSubDistrict($input: SubDistrictInputModelInput) {
+    editSubDistrict(input: $input) {
+      id
+      name
+      districtId
+    }
+  }
+`;
+
+export const DeleteSubDistrict = gql`
+  mutation DeleteSubDistrict($subDistrictId: UUID!) {
+    deleteSubDistrict(subDistrictId: $subDistrictId) {
+      id
+      name
+      isActive
+    }
+  }
+`;

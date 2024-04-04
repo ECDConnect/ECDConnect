@@ -10,18 +10,32 @@ export interface CoachPractitionerJourneyPageState {
 export const maxNumberOfVisits = 3;
 
 export const visitTypes = {
-  supportVisit: 'General support visit',
-  requestedVisit: 'Requested visit',
+  supportVisit: {
+    name: 'support_visit',
+    description: 'General support visit',
+    eventType: 'General support visit' as 'General support visit',
+    scheduleStartText: 'support visit',
+  },
+  requestedVisit: {
+    name: 'requested_support_visit',
+    description: 'Requested visit',
+    eventType: 'Requested visit' as 'Requested visit',
+    scheduleStartText: 'requested visit',
+  },
   delicensing: 'Delicensing',
   prePqa: {
     includes: 'pre_pqa_visit',
     first: {
       name: 'pre_pqa_visit_1',
       description: 'First site visit',
+      eventType: 'First site visit' as 'First site visit',
+      scheduleStartText: 'first site visit',
     },
     second: {
       name: 'pre_pqa_visit_2',
       description: 'Second site visit',
+      eventType: 'Second site visit' as 'Second site visit',
+      scheduleStartText: 'second site visit',
     },
   },
   pqa: {

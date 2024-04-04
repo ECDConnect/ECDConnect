@@ -15,10 +15,10 @@ namespace ECDLink.DataAccessLayer.Entities.AuditLog
         public Guid AuditLogTypeId { get; set; }
 
         public string Description { get; set; }
-        public DateTime InsertedDate { get; set; }
+        public DateTime InsertedDate { get; set; } 
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
     }
 }

@@ -1,8 +1,7 @@
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { ClinicDto } from '@ecdlink/core';
-import { GetAllClinic } from '@ecdlink/graphql';
+import { GetAllPortalClinics } from '@ecdlink/graphql';
 import { UseFormRegister } from 'react-hook-form';
-import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
 
 export interface TeamLeadFormProps {
@@ -16,7 +15,7 @@ const TeamLeadForm: React.FC<TeamLeadFormProps> = ({
   errors,
   register,
 }) => {
-  const { data } = useQuery(GetAllClinic, {
+  const { data } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -31,8 +30,8 @@ const TeamLeadForm: React.FC<TeamLeadFormProps> = ({
               register={register}
               options={
                 data &&
-                data.GetAllClinic &&
-                data.GetAllClinic.map((x: ClinicDto) => {
+                data.allPortalClinics &&
+                data.allPortalClinics.map((x: ClinicDto) => {
                   return { key: x.id, value: x.name };
                 })
               }

@@ -595,9 +595,6 @@ public class IntegrationAPIManager
         try
         {
             string[] columns = null;
-            List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
-            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
-            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = Constants.SSIntegrationSettings.SLChild, Operator = "Equals", Value = remoteChildId });
             var relatedConditions = new List<IntegrationOptionRelatedEntity>
             {
                 new IntegrationOptionRelatedEntity()
@@ -608,10 +605,13 @@ public class IntegrationAPIManager
                     {
                         Column = "DocumentType",
                         Operator = "In",
-                        Value = new [] { "Child Registration Form", "Child Birth Certificate", "Child Birth Certificate" }
+                        Value = new [] { "Child Registration Form", "Child Birth Certificate", "Child Birth Certificate", "Identity Document" }
                     }
                 }
             };
+            List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = Constants.SSIntegrationSettings.SLChild, Operator = "Equals", Value = remoteChildId });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
 
@@ -888,6 +888,35 @@ public class IntegrationAPIManager
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetPQAByFranchisee > " + remoteFranchiseeId);
+            return null;
+        }
+    }
+
+    public async Task<List<MappedLeague>> GetLeagues()
+    {
+        try
+        {
+            string[] columns = { "Guid", "Name", "LeagueType", "CreatedOn" };
+            var optionConditions = new List<IntegrationOptionConditionEntity>
+            {
+                new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" },
+            };
+
+            var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLLeagues + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedLeague>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetLeagues failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetLeagues");
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetLeagues");
             return null;
         }
     }

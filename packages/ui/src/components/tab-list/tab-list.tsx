@@ -71,6 +71,7 @@ export const TabList: React.FC<TabListProps> = ({
                 tabItems.map((item, index) => {
                   return (
                     <Tab
+                      id={item?.id}
                       className={classNames(
                         'text-textDark font-medium',
                         tabClassName

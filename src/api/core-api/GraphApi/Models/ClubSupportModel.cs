@@ -13,19 +13,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string WhatsAppNumber { get; set; }
         public string ProfileImageUrl { get; set; }
         public DateTime? DateAssigned { get; set; }
-
-         public DateTime? DateAccepted { get; set; }
+        public bool IsNewInSupportRole { get; set; }
 
         public ClubSupportModel(ClubSupport clubSupport)
         {
-            UserId = clubSupport.Practitioner.User.Id;
+            UserId = clubSupport.Practitioner.User.Id.ToString();
             PractitionerId = clubSupport.PractitionerId;
             FirstName = clubSupport.Practitioner.User.FirstName;
             Surname = clubSupport.Practitioner.User.Surname;
             PhoneNumber = clubSupport.Practitioner.User.PhoneNumber;
             WhatsAppNumber = clubSupport.Practitioner.User.WhatsAppNumber;
             DateAssigned = clubSupport.DateAssigned;
-            DateAccepted = clubSupport.DateAccepted;
+            IsNewInSupportRole = clubSupport.IsNewInSupportRole;
         }
     }
 }

@@ -15,7 +15,7 @@ export const StorySelectView: React.FC<StorySelectViewProps> = ({
     title: item.name,
     type: item.type,
     languages: item.availableLanguages,
-    selected: selectedStoryBookId == item.id,
+    selected: selectedStoryBookId === item.id,
     onSelected: () => {
       onStorySelected(item);
     },

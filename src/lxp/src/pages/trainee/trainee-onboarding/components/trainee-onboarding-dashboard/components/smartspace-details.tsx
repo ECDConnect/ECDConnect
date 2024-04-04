@@ -18,6 +18,7 @@ import { getStepDate } from '../timeline-steps';
 interface SmartSpaceLicenceReceivedProps {
   setShowCoachVisit: (item: boolean) => void;
   setNotificationStep?: (item: string) => void;
+  practitionerUserId: string;
 }
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
@@ -29,29 +30,37 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
 export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
   setShowCoachVisit,
   setNotificationStep,
+  practitionerUserId,
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitionerUserId)
+  );
   const smartSpaceVisitId = timeline?.sSCoachVisitId;
-  const coachSmartSpaceAnwers = useSelector(
-    traineeSelectors?.getCoachSmartSpaceVisitData
+  const coachSmartSpaceAnswers = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisitData(smartSpaceVisitId)
   );
   const visitData1Completed = useSelector(
-    traineeSelectors.getCoachSmartSpaceSection1VisitDataCount
+    traineeSelectors.getCoachSmartSpaceSectionScore(
+      smartSpaceVisitId,
+      'SmartSpace check'
+    )
   );
   const coachSmartSpaceVisit1DataNotAttendedStandards = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandards
+    traineeSelectors.getCoachSmartSpaceSectionFailedQuestions(
+      smartSpaceVisitId,
+      'SmartSpace check'
+    )
   );
-  const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
-    coachSmartSpaceVisit1DataNotAttendedStandards?.length! > 0
-      ? coachSmartSpaceVisit1DataNotAttendedStandards?.map((item: any) => {
-          return item?.question;
-        })
-      : [];
 
-  const discussNextStepsItem = coachSmartSpaceAnwers?.find(
-    (item) => item?.visitSection === 'Discuss next steps'
+  const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
+    coachSmartSpaceVisit1DataNotAttendedStandards?.map((item) => {
+      return item.question;
+    });
+
+  const discussNextStepsItem = coachSmartSpaceAnswers?.visitData.find(
+    (item) => item.visitSection === 'Discuss next steps'
   );
 
   const fetchSmartSpaceVisitData = useCallback(async () => {
@@ -81,7 +90,8 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
       className="h-screen pb-16"
     >
       <div className="h-screen p-4">
-        {timeline?.smartSpaceLicenseNotAwardedDate ? (
+        {timeline?.smartSpaceLicenseNotAwardedDate &&
+        !timeline?.smartSpaceLicenseDate ? (
           <Typography
             className={'my-3'}
             color={'textDark'}
@@ -96,7 +106,8 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
             text={`SmartSpace certificate awarded`}
           />
         )}
-        {!timeline?.smartSpaceLicenseNotAwardedDate && (
+        {(!timeline?.smartSpaceLicenseNotAwardedDate ||
+          timeline?.smartSpaceLicenseDate) && (
           <Alert
             className="mt-4"
             variant="outlined"
@@ -128,6 +139,7 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
         </Card>
 
         {timeline?.smartSpaceLicenseNotAwardedDate &&
+          !timeline?.smartSpaceLicenseDate &&
           (Number(visitData1Completed) < 17 ||
             visitData1Completed === undefined) && (
             <>
@@ -159,24 +171,26 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
           {renderIcon('EyeIcon', 'mr-2 text-primary w-5')}
           <Typography type={'body'} text={'View detail'} color={'primary'} />
         </Button>
-        <div>
-          <Button
-            type="filled"
-            color="primary"
-            className="mt-4 mb-2 w-full"
-            onClick={() =>
-              setNotificationStep &&
-              setNotificationStep('SmartSpace visit from coach')
-            }
-          >
-            {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-            <Typography
-              type={'help'}
-              text={'Request a visit from coach'}
-              color={'white'}
-            />
-          </Button>
-        </div>
+        {!timeline?.smartSpaceLicenseDate && (
+          <div>
+            <Button
+              type="filled"
+              color="primary"
+              className="mt-4 mb-2 w-full"
+              onClick={() =>
+                setNotificationStep &&
+                setNotificationStep('SmartSpace visit from coach')
+              }
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Request a visit from coach'}
+                color={'white'}
+              />
+            </Button>
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );

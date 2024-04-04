@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.Security.Models;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security;
 using ECDLink.Security.JwtSecurity.Enums;
@@ -27,14 +28,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         private readonly SecurityNotificationManager _notificationManager;
         private readonly ShortUrlManager _shortUrlManager;
 
-        public UserManager<ApplicationUser> _userManager { get; set; }
+        public ApplicationUserManager _userManager { get; set; }
 
         public IJwtFactory _jwtFactory { get; set; }
 
         public JwtTokenManager _jwtTokenManager { get; set; }
 
         public SecurityManager(
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           IPasswordManager<ApplicationUser> passwordManager,
           IClaimsManager claimsManager,
           SecurityNotificationManager notificationManager,
@@ -162,14 +163,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             var roles = await _userManager.GetRolesAsync(user);
 
             var claimIdentity = _claimsManager.GenerateClaimsIdentity(
-                    user.Id,
-                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id),
+                    user.Id.ToString(),
+                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id.ToString()),
                     new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
                 ); //TODO: CB Remove ROL again when portal login errors have been resolved
             //Remove the Rol and tenantId and add to table and obfuscate
-            var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id, jwtType, user.ResetData);
+            var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id.ToString(), jwtType, user.ResetData);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
-            await ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id, string.Join(',', roles));
+            await ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id.ToString(), string.Join(',', roles));
 
             return jwt;
         }

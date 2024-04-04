@@ -4,6 +4,7 @@ export const APIs = {
   confirmForgotPasswordReset: `api/authentication/confirm-forgot-password`,
   acceptInvitation: `api/invitation/accept-invitation`,
   acceptAdminInvitation: `api/invitation/accept-admin-invitation`,
+  acceptTeamLeadInvitation: `api/invitation/accept-team-lead-invitation`,
   verifyInvitation: `api/invitation/verify-invitation`,
   sendAuthCode: `api/invitation/send-auth-code`,
   refreshJwtToken: `api/authentication/refresh-token`,

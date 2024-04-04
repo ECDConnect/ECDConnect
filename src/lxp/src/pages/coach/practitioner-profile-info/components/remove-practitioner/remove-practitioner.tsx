@@ -2,7 +2,6 @@ import {
   ClassroomGroupDto,
   ReasonForLeavingDto,
   ReasonsForPractitionerLeaving,
-  UserDto,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -42,8 +41,11 @@ import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
+import { notificationsSelectors } from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
+  removeReasonId,
   onSuccess,
 }) => {
   const appDispatch = useAppDispatch();
@@ -108,7 +110,12 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   } = useForm<RemovePractionerModel>({
     resolver: yupResolver(removePractionerModelSchema),
     mode: 'onChange',
-    defaultValues: initialRemovePractionerValues,
+    defaultValues: !removeReasonId
+      ? initialRemovePractionerValues
+      : {
+          ...initialRemovePractionerValues,
+          removeReasonId,
+        },
   });
 
   const { isValid, errors } = useFormState({
@@ -137,6 +144,28 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     setRemovePractionerFormValues('reassignedClassrooms', mappedClasses);
     triggerRemovePractionerForm();
     return classroomDetails;
+  };
+
+  const removalNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      (item?.message?.cta?.includes('[[SeeTrainee]]') ||
+        item?.message?.cta?.includes('[[SeeSmartStarters]]')) &&
+      item?.message?.action?.includes(practitionerUserId) &&
+      item?.message?.action.includes('remove')
+  );
+
+  const removeNotifications = async () => {
+    if (removalNotifications && removalNotifications?.length > 0) {
+      removalNotifications.map((notification) => {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification.message.reference ?? '',
+          })
+        );
+      });
+    }
   };
 
   useEffect(() => {
@@ -377,6 +406,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
           onProceed={() => {
             handleFormSubmit(getRemovePractionerFormValues());
             setRemovePractionerPromptVisible(false);
+            removeNotifications();
             history.push(ROUTES.COACH.PRACTITIONERS);
             onSuccess();
           }}

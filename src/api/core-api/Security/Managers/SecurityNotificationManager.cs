@@ -5,6 +5,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -19,12 +20,12 @@ namespace EcdLink.Api.CoreApi.Security.Managers
     {
         private INotificationProviderFactory<ApplicationUser> _notificationProviderFactory;
         private ISystemSetting<SecurityNotificationOptions> _options;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
         public SecurityNotificationManager(
             INotificationProviderFactory<ApplicationUser> notificationProviderFactory,
             ISystemSetting<SecurityNotificationOptions> optionAccessor,
-            UserManager<ApplicationUser> userManager)
+            ApplicationUserManager userManager)
         {
             _notificationProviderFactory = notificationProviderFactory;
             _options = optionAccessor;

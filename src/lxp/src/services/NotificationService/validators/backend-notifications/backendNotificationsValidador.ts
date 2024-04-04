@@ -1,13 +1,16 @@
 import { Message, MessageViewType } from '@models/messages/messages';
 import {
   NotificationIntervals,
-  NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
 import { Config, UserDto } from '@ecdlink/core';
 import { Notification, QueryAllNotificationsArgs } from '@ecdlink/graphql';
 import { api } from '@/services/axios.helper';
-import { notificationTagConfig } from '@/constants/notifications';
+import {
+  MessageStatusConstants,
+  notificationTagConfig,
+} from '@/constants/notifications';
+import { Colours } from '@ecdlink/ui';
 
 export class BackendNotificationsValidator implements NotificationValidator {
   interval: NotificationIntervals;
@@ -22,23 +25,21 @@ export class BackendNotificationsValidator implements NotificationValidator {
     this.lastCheckTimestamp = 0;
   }
 
-  // TODO: update type of getNotifications
-  // @ts-ignore
   getNotifications = async () => {
+    if (!this.user?.id) return [];
+
     const notifications: Message[] = [];
 
-    // EC-1909 - Suppress ticket
-    // const allNotifications = await this.getAllNotifications({
-    //   userId: this.user?.id,
-    // });
-    // EC-1909 - Suppress ticket
-    // delete next line when unsuppressing
-    const allNotifications: Notification[] = [];
+    const allNotifications = await this.getAllNotifications({
+      userId: this.user?.id,
+    });
 
     if (!allNotifications.length) return;
 
     for (const notification of allNotifications) {
       const notificationConfig = this.getNotificationConfig(notification?.cTA);
+
+      const viewType = this.getViewType(notification?.messageProtocol ?? '');
 
       notifications.push({
         ...notificationConfig,
@@ -47,20 +48,36 @@ export class BackendNotificationsValidator implements NotificationValidator {
         title: notification?.subject ?? '',
         message: notification.message ?? '',
         dateCreated: notification.messageDate,
-        // TODO: get the correct priority from the backend
-        priority: NotificationPriority.high,
-        viewOnDashboard: true,
+        priority: notification?.ordering,
+        viewOnDashboard:
+          notificationConfig?.viewOnDashboard || viewType === 'Hub',
         actionText: notification.cTAText ?? '',
         cta: notification.cTA ?? '',
         icon: notificationConfig?.icon || 'ArrowCircleRightIcon',
-        color: notificationConfig?.color || 'white',
-        viewType: this.getViewType(notification?.messageProtocol ?? ''),
+        color:
+          notificationConfig?.color ||
+          this.getMessagesColor(notification?.status ?? ''),
+        viewType: notificationConfig?.viewType || viewType,
         area: notificationConfig?.area || this.getDefaultArea(this.user ?? {}),
         expiryDate: notification.messageEndDate,
+        action: notification.action ?? '',
       });
     }
 
     return notifications;
+  };
+
+  getMessagesColor = (status: string): Colours => {
+    switch (status) {
+      case MessageStatusConstants.Red:
+        return 'errorMain';
+      case MessageStatusConstants.Amber:
+        return 'alertMain';
+      case MessageStatusConstants.Green:
+        return 'successMain';
+      default:
+        return 'infoMain';
+    }
   };
 
   getNotificationConfig = (cta: Notification['cTA']) => {
@@ -116,9 +133,11 @@ export class BackendNotificationsValidator implements NotificationValidator {
             status
             cTA
             cTAText
+            ordering
             messageTemplate
               {
                 id
+                ordering
                 templateType
                 subject
                 message
@@ -126,6 +145,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
                 cTAText
                 typeCode                        
               }
+             action 
           }
         }
 
@@ -136,7 +156,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
     });
 
     if (response.status !== 200 || response.data.errors) {
-      throw new Error('get all notification failed - Server connection error');
+      return [];
     }
 
     return response.data.data.allNotifications;

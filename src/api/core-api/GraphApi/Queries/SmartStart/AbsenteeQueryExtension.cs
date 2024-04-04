@@ -29,18 +29,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
-            List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
             foreach (var absent in absents)
             {
                 if (absent.ReassignedClass != null)
                 {
                     var classRepo = repoFactory.CreateRepository<Programme>(userContext: uId);
-                    absent.Program = classRepo.GetAll().Where(x => x.Id.Equals(absent.ReassignedClass)).OrderBy(x => x.Id).FirstOrDefault();
+                    absent.Program = classRepo.GetAll().Where(x => x.Id == Guid.Parse(absent.ReassignedClass)).OrderBy(x => x.Id).FirstOrDefault();
                 }
                 if (absent.ReassignedToPractitioner != null)
                 {
                     var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-                    absent.Practitioner = practRepo.GetAll().Where(x => x.UserId.Contains(absent.ReassignedToPractitioner)).OrderBy(x => x.Id).FirstOrDefault();
+                    absent.Practitioner = practRepo.GetAll().Where(x => x.UserId.ToString().Contains(absent.ReassignedToPractitioner)).OrderBy(x => x.Id).FirstOrDefault();
                 }
             }
 
@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
-            List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
 
             return absents.Count();
         }
@@ -68,7 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
 
-            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
+            var absentees = absenteeRepo.GetAll().Where(x => x.UserId.ToString() == userId).ToList();
             return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
         }
 

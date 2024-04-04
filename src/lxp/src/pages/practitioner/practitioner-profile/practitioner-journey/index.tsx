@@ -150,7 +150,7 @@ export const PractitionerJourney = ({
     ) {
       window.sessionStorage.setItem(
         currentActivityKey,
-        coachVisitTypes.supportVisit
+        coachVisitTypes.supportVisit.description
       );
     } else {
       window.sessionStorage.setItem(

@@ -1,5 +1,4 @@
 import { coachSelectors } from '@/store/coach';
-import { ClubDto } from '@ecdlink/core';
 import { ClubMeetingModelInput } from '@ecdlink/graphql';
 import {
   Button,
@@ -88,7 +87,7 @@ export const Step1: React.FC<Step1Props> = ({
                 });
               }}
               dateFormat="EEE, dd MMM yyyy"
-              showIcon
+              // showIcon
               minDate={startQuarterDate}
               maxDate={endQuarterDate}
             />

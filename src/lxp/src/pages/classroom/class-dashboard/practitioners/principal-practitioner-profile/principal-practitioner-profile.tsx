@@ -13,6 +13,8 @@ import {
   Typography,
   Card,
   ActionModal,
+  MenuListDataItem,
+  StackedList,
 } from '@ecdlink/ui';
 import {
   ClassroomMetricReport,
@@ -38,6 +40,7 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   addDays,
+  format,
   getMonth,
   isFriday,
   isPast,
@@ -45,12 +48,14 @@ import {
   isToday,
   isWeekend,
   nextMonday,
+  sub,
 } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
+import { AbsencesView } from './components/absences-view/absences-view';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -65,16 +70,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
+  const daysAbsentLastMonth = practitioner?.daysAbsentLastMonth;
   const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
 
   const practitionerAbsentees = practitioner?.absentees;
-  const validAbsenteesDates = practitionerAbsentees?.filter(
+
+  const validAbsentee = practitionerAbsentees?.filter(
     (item) =>
-      !isPast(new Date(item?.absentDateEnd as string)) ||
-      isToday(new Date(item?.absentDate as string))
+      (!isPast(new Date(item?.absentDateEnd as string)) ||
+        isToday(new Date(item?.absentDate as string))) &&
+      item?.reason !== 'Practitioner removed from programme'
   );
 
-  const currentDates = validAbsenteesDates?.map((item) => {
+  const currentDates = validAbsentee?.map((item) => {
     return item?.absentDate as string;
   });
 
@@ -82,25 +90,48 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     return Date.parse(a) - Date.parse(b);
   });
 
-  const currentAbsentee = validAbsenteesDates?.find(
+  const currentAbsentee = validAbsentee?.find(
     (item) => item?.absentDate === orderedDates?.[0]
   ) as AbsenteeDto;
   const allAbsenteeClasses = practitionerAbsentees?.filter(
-    (item) => item?.absentDate === currentAbsentee?.absentDate
+    (item) =>
+      item?.absentDate === currentAbsentee?.absentDate &&
+      item?.reason !== 'Practitioner removed from programme'
+  );
+
+  const classesWithAbsence =
+    validAbsentee &&
+    Object.values(
+      validAbsentee?.reduce(
+        (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
+        {}
+      )
+    );
+
+  classesWithAbsence?.sort(function (a, b) {
+    return a?.absentDate?.localeCompare(b?.absentDate);
+  });
+
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
 
   const isOnLeave =
-    isPast(new Date(currentAbsentee?.absentDate as string)) &&
+    isLeave &&
+    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
+      isToday(new Date(currentAbsentee?.absentDate as string))) &&
     !isPast(new Date(currentAbsentee?.absentDateEnd as string));
 
   const absenceIsToday = isSameDay(
     new Date(),
     new Date(currentAbsentee?.absentDate || '')
   );
-  const isLeave = useMemo(
-    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
-    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
-  );
+
+  const lastMonth = sub(new Date(), {
+    months: 1,
+  });
+  const [showAbsences, setShowAbsences] = useState(false);
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
     return item?.userId === practitionerUserId;
@@ -121,7 +152,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
-      const isPrincipal = practitionerUser?.isPrincipal;
+      const isPrincipal = practitioner?.isPrincipal;
 
       if (isPrincipal) {
         if (allAbsenteeClasses) {
@@ -132,10 +163,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           });
           return;
         }
-        history.push('practitioner-reassign-class', {
-          practitionerId,
-          // principalPractitioner: practitionerUser,
-        });
+        if (allAbsenteeClasses)
+          history.push('practitioner-reassign-class', {
+            practitionerId,
+            allAbsenteeClasses,
+            // principalPractitioner: practitionerUser,
+          });
 
         return;
       }
@@ -152,7 +185,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         practitionerId,
       });
     },
-    [history]
+    [history, practitionerUser]
   );
 
   const handleComebackDay = useCallback((date: Date) => {
@@ -163,43 +196,50 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     return new Date(addDays(new Date(date), 1));
   }, []);
 
-  const handleAbsenceModal = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`What would you like to edit?`}
-          actionButtons={[
-            {
-              text: 'Edit this absence',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleReassignClass(practitionerUserId, allAbsenteeClasses);
-                onSubmit();
+  const handleAbsenceModal = useCallback(
+    (item: AbsenteeDto) => {
+      const absenceClasses = validAbsentee?.filter(
+        (absence) => absence?.absenteeId === item?.absenteeId
+      );
+
+      dialog({
+        position: DialogPosition.Middle,
+        render: (onSubmit, onCancel) => (
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`What would you like to edit?`}
+            actionButtons={[
+              {
+                text: 'Edit this absence',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId, absenceClasses);
+                  onSubmit();
+                },
+                leadingIcon: 'PencilAltIcon',
               },
-              leadingIcon: 'PencilAltIcon',
-            },
-            {
-              text: 'Add a new leave/absence',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                handleReassignClass(practitionerUserId);
-                onSubmit();
+              {
+                text: 'Add a new leave/absence',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId);
+                  onSubmit();
+                },
+                leadingIcon: 'PlusIcon',
               },
-              leadingIcon: 'PlusIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerUserId]);
+            ]}
+          />
+        ),
+      });
+    },
+    [dialog, handleReassignClass, practitionerUserId, validAbsentee]
+  );
 
   useEffect(() => {
     if (!!classMetrics && !!classMetrics?.length) {
@@ -225,7 +265,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const [editRemovalDialogVisable, setEditRemovalDialogVisable] =
     useState<boolean>(false);
-  const [existingRemoval, setExisitingRemoval] = useState<
+  const [existingRemoval, setExistingRemoval] = useState<
     PractitionerRemovalHistory | undefined
   >();
 
@@ -233,7 +273,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     const removalDetails = await new PractitionerService(
       userAuth?.auth_token!
     ).getRemovalForPractitioner(practitioner?.userId!);
-    setExisitingRemoval(removalDetails);
+    setExistingRemoval(removalDetails);
 
     return removalDetails;
   };
@@ -267,8 +307,26 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     await new PractitionerService(
       userAuth?.auth_token || ''
     ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
-    setExisitingRemoval(undefined);
+    setExistingRemoval(undefined);
   };
+
+  const notificationItem: MenuListDataItem[] = [
+    {
+      showIcon: true,
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'border-0',
+      iconColor: 'white',
+      title: `${daysAbsentLastMonth} ${
+        daysAbsentLastMonth && Number(daysAbsentLastMonth) > 1 ? 'days' : 'day'
+      } absent last month`,
+      titleStyle: 'text-textDark semibold whitespace-normal',
+      subTitle: format(lastMonth, 'MMMM yyyy'),
+      subTitleStyle: 'text-textMid',
+      iconBackgroundColor: 'alertMain',
+      backgroundColor: 'alertBg',
+      onActionClick: () => setShowAbsences(true),
+    },
+  ];
 
   return (
     <>
@@ -277,6 +335,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         <PractitionerNotRegistered
           practitioner={practitioner}
           classroom={classroom}
+          existingRemoval={existingRemoval}
         />
       ) : (
         <div className={styles.contentWrapper}>
@@ -288,7 +347,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             size="medium"
             renderBorder={true}
             renderOverflow={false}
-            onBack={() => history.goBack()}
+            onBack={() =>
+              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 })
+            }
             displayOffline={!isOnline}
           >
             <div className={styles.avatarWrapper}>
@@ -366,10 +427,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           <div className="flex flex-wrap justify-center">
             {existingRemoval && (
               <Card className={styles.removalCard}>
-                <div className="mt-2 mr-4 flex items-center">
+                <div className="mt-2 mr-4 mb-2 flex items-center">
                   <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                     <XCircleIcon
-                      className="text-errorMain h-5 w-5"
+                      className="text-errorMain mt-2 h-5 w-5"
                       aria-hidden="true"
                     />
                     <Typography
@@ -384,7 +445,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                             )
                           : ''
                       }`}
-                      className={styles.absentCardSubTitle}
+                      className={'text-errorMain ml-4 mt-2'}
                     />
                   </div>
                   <Button
@@ -394,10 +455,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     type="filled"
                     onClick={() => setEditRemovalDialogVisable(true)}
                   >
-                    {renderIcon(
-                      'PencilIcon',
-                      'w-5 h-5 color-primary text-primary mr-2'
-                    )}
+                    {renderIcon('PencilIcon', 'w-5 h-5 mr-2')}
                     <Typography
                       type="body"
                       className="mr-4"
@@ -408,18 +466,37 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
-            <AbsenceCard
-              absenceIsToday={absenceIsToday}
-              currentAbsentee={currentAbsentee}
-              handleComebackDay={handleComebackDay}
-              practitioner={practitioner!}
-              isOnLeave={isOnLeave}
-              handleReassignClass={handleReassignClass}
-              handleAbsenceModal={handleAbsenceModal}
-              isLeave={isLeave}
-              allAbsenteeClasses={allAbsenteeClasses}
-              practitionerUserId={practitionerUserId}
-            />
+            {!currentAbsentee &&
+              !!daysAbsentLastMonth &&
+              Number(daysAbsentLastMonth) > 0 && (
+                <div className="my-4 flex w-11/12 justify-center">
+                  <StackedList
+                    isFullHeight={false}
+                    className={'flex w-11/12 flex-col gap-2'}
+                    listItems={notificationItem}
+                    type={'MenuList'}
+                  />
+                </div>
+              )}
+            {!existingRemoval && (
+              <AbsenceCard
+                absenceIsToday={absenceIsToday}
+                currentAbsentee={currentAbsentee}
+                handleComebackDay={handleComebackDay}
+                practitioner={practitioner!}
+                isOnLeave={isOnLeave}
+                handleReassignClass={handleReassignClass}
+                handleAbsenceModal={(item: AbsenteeDto) =>
+                  handleAbsenceModal(item)
+                }
+                isLeave={isLeave}
+                allAbsenteeClasses={allAbsenteeClasses}
+                practitionerUserId={practitionerUserId}
+                classesWithAbsence={classesWithAbsence}
+                practitionerAbsentees={practitionerAbsentees}
+              />
+            )}
+
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(
@@ -488,7 +565,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               type={'body'}
                               weight={'bold'}
                               text={`attendance in ${getMonthName(
-                                getMonth(new Date()) - 1
+                                getMonth(new Date())
                                 // eslint-disable-next-line no-useless-concat
                               )}\u00A0${item?.year}`}
                               color={'textMid'}
@@ -746,8 +823,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
-            {/*
-            // EC-1909 - Suppress ticket
             {!existingRemoval && (
               <div className="flex w-full justify-center">
                 <Button
@@ -776,15 +851,26 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </Button>
               </div>
             )}
-                  */}
           </>
         </div>
       )}
       <Dialog
+        stretch={true}
+        visible={showAbsences}
+        position={DialogPosition.Full}
+      >
+        <AbsencesView
+          practitioner={practitioner!}
+          setShowAbsences={setShowAbsences}
+          lastMonth={lastMonth}
+          absences={practitionerAbsentees}
+        />
+      </Dialog>
+      <Dialog
         className={'mb-16 px-4'}
         stretch={true}
         visible={editRemovalDialogVisable}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <EditRemovePractitionerFromProgrammePrompt
           practitioner={practitioner}
@@ -798,6 +884,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           onCancel={() => {
             cancelPractitionerRemoval();
             setEditRemovalDialogVisable(false);
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
           }}
           onClose={() => {
             setEditRemovalDialogVisable(false);

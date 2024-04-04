@@ -1,0 +1,1 @@
+ALTER TABLE public."ClubMeeting" ADD "ClubLeaderContacted" bool NOT NULL DEFAULT false;

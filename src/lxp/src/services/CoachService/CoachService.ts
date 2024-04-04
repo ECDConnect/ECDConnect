@@ -1,4 +1,8 @@
-import { ClubMeetingModelInput, CoachInput } from '@ecdlink/graphql';
+import {
+  ChildProgressReportsStatus,
+  ClubMeetingModelInput,
+  CoachInput,
+} from '@ecdlink/graphql';
 import {
   ClubDto,
   CoachCirclesDto,
@@ -354,6 +358,8 @@ class CoachService {
           resource
           title
           topicContent
+          startDate
+          endDate
         }
       }
       `,
@@ -367,34 +373,32 @@ class CoachService {
     return response.data.data.GetAllCoachingCircleTopics;
   }
 
-  async declineSmartSpaceLicenseForTrainee(
-    userId: string,
-    dateDeclined: Date,
-    nextStepsComments: string
-  ): Promise<boolean> {
+  async getChildProgressReportsStatusForUser(
+    userId: string
+  ): Promise<ChildProgressReportsStatus> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
+      data: { childProgressReportsStatus: ChildProgressReportsStatus };
       errors?: {};
     }>(``, {
       query: `
-      mutation declineSmartSpaceLicenseForTrainee( $userId: String!, $dateDeclined: DateTime!, $nextStepsComments: String!) { 
-        declineSmartSpaceLicenseForTrainee(userId: $userId, dateDeclined: $dateDeclined, nextStepsComments: $nextStepsComments) { 
-            userId       
-          }    
+      query getChildProgressReportsStatus($userId: String) {
+        childProgressReportsStatus(userId: $userId) {
+          completedReports
+          numberOfChildren
         }
+       }
       `,
       variables: {
-        userId,
-        dateDeclined,
-        nextStepsComments,
+        userId: userId,
       },
     });
 
     if (response.status !== 200 || !!response.data.errors) {
-      throw new Error('Updating Coach failed - Server connection error');
+      throw new Error('Get Coach clubs Failed - Server connection error');
     }
 
-    return true;
+    return response.data.data.childProgressReportsStatus;
   }
 }
 

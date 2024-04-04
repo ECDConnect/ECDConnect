@@ -1,4 +1,5 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
+import { StepItem } from '@ecdlink/ui';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
@@ -8,6 +9,7 @@ import {
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { format } from 'date-fns';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -68,8 +70,11 @@ export class IncompletePractitionerInformationNotificationValidator
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
-        const timeline = traineeState?.traineeOnboardTimeline;
-        const completedSteps = timelineSteps(
+        const timeline =
+          traineeState?.traineeOnboardTimeline[
+            practitionerState.practitioner.userId || ''
+          ];
+        const steps = timelineSteps(
           timeline!,
           () => {},
           false,
@@ -79,30 +84,38 @@ export class IncompletePractitionerInformationNotificationValidator
           '',
           timeline?.consolidationMeetingStatus,
           isOnStipend
-        ).filter((item) => item?.type === 'completed');
+        );
+
+        const completedSteps = steps.filter(
+          (item) => item?.type === 'completed'
+        );
+        const overdueSteps = steps
+          .filter((item) => {
+            const overdueDate = (item as StepItem<{ date: Date }>)?.extraData
+              ?.date;
+            return (
+              (item?.type === 'todo' || item?.type === 'inProgress') &&
+              overdueDate &&
+              overdueDate < new Date()
+            );
+          })
+          .sort(
+            (stepA, stepB) =>
+              ((stepA as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
+                0) -
+              ((stepB as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
+                0)
+          ) as StepItem<{ date: Date }>[];
+
+        if (overdueSteps?.length > 0) {
+          return [];
+        }
+
         if (
-          (isOnStipend && completedSteps?.length < 7) ||
-          (isOnStipend !== true && completedSteps?.length < 6)
+          (isOnStipend && completedSteps?.length < 8) ||
+          (!isOnStipend && completedSteps?.length < 7)
         ) {
-          return [
-            {
-              reference: `trainee-profile`,
-              title: 'Start your trainee journey!',
-              message:
-                'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',
-              dateCreated: new Date().toISOString(),
-              priority: NotificationPriority.lower,
-              viewOnDashboard: true,
-              area: 'practitioner',
-              icon: 'SwitchVerticalIcon',
-              color: 'primary',
-              actionText: 'Get started',
-              viewType: 'Hub',
-              routeConfig: {
-                route: ROUTES.TRAINEE.SETUP_TRAINEE,
-              },
-            },
-          ];
+          return [];
         }
       }
 
@@ -114,7 +127,7 @@ export class IncompletePractitionerInformationNotificationValidator
             message:
               'Share more information about your programme to make Funda App useful for you.',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
+            priority: NotificationPriority.highest,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',

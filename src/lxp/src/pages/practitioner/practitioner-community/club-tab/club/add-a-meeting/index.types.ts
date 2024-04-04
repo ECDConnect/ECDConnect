@@ -3,12 +3,30 @@ export interface Step1Props {
   date: string;
 }
 
-// TODO: update types
+export interface Step2Props {
+  participants: { practitionerId: string; attended: boolean }[];
+}
+
+export interface Step3Props {
+  coachAttend: boolean;
+  meetingNotes?: string;
+  createdResource: boolean;
+}
+
 export interface AddMeetingProps {
+  clubId: string;
   step1?: Step1Props;
   step2?: unknown;
   setStep1?: (step1: Step1Props) => void;
-  setStep2?: (step2: unknown) => void;
-  setStep3?: (step3: unknown) => void;
+  setStep2?: (step2: Step2Props) => void;
+  setStep3?: (step3: Step3Props) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
+}
+
+export interface AddMeetingRouteParams {
+  eventId?: string;
+}
+
+export interface AddMeetingRouteState {
+  clubId?: string;
 }

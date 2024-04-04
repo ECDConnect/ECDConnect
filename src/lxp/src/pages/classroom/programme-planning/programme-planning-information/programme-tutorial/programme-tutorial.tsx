@@ -1,4 +1,3 @@
-import { ContentConsentTypeEnum } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -6,14 +5,30 @@ import {
   StackedList,
   StackedListItemType,
   Typography,
+  DialogPosition,
+  Dialog,
   MenuListDataItem,
+  Alert,
+  renderIcon,
+  classNames,
+  MoreInformationPage,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import Article from '../../../../../components/article/article';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './programme-tutorial.styles';
 import ROUTES from '@routes/routes';
+import ProgressReport from '../../components/progress-report/progress-report';
+import { useSelector } from 'react-redux';
+import { staticDataSelectors } from '@/store/static-data';
+import {
+  progressTrackingSelectors,
+  progressTrackingThunkActions,
+} from '@/store/progress-tracking';
+import { useAppDispatch } from '@/store';
+import { MoreInformation } from '@ecdlink/graphql';
+import InfoService from '@/services/InfoService/InfoService';
+const { usePDF } = require('react-to-pdf');
 
 interface ProgrammeTutorialProps extends ComponentBaseProps {
   listItems: StackedListItemType[];
@@ -29,9 +44,13 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
   const navigate = (route: string) => {
     history.push(route);
   };
-
+  const appDispatch = useAppDispatch();
+  const [data, setData] = useState<MoreInformation[]>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  const [selectedLanguage, setSelectedLanguage] = useState('en-za');
+  const [showReport, setShowReport] = useState(false);
   const [notifications] = useState<MenuListDataItem[]>([
     {
       title: 'Developing children holistically',
@@ -60,7 +79,74 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
     // ROUTE TO PROGRAMME CREATION
     history.replace(ROUTES.PROGRAMMES.THEME);
   };
-  console.log('notifications', notifications);
+
+  const progressSummary = useSelector(
+    progressTrackingSelectors?.getPractitionerProgressReportSummary
+  );
+  const fetchData = useCallback(
+    async (reportDate: string) => {
+      await appDispatch(
+        progressTrackingThunkActions.getPractitionerProgressReportSummary({
+          reportingPeriod: reportDate,
+        })
+      );
+    },
+    [appDispatch]
+  );
+
+  useEffect(() => {
+    if (!progressSummary) {
+      const today = new Date();
+      const reportDate =
+        today.getMonth() >= 0 && today.getMonth() <= 6
+          ? 'June'
+          : 'November' + today.getFullYear();
+      fetchData(reportDate);
+    }
+  }, [progressSummary, fetchData]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    new InfoService()
+      .getMoreInformation('Programme', selectedLanguage)
+      .then((info) => {
+        setData(info);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, [selectedLanguage]);
+
+  const { toPDF, targetRef } = usePDF({
+    filename: 'practitioner-progress-summary-report.pdf',
+  });
+
+  const downloadPdf = useCallback(() => {
+    setShowReport(true);
+    setTimeout(() => toPDF(), 600);
+    setTimeout(() => setShowReport(false), 600);
+  }, [setShowReport, toPDF]);
+
+  if (presentArticle) {
+    return (
+      <Dialog
+        fullScreen={true}
+        visible={presentArticle}
+        position={DialogPosition.Full}
+      >
+        <MoreInformationPage
+          isLoading={isLoading}
+          languages={languages.map((x) => ({
+            value: x.locale,
+            label: x.description,
+          }))}
+          moreInformation={!!data ? data[0] : {}}
+          title={'Learning through play'}
+          onClose={() => history.goBack()}
+          setSelectedLanguage={setSelectedLanguage}
+        />
+      </Dialog>
+    );
+  }
 
   return (
     <BannerWrapper
@@ -81,6 +167,29 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
         />
       )}
 
+      <Alert
+        className=""
+        message={`You can use the results from your progress reports to help children learn!`}
+        type="info"
+        button={
+          <Button
+            onClick={() => downloadPdf()}
+            className="w-full"
+            size="small"
+            color="primary"
+            type="filled"
+          >
+            {renderIcon('ChartBarIcon', classNames('h-5 w-5 text-white'))}
+            <Typography
+              type="small"
+              className="ml-2"
+              text="Get class programme summary"
+              color="white"
+            />
+          </Button>
+        }
+      />
+
       <div className={'pt-2'}>
         <Button
           color={'primary'}
@@ -97,13 +206,13 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
         </Button>
       </div>
 
-      <Article
-        consentEnumType={ContentConsentTypeEnum.LearningThroughPlay}
-        visible={presentArticle}
-        title={'Learning through play'}
-        onClose={() => setPresentArticle(false)}
-        showClose={false}
-      />
+      {showReport && (
+        <div className="mt-10 h-screen overflow-y-scroll">
+          <div ref={targetRef}>
+            <ProgressReport progressSummary={progressSummary!} />
+          </div>
+        </div>
+      )}
     </BannerWrapper>
   );
 };

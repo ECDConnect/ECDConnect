@@ -12,9 +12,10 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
+  TitleListItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -22,7 +23,6 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
-import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import {
   notificationActions,
@@ -32,13 +32,12 @@ import { settingSelectors, settingThunkActions } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
-import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
+
 import {
   practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { staticDataThunkActions } from '@store/static-data';
@@ -54,7 +53,7 @@ import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { traineeSelectors } from '@/store/trainee';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { PractitionerInput } from '@ecdlink/graphql';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
@@ -65,6 +64,8 @@ import { coachSelectors } from '@/store/coach';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { notificationTagConfig } from '@/constants/notifications';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -106,6 +107,7 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
@@ -114,23 +116,25 @@ export const Dashboard: React.FC = () => {
   const hasConsent = practitioner?.shareInfo;
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-
-  const a = useCallback(async () => {
-    if (isOnline) {
-      appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
-    }
-  }, []);
-
-  useEffect(() => {
-    a();
-  }, []);
-
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
+  const missingProgramme =
+    (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
+    !practitioner?.principalHierarchy &&
+    !isPrincipal;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
+  // this acceptAgreement is for club leader
+  const isPractitionerAcceptAgreementNotification =
+    dashboardNotification?.message?.cta?.includes(
+      notificationTagConfig.AcceptAgreement.cta!
+    );
+
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -146,6 +150,14 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
 
+  // Sync the coach data -> TODO make a better sync method
+  useEffect(() => {
+    if (isCoach) {
+      appDispatch(traineeThunkActions.syncCoachSmartSpaceVisitData());
+      appDispatch(traineeThunkActions.syncTraineeFranchisorAgreementData());
+    }
+  }, []);
+
   useEffect(() => {
     //This will prevent points card showing up for coaches
     if (isCoach) {
@@ -153,8 +165,9 @@ export const Dashboard: React.FC = () => {
     }
 
     const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
+    const currentYear = new Date().getFullYear();
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
-      if (current.month == currentMonth) {
+      if (current.month === currentMonth && current.year === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -227,10 +240,10 @@ export const Dashboard: React.FC = () => {
     if (
       (practitioner?.isTrainee &&
         practitioner?.isOnStipend &&
-        completedSteps?.length === 7) ||
+        completedSteps?.length === 8) ||
       (practitioner?.isTrainee &&
         practitioner?.isOnStipend !== true &&
-        completedSteps?.length === 6)
+        completedSteps?.length === 7)
     ) {
       const copy = Object.assign({}, practitioner);
 
@@ -246,7 +259,7 @@ export const Dashboard: React.FC = () => {
     }
   }, [completedSteps?.length]);
 
-  const leagueCard = useMemo((): ScoreCardProps => {
+  const clubCard = useMemo((): ScoreCardProps => {
     const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
       club?.pointsTotal ?? 0,
       club?.maxPointsTotal ?? 0
@@ -286,12 +299,14 @@ export const Dashboard: React.FC = () => {
       textColour: 'black',
       onClick: () =>
         history.push(
-          ROUTES.PRACTITIONER.COMMUNITY[
-            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
-          ]
+          isPractitionerAcceptAgreementNotification
+            ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+            : ROUTES.PRACTITIONER.COMMUNITY[
+                practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+              ]
         ),
     };
-  }, []);
+  }, [club, practitioner]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -382,33 +397,20 @@ export const Dashboard: React.FC = () => {
    */
   useEffect(() => {
     if (isOnline && !!userData) {
-      if (isCoach) {
-        (async () =>
-          await appDispatch(
-            practitionerForCoachThunkActions.getPractitionersForCoach({})
-          ).unwrap())();
+      (async () =>
+        await appDispatch(
+          pointsThunkActions.getPointsLibrary({
+            userId: userData?.id!,
+          })
+        ).unwrap())();
 
-        (async (id) =>
-          await appDispatch(
-            classroomsForCoachThunkActions.getClassroomForCoach({
-              id: userData?.id!,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            childrenThunkActions.getChildrenForCoach({})
-          ).unwrap())();
-      }
-
-      if (userData.roles?.some((role) => role.name === 'Practitioner')) {
-        (async () =>
-          await appDispatch(
-            practitionerThunkActions.getPractitionerByUserId({
-              userId: userData?.id || '',
-            })
-          ).unwrap())();
-
+      if (
+        userData.roles?.some(
+          (role) =>
+            role.name === UserTypeEnum.Practitioner ||
+            role.name === UserTypeEnum.Principal
+        )
+      ) {
         const currentDate = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
@@ -423,13 +425,6 @@ export const Dashboard: React.FC = () => {
 
         (async () =>
           await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
             pointsThunkActions.getUserClubStanding({
               userId: userData?.id!,
             })
@@ -437,6 +432,79 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, [userData]);
+
+  // This dialog prevents a user to access classrooms, before completing profile/programme info
+  const showCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Top,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            className="z-50"
+            icon="XCircleIcon"
+            iconBorderColor="errorBg"
+            iconColor="errorMain"
+            title="Missing programme information"
+            paragraphs={[
+              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
+            ]}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Add programme details',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'PlusIcon',
+                onClick: isTrainee
+                  ? async () => {
+                      onSubmit();
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
+                      );
+                    }
+                  : async () => {
+                      onSubmit();
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                      );
+                    },
+              },
+              {
+                colour: 'primary',
+                text: 'Close',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'XIcon',
+                onClick: () => {
+                  onSubmit();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const onNavigation = (navItem: any) => {
+    if (
+      (((classroom && classroom.id) ||
+        (classroomGroup && classroomGroup.length > 0)) &&
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrainee
+    ) {
+      history.push(navItem.href, navItem.params);
+    } else if (navItem.href.includes('classroom')) {
+      showCompleteProfileBlockingDialog();
+    } else {
+      history.push(navItem.href, navItem.params);
+    }
+  };
 
   useEffect(() => {
     if (isOnline) {
@@ -484,24 +552,28 @@ export const Dashboard: React.FC = () => {
               {
                 name: NavigationTypes.Attendance,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 0 },
                 current: false,
               },
               {
                 name: NavigationTypes.Practitioners,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 1 },
                 current: false,
               },
               {
                 name: NavigationTypes.Children,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 2 },
                 current: false,
               },
               {
                 name: NavigationTypes.Programme,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 3 },
                 current: false,
               },
@@ -551,8 +623,8 @@ export const Dashboard: React.FC = () => {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
       href: isFirstTimeCommunitySection
-        ? ROUTES.COMMUNITY.WELCOME
-        : ROUTES.COMMUNITY.ROOT,
+        ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
+        : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
       params: { isFromDashboard: true } as CommunityRouteState,
       icon: 'BookOpenIcon',
       current: false,
@@ -678,16 +750,15 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
-    //EC-1909 - Suppress ticket
-    // dashboardItems.push({
-    //   title: 'Calendar',
-    //   titleIcon: 'CalendarIcon',
-    //   titleIconClassName: styles.icon,
-    //   classNames: 'bg-uiBg',
-    //   onActionClick: () => {
-    //     goToCalendar();
-    //   },
-    // });
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.icon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isCoach) {
@@ -700,16 +771,16 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    //EC-1909 - Suppress ticket
-    // dashboardItems.push({
-    //   title: 'Calendar',
-    //   titleIcon: 'CalendarIcon',
-    //   titleIconClassName: styles.calendarIcon,
-    //   classNames: 'bg-uiBg',
-    //   onActionClick: () => {
-    //     goToCalendar();
-    //   },
-    // });
+
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isTrainee) {
@@ -791,7 +862,8 @@ export const Dashboard: React.FC = () => {
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
-        hasConsent) ||
+        hasConsent &&
+        !missingProgramme) ||
       isTrainee
     ) {
       history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
@@ -823,19 +895,6 @@ export const Dashboard: React.FC = () => {
     history.push(ROUTES.TRAINING);
   };
 
-  const onNavigation = (navItem: any) => {
-    if (
-      (classroom && classroom.id && navItem.href.includes('classroom')) ||
-      isTrainee
-    ) {
-      history.push(navItem.href, navItem.params);
-    } else if (navItem.href.includes('classroom')) {
-      showCompleteProfileBlockingDialog();
-    } else {
-      history.push(navItem.href, navItem.params);
-    }
-  };
-
   const showOnlineOnly = () => {
     dialog({
       color: 'bg-white',
@@ -852,59 +911,6 @@ export const Dashboard: React.FC = () => {
     } else {
       showOnlineOnly();
     }
-  };
-
-  const showCompleteProfileBlockingDialog = () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Top,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            className="z-50"
-            icon="XCircleIcon"
-            iconBorderColor="errorBg"
-            iconColor="errorMain"
-            title="Missing programme information"
-            paragraphs={[
-              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
-            ]}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Add programme details',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'PlusIcon',
-                onClick: isTrainee
-                  ? async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
-                      );
-                    }
-                  : async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-                      );
-                    },
-              },
-              {
-                colour: 'primary',
-                text: 'Close',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'XIcon',
-                onClick: () => {
-                  onSubmit();
-                },
-              },
-            ]}
-          />
-        );
-      },
-    });
   };
 
   const profilePc =
@@ -959,13 +965,12 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div className={`${!classroom ? styles.wrapper : ''}`}>
+      <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
         <DashboardItems
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {/* EC-1909 - Suppress ticket */}
-        {/* {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
@@ -982,23 +987,44 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && (
+        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
-            mainText={leagueCard.mainText}
-            hint={leagueCard.hint}
-            hintClassName={leagueCard.hintClassName}
+            mainText={clubCard.mainText}
+            hint={clubCard.hint}
+            hintClassName={clubCard.hintClassName}
             textPosition="left"
-            currentPoints={leagueCard.currentPoints}
-            maxPoints={leagueCard.maxPoints}
-            onClick={leagueCard.onClick}
-            barBgColour={leagueCard.barBgColour}
-            barColour={leagueCard.barColour}
-            bgColour={leagueCard.bgColour}
-            image={leagueCard.image}
-            textColour={leagueCard.textColour}
+            currentPoints={clubCard.currentPoints}
+            maxPoints={clubCard.maxPoints}
+            onClick={clubCard.onClick}
+            barBgColour={clubCard.barBgColour}
+            barColour={clubCard.barColour}
+            bgColour={clubCard.bgColour}
+            image={clubCard.image}
+            textColour={clubCard.textColour}
           />
-        )} */}
+        )}
+        {isPractitioner &&
+          (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
+            <div className="mt-1">
+              <TitleListItem
+                item={{
+                  title: !!club ? club?.name : 'Community',
+                  titleIcon: 'UserGroupIcon',
+                  titleIconClassName: styles.communityIcon,
+                  classNames: 'bg-uiBg',
+                  onActionClick: () =>
+                    history.push(
+                      isPractitionerAcceptAgreementNotification
+                        ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+                        : ROUTES.PRACTITIONER.COMMUNITY[
+                            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+                          ]
+                    ),
+                }}
+              />
+            </div>
+          )}
       </div>
     </BannerWrapper>
   );

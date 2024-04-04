@@ -1,11 +1,7 @@
-﻿using DinkToPdf;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers;
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Reports;
 using ECDLink.SmartStart.Services;
@@ -23,6 +19,7 @@ using System.Text;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using DinkToPdf.Contracts;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -33,17 +30,17 @@ namespace EcdLink.Api.CoreApi.Services
         private ChildAttendanceReport _childAttendanceReport;
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
-        private UserManager<ApplicationUser> _userManager;
+        private ApplicationUserManager _userManager;
         private AttendanceService _attendanceService;
 
-        private string _applicationUserId;
+        private Guid _applicationUserId;
 
         public AttendancePdfService(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] ChildAttendanceReport childAttendanceReport,
             [Service] DocumentManager documentManager,
             [Service] PersonnelService personnelService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] AttendanceService attendanceService,
             HierarchyEngine hierarchyEngine,
             IConverter pdfConverter)
@@ -55,7 +52,7 @@ namespace EcdLink.Api.CoreApi.Services
             _userManager = userManager;
             _pdfConverter = pdfConverter;
 
-            _applicationUserId = (contextAccessor.HttpContext != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetIntegrationUserId());
+            _applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetIntegrationUserId().GetValueOrDefault());
         }
 
 
@@ -65,6 +62,13 @@ namespace EcdLink.Api.CoreApi.Services
             DateTime startDate,
             DateTime endDate)
         {
+            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
+
+            if (!classroomGroups.Any())
+            {
+                return null;
+            }
+
             var siteAddress = _personnelService.GetUserSiteAddress(userId);
             var signingSignature = _personnelService.GetUserSignature(userId);
             var signDateRow = _documentManager.GetSignatureRow(signingSignature);
@@ -74,7 +78,7 @@ namespace EcdLink.Api.CoreApi.Services
             var htmlStringBuilder = new StringBuilder($"<html><head>{css}</head><body>");
 
             var attedanceOverview = _childAttendanceReport.GetClassroomAttendanceOverView(classroomId, userId, startDate.Date, endDate.GetEndOfDay());
-            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
+            
 
             var counter = 1;
             foreach (var classroomGroup in classroomGroups)
@@ -179,10 +183,9 @@ namespace EcdLink.Api.CoreApi.Services
                 Reference = Base64Result,
                 FileName = $"{header.Replace(" ", "_")}.pdf",
                 UserId = userId,
-                CreatedUserId = _applicationUserId,
+                CreatedUserId = _applicationUserId.ToString(),
             };
-
-            return await _documentManager.SaveAttendancePDF(pdfDoc);
+            return null;
         }
 
         private int GetTotalForDay(int key, IEnumerable<ClassroomGroupChildAttendanceReportModel> children)

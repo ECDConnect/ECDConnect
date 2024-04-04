@@ -8,4 +8,5 @@ export interface AttendanceListDataItem extends ListItem {
   attenendeeId: string;
   status?: AttendanceStatus;
   avatarColor: string;
+  className?: string;
 }

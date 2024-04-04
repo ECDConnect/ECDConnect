@@ -1,6 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  cancelCalendarEvent,
   getCalendarEventTypes,
   getCalendarEvents,
   updateCalendarEvent,
@@ -9,22 +10,51 @@ import {
 import { CalendarState } from './calendar.types';
 import { calendarConvert } from './calendar.util';
 import { CalendarEventModelInputModel } from '@ecdlink/core';
+import {
+  getActionName,
+  setFulfilledThunkActionStatus,
+  setRejectedThunkActionStatus,
+  setThunkActionStatus,
+} from '../utils';
+import { Status, ThunkActionStatuses } from '../types';
 
 const initialState: CalendarState = {
   events: [],
   eventTypes: [],
+  eventIdsToCancel: [],
 };
 
 const calendarSlice = createSlice({
   name: 'calendar',
   initialState,
   reducers: {
+    cancelCalendarEvent: (state, action: PayloadAction<{ id: string }>) => {
+      state.eventIdsToCancel = [
+        ...(state.eventIdsToCancel ?? []),
+        action.payload.id,
+      ];
+    },
     resetCalendarState: (state) => {
       state.events = initialState.events || [];
       state.eventTypes = initialState.eventTypes;
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateCalendarEvent, true);
+    setThunkActionStatus(builder, cancelCalendarEvent);
+    builder.addCase(cancelCalendarEvent.fulfilled, (state, action) => {
+      const input = action?.meta?.arg?.id;
+
+      if (input) {
+        state.eventIdsToCancel = state.eventIdsToCancel?.filter(
+          (id) => id !== input
+        );
+      } else {
+        state.eventIdsToCancel = [];
+      }
+
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getCalendarEventTypes.fulfilled, (state, action) => {
       state.eventTypes = action.payload;
     });
@@ -34,6 +64,8 @@ const calendarSlice = createSlice({
     });
 
     builder.addCase(updateCalendarEvent.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
       if (!state.events) {
         state.events = [];
       }
@@ -53,6 +85,8 @@ const calendarSlice = createSlice({
     });
 
     builder.addCase(updateCalendarEvent.rejected, (state, action) => {
+      setRejectedThunkActionStatus(state, action);
+
       if (!state.events) {
         state.events = [];
       }

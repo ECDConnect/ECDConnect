@@ -33,9 +33,7 @@ export default function Editor({ label, onStateChange, currentValue }) {
     <>
       {editorLoaded ? (
         <div className="relative">
-          <div className="text-slate-700 mb-2 text-sm font-medium capitalize">
-            {label}
-          </div>
+          <div className="text-slate-700 mb-2 text-sm font-medium">{label}</div>
           <CKEditor
             editor={ClassicEditor}
             config={editorConfiguration}

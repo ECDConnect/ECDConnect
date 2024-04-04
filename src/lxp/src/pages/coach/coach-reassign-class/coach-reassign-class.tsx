@@ -11,10 +11,7 @@ import {
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
-import {
-  ReassignClassPageState,
-  yesNoOptions,
-} from './coach-reassign-class.types';
+import { ReassignClassPageState } from './coach-reassign-class.types';
 import ROUTES from '@routes/routes';
 import { format } from 'date-fns';
 import { useStoreSetup } from '@hooks/useStoreSetup';
@@ -115,6 +112,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   >([]);
   const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] = useState();
   const [endDate, setEndDate] = useState<Date>();
+  const [otherReason, setOtherReason] = useState('');
 
   const handleReassignClassroomGroupPractitioner = useCallback(
     (classroomGroup: reassignedClassroomGroupProps) => {
@@ -135,15 +133,27 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     control: control,
   });
 
-  const disableButton = !reason || !selectedDate;
+  const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   const practitionerClassroomGroups = useMemo(
     () =>
       classroomGroups?.filter(
         (item) => item?.userId === absenteePractitioner?.userId
       ),
-    [absenteePractitioner, classroomGroups]
+    []
   );
+
+  const disableButton =
+    !reason ||
+    !selectedDate ||
+    !endDate ||
+    (!principalOrFundaAppAdmin &&
+      principalPractitioners &&
+      principalPractitioners?.length > 0) ||
+    (practitionerClassroomGroups?.length > 0 &&
+      reassignedClassroomGroups?.length !==
+        practitionerClassroomGroups?.length &&
+      practitionersTeachList?.length > 0);
   const practitionerProgramme = useMemo(
     () => practitionerClassroomGroups?.[0]?.classroom?.name,
     [practitionerClassroomGroups]
@@ -229,6 +239,12 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
 
       setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
+
+      if (allAbsenteeClasses?.[0]?.reassignedToUserId) {
+        setPrincipalOrFundaAppAdmin(
+          allAbsenteeClasses?.[0]?.reassignedToUserId as any
+        );
+      }
     }
   }, []);
 
@@ -246,15 +262,20 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             item?.absenteeId,
             false,
             item?.practitioner,
-            reason,
+            reasonPayload,
             new Date(selectedDate),
-            endDate || new Date(selectedDate)
+            endDate || new Date(selectedDate),
+            true,
+            principalOrFundaAppAdmin
           );
 
           dispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
           await refreshClassroom();
           setIsLoading(false);
-          history.push(ROUTES.DASHBOARD);
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId: practitionerId,
+            isFromReassignView: true,
+          });
 
           return;
         }
@@ -264,11 +285,14 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
         ).updateReassignClassroomGroup(
           practitioner,
           item?.practitioner,
-          reason,
+          reasonPayload,
           new Date(selectedDate),
           userData?.id!,
           item?.classroomId,
-          endDate || new Date(selectedDate)
+          endDate || new Date(selectedDate),
+          '',
+          '',
+          principalOrFundaAppAdmin
         );
       });
 
@@ -283,34 +307,45 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
             absenteeId,
             false,
-            practitioner2,
-            reason,
+            practitioner2 || '',
+            reasonPayload,
             new Date(selectedDate),
-            endDate || new Date(selectedDate)
+            endDate || new Date(selectedDate),
+            true,
+            principalOrFundaAppAdmin
           );
 
           await refreshClassroom();
           setIsLoading(false);
-          history.push(ROUTES.DASHBOARD);
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId: practitionerId,
+            isFromReassignView: true,
+          });
 
           return;
         }
+
         setIsLoading(true);
         await new ClassroomGroupService(
           userAuth.auth_token
         ).updateReassignClassroomGroup(
           practitioner,
           practitioner2,
-          reason,
+          reasonPayload,
           new Date(selectedDate),
           userData?.id!,
           '',
-          endDate || new Date(selectedDate)
+          endDate || new Date(selectedDate),
+          '',
+          principalOrFundaAppAdmin
         );
       }
     }
     setIsLoading(false);
-    history.push(ROUTES.DASHBOARD);
+    history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+      practitionerId: practitionerId,
+      isFromReassignView: true,
+    });
   };
 
   return (
@@ -395,8 +430,9 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             <FormInput
               className="my-4 w-full"
               label={'Type the reason'}
-              onChange={(e) => {}}
+              onChange={(e) => setOtherReason(e.target.value)}
               textInputType="input"
+              value={otherReason}
               placeholder={'e.g. personal appointment'}
             />
           )}
@@ -443,7 +479,14 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                           } for ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
-                          )}.`}
+                          )}${
+                            !!endDate
+                              ? ` to ${format(
+                                  new Date(endDate),
+                                  'EEEE, d LLLL'
+                                )}`
+                              : ''
+                          }.`}
                           type={'info'}
                         />
                       )}
@@ -486,7 +529,14 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                           }'s programme and class from ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
-                          )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}.`}
+                          )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}${
+                            !!endDate
+                              ? ` to ${format(
+                                  new Date(endDate),
+                                  'EEEE, d LLLL'
+                                )}`
+                              : ''
+                          }.`}
                           list={[
                             `${principalOrFundaAppAdminPractitioner?.user?.firstName} will be the Funda App Admin for ${practitionerProgramme}`,
                             `${practitionerPresentName?.user?.firstName} will teach the ${item?.name} class`,

@@ -1,6 +1,6 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
@@ -8,7 +8,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
-using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -17,10 +16,10 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -32,7 +31,6 @@ using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
-using HotChocolate.Data.Filters.Expressions;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -42,7 +40,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -189,7 +186,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
+                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
                     metrics.AddRange(metric);
@@ -218,8 +215,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var group in classroomGroups)
                 {
                     var learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
-                    var children = attendanceService.GetChildrenForUser(userId);
-
 
                     int childCount = learners.Count;
                     int month = fromDate.Month;
@@ -233,7 +228,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId);
+                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
                             if (attendanceData.Any())
                             {
                                 var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
@@ -319,6 +314,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public async Task<List<NotificationDisplay>> GetClassroomActionItems(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] ChildProgressReportService childProgressReportService,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] ChildAttendanceReport attendanceReportService,
@@ -337,7 +333,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var classroomGroups = classroomGroupRepo.GetAll()
                 .Where(c => c.UserId == Guid.Parse(practitionerId)).ToList();
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var practitioner = practRepo.GetByUserId(practitionerId);
 
@@ -414,24 +410,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get Due/Overdue Reports
             // Get Children not progressed
             var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodEnd = ChildProgressReportService.GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
 
-            DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
+            DateTime reportDueStart = ChildProgressReportService.GetReportDueStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportDueEnd = ChildProgressReportService.GetReportDueEnd(previousMonthStart.Year, isPeriod1);
 
-            var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-            var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+            var reportOverDueStart = ChildProgressReportService.GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+            var reportOverDueEnd = ChildProgressReportService.GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
             // Notifications for child progress reports
-            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
+            var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
 
             // If any reports were submitted in the overdue period (2nd month of the submission window
-            if (reportCounts.overdueReportsSubmitted > 0)
+            if (reportCounts.reportsSubmittedOverdue > 0)
             {
                 notifications.Add(new NotificationDisplay()
                 {
-                    Subject = $"{reportCounts.overdueReportsSubmitted} overdue progress reports",
+                    Subject = $"{reportCounts.reportsSubmittedOverdue} overdue progress reports",
                     // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
@@ -444,12 +440,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             // If any children did not get a report submitted
-            if (reportCounts.missedReportCount > 0
+            if (reportCounts.reportsMissingOrIncomplete > 0
                 && currentDate >= reportOverDueEnd)
             {
                 notifications.Add(new NotificationDisplay()
                 {
-                    Subject = $"{reportCounts.missedReportCount} missed progress reports",
+                    Subject = $"{reportCounts.reportsMissingOrIncomplete} missed progress reports",
                     // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
@@ -490,7 +486,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Rule:
             // Show only if the practitioner did not submit reports for the January to June reporting period by the deadline(31 July)
             // or for the July to November reporting period by the deadline(20 Dec)"
-            if (reportCounts.missedReportCount > 0
+            if (reportCounts.reportsMissingOrIncomplete > 0
                         && currentDate >= reportOverDueEnd)
             {
                 var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
@@ -535,7 +531,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             var classReassignmentHistoryCount = classReassignmentHistoryRepo.GetAll().Count(ch => ch.IsActive
-                && ch.ReassignedToUser == practitionerId
+                && ch.ReassignedToUser == Guid.Parse(practitionerId)
                 && ch.ReassignedToDate >= previousMonthStart
                 && ch.ReassignedToDate <= previousMonthEnd);
 
@@ -558,55 +554,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             return notifications;
-        }
-
-
-        private static DateTime GetReportPeriodStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 1, 1) : new DateOnly(year, 7, 1))
-                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetNextReportDuePeriodStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 11, 1) : new DateOnly(year + 1, 6, 1))
-                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetNextReportDuePeriodEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 11, 30) : new DateOnly(year + 1, 6, 30))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportPeriodEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 12, 20))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportDueStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 6, 1) : new DateOnly(year, 11, 1))
-                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportDueEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 11, 30))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportOverDueStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 7, 1) : new DateOnly(year, 12, 1))
-                            .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportOverDueEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 7, 31) : new DateOnly(year, 12, 20))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
         }
 
         private static (int notProgressedFor2Periods, int notProgressedFor3Periods) GetChildProgress(
@@ -640,11 +587,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (last2?.Count() == 2 && last2[0].Item2 > last2[1].Item2)
                     hasProgressedInLast2Periods++;
 
-                if (last3?.Count() == 3
-                    && (last3[0].Item2 > last3[1].Item2)
+                if (last3?.Count() == 3)
+                {
+                    if ((last3[0].Item2 > last3[1].Item2)
                     || (last3[0].Item2 > last3[2].Item2)
                     || (last3[1].Item2 > last3[2].Item2))
-                    hasProgressedInLast3Periods++;
+                        hasProgressedInLast3Periods++;
+
+                }
             }
             // Calculate count of children who haven't progressed
             int hasNotPorgressed2 = childIds.Count() - hasProgressedInLast2Periods;
@@ -664,7 +614,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
-            var uIdGuid = Guid.Parse(uId);
             var practitionerIdGuid = Guid.Parse(practitionerId);
 
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
@@ -674,7 +623,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomGroups = await classroomGroupRepo
                 .GetAll()
                 .Where(c => c.UserId == practitionerIdGuid
-                    || c.Classroom.UserId == practitionerId)
+                    || c.Classroom.UserId.ToString() == practitionerId)
                 .ToListAsync();
 
             // TODO: use this to apply:
@@ -707,9 +656,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (missingRegisterDayCount > 0)
             {
                 var isPeriod1 = currentDate.Month <= 7;
-                DateTime currentReportingPeriodEnd = GetReportDueEnd(currentDate.Year, isPeriod1);
+                DateTime currentReportingPeriodEnd = ChildProgressReportService.GetReportDueEnd(currentDate.Year, isPeriod1);
                 var isPreviousMonthPeriod1 = previousMonthStart.Month <= 7;
-                DateTime nextReportingPeriodEnd = GetNextReportDuePeriodEnd(previousMonthStart.Year, isPreviousMonthPeriod1);
+                DateTime nextReportingPeriodEnd = ChildProgressReportService.GetNextReportDuePeriodEnd(previousMonthStart.Year, isPreviousMonthPeriod1);
 
                 return new ActionItemMissedProgressReportsDisplay()
                 {
@@ -751,10 +700,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
 
             var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var children = await childRepo.GetAll().Where(c => c.IsActive == true
                     && c.Hierarchy.StartsWith(practitionerHieracry))
@@ -811,7 +760,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user.Id;
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var children = childRepo.GetAll().Where(c => c.IsActive == true
@@ -885,9 +834,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<ClassReassignmentDisplay>> GetActionItemClassReassignmentHistory(
-IGenericRepositoryFactory repoFactory,
-[Service] UserManager<ApplicationUser> userManager,
-string practitionerId)
+            IGenericRepositoryFactory repoFactory,
+            [Service] ApplicationUserManager userManager,
+            string practitionerId)
         {
             DateTime currentDate = DateTime.Now;
 
@@ -900,7 +849,7 @@ string practitionerId)
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
             var classReassignmentHistoryList = await classReassignmentHistoryRepo.GetAll()
                 .Where(ch => ch.IsActive
-                    && ch.ReassignedToUser == practitionerId
+                    && ch.ReassignedToUser == Guid.Parse(practitionerId)
                     && ch.ReassignedToDate >= previousMonthStart
                     && ch.ReassignedToDate <= previousMonthEnd)
                 .ToListAsync();
@@ -945,8 +894,8 @@ string practitionerId)
                         .Where(c => reassignment.ReassignedClassroomGroups?.Contains(c.Id.ToString()) ?? false)
                         .FirstOrDefault();
 
-                        var pract1 = await userManager.FindByIdAsync(reassignment.ReassignedToUser);
-                        var pract2 = await userManager.FindByIdAsync(reassignment.ReassignedBackToUserId);
+                        var pract1 = await userManager.FindByIdAsync(reassignment.ReassignedToUser.ToString());
+                        var pract2 = await userManager.FindByIdAsync(reassignment.ReassignedBackToUserId.ToString());
 
                         reassignedClassList.Add(new ClassReassignmentDisplay()
                         {
@@ -996,54 +945,6 @@ string practitionerId)
             return progressHistory;
         }
 
-        private (int dueReportsSubmitted, int missedReportCount, int overdueReportsSubmitted) GetChildProgressReportStatusCountsForPractitioner(
-            IGenericRepositoryFactory repoFactory,
-            string userId,
-            string practitionerHierarcry,
-            IEnumerable<Guid> classroomGroupIds,
-            DateTime currentDate)
-        {
-            DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
-            DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
-            var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
-
-            DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
-
-            var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-            var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
-
-            if (DateTime.Now <= reportPeriodStart)
-            {
-                // Reports aren't due yet
-                return (0, 0, 0);
-            }
-
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
-            var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: userId);
-
-            var progressReports = childProgressReportRepo
-                .GetAll()
-                .Where(x =>
-                        classroomGroupIds.Contains(x.ClassroomGroupId.Value)
-                        && x.ReportDate.ToUniversalTime() >= reportDueStart
-                        && x.ReportDate.ToUniversalTime() <= reportOverDueEnd
-                        && x.IsActive == true)
-                .OrderBy(x => x.ReportDate)
-                .ToList();
-
-            var dueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportDueStart && r.ReportDate <= reportDueEnd) ?? 0;
-            var overdueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportOverDueStart && r.ReportDate <= reportOverDueEnd) ?? 0;
-
-            var childCount = childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHierarcry));
-
-            var missedReportCount = childCount - (dueReportsSubmitted + overdueReportsSubmitted);
-
-            return (dueReportsSubmitted, missedReportCount, overdueReportsSubmitted);
-        }
-
         private async Task<int> GetMissingAttendanceReportsAsync(
             IGenericRepository<ClassProgramme, Guid> classProgrammeRepo,
             AttendanceTrackingRepository attendanceRepo,
@@ -1062,13 +963,13 @@ string practitionerId)
             // Get attendance reports submitted for period
             if (practitioner?.IsPrincipal == true)
             {
-                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId.ToString()).Select(cg => cg.Id).ToListAsync();
+                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId).Select(cg => cg.Id).ToListAsync();
 
             }
             else
             {
                 classroomGroupIds = await classroomGroupRepo.GetAll()
-                    .Where(cg => cg.UserId.ToString() == practitioner.UserId)
+                    .Where(cg => cg.UserId == practitioner.UserId)
                     .Select(cg => cg.Id)
                     .ToListAsync();
             }
@@ -1093,7 +994,7 @@ string practitionerId)
                 if (practitioner.IsPrincipal == true)
                 {
                     allAttendanceForPeriod = await attendanceRepo.GetAllByDateRange(reportingPeriodStart, reportingPeriodEnd)
-                        .Where(c => c.ParentRecordId == practitioner.UserId)
+                        .Where(c => c.ParentRecordId == practitioner.UserId.ToString())
                         .ToListAsync();
                 }
                 else
@@ -1123,14 +1024,52 @@ string practitionerId)
             return days.Where(d => !weekendDays.Contains(d.DayOfWeek));
         }
 
+        public ChildProgressReportsStatus GetChildProgressReportsStatus(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            HierarchyEngine hierarchyEngine,
+            [Service] ChildProgressReportService childProgressReportService,
+            string userId)
+        {
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+
+
+            var practitioner = practRepo.GetByUserId(userId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(userId));
+
+            var classroomGroups = classroomGroupRepo.GetAll()
+                .Where(c => c.UserId.HasValue && c.UserId.Value == Guid.Parse(userId)).ToList();
+
+            var childCount = childRepo.GetAll()
+               .Where(c => c.IsActive == true
+                   && c.Hierarchy.StartsWith(practitionerHieracry))
+               .Include(c => c.User)
+               .Count();
+
+            // Notifications for child progress reports
+            var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
+
+            return new ChildProgressReportsStatus
+            {
+                CompletedReports = reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue,
+                NumberOfChildren = childCount
+            };
+        }
+
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<NotificationDisplay> GetDisplayMetrics(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] VisitDataManager visitDataManager,
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
+            [Service] ChildProgressReportService childProgressReportService,
+            [Service] AttendanceService attendanceService,
             IGenericRepositoryFactory repoFactory,
             string type)
         {
@@ -1149,8 +1088,10 @@ string practitionerId)
                         incomeManager,
                         holidayService,
                         personnelService,
+                        childProgressReportService,
+                        attendanceService,
                         repoFactory,
-                        uId,
+                        uId.ToString(),
                         type).ToList();
                     return practitionerResults;
                 default:
@@ -1226,7 +1167,7 @@ string practitionerId)
                     Color = MetricsColorEnum.Error.ToString(),
                     Message = "",
                     Notes = "",
-                    UserId = Guid.Parse(user.UserId),
+                    UserId = user.UserId,
                     UserType = "child"
                 };
 
@@ -1239,6 +1180,8 @@ string practitionerId)
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
+            [Service] ChildProgressReportService childProgressReportService,
+            [Service] AttendanceService attendanceService,
             IGenericRepositoryFactory repoFactory,
             string uId,
             string mode)
@@ -1252,7 +1195,7 @@ string practitionerId)
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
             var licenseRepo = repoFactory.CreateRepository<License>(userContext: uId);
             //var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId); 
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             //var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
             var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
             var clubMeetingRegisterRepo = repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: uId);
@@ -1260,7 +1203,9 @@ string practitionerId)
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
             var pqaRatingRepo = repoFactory.CreateGenericRepository<PQARating>(userContext: uId);
             //var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
-            var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId); 
+            var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
+            var clubMemberRepo = repoFactory.CreateGenericRepository<ClubMember>(userContext: uId);
+            var clubMeetingRepo = repoFactory.CreateGenericRepository<ClubMeeting>(userContext: uId);
 
             var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
@@ -1276,23 +1221,38 @@ string practitionerId)
                     practitioners = practRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(uId)).ToList();
                     break;
                 default:
-                    // How/Does this get used by a single practitioner ???
-                    practitioners = practRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
+                    practitioners = practRepo.GetAll().Where(x => x.UserId == Guid.Parse(uId)).ToList();
                     break;
             }
 
-            var pracitionerUserIds = practitioners.Select(y => y.UserId);
+            var pracitionerUserIds = practitioners.Select(y => y.UserId.ToString());
             var classrooms = classroomRepo.GetAll().ToList();
-            var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId) && x.AbsentDate >= previousMonthStart).ToList();
-            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId)).ToList();
-            var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId)).ToList();
-            var classroomGroups = classroomGroupRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString()) && x.AbsentDate >= previousMonthStart).ToList();
+            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId.ToString())).ToList();
+            var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            var clubMemberDictionary = clubMemberRepo.GetAll().Where(x => x.IsActive).Select(x => new { x.PractitionerId, x.ClubId }).ToList();
+
+            var lastMonthClubMeetings = clubMeetingRepo.GetAll()
+                .Where(x => x.IsActive && x.MeetingDate.HasValue && x.MeetingDate.Value.Month == DateTime.Now.Month && x.MeetingDate.Value.Year == DateTime.Now.Year)
+                .Include(x => x.ClubMeetingRegister)
+                .ToList();
+
+            var practitionerClubAbsenceDictionary = clubMeetingRegisterRepo.GetAll()
+                .Where(x => x.InsertedDate.Year == DateTime.Now.Year && x.IsActive && !x.Attended)
+                .GroupBy(x => x.PractitionerId)
+                .ToDictionary(x => x.First().PractitionerId, x => x.Count());
 
             foreach (var practitioner in practitioners)
             {
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var practitionerClassroomGroupIds = classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == practitioner.UserId.Value).Select(x => x.Id).ToList();
+                var classroom = practitionerClassrooms.FirstOrDefault();
+                var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId && x.AbsentDate <= DateTime.Now.Date && x.Reason != "Practitioner removed from programme").ToList();
+
                 var notification = new NotificationDisplay()
                 {
-                    UserId = Guid.Parse(practitioner.UserId),
+                    UserId = practitioner.UserId,
                     UserType = "practitioner"
                 };
 
@@ -1314,21 +1274,51 @@ string practitionerId)
                 }
                 #endregion
 
+                #region OFFLINE ON FUNDA APP FOR 2 WEEKS
+                if (practitioner.User.LastSeen < DateTime.Now.AddDays(-14))
+                {
+                    notification.Subject = "Offline on Funda app for 2 weeks";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = $"Last login was {practitioner.User.LastSeen.ToString("MM/dd/yyyy h:mm tt")}";
+                    notification.GroupingName = "Offline on Funda app for 2 weeks";
+                    yield return notification;
+                    continue;
+                }
+                #endregion        
+
+                #region REMOVED FROM PROGRAMME
+                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId.Value)
+                    .Where(x => x.IsActive)
+                    .OrderByDescending(x => x.InsertedDate)
+                    .FirstOrDefault();
+
+                if (removalHistory != null)
+                {
+                    notification.Subject = "Removed from programme";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval}";
+                    notification.GroupingName = "Removed from programe";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
                 #region PROGRESS REPORTS OVERDUE
                 var isPeriod1 = previousMonthStart.Month <= 7;
-                var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-                var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+                var reportOverDueStart = ChildProgressReportService.GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+                var reportOverDueEnd = ChildProgressReportService.GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
                 if (DateTime.Now > reportOverDueStart && DateTime.Now < reportOverDueEnd)
                 {
-                    var missedReports = GetChildProgressReportStatusCountsForPractitioner(
-                    repoFactory,
-                    uId,
+                    var missedReports = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(
                     practitioner.Hierarchy,
-                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList(),
-                    DateTime.Now);
+                    practitionerClassroomGroupIds);
 
-                    if (missedReports.overdueReportsSubmitted > 0)
+                    if (missedReports.reportsMissingOrIncomplete > 0)
                     {
                         notification.Subject = "Progress reports overdue";
                         notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1342,63 +1332,12 @@ string practitionerId)
                 }
                 #endregion
 
-                #region INCOMPLETE CHILD REGISTRATIONS
-                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
-                                        //.Include(c => c.User)
-                                        .ToListAsync().Result;
-                var childUserIds = children.Select(c => c.UserId);
-                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true).ToList();
-                var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
-                && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
-
-                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
-                if (incompleteRegistrations > 0)
-                {
-                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "Child Registrations";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region ON LEAVE
-                if (absenteeDays.Any(x => x.UserId == practitioner.UserId && x.AbsentDate.Date == DateTime.Now.Date))
-                {
-                    notification.Subject = "On leave";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "On leave";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region ABSENT MORE THAN 25%
-                if (absenteeDays.Count() > 0 && absenteeDays.Count() > 4)
-                {
-                    notification.Subject = "Practitioner absent more than 25%";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "On leave";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
                 if (mode == "coach")
                 {
                     #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
                     if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
                     {
-                        var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
+                        var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId.ToString());
 
                         var warningCount = 0;
                         var warningString = MetricsColorEnum.Warning.ToString();
@@ -1413,7 +1352,7 @@ string practitionerId)
                         if (traineeTimeline.StarterLicenseColor == null || traineeTimeline.StarterLicenseColor == warningString) warningCount++;
                         if (traineeTimeline.ThreeChildrenRegisteredColor == null || traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
 
-                        if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28))
+                        if (traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-28))
                         {
                             if (warningCount > 0)
                             {
@@ -1427,7 +1366,7 @@ string practitionerId)
                                 continue;
                             }
                         }
-                        else if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-14))
+                        else if (traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-14))
                         {
                             if (warningCount > 0)
                             {
@@ -1444,15 +1383,42 @@ string practitionerId)
                         else
                         {
                             var overdueCount = 0;
-                            if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
-                            if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
+                            var successtring = MetricsColorEnum.Success.ToString();
+                            if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now && traineeTimeline.CommunitySupportColor != successtring) overdueCount++;
+                            if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now && traineeTimeline.ConsolidationMeetingColor != successtring) overdueCount++;
+                            if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now && traineeTimeline.SignFranchiseeAgreementColor != successtring) overdueCount++;
+                            if ((traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now && traineeTimeline.SignStartUpSupportAgreementColor != successtring)
+                            && practitioner.IsOnStipend.HasValue && practitioner.IsOnStipend.Value) overdueCount++;
+                            if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now && traineeTimeline.SmartSpaceChecklistColor != successtring) overdueCount++;
+                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now && traineeTimeline.SSCoachVisitColor != successtring) overdueCount++;
+                            if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now && traineeTimeline.ThreeChildrenRegisteredColor != successtring) overdueCount++;
 
-                            if (overdueCount > 2)
+                            if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now &&
+                                traineeTimeline.SSCoachVisitDone == false)
+                            {
+                                notification.Subject = "SmartSpace visit overdue";
+                                notification.Icon = MetricsIconEnum.Error.ToString();
+                                notification.Color = MetricsColorEnum.Error.ToString();
+                                notification.Message = "";
+                                notification.Notes = "";
+                                notification.GroupingName = "SmartSpace visit overdue";
+                                yield return notification;
+                                continue;
+                            }
+                            if (traineeTimeline.SSCoachVisitDate > DateTime.Now &&
+                               traineeTimeline.SSCoachVisitDone == false)
+                            {
+                                notification.Subject = $"{((DateTime)traineeTimeline.SSCoachVisitDate).ToString("MMMM dd", CultureInfo.InvariantCulture)}, SmartSpace visit due";
+                                notification.Icon = MetricsIconEnum.Error.ToString();
+                                notification.Color = MetricsColorEnum.Error.ToString();
+                                notification.Message = "";
+                                notification.Notes = "";
+                                notification.GroupingName = "SmartSpace visit overdue";
+                                yield return notification;
+                                continue;
+                            }
+
+                            if (overdueCount > 0)
                             {
                                 notification.Subject = $"{overdueCount} trainee onboarding tasks overdue";
                                 notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1464,6 +1430,16 @@ string practitionerId)
                                 continue;
                             }
                         }
+                        #region NEW TRAINEE
+                        notification.Subject = "New trainee";
+                        notification.Icon = MetricsIconEnum.Success.ToString();
+                        notification.Color = MetricsColorEnum.Success.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "New trainee";
+                        yield return notification;
+                        continue;
+                        #endregion
                     }
                     #endregion
 
@@ -1507,7 +1483,6 @@ string practitionerId)
                         }
                     }
                     #endregion
-
 
                     #region FIRST PQA OVERDUE
                     if (firstPqaVisit != null && !firstPqaVisit.Attended && firstPqaVisit.PlannedVisitDate < DateTime.Now)
@@ -1577,13 +1552,13 @@ string practitionerId)
                         notification.Color = MetricsColorEnum.Error.ToString();
                         notification.Message = "";
                         notification.Notes = smartSpaceVisit.PlannedVisitDate.ToShortDateString();
-                        notification.GroupingName = "SmartSpace visist overdue";
+                        notification.GroupingName = "SmartSpace visit overdue";
                         yield return notification;
                         continue;
                     }
                     #endregion
                     #region PQA REACCREDITATION DUE
-                    if (firstAccreditationPqaVisit != null && !firstAccreditationPqaVisit.Attended && firstAccreditationPqaVisit.PlannedVisitDate > DateTime.Now)
+                    if (firstAccreditationPqaVisit != null && !firstAccreditationPqaVisit.Attended && (firstAccreditationPqaVisit.PlannedVisitDate > DateTime.Now && firstAccreditationPqaVisit.PlannedVisitDate < DateTime.Now.AddMonths(3)))
                     {
                         notification.Subject = $"{firstAccreditationPqaVisit.PlannedVisitDate.ToShortDateString()}, PQA reaccreditation due";
                         notification.Icon = MetricsIconEnum.None.ToString(); //TODO
@@ -1683,43 +1658,67 @@ string practitionerId)
                     #endregion
                 }
 
-                #region REMOVED FROM PROGRAMME
-                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
-                    .Where(x => x.IsActive)
-                    .OrderByDescending(x => x.InsertedDate)
-                    .FirstOrDefault();
-
-                if (removalHistory != null)
+                #region ON LEAVE
+                if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date == DateTime.Now.Date))
                 {
-                    notification.Subject = "Removed from programme";
+                    notification.Subject = "On leave";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
-                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval}";
-                    notification.GroupingName = "Removed from programe";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
                     yield return notification;
                     continue;
                 }
                 #endregion
 
-                #region OFFLINE ON FUNDA APP FOR 2 WEEKS
-                if (practitioner.User.LastSeen < DateTime.Now.AddDays(-14))
+                #region ON EXTENDED LEAVE
+                if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date <= DateTime.Now.Date || (x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date <= DateTime.Now.Date)))
                 {
-                    notification.Subject = "Offline on Funda app for 2 weeks";
+                    notification.Subject = "On leave";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
-                    notification.Notes = $"Last login was {practitioner.User.LastSeen.ToString("MM/dd/yyyy h:mm tt")}";
-                    notification.GroupingName = "Offline on Funda app for 2 weeks";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
                     yield return notification;
                     continue;
                 }
                 #endregion
 
-                #region MISSING INCOME STATEMENT
-                var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId, previousMonthStart, previousMonthEnd).FirstOrDefault();
-                if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
+                #region ABSENT MORE THAN 25%
+                if (practitionerAbsenteeDays.Count() > 0 && practitionerAbsenteeDays.Count() > 4)
                 {
+                    notification.Subject = "Practitioner absent more than 25%";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region ABSENT 10-24% LAST MONTH
+                if (practitionerAbsenteeDays.Count() > 0 && practitionerAbsenteeDays.Count() <= 5 && practitionerAbsenteeDays.Any(x => x.AbsentDate <= previousMonthEnd))
+                {
+                    notification.Subject = "Practitioner absent last month";
+                    notification.Icon = MetricsIconEnum.Warning.ToString();
+                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                if ((practitioner.IsPrincipal.HasValue && (bool)practitioner.IsPrincipal.Value == true) || (practitioner.IsFundaAppAdmin.HasValue && (bool)practitioner.IsFundaAppAdmin.Value == true))
+                {
+
+                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).FirstOrDefault();
+                    #region MISSING INCOME STATEMENT
                     if (lastMonthStatement == null || lastMonthStatement.AutoSubmitted)
                     {
                         notification.Subject = $"Missing income statement";
@@ -1731,8 +1730,65 @@ string practitionerId)
                         yield return notification;
                         continue;
                     }
+                    #endregion
+
+                    #region PROGRAMME LOST R300 IN LAST 2 MONTHS
+                    var secondLastMonth = previousMonthStart.AddMonths(-1);
+                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), secondLastMonth, secondLastMonth).FirstOrDefault();
+                    if (lastMonthStatement != null && secondLastMonthStatement != null)
+                    {
+                        var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
+                        if (balance < 0)
+                        {
+                            notification.Subject = $"Programme lost R{balance} in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Programme losing money";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    #endregion
+
+                    #region MADE R300 PROFIT  - WHAT IS THIS PERIOD? Last 3 moneths? Is it tied to another alert I can look up?
+                    if (lastMonthStatement != null && secondLastMonthStatement != null)
+                    {
+                        var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
+                        if (balance > 0)
+                        {
+                            notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Success.ToString();
+                            notification.Color = MetricsColorEnum.Success.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Programme making profit";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    #endregion
+
+                    #region LESS THAN 5 CHILDREN REGISTERED                
+                    var numberOfLearners = classroomGroupRepo.GetAll()
+                            .Where(x => practitionerClassrooms.Select(x => x.Id).Contains(x.ClassroomId))
+                            .SelectMany(x => x.Learners)
+                            .Count();
+
+                    if (numberOfLearners < 5)
+                    {
+                        notification.Subject = "Less than 5 children registered";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Less than 5 children registered";
+                        yield return notification;
+                    }
+                    #endregion
                 }
-                #endregion
+
 
                 #region MISSING ATTENDANCE REGISTERS
                 var missingRegisterDayCount = GetMissingAttendanceReportsAsync(
@@ -1757,83 +1813,85 @@ string practitionerId)
                 }
                 #endregion
 
-                #region PROGRAMME LOST R300 IN LAST 2 MONTHS
-                var secondLastMonth = previousMonthStart.AddMonths(-1);
-                var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId, secondLastMonth, secondLastMonth).FirstOrDefault();
-                if (lastMonthStatement != null && secondLastMonthStatement != null)
+                if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {
-                    var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
-                    if (balance < 0)
+                    #region 50% CHILD ATTENDANCE
+                    var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd);
+                    if (attendancePercentage < 60)
                     {
-                        notification.Subject = $"Programme lost R{balance} in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
+                        notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
                         notification.Icon = MetricsIconEnum.Error.ToString();
                         notification.Color = MetricsColorEnum.Error.ToString();
                         notification.Message = "";
-                        notification.Notes = "";
-                        notification.GroupingName = "Programme losing money";
+                        notification.Notes = "Improve attendance";
+                        notification.GroupingName = "50% child attendance last month";
                         yield return notification;
                         continue;
                     }
-                }
-                #endregion
+                    #endregion
 
-                #region 50% CHILD ATTENDANCE
-                var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId, previousMonthStart, previousMonthEnd);
-                if (attendancePercentage < 60)
+                    #region 70% CHILD ATTENDENCE
+                    if (attendancePercentage < 80)
+                    {
+                        notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                        notification.Icon = MetricsIconEnum.Warning.ToString();
+                        notification.Color = MetricsColorEnum.Warning.ToString();
+                        notification.Message = "";
+                        notification.Notes = "Improve attendance";
+                        notification.GroupingName = "70% child attendance";
+                        yield return notification;
+                        continue;
+                    }
+                    #endregion
+
+                    #region 80% CHILD ATTENDANCE
+                    if (attendancePercentage >= 80)
+                    {
+                        notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                        notification.Icon = MetricsIconEnum.Success.ToString();
+                        notification.Color = MetricsColorEnum.Success.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "80% child attendance";
+                        yield return notification;
+                        continue;
+                    }
+                    #endregion
+                }
+
+                #region NOT ASSIGNED TO CLUB
+
+                if (!clubMemberDictionary.Any(x => x.PractitionerId == practitioner.Id))
                 {
-                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                    notification.Subject = "Not assigned to a club";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
-                    notification.Notes = "Improve attendance";
-                    notification.GroupingName = "50% child attendance last month";
+                    notification.Notes = "";
+                    notification.GroupingName = "Not assigned to a club";
                     yield return notification;
                     continue;
                 }
+
                 #endregion
 
-                // STARTUP SUPPORT ENDING (1 month)
+                #region MISSED 3 CLUB MEETINGS
 
-                // Club features not implemented yet
-                // NOT ASSIGNED TO A CLUB
-                // MISSED 3 CLUB MEETINGS
-
-                #region LESS THAN 5 CHILDREN REGISTERED                
-                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
-                var classroom = practitionerClassrooms.FirstOrDefault();
-
-                if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
+                var clubId = clubMemberDictionary.First(x => x.PractitionerId == practitioner.Id).ClubId;
+                var lastMonthMeeting = lastMonthClubMeetings.FirstOrDefault(x => x.ClubId == clubId);
+                if (lastMonthMeeting != null && lastMonthMeeting.ClubMeetingRegister.Any(x => !x.Attended && x.PractitionerId == practitioner.Id))
                 {
-                    var numberOfLearners = classroomGroupRepo.GetAll()
-                        .Where(x => practitionerClassrooms.Select(x => x.Id).Contains(x.ClassroomId))
-                        .SelectMany(x => x.Learners)
-                        .Count();
-
-                    if (numberOfLearners < 5)
-                    {
-                        notification.Subject = "Less than 5 children registered";
-                        notification.Icon = MetricsIconEnum.Error.ToString();
-                        notification.Color = MetricsColorEnum.Error.ToString();
-                        notification.Message = "";
-                        notification.Notes = "";
-                        notification.GroupingName = "Less than 5 children registered";
-                        yield return notification;
-                    }
-                }
-                #endregion
-
-                #region ABSENT 10-24% LAST MONTH
-                if (absenteeDays.Count() > 0 && absenteeDays.Count() <= 5)
-                {
-                    notification.Subject = "Practitioner absent last month";
-                    notification.Icon = MetricsIconEnum.Warning.ToString();
-                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    var missedMeetings = practitionerClubAbsenceDictionary.ContainsKey(practitioner.Id) ? practitionerClubAbsenceDictionary[practitioner.Id] : 1;
+                    notification.Subject = $"Missed {missedMeetings} club meetings";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
                     notification.Notes = "";
-                    notification.GroupingName = "On leave";
+                    notification.GroupingName = "Missed club meetings";
                     yield return notification;
                     continue;
                 }
+
                 #endregion
 
                 #region BUSINESS SKILLS TRAINING DUE
@@ -1864,24 +1922,33 @@ string practitionerId)
                 }
                 #endregion
 
-                // STARTUP SUPPORT ENDING (3 months)
-
-                #region 70% CHILD ATTENDENCE
-                if (attendancePercentage < 80)
+                #region INCOMPLETE CHILD REGISTRATIONS
+                var learners = new List<Learner>();
+                foreach (var group in practitionerClassroomGroupIds)
                 {
-                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                    notification.Icon = MetricsIconEnum.Warning.ToString();
-                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    learners.AddRange(attendanceService.GetAllLearnerGroupInstances(group));
+                }
+                var childUserIds = learners.Select(c => c.UserId).Distinct().ToList();
+                var children = childRepo.GetAll().Where(x => childUserIds.Contains(x.UserId)).ToList();
+                var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
+                    && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
+
+                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
+                if (incompleteRegistrations > 0)
+                {
+                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
-                    notification.Notes = "Improve attendance";
-                    notification.GroupingName = "70% child attendance";
+                    notification.Notes = "";
+                    notification.GroupingName = "Child Registrations";
                     yield return notification;
                     continue;
                 }
                 #endregion
 
                 #region CHILDREN DID NOT PROGRESS
-                var childProgress = GetChildProgress(repoFactory, GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
+                var childProgress = GetChildProgress(repoFactory, ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
 
                 if (childProgress.notProgressedFor2Periods > 0)
                 {
@@ -1893,52 +1960,6 @@ string practitionerId)
                     notification.GroupingName = "Children did not progress";
                     yield return notification;
                     continue;
-                }
-                #endregion
-
-                #region NEW TRAINEE
-                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
-                {
-                    notification.Subject = "New trainee";
-                    notification.Icon = MetricsIconEnum.Success.ToString();
-                    notification.Color = MetricsColorEnum.Success.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "New trainee";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region 80% CHILD ATTENDANCE
-                if (attendancePercentage >= 80)
-                {
-                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                    notification.Icon = MetricsIconEnum.Success.ToString();
-                    notification.Color = MetricsColorEnum.Success.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "80% child attendance";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region MADE R300 PROFIT  - WHAT IS THIS PERIOD? Last 3 moneths? Is it tied to another alert I can look up?
-                if (lastMonthStatement != null && secondLastMonthStatement != null)
-                {
-                    var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
-                    if (balance > 0)
-                    {
-                        notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
-                        notification.Icon = MetricsIconEnum.Error.ToString();
-                        notification.Color = MetricsColorEnum.Error.ToString();
-                        notification.Message = "";
-                        notification.Notes = "";
-                        notification.GroupingName = "Programme making profit";
-                        yield return notification;
-                        continue;
-                    }
                 }
                 #endregion
 

@@ -40,6 +40,7 @@ module.exports = {
         16: '1rem',
         18: '1.125rem',
         24: '1.5rem',
+        48: '3rem'
       },
       lineHeight: {
         1.56: '1.56',
@@ -71,7 +72,18 @@ module.exports = {
         infoMain: 'var(--infoMain)',
         infoDark: 'var(--infoDark)',
         infoBb: 'var(--infoBb)',
-        darkBackground: 'var(--darkBackground)'
+        darkBackground: 'var(--darkBackground)',
+        adminPortalBg: '#EFF6FA',
+        quaternary: "#D2F1F9",
+        quatenaryMain: "#1DBADF",
+        darkBlue: "#27385A",
+        primaryGG: '#FAAB35',
+        secondaryGG: '#8CDBDF',
+        tertiaryGG: '#FF9D7B',
+        quaternaryGG: '#D8C498',
+        pointsCardBg: '#FEEED7',
+        pointsCardBarBg: '#FCCF8C',
+        infographicBg: '#FFD525'
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',

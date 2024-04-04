@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { UserRoutes } from '../../app.routes';
+import { UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
+import { TenantContext } from '../../utils/constants';
 
 export function Users() {
   const { data } = useQuery(GetTenantContext, {
@@ -14,7 +15,7 @@ export function Users() {
     if (
       data &&
       data.tenantContext &&
-      data.tenantContext.applicationName === 'GrowGreat'
+      data.tenantContext.applicationName === TenantContext.GrowGreat
     ) {
       return [
         {
@@ -67,7 +68,7 @@ export function Users() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const userSelected = localStorage.getItem('selectedUser');
-  console.log(window.location.pathname);
+
   return (
     <div className="">
       <div className="flex justify-center bg-white ">
@@ -75,7 +76,7 @@ export function Users() {
           navigation.map((item) => (
             <div
               className={
-                data?.tenantContext.applicationName === 'GrowGreat'
+                data?.tenantContext.applicationName === TenantContext.GrowGreat
                   ? 'w-3/12 '
                   : 'w-full'
               }
@@ -91,7 +92,7 @@ export function Users() {
       <div className=" lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div
-            className="relative h-full rounded-xl bg-white p-12"
+            className="bg-adminPortalBg relative h-full rounded-xl p-12"
             style={{ minHeight: '36rem' }}
           >
             <UserRoutes />

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ECDLink.Abstractrions.Constants
+﻿namespace ECDLink.Abstractrions.Constants
 {
     public class MessageTemplateConstants
     {
@@ -19,6 +13,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string OTPCode = "OTPCode";
         public const string AdminUserFullName = "AdminUserFullName";
         public const string AffectedUserFullName = "AffectedUserFullName";
-        
+        public const string LoginLinkShort = "LoginLink:shorturl";
+
     }
 }

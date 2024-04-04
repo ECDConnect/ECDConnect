@@ -4,6 +4,7 @@ export interface CalendarEventParticipantModel {
   participantUser: {
     firstName: string;
     surname: string;
+    type?: 'infant' | 'mother' | 'clinic' | 'teamLead' | 'healthCareWorker';
   };
 }
 
@@ -30,6 +31,9 @@ export interface CalendarEventModel {
     firstName: string;
     surname: string;
   };
+  visit: {
+    attended: boolean | null;
+  } | null;
 }
 
 export interface CalendarEventParticipantModelInputModel {

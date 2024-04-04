@@ -8,6 +8,7 @@ namespace ECDLink.AutomatedJobs.Cron
         public string Type { get; set; }
         public string Cron { get; set; }
         public string TimeZone { get; set; }
+        public string Tenants { get; set; }
         public TimeZoneInfo TimeZoneInfo
         {
             get

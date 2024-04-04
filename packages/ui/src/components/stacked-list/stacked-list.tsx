@@ -47,8 +47,7 @@ export const StackedList = <T extends {}>({
   const getItemComponent = (
     type: string,
     item: StackedListItemType,
-    index: number,
-    id: string
+    index: number
   ) => {
     switch (type) {
       case 'ActionList':
@@ -106,6 +105,7 @@ export const StackedList = <T extends {}>({
 
   return (
     <div
+      id={id}
       className={classNames(
         className,
         isFullHeight ? 'h-full' : '',
@@ -113,7 +113,7 @@ export const StackedList = <T extends {}>({
       )}
       onScroll={(e: any) => handleScroll(e)}
     >
-      {listItems.map((item, idx) => getItemComponent(type, item, idx, id!))}
+      {listItems.map((item, idx) => getItemComponent(type, item, idx))}
     </div>
   );
 };

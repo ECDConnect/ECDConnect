@@ -12,12 +12,12 @@ class EducationLevelService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query {
-          GetAllEducation {
-            id
-            description      
-          }
+      query GetAllEducation($isActive: Boolean = true) {
+        GetAllEducation(where: { isActive: { eq: $isActive } }) {
+          id
+          description      
         }
+      }
           `,
     });
 

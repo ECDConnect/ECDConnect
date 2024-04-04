@@ -17,6 +17,9 @@ import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
 import { PREGNANT_PROFILE_TABS } from '..';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { CalendarAddEventOptions } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
+import { addDays } from 'date-fns';
 
 const HEADER_HEIGHT = 122;
 
@@ -31,6 +34,7 @@ export const Contact: React.FC = () => {
   const { height } = useWindowSize();
   const history = useHistory();
   const dialog = useDialog();
+  const calendarAddEvent = useCalendarAddEvent();
 
   const [, , , motherId] = location.pathname.split('/');
   const mother = useSelector((state: RootState) =>
@@ -138,6 +142,15 @@ export const Contact: React.FC = () => {
       },
     });
   }
+
+  const onBookVisit = () => {
+    const options: CalendarAddEventOptions = {
+      event: {
+        participantUserIds: [motherId],
+      },
+    };
+    calendarAddEvent(options);
+  };
 
   return (
     <div
@@ -253,7 +266,7 @@ export const Contact: React.FC = () => {
           textColor="white"
           className="mt-4 w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT)}
+          onClick={onBookVisit}
         />
         <Button
           id="walkthrough-contact-step-3"

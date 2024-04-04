@@ -71,12 +71,14 @@ import {
   TabsItems,
   TabsItemsWithAttendance,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { PointsService } from '@/services/PointsService';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
     useStaticData();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const location = useLocation<ChildRegistrationRouteState>();
   const routeStep = location?.state?.step;
   const childId = location?.state?.childId;
@@ -434,10 +436,18 @@ export const ChildRegistration: React.FC = () => {
       WorkflowStatusEnum.ChildActive
     );
     childInputModel.caregiverId = caregiverDto.id;
-    childInputModel.workflowStatusId = childStatusId;
+    childInputModel.workflowStatusId = childStatusId || undefined;
     childInputModel.insertedBy = user?.fullName;
 
     await updateChild(childInputModel);
+
+    // Call BE to add points for registering child
+    if (!!userAuth && !!user) {
+      await new PointsService(userAuth.auth_token).addChildRegistrationPoints(
+        user.id!
+      );
+    }
+
     setIsLoading(false);
     if (isFromPqa) {
       return dialog({
@@ -482,8 +492,7 @@ export const ChildRegistration: React.FC = () => {
                   ? `${existingChildUser.firstName}'s registration is complete, great job!`
                   : `This child's registration is complete, great job!`
               }
-              // EC-1909 - Suppress ticket
-              //detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
+              detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
               actionButtons={[
                 {
                   colour: 'primary',

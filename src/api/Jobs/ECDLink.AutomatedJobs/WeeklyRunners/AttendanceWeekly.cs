@@ -13,25 +13,18 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 
 public class AttendanceWeekly : CronJobService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IGenericRepositoryFactory _repoFactory;
-    private readonly HierarchyEngine _hierarchyEngine;
     public AttendanceWeekly(IServiceScopeFactory scopeFactory, CronJobConfig<AttendanceWeekly> config, ILogger<AttendanceWeekly> logger)
-            : base(config, logger)
+            : base(scopeFactory, config, logger)
     {
-        _scopeFactory = scopeFactory;
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
-        using (var scope = _scopeFactory.CreateScope())
+        var service = Scope.ServiceProvider.GetRequiredService<IIntegrationService>();
+        if (service != null && service.Enabled)
         {
-            TenancyContext.SetTenantContext(scope);
-            var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
-            if (service != null && service.Enabled)
-            {
-                await service.IntegrationAttendanceByDueData();
-            }
+            await service.IntegrationAttendanceByDueData();
+            await service.IntegrationLeagueData();
         }
     }
 }

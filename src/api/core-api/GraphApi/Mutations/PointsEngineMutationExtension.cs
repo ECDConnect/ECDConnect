@@ -1,7 +1,6 @@
 ﻿using ECDLink.Core.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -10,32 +9,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class PointsEngineMutationExtension
     {
         public bool TestPointEngine(
-             [Service] IHttpContextAccessor contextAccessor,
              [Service] IPointsEngineService pointsEngineService,
              string userId,
              DateTime today,
              string type
              )
          {
-             if (type == "CalculatePregnantMomClientRegistration")
+             //if (type == "CalculatePregnantMomClientRegistration")
+             //{
+             //    return pointsEngineService.CalculatePregnantMomClientRegistration(userId, today);
+             //} 
+             //else if (type == "CalculateInfantClientRegistration")
+             //{
+             //    return pointsEngineService.CalculateInfantClientRegistration(userId, today);
+             //}
+             //else if (type == "CalculatePregnantMomVisits")
+             //{
+             //    return pointsEngineService.CalculatePregnantMomVisits(userId, today);
+             //}
+             //else if (type == "CalculateInfantVisits")
+             //{
+             //    return pointsEngineService.CalculateInfantVisits(userId, today);
+             //}
+             //else 
+             if (type == "CalculateChildrenRegistrationAdd")
              {
-                 return pointsEngineService.CalculatePregnantMomClientRegistration(userId, today);
-             } 
-             else if (type == "CalculateInfantClientRegistration")
-             {
-                 return pointsEngineService.CalculateInfantClientRegistration(userId, today);
-             }
-             else if (type == "CalculatePregnantMomVisits")
-             {
-                 return pointsEngineService.CalculatePregnantMomVisits(userId, today);
-             }
-             else if (type == "CalculateInfantVisits")
-             {
-                 return pointsEngineService.CalculateInfantVisits(userId, today);
-             }
-             else if (type == "CalculateChildrenRegistrationAdd")
-             {
-                 return pointsEngineService.CalculateChildrenRegistrationAdd(userId, today);
+                 return pointsEngineService.CalculateChildrenRegistrationAdd(userId);
              }
              else if (type == "CalculateChildrenRegistrationRemoval")
              {
@@ -47,8 +46,40 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              }
 
              return false;
-         }
+        }
 
+        public bool AddChildRegistrationPoints([Service] IPointsEngineService pointsEngineService, string userId)
+        {
+            return pointsEngineService.CalculateChildrenRegistrationAdd(userId);
+        }
 
+        public bool CalculateLeaveNoOneBehind([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateLeaveNoOneBehind();
+            return true;
+        }
+        
+        public bool CalculateMeetRegularly([Service] IPointsEngineService pointsEngineService, Guid clubId, Guid clubMeetingId)
+        {
+            return pointsEngineService.CalculateMeetRegularly(clubId, clubMeetingId);
+        }
+
+        public bool CalculateProgressReports([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateCompleteChildProgressReports();
+            return true;
+        }
+
+        public bool CalculateCaregiverReportBack([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateCompleteCaregiverReportBack();
+            return true;
+        }
+
+        public bool CalculateClubChildAttendance([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateClubChildAttendance();
+            return true;
+        }
     }
 }

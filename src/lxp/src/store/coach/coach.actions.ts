@@ -353,50 +353,6 @@ export const updateCoachClubClicked = createAsyncThunk<
   }
 );
 
-export const declineSmartSpaceLicenseForTrainee = createAsyncThunk<
-  boolean[],
-  { userId: string; dateDeclined: Date; nextStepsComments: string },
-  ThunkApiType<RootState>
->(
-  'declineSmartSpaceLicenseForTrainee',
-  async (
-    { userId, dateDeclined, nextStepsComments },
-    { getState, rejectWithValue }
-  ) => {
-    const {
-      auth: { userAuth },
-      coach: { coach },
-    } = getState();
-
-    try {
-      let declineLicence: boolean | undefined;
-
-      if (userAuth?.auth_token && coach) {
-        declineLicence = await new CoachService(
-          userAuth?.auth_token
-        ).declineSmartSpaceLicenseForTrainee(
-          userId,
-          dateDeclined,
-          nextStepsComments
-        );
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!declineLicence) {
-        return rejectWithValue('Error adding meeting circle');
-      }
-
-      return [declineLicence];
-    } catch (err) {
-      if (err instanceof Error) {
-        return rejectWithValue(err.message);
-      }
-      return rejectWithValue(err);
-    }
-  }
-);
-
 const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,
@@ -408,6 +364,7 @@ const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   FranchisorId: coach.franchisorId,
   UserId: coach.userId,
   Id: coach.id,
+  ClickedClubTab: coach.clickedClubTab,
 });
 
 const mapSiteAddress = (

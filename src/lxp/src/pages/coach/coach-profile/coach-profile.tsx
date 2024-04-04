@@ -36,7 +36,18 @@ export const CoachProfile: React.FC = () => {
 
   const sync = async () => {
     await appDispatch(syncThunkActions.syncOfflineData({}));
-    await appDispatch(settingActions.setLastDataSync());
+    appDispatch(settingActions.setLastDataSync());
+  };
+
+  const handleSync = async () => {
+    if (isOnline) {
+      await sync();
+      await resetAppStore();
+      await resetAuth();
+      history.push('/');
+    } else {
+      history.push(ROUTES.LOGIN);
+    }
   };
 
   useEffect(() => {
@@ -115,11 +126,8 @@ export const CoachProfile: React.FC = () => {
                       text: 'Yes, log out',
                       colour: 'primary',
                       onClick: async () => {
+                        await handleSync();
                         onSubmit();
-                        await sync();
-                        await resetAuth();
-                        await resetAppStore();
-                        history.push('/');
                       },
                       type: 'filled',
                       textColour: 'white',
@@ -148,7 +156,7 @@ export const CoachProfile: React.FC = () => {
   const isProfileComplete =
     !!coach?.user?.firstName &&
     !!coach?.user?.surname &&
-    !!coach?.user?.phoneNumber &&
+    !!coach?.user?.email &&
     !!coach?.siteAddress;
 
   const tabItem: TabItem[] = [

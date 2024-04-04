@@ -174,6 +174,7 @@ export const ReAccreditationVisits = ({
                   onClick={() =>
                     onClick({
                       visit: item as Visit,
+                      visitTypeName: item?.visitType?.name || '',
                       visitEventId: currentVisit?.eventId,
                       eventType:
                         item?.visitType?.name ===

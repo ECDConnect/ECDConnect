@@ -22,6 +22,7 @@ import { userSelectors } from '@/store/user';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 
 const HEADER_HEIGHT = 122;
 
@@ -62,6 +63,8 @@ export const VisitList: React.FC = () => {
   const history = useHistory();
 
   const appDispatch = useAppDispatch();
+
+  const calendarAddEvent = useCalendarAddEvent();
 
   const user = useSelector(userSelectors.getUser);
   const visitStatus = useSelector(visitSelectors.getVisitStatus);
@@ -196,6 +199,12 @@ export const VisitList: React.FC = () => {
     );
   }
 
+  const onBookVisit = () => {
+    calendarAddEvent({
+      event: {},
+    });
+  };
+
   return (
     <div
       className="flex flex-col p-4"
@@ -244,7 +253,7 @@ export const VisitList: React.FC = () => {
           textColor="primary"
           className="w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.VISIT_TAB.BOOK_VISIT)}
+          onClick={onBookVisit}
         />
       </div>
     </div>

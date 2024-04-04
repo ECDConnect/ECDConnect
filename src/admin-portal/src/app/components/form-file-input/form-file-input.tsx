@@ -3,12 +3,22 @@ import {
   DesktopComputerIcon,
   PhotographIcon,
   UploadIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/solid';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { classNames } from '../../pages/users/components/users';
-import { Alert, LoadingSpinner } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogPosition,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { videoExtensions } from '../../utils/constants';
+import themesIcons from './components/themeIcons/themeIcons';
+import { SearchCircleIcon } from '@heroicons/react/outline';
 
 export interface FileModel {
   fileName: string;
@@ -25,6 +35,12 @@ export interface FormFileInputProps {
   isImage?: boolean;
   byPassCompression?: boolean;
   setValue: UseFormSetValue<any>;
+  isSubcategoryInput?: boolean;
+  allowedFileSize?: number;
+  isIconInput?: boolean;
+  onChange?: (item: any) => void;
+  isThemeFormFile?: boolean;
+  isVideoInput?: boolean;
 }
 
 const containerBaseStyle =
@@ -37,6 +53,7 @@ const errorContainerStyle = 'border-errorMain';
 const iconBaseStyle = 'mx-auto h-12 w-12';
 const iconStyle = 'text-tertiary';
 const fileIconStyle = 'text-successMain';
+const themeIconStyle = 'mx-auto h-12 w-12 text-pink-700';
 const errorIconStyle = 'text-errorMain';
 
 const FormFileInput: React.FC<FormFileInputProps> = ({
@@ -49,21 +66,65 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   isImage = true,
   byPassCompression = false,
   setValue,
+  isSubcategoryInput,
+  allowedFileSize,
+  isIconInput,
+  onChange,
+  isThemeFormFile,
+  isVideoInput,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
+  const [uploadTypes, setUploadedTypes] = useState('');
+  const [themeIconValue, setThemeIconValue] = useState<any>('');
+  const [iconSelected, setIconSelected] = useState(false);
+  const [iconIndex, setIconIndex] = useState<number>();
   const accepetedFormatsWithoutLastItem = acceptedFormats?.slice(0, -1);
   const accepetedFormatsFormatted = accepetedFormatsWithoutLastItem?.map(
     (item) => {
       return item + ' ';
     }
   );
-  const lastAcceptedFormat = acceptedFormats[acceptedFormats?.length - 1];
+  const lastAcceptedFormat = acceptedFormats?.[acceptedFormats?.length - 1];
+  const [emojisSection, setEmojisSection] = useState(false);
 
-  const handleChange = (event: any) => {
+  const isPdfExtension = acceptedFormats?.some((format) =>
+    format.toLowerCase().includes('pdf')
+  );
+
+  useEffect(() => {
+    if (acceptedFormats?.length > 0 && uploadTypes === '') {
+      let extenstions = '';
+      acceptedFormats?.forEach(function (extension) {
+        extenstions += '.' + extension + ', ';
+      });
+      setUploadedTypes(extenstions);
+    }
+
+    if (contentUrl && contentUrl !== '') {
+      setFileName(contentUrl);
+    }
+  }, [acceptedFormats, contentUrl, uploadTypes]);
+
+  const handleChange = async (event: any) => {
+    if (isThemeFormFile) {
+      const fileName = event?.target.src;
+      const response = await fetch(event?.target?.src);
+      const blob = await response.blob();
+      const iconFile = new File([blob], fileName, {
+        type: blob.type,
+      });
+
+      setLoading(true);
+      handleFile(iconFile);
+      setFileName(iconFile?.name);
+
+      return;
+    }
+
     if (event && event.target && event.target.files) {
       const firstFile = event.target.files[0];
       if (!firstFile) return;
@@ -103,17 +164,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
     const compressedFile =
       isImage &&
+      !isPdfExtension &&
       !isVideoExtension &&
       !byPassCompression &&
-      acceptedFormats.filter((x) => x === fileExtension).length > 0
+      acceptedFormats?.filter((x) => x === fileExtension).length > 0
         ? await getCompressedImage(file)
         : file;
 
     if (fileExtension) {
-      if (acceptedFormats.length > 0) {
+      if (acceptedFormats?.length > 0) {
         if (
-          acceptedFormats.filter((x) => x === fileExtension).length > 0 &&
-          compressedFile?.size < 350000
+          acceptedFormats?.filter((x) => x === fileExtension).length > 0 &&
+          compressedFile?.size < allowedFileSize
         ) {
           setError('');
 
@@ -136,18 +198,22 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             setLoading(false);
           };
         } else {
-          if (acceptedFormats.filter((x) => x === fileExtension).length === 0) {
+          if (
+            acceptedFormats?.filter((x) => x === fileExtension).length === 0
+          ) {
             setError('Invalid File type');
             setLoading(false);
             return;
           }
-
-          if (compressedFile?.size > 350000) {
-            setError('The file is too big');
+          if (compressedFile?.size > allowedFileSize) {
+            const mbSize = Math.round(allowedFileSize / 1024 / 1024);
+            setError(
+              'The file is too big, upload a file no more than ' + mbSize + 'MB'
+            );
             setLoading(false);
             return;
           }
-          setError('Invalid File type');
+          setError('Invalid File size');
           setLoading(false);
         }
       } else {
@@ -168,6 +234,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                   fileName: file?.name,
                 }
           );
+          onChange(splitString);
           setFile(reader.result?.toString() ?? '');
           setLoading(false);
         };
@@ -212,15 +279,64 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
   return (
     <>
-      <label
-        htmlFor={nameProp}
-        className="font-lg block pb-1 text-sm text-gray-900"
-      >
-        {label}
-        {acceptedFormats && (
-          <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
-        )}
-      </label>
+      {isSubcategoryInput ? (
+        <>
+          <label htmlFor={nameProp} className="font-h4 block pb-1 font-bold">
+            {label}
+          </label>
+          {isIconInput ? (
+            <label
+              htmlFor={nameProp}
+              className="font-md block pb-1 text-sm text-gray-900"
+            >
+              Size limit:{' '}
+              <span className="text-errorMain font-semibold">1MB</span>. To
+              improve the image position & size, edit the image to fit 64px by
+              64px before uploading.
+            </label>
+          ) : (
+            <label
+              htmlFor={nameProp}
+              className="font-md block pb-1 text-sm text-gray-900"
+            >
+              Size limit:{' '}
+              <span className="text-errorMain font-semibold">1MB</span>. To
+              improve the image position & size, edit the image to fit 32px by
+              32px before uploading.
+            </label>
+          )}
+        </>
+      ) : (
+        <label
+          htmlFor={nameProp}
+          className="font-lg block pb-1 text-sm text-gray-900"
+        >
+          {label}
+          {acceptedFormats && !isThemeFormFile && (
+            <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
+          )}
+        </label>
+      )}
+
+      {isPdfExtension && acceptedFormats?.length === 1 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit:{' '}
+          <span className="text-errorMain font-semibold">
+            {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
+          </span>{' '}
+          MB. Convert the file(s) to a single pdf before uploading.
+        </p>
+      )}
+
+      {isVideoInput && acceptedFormats?.length === 2 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit:{' '}
+          <span className="text-errorMain font-semibold">
+            {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
+          </span>{' '}
+          MB.
+        </p>
+      )}
       <label
         className={
           contentUrl && !fileName
@@ -228,7 +344,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             : classNames(getContainerStyle(), containerBaseStyle)
         }
         onClick={() => {
-          handleClick();
+          isThemeFormFile ? setEmojisSection(true) : handleClick();
         }}
         onDrop={(e) => {
           handleDrop(e);
@@ -238,8 +354,8 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         }}
       >
         {contentUrl && !fileName ? (
-          <div className="bg-uiBg relative">
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
+          <div className="bg-adminPortalBg relative">
+            <div className="bg-adminPortalBg absolute inset-0 z-10 flex flex-col items-center justify-center bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
               <UploadIcon className={classNames(iconBaseStyle, 'text-black')} />
             </div>
             <div className="relative">
@@ -265,7 +381,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         ) : (
           <div
-            className="flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
+            className="bg-adminPortalBg flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
             style={
               file
                 ? {
@@ -290,16 +406,46 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
               />
             ) : (
               <div>
-                <PhotographIcon
-                  className={classNames(getIconStyle(), iconBaseStyle, '')}
-                />
-                <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
-                  <DesktopComputerIcon className="mr-4 h-5 w-5">
-                    {' '}
-                  </DesktopComputerIcon>
-                  Browse my computer
-                </div>
-                <p className="text-md py-2 text-gray-700">or drag file here</p>
+                {!isThemeFormFile ? (
+                  <>
+                    {isVideoInput ? (
+                      <VideoCameraIcon
+                        className={classNames(
+                          getIconStyle(),
+                          iconBaseStyle,
+                          ''
+                        )}
+                      />
+                    ) : (
+                      <PhotographIcon
+                        className={classNames(
+                          getIconStyle(),
+                          iconBaseStyle,
+                          ''
+                        )}
+                      />
+                    )}
+                    <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                      <DesktopComputerIcon className="mr-4 h-5 w-5">
+                        {' '}
+                      </DesktopComputerIcon>
+                      Browse my computer
+                    </div>
+                    <p className="text-md py-2 text-gray-700">
+                      or drag file here
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <PhotographIcon className={themeIconStyle} />
+                    <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                      <SearchCircleIcon className="mr-4 h-5 w-5">
+                        {' '}
+                      </SearchCircleIcon>
+                      Search for a theme icon
+                    </div>
+                  </>
+                )}
               </div>
             )}
             {/* <span className={labelStyle}>{getLabel()}</span> */}
@@ -307,18 +453,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         )}
       </label>
       {error ? (
-        <p className="text-errorMain pb-4">{`${error}. ${
-          error === 'The file is too big'
-            ? 'Upload a file less than 13MB'
-            : `You can only upload a ${accepetedFormatsFormatted.join(
+        <p className="text-errorMain pb-4">{`${
+          error.toLowerCase().includes('too big')
+            ? error
+            : `${error}. You can only upload ${accepetedFormatsFormatted.join(
                 ', '
-              )} or ${lastAcceptedFormat} file`
+              )} ${lastAcceptedFormat} files`
         }`}</p>
       ) : (
         fileName && <p className="pb-4">{fileName}</p>
       )}
 
-      {contentUrl && !fileName && (
+      {contentUrl && !fileName && !isSubcategoryInput && (
         <Alert
           className="mt-5 mb-3"
           message="Wrong file type. Please try again."
@@ -327,7 +473,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
       )}
 
       <input
-        accept={acceptedFormats.toString()}
+        accept={uploadTypes}
         id={nameProp}
         disabled={disabled}
         type="file"
@@ -336,6 +482,80 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           handleChange(e);
         }}
       />
+      <div className="flex items-center justify-center">
+        <Dialog
+          visible={emojisSection}
+          position={DialogPosition.Top}
+          className="h-9/12 absolute left-auto right-auto w-6/12"
+        >
+          <Typography
+            type={'h2'}
+            weight="bold"
+            color={'textMid'}
+            className="ml-6 mt-6"
+            text={'Search for an icon'}
+          />
+
+          <div className="w-dvw">
+            <div className="flex h-80 flex-wrap justify-center overflow-y-auto">
+              <div className="mt-8 grid w-9/12 grid-cols-6 justify-center gap-x-3 gap-y-3">
+                {!!themesIcons?.length &&
+                  themesIcons.map((item, index) => {
+                    return (
+                      <div
+                        onClick={(e) => setIconIndex(index)}
+                        key={`${item}-${index}`}
+                        className={`flex items-center justify-center ${
+                          iconSelected && index === iconIndex
+                            ? 'rounded-full border-2 border-black'
+                            : ''
+                        }`}
+                      >
+                        <img
+                          src={item}
+                          alt="emojis"
+                          id={String(index)}
+                          onClick={(e) => {
+                            setThemeIconValue(e);
+                            setIconSelected(true);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+            <div className="mt-14 flex w-full flex-col justify-center">
+              <div className="flex w-full justify-center ">
+                <Button
+                  type={'filled'}
+                  text={'Select icon'}
+                  color={'secondary'}
+                  textColor={'white'}
+                  className={'mb-2 w-11/12 rounded-2xl'}
+                  iconPosition={'start'}
+                  onClick={() => {
+                    handleChange(themeIconValue);
+                    setEmojisSection(false);
+                    setIconSelected(false);
+                  }}
+                />
+              </div>
+              <div className="flex w-full justify-center ">
+                <Button
+                  type={'outlined'}
+                  text={'Close'}
+                  color={'secondary'}
+                  textColor={'secondary'}
+                  className={'mb-8 w-11/12 rounded-2xl'}
+                  iconPosition={'start'}
+                  onClick={() => setEmojisSection(false)}
+                />
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      </div>
     </>
   );
 };

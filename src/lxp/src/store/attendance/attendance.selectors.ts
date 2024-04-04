@@ -20,3 +20,10 @@ export const getClassroomProgrammeAttendanceFor = (attendanceDate: Date) =>
         isSameDay(new Date(att.attendanceDate as string), attendanceDate)
       )
   );
+
+export const getAttendanceReportsForUser = (userId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.attendanceData.monthlyAttendanceRecordsByUser[userId],
+    (attendanceReports) => attendanceReports
+  );

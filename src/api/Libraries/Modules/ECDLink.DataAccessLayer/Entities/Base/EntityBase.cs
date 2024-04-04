@@ -8,7 +8,7 @@ namespace ECDLink.DataAccessLayer.Entities.Base
 {
     public abstract class EntityBase<TKey> where TKey : IEquatable<TKey>
     {
-        [Key]
+        //[Key]
         [Column(Order = 1)]
         public TKey Id { get; set; }
 

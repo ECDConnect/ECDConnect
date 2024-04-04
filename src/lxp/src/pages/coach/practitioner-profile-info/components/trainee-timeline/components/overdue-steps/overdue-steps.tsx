@@ -5,10 +5,10 @@ import {
   BannerWrapper,
   Button,
   MenuListDataItem,
-  StackedList,
   StepItem,
   Typography,
   renderIcon,
+  ListItem,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
@@ -97,12 +97,26 @@ export const OverdueSteps: React.FC<OverdueStepsoProps> = ({
         />
         {overdueSteps && overdueSteps?.length > 0 && (
           <div className="pt-2 pb-6">
-            <StackedList
-              isFullHeight={false}
-              className={'flex flex-col gap-2'}
-              listItems={overdueItems!}
-              type={'MenuList'}
-            />
+            {overdueItems?.map((step, idx) => {
+              return (
+                <div className={'mb-4'} key={idx.toString()}>
+                  <ListItem
+                    className="mt-4"
+                    key={idx.toString()}
+                    title={step.title}
+                    titleTypographyType="h4"
+                    titleColor="textDark"
+                    subTitle={step.subTitle}
+                    subTitleTypographyType="help"
+                    subTitleColor="textMid"
+                    showIcon
+                    iconName="ExclamationIcon"
+                    iconBackgroundColor="alertMain"
+                    iconColor="white"
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
         <Typography
@@ -137,7 +151,7 @@ export const OverdueSteps: React.FC<OverdueStepsoProps> = ({
                 className="text-primary mr-1 h-5 w-5"
               />
               <Typography
-                text={`Whatsapp ${coach?.user?.firstName}`}
+                text={`Whatsapp ${practitioner?.user?.firstName}`}
                 type="button"
                 weight="skinny"
                 color="primary"
@@ -157,7 +171,7 @@ export const OverdueSteps: React.FC<OverdueStepsoProps> = ({
                 aria-hidden="true"
               />
               <Typography
-                text={`Call ${coach?.user?.firstName}`}
+                text={`Call ${practitioner?.user?.firstName}`}
                 type="button"
                 weight="skinny"
                 color="primary"

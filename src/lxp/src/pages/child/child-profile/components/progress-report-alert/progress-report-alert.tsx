@@ -79,8 +79,14 @@ export const ChildProgressReportAlert: React.FC<
   );
 
   const reportDate = requiresInitialReport
-    ? new Date(2000, 0, 1)
-    : new Date(`${reportingPeriod.monthName}-01-${reportingPeriod.year}`);
+    ? new Date(Date.UTC(2000, 0, 1))
+    : new Date(
+        Date.UTC(
+          reportingPeriod.year,
+          reportingPeriod.monthName === 'June' ? 5 : 10,
+          1
+        )
+      );
 
   const navigateToChildProgressObservation = () => {
     history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {

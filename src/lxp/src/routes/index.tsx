@@ -1,4 +1,4 @@
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { Login } from '@auth-p/login/login';
 import { NewPassword } from '@auth-p/new-password/new-password';
 import PasswordReset from '@auth-p/password-reset/password-reset';
@@ -66,6 +66,7 @@ import { Logout } from '@/pages/auth/logout/logout';
 import ReassignClass from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class';
 import { AddPractitioner } from '@/pages/principal/components/add-practitioner/add-practitioner';
 import ConfirmPractitioner from '@/pages/principal/components/add-practitioner/confirm-practitioner';
+import { ContactPractitioner } from '@/pages/principal/components/contact-practitioner/contact-practitioner';
 import { PractitionerSignature } from '@/pages/practitioner/practitioner-about/components/practitioner-signature/practitioner-signature';
 import { CoachContactPractitioner } from '@/pages/coach/practitioner-profile-info/coach-contact-practitioner/coach-contact-practitioner';
 import Business from '@/pages/business/business';
@@ -83,7 +84,7 @@ import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-on
 import Calendar from '@/pages/calendar/calendar-home';
 import RemovePractitionerFromProgramme from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/remove-practitioner-from-programme';
 import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
-import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { FranchiseeAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/franchisee-agreement/franchisee-agreement';
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
 import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
@@ -125,6 +126,12 @@ import { AddMeeting } from '@/pages/practitioner/practitioner-community/club-tab
 import { AddAFamilyDayEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-family-day-event';
 import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-collage-event';
 import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
+import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
+import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
+import { MissingMeetingRegisters } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { usePrevious } from '@ecdlink/core';
+import { Location } from 'history';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -162,8 +169,19 @@ const PublicRoutes: React.FC = () => {
 };
 
 const AuthRoutes: React.FC = () => {
+  const { isOnline } = useOnlineStatus();
+  const location = useLocation();
+  const previousLocation = usePrevious(location) as
+    | Location<unknown>
+    | undefined;
+
   return (
     <Switch>
+      {(!isOnline ||
+        (location.pathname === ROUTES.LOGIN &&
+          previousLocation?.pathname === ROUTES.LOGIN)) && (
+        <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+      )}
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
@@ -263,6 +281,7 @@ const AuthRoutes: React.FC = () => {
         path={[
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH,
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER,
+          ROUTES.COMMUNITY.CLUB.USER_PROFILE.SUPPORT_ROLE,
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER,
         ]}
         component={UserProfile}
@@ -281,6 +300,13 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS}
         component={MeetingDetails}
+        exact
+      />
+      <Route
+        path={
+          ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MISSING_MEETING_REGISTERS
+        }
+        component={MissingMeetingRegisters}
         exact
       />
       <Route
@@ -343,7 +369,11 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING}
+        path={[
+          ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT,
+          ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+            .UPCOMING_MEETING,
+        ]}
         component={AddMeeting}
         exact
       />
@@ -464,6 +494,11 @@ const AuthRoutes: React.FC = () => {
       <Route exact path={ROUTES.PRINCIPAL.NOTES} component={PrincipalNotes} />
       <Route
         exact
+        path={ROUTES.PRINCIPAL.CONTACT_PRACTITIONER}
+        component={ContactPractitioner}
+      />
+      <Route
+        exact
         path={ROUTES.TRAINEE.SETUP_TRAINEE}
         component={SetupTrainee}
       />
@@ -566,7 +601,7 @@ const AuthRoutes: React.FC = () => {
       <Route
         exact
         path={ROUTES.COACH_FRANCHISE_AGREEMENT}
-        component={CoachTraineeFranchisorAgreement}
+        component={FranchiseeAgreement}
       />
       <Route
         exact
@@ -603,6 +638,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
         component={CoachPractitionerClassroom}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER_PROGRESS_REPORT_SUMMARY}
+        component={PractitionerPdfSummaryReport}
       />
       <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
       <Route
@@ -641,6 +681,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_JOURNEY}
         component={CoachPractitionerJourney}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_POINTS}
+        component={CoachPractitionerPoints}
       />
       <Route
         exact

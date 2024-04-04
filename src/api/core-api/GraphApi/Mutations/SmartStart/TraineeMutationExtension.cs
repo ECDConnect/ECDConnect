@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     trainee = dbRepo.Insert(input);
                     //get practitioner details
                     var pracRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-                    Practitioner traineePrac = pracRepo.GetByUserId(input.UserId);
+                    Practitioner traineePrac = pracRepo.GetByUserId(input.UserId.ToString());
                     if (traineePrac != null)
                     {
                         //create unsure classes and N/A classroom
@@ -84,7 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         ClassroomGroup pracUnsureClass = new ClassroomGroup()
                         {
                             Id = Guid.NewGuid(),
-                            UserId = Guid.Parse(traineePrac.UserId),
+                            UserId = traineePrac.UserId,
                             IsActive = true,
                             Name = "Unsure",
                             TenantId = traineePrac.TenantId,
@@ -116,7 +116,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             trainee.HomeAddressLine2 = input.HomeAddressLine2;
             trainee.HomeAddressLine3 = input.HomeAddressLine3;
             trainee.HomeAddressPostalCode = input.HomeAddressPostalCode;
-            
+
+            //update the address for the trainee's classroom
+            var _classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
+            var _addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: userId);
+
+            var classroom = _classroomRepo.GetByUserId(userId);
+
+            if (classroom != null)
+            {
+                var newAddress = new SiteAddress();
+                newAddress.AddressLine1 = input.HomeAddressLine1;
+                newAddress.AddressLine2 = input.HomeAddressLine2;
+                newAddress.AddressLine3 = input.HomeAddressLine3;
+                newAddress.PostalCode = input.HomeAddressPostalCode;
+
+                var updateAddressResult = _addressRepo.Update(newAddress);
+                if (updateAddressResult != null)
+                {
+                    classroom.SiteAddressId = updateAddressResult.Id;
+                    _classroomRepo.Update(classroom);
+                }
+            }
             return _traineeRepo.Update(trainee);
         }
 
@@ -126,17 +147,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string userId,
             DateTime dateAwarded)
         {
-            return licenseManager.AddSmartSpaceLicense(userId, dateAwarded);
+            return licenseManager.AddSmartSpaceLicense(Guid.Parse(userId), dateAwarded);
         }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public License DeclineSmartSpaceLicenseForTrainee(
-    [Service] UserLicenseManager licenseManager,
-    string userId,
-    DateTime dateDeclined, string nextStepsComments)
-        {
-            return licenseManager.DeclineSmartSpaceLicense(userId, dateDeclined, nextStepsComments);
-        }
-
     }
 }

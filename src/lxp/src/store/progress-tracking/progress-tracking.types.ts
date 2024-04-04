@@ -1,4 +1,5 @@
 import {
+  PractitionerProgressReportSummaryDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -10,4 +11,7 @@ export type ProgressTrackingState = {
   progressTrackingSubCategories: ProgressTrackingSubCategoryDto[] | undefined;
   progressTrackingSkills: ProgressTrackingSkillDto[] | undefined;
   progressTrackingLevels: ProgressTrackingLevelDto[] | undefined;
+  practitionerProgressReportSummary?:
+    | PractitionerProgressReportSummaryDto
+    | undefined;
 };

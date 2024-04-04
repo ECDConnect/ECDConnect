@@ -17,6 +17,8 @@ import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { INFANT_PROFILE_TABS } from '..';
+import { CalendarAddEventOptions } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 
 const HEADER_HEIGHT = 122;
 
@@ -31,6 +33,7 @@ export const ContactTab: React.FC = () => {
   const { height } = useWindowSize();
   const history = useHistory();
   const dialog = useDialog();
+  const calendarAddEvent = useCalendarAddEvent();
 
   const [, , , childId] = location.pathname.split('/');
   const child = useSelector((state: RootState) =>
@@ -140,6 +143,15 @@ export const ContactTab: React.FC = () => {
       },
     });
   }
+
+  const onBookVisit = () => {
+    const options: CalendarAddEventOptions = {
+      event: {
+        participantUserIds: [childId],
+      },
+    };
+    calendarAddEvent(options);
+  };
 
   return (
     <div
@@ -255,7 +267,7 @@ export const ContactTab: React.FC = () => {
           textColor="white"
           className="mt-4 w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.INFANT_PROFILE.VISITS.BOOK_VISIT)}
+          onClick={onBookVisit}
         />
         <Button
           id="walkthrough-contact-step-3"

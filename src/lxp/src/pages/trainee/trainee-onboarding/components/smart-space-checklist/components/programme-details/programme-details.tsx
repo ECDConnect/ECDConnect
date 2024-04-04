@@ -1,4 +1,9 @@
-import { ContentConsentTypeEnum, ProgrammeTypeDto } from '@ecdlink/core';
+import {
+  ContentConsentTypeEnum,
+  ProgrammeTypeDto,
+  ClassroomDto,
+  SiteAddressDto,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -19,7 +24,7 @@ import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from './programme-details.styles';
-import { ProgrammeDetailsProps, yesNoOptions } from './programme-details.types';
+import { yesNoOptions } from './programme-details.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import Article from '@/components/article/article';
 import {
@@ -27,20 +32,30 @@ import {
   ProgrammeDetailsSchema,
 } from '@/schemas/trainee/programme-details';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import {
+  SmartSpaceChecklistProps,
+  SmartSpaceChecklistStepsSteps,
+} from '../../smart-space-checklist.types';
 import { traineeSelectors } from '@/store/trainee';
 import { AddressMap } from '../map/map';
 import tool_R4c_form from '@/assets/tool_R4c_form.pdf';
 import tool_R4b_form from '@/assets/tool_R4b_form.pdf';
 import tool_R4a_form from '@/assets/tool_R4a_form.pdf';
+import { useAppDispatch } from '@/store';
+import { newGuid } from '@utils/common/uuid.utils';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
+import { cloneDeep } from 'lodash';
 
-export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
+export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
   setSectionQuestions,
-  setShowProgrammeDetails,
   setVisitSection,
-  onSubmit,
   setActiveStep,
   onSubmitAndContinue,
+  checklistVisitId,
 }) => {
   const {
     getValues: getProgrammeFormValues,
@@ -61,7 +76,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     ownTheProperty,
     unproclaimedLand,
     liveAtTheProperty,
-    r4bPhoto,
   } = useWatch<ProgrammeDetailsModel>({
     control: programmeFormControl,
     defaultValue: {},
@@ -74,10 +88,20 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const acceptedFormats = ['jpg, bmp'];
-  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const visitData = useSelector(
+    traineeSelectors.getTraineeVisitData(checklistVisitId)
+  );
   const [showMap, setShowMap] = useState(false);
   const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] =
     useState<boolean>(false);
+
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+  const [editedAddress, setEditedAddress] = useState(
+    classroom?.siteAddress?.addressLine1 || ''
+  );
+
+  const appDispatch = useAppDispatch();
+
   const [questions, setAnswers] = useState([
     {
       question:
@@ -199,6 +223,33 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     setProgrammeFormValue('r4bPhoto', '');
     setR4bPhotoUrl('');
     setDisplayPhotoDeleteWarning(false);
+  };
+
+  const changeSmartSpaceCheckAddress = async () => {
+    const classroomCopy = cloneDeep(classroom);
+    if (classroomCopy) {
+      const siteAddressId = classroomCopy.siteAddressId || newGuid();
+
+      const siteAddress: SiteAddressDto = {
+        id: siteAddressId,
+        addressLine1: editedAddress || '',
+      };
+      classroomCopy.siteAddress = siteAddress;
+      classroomCopy.siteAddressId = siteAddressId;
+
+      if (classroomCopy.siteAddress) {
+        appDispatch(
+          classroomsActions.updateClassroomSiteAddress(
+            classroomCopy as ClassroomDto
+          )
+        );
+        if (isOnline) {
+          await appDispatch(
+            classroomsThunkActions.upsertClassroomSiteAddress({})
+          );
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -344,7 +395,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         title={'Programme details'}
         subTitle={'Step 1 of 4'}
         color={'primary'}
-        onBack={() => setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL)}
+        onBack={() => setActiveStep(SmartSpaceChecklistStepsSteps.INITIAL)}
         displayOffline={!isOnline}
         className="pb-16"
       >
@@ -796,6 +847,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 }
                 onClick={() => {
                   // setSectionQuestions(questions)
+                  changeSmartSpaceCheckAddress();
                   setVisitSection(visitSection);
                   onSubmitAndContinue();
                 }}
@@ -825,6 +877,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           onClose={() => setShowMap?.(false)}
           onSubmit={(address) => {
             setProgrammeFormValue('programmeAddress', address);
+            setEditedAddress(address);
             onOptionSelected(address, 3);
           }}
         />

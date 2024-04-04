@@ -18,10 +18,12 @@ export interface StoryBookPartDto {
   part: string;
   partText: string; // Markdown
   storyBookPartQuestions: StoryBookQuestionDto[];
+  idx?: number;
 }
 
 export interface StoryBookQuestionDto {
   id: number;
   name: string;
   question: string; // Markdown
+  idx?: number;
 }

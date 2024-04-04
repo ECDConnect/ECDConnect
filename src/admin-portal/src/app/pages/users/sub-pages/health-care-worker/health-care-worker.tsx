@@ -1,191 +1,230 @@
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import {
-  ClinicDto,
   NOTIFICATION,
   PermissionEnum,
-  TeamLeadDto,
-  UserDto,
-  b64toBlob,
   useDialog,
   useNotifications,
   usePanel,
 } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
-
+import ReactDatePicker from 'react-datepicker';
 import { HealthCareWorkerDto } from '@ecdlink/core/lib/models/dto/Users/health-care-worker.dto';
 import {
   SendInviteToApplication,
   GetAllHealthCareWorker,
-  GetAllTeamLead,
-  GetAllClinic,
+  GetAllPortalClinics,
   GetAllProvince,
-  HealthCareWorkerTemplate,
-  getHealthCareWorkerCount,
-  SortEnumType,
-  HealthCareWorkerSortInput,
+  GetSubDistrictsAndStats,
 } from '@ecdlink/graphql';
 import {
-  Button,
+  ActionModal,
+  Dialog,
   DialogPosition,
-  DropDownOption,
   Dropdown,
+  SearchDropDown,
+  SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui';
-import { Fragment, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
-import UiTable from '../../../../components/ui-table';
-import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusIcon,
+  SearchIcon,
+  UploadIcon,
+} from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
+import UiTable from './components/ui-table';
+import { ConenctUsage } from '../team-leads/team-leads.types';
+import { Status } from '../application-admins/applications-admins.types';
+import { format } from 'date-fns';
+import { AppVisitActivity } from './health-care-worker.types';
+import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import ROUTES from '../../../../routes/app.routes-constants';
+
+export const sortByConnectUsage: SearchDropDownOption<string>[] = [
+  ConenctUsage?.InvitationActive,
+  ConenctUsage?.InvitationExpired,
+  ConenctUsage?.LastOnlineOver6Months,
+  ConenctUsage?.LastOnlineWithinPast6Months,
+  ConenctUsage?.Removed,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
+  Status?.ACTIVE,
+  Status?.INACTIVE,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByAppActivity: SearchDropDownOption<string>[] = [
+  AppVisitActivity?.High,
+  AppVisitActivity?.Medium,
+  AppVisitActivity?.Low,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
   const [tableData, setTableData] = useState<any[]>([]);
-  const [rawData, setRawData] = useState<any[]>([]);
   const history = useHistory();
-  const [nameFilter, setNameFilter] = useState(false);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
-  const [statusFilter, setStatusFilter] = useState('active');
-  const [teamLeadFilter, setTeamLeadFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('');
-  const [sortDescending, setSortDescending] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(null);
-  const [totalItemCount, setTotalItemCount] = useState(10);
+
+  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [handleAdduser, setHandleAdduser] = useState(false);
+
+  const onChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  const dateDropdownValue = useMemo(
+    () =>
+      startDate && endDate
+        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
+        : '',
+    [endDate, startDate]
+  );
+
+  const handleSetDateFilter = useCallback(() => {
+    setFilterDateAdded(!filterDateAdded);
+  }, [filterDateAdded]);
+
+  useEffect(() => {
+    if (endDate) {
+      handleSetDateFilter();
+    }
+  }, [endDate]);
+
+  const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+  const [provincesFiltered, setProvincesFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredProvinces = useMemo(
+    () => provincesFiltered?.map((item) => item?.id),
+    [provincesFiltered]
+  );
+
+  const [clinics, setClinics] = useState<SearchDropDownOption<string>[]>([]);
+  const [clinicsFiltered, setClinicsFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredClinics = useMemo(
+    () => clinicsFiltered?.map((item) => item?.label),
+    [clinicsFiltered]
+  );
+
+  const [subDistricts, setSubDistricts] =
+    useState<SearchDropDownOption<string>[]>();
+  const [subDistrictsFiltered, setSubDistrictsFiltered] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredSubDistricts = useMemo(
+    () => subDistrictsFiltered?.map((item) => item?.id),
+    [subDistrictsFiltered]
+  );
+
+  const [statusFilter, setStatusFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([sortByClientStatusOptions[0]]);
+
+  const [connectUsageFilter, setConnectUsageFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredConnectUsage = useMemo(
+    () => connectUsageFilter?.map((item) => item?.id),
+    [connectUsageFilter]
+  );
+
+  const [appActivityFilter, setAppActivityFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredAppActivity = useMemo(
+    () => appActivityFilter?.map((item) => item?.id),
+    [appActivityFilter]
+  );
 
   const viewSelectedRow = (selectedRow: any) => {
+    const user = tableData?.find(
+      (item) => item?.userId === selectedRow?.userId
+    );
+
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/users/view-user',
+      pathname: ROUTES.VIEW_USERS,
       state: {
         component: 'chw',
         userId: selectedRow?.userId,
+        clinicId: selectedRow?.clinicId,
+        hcwId: selectedRow?.id,
+        isRegistered: selectedRow?.isRegistered,
+        connectUsage: selectedRow?.connectUsage,
+        connectUsageColor: user?.user?.connectUsageColor,
       },
     });
   };
-  const getVariables = (
-    search: string,
-    province: string,
-    teamLead: string,
-    clinic: string,
-    sortDescending: boolean,
-    currentPage: number,
-    pageSize: number | null
-  ) => {
-    return {
-      provinceSearch: province,
-      clinicSearch: clinic,
-      teamLeadSearch: teamLead,
-      search: search,
+
+  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
+    variables: {
+      search: '',
+      clinicSearch: filteredClinics,
+      provinceSearch: filteredProvinces,
+      subDistrictSearch: filteredSubDistricts,
+      visitSearch: filteredAppActivity,
+      connectUsageSearch: filteredConnectUsage,
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
       order: [
         {
-          insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc,
-        } as HealthCareWorkerSortInput,
+          insertedDate: 'DESC',
+        },
       ],
-      pagingInput: {
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      },
-    };
-  };
-
-  // TODO: fetch count when the total was implemented
-  // const [getAllHealthCareWorkersCount, {data: chwCountData }] = useLazyQuery(
-  //   getHealthCareWorkerCount, {
-  //   fetchPolicy: 'cache-and-network',
-  //   variables: {
-  //     search: '',
-  //     clinicSearch: '',
-  //     provinceSearch: '',
-  //   },
-  // });
-
-  const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
-    GetAllHealthCareWorker,
-    {
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        teamLeadFilter,
-        sortDescending,
-        currentPage,
-        null
-      ),
-      fetchPolicy: 'network-only',
-    }
-  );
-
-  useEffect(() => {
-    getAllHealthCareWorkers({
-      variables: getVariables(
-        searchValue,
-        provinceFilter,
-        clinicFilter,
-        teamLeadFilter,
-        sortDescending,
-        currentPage,
-        pageSize
-      ),
-      fetchPolicy: 'network-only',
-    });
-  }, [
-    provinceFilter,
-    searchValue,
-    clinicFilter,
-    teamLeadFilter,
-    currentPage,
-    pageSize,
-    sortDescending,
-  ]);
-
-  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
-    fetchPolicy: 'cache-and-network',
+    },
+    fetchPolicy: 'network-only',
   });
-  const { data: clinicData } = useQuery(GetAllClinic, {
+
+  const { data: clinicData } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
   const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
-
-  const teamLeads = teamLeadData?.allTeamLeads.map((x: TeamLeadDto) => {
-    return {
-      value: x.user.fullName,
-      label: x.user.fullName,
-    };
-  });
-
-  const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
-    return {
-      label: x.name,
-      value: x.name,
-    };
-  });
-
-  const provinces = provinceData?.GetAllProvince.map((x: any) => {
-    return {
-      label: x.description,
-      value: x.description,
-    };
-  });
 
   const mapUserTableItem = (item: any) => {
     return {
@@ -197,6 +236,7 @@ export default function HealthCareWorkers() {
       isActive: item.user?.isActive,
       idNumber: item.user?.idNumber,
       dateInvited: item.user?.insertedDate,
+      connectUsage: item?.user?.connectUsage,
     };
   };
 
@@ -205,15 +245,56 @@ export default function HealthCareWorkers() {
       const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
       );
-      // TODO: Move this when the UITable supports setting a length.
-      setTotalItemCount(data.allHealthCareWorkers.length);
+
+      const filteredByDateData = copyItems?.filter((d) => {
+        return (
+          new Date(d?.insertedDate).getTime() >=
+            new Date(startDate)?.getTime() &&
+          new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
+        );
+      });
+
+      if (startDate && endDate) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = filteredByDateData?.filter(
+              (item) => item?.isActive
+            );
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = filteredByDateData?.filter(
+              (item) => !item?.isActive
+            );
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+        setTableData(filteredByDateData);
+        return;
+      }
+
+      if (statusFilter) {
+        if (statusFilter?.length === 1) {
+          if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
+            const filterByStatusActive = copyItems?.filter(
+              (item) => item?.isActive
+            );
+            setTableData(filterByStatusActive);
+            return;
+          } else {
+            const filterByStatusInactive = copyItems?.filter(
+              (item) => !item?.isActive
+            );
+            setTableData(filterByStatusInactive);
+            return;
+          }
+        }
+      }
+
       setTableData(copyItems);
-      // let userStatus = statusFilter === 'active' ? true : false;
-      // setTableData(
-      //   copyItems.filter((user: { isActive: boolean; }) => user.isActive === userStatus).map(mapUserTableItem)
-      // );
     }
-  }, [data]);
+  }, [data, endDate, startDate, statusFilter]);
 
   const sendInvite = async (practitioner: HealthCareWorkerDto) => {
     dialog({
@@ -261,12 +342,108 @@ export default function HealthCareWorkers() {
     });
   };
 
+  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
+  const numberOfFilters = useMemo(
+    () =>
+      statusFilter?.length +
+      connectUsageFilter?.length +
+      provincesFiltered?.length +
+      clinicsFiltered?.length +
+      appActivityFilter?.length +
+      subDistrictsFiltered?.length +
+      hasDateFilter,
+    [
+      statusFilter?.length,
+      connectUsageFilter?.length,
+      provincesFiltered?.length,
+      clinicsFiltered?.length,
+      appActivityFilter?.length,
+      subDistrictsFiltered?.length,
+      hasDateFilter,
+    ]
+  );
+
   const clearFilters = () => {
-    setStatusFilter('');
-    setClinicFilter('');
-    setProvinceFilter('');
-    setTeamLeadFilter('');
+    setStatusFilter([]);
+    setConnectUsageFilter([]);
+    setProvincesFiltered([]);
+    setClinicsFiltered([]);
+    setStartDate('');
+    setEndDate('');
+    setAppActivityFilter([]);
+    setSubDistrictsFiltered([]);
   };
+
+  useEffect(() => {
+    if (clinicData?.allPortalClinics?.length > 0) {
+      const clinicsSorted = clinicData?.allPortalClinics
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+
+      setClinics(
+        clinicsSorted?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+            id: item?.id,
+          };
+        })
+      );
+    }
+  }, [clinicData?.allPortalClinics]);
+
+  useEffect(() => {
+    if (subDistrictData?.subDistrictsAndStats?.length > 0) {
+      const subDistrictSorted = subDistrictData?.subDistrictsAndStats
+        ?.slice()
+        ?.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+      setSubDistricts(
+        subDistrictSorted?.map((item) => {
+          return {
+            value: item?.id,
+            label: item?.name,
+            id: item?.id,
+          };
+        })
+      );
+    }
+  }, [subDistrictData]);
+
+  useEffect(() => {
+    if (provinceData?.GetAllProvince?.length > 0) {
+      const provincesSorted = provinceData?.GetAllProvince?.slice()?.sort(
+        (a, b) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+      );
+
+      setProvinces(
+        provincesSorted
+          ?.filter((prov) => prov?.description !== 'N/A')
+          ?.map((item) => {
+            return {
+              value: item?.id,
+              label: item?.description,
+              id: item?.id,
+            };
+          })
+      );
+    }
+  }, [provinceData?.GetAllProvince]);
+
+  const renderFilterButtonText = useMemo(() => {
+    if (numberOfFilters) {
+      if (numberOfFilters === 1) {
+        return `${numberOfFilters} Filter`;
+      }
+      return `${numberOfFilters} Filters`;
+    }
+
+    return 'Filter';
+  }, [numberOfFilters]);
 
   if (tableData) {
     return (
@@ -282,7 +459,7 @@ export default function HealthCareWorkers() {
                     )}
                   </span>
                   <input
-                    className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                     placeholder="      Search by id number or name..."
                     onChange={search}
                   />
@@ -290,136 +467,210 @@ export default function HealthCareWorkers() {
               </div>
             </div>
 
-            <div className="mt-0  flex w-10/12 flex-row sm:mt-0  sm:ml-4">
+            <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
               <div className="pr-2 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
                     onClick={() => setShowFilter(!showFilter)}
                     id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    className={`${
+                      numberOfFilters
+                        ? ' bg-secondary'
+                        : 'border-secondary border-2 bg-white'
+                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
+                      numberOfFilters ? 'text-white' : 'text-textMid'
+                    } hover:bg-gray-300 focus:ring-2`}
                     type="button"
                   >
-                    Filter
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      aria-hidden="true"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
+                    <div className="flex items-center gap-1">
+                      <Typography
+                        className="truncate"
+                        type="help"
+                        color={numberOfFilters ? 'white' : 'textLight'}
+                        text={renderFilterButtonText}
+                      />
+                      {!showFilter ? (
+                        <span>
+                          <ChevronDownIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
+                        </span>
+                      ) : (
+                        <span>
+                          <ChevronUpIcon
+                            className={`h-6 w-6 ${
+                              numberOfFilters ? 'text-white' : 'text-textLight'
+                            }`}
+                          />
+                        </span>
+                      )}
+                    </div>
                   </button>
                 </span>
               </div>
-
-              <div className="flex w-full flex-row ">
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={displayPanel}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                  >
-                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                    Add CHW
-                  </button>
-                )}
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={() => {
-                      history.push('/upload-users');
-                    }}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                  >
-                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
-                    Bulk Upload
-                  </button>
-                )}
+              <div>
+                <div className="flex w-full">
+                  {hasPermission(PermissionEnum.create_user) && (
+                    <button
+                      onClick={() => setHandleAdduser(true)}
+                      type="button"
+                      className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                    >
+                      <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                      Add CHWs
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
           {showFilter && (
-            <div className="mb-0 flex w-full flex-row flex-wrap items-center">
-              <div className="relative inline-block pr-2 text-left">
-                <Dropdown
-                  showSearch
-                  fillType="outlined"
-                  fillColor="secondary"
-                  placeholder="Province"
-                  selectedValue={provinceFilter}
-                  list={provinces}
-                  onChange={(item) => {
-                    setProvinceFilter(item);
-                    refetch();
+            <div className="mb-4 grid auto-cols-min grid-cols-5 items-center">
+              <div className="flex w-full items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-0.5 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByConnectUsage}
+                  selectedOptions={connectUsageFilter}
+                  onChange={setConnectUsageFilter}
+                  placeholder={'CHW Connect usage'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `CHW Connect usage:`,
                   }}
                 />
               </div>
-              <div className="relative inline-block pr-2 text-left">
-                <Dropdown
-                  showSearch
-                  fillType="outlined"
-                  fillColor="secondary"
-                  placeholder="Clinic"
-                  selectedValue={clinicFilter}
-                  list={clinics}
-                  onChange={(item) => setClinicFilter(item)}
-                />
-              </div>
-              <div className="relative inline-block pr-2 text-left">
-                <Dropdown
-                  showSearch
-                  fillType="outlined"
-                  textColor="white"
-                  fillColor="secondary"
-                  placeholder="Team Leads"
-                  selectedValue={teamLeadFilter}
-                  list={teamLeads || []}
-                  onChange={(item) => setTeamLeadFilter(item)}
-                />
-              </div>
+              {!filterDateAdded && (
+                <div
+                  onClick={() => setFilterDateAdded(!filterDateAdded)}
+                  className="mr-1"
+                >
+                  <Dropdown
+                    fillType="filled"
+                    textColor={'textLight'}
+                    fillColor={endDate ? 'secondary' : 'white'}
+                    placeholder={dateDropdownValue || 'Date invited'}
+                    labelColor={endDate ? 'white' : 'textLight'}
+                    list={[]}
+                    onChange={(item) => {}}
+                    className="w-full text-sm text-white"
+                  />
+                </div>
+              )}
 
-              <div>
-                <Dropdown
-                  fillType="filled"
-                  textColor="white"
-                  fillColor="secondary"
-                  placeholder="Filter By Name"
-                  labelColor="white"
-                  selectedValue={nameFilter}
-                  list={[
-                    { label: 'Ascending', value: false },
-                    { label: 'Descending', value: true },
-                  ]}
-                  onChange={(item) => {
-                    setNameFilter(item);
+              {filterDateAdded && (
+                <div>
+                  <ReactDatePicker
+                    selected={startDate}
+                    onChange={onChange}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selectsRange={true}
+                    inline
+                    shouldCloseOnSelect={true}
+                  />
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-0.5 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByAppActivity}
+                  selectedOptions={appActivityFilter}
+                  onChange={setAppActivityFilter}
+                  placeholder={'App activity'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `App activity:`,
                   }}
-                  className="p-2"
                 />
               </div>
-
-              <div>
-                <Dropdown
-                  fillType="filled"
-                  textColor="white"
-                  fillColor="secondary"
-                  placeholder="Filter By Status"
-                  labelColor="white"
-                  selectedValue={statusFilter}
-                  list={[
-                    { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'inactive' },
-                  ]}
-                  onChange={(item) => {
-                    setStatusFilter(item);
+              <div className="w-full">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={clinics}
+                  selectedOptions={clinicsFiltered}
+                  onChange={setClinicsFiltered}
+                  placeholder={'Clinic'}
+                  info={{
+                    name: `Clinic:`,
                   }}
-                  className="p-2"
+                  multiple={true}
+                  color={'secondary'}
+                />
+              </div>
+              <div className="w-full">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={subDistricts}
+                  selectedOptions={subDistrictsFiltered}
+                  onChange={setSubDistrictsFiltered}
+                  placeholder={'Sub-district'}
+                  info={{
+                    name: `Sub-district:`,
+                  }}
+                  multiple={true}
+                  color={'secondary'}
+                />
+              </div>
+              <div className="w-full">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={provinces}
+                  selectedOptions={provincesFiltered}
+                  onChange={setProvincesFiltered}
+                  placeholder={'Province'}
+                  info={{
+                    name: `Province:`,
+                  }}
+                  multiple={true}
+                  color={'secondary'}
+                />
+              </div>
+              <div className="mr-2 flex items-center gap-2">
+                <SearchDropDown<string>
+                  displayMenuOverlay={true}
+                  className={'mr-1 w-full'}
+                  menuItemClassName={
+                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                  }
+                  overlayTopOffset={'120'}
+                  options={sortByClientStatusOptions}
+                  selectedOptions={statusFilter}
+                  onChange={setStatusFilter}
+                  placeholder={'Status'}
+                  multiple={true}
+                  color={'secondary'}
+                  info={{
+                    name: `Status:`,
+                  }}
                 />
               </div>
 
@@ -432,9 +683,6 @@ export default function HealthCareWorkers() {
                   Clear All
                 </button>
               </div>
-
-              {/* <CustomDateRangePicker handleDateChange={handleDateChange} selectedRange={selectedRange} /> */}
-
               <div></div>
             </div>
           )}
@@ -449,22 +697,65 @@ export default function HealthCareWorkers() {
                       use: 'id / Passport',
                     },
                     { field: 'fullName', use: 'name' },
-                    // { field: 'usage', use: 'CHW Connect usage' },
+                    { field: 'connectUsage', use: 'CHW Connect usage' },
                     { field: 'insertedDate', use: 'Date invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
-                  rows={tableData}
+                  rows={
+                    searchValue !== 'Search by title or content...'
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   sendRow={
                     hasPermission(PermissionEnum.update_user) && sendInvite
                   }
-                  searchInput={searchValue}
                   component={'chw'}
                   viewRow={viewSelectedRow}
+                  isLoading={loading}
+                  refetchData={refetch}
                 />
               </div>
             </div>
           </div>
         </div>
+        <Dialog
+          className="absolute left-56 bottom-96 mb-44 w-6/12"
+          stretch
+          visible={handleAdduser}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'ExclamationCircleIcon'}
+            iconColor="white"
+            iconBorderColor="infoMain"
+            importantText={`Would you like to add one CHW or multiple?`}
+            actionButtons={[
+              {
+                text: 'Add multiple CHWs',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () =>
+                  history.push({
+                    pathname: ROUTES.UPLOAD_USERS,
+                  }),
+                leadingIcon: 'UsersIcon',
+              },
+              {
+                text: 'Add one CHW',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => {
+                  displayPanel();
+                  setHandleAdduser(false);
+                },
+                leadingIcon: 'UserIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </div>
     );
   } else {

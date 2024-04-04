@@ -64,12 +64,14 @@ export class NotificationService {
         validator.lastCheckTimestamp
       );
       if (Math.abs(differenceInMs) > validator.interval) {
-        const validatorNotifications = validator.getNotifications();
+        const validatorNotifications =
+          validator.getNotifications() as Message[];
         notifications.push(...validatorNotifications);
       }
 
       validator.lastCheckTimestamp = new Date().valueOf();
     }
+
     return notifications;
   };
 

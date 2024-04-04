@@ -5,6 +5,7 @@ import { OfflineCard } from '../offline-card/offline-card';
 interface StepViewProps {
   title: string;
   isOnline?: boolean;
+  showOfflineCard?: boolean;
   onClose?: () => void;
   activeStep: number;
   showStepCount?: boolean;
@@ -17,6 +18,7 @@ export const StepViewer: React.FC<StepViewProps> = ({
   onClose,
   children,
   isOnline,
+  showOfflineCard = true,
   showStepCount = true,
 }) => {
   const childrenWithProps = React.Children.toArray(children);
@@ -57,7 +59,7 @@ export const StepViewer: React.FC<StepViewProps> = ({
       onClose={onClose}
       displayOffline={!isOnline}
     >
-      {isOnline ? activeChild : <OfflineCard />}
+      {isOnline || !showOfflineCard ? activeChild : <OfflineCard />}
     </BannerWrapper>
   ) : (
     <>{activeChild}</>

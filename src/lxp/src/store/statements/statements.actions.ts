@@ -4,7 +4,6 @@ import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import {
   ExpensesStatementsTypes,
   IncomeStatementsTypes,
-  ReportTableDataDto,
   StatementsContributionTypes,
   IncomeStatementDto,
   StatementsPayTypes,
@@ -181,26 +180,31 @@ export const getAllPayType = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      statements: { payTypes: payTypesCached },
     } = getState();
 
-    try {
-      let payTypes: StatementsPayTypes[] | undefined;
+    if (!payTypesCached) {
+      try {
+        let payTypes: StatementsPayTypes[] | undefined;
 
-      if (userAuth?.auth_token) {
-        payTypes = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).GetAllStatementsPayType();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token) {
+          payTypes = await new IncomeStatementsService(
+            userAuth?.auth_token
+          ).GetAllStatementsPayType();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!payTypes) {
+          return rejectWithValue('Error getting pay types');
+        }
+
+        return payTypes;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!payTypes) {
-        return rejectWithValue('Erro getting pay types');
-      }
-
-      return payTypes;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return payTypesCached;
     }
   }
 );

@@ -47,26 +47,39 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
     sumIncomeOrExpenseItems(unsubmittedIncome) -
     sumIncomeOrExpenseItems(unsubmittedExpenses);
 
-  const currentDate = new Date();
-
   const isThisMonthSubmitted = useMemo(
     () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
     [statements]
   );
-  const isPreviousMonthSubmitted = useMemo(
-    () => !!statements?.find((x) => x.month === new Date().getMonth()),
-    [statements]
-  );
+  const isPreviousMonthSubmitted = useMemo(() => {
+    var currentMonth = new Date().getMonth();
+
+    if (currentMonth === 0) {
+      return !!statements?.find(
+        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
+      );
+    }
+
+    return !!statements?.find((x) => x.month === currentMonth);
+  }, [statements]);
 
   // submit window open And last statement not submitted -> previous month
   // submitted this month -> next month
   // otherwise current month
-  const summaryDate = isThisMonthSubmitted
-    ? getNextMonth(currentDate)
-    : !isPreviousMonthSubmitted &&
-      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
-    ? getPreviousMonth(currentDate)
-    : currentDate;
+  const summaryDate = useMemo(() => {
+    var date = new Date();
+    if (isThisMonthSubmitted) {
+      return getNextMonth(date);
+    }
+    if (
+      !isPreviousMonthSubmitted &&
+      date.getDate() <= IncomeStatementDates.SubmitEndDay
+    ) {
+      return getPreviousMonth(date);
+    }
+
+    return date;
+  }, [isThisMonthSubmitted, isPreviousMonthSubmitted]);
 
   const prevStatementsItems = useMemo(() => {
     return [

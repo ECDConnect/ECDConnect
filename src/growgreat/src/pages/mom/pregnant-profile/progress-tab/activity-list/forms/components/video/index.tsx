@@ -70,7 +70,7 @@ export const Video = ({ section }: VideoProps) => {
 
   return (
     <>
-      <LanguageSelector selectLanguage={setLanguage} />
+      <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
       {renderContent}
     </>
   );

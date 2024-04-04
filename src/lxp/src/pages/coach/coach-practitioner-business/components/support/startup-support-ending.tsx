@@ -19,7 +19,9 @@ export const StartupSupportEnding: React.FC<StartupSupportEndingProps> = ({
   const { userId } = useParams<PractitionerBusinessParams>();
   const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const timeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
+  );
 
   const currentDate = new Date();
   const startUpSupportEndDate = new Date(timeline?.startUpSupportEndDate);

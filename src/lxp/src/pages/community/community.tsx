@@ -23,7 +23,6 @@ export const Community: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
-  const [currentTab] = useState<TabItem>();
 
   const tabItems: TabItem[] = [
     {

@@ -1,4 +1,5 @@
 import { ContentDefinitionModelDto, ContentValueDto } from '@ecdlink/core';
+import { SearchDropDownOption } from '@ecdlink/ui';
 
 export interface ContentManagementView {
   content: any;
@@ -12,7 +13,51 @@ export enum FieldType {
   Link = 'link',
   StaticLink = 'staticLink',
   ColorPicker = 'color-picker',
+  DatePicker = 'date-picker',
+  video = 'video',
 }
+
+export enum ContentName {
+  StoryBook = 'StoryBook',
+  Theme = 'Theme',
+  ProgressTrackingCategory = 'ProgressTrackingCategory',
+  ProgressTrackingSkill = 'ProgressTrackingSkill',
+}
+
+export enum StoryActivitiesTypes {
+  Storybook = 'Story book',
+  ReadAloud = 'Read aloud',
+  Other = 'other',
+}
+
+export enum ActivitiesTitles {
+  StorybookParts = 'StorybookParts',
+  StoryActivities = 'Story activities',
+  Storybooks = 'Storybooks',
+  SmallLargeGroupActivities = 'Small/large group activities',
+}
+
+export enum NatalTypes {
+  Info = 'Info',
+  HealthPromotion = 'Health promotion',
+  Video = 'Video',
+  Infographic = 'Infographic',
+}
+
+export enum TemplateTypenames {
+  DanngerSigns = 'DangerSign Form',
+}
+
+export const sortByNatalTypeOptions: SearchDropDownOption<string>[] = [
+  NatalTypes?.HealthPromotion,
+  NatalTypes?.Info,
+  NatalTypes.Infographic,
+  NatalTypes?.Video,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export interface DynamicFormTemplate {
   title: string;
@@ -30,6 +75,9 @@ export interface FormTemplateField {
   optionDefinition?: ContentDefinitionModelDto;
   selectedLanguageId?: string;
   dataLinkName?: string;
+  isRequired?: boolean;
+  subHeading?: string;
+  fieldAlert?: string;
 }
 
 export interface FormTemplateFieldRequired {

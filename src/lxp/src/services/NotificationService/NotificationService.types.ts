@@ -11,16 +11,17 @@ export const enum NotificationPriority {
 }
 
 export enum NotificationIntervals {
-  oneMinute = 2000,
-  halfhour = 60000,
-  hour = 60000,
-  twoHours = 60000,
-  fourHours = 60000,
-  eightHours = 60000,
+  oneMinute = 60000,
+  halfhour = 1800000,
+  hour = 3600000,
+  twoHours = 3600000 * 2,
+  fourHours = 3600000 * 4,
+  eightHours = 3600000 * 8,
+  oneDay = 3600000 * 24,
 }
 
 export interface NotificationValidator {
   interval: NotificationIntervals; // enum;
   lastCheckTimestamp: number;
-  getNotifications: () => Message[];
+  getNotifications: () => Message[] | Promise<Message[] | undefined>;
 }

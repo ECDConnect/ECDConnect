@@ -8,21 +8,84 @@ import {
   UserAvatar,
 } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { useAppDispatch } from '@/store';
+import { ClubActions, changeClubSupportRole } from '@/store/club/club.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useSnackbar } from '@ecdlink/core';
+import ROUTES from '@/routes/routes';
+import { ClubDto } from '@/models/club/club.dto';
+import { clubActions } from '@/store/club';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const SupportRoleEdit: React.FC = () => {
   const [checkboxValue, setCheckboxValue] = useState(false);
+  const [selectedMemberId, setSelectedMemberId] = useState<string>();
 
   const location = useLocation();
   const lastPathSegment = location.pathname.split('/').pop();
 
   const isToChange = lastPathSegment?.includes('edit');
 
-  const isLoading = false;
-
   const history = useHistory();
 
-  const onSubmit = async () => {};
+  const appDispatch = useAppDispatch();
+
+  const { isOnline } = useOnlineStatus();
+
+  const club = useSelector(getClubForPractitionerSelector);
+
+  const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
+    'clubs',
+    ClubActions.CHANGE_CLUB_SUPPORT_ROLE
+  );
+  const { showMessage } = useSnackbar();
+
+  const selectedMember = club?.clubMembers?.find(
+    (member) => member?.practitionerId === selectedMemberId
+  );
+
+  const onSubmit = async () => {
+    const payload: ClubDto['clubSupport'] = {
+      practitionerId: selectedMemberId ?? '',
+      firstName: selectedMember?.firstName ?? '',
+      surname: selectedMember?.surname ?? '',
+      phoneNumber: selectedMember?.phoneNumber ?? '',
+      profileImageUrl: selectedMember?.profileImageUrl ?? '',
+      userId: selectedMember?.userId ?? '',
+      dateAssigned: new Date().toISOString(),
+    };
+
+    appDispatch(clubActions.changeClubSupportRole(payload));
+
+    if (isOnline) {
+      await appDispatch(
+        changeClubSupportRole({
+          clubId: club?.id ?? '',
+          practitionerId: selectedMemberId ?? '',
+        })
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      if (isRejected) {
+        showMessage({
+          message: error?.message ?? '',
+          type: 'error',
+        });
+      } else {
+        showMessage({
+          message: 'Club support role updated!',
+          type: 'success',
+        });
+        history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT);
+      }
+    }
+  }, [error?.message, history, isLoading, isRejected, showMessage, wasLoading]);
 
   return (
     <BannerWrapper
@@ -32,6 +95,7 @@ export const SupportRoleEdit: React.FC = () => {
       title={`${isToChange ? 'Change' : 'Assign'} club support`}
       subTitle="step 1 of 1"
       onBack={() => history.goBack()}
+      displayOffline={!isOnline}
     >
       <Typography
         type="h2"
@@ -44,38 +108,48 @@ export const SupportRoleEdit: React.FC = () => {
         title="This should be someone who can support you by taking attendance and adding events when you can’t."
       />
       <fieldset className="mb-4 flex flex-col gap-2">
-        {[1, 2, 3, 4, 5].map((member) => (
-          <Radio
-            key={member}
-            description={`{memberName}`}
-            // value={}
-            // checked={}
-            onChange={() => {}}
-            className="mb-4"
-            variant="slim"
-            customIcon={
-              <UserAvatar
-                className="mr-4"
-                size="md"
-                avatarColor="var(--primaryAccent2)"
-                text={`MB`}
-                displayBorder
-              />
-            }
-          />
-        ))}
+        {club?.clubMembers
+          ?.filter(
+            (member) =>
+              member?.userId !== club?.clubSupport?.userId &&
+              member?.userId !== club?.clubLeader?.userId
+          )
+          ?.map((member) => (
+            <Radio
+              key={member?.userId}
+              description={`${member?.firstName} ${member?.surname}`}
+              value={member?.practitionerId}
+              checked={selectedMemberId === member?.practitionerId}
+              onChange={(event) => setSelectedMemberId(event.target.value)}
+              className="mb-4"
+              variant="slim"
+              customIcon={
+                <UserAvatar
+                  className="mr-4"
+                  size="md"
+                  avatarColor="var(--primaryAccent2)"
+                  text={member?.firstName[0] + member?.surname[0]}
+                  displayBorder
+                />
+              }
+            />
+          ))}
       </fieldset>
-      <Checkbox
-        description={`I confirm that I have discussed this with {supportRoleName}.`}
-        descriptionColor="textMid"
-        checked={checkboxValue}
-        onCheckboxChange={() => setCheckboxValue(!checkboxValue)}
-      />
-      <Alert
-        className="my-4"
-        type="info"
-        title={`{supportRoleName} will be notified immediately.`}
-      />
+      {selectedMemberId && (
+        <>
+          <Checkbox
+            description={`I confirm that I have discussed this with ${selectedMember?.firstName}.`}
+            descriptionColor="textMid"
+            checked={checkboxValue}
+            onCheckboxChange={() => setCheckboxValue(!checkboxValue)}
+          />
+          <Alert
+            className="my-4"
+            type="info"
+            title={`${selectedMember?.firstName} will be notified immediately.`}
+          />
+        </>
+      )}
       <Button
         className="mt-auto"
         icon="SaveIcon"
@@ -84,7 +158,7 @@ export const SupportRoleEdit: React.FC = () => {
         textColor="white"
         text="Save"
         isLoading={isLoading}
-        disabled
+        disabled={isLoading || !selectedMemberId || !checkboxValue}
         onClick={onSubmit}
       />
     </BannerWrapper>

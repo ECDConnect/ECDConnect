@@ -13,7 +13,7 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { format, getDay, getDayOfYear } from 'date-fns';
+import { format, getDay } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -47,29 +47,29 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   classroomgroupId,
 }) => {
   const appDispatch = useAppDispatch();
+
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
-  const userData = useSelector(userSelectors.getUser);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const isPrincipal = practitioner?.isPrincipal === true;
   const [hasChildren, setHasChildren] = useState<boolean>(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [shouldFilter] = useState<boolean>(true);
-  const allLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
-  );
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
-
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
 
-  const dialog = useDialog();
-
+  const userData = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const allLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
   const user = useSelector(userSelectors.getUser);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
+
+  const isPrincipal = practitioner?.isPrincipal === true;
+
+  const dialog = useDialog();
+
   const classroomGroups = allClassroomGroups.filter(
     (x) => x.name !== NoPlaygroupClassroomType.name
   );
@@ -112,8 +112,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       const _allLearners = allLearners.filter(
         (x) =>
           !Boolean(x.stoppedAttendance) &&
-          getDayOfYear(attendanceDate) >=
-            getDayOfYear(new Date(x.startedAttendance))
+          attendanceDate.getTime() >= new Date(x.startedAttendance).getTime()
       );
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {
@@ -201,7 +200,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     const currentProgramme = getPlaygroup(
       classProgrammesUpdated,
       attendanceDate,
-      editAttendanceRegisterVisible ? classroomgroupId : ''
+      editAttendanceRegisterVisible && selectedClassroomGroups.length === 1
+        ? classroomgroupId
+        : ''
     );
 
     if (!currentProgramme) return;
@@ -328,52 +329,50 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   return (
     <div className={styles.wrapper}>
       <div className={'bg-uiBg flex w-full flex-col items-start'}>
-        {shouldFilter &&
-          classroomGroupsForPrincipal.length > 1 &&
-          submitText === '' && (
-            <>
-              <SearchDropDown<any>
-                displayMenuOverlay
-                menuItemClassName={styles.dropdownStyles}
-                className={'mr-1 ml-2'}
-                options={
-                  (classroomGroups && isPrincipal
-                    ? classroomGroupsForPrincipal.map((x) => {
-                        return {
-                          id: x.id ?? '',
-                          value: x,
-                          label: x.name,
-                          disabled: false,
-                        };
-                      })
-                    : classroomGroups.map((x) => {
-                        return {
-                          id: x.id ?? '',
-                          value: x,
-                          label: x.name,
-                          disabled: false,
-                        };
-                      })) || []
-                }
-                onChange={(value) => onFilterItemsChanges(value)}
-                placeholder={'Class'}
-                pluralSelectionText={'Classes'}
-                color={'secondary'}
-                multiple
-                selectedOptions={selectedClassroomGroups.map((x) => {
-                  return {
-                    id: x.id ?? '',
-                    value: x,
-                    label: x.name,
-                  };
-                })}
-                info={{
-                  name: `Filter by:${filterInfo?.filterName}`,
-                  hint: filterInfo?.filterHint || '',
-                }}
-              />
-            </>
-          )}
+        {classroomGroupsForPrincipal.length > 1 && (
+          <>
+            <SearchDropDown<any>
+              displayMenuOverlay
+              menuItemClassName={styles.dropdownStyles}
+              className={'mr-1 ml-2'}
+              options={
+                (classroomGroups && isPrincipal
+                  ? classroomGroupsForPrincipal.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled: false,
+                      };
+                    })
+                  : classroomGroups.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled: false,
+                      };
+                    })) || []
+              }
+              onChange={(value) => onFilterItemsChanges(value)}
+              placeholder={'Class'}
+              pluralSelectionText={'Classes'}
+              color={'secondary'}
+              multiple
+              selectedOptions={selectedClassroomGroups.map((x) => {
+                return {
+                  id: x.id ?? '',
+                  value: x,
+                  label: x.name,
+                };
+              })}
+              info={{
+                name: `Filter by:${filterInfo?.filterName}`,
+                hint: filterInfo?.filterHint || '',
+              }}
+            />
+          </>
+        )}
       </div>
       <div>
         {hasChildren ? (
@@ -407,7 +406,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                   selectedGroup.id ===
                   primaryClassProgramme[0]?.classroomGroupId;
                 return (
-                  <div id={`attendanceList${selectedGroup.id}`}>
+                  <div
+                    key={`attencance_list_${idx}`}
+                    id={`attendanceList${selectedGroup.id}`}
+                  >
                     <ClassProgrammeAttendanceList
                       key={`class_attencance_list_${idx}`}
                       isPrimaryClass={isPrimaryList}

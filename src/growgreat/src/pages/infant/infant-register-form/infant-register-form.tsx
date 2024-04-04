@@ -223,7 +223,7 @@ export const InfantRegisterForm: React.FC = () => {
           firstChild?.relationshipId ||
           details?.relationshipId ||
           '',
-        healthCareWorkerId: user?.id,
+        healthCareWorkerId: user?.id, // Pretty sure this should not be a userId, but the healthCareWorkerId
       };
 
       setRelationshipId(
@@ -235,6 +235,7 @@ export const InfantRegisterForm: React.FC = () => {
       if (!details?.isMother) {
         appDispatch(caregiverActions.createCaregiver(caregiverInput));
       }
+      const healthCareWorkerId = user?.id;
 
       if (multipleChildrenArray?.length >= 1) {
         for (const child of multipleChildrenArray) {
@@ -285,7 +286,7 @@ export const InfantRegisterForm: React.FC = () => {
             const documentInputModel: Document = {
               id: newGuid(),
               userId: childUserId,
-              createdUserId: user?.id ?? '',
+              createdUserId: healthCareWorkerId ?? '',
               workflowStatusId: workflowStatusId ?? '',
               documentTypeId: documentTypeId ?? '',
               name: fileName,
@@ -351,7 +352,7 @@ export const InfantRegisterForm: React.FC = () => {
           const documentInputModel: Document = {
             id: newGuid(),
             userId: childUserId,
-            createdUserId: user?.id ?? '',
+            createdUserId: healthCareWorkerId ?? '',
             workflowStatusId: workflowStatusId ?? '',
             documentTypeId: documentTypeId ?? '',
             name: fileName,
@@ -533,7 +534,8 @@ export const InfantRegisterForm: React.FC = () => {
       dialog({
         position: DialogPosition.Middle,
         color: 'bg-transparent',
-        render(onSubmit, onClose) {
+        blocking: true,
+        render(onSubmit) {
           return (
             <Card
               shadowSize={'lg'}
@@ -581,7 +583,7 @@ export const InfantRegisterForm: React.FC = () => {
                     history.push(ROUTES.CLIENTS.ROOT, {
                       activeTabIndex: CLIENT_TABS.CLIENT,
                     });
-                    onClose();
+                    onSubmit();
                   }}
                 />
               </div>

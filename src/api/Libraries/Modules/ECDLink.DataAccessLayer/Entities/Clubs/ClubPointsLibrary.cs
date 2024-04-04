@@ -17,6 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
     {
         public string Type { get; set; }
         public string Activity { get; set; }
+        public string SubActivity { get; set; }
         public string Description { get; set; }
         public int Points { get; set; }
         public int MaxPointsYearly { get; set; }

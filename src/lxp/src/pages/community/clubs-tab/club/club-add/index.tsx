@@ -6,7 +6,7 @@ import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { PractitionerDto, useSnackbar } from '@ecdlink/core';
 import { Step3 } from './steps/step-3';
-import { ClubLeader, NewClubInput } from '@ecdlink/graphql';
+import { Club, NewClubInput } from '@ecdlink/graphql';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { useAppDispatch } from '@/store';
@@ -93,7 +93,7 @@ export const ClubAdd: React.FC = () => {
 
     const response = await appDispatch(addNewClub({ input: payloadAddClub }));
 
-    const clubId = (response.payload as ClubLeader | undefined)?.clubId;
+    const clubId = (response?.payload as Club | undefined)?.id;
 
     if (clubId) {
       const payloadAddClubLeader: NewClubLeaderInput = {

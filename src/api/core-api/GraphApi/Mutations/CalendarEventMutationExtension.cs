@@ -109,6 +109,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
             return calendarEvent;
         }
+
+        public CalendarEvent CancelCalendarEvent(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid id)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var repoCalendarEvent = repoFactory.CreateGenericRepository<CalendarEvent>();
+
+            CalendarEvent calendarEvent = repoCalendarEvent.GetById(id);
+            calendarEvent.IsActive = false;
+            calendarEvent.UpdatedDate = DateTime.Now;
+            calendarEvent.UpdatedBy = uId.ToString();
+            return repoCalendarEvent.Update(calendarEvent);
+        }
     }
 
 }

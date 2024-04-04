@@ -1,10 +1,9 @@
-import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
+import { Alert, BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import ROUTES from '@/routes/routes';
 import { ClubsRouteState } from '@/pages/community/clubs-tab/index.types';
-import { useEffect } from 'react';
 import { getPointsActivityDateDetails } from '@/pages/community/clubs-tab/index.filters';
 import { ActivityMeetRegularDetail } from '@ecdlink/graphql';
 
@@ -25,25 +24,32 @@ export const MeetingDetails: React.FC = () => {
   const isUpcomingVisit = currentDate < meetingDate;
 
   const meeting = isUpcomingVisit
-    ? details?.upcomingMeetings?.find((item) =>
-        item?.meetingDate.includes(meetingId)
+    ? details?.upcomingMeetings?.find(
+        (item) =>
+          getPointsActivityDateDetails(item?.meetingDate).meetingId ===
+          meetingId
       )
-    : details?.pastMeetings?.find((item) =>
-        item?.meetingDate.includes(meetingId)
+    : details?.pastMeetings?.find(
+        (item) =>
+          getPointsActivityDateDetails(item?.meetingDate).meetingId ===
+          meetingId
       );
 
   const { formattedDate } = getPointsActivityDateDetails(meeting?.meetingDate);
 
-  useEffect(() => {
-    if (!details) {
-      history.push(
-        ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
-          ':clubId',
-          clubId
-        )
-      );
+  const renderAttendanceBadgeColor = (attendancePerc: number) => {
+    let badgeColor;
+
+    if (attendancePerc >= 80) {
+      badgeColor = 'bg-successMain';
+    } else if (attendancePerc >= 60) {
+      badgeColor = 'bg-alertMain';
+    } else {
+      badgeColor = 'bg-errorMain';
     }
-  }, [clubId, details, history]);
+
+    return badgeColor;
+  };
 
   const Item = ({ name }: { name: string }) => (
     <>
@@ -61,42 +67,55 @@ export const MeetingDetails: React.FC = () => {
       subTitle={formattedDate}
       onBack={() => history.goBack()}
     >
+      {!meeting && <Alert type="info" title="No meeting details available" />}
       <Typography type="h2" text={formattedDate} />
-      {meeting?.meetingNotes && (
+      {!!meeting?.meetingNotes && (
         <div className="bg-uiBg rounded-15 my-5 p-4">
           <Typography type="h3" text="Notes" />
           <Typography type="body" color="textMid" text={meeting.meetingNotes} />
         </div>
       )}
-      {!isUpcomingVisit && meeting && (
+      {!isUpcomingVisit && !!meeting && (
         <>
           <Typography type="h2" className="mb-5" text="Attendance" />
           <div className="flex items-center gap-2">
-            <p className="bg-successMain rounded-3xl px-2 py-1">
-              {(meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc}%
+            <p
+              className={`${renderAttendanceBadgeColor(
+                (meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc
+              )} rounded-3xl px-2 py-1 text-white`}
+            >
+              {Math.round(
+                (meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc
+              )}
+              %
             </p>
             <Typography type="h4" text="club members attended:" />
           </div>
           {(meeting as ActivityMeetRegularDetail)?.meetingParticipants?.map(
             (member) => (
               <Item
-                key={member?.practitioner?.user?.id}
-                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+                key={member?.userId}
+                name={`${member?.firstName} ${member?.surname}`}
               />
             )
           )}
-          <Typography
-            type="h4"
-            text="These practitioners were absent:"
-            className="mt-5 mb-2"
-          />
-          {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
-            (member) => (
-              <Item
-                key={member?.practitioner?.user?.id}
-                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+          {!!(meeting as ActivityMeetRegularDetail)?.meetingAbsentees
+            ?.length && (
+            <>
+              <Typography
+                type="h4"
+                text="These practitioners were absent:"
+                className="mt-5 mb-2"
               />
-            )
+              {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
+                (member) => (
+                  <Item
+                    key={member?.userId}
+                    name={`${member?.firstName} ${member?.surname}`}
+                  />
+                )
+              )}
+            </>
           )}
         </>
       )}

@@ -10,9 +10,17 @@ import {
   SearchDropDownOption,
   SearchSortOptions,
   UserAlertListDataItem,
+  ActionModal,
 } from '@ecdlink/ui';
-import { isBefore } from 'date-fns';
-import { useEffect, useState } from 'react';
+import {
+  addDays,
+  format,
+  isBefore,
+  isFriday,
+  isWeekend,
+  nextMonday,
+} from 'date-fns';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
@@ -32,6 +40,8 @@ import ROUTES from '@/routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
+import { coachSelectors } from '@/store/coach';
+import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -75,6 +85,7 @@ const sortOptions: SearchSortOptions = {
 export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+  const coach = useSelector(coachSelectors.getCoach);
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const pendingStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
@@ -134,6 +145,22 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       return f.userId === el.userId; // filter only principal learners
     });
   });
+
+  const call = useCallback(() => {
+    window.open(`tel:${coach?.user?.phoneNumber}`);
+  }, [coach?.user?.phoneNumber]);
+
+  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+    practitioner!
+  );
+
+  const handleComebackDay = useCallback((date: Date) => {
+    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
+      return nextMonday(new Date(date));
+    }
+
+    return new Date(addDays(new Date(date), 1));
+  }, []);
 
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
@@ -215,6 +242,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const onChildListItemAction = (childId: string) => {
     history.push(ROUTES.CHILD_PROFILE, {
       childId,
+      practitionerIsOnLeave,
     });
   };
 
@@ -434,6 +462,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const registerNewChild = () => {
     if (isOnline) {
+      if (practitionerIsOnLeave) {
+        handleIsOnleaveModal();
+        return;
+      }
       history.push(ROUTES.CHILD_REGISTRATION_LANDING, { practitionerId });
     } else {
       showOnlineOnly();
@@ -450,12 +482,79 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const showOnlineOnly = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit) => {
         return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
       },
     });
   };
+
+  const handleIsOnleaveModal = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return (
+          <ActionModal
+            icon="ExclamationCircleIcon"
+            iconBorderColor="alertBg"
+            iconColor="alertMain"
+            importantText={`You are on leave and cannot use this section`}
+            paragraphs={[
+              `You are on leave from ${format(
+                new Date((currentAbsentee?.absentDate as Date) || new Date()),
+                'd MMM yyyy'
+              )} to ${format(
+                new Date(
+                  handleComebackDay(
+                    (currentAbsentee?.absentDateEnd as Date) || new Date()
+                  )
+                ),
+                'd MMM yyyy'
+              )}. If you believe this is a mistake please reach out to ${
+                currentAbsentee?.loggedByPerson
+              }.`,
+            ]}
+            actionButtons={[
+              {
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  call();
+                  onClose();
+                },
+                leadingIcon: 'PhoneIcon',
+              },
+              {
+                text: `Close`,
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  onClose();
+                },
+                leadingIcon: 'XCircleIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [
+    call,
+    coach?.user?.firstName,
+    currentAbsentee?.absentDateEnd,
+    dialog,
+    handleComebackDay,
+  ]);
+
+  useEffect(() => {
+    if (practitionerIsOnLeave) {
+      handleIsOnleaveModal();
+    }
+  }, []);
 
   return (
     <>

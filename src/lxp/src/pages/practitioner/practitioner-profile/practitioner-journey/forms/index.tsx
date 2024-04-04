@@ -53,6 +53,7 @@ import {
   question2,
 } from './request-coaching-visit-or-call/constants';
 import { OfflineStep } from './offline';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -112,7 +113,7 @@ export const Form = ({ onBack }: FormProps) => {
   const isStep2AllCompleted =
     String(step2PreviousData?.questions?.[0]?.answer)?.split('.,')?.length ===
     options.length;
-  const previousData = useSelector(
+  const previousDataPqaStep11 = useSelector(
     getSectionsQuestionsByStep(
       visitId ?? '',
       'pqaPreviousFormData',
@@ -121,7 +122,7 @@ export const Form = ({ onBack }: FormProps) => {
   );
 
   const pqaStep11Answer =
-    String(previousData?.questions?.[0]?.answer) ?? undefined;
+    String(previousDataPqaStep11?.questions?.[0]?.answer) ?? undefined;
 
   const { isOnline } = useOnlineStatus();
 
@@ -150,8 +151,8 @@ export const Form = ({ onBack }: FormProps) => {
       setTitle('Pre-PQA site visits summary');
       return prePqaSteps;
     }
-    if (activityName === coachVisitTypes.supportVisit) {
-      setTitle(coachVisitTypes.supportVisit);
+    if (activityName === coachVisitTypes.supportVisit.description) {
+      setTitle(coachVisitTypes.supportVisit.description);
       return supportVisitSteps;
     }
 
@@ -163,7 +164,7 @@ export const Form = ({ onBack }: FormProps) => {
     if (isPQA && isViewDetails) {
       return getFirstPqaSteps({
         isToShowStep1: false,
-        isStep11AnswerTrue: !!pqaStep11Answer,
+        isStep11AnswerTrue: pqaStep11Answer === 'true',
         isToRemoveSmartStarter: false,
         isToShowStep17: false,
       });
@@ -278,14 +279,19 @@ export const Form = ({ onBack }: FormProps) => {
   const onSubmitSelfAssessment = async (
     payload: CmsVisitDataInputModelInput
   ) => {
+    const syncId = newGuid();
+
     appDispatch(
-      pqaActions.addVisitFormData(payload, {
-        userId: user?.id!,
-        formType: 'self-assessment',
-      })
+      pqaActions.addVisitFormData(
+        { syncId, ...payload },
+        {
+          userId: user?.id!,
+          formType: 'self-assessment',
+        }
+      )
     );
 
-    await appDispatch(pqaThunkActions.addVisitFormData(payload));
+    await appDispatch(pqaThunkActions.addVisitFormData({ syncId, ...payload }));
   };
 
   const onSubmitRequestCoachingVisitOrCall = async () => {
@@ -419,7 +425,7 @@ export const Form = ({ onBack }: FormProps) => {
         onClose={onBack}
         onSubmit={handleOnSubmit}
         submitButton={renderSubmitButtonStyle}
-        isLoading={isLoading}
+        isLoading={isLoading || isLoadingCoachRequest}
         isView={isView}
         {...(isViewPqaOrReAccreditation && { onView })}
       />

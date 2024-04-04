@@ -15,8 +15,8 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './walktrough-tutorial.styles';
 import { AttendanceTutorialProps, tabItems } from './walktrough-tutorial.types';
 import { useAppContext } from '@/walkthrougContext';
-import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { useSetState } from 'react-use';
+import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 
 export const WalkthroughTutorial = ({
   onComplete,
@@ -105,7 +105,7 @@ export const WalkthroughTutorial = ({
       displayHelp={true}
       onHelp={() => {}}
     >
-      <MultiRouteWrapper />
+      <AttendanceWrapper />
       <TabList
         className="bg-uiBg"
         tabItems={tabItems}

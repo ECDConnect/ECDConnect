@@ -36,6 +36,7 @@ import { MotherActions } from '@/store/mother/mother.actions';
 import { VisitModelInput } from '@/../../../packages/graphql/lib';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { visitSteps as walkthroughSteps } from './walkthrough/steps';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 
 const HEADER_HEIGHT = 64;
 
@@ -51,6 +52,8 @@ export const Visits: React.FC = () => {
   const dialog = useDialog();
 
   const { errorDialog } = useRequestResponseDialog();
+
+  const calendarAddEvent = useCalendarAddEvent();
 
   const [, , , motherId] = location.pathname.split('/');
 
@@ -103,11 +106,11 @@ export const Visits: React.FC = () => {
     });
   }, []);
 
-  const currentDate = useMemo(() => new Date(), []);
-  currentDate?.setHours(0, 0, 0, 0);
   const todayEndOfTheDay = new Date();
   todayEndOfTheDay.setHours(23, 59, 59, 999);
-  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+  const todayDateWithoutTimeZone = getDateWithoutTimeZone(
+    todayEndOfTheDay.toISOString()
+  );
 
   const currentVisit = useMemo((): VisitDto | undefined => {
     const noAttended =
@@ -117,11 +120,11 @@ export const Visits: React.FC = () => {
         const isAttend = item.attended;
 
         if (dueDate) {
-          return !isAttend && dueDate >= todayDate!;
+          return !isAttend && dueDate >= todayDateWithoutTimeZone!;
         }
 
         if (orderDate) {
-          return !isAttend && orderDate >= todayDate!;
+          return !isAttend && orderDate >= todayDateWithoutTimeZone!;
         }
 
         return !isAttend;
@@ -129,13 +132,12 @@ export const Visits: React.FC = () => {
 
     return noAttended.length
       ? noAttended.reduce((prev, curr) =>
-          new Date(prev.orderDate).getTime() <
-          new Date(curr.orderDate).getTime()
+          (prev.visitType?.order ?? 0) < (curr.visitType?.order ?? 0)
             ? prev
             : curr
         )
       : undefined;
-  }, [todayDate, visits]);
+  }, [todayDateWithoutTimeZone, visits]);
 
   // INFO: EC-685 - only show start visit button if today falls between planned and due date for current visit
   const plannedVisitDate =
@@ -149,9 +151,10 @@ export const Visits: React.FC = () => {
   const isFirstVisit = visits
     .filter((item) => item.visitType?.name !== 'additional_visits')
     .every((item) => !item.attended);
-  const isOrderVisitDate = plannedVisitDate && currentDate >= plannedVisitDate;
-  const isDueDate = dueDate && currentDate <= dueDate;
-  const isWeekDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
+  const isOrderVisitDate =
+    plannedVisitDate && todayEndOfTheDay >= plannedVisitDate;
+  const isDueDate = dueDate && todayDateWithoutTimeZone! <= dueDate;
+  const isDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
   const previousVisit = useSelector((state: RootState) =>
     getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
   );
@@ -178,32 +181,18 @@ export const Visits: React.FC = () => {
         return 'completed';
       }
       if (
-        (isWeekDeadline &&
-          currentVisit?.visitType?.id === item.visitType?.id) ||
+        (isDeadline && currentVisit?.visitType?.id === item.visitType?.id) ||
         (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
       }
       return 'todo';
     },
-    [currentVisit?.visitType?.id, isWeekDeadline, previousVisit?.attended]
+    [currentVisit?.visitType?.id, isDeadline, previousVisit?.attended]
   );
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => {
-      const dueDate = getDateWithoutTimeZone(item.dueDate);
-      const orderDate = getDateWithoutTimeZone(item.orderDate);
-      const isAttend = item.attended;
-      if (dueDate) {
-        return !isAttend && dueDate >= todayDate!;
-      }
-
-      if (orderDate) {
-        return !isAttend && orderDate >= todayDate!;
-      }
-
-      return !isAttend;
-    });
+    const filteredVisits = visits.filter((item) => !item.attended);
 
     const sortedVisits = getSortedVisits(filteredVisits);
     const isToShowPastVisits = visits.length > filteredVisits.length;
@@ -218,34 +207,43 @@ export const Visits: React.FC = () => {
 
       const orderDate = getDateWithoutTimeZone(orderDateString);
 
+      const isMissedVisit =
+        orderDate?.getTime()! < todayDateWithoutTimeZone?.getTime()!;
+
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
+
+      let subTitle = `By ${day} ${orderDate?.toLocaleString('default', {
+        month: 'long',
+      })} ${orderDate?.getFullYear()}`;
+
+      if (isAdditionalVisit && item.comment) {
+        subTitle = item.comment;
+      }
+
+      if (isMissedVisit && (!previousItem || previousItem?.attended)) {
+        subTitle = 'Missed visit deadline';
+      }
 
       return {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName || 'Visit',
-        subTitle:
-          isAdditionalVisit && item.comment!
-            ? item.comment
-            : `By ${day} ${orderDate?.toLocaleString('default', {
-                month: 'long',
-              })} ${orderDate?.getFullYear()}`,
-        ...(isAdditionalVisit && {
+        subTitle,
+        ...((isMissedVisit || isAdditionalVisit) && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: 'CalendarIcon',
         type: getType(item),
         showActionButton:
           (!previousItem || previousItem?.attended) &&
-          getType(item) === 'inProgress',
+          (getType(item) === 'inProgress' || isMissedVisit),
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          history.push(
-            `${location.pathname}/activities-form/${currentVisit?.id}`,
-            { editView: true }
-          ),
+          history.push(`${location.pathname}/activities-form/${item?.id}`, {
+            editView: true,
+          }),
       };
     });
 
@@ -267,13 +265,12 @@ export const Visits: React.FC = () => {
 
     return array;
   }, [
-    currentVisit,
     getSortedVisits,
     getType,
     history,
     insertedDate,
     location,
-    todayDate,
+    todayDateWithoutTimeZone,
     visits,
   ]);
 
@@ -323,8 +320,8 @@ export const Visits: React.FC = () => {
                 isLoading: isLoadingAddAdditionalVisit,
                 disabled: isLoadingAddAdditionalVisit,
                 onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
                   onClose();
+                  onBookVisit();
                 },
                 type: 'outlined',
                 textColour: 'primary',
@@ -367,6 +364,14 @@ export const Visits: React.FC = () => {
   useLayoutEffect(() => {
     appDispatch(motherThunkActions.getMotherVisits({ motherId })).unwrap();
   }, [appDispatch, motherId]);
+
+  const onBookVisit = () => {
+    calendarAddEvent({
+      event: {
+        participantUserIds: [motherId],
+      },
+    });
+  };
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>

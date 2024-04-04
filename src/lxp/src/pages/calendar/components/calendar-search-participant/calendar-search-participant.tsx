@@ -24,16 +24,23 @@ import {
 } from '../calendar.utils';
 import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
 import { coachSelectors } from '@/store/coach';
+import { useWindowSize } from '@reach/window-size';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
-> = ({ currentParticipantUsers, onBack, onDone }) => {
-  const [filteredData, setFilteredData] = useState<ListDataItem[]>([]);
+> = ({ currentParticipantUsers, customList, onBack, onDone }) => {
+  const [filteredData, setFilteredData] = useState<ListDataItem[]>(
+    customList || []
+  );
   const [selectedData, setSelectedData] = useState<ListDataItem[]>([]);
-  const [unselectedData, setUnselectedData] = useState<ListDataItem[]>([]);
+  const [unselectedData, setUnselectedData] = useState<ListDataItem[]>(
+    customList || []
+  );
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState<boolean>(false);
   const [busySaving, setBusySaving] = useState<boolean>(false);
+
+  const { height } = useWindowSize();
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
   const isCoach = currentUser?.roles?.some((role) => role.name === 'Coach');
@@ -87,7 +94,9 @@ export const CalendarSearchParticipant: React.FC<
       );
       if (filteredIndex !== -1) filtered.splice(filteredIndex, 1);
       setUnselectedData(unselected);
-      setSelectedData([selectedData[0], ...selected]);
+      setSelectedData(
+        !!selectedData?.[0] ? [selectedData[0], ...selected] : selected
+      );
       setFilteredData(filtered);
     },
     [unselectedData, selectedData, filteredData, currentUser.id]
@@ -113,17 +122,21 @@ export const CalendarSearchParticipant: React.FC<
 
   const onClickDone = useCallback(() => {
     setBusySaving(true);
-    const participantUsers: CalendarAddEventParticipantFormModel[] =
-      selectedData.slice(1).map((x) => ({
-        userId: x.id || '',
-        firstName: x.extraData?.firstName || '',
-        surname: x.extraData?.surname || '',
-        isClub: x.extraData?.isClub || false,
-      }));
+    const participantUsers: CalendarAddEventParticipantFormModel[] = (
+      !!customList ? selectedData : selectedData.slice(1)
+    ).map((x) => ({
+      userId: x.id || '',
+      firstName: x.extraData?.firstName || '',
+      surname: x.extraData?.surname || '',
+      isClub: x.extraData?.isClub || false,
+    }));
+
     onDone(participantUsers);
-  }, [selectedData, onDone]);
+  }, [customList, selectedData, onDone]);
 
   useEffect(() => {
+    if (customList?.length) return;
+
     if (
       !!practitioners &&
       practitioners.length > 0 &&
@@ -165,35 +178,38 @@ export const CalendarSearchParticipant: React.FC<
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners, clubs]);
+  }, [practitioners, clubs, customList]);
 
   return (
-    <BannerWrapper
-      size={'small'}
-      renderBorder={true}
-      title={'Search for participants...'}
-      color={'primary'}
-      onBack={onBack}
-    >
-      <SearchHeader<ListDataItem>
-        searchItems={filteredData || []}
-        onScroll={handleListScroll}
-        onSearchChange={onSearchChange}
-        isTextSearchActive={searchTextActive}
-        onBack={onSearchDone}
-        onSearchButtonClick={onSearch}
-        onClickItem={onPractitionerAdd}
+    <div className="overflow-auto" style={{ height }}>
+      <BannerWrapper
+        size={'small'}
+        renderBorder={true}
+        title={'Search for participants...'}
+        color={'primary'}
+        onBack={onBack}
+        renderOverflow
       >
-        <div></div>
-      </SearchHeader>
-      <div className="flex justify-center">
-        <div className="w-11/12">
-          <StackedList
-            className={styles.stackedList}
-            listItems={selectedData}
-            type={'UserAlertList'}
-            onClickItem={onPractitionerRemove}
-          />
+        <SearchHeader<ListDataItem>
+          searchItems={filteredData || []}
+          onScroll={handleListScroll}
+          onSearchChange={onSearchChange}
+          isTextSearchActive={searchTextActive}
+          onBack={onSearchDone}
+          onSearchButtonClick={onSearch}
+          onClickItem={onPractitionerAdd}
+        >
+          <div></div>
+        </SearchHeader>
+        <div className="w-full p-4">
+          <div className="flex justify-center">
+            <StackedList
+              className={styles.stackedList}
+              listItems={selectedData}
+              type={'UserAlertList'}
+              onClickItem={onPractitionerRemove}
+            />
+          </div>
           <div>
             <Button
               onClick={onClickDone}
@@ -214,8 +230,8 @@ export const CalendarSearchParticipant: React.FC<
             </Button>
           </div>
         </div>
-      </div>
-    </BannerWrapper>
+      </BannerWrapper>
+    </div>
   );
 };
 

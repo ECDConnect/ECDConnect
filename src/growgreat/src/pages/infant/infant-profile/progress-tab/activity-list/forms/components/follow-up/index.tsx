@@ -331,7 +331,6 @@ export const FollowUp = ({
         />
         <div className="w-2/4">
           <ProgressBar
-            className="h-2"
             label={
               walkthroughData?.progressBar.label ||
               previousVisitStatus?.score ||
@@ -491,9 +490,11 @@ export const FollowUp = ({
                                           `w-5 h-5 text-successDark`
                                         )}
                                       </div>
-                                      <article className="w-full font-semibold text-black">
-                                        {item}
-                                      </article>
+                                      <Typography
+                                        type="markdown"
+                                        className="text-textDark w-full"
+                                        text={item}
+                                      />
                                     </div>
                                   ))}
                                 </div>
@@ -527,9 +528,11 @@ export const FollowUp = ({
                                           `w-5 h-5 text-alertDark`
                                         )}
                                       </div>
-                                      <article className="w-full font-semibold text-black">
-                                        {item}
-                                      </article>
+                                      <Typography
+                                        type="markdown"
+                                        className="text-textDark w-full"
+                                        text={item}
+                                      />
                                     </div>
                                   ))}
                                 </div>
@@ -563,9 +566,11 @@ export const FollowUp = ({
                                           `w-5 h-5 text-errorDark`
                                         )}
                                       </div>
-                                      <article className="w-full font-semibold text-black">
-                                        {item}
-                                      </article>
+                                      <Typography
+                                        type="markdown"
+                                        className="text-textDark w-full"
+                                        text={item}
+                                      />
                                     </div>
                                   ))}
                                 </div>
@@ -595,9 +600,11 @@ export const FollowUp = ({
                                 <div className="pt-2">
                                   {documentItems?.map((item, indexb) => (
                                     <div className="flex gap-2" key={indexb}>
-                                      <article className="w-full font-semibold text-black">
-                                        {item}
-                                      </article>
+                                      <Typography
+                                        type="markdown"
+                                        className="text-textDark w-full"
+                                        text={item}
+                                      />
                                     </div>
                                   ))}
                                 </div>
@@ -626,9 +633,11 @@ export const FollowUp = ({
                                 <div className="pt-2">
                                   {documentItems?.map((item, indexb) => (
                                     <div className="flex gap-2" key={indexb}>
-                                      <article className="w-full font-semibold text-black">
-                                        {item}
-                                      </article>
+                                      <Typography
+                                        type="markdown"
+                                        className="text-textDark w-full"
+                                        text={item}
+                                      />
                                     </div>
                                   ))}
                                 </div>

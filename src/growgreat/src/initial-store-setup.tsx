@@ -23,6 +23,10 @@ import {
   healthCareWorkerThunkActions,
 } from './store/healthCareWorker';
 import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
+import { calendarActions, calendarThunkActions } from './store/calendar';
+import { subMonths } from 'date-fns';
+import { communitySelectors, communityThunkActions } from './store/community';
+import { visitThunkActions } from '@/store/visit';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -51,6 +55,7 @@ function InitialStoreSetup(props: Props) {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors.getHealthCareWorker
   );
+  const userClinic = useSelector(communitySelectors.getClinicSelector);
 
   const clearSiteData = useClearSiteData();
 
@@ -67,20 +72,83 @@ function InitialStoreSetup(props: Props) {
         await appDispatch(
           caregiverThunkActions.getAllCaregiverClients({ userId: userData.id! })
         ))();
+      (async () =>
+        await appDispatch(
+          visitThunkActions.getHealthCareWorkerVisitStatus({
+            userId: userData.id!,
+          })
+        ).unwrap())();
     }
     setInitLoading(false);
   }, [appDispatch, userData]);
 
   useEffect(() => {
     if (healthCareWorker) {
+      (async () => {
+        const promises = [];
+
+        if (healthCareWorker?.clinicId) {
+          promises.push(
+            appDispatch(
+              communityThunkActions.getClinicById({
+                clinicId: healthCareWorker?.clinicId || '',
+              })
+            ).unwrap()
+          );
+        }
+
+        promises.push(
+          appDispatch(
+            caregiverThunkActions.getCaregiversForHealthCareWorker({
+              id: healthCareWorker?.id || '',
+            })
+          ).unwrap()
+        );
+        promises.push(
+          appDispatch(
+            healthCareWorkerThunkActions.getHealthCareWorkerPointsTodoItems({
+              healthCareWorkerId: healthCareWorker.id!,
+            })
+          ).unwrap()
+        );
+
+        if (!!healthCareWorker.user && !!healthCareWorker.user.id) {
+          const currentDate = new Date();
+          const oneYearAgo = new Date();
+          oneYearAgo.setMonth(currentDate.getMonth() - 12);
+
+          promises.push(
+            appDispatch(
+              healthCareWorkerThunkActions.getHealthCareWorkerPoints({
+                userId: healthCareWorker.user.id,
+                startDate: oneYearAgo,
+              })
+            ).unwrap()
+          );
+          promises.push(
+            appDispatch(
+              healthCareWorkerThunkActions.getHealthCareWorkerTeamStanding({
+                userId: healthCareWorker.user.id,
+              })
+            ).unwrap()
+          );
+        }
+
+        await Promise.all(promises);
+      })();
+    }
+  }, [appDispatch, healthCareWorker]);
+
+  useEffect(() => {
+    if (userClinic && userClinic.league?.id) {
       (async () =>
         await appDispatch(
-          caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id || '',
+          communityThunkActions.getLeagueById({
+            leagueId: userClinic?.league?.id || '',
           })
         ).unwrap())();
     }
-  }, [appDispatch, healthCareWorker]);
+  }, [appDispatch, userClinic]);
 
   const values = {
     initloading,
@@ -121,6 +189,7 @@ function InitialStoreSetup(props: Props) {
     await appDispatch(documentActions.resetDocumentsState());
     await appDispatch(motherActions.resetMotherState());
     await appDispatch(infantActions.resetInfantState());
+    await appDispatch(calendarActions.resetCalendarState());
   };
 
   async function initStoreSetup() {
@@ -143,6 +212,14 @@ function InitialStoreSetup(props: Props) {
       appDispatch(userThunkActions.getUser({})).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
       appDispatch(documentThunkActions.getDocumentsForHCW()).unwrap(),
+      appDispatch(
+        calendarThunkActions.getCalendarEvents({
+          start: subMonths(
+            new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+            1
+          ),
+        })
+      ),
     ];
     // SPECIFIC DATA
     setOtherLoading(true);
@@ -171,6 +248,9 @@ function InitialStoreSetup(props: Props) {
       appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
+      ).unwrap(),
     ];
 
     setStaticDataLoading(true);

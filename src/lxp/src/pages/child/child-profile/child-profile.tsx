@@ -105,6 +105,7 @@ export const ChildProfile: React.FC = () => {
   const dialog = useDialog();
   const location = useLocation<ChildProfileRouteState>();
   const childId = location.state.childId;
+  const practitionerIsOnLeave = location.state?.practitionerIsOnLeave;
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
   const workflowDocumentVerified = getWorkflowStatusIdByEnum(
@@ -217,7 +218,10 @@ export const ChildProfile: React.FC = () => {
       dividerType: 'dashed',
       withPaddingY: true,
       onButtonClick: () => {
-        history.push(ROUTES.CHILD.INFORMATION.EDIT, { childId });
+        history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+          childId,
+          practitionerIsOnLeave,
+        });
       },
     },
   ]);
@@ -240,7 +244,7 @@ export const ChildProfile: React.FC = () => {
 
   const {
     setState,
-    state: { run, stepIndex },
+    state: { run },
   } = useAppContext();
 
   const childTutorialTaken = getStorageItem(
@@ -411,7 +415,7 @@ export const ChildProfile: React.FC = () => {
       buttonText: 'Edit',
       buttonTextColor: 'secondary',
       buttonColor: 'secondaryAccent2',
-      showButton: true,
+      showButton: practitionerIsOnLeave ? false : true,
       showDivider: true,
       dividerType: 'dashed',
       withPaddingY: true,
@@ -448,7 +452,7 @@ export const ChildProfile: React.FC = () => {
   }, [createChildNoteVisible]);
 
   useEffect(() => {
-    if (!attendanceData || !child || !playGroup) return;
+    if (!attendanceData || !child) return;
 
     const childBirthDate = childUser?.dateOfBirth
       ? new Date(childUser?.dateOfBirth)
@@ -458,32 +462,34 @@ export const ChildProfile: React.FC = () => {
 
     setChildAge(ageOfChild);
 
-    if (isOnline) {
-      new AttendanceService(authUser?.auth_token ?? '')
-        .getChildAttendanceRecords(
-          child.userId ?? '',
-          playGroup?.id ?? '',
-          startOfISOWeekYear(new Date()),
-          currentDate
-        )
-        .then((data) => {
-          setAttendanceReport(data);
-        });
+    if (playGroup) {
+      if (isOnline) {
+        new AttendanceService(authUser?.auth_token ?? '')
+          .getChildAttendanceRecords(
+            child.userId ?? '',
+            playGroup?.id ?? '',
+            startOfISOWeekYear(new Date()),
+            currentDate
+          )
+          .then((data) => {
+            setAttendanceReport(data);
+          });
+      }
+
+      const applicableNotifications: ListItemProps[] = [];
+
+      const attendanceNotification = getAttendanceNotification(
+        child.userId || '',
+        attendanceData,
+        playGroup.id || ''
+      );
+
+      if (attendanceNotification) {
+        applicableNotifications.push(attendanceNotification);
+      }
+
+      setNotifications([...applicableNotifications]);
     }
-
-    const applicableNotifications: ListItemProps[] = [];
-
-    const attendanceNotification = getAttendanceNotification(
-      child.userId || '',
-      attendanceData,
-      playGroup.id || ''
-    );
-
-    if (attendanceNotification) {
-      applicableNotifications.push(attendanceNotification);
-    }
-
-    setNotifications([...applicableNotifications]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceData, child, playGroup]);
 
@@ -700,9 +706,9 @@ export const ChildProfile: React.FC = () => {
     return <ChildPending child={child} childUser={childUser} />;
   }
 
-  const displayWalkthrough = () => {
-    goToChildProfileWalkhthrough();
-  };
+  // const displayWalkthrough = () => {
+  //   goToChildProfileWalkhthrough();
+  // };
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -830,7 +836,7 @@ export const ChildProfile: React.FC = () => {
           )}
         <div className={styles.profileOptionsWrapper}>
           {profileOptions.map((options, index) => (
-            <div id={`child_walkthrough_step_${index}`}>
+            <div key={`option-${index}`} id={`child_walkthrough_step_${index}`}>
               <ListItem
                 {...options}
                 key={`child-profile-option-${options.key}`}
@@ -849,21 +855,23 @@ export const ChildProfile: React.FC = () => {
             {renderIcon('ChatAlt2Icon', styles.buttonIcon)}
             <Typography type="button" text="Contact caregiver" color="white" />
           </Button>
-          <div id="child_remove">
-            <Button
-              className={styles.button}
-              color={'errorMain'}
-              type="outlined"
-            >
-              {renderIcon('TrashIcon', styles.buttonIcon)}
-              <Typography
-                type="button"
-                text={`Remove ${childUser?.firstName}`}
-                color="errorMain"
-                onClick={() => setRemoveChildConfirmationVisible(true)}
-              />
-            </Button>
-          </div>
+          {!practitionerIsOnLeave && (
+            <div id="child_remove">
+              <Button
+                className={styles.button}
+                color={'errorMain'}
+                type="outlined"
+              >
+                {renderIcon('TrashIcon', styles.buttonIcon)}
+                <Typography
+                  type="button"
+                  text={`Remove ${childUser?.firstName}`}
+                  color="errorMain"
+                  onClick={() => setRemoveChildConfirmationVisible(true)}
+                />
+              </Button>
+            </div>
+          )}
         </div>
       </BannerWrapper>
       <Dialog

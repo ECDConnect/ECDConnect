@@ -94,8 +94,10 @@ class PointsService {
     }>(``, {
       query: `query userClubStanding($userId: String) {
           userClubStanding(userId: $userId) {
-            percentileStandingForCurrentMonth
-            percentileStandingForCurrentYear 
+            percentageMembersWithFewerPointsForCurrentMonth
+            percentageMembersWithFewerPointsForCurrentYear
+            percentageMembersWithMorePointsForCurrentMonth
+            percentageMembersWithMorePointsForCurrentYear
           }
         }`,
       variables: {
@@ -108,6 +110,32 @@ class PointsService {
     }
 
     return response.data.data.userClubStanding;
+  }
+
+  async addChildRegistrationPoints(userId: string): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addChildRegistrationPoints: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation addChildRegistrationPoints($userId: String) {
+          addChildRegistrationPoints(userId: $userId){
+          }
+        }
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Adding child registration points failed - Server connection error'
+      );
+    }
+
+    return true;
   }
 }
 

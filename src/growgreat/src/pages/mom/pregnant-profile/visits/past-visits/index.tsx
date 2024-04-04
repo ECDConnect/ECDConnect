@@ -16,7 +16,7 @@ import {
 } from '@/store/mother/mother.selectors';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
-import { getDateWithoutTimeZone, VisitDto } from '@ecdlink/core';
+import { VisitDto } from '@ecdlink/core';
 
 export const PastVisits: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -29,7 +29,6 @@ export const PastVisits: React.FC = () => {
 
   const currentDate = new Date();
   currentDate?.setHours(0, 0, 0, 0);
-  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
 
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
@@ -63,21 +62,7 @@ export const PastVisits: React.FC = () => {
   }, []);
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => {
-      const dueDate = getDateWithoutTimeZone(item.dueDate);
-      const orderDate = getDateWithoutTimeZone(item.orderDate);
-      const isAttend = item.attended;
-
-      if (dueDate) {
-        return isAttend || (!isAttend && dueDate < todayDate!);
-      }
-
-      if (orderDate) {
-        return isAttend || (!isAttend && orderDate < todayDate!);
-      }
-
-      return isAttend;
-    });
+    const filteredVisits = visits.filter((item) => item?.attended);
 
     const sortedVisits = getSortedVisits(filteredVisits);
 
@@ -95,7 +80,7 @@ export const PastVisits: React.FC = () => {
       return {
         title: isAdditionalVisit
           ? 'Other visit'
-          : item.visitType?.normalizedName + ' visit' || 'Visit',
+          : item.visitType?.normalizedName || 'Visit',
         subTitle:
           isAdditionalVisit && item.comment!
             ? item.comment
@@ -125,7 +110,7 @@ export const PastVisits: React.FC = () => {
     });
 
     return array;
-  }, [history, motherId, todayDate, visits]);
+  }, [getSortedVisits, history, motherId, visits]);
 
   const goBack = useCallback(() => {
     history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}`);

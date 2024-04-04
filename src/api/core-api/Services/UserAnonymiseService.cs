@@ -1,0 +1,160 @@
+﻿using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using HotChocolate;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ECDLink.Abstractrions.Constants;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Clubs;
+
+namespace EcdLink.Api.CoreApi.Services
+{
+    public class UserAnonymiseService
+    {
+        private readonly HierarchyEngine _hierarchyEngine;
+        private readonly ApplicationUserManager _userManager;
+        private ILogger<UserAnonymiseService> _logger;
+        private readonly AuthenticationDbContext _context;
+        private readonly INotificationService _notificationService;
+
+        public UserAnonymiseService(
+            IGenericRepositoryFactory repositoryFactory,
+            IDocumentManagementService documentManagementService,
+            HierarchyEngine hierarchyEngine,
+            [Service] ApplicationUserManager userManager,
+            ILogger<UserAnonymiseService> logger,
+            [Service] INotificationService notificationService,
+            [Service] AuthenticationDbContext context)
+        {
+            _hierarchyEngine = hierarchyEngine;
+            _userManager = userManager;
+            _logger = logger;
+            _context = context;
+            _notificationService = notificationService;
+        }
+
+        public void AnonymiseUser(Guid userId, string userType)
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+
+            if (userId != null)
+            {
+                try
+                { 
+                    if (userType == "Trainee")
+                    {
+                        var pracToDelete = _context.Practitioners.Where(p => p.UserId.Equals(userId)).FirstOrDefault();
+                        
+                        var traineeToDelete = _context.Trainees.Where(c => c.UserId.ToString() == userId.ToString())
+                            .Include(c => c.User)
+                            .FirstOrDefault();                        
+
+                        if (traineeToDelete != null && traineeToDelete.User != null)
+                        {
+                            _notificationService.DeleteAllNotificationsForUser(traineeToDelete.UserId.ToString());
+
+                            if (pracToDelete != null)
+                            {
+                                //remove practitioner
+                                _context.Remove(pracToDelete);
+                            }
+                            var documents = _context.Documents.Where(x => x.UserId == userId).ToList();
+                            if (documents.Any())
+                            {
+                                foreach (var docRow in documents)
+                                { _context.Remove(docRow); }
+                            }
+                            var jobNotification = _context.JobNotifications.Where(x => x.UserId == userId).ToList();
+                            if (jobNotification.Any())
+                            {
+                                foreach (var jobNotificationRow in jobNotification)
+                                { _context.Remove(jobNotificationRow); }
+                            }
+                            //remove classroomgroups and children via classrooms and learners linke dto this user
+                            List<ClassroomGroup> classroomGroups = _context.ClassroomGroupss.Where(x => x.UserId == userId).ToList();
+                            List<Classroom> classrooms = _context.Classrooms.Where(x => x.UserId == userId).ToList();
+
+                            if (classroomGroups.Any())
+                            {
+                                foreach (var group in classroomGroups)
+                                {
+                                    List<Learner> learners = _context.Learners.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
+                                    if (learners.Any())
+                                    {
+                                        foreach (var learner in learners) {
+                                            List<Child> children = _context.Children.Where(x => x.UserId.Equals(learner.UserId)).ToList();
+                                            if (children.Any())
+                                            {
+                                                foreach (var child in children)
+                                                {
+                                                    _context.Remove(child);
+                                                }
+                                            }
+                                            _context.Remove(learner);
+                                        }
+                                    }
+                                    _context.Remove(group);
+                                }
+                            }
+                            if (classrooms.Any())
+                            {
+                                foreach (var classroom in classrooms)
+                                {
+                                    _context.Remove(classroom);
+                                }
+                            }
+                            List<Visit> pracVisits = _context.Visits.Where(x => x.PractitionerId == userId).ToList();
+                            if (pracVisits.Any())
+                            {
+                                foreach (var visit in pracVisits)
+                                {
+                                    _context.Remove(visit);
+                                }
+                            }
+                            List<Visit> traineeVisits = _context.Visits.Where(x => x.TraineeId == userId).ToList();
+                            if (traineeVisits.Any())
+                            {
+                                foreach (var visit in traineeVisits)
+                                {
+                                    _context.Remove(visit);
+                                }
+                            }
+                            List<ClubMember> clubsMembers = _context.ClubMember.Where(x => x.PractitionerId == userId).ToList();
+                            if (clubsMembers.Any())
+                            {
+                                foreach (var clubsMember in clubsMembers)
+                                {
+                                    _context.Remove(clubsMember);
+                                }
+                            }
+                            //remove hierarchy
+                            _hierarchyEngine.DeleteHierarchy(userId);
+                            //remove trainee
+                            _context.Remove(traineeToDelete);
+                            _context.SaveChanges();
+                            //remove user
+                            var result = _userManager.DeleteAsync(traineeToDelete.User).Result;
+                            if (result.Succeeded)
+                            {
+                                _logger.LogInformation("Trainee Removal Succeeded for Type: {0} and UserId {1}", userType, userId);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "AnonymiseUser Failed for trainee Id: {0} on {1}", userId, ex.Message);
+                }
+            }
+        }
+
+    }
+}

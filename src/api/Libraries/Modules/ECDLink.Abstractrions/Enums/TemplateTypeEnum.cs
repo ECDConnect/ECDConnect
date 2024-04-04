@@ -17,8 +17,7 @@ namespace ECDLink.Abstractrions.Enums
         AdminPortalInvitation = 12,
         ForgotPasswordPortal = 13,
         StatementReminder = 14,
-
-
-
+        ProgrammeInvitation = 15,
+        TeamLeadInvitation = 16,
     }
 }

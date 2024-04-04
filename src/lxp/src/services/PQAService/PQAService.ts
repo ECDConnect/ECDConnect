@@ -3,7 +3,6 @@ import {
   CmsVisitDataInputModelInput,
   FollowUpVisitModelInput,
   PractitionerTimeline,
-  ReAccreditationVisitModelInput,
   SupportVisitModelInput,
   UpdateVisitPlannedVisitDateModelInput,
   Visit,
@@ -64,34 +63,6 @@ class PQAService {
 
     if (response.status !== 200 || response.data.errors) {
       throw new Error('Add support visit failed - Server connection error');
-    }
-
-    return true;
-  }
-
-  async addReAccreditationVisitData(
-    input: ReAccreditationVisitModelInput
-  ): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      data: { addReAccreditationVisitForPractitioner: boolean };
-      errors?: {};
-    }>(``, {
-      query: ` 
-        mutation AddReAccreditationVisitForPractitioner($input: ReAccreditationVisitModelInput) {
-          addReAccreditationVisitForPractitioner(input: $input) {
-              id, 
-              plannedVisitDate
-          }        
-        }
-      `,
-      variables: {
-        input,
-      },
-    });
-
-    if (response.status !== 200 || response.data.errors) {
-      throw new Error('Add visit failed - Server connection error');
     }
 
     return true;
@@ -303,6 +274,7 @@ class PQAService {
             pQASiteVisits {
               id
               hasAnswerData
+              delicenseQuestionAnswered
               plannedVisitDate
               attended
               comment
@@ -321,6 +293,7 @@ class PQAService {
             reAccreditationVisits {
               id
               hasAnswerData
+              delicenseQuestionAnswered
               plannedVisitDate
               attended
               comment
@@ -357,6 +330,7 @@ class PQAService {
               plannedVisitDate
               insertedDate
               attended
+              eventId
               visitType {
                 description
                 id
@@ -407,20 +381,34 @@ class PQAService {
               }
               eventId
             }
-            coachCircles{
+            coachCircles {
               totalMeetings
               totalPresent
               percAttended
               attendanceText
               attendanceColor
               meetingRegister {
-                  attended
-                  clubMeeting {
-                      meetingDate
-                      meetingNotes
-                  }
+                attended
+                 clubMeeting {
+                  meetingDate
+                  meetingNotes
+                }
               }
-          }
+            }
+            clubMeetings {
+              totalMeetings
+              totalPresent
+              percAttended
+              attendanceText
+              attendanceColor
+              meetingRegister {
+                attended
+                 clubMeeting {
+                  meetingDate
+                  meetingNotes
+                }
+              }
+            }
           }
         }
           `,
@@ -434,7 +422,6 @@ class PQAService {
         'Get Practitioner Timeline Failed - Server connection error'
       );
     }
-
     return response.data.data.practitionerTimeline;
   }
 
