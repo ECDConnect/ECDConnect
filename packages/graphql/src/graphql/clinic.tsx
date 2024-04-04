@@ -177,6 +177,7 @@ export const GetClinicPointsData = gql`
       totalHCWs
       leagueRanking
       pointsTotal
+      maxPointsTotal
       momsTargetPerc
       momsTargetPercColor
       momsTopLeagueTeamPerc
