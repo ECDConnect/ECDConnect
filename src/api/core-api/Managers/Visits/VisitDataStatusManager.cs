@@ -826,31 +826,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ManageMaternalDistressScreening(List<VisitData> maternalDistressScreening, string firstName, string clientId, string clientType)
         {
-            var comment = "";
-
             var q1 = maternalDistressScreening.Where(x => x.Question == GGSettings.q_stop_worry).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = maternalDistressScreening.Where(x => x.Question == GGSettings.q_felt_down).OrderBy(x => x.Id).FirstOrDefault();
             var q3 = maternalDistressScreening.Where(x => x.Question == GGSettings.q_suicide).OrderBy(x => x.Id).FirstOrDefault();
 
+            var MaternalDistressFollowUpComment = new StringBuilder($"{firstName} was experiencing the following: ");
+            if (q1.QuestionAnswer == GGSettings.AnswerYes) {
+                 MaternalDistressFollowUpComment.AppendLine($"<li>{GGSettings.q_stop_worry.TrimEnd('?')}</li>");
+            } 
+             if (q2.QuestionAnswer == GGSettings.AnswerYes) {
+                 MaternalDistressFollowUpComment.AppendLine($"<li>{GGSettings.q_felt_down.TrimEnd('?')}</li>");
+            } 
+             if (q3.QuestionAnswer == GGSettings.AnswerYes) {
+                 MaternalDistressFollowUpComment.AppendLine($"<li>{GGSettings.q_suicide.TrimEnd('?')}</li>");
+            }    
             // a GGSettings.answer_yes response to the 3rd question trumps all.
             if (q3.QuestionAnswer == GGSettings.AnswerYes)
             {
-                comment = firstName + GGSettings.maternal_distress;
-                AddVisitDataStatus(q3, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
+                AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
 
                 // add to amber items in progress screen(use case 2)(""Lethabo was experiencing maternal distress"")
-                comment = firstName + GGSettings.maternal_distress;
-                AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
+                AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
 
                 AddAdditionalVisit(clientId, clientType, GGSettings.maternal_distress2);
 
                 // add G4 secondary text item: Amber - ""Refer to clinic""
-                comment = GGSettings.refer_to_clinic;
-                AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_dashboard, q3.VisitSection, false);
+                var comment = new StringBuilder($"{GGSettings.refer_to_clinic}");
+                AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_dashboard, q3.VisitSection, false);
 
                 // add amber item to G9 client summary: ""You are struggling and need some support""
-                comment = GGSettings.need_support;
-                AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
+                comment = new StringBuilder($"{GGSettings.need_support}");
+                AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
 
                 if (clientType == GGSettings.client_child)
                 {
@@ -866,28 +872,25 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (q3.QuestionAnswer == GGSettings.AnswerNo && (q1.QuestionAnswer == GGSettings.AnswerYes || q2.QuestionAnswer == GGSettings.AnswerYes))
                 {
-                    comment = firstName + GGSettings.maternal_distress;
-                    AddVisitDataStatus(q3, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
+                    AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
 
-                    comment = firstName + GGSettings.maternal_distress;
-                    AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
 
                     AddAdditionalVisit(clientId, clientType, GGSettings.maternal_distress2);
 
                     // add amber item to G9 client summary: ""You are struggling and need some support""
-                    comment = GGSettings.need_support;
-                    AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
+                    var comment = new StringBuilder($"{GGSettings.need_support}");
+                    AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
                 }
 
                 if (q3.QuestionAnswer == GGSettings.AnswerNo && q1.QuestionAnswer == GGSettings.AnswerNo && q2.QuestionAnswer == GGSettings.AnswerNo)
                 {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
-                    comment = firstName + GGSettings.was_coping;
-                    AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_progress, q3.VisitSection, true);
+                    var comment = new StringBuilder($"{firstName}{GGSettings.was_coping}");
+                    AddVisitDataStatus(q3, comment.ToString(), StatusColours.Green, GGSettings.visit_data_client_progress, q3.VisitSection, true);
 
                     //add green item to G9 client summary: You are coping well!
-                    comment = GGSettings.coping_well;
-                    AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment.ToString(), StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
                 }
                 if (q3.QuestionAnswer == GGSettings.AnswerNo)
                 {
