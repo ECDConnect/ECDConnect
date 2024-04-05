@@ -3,6 +3,7 @@ import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
 
 export interface FormFieldProps {
   label: string;
+  subLabel?: string;
   nameProp: string;
   type?: string;
   error?: string;
@@ -20,6 +21,7 @@ export interface FormFieldProps {
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
+  subLabel,
   nameProp,
   type = 'text',
   error,
@@ -57,6 +59,16 @@ const FormField: React.FC<FormFieldProps> = ({
       >
         {label}
       </label>
+      {subLabel && (
+        <label
+          htmlFor={nameProp}
+          className={
+            'font-body text-textMid block self-stretch text-sm leading-snug'
+          }
+        >
+          {subLabel}
+        </label>
+      )}
       <div>
         {instructions?.length && instructions.length === 1 ? (
           type === 'email' && <p className="text-base">{instructions[0]}</p>

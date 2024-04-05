@@ -166,6 +166,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div className="sm:col-span-12">
                 <FormField
                   label={isRequired ? title + ' *' : title}
+                  subLabel={!isRequired ? 'ahahaha' : 'hihihi'}
                   nameProp={propName}
                   register={register}
                   error={

@@ -103,7 +103,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
       <ReferralRoutes />
-      <Route path={`/documents`} component={Documents}></Route>
+      <Route path={ROUTES.DOCUMENTS} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
