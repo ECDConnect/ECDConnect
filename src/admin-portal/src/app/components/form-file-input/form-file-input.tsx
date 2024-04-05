@@ -19,6 +19,7 @@ import {
 import { videoExtensions } from '../../utils/constants';
 import themesIcons from './components/themeIcons/themeIcons';
 import { SearchCircleIcon } from '@heroicons/react/outline';
+import { FieldType } from '../../pages/content-management/content-management-models';
 
 export interface FileModel {
   fileName: string;
@@ -279,48 +280,29 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
   return (
     <>
-      {isSubcategoryInput ? (
-        <>
-          <label htmlFor={nameProp} className="font-h4 block pb-1 font-bold">
-            {label}
-          </label>
-          {isIconInput ? (
-            <label
-              htmlFor={nameProp}
-              className="font-md block pb-1 text-sm text-gray-900"
-            >
-              Size limit:{' '}
-              <span className="text-errorMain font-semibold">1MB</span>. To
-              improve the image position & size, edit the image to fit 64px by
-              64px before uploading.
-            </label>
-          ) : (
-            <label
-              htmlFor={nameProp}
-              className="font-md block pb-1 text-sm text-gray-900"
-            >
-              Size limit:{' '}
-              <span className="text-errorMain font-semibold">1MB</span>. To
-              improve the image position & size, edit the image to fit 32px by
-              32px before uploading.
-            </label>
-          )}
-        </>
-      ) : (
-        <label
-          htmlFor={nameProp}
-          className="font-lg block pb-1 text-sm text-gray-900"
-        >
-          {label}
-          {acceptedFormats && !isThemeFormFile && (
-            <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
-          )}
-        </label>
+      <label
+        htmlFor={nameProp}
+        className="font-lg block pb-1 text-sm text-gray-900"
+      >
+        {label}
+        {acceptedFormats && !isThemeFormFile && (
+          <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
+        )}
+      </label>
+
+      {nameProp === FieldType.Image && acceptedFormats?.length > 0 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit:
+          <span className="text-errorMain font-semibold">
+            {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
+          </span>{' '}
+          MB.
+        </p>
       )}
 
       {isPdfExtension && acceptedFormats?.length === 1 && (
         <p className="text-textMid mb-2 text-sm">
-          Size limit:{' '}
+          Size limit:
           <span className="text-errorMain font-semibold">
             {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
           </span>{' '}
@@ -330,7 +312,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
       {isVideoInput && acceptedFormats?.length === 2 && (
         <p className="text-textMid mb-2 text-sm">
-          Size limit:{' '}
+          Size limit:
           <span className="text-errorMain font-semibold">
             {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
           </span>{' '}

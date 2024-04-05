@@ -569,6 +569,14 @@ export default function ContentEdit({
               />
             )}
 
+            {Number(postNatalType?.id) === ContentTypeEnum?.NatalGraphic && (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                title={`Make sure you upload the correct language version (${selectedLanguage?.description}).`}
+                type="warning"
+              />
+            )}
+
             {dangerSignsDisableInputs && (
               <Alert
                 className={'mt-5 mb-3'}
