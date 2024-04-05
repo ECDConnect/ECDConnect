@@ -47,11 +47,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<PortalReferralsSummaryModel> referrals;
             if (clinicIds != null && clinicIds.Any())
             {
-                referrals = referralService.GetReferralsForClinics(clinicIds, startDate, endDate);
+                referrals = referralService.GetReferralsSummaryForClinics(clinicIds, startDate, endDate);
             }
             else
             {
-                referrals = referralService.GetReferralsForTeamLead(uId, startDate, endDate);
+                referrals = referralService.GetReferralsSummaryForTeamLead(uId, startDate, endDate);
             }
 
             if (pagingInput == null)
@@ -64,6 +64,50 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (pagingInput.PageSize is not null)
                 queryable = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, queryable);
             
+
+            return queryable.ToList();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        [UseSorting]
+        public List<PortalReferralModel> GetReferralsSummary(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IReferralService referralService,
+            DateTime startDate,
+            DateTime endDate,
+            string type,
+            PagedQueryInput pagingInput = null,
+            List<Guid> clinicIds = null)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            // Need to get list of relevant CHWs, for clinics or for the team leads clinics if none are provided
+            List<PortalReferralModel> referrals;
+            if (clinicIds != null && clinicIds.Any())
+            {
+                referrals = referralService.GetReferralsForClinics(clinicIds, startDate, endDate);
+            }
+            else
+            {
+                referrals = referralService.GetReferralsForTeamLead(uId, startDate, endDate);
+            }
+
+            if (!string.IsNullOrWhiteSpace(type)) 
+            {
+                referrals = referrals.Where(x => x.Type == type).ToList();
+            }
+
+            if (pagingInput == null)
+            {
+                return referrals;
+            }
+
+            var queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, referrals.AsQueryable());
+
+            if (pagingInput.PageSize is not null)
+                queryable = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, queryable);
+
 
             return queryable.ToList();
         }

@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.Services
             _healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
         }
 
-        public List<PortalReferralsSummaryModel> GetReferralsForTeamLead(
+        public List<PortalReferralsSummaryModel> GetReferralsSummaryForTeamLead(
             Guid userId,
             DateTime startDate,
             DateTime endDate)
@@ -39,10 +39,10 @@ namespace EcdLink.Api.CoreApi.Services
                     .Select(x => x.Id)
                     .ToList();
 
-            return GetReferrals(healthCareWorkerIds, startDate, endDate);
+            return GetReferralsSummary(healthCareWorkerIds, startDate, endDate);
         }
 
-        public List<PortalReferralsSummaryModel> GetReferralsForClinics(
+        public List<PortalReferralsSummaryModel> GetReferralsSummaryForClinics(
             List<Guid> clinicIds,
             DateTime startDate,
             DateTime endDate)
@@ -52,10 +52,36 @@ namespace EcdLink.Api.CoreApi.Services
                     .Select(x => x.Id)
                     .ToList();
 
-            return GetReferrals(healthCareWorkerIds, startDate, endDate);
+            return GetReferralsSummary(healthCareWorkerIds, startDate, endDate);
         }
 
-        private List<PortalReferralsSummaryModel> GetReferrals(
+        public List<PortalReferralModel> GetReferralsForTeamLead(
+            Guid userId,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var healthCareWorkerIds = _healthCareWorkerRepo.GetAll()
+                    .Where(x => x.ClinicId.HasValue && x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId))
+                    .Select(x => x.Id)
+                    .ToList();
+
+            return GetReferrals(healthCareWorkerIds, startDate, endDate).ToList();
+        }
+
+        public List<PortalReferralModel> GetReferralsForClinics(
+            List<Guid> clinicIds,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var healthCareWorkerIds = _healthCareWorkerRepo.GetAll()
+                    .Where(x => x.ClinicId.HasValue && clinicIds.Contains(x.ClinicId.Value))
+                    .Select(x => x.Id)
+                    .ToList();
+
+            return GetReferrals(healthCareWorkerIds, startDate, endDate).ToList();
+        }
+
+        public IEnumerable<PortalReferralModel> GetReferrals(
             List<Guid> healthCareWorkerIds,
             DateTime startDate,
             DateTime endDate)
@@ -67,132 +93,174 @@ namespace EcdLink.Api.CoreApi.Services
                     && x.VisitData.Visit.ActualVisitDate <= endDate
                     && (x.VisitData.Visit.MotherId.HasValue && x.VisitData.Visit.Mother.HealthCareWorkerId.HasValue && healthCareWorkerIds.Contains(x.VisitData.Visit.Mother.HealthCareWorkerId.Value)
                         || x.VisitData.Visit.InfantId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.HasValue && healthCareWorkerIds.Contains(x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.Value)))
-                .Select(x => new { x.Id, IsPregnantMomVisit = x.VisitData.Visit.MotherId.HasValue, x.VisitData.VisitName, x.VisitData.VisitId, x.VisitData.VisitSection, x.VisitData.Question, x.VisitData.Visit.ActualVisitDate, x.Comment, x.IsCompleted, x.BackReferral, x.BackReferralCompleted, OtherStatuses = x.VisitData.VisitDataStatus.ToList() })
+                .Select(x => new
+                {
+                    VisitDataStatusId = x.Id,
+                    IsPregnantMomVisit = x.VisitData.Visit.MotherId.HasValue, 
+                    x.VisitData.VisitName, 
+                    x.VisitData.VisitId, 
+                    x.VisitData.Question, 
+                    x.Comment, 
+                    x.IsCompleted, 
+                    x.BackReferralCompleted,
+                    BackReferral = x.BackReferral,
+                    CompletedDate = x.ReferralDateCompleted,
+                    CreatedDate = x.InsertedDate,
+                    Mother = x.VisitData.Visit.Mother,
+                    Infant = x.VisitData.Visit.Infant,
+                })
                 .ToList();
 
-            var referralModels = new List<PortalReferralsSummaryModel>();
-
-            // Mother referrals
-
-            #region EarlyIdentificationOfPregnancy
-
-            var earlyIdentificationOfPregnancyReferrals = referrals.Where(x => x.Comment == GGSettings.pregnancy_not_booked).ToList();
-
-            var earlyIdentificationOfPregnancyReferralModel = new PortalReferralsSummaryModel()
+            foreach (var referral in referrals)
             {
-                Type = ReferralTypes.EarlyIdentificationOfPregnancy,
-                ReferralsRaised = earlyIdentificationOfPregnancyReferrals.Count,
-                ReferralsMade = earlyIdentificationOfPregnancyReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = earlyIdentificationOfPregnancyReferrals.Where(x => x.BackReferralCompleted).Count(),
+                var type = GetReferralType(referral.Comment, referral.IsPregnantMomVisit, referral.Question, referral.VisitName);
+
+                yield return new PortalReferralModel()
+                {
+                    VisitId = referral.VisitId,
+                    VisitDataStatusId = referral.VisitDataStatusId,
+                    Type = type,
+                    AdminBackReferralNote = "Todo",
+                    CompletedDate = referral.CompletedDate,
+                    CreatedDate = referral.CreatedDate,
+                    HealthCareWorkerId = referral.IsPregnantMomVisit ? referral.Mother.HealthCareWorkerId.Value : referral.Infant.Caregiver.HealthCareWorkerId.Value,
+                    HealthCareWorker = referral.IsPregnantMomVisit 
+                        ? $"{referral.Mother.HealthCareWorker.User.FirstName} {referral.Mother.HealthCareWorker.User.Surname}" 
+                        : $"{referral.Infant.Caregiver.HealthCareWorker.User.FirstName} {referral.Infant.Caregiver.HealthCareWorker.User.Surname}",
+                    Client = referral.IsPregnantMomVisit
+                        ? $"{referral.Mother.User.FirstName} {referral.Mother.User.Surname}"
+                        : $"{referral.Infant.User.FirstName} & {referral.Infant.Caregiver.FirstName} {referral.Infant.Caregiver.Surname}",
+                    HealthCareWorkerBackReferralNote = referral.BackReferral?.Comment,
+                    IsBackReferralCompleted = referral.BackReferralCompleted,
+                    IsCompleted = referral.IsCompleted,
+                    Text = referral.Comment
+                };
+            }
+        }
+
+        private List<PortalReferralsSummaryModel> GetReferralsSummary(
+            List<Guid> healthCareWorkerIds,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var referrals = GetReferrals(healthCareWorkerIds, startDate, endDate);
+
+            var referralModels = new Dictionary<string, PortalReferralsSummaryModel>
+            {
+                { ReferralTypes.EarlyIdentificationOfPregnancy, new PortalReferralsSummaryModel { Type = ReferralTypes.EarlyIdentificationOfPregnancy, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.ChildSupportGrant, new PortalReferralsSummaryModel { Type = ReferralTypes.ChildSupportGrant, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.DevelopmentalDelays, new PortalReferralsSummaryModel { Type = ReferralTypes.DevelopmentalDelays, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.MaternalDistress, new PortalReferralsSummaryModel { Type = ReferralTypes.MaternalDistress, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.SeverlyUnderweight, new PortalReferralsSummaryModel { Type = ReferralTypes.SeverlyUnderweight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.VitaminANotUpToDate, new PortalReferralsSummaryModel { Type = ReferralTypes.VitaminANotUpToDate, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.ClinicVisitsNotUpToDate, new PortalReferralsSummaryModel { Type = ReferralTypes.ClinicVisitsNotUpToDate, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.DangerSignsChildsMother, new PortalReferralsSummaryModel { Type = ReferralTypes.DangerSignsChildsMother, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.DangerSignsPregnantMom, new PortalReferralsSummaryModel { Type = ReferralTypes.DangerSignsPregnantMom, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.MaternalMalnutrition, new PortalReferralsSummaryModel { Type = ReferralTypes.MaternalMalnutrition, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.SubstanceAbuse, new PortalReferralsSummaryModel { Type = ReferralTypes.SubstanceAbuse, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.DangerSignsChild, new PortalReferralsSummaryModel { Type = ReferralTypes.DangerSignsChild, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.CaregiverIDBook, new PortalReferralsSummaryModel { Type = ReferralTypes.CaregiverIDBook, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.SevereAcuteMalnutrition, new PortalReferralsSummaryModel { Type = ReferralTypes.SevereAcuteMalnutrition, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.SeverlyStunted, new PortalReferralsSummaryModel { Type = ReferralTypes.SeverlyStunted, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.LowBirthWeight, new PortalReferralsSummaryModel { Type = ReferralTypes.LowBirthWeight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.GrowthFaltering, new PortalReferralsSummaryModel { Type = ReferralTypes.GrowthFaltering, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.Underweight, new PortalReferralsSummaryModel { Type = ReferralTypes.Underweight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.Overweight, new PortalReferralsSummaryModel { Type = ReferralTypes.Overweight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.Obese, new PortalReferralsSummaryModel { Type = ReferralTypes.Obese, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.LowBirthLength, new PortalReferralsSummaryModel { Type = ReferralTypes.LowBirthLength, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.Stunted, new PortalReferralsSummaryModel { Type = ReferralTypes.Stunted, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.ModerateAcuteMalnutrition, new PortalReferralsSummaryModel { Type = ReferralTypes.ModerateAcuteMalnutrition, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.DewormingNotUpToDate, new PortalReferralsSummaryModel { Type = ReferralTypes.DewormingNotUpToDate, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.ImmunisationNotUpToDate, new PortalReferralsSummaryModel { Type = ReferralTypes.ImmunisationNotUpToDate, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.ChildBirthCertificate, new PortalReferralsSummaryModel { Type = ReferralTypes.ChildBirthCertificate, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },        
             };
 
-            referralModels.Add(earlyIdentificationOfPregnancyReferralModel);
+            foreach (var referral in referrals)
+            {
+                if (referral.Type == "Unknown")
+                {
+                    continue;
+                }
+
+                referralModels[referral.Type].ReferralsRaised++;
+
+                if (referral.IsCompleted)
+                {
+                    referralModels[referral.Type].ReferralsMade++;
+                }
+
+                if (referral.IsBackReferralCompleted)
+                {
+                    referralModels[referral.Type].BackReferralsMade++;
+                }
+            }
+
+            return referralModels.Values.ToList();
+        }
+
+        private string GetReferralType(string comment, bool isPregnantMomVisit, string question, string visitName)
+        {
+            #region EarlyIdentificationOfPregnancy
+
+            if (comment == GGSettings.pregnancy_not_booked)
+            {
+                return ReferralTypes.EarlyIdentificationOfPregnancy;
+            }
 
             #endregion
 
             #region MaternalDistress
 
-            var maternalDistressReferrals = referrals.Where(x => x.Comment.EndsWith(GGSettings.maternal_distress)).ToList();
-
-            var maternalDistressReferralModel = new PortalReferralsSummaryModel()
+            if (comment.EndsWith(GGSettings.maternal_distress))
             {
-                Type = ReferralTypes.MaternalDistress,
-                ReferralsRaised = maternalDistressReferrals.Count,
-                ReferralsMade = maternalDistressReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = maternalDistressReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(maternalDistressReferralModel);
+                return ReferralTypes.MaternalDistress;
+            }
 
             #endregion
 
             #region DangerSignsChildsMother
 
-            var dangerSignsChildsMotherReferrals = referrals
-                .Where(x =>
-                    !x.IsPregnantMomVisit
-                    && x.Question == GGSettings.q_danger_signs
-                    && x.VisitName == GGSettings.cfm_name)
-                .ToList();
-
-            var dangerSignsChildsMotherReferralModel = new PortalReferralsSummaryModel()
+            if (!isPregnantMomVisit && question == GGSettings.q_danger_signs && visitName == GGSettings.cfm_name)
             {
-                Type = ReferralTypes.DangerSignsChildsMother,
-                ReferralsRaised = dangerSignsChildsMotherReferrals.Count,
-                ReferralsMade = dangerSignsChildsMotherReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = dangerSignsChildsMotherReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(dangerSignsChildsMotherReferralModel);
+                return ReferralTypes.DangerSignsChildsMother;
+            }
 
             #endregion
 
             #region DangerSignsPregnantMom
 
-            var dangerSignsPregnantMomReferrals = referrals
-                .Where(x =>
-                    x.IsPregnantMomVisit
-                    && x.Question == GGSettings.q_danger_signs)
-                .ToList();
-
-            var dangerSignsPregnantMomReferralModel = new PortalReferralsSummaryModel()
+            if (isPregnantMomVisit && question == GGSettings.q_danger_signs)
             {
-                Type = ReferralTypes.DangerSignsPregnantMom,
-                ReferralsRaised = dangerSignsPregnantMomReferrals.Count,
-                ReferralsMade = dangerSignsPregnantMomReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = dangerSignsPregnantMomReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(dangerSignsPregnantMomReferralModel);
+                return ReferralTypes.DangerSignsPregnantMom;
+            }
 
             #endregion
 
             #region MaternalMalnutrition
 
-            var maternalMalnutritionReferrals = referrals.Where(x => x.Comment == GGSettings.IndicatorMotherUnderweight).ToList();
-
-            var maternalMalnutritionReferralModel = new PortalReferralsSummaryModel()
+            if (comment == GGSettings.IndicatorMotherUnderweight)
             {
-                Type = ReferralTypes.MaternalMalnutrition,
-                ReferralsRaised = maternalMalnutritionReferrals.Count,
-                ReferralsMade = maternalMalnutritionReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = maternalMalnutritionReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(maternalMalnutritionReferralModel);
+                return ReferralTypes.MaternalMalnutrition;
+            }
 
             #endregion
 
             // Referral always saved on tolerance question, but should we include the other in the check in case?
             #region SubstanceAbuse
 
-            var substanceAbuseReferrals = referrals.Where(x => x.Question == GGSettings.QuestionAlcoholTolerance).ToList();
-
-            var substanceAbuseReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionAlcoholTolerance)
             {
-                Type = ReferralTypes.SubstanceAbuse,
-                ReferralsRaised = substanceAbuseReferrals.Count,
-                ReferralsMade = substanceAbuseReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = substanceAbuseReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(substanceAbuseReferralModel);
+                return ReferralTypes.SubstanceAbuse;
+            }
 
             #endregion
 
             #region CaregiverIDBook
 
-            var caregiverIDBookReferrals = referrals.Where(x => x.Comment.EndsWith(GGSettings.no_id_book)).ToList();
-
-            var caregiverIDBookReferralModel = new PortalReferralsSummaryModel()
+            if (comment.EndsWith(GGSettings.no_id_book))
             {
-                Type = ReferralTypes.CaregiverIDBook,
-                ReferralsRaised = caregiverIDBookReferrals.Count,
-                ReferralsMade = caregiverIDBookReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = caregiverIDBookReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(caregiverIDBookReferralModel);
+                return ReferralTypes.CaregiverIDBook;
+            }
 
             #endregion
 
@@ -200,400 +268,221 @@ namespace EcdLink.Api.CoreApi.Services
 
             #region ChildSupportGrant
 
-            var childSupportGrantReferrals = referrals.Where(x => x.Comment == GGSettings.has_csg3).ToList();
-
-            var childSupportGrantReferralModel = new PortalReferralsSummaryModel()
+            if (comment == GGSettings.has_csg3)
             {
-                Type = ReferralTypes.ChildSupportGrant,
-                ReferralsRaised = childSupportGrantReferrals.Count,
-                ReferralsMade = childSupportGrantReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = childSupportGrantReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(childSupportGrantReferralModel);
+                return ReferralTypes.ChildSupportGrant;
+            }
 
             #endregion
 
             // Too many comparisons
             #region DevelopmentalDelays
 
-            var developmentalDelaysReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.q_hearing1 ||
-                    x.Question == GGSettings.q_hearing2 ||
-                    x.Question == GGSettings.q_hearing3 ||
-                    x.Question == GGSettings.q_hearing4 ||
-                    x.Question == GGSettings.q_hearing5 ||
-                    x.Question == GGSettings.q_hearing6 ||
-                    x.Question == GGSettings.q_hearing7 ||
-                    x.Question == GGSettings.q_hearing8 ||
-                    x.Question == GGSettings.q_hearing9 ||
-                    x.Question == GGSettings.q_seeing1 ||
-                    x.Question == GGSettings.q_seeing2 ||
-                    x.Question == GGSettings.q_seeing3 ||
-                    x.Question == GGSettings.q_seeing4 ||
-                    x.Question == GGSettings.q_seeing5 ||
-                    x.Question == GGSettings.q_seeing6 ||
-                    x.Question == GGSettings.q_seeing7 ||
-                    x.Question == GGSettings.q_brain1 ||
-                    x.Question == GGSettings.q_brain2 ||
-                    x.Question == GGSettings.q_brain3 ||
-                    x.Question == GGSettings.q_brain4 ||
-                    x.Question == GGSettings.q_brain5 ||
-                    x.Question == GGSettings.q_brain6 ||
-                    x.Question == GGSettings.q_brain7 ||
-                    x.Question == GGSettings.q_moving1 ||
-                    x.Question == GGSettings.q_moving2 ||
-                    x.Question == GGSettings.q_moving3 ||
-                    x.Question == GGSettings.q_moving4 ||
-                    x.Question == GGSettings.q_moving5 ||
-                    x.Question == GGSettings.q_moving6 ||
-                    x.Question == GGSettings.q_moving7)
-                .ToList();
-
-            var developmentalDelaysReferralModel = new PortalReferralsSummaryModel()
+            if (
+                question == GGSettings.q_hearing1 ||
+                question == GGSettings.q_hearing2 ||
+                question == GGSettings.q_hearing3 ||
+                question == GGSettings.q_hearing4 ||
+                question == GGSettings.q_hearing5 ||
+                question == GGSettings.q_hearing6 ||
+                question == GGSettings.q_hearing7 ||
+                question == GGSettings.q_hearing8 ||
+                question == GGSettings.q_hearing9 ||
+                question == GGSettings.q_seeing1 ||
+                question == GGSettings.q_seeing2 ||
+                question == GGSettings.q_seeing3 ||
+                question == GGSettings.q_seeing4 ||
+                question == GGSettings.q_seeing5 ||
+                question == GGSettings.q_seeing6 ||
+                question == GGSettings.q_seeing7 ||
+                question == GGSettings.q_brain1 ||
+                question == GGSettings.q_brain2 ||
+                question == GGSettings.q_brain3 ||
+                question == GGSettings.q_brain4 ||
+                question == GGSettings.q_brain5 ||
+                question == GGSettings.q_brain6 ||
+                question == GGSettings.q_brain7 ||
+                question == GGSettings.q_moving1 ||
+                question == GGSettings.q_moving2 ||
+                question == GGSettings.q_moving3 ||
+                question == GGSettings.q_moving4 ||
+                question == GGSettings.q_moving5 ||
+                question == GGSettings.q_moving6 ||
+                question == GGSettings.q_moving7)
             {
-                Type = ReferralTypes.DevelopmentalDelays,
-                ReferralsRaised = developmentalDelaysReferrals.Count,
-                ReferralsMade = developmentalDelaysReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = developmentalDelaysReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(developmentalDelaysReferralModel);
+                return ReferralTypes.DevelopmentalDelays;
+            }
 
             #endregion
 
             #region ClinicVisitsNotUpToDate
 
-            var clinicVisitsNotUpToDateReferrals = referrals
-                .Where(x =>
-                    x.Comment == GGSettings.clinic_visits_not_up_to_date
-                    || x.Comment == GGSettings.infant_missed_clinic_visit)
-                .ToList();
-
-            var clinicVisitsNotUpToDateReferralModel = new PortalReferralsSummaryModel()
+            if (comment == GGSettings.clinic_visits_not_up_to_date
+                || comment == GGSettings.infant_missed_clinic_visit)
             {
-                Type = ReferralTypes.ClinicVisitsNotUpToDate,
-                ReferralsRaised = clinicVisitsNotUpToDateReferrals.Count,
-                ReferralsMade = clinicVisitsNotUpToDateReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = clinicVisitsNotUpToDateReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(clinicVisitsNotUpToDateReferralModel);
+                return ReferralTypes.ClinicVisitsNotUpToDate;
+            }
 
             #endregion
 
             #region DangerSignsChild
 
-            var dangerSignsChildReferrals = referrals
-                .Where(x =>
-                    x.VisitName != GGSettings.cfm_name
-                    && x.Question == GGSettings.q_danger_signs)
-                .ToList();
-
-            var dangerSignsChildReferralModel = new PortalReferralsSummaryModel()
+            if (visitName != GGSettings.cfm_name
+                && question == GGSettings.q_danger_signs)
             {
-                Type = ReferralTypes.DangerSignsChildsMother,
-                ReferralsRaised = dangerSignsChildReferrals.Count,
-                ReferralsMade = dangerSignsChildReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = dangerSignsChildReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(dangerSignsChildReferralModel);
+                return ReferralTypes.DangerSignsChildsMother;
+            }
 
             #endregion
 
             #region LowBirthWeight
 
-            var lowBirthWeightReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight
-                    && x.Comment.Contains(GGSettings.IndicatorLowBirthWeight))
-                .ToList();
-
-            var lowBirthWeightReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight
+                && comment.Contains(GGSettings.IndicatorLowBirthWeight))
             {
-                Type = ReferralTypes.LowBirthWeight,
-                ReferralsRaised = lowBirthWeightReferrals.Count,
-                ReferralsMade = lowBirthWeightReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = lowBirthWeightReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(lowBirthWeightReferralModel);
+                return ReferralTypes.LowBirthWeight;
+            }
 
             #endregion
 
             #region GrowthFaltering
-
-            var growthFalteringReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight
-                    && x.Comment.Contains(GGSettings.IndicatorGrowthFaltering))
-                .ToList();
-
-            var growthFalteringReferralModel = new PortalReferralsSummaryModel()
+            
+            if (question == GGSettings.QuestionWeight
+                && comment.Contains(GGSettings.IndicatorGrowthFaltering))
             {
-                Type = ReferralTypes.GrowthFaltering,
-                ReferralsRaised = growthFalteringReferrals.Count,
-                ReferralsMade = growthFalteringReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = growthFalteringReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(growthFalteringReferralModel);
+                return ReferralTypes.GrowthFaltering;
+            }
 
             #endregion
 
             #region SeverlyUnderweight
 
-            var severlyUnderweightReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight
-                    && x.Comment.Contains(GGSettings.IndicatorSeverelyUnderweight))
-                .ToList();
-
-            var severlyUnderweightReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight
+                && comment.Contains(GGSettings.IndicatorSeverelyUnderweight))
             {
-                Type = ReferralTypes.SeverlyUnderweight,
-                ReferralsRaised = severlyUnderweightReferrals.Count,
-                ReferralsMade = severlyUnderweightReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = severlyUnderweightReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(severlyUnderweightReferralModel);
+                return ReferralTypes.SeverlyUnderweight;
+            }
 
             #endregion
 
             #region Underweight
 
-            var underweightReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight
-                    && x.Comment.Contains(GGSettings.IndicatorUnderweight))
-                .ToList();
-
-            var underweightReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight
+                    && comment.Contains(GGSettings.IndicatorUnderweight))
             {
-                Type = ReferralTypes.Underweight,
-                ReferralsRaised = underweightReferrals.Count,
-                ReferralsMade = underweightReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = underweightReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(underweightReferralModel);
+                return ReferralTypes.Underweight;
+            }
 
             #endregion
 
             #region Overweight
 
-            var overweightReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight
-                    && x.VisitName != GGSettings.CareForBaby
-                    && x.Comment.Contains(GGSettings.IndicatorOverweight))
-                .ToList();
-
-            var overweightReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight
+                    && comment.Contains(GGSettings.IndicatorOverweight))
             {
-                Type = ReferralTypes.Overweight,
-                ReferralsRaised = overweightReferrals.Count,
-                ReferralsMade = overweightReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = overweightReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(overweightReferralModel);
+                return ReferralTypes.Overweight;
+            }
 
             #endregion
 
             #region Obese
 
-            var obeseReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight
-                    && x.VisitName != GGSettings.CareForBaby
-                    && x.Comment.Contains(GGSettings.IndicatorObese))
-                .ToList();
-
-            var obeseReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight
+                    && comment.Contains(GGSettings.IndicatorObese))
             {
-                Type = ReferralTypes.Obese,
-                ReferralsRaised = obeseReferrals.Count,
-                ReferralsMade = obeseReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = obeseReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(obeseReferralModel);
+                return ReferralTypes.Obese;
+            }
 
             #endregion
 
             #region SeverlyStunted
 
-            var severlyStuntedReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && x.Comment.Contains(GGSettings.IndicatorSeverelyStunted))
-                .ToList();
-
-            var severlyStuntedReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
+                    && comment.Contains(GGSettings.IndicatorSeverelyStunted))
             {
-                Type = ReferralTypes.SeverlyStunted,
-                ReferralsRaised = severlyStuntedReferrals.Count,
-                ReferralsMade = severlyStuntedReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = severlyStuntedReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(severlyStuntedReferralModel);
+                return ReferralTypes.SeverlyStunted;
+            }
 
             #endregion
 
             // This referral still needs to be added
             #region LowBirthLength
 
-            var lowBirthLengthReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && x.OtherStatuses.Any(x => x.Comment == GGSettings.IndicatorLowBirthLength))
-                .ToList();
-
-            var lowBirthLengthReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
+                    && comment.Contains(GGSettings.IndicatorLowBirthLength))
             {
-                Type = ReferralTypes.LowBirthLength,
-                ReferralsRaised = lowBirthLengthReferrals.Count,
-                ReferralsMade = lowBirthLengthReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = lowBirthLengthReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(lowBirthLengthReferralModel);
+                return ReferralTypes.LowBirthLength;
+            }
 
             #endregion
 
             #region Stunted
 
-            var stuntedReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && x.Comment.Contains(GGSettings.IndicatorStunted))
-                .ToList();
-
-            var stuntedReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
+                    && comment.Contains(GGSettings.IndicatorStunted))
             {
-                Type = ReferralTypes.Stunted,
-                ReferralsRaised = stuntedReferrals.Count,
-                ReferralsMade = stuntedReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = stuntedReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(stuntedReferralModel);
+                return ReferralTypes.Stunted;
+            }
 
             #endregion
 
             #region SevereAcuteMalnutrition
 
-            var severeAcuteMalnutritionReferrals = referrals
-                .Where(x =>
-                   x.Question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && x.Comment.Contains(GGSettings.IndicatorSevereAcuteMalnutrition))
-                .ToList();
-
-            var severeAcuteMalnutritionReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
+                    && comment.Contains(GGSettings.IndicatorSevereAcuteMalnutrition))
             {
-                Type = ReferralTypes.SevereAcuteMalnutrition,
-                ReferralsRaised = severeAcuteMalnutritionReferrals.Count,
-                ReferralsMade = severeAcuteMalnutritionReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = severeAcuteMalnutritionReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(severeAcuteMalnutritionReferralModel);
+                return ReferralTypes.SevereAcuteMalnutrition;
+            }
 
             #endregion
 
             #region ModerateAcuteMalnutrition
 
-            var moderateAcuteMalnutritionReferrals = referrals
-                .Where(x =>
-                    x.Question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && x.Comment.Contains(GGSettings.IndicatorModerateAcuteMalnutrition))
-                .ToList();
-
-            var moderateAcuteMalnutritionReferralModel = new PortalReferralsSummaryModel()
+            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
+                    && comment.Contains(GGSettings.IndicatorModerateAcuteMalnutrition))
             {
-                Type = ReferralTypes.ModerateAcuteMalnutrition,
-                ReferralsRaised = moderateAcuteMalnutritionReferrals.Count,
-                ReferralsMade = moderateAcuteMalnutritionReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = moderateAcuteMalnutritionReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(moderateAcuteMalnutritionReferralModel);
+                return ReferralTypes.ModerateAcuteMalnutrition;
+            }
 
             #endregion
 
             #region VitaminANotUpToDate
 
-            var vitaminANotUpToDateReferrals = referrals
-                .Where(x => x.Comment == GGSettings.VitaminANotUpToDate).ToList();
-
-            var vitaminANotUpToDateReferralModel = new PortalReferralsSummaryModel()
+            if (comment == GGSettings.VitaminANotUpToDate)
             {
-                Type = ReferralTypes.VitaminANotUpToDate,
-                ReferralsRaised = vitaminANotUpToDateReferrals.Count,
-                ReferralsMade = vitaminANotUpToDateReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = vitaminANotUpToDateReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(vitaminANotUpToDateReferralModel);
+                return ReferralTypes.VitaminANotUpToDate;
+            }
 
             #endregion
 
             #region DewormingNotUpToDate
 
-            var dewormingNotUpToDateReferrals = referrals
-                .Where(x => x.Comment == GGSettings.DewormingNotUpToDate).ToList();
-
-            var dewormingNotUpToDateReferralModel = new PortalReferralsSummaryModel()
+            if (comment == GGSettings.DewormingNotUpToDate)
             {
-                Type = ReferralTypes.DewormingNotUpToDate,
-                ReferralsRaised = dewormingNotUpToDateReferrals.Count,
-                ReferralsMade = dewormingNotUpToDateReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = dewormingNotUpToDateReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(dewormingNotUpToDateReferralModel);
+                return ReferralTypes.DewormingNotUpToDate;
+            }
 
             #endregion
 
             #region ImmunisationNotUpToDate
 
-            var immunisationNotUpToDateReferrals = referrals
-                .Where(x => x.Comment == GGSettings.DewormingNotUpToDate).ToList();
-
-            var immunisationNotUpToDateReferralModel = new PortalReferralsSummaryModel()
+            if (comment == GGSettings.DewormingNotUpToDate)
             {
-                Type = ReferralTypes.ImmunisationNotUpToDate,
-                ReferralsRaised = immunisationNotUpToDateReferrals.Count,
-                ReferralsMade = immunisationNotUpToDateReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = immunisationNotUpToDateReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(immunisationNotUpToDateReferralModel);
+                return ReferralTypes.ImmunisationNotUpToDate;
+            }
 
             #endregion
 
             #region ChildBirthCertificate
 
-            var childBirthCertificateReferrals = referrals.Where(x => x.Comment.EndsWith(GGSettings.no_birth_certificate)).ToList();
-
-            var childBirthCertificateReferralModel = new PortalReferralsSummaryModel()
+            if (comment.EndsWith(GGSettings.no_birth_certificate))
             {
-                Type = ReferralTypes.ChildBirthCertificate,
-                ReferralsRaised = childBirthCertificateReferrals.Count,
-                ReferralsMade = childBirthCertificateReferrals.Where(x => x.IsCompleted).Count(),
-                BackReferralsMade = childBirthCertificateReferrals.Where(x => x.BackReferralCompleted).Count(),
-            };
-
-            referralModels.Add(childBirthCertificateReferralModel);
+                return ReferralTypes.ChildBirthCertificate;
+            }
 
             #endregion
 
-            return referralModels;
+            return "Unknown";
         }
     }
 }
