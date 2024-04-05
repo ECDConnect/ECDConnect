@@ -4,7 +4,6 @@ import DynamicStaticSelector from '../../../../components/dynamic-static-selecto
 import FormColorField from '../../../../components/form-color-field/form-color-field';
 import FormField from '../../../../components/form-field/form-field';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
-import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 import {
   ActivitiesTitles,
   ContentManagementView,
@@ -16,6 +15,7 @@ import {
 import { Alert, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 import { ContentForms } from '../../../../constants/content-management';
+import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 const acceptedVideoFormats = ['mp4', 'mov'];
@@ -212,6 +212,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               </div>
             );
           }
+
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -221,6 +222,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     field.contentValue ? field.contentValue.value : undefined
                   }
                   onStateChange={(data) => onStateChange(propName, data)}
+                  subLabel={
+                    isRequired
+                      ? 'You must add at least one content section.'
+                      : 'Optional'
+                  }
                 />
               </div>
               {isRequired &&

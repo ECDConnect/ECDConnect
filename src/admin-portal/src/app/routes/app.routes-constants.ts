@@ -5,6 +5,7 @@ const ROUTES = {
   LOGIN: '/login',
   LOGOUT: '/logout',
   UPLOAD_USERS: '/upload-users',
+  DOCUMENTS: '/documents',
   VIEW_USERS: '/users/view-user',
   CLINICS: addPrefix('/clinics', {
     ALL_CLINICS: '/clinics',
