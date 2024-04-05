@@ -129,15 +129,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     template.title,
   ]);
 
-  useEffect(() => {
-    onStateChange(
-      'subCategories',
-      contentView?.content?.['subCategories']
-        ?.map((item) => item?.id)
-        ?.toString()
-    );
-  }, []);
-
+  console.log({ allowedFileSize });
   const renderFields = (fields: FormTemplateField[]) => {
     return fields?.map((field) => {
       const {
