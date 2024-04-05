@@ -44,6 +44,16 @@ const infantSlice = createSlice({
         }
       }
     },
+    updateInfantRTHDetails: (state, action: PayloadAction<InfantDto>) => {
+      if (state.infants) {
+        for (let i = 0; i < state.infants.length; i++) {
+          if (state.infants[i].id === action.payload.id) {
+            state.infants[i].weightAtBirth = action.payload.weightAtBirth;
+            state.infants[i].lengthAtBirth = action.payload.lengthAtBirth;
+          }
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addInfant);

@@ -15,6 +15,7 @@ interface NotificationTagConfigParams {
   AddClub: Partial<Message>;
   SeeScoreBoard: Partial<Message>;
   SeePoints: Partial<Message>;
+  RoadToHealthBook: Partial<Message>;
 }
 
 export const notificationTagConfig: NotificationTagConfigParams = {
@@ -47,6 +48,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   ModerateChildMuacReferral: {
     cta: 'SeeReferralsChildMuacM',
+  },
+  RoadToHealthBook: {
+    cta: 'RoadToHealth',
   },
   AddClub: {
     cta: 'AddClub',
