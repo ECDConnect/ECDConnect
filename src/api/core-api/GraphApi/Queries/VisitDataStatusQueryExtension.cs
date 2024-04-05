@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
         [UseSorting]
-        public List<PortalReferralModel> GetReferralsSummary(
+        public List<PortalReferralModel> GetReferrals(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IReferralService referralService,
             DateTime startDate,
