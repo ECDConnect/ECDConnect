@@ -1,6 +1,6 @@
-import { Button, Typography } from '@ecdlink/ui';
+import { Button, DatePicker, Typography } from '@ecdlink/ui';
 import { useLocation } from 'react-router';
-import { ClinicsRouteState } from '../../clinics.types';
+import { ClinicsRouteState } from '../../main-view/admin-view/clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
 import { usePanel } from '@ecdlink/core';
 import { useLazyQuery, useQuery } from '@apollo/client';
@@ -13,9 +13,9 @@ import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
-import DatePicker from 'react-datepicker';
 import { useEffect, useState } from 'react';
-import { sub } from 'date-fns';
+import { format, sub } from 'date-fns';
+import { ViewClinicReportProps } from './view-clinic-report.types';
 
 export interface PointsReportSummaryDto {
   childrenRankingPerc: number;
@@ -31,29 +31,32 @@ export interface PointsReportSummaryDto {
   totalHCWs: number;
 }
 
-export const ViewClinicReport = () => {
+export const ViewClinicReport = ({
+  clinic: clinicFromProps,
+}: ViewClinicReportProps) => {
   const location = useLocation<ClinicsRouteState>();
   const panel = usePanel();
-  const clinic = location?.state?.clinic;
+  const clinic = clinicFromProps || location?.state?.clinic;
   const today = new Date();
   const initialBefore30Days = sub(today, {
     days: 30,
+  });
+  const lastYear = sub(today, {
+    years: 1,
   });
 
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDate, endDate] = dateRange;
 
-  const [fetchVisitInformation, { data: clinicReportData }] = useLazyQuery(
-    GetClinicVisitReportData,
-    {
+  const [fetchVisitInformation, { data: clinicReportData, loading }] =
+    useLazyQuery(GetClinicVisitReportData, {
       fetchPolicy: 'cache-and-network',
       variables: {
         clinicId: clinic?.id,
         startDate: startDate,
         endDate: endDate,
       },
-    }
-  );
+    });
 
   const { data: clinicPointsData } = useQuery(GetClinicPointsData, {
     fetchPolicy: 'cache-and-network',
@@ -63,6 +66,18 @@ export const ViewClinicReport = () => {
   });
 
   const dataFromClinicPointsData = clinicPointsData?.clinicPointsData;
+
+  const clinicInformation = [
+    { name: 'Unique ID:', value: clinic?.id },
+    { name: 'Phone number:', value: clinic?.phoneNumber },
+    { name: 'Address:', value: clinic?.siteAddress?.addressLine1 },
+    { name: 'Sub-district:', value: clinic?.subDistrict?.name },
+    { name: 'District:', value: clinic?.subDistrict?.district?.name },
+    {
+      name: 'Province:',
+      value: clinic?.subDistrict?.district?.province?.description,
+    },
+  ];
 
   useEffect(() => {
     if (startDate && endDate) {
@@ -97,115 +112,40 @@ export const ViewClinicReport = () => {
 
   return (
     <div>
-      <div>
-        <Typography
-          className="mb-8 truncate"
-          type="h2"
-          weight="bold"
-          color="textMid"
-          text={clinic?.name}
-        />
-      </div>
+      <Typography
+        className="mb-8 truncate"
+        type="h1"
+        weight="bold"
+        color="textMid"
+        text={clinic?.name}
+      />
       <div className="w-full rounded-2xl bg-white p-8">
         <div className="mb-4 flex items-center gap-2">
           <Typography
             className="truncate"
-            type="h3"
+            type="h2"
             weight="bold"
             color="textMid"
             text={`Clinic information`}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Unique ID:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.id}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Phone number:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.phoneNumber}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Address:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.siteAddress?.addressLine1}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Sub-district:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.subDistrict?.name}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`District:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.subDistrict?.district?.name}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Province:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.subDistrict?.district?.province?.description}
-          />
-        </div>
+        {clinicInformation.map((info, index) => (
+          <div className="flex items-center gap-2" key={info.name + index}>
+            <Typography
+              className="truncate"
+              type="h4"
+              weight="bold"
+              color="textMid"
+              text={info.name}
+            />
+            <Typography
+              className="truncate"
+              type="body"
+              color="textMid"
+              text={info.value}
+            />
+          </div>
+        ))}
         <div className="mt-4 flex w-full justify-end gap-2">
           <Button
             className="rounded-xl px-2"
@@ -240,7 +180,7 @@ export const ViewClinicReport = () => {
       <div className="bg-adminPortalBg mt-8 w-full">
         <div>
           <Typography
-            type="h4"
+            type="h1"
             color="textDark"
             text={`% targets met so far this year`}
             align="left"
@@ -248,7 +188,10 @@ export const ViewClinicReport = () => {
           <Typography
             type="help"
             color="textDark"
-            text={`October 2023 - September 2024`}
+            text={`October ${lastYear.getFullYear()} - ${format(
+              today,
+              'MMMM yyyy'
+            )}`}
             align="left"
           />
         </div>
@@ -283,86 +226,34 @@ export const ViewClinicReport = () => {
           />
         </div>
       </div>
-      <div className="mt-8">
-        <div className="flex w-full items-center justify-around">
-          <Typography
-            type="h3"
-            weight="bold"
-            color="textDark"
-            text={`Visit information`}
-            align="left"
-            className="w-full"
-          />
-          <div className="w-56">
-            <DatePicker
-              selectsRange={true}
-              startDate={startDate}
-              endDate={endDate}
-              maxDate={today}
-              onChange={(update) => {
-                setDateRange(update);
-              }}
-              className="bg-secondary w-56 rounded-xl text-white"
-            />
-          </div>
-        </div>
-        <div>
-          <ClientRegistration
-            totalCaregiversAttended={
-              clinicReportData?.clinicVisitReportData?.breastFeedingClub
-                ?.totalCaregiversAttended
-            }
-            totalClubsHeld={
-              clinicReportData?.clinicVisitReportData?.breastFeedingClub
-                ?.totalClubsHeld
-            }
-            totalGrowthMonitored={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalGrowthMonitored
-            }
-            totalSupportGrant={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalSupportGrant
-            }
-            totalUpToDateDeworming={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalUpToDateDeworming
-            }
-            totalUpToDateImmunisations={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalUpToDateImmunisations
-            }
-            totalUpToDateVitaminA={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalUpToDateVitaminA
-            }
-            totalChildFoldersOpened={
-              clinicReportData?.clinicVisitReportData?.clientRegistration
-                ?.totalChildFoldersOpened
-            }
-            totalMotherFoldersBefore20WeeksOpened={
-              clinicReportData?.clinicVisitReportData?.clientRegistration
-                ?.totalMotherFoldersBefore20WeeksOpened
-            }
-            totalMotherFoldersOpened={
-              clinicReportData?.clinicVisitReportData?.clientRegistration
-                ?.totalMotherFoldersOpened
-            }
-            totalAlcoholAbuse={
-              clinicReportData?.clinicVisitReportData?.pregnantMoms
-                ?.totalAlcoholAbuse
-            }
-            totalMaternalDistress={
-              clinicReportData?.clinicVisitReportData?.pregnantMoms
-                ?.totalMaternalDistress
-            }
-            totalMaternalMalnutrition={
-              clinicReportData?.clinicVisitReportData?.pregnantMoms
-                ?.totalMaternalMalnutrition
-            }
-          />
-        </div>
+      <div className="mt-8 flex w-full items-center justify-between">
+        <Typography
+          type="h1"
+          weight="bold"
+          color="textDark"
+          text={`Visit information`}
+          align="left"
+        />
+        <DatePicker
+          isFullWidth={false}
+          showChevronIcon
+          hideCalendarIcon
+          className="w-64 rounded-xl"
+          selectsRange
+          startDate={startDate}
+          endDate={endDate}
+          maxDate={today}
+          colour="secondary"
+          textColour="white"
+          onChange={(update) => {
+            setDateRange(update);
+          }}
+        />
       </div>
+      <ClientRegistration
+        isLoading={loading}
+        clinicReportData={clinicReportData?.clinicVisitReportData}
+      />
     </div>
   );
 };

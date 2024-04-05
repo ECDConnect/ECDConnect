@@ -5,7 +5,11 @@ import { useEffect, useState } from 'react';
 import { Checkbox, FormInput } from '../form-fields';
 import Button from '../button/button';
 import { classNames, renderIcon } from '../../utils';
-import SearchDropDown from '../dropdown/search-dropdown/search-dropdown';
+import SearchDropDown, {
+  SearchDropDownProps,
+} from '../dropdown/search-dropdown/search-dropdown';
+import { DatePicker, DatePickerProps } from '../date-picker';
+import { ButtonProps } from '../button/button.types';
 
 export const Table = ({
   rows,
@@ -26,9 +30,12 @@ export const Table = ({
 
   const totalPages = Math.ceil(rows.length / rowsPerPage);
 
-  const selectedFilters = filters?.filter(
-    (filter) => filter.selectedOptions?.length
-  );
+  const selectedFilters = filters?.filter((filter) => {
+    if (filter?.type === 'date-picker') {
+      return filter?.value || filter?.startDate;
+    }
+    return (filter as SearchDropDownProps<string>)?.selectedOptions?.length;
+  });
 
   const rowsWithKey = rows?.map((row, index) => ({ ...row, key: index }));
 
@@ -177,12 +184,16 @@ export const Table = ({
       <div className="flex  flex-col">
         <div className="mb-8 flex w-full flex-row items-center justify-between">
           {search && (
-            <div className="flex w-3/5 items-center gap-4">
+            <div
+              className={`flex ${
+                !!actionButton ? 'w-3/5' : 'w-full'
+              } items-center gap-4`}
+            >
               <FormInput
                 {...search}
                 startIcon="SearchIcon"
                 color="adminPortalBg"
-                className="h-auto w-3/4"
+                className={`h-auto ${!!actionButton ? 'w-3/4' : 'w-full'}`}
                 isAdminPortalField
               />
               {!!filters?.length && (
@@ -190,7 +201,7 @@ export const Table = ({
                   type="filled"
                   color="adminPortalBg"
                   textColor="textMid"
-                  className="text-textMid  mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
+                  className="text-textMid  mt-1 h-11 min-w-max whitespace-normal break-normal rounded-md px-2 py-0"
                   onClick={() => setOpenFilters(!openFilters)}
                 >
                   {!!selectedFilters?.length
@@ -205,28 +216,47 @@ export const Table = ({
               )}
             </div>
           )}
-          {!!actionButton && (
-            <Button
-              type="filled"
-              color="secondary"
-              textColor="white"
-              className="hover:bg-secondaryGG mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
-              {...actionButton}
-            />
-          )}
+          <div className="ml-auto flex">
+            {!!actionButton && actionButton.actionType !== 'date-picker' && (
+              <Button
+                // @ts-ignore
+                type="filled"
+                // @ts-ignore
+                color="secondary"
+                textColor="white"
+                className="hover:bg-secondaryGG mt-1 h-11 w-full rounded-md px-2 py-0 lg:w-auto"
+                {...(actionButton as ButtonProps)}
+              />
+            )}
+            {actionButton?.actionType === 'date-picker' && (
+              <DatePicker {...(actionButton as DatePickerProps)} />
+            )}
+          </div>
         </div>
         {openFilters && (
           <div className="mb-4 flex items-center justify-between">
-            <div className="flex gap-2">
-              {filters?.map((filterProps, index) => (
-                <SearchDropDown<string>
-                  key={`filter-${index}`}
-                  bgColor="adminPortalBg"
-                  color="secondary"
-                  displayMenuOverlay
-                  {...filterProps}
-                />
-              ))}
+            <div className="flex items-center gap-2">
+              {filters?.map((filterProps, index) => {
+                if (filterProps?.type === 'date-picker') {
+                  return (
+                    <DatePicker
+                      key={`filter-${index}`}
+                      className="w-56"
+                      {...filterProps}
+                    />
+                  );
+                }
+
+                return (
+                  <SearchDropDown<string>
+                    key={`filter-${index}`}
+                    bgColor="adminPortalBg"
+                    color="secondary"
+                    displayMenuOverlay
+                    {...(filterProps as SearchDropDownProps<string>)}
+                  />
+                );
+              })}
             </div>
             <Button
               type="filled"

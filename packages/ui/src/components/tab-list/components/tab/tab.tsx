@@ -8,6 +8,7 @@ export interface TabProps extends ComponentBaseProps {
   tabIndex: number;
   activeIndex: number;
   isOnlyTab?: boolean;
+  activeTabClassName?: string;
   tabSelected?: (index: number) => void;
 }
 
@@ -19,6 +20,7 @@ export function Tab({
   tabSelected,
   className,
   isOnlyTab,
+  activeTabClassName,
 }: TabProps) {
   const selectTabReceived = (tab: number) => {
     if (tabSelected) {
@@ -50,7 +52,8 @@ export function Tab({
       className={styles.getTabClass(
         tabIndex === activeIndex,
         className ? className : '',
-        isOnlyTab
+        isOnlyTab,
+        activeTabClassName
       )}
       onClick={() => selectTabReceived(tabIndex)}
       style={{ width: '-webkit-fill-available' }}
