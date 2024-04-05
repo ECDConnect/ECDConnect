@@ -46,6 +46,7 @@ export interface TableProps {
   bulkActions?: BulkAction[];
   filters?: Filter[];
   loading?: Loading;
+  noContentText?: string;
   onClearFilters?: () => void;
   onClickRow?: (row: Irow) => void;
   onChangePage?: (page: number) => void;

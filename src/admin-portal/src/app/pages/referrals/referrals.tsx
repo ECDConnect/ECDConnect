@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Icolumn, Irow } from 'react-tailwind-table';
-import { sub } from 'date-fns';
+import { format, sub } from 'date-fns';
 import { useHistory } from 'react-router';
 import ROUTES from '../../routes/app.routes-constants';
-import { formatTextToSlug } from '@ecdlink/core';
+import { ReferralSummary, formatTextToSlug } from '@ecdlink/core';
 import { Table } from '@ecdlink/ui';
 import { useQuery } from '@apollo/client';
 import { GetReferralsSummary } from '@ecdlink/graphql';
@@ -15,19 +15,24 @@ export const Referrals = () => {
   });
 
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
-  const [startDate, endDate] = dateRange;
+  const [startDateRange, endDateRange] = dateRange;
+  const startDate = format(startDateRange, 'yyyy-MM-dd');
+  const endDate = format(endDateRange ?? startDateRange, 'yyyy-MM-dd');
 
   const [search, setSearch] = useState<string>('');
 
   const history = useHistory();
 
-  const { data, loading } = useQuery(GetReferralsSummary, {
-    variables: {
-      startDate,
-      endDate: endDate ?? startDate,
-    },
-    fetchPolicy: 'network-only',
-  });
+  const { data, loading } = useQuery<{ referralsSummary?: ReferralSummary[] }>(
+    GetReferralsSummary,
+    {
+      variables: {
+        startDate,
+        endDate,
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const columns: Icolumn[] = [
     {
@@ -47,7 +52,7 @@ export const Referrals = () => {
   const rows: Irow[] =
     (search
       ? data?.referralsSummary?.filter((item) =>
-          item.type.toLocaleLowerCase().includes(search)
+          item?.type?.toLocaleLowerCase().includes(search)
         )
       : data?.referralsSummary) ?? [];
 
@@ -84,8 +89,8 @@ export const Referrals = () => {
               isFullWidth: false,
               type: 'date-picker',
               selectsRange: true,
-              startDate,
-              endDate,
+              startDate: startDateRange,
+              endDate: endDateRange,
               maxDate: today,
               onChange: (date) => setDateRange(date),
             },
