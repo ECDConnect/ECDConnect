@@ -74,9 +74,16 @@ const MainRoutes: React.FC = () => {
   );
 };
 
-const ReferralRoutes: React.FC = () => {
+const AuthRoutes: React.FC = () => {
   return (
-    <>
+    <Switch>
+      <Route path={`/dashboard`} component={Dashboard}></Route>
+      <Route path={`/settings`} component={Settings}></Route>
+      <Route path={`/data`} component={StaticData}></Route>
+      <Route path={`/profile`} component={Profile}></Route>
+      <Route path={`/upload-users`} component={UploadBulkUser}></Route>
+      <Route path={`/users`} component={Users}></Route>
+      <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
       <Route exact path={ROUTES.REFERRALS.ROOT} component={Referrals}></Route>
       <Route
         exact
@@ -88,21 +95,6 @@ const ReferralRoutes: React.FC = () => {
         path={ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.EDIT_BACK_REFERRAL}
         component={EditBackReferral}
       ></Route>
-    </>
-  );
-};
-
-const AuthRoutes: React.FC = () => {
-  return (
-    <Switch>
-      <Route path={`/dashboard`} component={Dashboard}></Route>
-      <Route path={`/settings`} component={Settings}></Route>
-      <Route path={`/data`} component={StaticData}></Route>
-      <Route path={`/profile`} component={Profile}></Route>
-      <Route path={`/upload-users`} component={UploadBulkUser}></Route>
-      <Route path={`/users`} component={Users}></Route>
-      <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
-      <ReferralRoutes />
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
