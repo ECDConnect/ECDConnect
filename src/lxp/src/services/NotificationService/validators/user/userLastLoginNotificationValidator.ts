@@ -18,7 +18,7 @@ export class UserLastLoginNotificationValidator
 
   constructor(store: EnhancedStore<RootState, any>, currentDate: Date) {
     this.store = store;
-    this.interval = NotificationIntervals.halfhour;
+    this.interval = NotificationIntervals.oneMinute;
     this.lastCheckTimestamp = 0;
     this.currentDate = currentDate;
   }

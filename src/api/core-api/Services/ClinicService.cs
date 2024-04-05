@@ -93,7 +93,7 @@ namespace EcdLink.Api.CoreApi.Services
                     TotalSubDistricts = district.SubDistricts.Where(x => x.IsActive).Count(),
                     TotalClinics = clinics.Where(x => x.SubDistrict.DistrictId == district.Id).Distinct().Count(),
                     TotalTeamLeads = clinicTeamLeads.Where(x => x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count(),
-                    TotalHCWs = hCWs.Where(x => x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count()
+                    TotalHCWs = hCWs.Where(x => x.Clinic.SubDistrict != null && x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count()
                 });
             }
 
