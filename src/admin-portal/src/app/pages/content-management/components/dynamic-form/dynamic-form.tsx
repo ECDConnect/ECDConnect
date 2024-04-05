@@ -270,8 +270,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               </div>
             );
           }
-          console.log('entrouuu');
-          console.log({ propName });
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
