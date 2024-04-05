@@ -443,7 +443,7 @@ export default function ContentEdit({
     });
 
     savedContent();
-
+    setSearchValue('');
     setLoading(false);
 
     if (cancelEdit) {
