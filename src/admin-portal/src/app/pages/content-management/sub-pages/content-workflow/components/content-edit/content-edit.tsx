@@ -453,7 +453,7 @@ export default function ContentEdit({
 
   useEffect(() => {
     if (
-      template?.title === TemplateTypenames.DanngerSigns &&
+      template?.title === TemplateTypenames.DangerSigns &&
       template?.fields?.[0]?.selectedLanguageId === defaultLanguageId
     ) {
       setDangerSignsDisableInputs(true);

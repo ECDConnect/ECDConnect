@@ -45,7 +45,8 @@ export enum NatalTypes {
 }
 
 export enum TemplateTypenames {
-  DanngerSigns = 'DangerSign Form',
+  DangerSigns = 'DangerSign Form',
+  NatalGraphic = 'NatalGraphic Form',
 }
 
 export const sortByNatalTypeOptions: SearchDropDownOption<string>[] = [

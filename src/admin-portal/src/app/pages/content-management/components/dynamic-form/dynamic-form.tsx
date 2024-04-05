@@ -18,6 +18,7 @@ import { ContentForms } from '../../../../constants/content-management';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
+const accpedFormatsWithPdf = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg', 'pdf'];
 const acceptedVideoFormats = ['mp4', 'mov'];
 const allowedVideoFileSize = 13631488;
 
@@ -99,7 +100,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   useEffect(() => {
     if (
-      template?.title === TemplateTypenames.DanngerSigns &&
+      template?.title === TemplateTypenames.DangerSigns &&
       template?.fields?.[0]?.selectedLanguageId !== defaultLanguageId &&
       contentView?.content
     ) {
@@ -129,7 +130,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     template.title,
   ]);
 
-  console.log({ allowedFileSize });
   const renderFields = (fields: FormTemplateField[]) => {
     return fields?.map((field) => {
       const {
@@ -274,7 +274,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormFileInput
-                  acceptedFormats={acceptedFileFormats || acceptedFormats}
+                  acceptedFormats={
+                    template?.title === TemplateTypenames.NatalGraphic
+                      ? accpedFormatsWithPdf
+                      : acceptedFileFormats || acceptedFormats
+                  }
                   label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   contentUrl={

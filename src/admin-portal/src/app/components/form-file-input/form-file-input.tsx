@@ -363,7 +363,9 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         ) : (
           <div
-            className="bg-adminPortalBg flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
+            className={`${
+              contentUrl ? 'bg-darkBlue' : 'bg-adminPortalBg'
+            } flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5`}
             style={
               file
                 ? {
@@ -408,14 +410,34 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                       />
                     )}
                     <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
-                      <DesktopComputerIcon className="mr-4 h-5 w-5">
-                        {' '}
-                      </DesktopComputerIcon>
-                      Browse my computer
+                      <DesktopComputerIcon className="mr-4 h-5 w-5" />
+                      {file || contentUrl ? (
+                        <Typography
+                          type={'h4'}
+                          color={'white'}
+                          text={isVideoInput ? 'Change video' : 'Change image'}
+                        />
+                      ) : (
+                        <Typography
+                          type={'h4'}
+                          color={'white'}
+                          text={'Browse my computer'}
+                        />
+                      )}
                     </div>
-                    <p className="text-md py-2 text-gray-700">
-                      or drag file here
-                    </p>
+                    {file || contentUrl ? (
+                      <Typography
+                        type={'h4'}
+                        color={'white'}
+                        text={'or drag file here'}
+                      />
+                    ) : (
+                      <Typography
+                        type={'h4'}
+                        color={'textMid'}
+                        text={'or drag file here'}
+                      />
+                    )}
                   </>
                 ) : (
                   <>
