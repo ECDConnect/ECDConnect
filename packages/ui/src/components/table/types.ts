@@ -4,6 +4,7 @@ import { ButtonProps } from '../button/button.types';
 import { FormFieldProps } from '../form-fields/form-input/form-input';
 import { SearchDropDownProps } from '../dropdown/search-dropdown/search-dropdown';
 import { DatePickerRangeProps, DatePickerSingleProps } from '../date-picker';
+import { LoadingSpinnerProps } from '../loading-spinner/loading-spinner';
 
 interface BulkAction extends Omit<ButtonProps, 'onClick'> {
   onClick?: (selected: Irow[]) => void;
@@ -32,6 +33,10 @@ type Filter = ISearchDropDown | IDatePickerFilter;
 
 type ActionButton = IButton | IDatePicker;
 
+interface Loading extends LoadingSpinnerProps {
+  isLoading: boolean;
+}
+
 export interface TableProps {
   columns: Icolumn[];
   rows: Irow[];
@@ -40,6 +45,7 @@ export interface TableProps {
   actionButton?: ActionButton;
   bulkActions?: BulkAction[];
   filters?: Filter[];
+  loading?: Loading;
   onClearFilters?: () => void;
   onClickRow?: (row: Irow) => void;
   onChangePage?: (page: number) => void;

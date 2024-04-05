@@ -10,6 +10,7 @@ import SearchDropDown, {
 } from '../dropdown/search-dropdown/search-dropdown';
 import { DatePicker, DatePickerProps } from '../date-picker';
 import { ButtonProps } from '../button/button.types';
+import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 export const Table = ({
   rows,
@@ -22,6 +23,7 @@ export const Table = ({
   onClearFilters,
   onClickRow,
   onChangePage,
+  loading,
 }: TableProps) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -286,18 +288,22 @@ export const Table = ({
           </div>
         </div>
       )}
-      <ReactTailwindTable
-        striped={false}
-        show_search={false}
-        should_export={false}
-        bordered
-        columns={mergedColumns}
-        rows={mergedRows}
-        styling={getStyles({ rows, rowsPerPage })}
-        per_page={rowsPerPage}
-        row_render={customRowElements}
-        no_content_text="-"
-      />
+      {loading?.isLoading ? (
+        <LoadingSpinner {...loading} />
+      ) : (
+        <ReactTailwindTable
+          striped={false}
+          show_search={false}
+          should_export={false}
+          bordered
+          columns={mergedColumns}
+          rows={mergedRows}
+          styling={getStyles({ rows, rowsPerPage })}
+          per_page={rowsPerPage}
+          row_render={customRowElements}
+          no_content_text="-"
+        />
+      )}
     </>
   );
 };

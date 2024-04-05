@@ -5,6 +5,8 @@ import { useHistory } from 'react-router';
 import ROUTES from '../../routes/app.routes-constants';
 import { formatTextToSlug } from '@ecdlink/core';
 import { Table } from '@ecdlink/ui';
+import { useQuery } from '@apollo/client';
+import { GetReferralsSummary } from '@ecdlink/graphql';
 
 export const Referrals = () => {
   const today = new Date();
@@ -19,14 +21,21 @@ export const Referrals = () => {
 
   const history = useHistory();
 
-  // TODO: replace with real data
+  const { data, loading } = useQuery(GetReferralsSummary, {
+    variables: {
+      startDate,
+      endDate: endDate ?? startDate,
+    },
+    fetchPolicy: 'network-only',
+  });
+
   const columns: Icolumn[] = [
     {
       field: 'type',
       use: 'Referral type',
     },
     {
-      field: 'referralsMade',
+      field: 'referralsRaised',
       use: '# referrals made',
     },
     {
@@ -35,19 +44,12 @@ export const Referrals = () => {
     },
   ];
 
-  // TODO: replace with real data
-  const rows: Irow[] = [
-    {
-      type: 'Early identification of pregnancy',
-      referralsMade: 12,
-      backReferralsMade: 8,
-    },
-    {
-      type: 'Child support grant',
-      referralsMade: 7,
-      backReferralsMade: 2,
-    },
-  ];
+  const rows: Irow[] =
+    (search
+      ? data?.referralsSummary?.filter((item) =>
+          item.type.toLocaleLowerCase().includes(search)
+        )
+      : data?.referralsSummary) ?? [];
 
   return (
     <div className="bg-adminPortalBg h-full rounded-2xl p-4">
@@ -55,6 +57,12 @@ export const Referrals = () => {
         <Table
           rows={rows}
           columns={columns}
+          loading={{
+            isLoading: loading,
+            size: 'medium',
+            spinnerColor: 'adminPortalBg',
+            backgroundColor: 'secondary',
+          }}
           search={{
             value: search,
             placeholder: 'Search by referral type...',
