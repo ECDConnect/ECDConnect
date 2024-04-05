@@ -81,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 ClinicName = item.Clinic.Name,
                 InsertedDate = item.InsertedDate,
                 IsRegistered = item.IsRegistered,
-                ProvinceId = item.Clinic.SubDistrict.District.ProvinceId,
+                ProvinceId = item.Clinic.SubDistrict != null ? item.Clinic.SubDistrict.District.ProvinceId: null,
                 SubDistrictId = item.Clinic.SubDistrictId
             }).ToList();
 

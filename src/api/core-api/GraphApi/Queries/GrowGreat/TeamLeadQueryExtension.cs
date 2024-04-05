@@ -75,8 +75,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 ClinicNames = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.Name).ToList(),
                 InsertedDate = item.InsertedDate,
                 IsRegistered = item.IsRegistered,
-                ProvinceIds = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.SubDistrict.District.ProvinceId).ToList(),
-                SubDistrictIds = item.Clinics.Where(x => x.IsActive).Select(x => (Guid)x.Clinic.SubDistrictId).ToList()
+                ProvinceIds = item.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => x.Clinic.SubDistrict.District.ProvinceId).ToList(),
+                SubDistrictIds = item.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => (Guid)x.Clinic.SubDistrictId).ToList()
             }).ToList();
 
             List<PortalUsersTLModel> filteredUsers = new List<PortalUsersTLModel>();
