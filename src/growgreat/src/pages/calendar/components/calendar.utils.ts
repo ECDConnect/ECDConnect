@@ -174,7 +174,6 @@ export const mapTeamLeadToListDataItem = (
       type: 'teamLead',
     },
     rightIcon: '',
-    noClick: true,
   };
 };
 
@@ -192,7 +191,7 @@ export const mapClinicMemberToListDataItemList = (
     icon: TypeInfo['healthCareWorker']?.icon,
     profileDataUrl: member.profileImageUrl,
     title: `${member.firstName} ${member.surname}`,
-    subTitle: 'HCW',
+    subTitle: 'CHW',
     profileText: `${member.firstName && member.firstName[0]}${
       member.surname && member.surname[0]
     }`,
@@ -205,7 +204,6 @@ export const mapClinicMemberToListDataItemList = (
       type: 'healthCareWorker',
     },
     rightIcon: '',
-    noClick: true,
   };
 };
 
