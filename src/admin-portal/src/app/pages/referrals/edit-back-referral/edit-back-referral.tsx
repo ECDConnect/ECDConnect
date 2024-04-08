@@ -5,18 +5,46 @@ import {
   Divider,
   FormInput,
   Typography,
+  TypographyProps,
   classNames,
 } from '@ecdlink/ui';
-import { useHistory, useParams } from 'react-router';
-import { EditBackReferralRouteParams } from './types';
-import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { useHistory, useLocation, useParams } from 'react-router';
+import {
+  EditBackReferralRouteParams,
+  EditBackReferralRouteState,
+} from './types';
+import {
+  ReferralDetails,
+  formatStringWithFirstLetterCapitalized,
+} from '@ecdlink/core';
 import ROUTES from '../../../routes/app.routes-constants';
 import { ViewReferralDetailRouteParams } from '../view-referral-detail/types';
+import { useApolloClient } from '@apollo/client';
+import { GetReferrals } from '@ecdlink/graphql';
+import { format } from 'date-fns';
 
 export const EditBackReferral = () => {
   const { client, referralType } = useParams<
     EditBackReferralRouteParams & ViewReferralDetailRouteParams
   >();
+
+  const { state } = useLocation<EditBackReferralRouteState>();
+
+  const apolloClient = useApolloClient();
+
+  const { referrals } =
+    apolloClient.readQuery<{ referrals?: ReferralDetails[] }>({
+      query: GetReferrals,
+      variables: {
+        type: formatStringWithFirstLetterCapitalized(referralType),
+        startDate: state?.startDate,
+        endDate: state?.endDate,
+      },
+    }) || {};
+
+  const selectedClient = referrals?.find(
+    (referral) => referral.client === client
+  );
 
   const history = useHistory();
 
@@ -32,20 +60,50 @@ export const EditBackReferral = () => {
     { name: 'Edit back-referral', url: '' },
   ];
 
-  // TODO: replace with real data
-  const details = [
+  const details: {
+    name: string;
+    value: string;
+    className?: string;
+    type?: TypographyProps['type'];
+  }[] = [
     {
       name: 'Client:',
-      value: 'Amahle & Ted Khumalo',
+      value: selectedClient?.client ?? '-',
     },
     {
       name: 'CHW:',
-      value: 'Bulelwa Mahlangu',
+      value: selectedClient?.healthCareWorker ?? '-',
     },
     {
       name: 'Referral created on:',
-      value: '26 September 2023',
+      value: !!selectedClient?.createdDate
+        ? format(new Date(selectedClient?.createdDate), 'dd MMMM yyyy')
+        : '-',
       className: 'mt-4',
+    },
+    {
+      name: 'Was the referral made?',
+      value: selectedClient?.isCompleted ? 'Yes' : 'No',
+    },
+    {
+      name: 'Referral made on:',
+      value: !!selectedClient?.completedDate
+        ? format(new Date(selectedClient?.completedDate), 'dd MMMM yyyy')
+        : '-',
+    },
+    {
+      name: 'Referral text:',
+      value: selectedClient?.text ?? '-',
+      className: 'flex-col mb-4',
+      type: 'markdown',
+    },
+    {
+      name: 'Was a back-referral made?',
+      value: selectedClient?.isBackReferralCompleted ? 'Yes' : 'No',
+    },
+    {
+      name: 'CHW back-referral note:',
+      value: selectedClient?.healthCareWorkerBackReferralNote ?? '-',
     },
   ];
 
@@ -83,9 +141,13 @@ export const EditBackReferral = () => {
           className="mb-4"
         />
         {details.map((detail) => (
-          <div className={classNames(detail.className, 'flex gap-2')}>
+          <div className={classNames(detail.className, 'flex  gap-2')}>
             <Typography type="h4" text={detail.name} color="textDark" />
-            <Typography type="body" text={detail.value} color="textDark" />
+            <Typography
+              type={detail?.type ?? 'body'}
+              text={detail.value}
+              color="textDark"
+            />
           </div>
         ))}
         <Divider className="my-8" dividerType="dashed" />
@@ -107,7 +169,7 @@ export const EditBackReferral = () => {
         textColor="white"
         text="Save"
         icon="SaveIcon"
-        className="mt-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
+        className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
         onClick={() =>
           history.push(
             ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(

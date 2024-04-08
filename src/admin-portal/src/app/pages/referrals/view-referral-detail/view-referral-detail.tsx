@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { Icolumn, Irow } from 'react-tailwind-table';
-import { sub } from 'date-fns';
+import { format, sub } from 'date-fns';
 import { Breadcrumb, BreadcrumbProps, Table, Typography } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { ViewReferralDetailRouteParams } from './types';
 import {
+  ReferralDetails,
   formatStringWithFirstLetterCapitalized,
   formatTextToSlug,
 } from '@ecdlink/core';
 import ROUTES from '../../../routes/app.routes-constants';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/solid';
+import { useQuery } from '@apollo/client';
+import { GetReferrals } from '@ecdlink/graphql';
+import { EditBackReferralRouteState } from '../edit-back-referral/types';
 
 export const ViewReferralDetail = () => {
   const today = new Date();
@@ -18,13 +22,26 @@ export const ViewReferralDetail = () => {
   });
 
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
-  const [startDate, endDate] = dateRange;
+  const [startDateRange, endDateRange] = dateRange;
+  const startDate = format(startDateRange, 'yyyy-MM-dd');
+  const endDate = format(endDateRange ?? startDateRange, 'yyyy-MM-dd');
 
   const { referralType } = useParams<ViewReferralDetailRouteParams>();
 
   const history = useHistory();
 
-  // TODO: replace with real data
+  const { data, loading } = useQuery<{ referrals: ReferralDetails[] }>(
+    GetReferrals,
+    {
+      variables: {
+        type: formatStringWithFirstLetterCapitalized(referralType),
+        startDate,
+        endDate,
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
   const columns: Icolumn[] = [
     {
       field: 'client',
@@ -52,21 +69,20 @@ export const ViewReferralDetail = () => {
     },
   ];
 
-  // TODO: replace with real data
-  const rows: Irow[] = [
-    {
-      client: 'Amahle & Ted Khumalo',
-      chw: 'Bulelwa Mahlangu',
-      referralsMade: <CheckCircleIcon className="h-6 w-6 text-green-500" />,
-      backReferralsMade: <CheckCircleIcon className="h-6 w-6 text-green-500" />,
-    },
-    {
-      client: 'Themba & Lidia Sibiya',
-      chw: 'Bulelwa Mahlangu',
-      referralsMade: <XCircleIcon className="h-6 w-6 text-red-500" />,
-      backReferralsMade: <CheckCircleIcon className="h-6 w-6 text-green-500" />,
-    },
-  ];
+  const greenIcon = <CheckCircleIcon className="h-6 w-6 text-green-500" />;
+  const redIcon = <XCircleIcon className="h-6 w-6 text-red-500" />;
+
+  const rows: Irow[] =
+    data?.referrals.map((referral) => ({
+      client: referral?.client ?? '-',
+      chw: referral?.healthCareWorker ?? '-',
+      referralsMade: referral?.isCompleted ? greenIcon : redIcon,
+      backReferralsMade: referral?.isBackReferralCompleted
+        ? greenIcon
+        : redIcon,
+      backReferralNote: referral?.healthCareWorkerBackReferralNote,
+      referralDate: referral?.createdDate ?? '-',
+    })) ?? [];
 
   const paths: BreadcrumbProps['paths'] = [
     { name: 'Referrals', url: ROUTES.REFERRALS.ROOT },
@@ -82,10 +98,17 @@ export const ViewReferralDetail = () => {
         text={formatStringWithFirstLetterCapitalized(referralType)}
         color="textDark"
       />
-      <div className="rounded-xl bg-white p-12">
+      <div className="rounded-xl bg-white px-12 pb-12 pt-4">
         <Table
           rows={rows}
           columns={columns}
+          noContentText="No referrals were made for this time period."
+          loading={{
+            isLoading: loading,
+            size: 'medium',
+            spinnerColor: 'adminPortalBg',
+            backgroundColor: 'secondary',
+          }}
           actionButton={{
             className: 'w-64 h-11',
             colour: 'secondary',
@@ -95,8 +118,8 @@ export const ViewReferralDetail = () => {
             isFullWidth: false,
             actionType: 'date-picker',
             selectsRange: true,
-            startDate,
-            endDate,
+            startDate: startDateRange,
+            endDate: endDateRange,
             maxDate: today,
             onChange: (date) => setDateRange(date),
           }}
@@ -105,7 +128,8 @@ export const ViewReferralDetail = () => {
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.EDIT_BACK_REFERRAL.replace(
                 ':referralType',
                 formatTextToSlug(referralType)
-              ).replace(':client', formatTextToSlug(row.client))
+              ).replace(':client', formatTextToSlug(row.client)),
+              { startDate, endDate } as EditBackReferralRouteState
             )
           }
         />

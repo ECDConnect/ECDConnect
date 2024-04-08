@@ -24,6 +24,7 @@ export const Table = ({
   onClickRow,
   onChangePage,
   loading,
+  noContentText = '-',
 }: TableProps) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -301,7 +302,7 @@ export const Table = ({
           styling={getStyles({ rows, rowsPerPage })}
           per_page={rowsPerPage}
           row_render={customRowElements}
-          no_content_text="-"
+          no_content_text={noContentText}
         />
       )}
     </>
