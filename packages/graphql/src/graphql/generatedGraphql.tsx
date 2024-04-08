@@ -17254,6 +17254,7 @@ export type TeamLead = {
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['UUID']>;
+  welcomeMessage?: Maybe<Scalars['String']>;
 };
 
 export type TeamLeadFilterInput = {
@@ -17269,6 +17270,7 @@ export type TeamLeadFilterInput = {
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  welcomeMessage?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type TeamLeadInput = {
@@ -17280,6 +17282,7 @@ export type TeamLeadInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['UUID']>;
+  WelcomeMessage?: InputMaybe<Scalars['String']>;
 };
 
 export type TeamLeadModel = {
@@ -17303,6 +17306,7 @@ export type TeamLeadSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
+  welcomeMessage?: InputMaybe<SortEnumType>;
 };
 
 export type TeamStandingModel = {
@@ -17836,6 +17840,7 @@ export type UserModel = {
   surname?: Maybe<Scalars['String']>;
   userName?: Maybe<Scalars['String']>;
   verifiedByHomeAffairs?: Maybe<Scalars['Boolean']>;
+  welcomeMessage?: Maybe<Scalars['String']>;
   whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
@@ -17864,6 +17869,7 @@ export type UserModelInput = {
   surname?: InputMaybe<Scalars['String']>;
   userName?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs?: InputMaybe<Scalars['Boolean']>;
+  welcomeMessage?: InputMaybe<Scalars['String']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 

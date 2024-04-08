@@ -64,5 +64,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string WhatsAppNumber { get; set; }
         public bool? IsAdmin { get; set; } = false;
         public bool? ResetData { get; set; } = false;
+        public string WelcomeMessage { get; set; }
     }
 }
