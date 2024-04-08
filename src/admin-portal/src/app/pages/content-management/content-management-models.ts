@@ -1,4 +1,5 @@
 import { ContentDefinitionModelDto, ContentValueDto } from '@ecdlink/core';
+import { SearchDropDownOption } from '@ecdlink/ui';
 
 export interface ContentManagementView {
   content: any;
@@ -44,8 +45,20 @@ export enum NatalTypes {
 }
 
 export enum TemplateTypenames {
-  DanngerSigns = 'DangerSign Form',
+  DangerSigns = 'DangerSign Form',
+  NatalGraphic = 'NatalGraphic Form',
 }
+
+export const sortByNatalTypeOptions: SearchDropDownOption<string>[] = [
+  NatalTypes?.HealthPromotion,
+  NatalTypes?.Info,
+  NatalTypes.Infographic,
+  NatalTypes?.Video,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export interface DynamicFormTemplate {
   title: string;

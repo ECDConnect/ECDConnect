@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         [Service] INotificationService notificationService, string userId)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>(), null, false, false, null, null);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>(), null, false, true, null, null);
         }
 
         public async Task<bool> SendGGChildMUACNotification(
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 ReplacementValue = infantUserId
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, infantUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, infantUserId);
         }
 
         public async Task<bool> SendGGChildGrowthIssueNotification(
@@ -73,7 +73,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                         ReplacementValue = growthIssue
                     });
             var userToSend = userManager.FindByIdAsync(userId).Result;
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildGrowthIssue, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null, infantUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildGrowthIssue, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, infantUserId);
         }
         public async Task<bool> SendGGReferralDangerSignsInfantNotification(
         [Service] ApplicationUserManager userManager,
@@ -96,7 +96,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 ReplacementValue = dangerSignsList
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null, infantUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, infantUserId);
         }
 
          public async Task<bool> SendGGReferralDangerSignsMotherNotification(
@@ -120,7 +120,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 ReplacementValue = dangerSignsList
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null, motherUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, motherUserId);
         }
 
          public async Task<bool> SendGGRedAlertMaternalDistressNotificationMother(
@@ -139,7 +139,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                     ReplacementValue = motherUserId
                 });
                 var userToSend = userManager.FindByIdAsync(userId).Result;
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistressMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null, motherUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistressMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, motherUserId);
         }
 
          public async Task<bool> SendGGRedAlertMaternalDistressNotificationInfant(
@@ -158,7 +158,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                     ReplacementValue = infantUserId
                 });
                 var userToSend = userManager.FindByIdAsync(userId).Result;
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistressInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, false, null, infantUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistressInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null, infantUserId);
         }
 
         public async Task<bool> SendGGChildMUACMalnutritionNotification(
@@ -177,7 +177,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 ReplacementValue = infantUserId
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, false, null, infantUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, true, null, infantUserId);
         }
 
     }

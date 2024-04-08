@@ -61,7 +61,9 @@ export default function ContentCompare({
       contentView.content
     ) {
       const content = contentType.content.find(
-        (x) => x.id === contentView.content.id
+        (x) =>
+          x.id === contentView.content.id ||
+          Number(x?.id) === Number(contentView.content?.childId)
       );
       if (content) {
         setCurrentContent(content);
@@ -376,6 +378,7 @@ export default function ContentCompare({
                     defaultLanguageId={defaultLanguageId}
                     choosedSectionTitle={choosedSectionTitle}
                     contentView={contentView}
+                    languages={languages}
                   />
                 )}
               </div>
@@ -410,6 +413,7 @@ export default function ContentCompare({
                     defaultLanguageId={defaultLanguageId}
                     choosedSectionTitle={choosedSectionTitle}
                     contentView={contentView}
+                    languages={languages}
                   />
                 )}
               </div>

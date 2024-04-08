@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -149,7 +149,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (vData.Question == GGSettings.q_postnatal_check_up)
                 {
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
 
                         // referral: add ""Missed clinic visit"" to referrals list
@@ -180,7 +180,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (vData.Question == GGSettings.q_postnatal_6_weeks)
                 {
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
 
                         // referral: add ""Missed clinic visit"" to referrals list
@@ -473,12 +473,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         vData.Question == GGSettings.q_moving6 ||
                         vData.Question == GGSettings.q_moving7)
                 {
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
                         developmentScreening.Add(vData);
                     }
                 }
-                else if (vData.Question == GGSettings.q_immunisation ||
+                else if (vData.Question == GGSettings.QuestionImmunisation ||
                             vData.Question == GGSettings.QuestionVitaminA ||
                             vData.Question == GGSettings.QuestionDeworming)
                 {
@@ -570,7 +570,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 else if (vData.Question == GGSettings.q_birth_certificate)
                 {
 
-                    if (vData.QuestionAnswer == GGSettings.answer_no)
+                    if (vData.QuestionAnswer == GGSettings.AnswerNo)
                     {
                         // Add referral under ""Home Affairs referrals"" = ""Themba does not have a birth certificate""
                         comment = firstName + GGSettings.no_birth_certificate;
@@ -648,7 +648,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (visitData.Question == GGSettings.q_first_antenatal_visit)
                 {
-                    if (visitData.QuestionAnswer == GGSettings.answer_no)
+                    if (visitData.QuestionAnswer == GGSettings.AnswerNo)
                     {
 
                         // this should add a referral to the list(""Pregnancy not booked"")
@@ -681,7 +681,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (visitData.Question == GGSettings.q_antenatal_visits)
                 {
-                    if (visitData.QuestionAnswer == GGSettings.answer_no)
+                    if (visitData.QuestionAnswer == GGSettings.AnswerNo)
                     {
                         // add an ""amber"" item to the progress: ""Clinic visits not up to date""
                         comment = GGSettings.clinic_visits_not_up_to_date;
@@ -718,11 +718,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (questionAnswer < 22)
                     {
                         // add to referrals items list(""May be underweight - MUAC less than 22cm"") red
-                        comment = GGSettings.underweight;
+                        comment = GGSettings.IndicatorMotherUnderweight;
                         AddVisitDataStatus(visitData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
 
                         // add to red items in progress screen(use case 2) (""May be underweight - MUAC less than 22cm"")
-                        comment = GGSettings.underweight;
+                        comment = GGSettings.IndicatorMotherUnderweight;
                         AddVisitDataStatus(visitData, comment, StatusColours.Red, GGSettings.visit_data_client_progress, visitData.VisitSection, false);
 
                         // add G4 secondary text item: ""Refer to clinic urgently""(this is the highest - priority item & will be shown)
@@ -734,7 +734,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(visitData, comment, StatusColours.Green, GGSettings.visit_data_client_summary, visitData.VisitSection, false);
 
                         // add additional visit item with ""Underweight"" secondary text -please see G3.7 Other / Additional visits
-                        AddAdditionalVisit(motherId, GGSettings.client_mother, GGSettings.underweight3);
+                        AddAdditionalVisit(motherId, GGSettings.client_mother, GGSettings.IndicatorUnderweight);
                     }
                     if (questionAnswer >= 22)
                     {
@@ -753,7 +753,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     maternalDistressScreening.Add(visitData);
                 }
-                else if (visitData.Question == GGSettings.q_T ||
+                else if (visitData.Question == GGSettings.QuestionAlcoholTolerance ||
                     visitData.Question == GGSettings.q_A ||
                     visitData.Question == GGSettings.q_C ||
                     visitData.Question == GGSettings.q_E)
@@ -826,31 +826,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ManageMaternalDistressScreening(List<VisitData> maternalDistressScreening, string firstName, string clientId, string clientType)
         {
-            var comment = "";
-
             var q1 = maternalDistressScreening.Where(x => x.Question == GGSettings.q_stop_worry).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = maternalDistressScreening.Where(x => x.Question == GGSettings.q_felt_down).OrderBy(x => x.Id).FirstOrDefault();
             var q3 = maternalDistressScreening.Where(x => x.Question == GGSettings.q_suicide).OrderBy(x => x.Id).FirstOrDefault();
 
+            var MaternalDistressFollowUpComment = new StringBuilder($"{firstName} was experiencing the following: ");
+            if (q1.QuestionAnswer == GGSettings.AnswerYes) {
+                 MaternalDistressFollowUpComment.AppendLine($"<li>{GGSettings.q_stop_worry.TrimEnd('?')}</li>");
+            } 
+             if (q2.QuestionAnswer == GGSettings.AnswerYes) {
+                 MaternalDistressFollowUpComment.AppendLine($"<li>{GGSettings.q_felt_down.TrimEnd('?')}</li>");
+            } 
+             if (q3.QuestionAnswer == GGSettings.AnswerYes) {
+                 MaternalDistressFollowUpComment.AppendLine($"<li>{GGSettings.q_suicide.TrimEnd('?')}</li>");
+            }    
             // a GGSettings.answer_yes response to the 3rd question trumps all.
             if (q3.QuestionAnswer == GGSettings.AnswerYes)
             {
-                comment = firstName + GGSettings.maternal_distress;
-                AddVisitDataStatus(q3, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
+                AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
 
                 // add to amber items in progress screen(use case 2)(""Lethabo was experiencing maternal distress"")
-                comment = firstName + GGSettings.maternal_distress;
-                AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
+                AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
 
                 AddAdditionalVisit(clientId, clientType, GGSettings.maternal_distress2);
 
                 // add G4 secondary text item: Amber - ""Refer to clinic""
-                comment = GGSettings.refer_to_clinic;
-                AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_dashboard, q3.VisitSection, false);
+                var comment = new StringBuilder($"{GGSettings.refer_to_clinic}");
+                AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_dashboard, q3.VisitSection, false);
 
                 // add amber item to G9 client summary: ""You are struggling and need some support""
-                comment = GGSettings.need_support;
-                AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
+                comment = new StringBuilder($"{GGSettings.need_support}");
+                AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
 
                 if (clientType == GGSettings.client_child)
                 {
@@ -864,32 +870,29 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else
             {
-                if (q3.QuestionAnswer == GGSettings.answer_no && (q1.QuestionAnswer == GGSettings.AnswerYes || q2.QuestionAnswer == GGSettings.AnswerYes))
+                if (q3.QuestionAnswer == GGSettings.AnswerNo && (q1.QuestionAnswer == GGSettings.AnswerYes || q2.QuestionAnswer == GGSettings.AnswerYes))
                 {
-                    comment = firstName + GGSettings.maternal_distress;
-                    AddVisitDataStatus(q3, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
+                    AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
 
-                    comment = firstName + GGSettings.maternal_distress;
-                    AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
 
                     AddAdditionalVisit(clientId, clientType, GGSettings.maternal_distress2);
 
                     // add amber item to G9 client summary: ""You are struggling and need some support""
-                    comment = GGSettings.need_support;
-                    AddVisitDataStatus(q3, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
+                    var comment = new StringBuilder($"{GGSettings.need_support}");
+                    AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
                 }
 
-                if (q3.QuestionAnswer == GGSettings.answer_no && q1.QuestionAnswer == GGSettings.answer_no && q2.QuestionAnswer == GGSettings.answer_no)
+                if (q3.QuestionAnswer == GGSettings.AnswerNo && q1.QuestionAnswer == GGSettings.AnswerNo && q2.QuestionAnswer == GGSettings.AnswerNo)
                 {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
-                    comment = firstName + GGSettings.was_coping;
-                    AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_progress, q3.VisitSection, true);
+                    var comment = new StringBuilder($"{firstName}{GGSettings.was_coping}");
+                    AddVisitDataStatus(q3, comment.ToString(), StatusColours.Green, GGSettings.visit_data_client_progress, q3.VisitSection, true);
 
                     //add green item to G9 client summary: You are coping well!
-                    comment = GGSettings.coping_well;
-                    AddVisitDataStatus(q3, comment, StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment.ToString(), StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
                 }
-                if (q3.QuestionAnswer == GGSettings.answer_no)
+                if (q3.QuestionAnswer == GGSettings.AnswerNo)
                 {
                     if (clientType == GGSettings.client_child)
                     {
@@ -908,7 +911,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var comment = "";
             var score = 0;
 
-            var q1 = alcoholUse.Where(x => x.Question == GGSettings.q_T).OrderBy(x => x.Id).FirstOrDefault();
+            var q1 = alcoholUse.Where(x => x.Question == GGSettings.QuestionAlcoholTolerance).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = alcoholUse.Where(x => x.Question == GGSettings.q_A).OrderBy(x => x.Id).FirstOrDefault();
             var q3 = alcoholUse.Where(x => x.Question == GGSettings.q_C).OrderBy(x => x.Id).FirstOrDefault();
             var q4 = alcoholUse.Where(x => x.Question == GGSettings.q_E).OrderBy(x => x.Id).FirstOrDefault();
@@ -966,7 +969,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var q1 = idDocs.Where(x => x.Question == GGSettings.q_ID_doc).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = idDocs.Where(x => x.Question == GGSettings.q_citizen).OrderBy(x => x.Id).FirstOrDefault();
 
-            if (q1.QuestionAnswer == GGSettings.answer_no && q2.QuestionAnswer == GGSettings.AnswerYes)
+            if (q1.QuestionAnswer == GGSettings.AnswerNo && q2.QuestionAnswer == GGSettings.AnswerYes)
             {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list under Department of Home Affairs referrals(""Lethabo doesn't have an ID book)
                 comment = firstName + GGSettings.no_id_book;
@@ -1055,7 +1058,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (totalDaysOld < 7 && previousWeight == 0 && weight < 2.5)
                 {
-                    weightIndicator = "Low birth weight";
+                    weightIndicator = GGSettings.IndicatorLowBirthWeight;
                     weightColor = StatusColours.Amber;
 
                     // In this case we only add a referral at the end
@@ -1074,10 +1077,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         weightColor = StatusColours.Red;
 
                         // Red progress
-                        AddVisitDataStatus(weightQuestion, GGSettings.severely_underweight, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.IndicatorSeverelyUnderweight, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.severely_underweight);
+                        AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.IndicatorSeverelyUnderweight);
 
                         // Red G4
                         AddVisitDataStatus(weightQuestion, GGSettings.refer_to_clinic_urgently, weightColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
@@ -1100,7 +1103,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         weightColor = StatusColours.Amber;
 
                         // Amber progress
-                        AddVisitDataStatus(weightQuestion, GGSettings.growth_faltering, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
+                        AddVisitDataStatus(weightQuestion, GGSettings.IndicatorGrowthFaltering, weightColor, GGSettings.visit_data_client_progress, weightQuestion.VisitSection, false);
 
                         // additional visit
                         AddAdditionalVisit(infantId, GGSettings.client_child, weightIndicator);
@@ -1191,28 +1194,28 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 muacIndicator = "Normal";
                 if (questionAnswer < 11.5)
                 {
-                    muacIndicator = GGSettings.severe_acute_malnutrition;
+                    muacIndicator = GGSettings.IndicatorSevereAcuteMalnutrition;
                     muacColor = StatusColours.Red;
 
                     // Red progress
                     AddVisitDataStatus(muacQuestion, muacIndicator, muacColor, GGSettings.visit_data_client_progress, muacQuestion.VisitSection, false);
 
                     // additional visit
-                    AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.severe_acute_malnutrition);
+                    AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.IndicatorSevereAcuteMalnutrition);
 
                     // Red G4
                     AddVisitDataStatus(muacQuestion, GGSettings.refer_to_clinic_urgently, muacColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
                 }
                 else if (questionAnswer >= 11.5 && questionAnswer < 12.5)
                 {
-                    muacIndicator = GGSettings.moderate_acute_malnutrition;
+                    muacIndicator = GGSettings.IndicatorModerateAcuteMalnutrition;
                     muacColor = StatusColours.Amber;
 
                     // Amber progress
                     AddVisitDataStatus(muacQuestion, muacIndicator, muacColor, GGSettings.visit_data_client_progress, muacQuestion.VisitSection, false);
 
                     // additional visit
-                    AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.moderate_acute_malnutrition);
+                    AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.IndicatorModerateAcuteMalnutrition);
 
                     // Amber G4
                     AddVisitDataStatus(muacQuestion, GGSettings.refer_to_clinic_urgently, muacColor, GGSettings.visit_data_client_dashboard, GGSettings.refer_to_clinic_urgently, false);
@@ -1270,7 +1273,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 } 
                 else
                 {
-                    if (muacIndicator == GGSettings.severe_acute_malnutrition)
+                    if (muacIndicator == GGSettings.IndicatorSevereAcuteMalnutrition)
                     {
                         _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId).Wait();
                     }else
@@ -1461,13 +1464,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     answeredItems.Add(item);
 
-                    if (item.Question == GGSettings.q_immunisation)
+                    if (item.Question == GGSettings.QuestionImmunisation)
                     {
-                        if (item.QuestionAnswer == GGSettings.answer_no)
+                        if (item.QuestionAnswer == GGSettings.AnswerNo)
                         {
                             hasImmunisation = false;
                             // - if ""No"" to immunisation question only, add referral: ""Immunisations not up to date""
-                            comment = GGSettings.immunisations_not_up_to_date;
+                            comment = GGSettings.ImmunisationsNotUpToDate;
                             AddVisitDataStatus(item, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
                             if (no_comment != "")
                             {
@@ -1494,11 +1497,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                     if (item.Question == GGSettings.QuestionVitaminA)
                     {
-                        if (item.QuestionAnswer == GGSettings.answer_no)
+                        if (item.QuestionAnswer == GGSettings.AnswerNo)
                         {
                             hasVitaminA = false;
                             // if ""No"" to Vitamin A question only, add referral: ""Vitamin A not up to date""
-                            comment = GGSettings.vitamin_not_up_to_date;
+                            comment = GGSettings.VitaminANotUpToDate;
                             AddVisitDataStatus(item, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
                             if (no_comment != "")
                             {
@@ -1524,11 +1527,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                     if (item.Question == GGSettings.QuestionDeworming)
                     {
-                        if (item.QuestionAnswer == GGSettings.answer_no)
+                        if (item.QuestionAnswer == GGSettings.AnswerNo)
                         {
                             hasDeworm = false;
                             // if ""No"" to deworming question only, add referral: ""Deworming not up to date""
-                            comment = GGSettings.deworming_not_up_to_date;
+                            comment = GGSettings.DewormingNotUpToDate;
                             AddVisitDataStatus(item, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false);
                             if (no_comment != "")
                             {

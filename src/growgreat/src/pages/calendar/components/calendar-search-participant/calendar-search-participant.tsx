@@ -187,10 +187,11 @@ export const CalendarSearchParticipant: React.FC<
         onBack={onSearchDone}
         onSearchButtonClick={onSearch}
         onClickItem={onParticipantAdd}
+        contentClassName="mb-16"
       >
         <div></div>
       </SearchHeader>
-      <div className="flex justify-center">
+      <div className="mb-32 flex justify-center">
         <div className="w-11/12">
           <StackedList
             className={styles.stackedList}

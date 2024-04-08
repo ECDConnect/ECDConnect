@@ -56,3 +56,4 @@ export * from './date-picker';
 
 export * from './stacked-list/components/title-list-item/title-list-item';
 export * from './table';
+export * from './breadcrumb';

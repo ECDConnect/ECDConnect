@@ -114,12 +114,12 @@ export function ContentManagement() {
         },
         {
           name: 'Antenatal',
-          href: 'MoreInformation',
+          href: 'NatalInfo',
           id: 3,
         },
         {
           name: 'Danger signs',
-          href: 'DangerSign',
+          href: ContentTypes.DANGERSIGN,
           id: 4,
         },
         // {

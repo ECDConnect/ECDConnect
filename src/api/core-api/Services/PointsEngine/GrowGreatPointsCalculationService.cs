@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
-            _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault());
+            _uId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault());
 
             _infantRepo = _repositoryFactory.CreateGenericRepository<Infant>(userContext: _uId);
             _motherRepo = _repositoryFactory.CreateGenericRepository<Mother>(userContext: _uId);
@@ -484,13 +484,12 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                 var allMonthlyVisits = _visitRepo.GetAll()
                     .Where(x => 
                         x.Mother.HealthCareWorker.UserId == userId
-                        && x.DueDate.HasValue
-                        && x.DueDate >= monthStart
-                        && x.DueDate <= monthEnd)
-                    .Select(x => new { Id = x.Id, Type = x.VisitType.Name, x.Attended })
+                        && ((x.DueDate.HasValue && x.DueDate >= monthStart && x.DueDate <= monthEnd)
+                            || (x.ActualVisitDate.HasValue && x.ActualVisitDate.Value >= monthStart && x.ActualVisitDate.Value <= monthEnd)))
+                    .Select(x => new { Id = x.Id, Type = x.VisitType.Name, x.Attended, x.ActualVisitDate, x.DueDate })
                     .ToList();
 
-                var totalVisits = allMonthlyVisits.Count();
+                var totalVisits = allMonthlyVisits.Where(x => x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value >= monthStart && x.ActualVisitDate.Value <= monthEnd).Count();
                 var missedVisits = allMonthlyVisits.Where(x => x.Attended == false).Count();
 
                 if (missedVisits == 0)
@@ -510,7 +509,15 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                         monthStart);
                 }
 
-                var totalVisit1s = allMonthlyVisits.Where(x => x.Type == GGSettings.visit1).Count();
+                var totalVisit1s = allMonthlyVisits
+                    .Where(x => 
+                        x.Type == GGSettings.visit1 
+                        && x.Attended 
+                        && x.ActualVisitDate.HasValue 
+                        && x.ActualVisitDate.Value >= monthStart 
+                        && x.ActualVisitDate.Value <= monthEnd)
+                    .Count();
+
                 var missedVisit1s = allMonthlyVisits.Where(x => x.Type == GGSettings.visit1 && x.Attended == false).Count();
 
                 if (missedVisit1s == 0)
@@ -555,16 +562,14 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                     .Where(x =>
                         x.InfantId.HasValue
                         && infantIds.Contains(x.InfantId.Value)
-                        && x.VisitData.Any(y => 
-                            (y.Question == GGSettings.QuestionCSGQualification && y.QuestionAnswer == GGSettings.AnswerYes)
-                            || y.Question == GGSettings.QuestionReceivingCSG))
+                        // Filter out any who don't qualify
+                        && !x.VisitData.Any(y => y.Question == GGSettings.QuestionCSGQualification && y.QuestionAnswer == GGSettings.AnswerNo)
+                        && x.VisitData.Any(y => y.Question == GGSettings.QuestionReceivingCSG))
                     .Select(x => new { 
                         x.Id, 
                         x.InfantId, 
                         x.ActualVisitDate, 
-                        ReceivingGrant = x.VisitData.Any(y =>
-                             y.Question == GGSettings.QuestionReceivingCSG
-                             && y.QuestionAnswer == GGSettings.AnswerYes)
+                        ReceivingGrant = x.VisitData.Any(y => y.Question == GGSettings.QuestionReceivingCSG && y.QuestionAnswer == GGSettings.AnswerYes)
                     })
                     .GroupBy(x => x.InfantId)
                     // Take only the latest visit
@@ -591,16 +596,18 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                 var visitsByChild = _visitRepo.GetAll()
                     .Where(x =>
                         x.DueDate.HasValue
-                        && x.DueDate <= monthEnd                        
-                        && x.InfantId.HasValue 
-                        && x.DueDate >= x.Infant.InsertedDate // Restrict to visits after they were created, so not penalised for visits that could never be completed
+                        && x.InfantId.HasValue
                         && infantIds.Contains(x.InfantId.Value)
-                        && x.VisitType.Name != GGSettings.VisitTypeAdditionalVisit)
+                        && x.VisitType.Name != GGSettings.VisitTypeAdditionalVisit
+                        && ((x.DueDate.HasValue && x.DueDate <= monthEnd && x.DueDate >= x.Infant.InsertedDate) // Restrict to visits after they were created, so not penalised for visits that could never be completed
+                            || (x.ActualVisitDate.HasValue && x.ActualVisitDate.Value >= monthStart && x.ActualVisitDate.Value <= monthEnd))
+                        )
                     .Select(x => new PointsVisit 
                     { 
                         VisitId = x.Id, 
                         InfantId = x.InfantId.Value, 
                         DueDate = x.DueDate.Value, 
+                        ActualVisitDate = x.ActualVisitDate,
                         VisitType = x.VisitType.Name, 
                         Attended = x.Attended 
                     })
@@ -610,7 +617,9 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
 
                 #region All developmental screenings completed
 
-                var totalDevelopmentVisits = visitsByChild.Where(x => x.Count() > 0).Count();
+                var totalDevelopmentVisits = visitsByChild.Where(x => x.Any(y =>
+                    y.ActualVisitDate.HasValue && y.ActualVisitDate.Value >= monthStart && y.ActualVisitDate.Value <= monthEnd)).Count();
+
                 var missedDevelopmentVisits = visitsByChild.Any(x => !IsDevelopmentalScreeningUpToDate(x));
 
                 if (!missedDevelopmentVisits)
@@ -645,7 +654,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                             ActualVisitDate = x.ActualVisitDate,
                             UpToDate = x.VisitData.Any(y =>
                                 y.Question == GGSettings.QuestionVitaminA
-                                && y.QuestionAnswer == GGSettings.AnswerYes)
+                                && y.QuestionAnswer != GGSettings.AnswerNo) // Seems in cases we don't ask the question we still save it with an answer of undefined, so checking for yes does not work
                         })
                         // Group by child
                         .GroupBy(x => x.InfantId)
@@ -653,10 +662,17 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                         .Select(x => x.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault())
                         .ToList();
 
-                    var totalVitaminAChildren = childLatestVitaminAAnswer.Count();
+                    var totalVitaminAChildren = childLatestVitaminAAnswer
+                        .Where(x => 
+                            x.UpToDate 
+                            && x.ActualVisitDate.HasValue 
+                            && x.ActualVisitDate.Value >= monthStart 
+                            && x.ActualVisitDate.Value <= monthEnd)
+                        .Count();
+
                     var vitaminAUpToDate = !childLatestVitaminAAnswer.Any(x => x.UpToDate == false);
 
-                    if (totalVitaminAChildren > 0 && vitaminAUpToDate)
+                    if (infantIds.Any() && vitaminAUpToDate)
                     {
                         AddOrUpdatePoints(
                             PointsActivityConstants.ChildrenVitaminAUpToDateActivityId,
@@ -688,7 +704,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                             ActualVisitDate = x.ActualVisitDate,
                             UpToDate = x.VisitData.Any(y =>
                                 y.Question == GGSettings.QuestionDeworming
-                                && y.QuestionAnswer == GGSettings.AnswerYes)
+                                && y.QuestionAnswer != GGSettings.AnswerNo) // Seems in cases we don't ask the question we still save it with an answer of undefined, so checking for yes does not work
                         })
                         // Group by child
                         .GroupBy(x => x.InfantId)
@@ -696,10 +712,17 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                         .Select(x => x.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault())
                         .ToList();
 
-                    var totalDewormingChildren = childLatestDewormingAnswer.Count();
+                    var totalDewormingChildren = childLatestDewormingAnswer
+                        .Where(x => 
+                            x.UpToDate 
+                            && x.ActualVisitDate.HasValue 
+                            && x.ActualVisitDate.Value >= monthStart 
+                            && x.ActualVisitDate.Value <= monthEnd)
+                        .Count();
+
                     var dewormingUpToDate = !childLatestDewormingAnswer.Any(x => x.UpToDate == false);
 
-                    if (totalDewormingChildren > 0 && dewormingUpToDate)
+                    if (infantIds.Any() && dewormingUpToDate)
                     {
                         AddOrUpdatePoints(
                             PointsActivityConstants.ChildrenDewormingUpToDateActivityId,
@@ -724,14 +747,14 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                         .Where(x =>
                             x.InfantId.HasValue
                             && infantIds.Contains(x.InfantId.Value)
-                            && x.VisitData.Any(y => y.Question == GGSettings.QuestionDeworming))
+                            && x.VisitData.Any(y => y.Question == GGSettings.QuestionImmunisation))
                         .Select(x => new
                         {
                             InfantId = x.InfantId.Value,
                             ActualVisitDate = x.ActualVisitDate,
                             UpToDate = x.VisitData.Any(y =>
-                                y.Question == GGSettings.QuestionDeworming
-                                && y.QuestionAnswer == GGSettings.AnswerYes)
+                                y.Question == GGSettings.QuestionImmunisation
+                                && y.QuestionAnswer != GGSettings.AnswerNo) // Seems in cases we don't ask the question we still save it with an answer of undefined, so checking for yes does not work
                         })
                         // Group by child
                         .GroupBy(x => x.InfantId)
@@ -739,10 +762,17 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
                         .Select(x => x.OrderByDescending(x => x.ActualVisitDate).FirstOrDefault())
                         .ToList();
 
-                    var totalImmunisationChildren = childImmunisationAnswer.Count();
+                    var totalImmunisationChildren = childImmunisationAnswer
+                        .Where(x => 
+                            x.UpToDate 
+                            && x.ActualVisitDate.HasValue 
+                            && x.ActualVisitDate.Value >= monthStart 
+                            && x.ActualVisitDate.Value <= monthEnd)
+                        .Count();
+
                     var immunisationsUpToDate = !childImmunisationAnswer.Any(x => x.UpToDate == false);
 
-                    if (totalImmunisationChildren > 0 && immunisationsUpToDate)
+                    if (infantIds.Any() && immunisationsUpToDate)
                     {
                         AddOrUpdatePoints(
                             PointsActivityConstants.ChildrenImmunisationsUpToDateActivityId,
@@ -997,6 +1027,7 @@ namespace EcdLink.Api.CoreApi.Services.PointsEngine
             public Guid VisitId { get; set; }
             public Guid InfantId { get; set; }
             public DateTime DueDate { get; set; }
+            public DateTime? ActualVisitDate { get; set; }
             public string VisitType { get; set; }
             public bool Attended { get; set; }
         }    

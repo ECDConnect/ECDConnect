@@ -41,7 +41,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
@@ -354,7 +354,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var motherOverDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date <= DateTime.Today).Count();
 
             var motherDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
-            var childDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+            var childDueVisits = visits.Where(x => x.InfantId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
 
             var lastCompletedVisit = visits.Where(x => x.Attended).OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
 

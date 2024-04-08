@@ -49,7 +49,7 @@ namespace ECDLink.SmartStart.Services
             _dbContext = dbContext;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);

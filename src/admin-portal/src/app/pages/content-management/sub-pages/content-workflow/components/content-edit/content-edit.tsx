@@ -6,6 +6,7 @@ import {
   ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
+  LanguageDto,
   NOTIFICATION,
   useDialog,
   useNotifications,
@@ -54,6 +55,7 @@ export interface ContentViewProps {
   contentView?: ContentManagementView;
   postNatalType?: ContentTypeDto;
   selectedTab?: number;
+  languages: LanguageDto[];
 }
 
 export interface RequirementProps {
@@ -76,6 +78,7 @@ export default function ContentEdit({
   contentView,
   postNatalType,
   selectedTab,
+  languages,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -196,6 +199,9 @@ export default function ContentEdit({
   const [smallLargeGroupsSkills, setSmallLargeGroupsSkills] = useState([]);
   const [dangerSignsDisableInputs, setDangerSignsDisableInputs] =
     useState(false);
+  const selectedLanguage = languages?.find(
+    (item) => item?.id === selectedLanguageId
+  );
 
   const disableButton =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
@@ -373,7 +379,7 @@ export default function ContentEdit({
       }
     });
 
-    if (!content?.id) {
+    if (!content?.id && !content?.childId) {
       await createContent({
         variables: {
           input: { ...model },
@@ -385,7 +391,7 @@ export default function ContentEdit({
     } else {
       await updateContent({
         variables: {
-          id: content.id.toString(),
+          id: content?.id?.toString() || content?.childId?.toString(),
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
@@ -437,7 +443,7 @@ export default function ContentEdit({
     });
 
     savedContent();
-
+    setSearchValue('');
     setLoading(false);
 
     if (cancelEdit) {
@@ -447,7 +453,7 @@ export default function ContentEdit({
 
   useEffect(() => {
     if (
-      template?.title === TemplateTypenames.DanngerSigns &&
+      template?.title === TemplateTypenames.DangerSigns &&
       template?.fields?.[0]?.selectedLanguageId === defaultLanguageId
     ) {
       setDangerSignsDisableInputs(true);
@@ -479,39 +485,38 @@ export default function ContentEdit({
                   content?.__typename === 'DangerSign' &&
                   camelCaseToSentanceCase(content?.section || '')}
               </h3>
-              {selectedTab === 2 ||
-                (selectedTab === 3 && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Typography
-                        className="truncate"
-                        type="h4"
-                        weight="bold"
-                        color="textMid"
-                        text={'Section:'}
-                      />
-                      <Typography
-                        type="h4"
-                        color="textMid"
-                        text={content?.section}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Typography
-                        className="truncate"
-                        type="h4"
-                        weight="bold"
-                        color="textMid"
-                        text={'Section:'}
-                      />
-                      <Typography
-                        type="h4"
-                        color="textMid"
-                        text={content?.childType}
-                      />
-                    </div>
-                  </>
-                ))}
+              {(selectedTab === 2 || selectedTab === 3) && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Typography
+                      className="truncate"
+                      type="h4"
+                      weight="bold"
+                      color="textMid"
+                      text={'Section:'}
+                    />
+                    <Typography
+                      type="h4"
+                      color="textMid"
+                      text={content?.section}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Typography
+                      className="truncate"
+                      type="h4"
+                      weight="bold"
+                      color="textMid"
+                      text={'Type:'}
+                    />
+                    <Typography
+                      type="h4"
+                      color="textMid"
+                      text={content?.childType}
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               {!!cancelCompare && (
@@ -557,9 +562,17 @@ export default function ContentEdit({
                 className="mt-2 mb-2 rounded-md"
                 title="Make sure you do the following:"
                 list={[
-                  `Upload the correct language version (English)`,
+                  `Upload the correct language version (${selectedLanguage?.description})`,
                   `Restrict the video size to standard smartphone resolution (300dpi) and make sure videos are 360px wide, 640px high at 15 frames per second. If the video is too large users will not be able to load the page.`,
                 ]}
+                type="warning"
+              />
+            )}
+
+            {Number(postNatalType?.id) === ContentTypeEnum?.NatalGraphic && (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                title={`Make sure you upload the correct language version (${selectedLanguage?.description}).`}
                 type="warning"
               />
             )}
@@ -613,7 +626,8 @@ export default function ContentEdit({
               {content?.id &&
                 content?.__typename !== ContentTypes.PROGRESS_TRACKING_SKILL &&
                 content?.__typename !== ContentTypes.MORE_INFORMATION &&
-                content?.__typename !== ContentTypes.CONSENT && (
+                content?.__typename !== ContentTypes.CONSENT &&
+                content?.__typename !== ContentTypes.DANGERSIGN && (
                   <button
                     onClick={deleteAndRefresh}
                     className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"

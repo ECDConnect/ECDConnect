@@ -28,7 +28,7 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
       <div className="mt-8">
         <Typography
           className="truncate"
-          type="h2"
+          type="h1"
           weight="bold"
           color="textMid"
           text={`Summary`}

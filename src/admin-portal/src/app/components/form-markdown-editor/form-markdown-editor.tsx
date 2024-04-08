@@ -2,7 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import ContentLoader from '../content-loader/content-loader';
 import { CKEditorCustomUploadAdapterPlugin } from '../../utils/custom-upload-adapter';
 
-export default function Editor({ label, onStateChange, currentValue }) {
+interface CKEditorProps {
+  label: any;
+  onStateChange: any;
+  currentValue: any;
+  subLabel?: any;
+}
+
+export default function Editor({
+  label,
+  onStateChange,
+  currentValue,
+  subLabel,
+}: CKEditorProps) {
   const [editorLoaded, setEditorLoaded] = useState(false);
   const editorRef = useRef({ CKEditor: undefined, ClassicEditor: undefined });
   const { CKEditor, ClassicEditor } = editorRef.current;
@@ -33,8 +45,11 @@ export default function Editor({ label, onStateChange, currentValue }) {
     <>
       {editorLoaded ? (
         <div className="relative">
-          <div className="text-slate-700 mb-2 text-sm font-medium capitalize">
+          <div className="text-textDark text-h4 mb-2 font-bold font-medium">
             {label}
+          </div>
+          <div className="text-slate-700 mb-2 text-sm font-medium">
+            {subLabel}
           </div>
           <CKEditor
             editor={ClassicEditor}
