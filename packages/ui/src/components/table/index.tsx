@@ -72,7 +72,11 @@ export const Table = ({
     }
 
     if (!!onClickRow) {
-      return <button onClick={() => onClickRow(row)}>{displayValue}</button>;
+      return (
+        <button className="w-full truncate" onClick={() => onClickRow(row)}>
+          {displayValue}
+        </button>
+      );
     }
 
     return <div>{displayValue}</div>;

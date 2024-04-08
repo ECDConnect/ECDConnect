@@ -3,7 +3,7 @@ import { ClinicsTeamLeadView } from './main-view/team-lead-view/clinics';
 
 export const ClinicsMainPage = () => {
   // TODO: replace with real user role
-  const isTeamLead = false;
+  const isTeamLead = true;
 
   if (isTeamLead) {
     return <ClinicsTeamLeadView />;

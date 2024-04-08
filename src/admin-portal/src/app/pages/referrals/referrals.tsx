@@ -1,17 +1,25 @@
-import { useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { Icolumn, Irow } from 'react-tailwind-table';
 import { format, sub } from 'date-fns';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '../../routes/app.routes-constants';
 import { ReferralSummary, formatTextToSlug } from '@ecdlink/core';
-import { Table } from '@ecdlink/ui';
+import { SearchDropDownOption, Table } from '@ecdlink/ui';
 import { useQuery } from '@apollo/client';
-import { GetReferralsSummary } from '@ecdlink/graphql';
+import {
+  Clinic,
+  GetAllPortalClinics,
+  GetReferralsSummary,
+} from '@ecdlink/graphql';
+import { ViewReferralDetailsRouteState } from './view-referral-detail/types';
 
 export const Referrals = () => {
   const today = new Date();
   const initialBefore30Days = sub(today, {
     days: 30,
+  });
+  const minDate = sub(today, {
+    months: 6,
   });
 
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
@@ -20,8 +28,17 @@ export const Referrals = () => {
   const endDate = format(endDateRange ?? startDateRange, 'yyyy-MM-dd');
 
   const [search, setSearch] = useState<string>('');
+  const [selectedClinic, setSelectedClinic] =
+    useState<SearchDropDownOption<string>[]>();
 
   const history = useHistory();
+
+  const { state } = useLocation<ViewReferralDetailsRouteState>();
+
+  const selectedClinicIds = useMemo(
+    () => selectedClinic?.map((clinic) => clinic.value),
+    [selectedClinic]
+  );
 
   const { data, loading } = useQuery<{ referralsSummary?: ReferralSummary[] }>(
     GetReferralsSummary,
@@ -29,9 +46,24 @@ export const Referrals = () => {
       variables: {
         startDate,
         endDate,
+        clinicIds: selectedClinicIds,
       },
       fetchPolicy: 'cache-and-network',
     }
+  );
+
+  const { data: clinicsData, loading: loadingClinics } = useQuery<{
+    allPortalClinics?: Clinic[];
+  }>(GetAllPortalClinics, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const clinicOptions = clinicsData?.allPortalClinics?.map(
+    (clinic): SearchDropDownOption<string> => ({
+      id: clinic?.id ?? '',
+      label: clinic?.name ?? '',
+      value: clinic?.id ?? '',
+    })
   );
 
   const columns: Icolumn[] = [
@@ -56,6 +88,26 @@ export const Referrals = () => {
         )
       : data?.referralsSummary) ?? [];
 
+  const onClearFilters = () => {
+    setSearch('');
+    setSelectedClinic([]);
+    setDateRange([initialBefore30Days, today]);
+  };
+
+  useLayoutEffect(() => {
+    if (state?.clinicIds) {
+      setSelectedClinic(
+        clinicsData?.allPortalClinics
+          ?.filter((clinic) => state?.clinicIds?.includes(clinic?.id))
+          ?.map((clinic) => ({
+            id: clinic?.id ?? '',
+            label: clinic?.name ?? '',
+            value: clinic?.id ?? '',
+          }))
+      );
+    }
+  }, [clinicsData?.allPortalClinics, state?.clinicIds]);
+
   return (
     <div className="bg-adminPortalBg h-full rounded-2xl p-4">
       <div className="rounded-xl bg-white p-12">
@@ -63,7 +115,7 @@ export const Referrals = () => {
           rows={rows}
           columns={columns}
           loading={{
-            isLoading: loading,
+            isLoading: loading || loadingClinics,
             size: 'medium',
             spinnerColor: 'adminPortalBg',
             backgroundColor: 'secondary',
@@ -78,7 +130,9 @@ export const Referrals = () => {
               className: 'mt-1',
               type: 'search-dropdown',
               placeholder: 'Clinic',
-              options: [],
+              options: clinicOptions,
+              selectedOptions: selectedClinic,
+              onChange: setSelectedClinic,
             },
             {
               className: 'w-64 h-11',
@@ -91,16 +145,19 @@ export const Referrals = () => {
               selectsRange: true,
               startDate: startDateRange,
               endDate: endDateRange,
+              minDate,
               maxDate: today,
               onChange: (date) => setDateRange(date),
             },
           ]}
+          onClearFilters={onClearFilters}
           onClickRow={(row) =>
             history.push(
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
                 ':referralType',
                 formatTextToSlug(row.type)
-              )
+              ),
+              { clinicIds: selectedClinicIds } as ViewReferralDetailsRouteState
             )
           }
         />

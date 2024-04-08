@@ -13,7 +13,7 @@ const ROUTES = {
   }),
   REFERRALS: addPrefix('/referrals', {
     VIEW_REFERRAL_DETAIL: addPrefix('/view-referral-detail/:referralType', {
-      EDIT_BACK_REFERRAL: '/edit-back-referral/:client',
+      EDIT_BACK_REFERRAL: '/edit-back-referral/:visitId',
     }),
   }),
   CLASSROOM: addPrefix('/classroom', {
