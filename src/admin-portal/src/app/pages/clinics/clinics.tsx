@@ -1,9 +1,9 @@
+import { useUserRole } from '../../hooks/useUserRole';
 import ClinicsAdminView from './main-view/admin-view/clinics';
 import { ClinicsTeamLeadView } from './main-view/team-lead-view/clinics';
 
 export const ClinicsMainPage = () => {
-  // TODO: replace with real user role
-  const isTeamLead = true;
+  const { isTeamLead } = useUserRole();
 
   if (isTeamLead) {
     return <ClinicsTeamLeadView />;
