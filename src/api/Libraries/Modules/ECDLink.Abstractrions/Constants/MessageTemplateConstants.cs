@@ -6,6 +6,7 @@
         public const string InvitationLink = "InvitationLink";
         public const string PasswordResetLink = "PasswordResetLink";
         public const string VerifyEmailAddressLink = "VerifyEmailAddressLink";
+        public const string VerifyCellphoneLink = "VerifyCellphoneLink";
 
         public const string FirstName = "FirstName";
         public const string ApplicationName = "ApplicationName";

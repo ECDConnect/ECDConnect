@@ -26,6 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public string JobTitle { get; set; }
         public bool IsRegistered { get; set; }
+        public string WelcomeMessage { get; set; }
     }
 
     public interface TeamLeadJoin<TKey>

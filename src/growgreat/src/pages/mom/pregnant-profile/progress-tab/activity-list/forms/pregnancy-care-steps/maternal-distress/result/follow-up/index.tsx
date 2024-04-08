@@ -26,7 +26,8 @@ export const MaternalDistressFollowUpStep = ({
     const followUp = previousVisit?.visitDataStatus?.find(
       (item) =>
         item?.section === maternalDistressVisitSection &&
-        item.visitData?.visitName === activitiesTypes.dangerSigns
+        (item.visitData?.visitName === activitiesTypes.dangerSigns ||
+          item.visitData?.visitName === activitiesTypes.pregnancyCare)
     )?.comment;
 
     const [, message, list] = followUp?.match(/(.+?)(<.*>)/) ?? [];
@@ -38,7 +39,11 @@ export const MaternalDistressFollowUpStep = ({
       li?.textContent?.trim()
     ) || []) as string[];
 
-    return { message: `${name} ${message}`, list: sentences };
+    if (message) {
+      return { message: `${name} ${message}`, list: sentences };
+    } else {
+      return { message: `${followUp}` };
+    }
   }, [name, previousVisit?.visitDataStatus]);
 
   useLayoutEffect(() => {

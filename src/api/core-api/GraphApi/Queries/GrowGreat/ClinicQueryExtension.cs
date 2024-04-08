@@ -1,6 +1,8 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.Services;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
@@ -14,6 +16,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,12 +57,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public ClinicModel GetClinicById(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IPointsEngineService pointsEngineService,
+            [Service] IReferralService referralService,
             IGenericRepositoryFactory repoFactory,
             Guid clinicId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
             var pointsLibraryRepo = repoFactory.CreateRepository<PointsLibrary>(userContext: uId);
+
+            referralService.GetReferralsSummaryForClinics(new List<Guid> { clinicId }, new DateTime(2024, 1, 1), DateTime.Now);
 
             var clinic = clinicRepo.GetAll()
                 .Where(x => x.Id == clinicId)

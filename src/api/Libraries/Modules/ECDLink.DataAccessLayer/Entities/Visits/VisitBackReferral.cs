@@ -16,6 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits {
         public string Question { get; set; }
         public string Answer { get; set; }
         public string Comment { get; set; }
+        public string AdminComment { get; set; }
     }
 
     public interface VisitBackReferralJoin<TKey> {

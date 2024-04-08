@@ -523,7 +523,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
                         continue;
                     }
-                    await notificationManager.SendInvitationAsync(user, token);
+                    await notificationManager.SendTeamLeadInvitationAsync(user, token);
                 }
                 catch (Exception ex)
                 {

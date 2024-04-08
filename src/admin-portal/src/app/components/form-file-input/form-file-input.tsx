@@ -19,6 +19,7 @@ import {
 import { videoExtensions } from '../../utils/constants';
 import themesIcons from './components/themeIcons/themeIcons';
 import { SearchCircleIcon } from '@heroicons/react/outline';
+import { FieldType } from '../../pages/content-management/content-management-models';
 
 export interface FileModel {
   fileName: string;
@@ -245,6 +246,12 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      setValue(nameProp, '');
+    }
+  }, [error, nameProp, setValue]);
+
   const handleDragOver = (event: any) => {
     if (event) {
       event.preventDefault();
@@ -279,48 +286,29 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
   return (
     <>
-      {isSubcategoryInput ? (
-        <>
-          <label htmlFor={nameProp} className="font-h4 block pb-1 font-bold">
-            {label}
-          </label>
-          {isIconInput ? (
-            <label
-              htmlFor={nameProp}
-              className="font-md block pb-1 text-sm text-gray-900"
-            >
-              Size limit:{' '}
-              <span className="text-errorMain font-semibold">1MB</span>. To
-              improve the image position & size, edit the image to fit 64px by
-              64px before uploading.
-            </label>
-          ) : (
-            <label
-              htmlFor={nameProp}
-              className="font-md block pb-1 text-sm text-gray-900"
-            >
-              Size limit:{' '}
-              <span className="text-errorMain font-semibold">1MB</span>. To
-              improve the image position & size, edit the image to fit 32px by
-              32px before uploading.
-            </label>
-          )}
-        </>
-      ) : (
-        <label
-          htmlFor={nameProp}
-          className="font-lg block pb-1 text-sm text-gray-900"
-        >
-          {label}
-          {acceptedFormats && !isThemeFormFile && (
-            <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
-          )}
-        </label>
+      <label
+        htmlFor={nameProp}
+        className="font-lg block pb-1 text-sm text-gray-900"
+      >
+        {label}
+        {acceptedFormats && !isThemeFormFile && (
+          <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
+        )}
+      </label>
+
+      {nameProp === FieldType.Image && acceptedFormats?.length > 0 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit:
+          <span className="text-errorMain font-semibold">
+            {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
+          </span>{' '}
+          MB.
+        </p>
       )}
 
       {isPdfExtension && acceptedFormats?.length === 1 && (
         <p className="text-textMid mb-2 text-sm">
-          Size limit:{' '}
+          Size limit:
           <span className="text-errorMain font-semibold">
             {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
           </span>{' '}
@@ -330,7 +318,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
       {isVideoInput && acceptedFormats?.length === 2 && (
         <p className="text-textMid mb-2 text-sm">
-          Size limit:{' '}
+          Size limit:
           <span className="text-errorMain font-semibold">
             {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
           </span>{' '}
@@ -381,7 +369,9 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         ) : (
           <div
-            className="bg-adminPortalBg flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
+            className={`${
+              contentUrl ? 'bg-darkBlue' : 'bg-adminPortalBg'
+            } flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5`}
             style={
               file
                 ? {
@@ -426,14 +416,34 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                       />
                     )}
                     <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
-                      <DesktopComputerIcon className="mr-4 h-5 w-5">
-                        {' '}
-                      </DesktopComputerIcon>
-                      Browse my computer
+                      <DesktopComputerIcon className="mr-4 h-5 w-5" />
+                      {file || contentUrl ? (
+                        <Typography
+                          type={'h4'}
+                          color={'white'}
+                          text={isVideoInput ? 'Change video' : 'Change image'}
+                        />
+                      ) : (
+                        <Typography
+                          type={'h4'}
+                          color={'white'}
+                          text={'Browse my computer'}
+                        />
+                      )}
                     </div>
-                    <p className="text-md py-2 text-gray-700">
-                      or drag file here
-                    </p>
+                    {file || contentUrl ? (
+                      <Typography
+                        type={'h4'}
+                        color={'white'}
+                        text={'or drag file here'}
+                      />
+                    ) : (
+                      <Typography
+                        type={'h4'}
+                        color={'textMid'}
+                        text={'or drag file here'}
+                      />
+                    )}
                   </>
                 ) : (
                   <>

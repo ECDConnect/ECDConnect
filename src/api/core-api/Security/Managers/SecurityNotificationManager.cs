@@ -4,13 +4,9 @@ using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
-using HotChocolate;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Threading.Tasks;
 
@@ -104,6 +100,25 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.VerifyEmailAddressLink, verifyEmailCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task RequestVerifyCellphoneNumberAsync(ApplicationUser user, Uri hostUrl)
+        {
+            var token = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PendingPhoneNumber);
+
+            var encodedToken = TokenHelper.EncodeToken(token);
+            var defaultVerificationUrl = new Uri(hostUrl, "/api/authentication/" + TemplateTypeConstants.VerifyCellphoneNumber.ToString()).ToString();
+            var verificationUrl = $"{_options?.Value?.VerifyCellphoneNumberUrl ?? defaultVerificationUrl}";
+            var verifyCellphoneNumberCallback = $"{verificationUrl}?username={user.UserName}&token={encodedToken}";
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.VerifyCellphoneNumber)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.VerifyCellphoneLink, verifyCellphoneNumberCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
         }

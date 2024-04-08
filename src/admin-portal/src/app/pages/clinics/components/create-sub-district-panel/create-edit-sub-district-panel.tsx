@@ -15,7 +15,7 @@ import {
   subDistrictModel,
   subDistrictInitialValues,
   subDistrictSchema,
-} from '../../clinics.types';
+} from '../../main-view/admin-view/clinics.types';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';

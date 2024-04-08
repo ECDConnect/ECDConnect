@@ -4,7 +4,6 @@ import DynamicStaticSelector from '../../../../components/dynamic-static-selecto
 import FormColorField from '../../../../components/form-color-field/form-color-field';
 import FormField from '../../../../components/form-field/form-field';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
-import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 import {
   ActivitiesTitles,
   ContentManagementView,
@@ -16,8 +15,10 @@ import {
 import { Alert, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 import { ContentForms } from '../../../../constants/content-management';
+import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
+const accpedFormatsWithPdf = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg', 'pdf'];
 const acceptedVideoFormats = ['mp4', 'mov'];
 const allowedVideoFileSize = 13631488;
 
@@ -99,7 +100,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   useEffect(() => {
     if (
-      template?.title === TemplateTypenames.DanngerSigns &&
+      template?.title === TemplateTypenames.DangerSigns &&
       template?.fields?.[0]?.selectedLanguageId !== defaultLanguageId &&
       contentView?.content
     ) {
@@ -128,15 +129,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     template?.fields,
     template.title,
   ]);
-
-  useEffect(() => {
-    onStateChange(
-      'subCategories',
-      contentView?.content?.['subCategories']
-        ?.map((item) => item?.id)
-        ?.toString()
-    );
-  }, []);
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields?.map((field) => {
@@ -212,6 +204,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               </div>
             );
           }
+
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -221,6 +214,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     field.contentValue ? field.contentValue.value : undefined
                   }
                   onStateChange={(data) => onStateChange(propName, data)}
+                  subLabel={
+                    isRequired
+                      ? 'You must add at least one content section.'
+                      : 'Optional'
+                  }
                 />
               </div>
               {isRequired &&
@@ -276,7 +274,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormFileInput
-                  acceptedFormats={acceptedFileFormats || acceptedFormats}
+                  acceptedFormats={
+                    template?.title === TemplateTypenames.NatalGraphic
+                      ? accpedFormatsWithPdf
+                      : acceptedFileFormats || acceptedFormats
+                  }
                   label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   contentUrl={

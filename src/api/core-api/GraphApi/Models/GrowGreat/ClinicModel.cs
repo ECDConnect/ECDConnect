@@ -5,10 +5,14 @@ using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
-    public class ClinicModel
+    public class BaseClinicModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class ClinicModel : BaseClinicModel
+    {
         public string PhoneNumber { get; set; }
         public SiteAddressModel SiteAddress { get; set; }
         public GrowGreatLeagueModel League { get; set; }

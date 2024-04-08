@@ -431,7 +431,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         onClose={() => exitUpdateEvent()}
         displayOffline={!isOnline}
       >
-        <div className={'mb-24 px-4 pt-4'}>
+        <div className={'mb-32 px-4 pt-4'}>
           <FormInput<CalendarAddEventFormModel>
             className="mb-4"
             label="Name your event"

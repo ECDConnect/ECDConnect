@@ -62,6 +62,3 @@ alter table public."HealthCareWorker" add "ClickedTeamTab" bool not null default
 
 ALTER TABLE public."League" ADD "StartDate" timestamp NULL;
 ALTER TABLE public."League" ADD "EndDate" timestamp NULL;
-
-ALTER TABLE public."TeamLead" DROP column "ClinicId";
-ALTER TABLE public."HealthCareWorker" DROP column "TeamLeadId";
