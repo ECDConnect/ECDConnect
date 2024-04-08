@@ -187,7 +187,7 @@ export const CalendarSearchParticipant: React.FC<
         onBack={onSearchDone}
         onSearchButtonClick={onSearch}
         onClickItem={onParticipantAdd}
-        contentClassName="mb-32"
+        contentClassName="mb-48"
       >
         <div></div>
       </SearchHeader>
