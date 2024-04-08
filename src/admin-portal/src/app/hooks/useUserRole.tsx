@@ -1,16 +1,19 @@
+import { useMemo } from 'react';
 import { UserRoles } from '../constants/user';
 import { useUser } from './useUser';
 
 export const useUserRole = () => {
   const { user } = useUser();
 
-  const isTeamLead = user?.roles?.some((x) => x.name === UserRoles.TeamLead);
-  const isAdministrator = user?.roles?.some(
-    (x) => x.name === UserRoles.Administrator
-  );
-  const isSuperAdmin = user?.roles?.some(
-    (x) => x.name === UserRoles.SuperAdmin
-  );
+  const roles = useMemo(() => {
+    const rolesSet = new Set(user?.roles?.map((role) => role.name));
 
-  return { isTeamLead, isAdministrator, isSuperAdmin };
+    return {
+      isTeamLead: rolesSet.has(UserRoles.TeamLead),
+      isAdministrator: rolesSet.has(UserRoles.Administrator),
+      isSuperAdmin: rolesSet.has(UserRoles.SuperAdmin),
+    };
+  }, [user]);
+
+  return roles;
 };
