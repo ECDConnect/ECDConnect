@@ -91,9 +91,9 @@ namespace EcdLink.Api.CoreApi.Services
                     Province = district.Province,
                     SubDistricts = district.SubDistricts.Where(x => x.IsActive).ToList(),
                     TotalSubDistricts = district.SubDistricts.Where(x => x.IsActive).Count(),
-                    TotalClinics = clinics.Where(x => x.SubDistrict.DistrictId == district.Id).Distinct().Count(),
-                    TotalTeamLeads = clinicTeamLeads.Where(x => x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count(),
-                    TotalHCWs = hCWs.Where(x => x.Clinic.SubDistrict != null && x.Clinic.SubDistrict.DistrictId == district.Id).Distinct().Count()
+                    TotalClinics = clinics.Where(x => x.SubDistrictId == district.Id).Distinct().Count(),
+                    TotalTeamLeads = clinicTeamLeads.Where(x => x.Clinic.SubDistrictId == district.Id).Distinct().Count(),
+                    TotalHCWs = hCWs.Where(x => x.Clinic.SubDistrictId == district.Id).Distinct().Count()
                 });
             }
 
