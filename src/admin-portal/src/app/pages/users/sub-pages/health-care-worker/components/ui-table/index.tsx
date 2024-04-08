@@ -69,6 +69,10 @@ export default function UiTable({
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const registeredUsers = selectedUsers?.filter(
+    (item) => item?.isRegistered === true
+  );
+  const registeredusersIds = registeredUsers?.map((item) => item?.userId);
   const usersWithoutPhoneNumber = selectedUsers?.filter(
     (item) => !item?.user?.phoneNumber
   );
@@ -76,7 +80,9 @@ export default function UiTable({
     (item) => item?.userId
   );
   const filteredRowsByPhoneNumber = selectedRows.filter(
-    (item) => !usersWithoutPhoneNumberIds.includes(item)
+    (item) =>
+      !usersWithoutPhoneNumberIds?.includes(item) &&
+      !registeredusersIds?.includes(item)
   );
   const disableBulkButtons =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
@@ -629,7 +635,7 @@ export default function UiTable({
           className="rounded-xl px-6 py-0"
           type="outlined"
           isLoading={deactivating}
-          disabled={deactivating || disableBulkButtons || isAllInactive}
+          disabled={deactivating || isAllInactive}
           color="tertiary"
           onClick={handleBulkDelete}
         >

@@ -68,6 +68,10 @@ export default function UiTable({
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const registeredUsers = selectedUsers?.filter(
+    (item) => item?.isRegistered === true
+  );
+  const registeredusersIds = registeredUsers?.map((item) => item?.userId);
   const usersWithoutPhoneNumber = selectedUsers?.filter(
     (item) => !item?.user?.phoneNumber
   );
@@ -75,7 +79,9 @@ export default function UiTable({
     (item) => item?.userId
   );
   const filteredRowsByPhoneNumber = selectedRows.filter(
-    (item) => !usersWithoutPhoneNumberIds.includes(item)
+    (item) =>
+      !usersWithoutPhoneNumberIds.includes(item) &&
+      !registeredusersIds?.includes(item)
   );
   const disableBulkButtons =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
@@ -623,11 +629,7 @@ export default function UiTable({
           <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
-            color={
-              deactivating || disableBulkButtons || isAllInactive
-                ? 'textMid'
-                : 'tertiary'
-            }
+            color={deactivating || isAllInactive ? 'textMid' : 'tertiary'}
             text={'Deactivate User'}
           ></Typography>
         </Button>
