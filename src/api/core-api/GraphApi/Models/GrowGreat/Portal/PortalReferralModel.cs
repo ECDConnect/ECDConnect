@@ -6,6 +6,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
     {
         public Guid VisitId { get; set; }
         public Guid VisitDataStatusId { get; set; }
+        public Guid? VisitBackReferralId { get; set; }
         public string Type { get; set; }
         public string Client { get; set; }
         public string HealthCareWorker { get; set; }

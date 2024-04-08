@@ -56,6 +56,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return _visitBackReferralRepo.Insert(referral);
         }
 
+        public VisitBackReferral AddVisitBackReferralAdminComment(Guid visiBackReferralId, string comment)
+        {
+            var referral = _visitBackReferralRepo.GetById(visiBackReferralId);
+
+            referral.AdminComment = comment;
+
+            return _visitBackReferralRepo.Update(referral);
+        }
+
         private VisitBackReferral GetVisitBackReferralFromInputModel(VisitBackReferralModel input, string applicationUserId)
         {
             if (input == null)

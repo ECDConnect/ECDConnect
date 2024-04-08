@@ -119,8 +119,9 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     VisitId = referral.VisitId,
                     VisitDataStatusId = referral.VisitDataStatusId,
+                    VisitBackReferralId = referral.BackReferral?.Id,
                     Type = type,
-                    AdminBackReferralNote = "Todo",
+                    AdminBackReferralNote = referral.BackReferral?.AdminComment,
                     CompletedDate = referral.CompletedDate,
                     CreatedDate = referral.CreatedDate,
                     HealthCareWorkerId = referral.IsPregnantMomVisit ? referral.Mother.HealthCareWorkerId.Value : referral.Infant.Caregiver.HealthCareWorkerId.Value,

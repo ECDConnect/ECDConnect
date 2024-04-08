@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
@@ -402,6 +403,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
                 var clinicNameList = new List<string>();
                 var clinicIds = new List<Guid>();
+                var clinics = new List<BaseClinicModel>();
                 foreach (var item in clinicTeamLeadRecords)
                 {
                     var league = item.Clinic.Leagues.Where(x => x.IsActive).FirstOrDefault();
@@ -413,6 +415,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                         clinicNameList.Add(item.Clinic.Name);
                     }
                     clinicIds.Add(item.ClinicId);
+                    clinics.Add(new BaseClinicModel
+                    {
+                        Id = item.Clinic.Id,
+                        Name = item.Clinic.Name,
+                    });
                 }
                 var healthCareWorkers = hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId != null && clinicIds.Contains((Guid)x.ClinicId))
                     .Include(x => x.Mothers)
@@ -428,7 +435,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var totalMeetingReportsSubmitted = 0;
                 var totalInFieldVisitsCompleted = 0;
                 return new PortalTeamLeadModel(teamLead.User, clinicNames, siteAddress, clinicNameList.Count, totalHealthCareWorkers,
-                                          totalPregnantMoms, totalChildren, totalMeetingReportsSubmitted, totalInFieldVisitsCompleted);
+                                          totalPregnantMoms, totalChildren, totalMeetingReportsSubmitted, totalInFieldVisitsCompleted, clinics);
             }
             return null;
         }
