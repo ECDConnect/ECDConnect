@@ -246,6 +246,12 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      setValue(nameProp, '');
+    }
+  }, [error, nameProp, setValue]);
+
   const handleDragOver = (event: any) => {
     if (event) {
       event.preventDefault();
