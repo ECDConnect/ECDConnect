@@ -29,7 +29,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         if (targetPerc < 50) {
           return `This team is in the bottom ${targetRanking?.toFixed(
             2
-          )}% of other GGC teams for pregnant mom folders opened!`;
+          )}% for number of pregnant mom folders opened!`;
         }
         return `This team is doing better than ${targetRanking?.toFixed(
           2
@@ -38,11 +38,11 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         if (targetPerc < 50) {
           return `This team is in the bottom ${targetRanking?.toFixed(
             2
-          )}%f other GGC teams for child folders opened compared to other GGC teams.`;
+          )}% for number of child folders opened compared to other GGC teams.`;
         }
-        return `This team is in the top ${targetRanking?.toFixed(
+        return `This team is doing better than ${targetRanking?.toFixed(
           2
-        )}% of other GGC teams for child folders opened compared to other GGC teams.`;
+        )}% of other GGC teams for child folders opened.`;
     }
   };
 
@@ -92,16 +92,16 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         label: `hide`,
         data: [targetPerc, 100 - targetPerc],
         borderColor: [
-          renderGraphColor(targetPercColor),
           renderGraphBackGgroundColor(targetPercColor),
+          renderGraphColor(targetPercColor),
         ],
         borderWidth: 4,
         showLine: false,
         pointRadius: 1,
         pointBackgroundColor: 'white',
         backgroundColor: [
-          renderGraphColor(targetPercColor),
           renderGraphBackGgroundColor(targetPercColor),
+          renderGraphColor(targetPercColor),
         ],
       },
     ],

@@ -197,6 +197,7 @@ export const ViewClinicReport = ({
         </div>
         <div className="flex gap-x-4">
           <ReportsDataChart
+            key={clinicPointsData}
             clinic={clinic}
             targetPerc={clinicPointsData?.clinicPointsData?.momsTargetPerc}
             targetPercColor={
@@ -210,6 +211,7 @@ export const ViewClinicReport = ({
             icon={Pregnant}
           />
           <ReportsDataChart
+            key={clinicPointsData}
             clinic={clinic}
             targetPerc={clinicPointsData?.clinicPointsData?.childrenTargetPerc}
             targetPercColor={
