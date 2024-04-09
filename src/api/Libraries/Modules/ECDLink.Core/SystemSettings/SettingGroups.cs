@@ -10,15 +10,6 @@
             {
                 public const string EmailGroupBase = "Notifications.EmailProviders";
 
-                public static class SendGrid
-                {
-                    public const string SendGridGrouping = "Notifications.EmailProviders.SendGrid";
-
-                    public const string User = "Notifications.EmailProviders.SendGrid.User";
-                    public const string Key = "Notifications.EmailProviders.SendGrid.Key";
-                    public const string DefaultEmail = "Notifications.EmailProviders.SendGrid.FromEmail";
-                }
-
                 public static class Smtp
                 {
                     public const string SmtpGrouping = "Notifications.EmailProviders.Smtp";
@@ -32,6 +23,7 @@
                     public const string SmtpServerSecondaryAddress = "Notifications.EmailProviders.Smtp.SmtpServerSecondaryAddress";
                     public const string SmtpServerSecondaryPort = "Notifications.EmailProviders.Smtp.SmtpServerSecondaryPort";
                     public const string RetryCount = "Notifications.EmailProviders.Smtp.RetryCount";
+                    public const string DevOverrideEmailAddress = "Notifications.EmailProviders.Smtp.DevOverrideEmailAddress";
                 }
             }
 
