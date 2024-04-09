@@ -137,6 +137,7 @@
 
                 public const string Signup = "General.Callback.Invitations.Signup";
                 public const string AdminSignup = "General.Callback.Invitations.AdminSignup";
+                public const string TeamLeadSignup = "General.Callback.Invitations.TeamLeadSignup";
             }
 
             public static class Security

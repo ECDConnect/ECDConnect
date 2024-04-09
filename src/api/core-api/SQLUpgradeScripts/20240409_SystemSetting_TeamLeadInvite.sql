@@ -1,0 +1,3 @@
+INSERT INTO public."SystemSetting"
+("Id", "Grouping", "FullPath", "Name", "Value", "IsSystemValue", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId")
+VALUES('c45ec9fb-60f5-4b24-936c-11193cedc9a1', 'General.Callback.Invitations', 'General.Callback.Invitations.TeamLeadSignup', 'TeamLeadSignup', 'https://growgreat-develop-portal.azurewebsites.net/team-lead-register/', true, true, current_date, current_date, null, '39077d0e-e443-4076-aaf2-978dc6805aa0');
