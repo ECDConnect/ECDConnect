@@ -704,6 +704,12 @@ export type AuditLogTypeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type BaseClinicModel = {
+  __typename?: 'BaseClinicModel';
+  id: Scalars['UUID'];
+  name?: Maybe<Scalars['String']>;
+};
+
 export type BeCreativeUploadInput = {
   clubId: Scalars['UUID'];
   dateUploaded: Scalars['DateTime'];
@@ -6176,6 +6182,7 @@ export type Mutation = {
   addUser?: Maybe<ApplicationUser>;
   addUsersToRole: Scalars['Boolean'];
   addVisitBackReferral?: Maybe<VisitBackReferral>;
+  addVisitBackReferralAdminComment?: Maybe<VisitBackReferral>;
   addVisitData: Scalars['Boolean'];
   autoSubmitStatement?: Maybe<ResultReturnObject>;
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
@@ -6548,7 +6555,6 @@ export type Mutation = {
   sendGGAddBreastfeedingClubNotification: Scalars['Boolean'];
   sendGGBronzeTierPointsTeamNotification: Scalars['Boolean'];
   sendGGChildGrowthIssueNotification: Scalars['Boolean'];
-  sendGGChildMUACMalnutritionNotification: Scalars['Boolean'];
   sendGGChildMUACNotification: Scalars['Boolean'];
   sendGGChildOlderThanFiveNotification: Scalars['Boolean'];
   sendGGClinicVisitsNotUpToDateNotification: Scalars['Boolean'];
@@ -7051,6 +7057,11 @@ export type MutationAddUsersToRoleArgs = {
 
 export type MutationAddVisitBackReferralArgs = {
   input?: InputMaybe<VisitBackReferralModelInput>;
+};
+
+export type MutationAddVisitBackReferralAdminCommentArgs = {
+  comment?: InputMaybe<Scalars['String']>;
+  visitBackReferralId: Scalars['UUID'];
 };
 
 export type MutationAddVisitDataArgs = {
@@ -8659,11 +8670,6 @@ export type MutationSendGgBronzeTierPointsTeamNotificationArgs = {
 export type MutationSendGgChildGrowthIssueNotificationArgs = {
   childFirstName?: InputMaybe<Scalars['String']>;
   infantUserId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgChildMuacMalnutritionNotificationArgs = {
-  childFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -11018,9 +11024,88 @@ export type PortalNatalModel = {
   updatedDate: Scalars['DateTime'];
 };
 
+export type PortalReferralModel = {
+  __typename?: 'PortalReferralModel';
+  adminBackReferralNote?: Maybe<Scalars['String']>;
+  client?: Maybe<Scalars['String']>;
+  completedDate?: Maybe<Scalars['DateTime']>;
+  createdDate: Scalars['DateTime'];
+  healthCareWorker?: Maybe<Scalars['String']>;
+  healthCareWorkerBackReferralNote?: Maybe<Scalars['String']>;
+  healthCareWorkerId: Scalars['UUID'];
+  isBackReferralCompleted: Scalars['Boolean'];
+  isCompleted: Scalars['Boolean'];
+  text?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  visitBackReferralId?: Maybe<Scalars['UUID']>;
+  visitDataStatusId: Scalars['UUID'];
+  visitId: Scalars['UUID'];
+};
+
+export type PortalReferralModelFilterInput = {
+  adminBackReferralNote?: InputMaybe<StringOperationFilterInput>;
+  and?: InputMaybe<Array<PortalReferralModelFilterInput>>;
+  client?: InputMaybe<StringOperationFilterInput>;
+  completedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  createdDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  healthCareWorker?: InputMaybe<StringOperationFilterInput>;
+  healthCareWorkerBackReferralNote?: InputMaybe<StringOperationFilterInput>;
+  healthCareWorkerId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  isBackReferralCompleted?: InputMaybe<BooleanOperationFilterInput>;
+  isCompleted?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<PortalReferralModelFilterInput>>;
+  text?: InputMaybe<StringOperationFilterInput>;
+  type?: InputMaybe<StringOperationFilterInput>;
+  visitBackReferralId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  visitDataStatusId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  visitId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type PortalReferralModelSortInput = {
+  adminBackReferralNote?: InputMaybe<SortEnumType>;
+  client?: InputMaybe<SortEnumType>;
+  completedDate?: InputMaybe<SortEnumType>;
+  createdDate?: InputMaybe<SortEnumType>;
+  healthCareWorker?: InputMaybe<SortEnumType>;
+  healthCareWorkerBackReferralNote?: InputMaybe<SortEnumType>;
+  healthCareWorkerId?: InputMaybe<SortEnumType>;
+  isBackReferralCompleted?: InputMaybe<SortEnumType>;
+  isCompleted?: InputMaybe<SortEnumType>;
+  text?: InputMaybe<SortEnumType>;
+  type?: InputMaybe<SortEnumType>;
+  visitBackReferralId?: InputMaybe<SortEnumType>;
+  visitDataStatusId?: InputMaybe<SortEnumType>;
+  visitId?: InputMaybe<SortEnumType>;
+};
+
+export type PortalReferralsSummaryModel = {
+  __typename?: 'PortalReferralsSummaryModel';
+  backReferralsMade: Scalars['Int'];
+  referralsMade: Scalars['Int'];
+  referralsRaised: Scalars['Int'];
+  type?: Maybe<Scalars['String']>;
+};
+
+export type PortalReferralsSummaryModelFilterInput = {
+  and?: InputMaybe<Array<PortalReferralsSummaryModelFilterInput>>;
+  backReferralsMade?: InputMaybe<ComparableInt32OperationFilterInput>;
+  or?: InputMaybe<Array<PortalReferralsSummaryModelFilterInput>>;
+  referralsMade?: InputMaybe<ComparableInt32OperationFilterInput>;
+  referralsRaised?: InputMaybe<ComparableInt32OperationFilterInput>;
+  type?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type PortalReferralsSummaryModelSortInput = {
+  backReferralsMade?: InputMaybe<SortEnumType>;
+  referralsMade?: InputMaybe<SortEnumType>;
+  referralsRaised?: InputMaybe<SortEnumType>;
+  type?: InputMaybe<SortEnumType>;
+};
+
 export type PortalTeamLeadModel = {
   __typename?: 'PortalTeamLeadModel';
   clinicNames?: Maybe<Scalars['String']>;
+  clinics?: Maybe<Array<Maybe<BaseClinicModel>>>;
   firstName?: Maybe<Scalars['String']>;
   idNumber?: Maybe<Scalars['String']>;
   lastSeen: Scalars['DateTime'];
@@ -12858,9 +12943,11 @@ export type Query = {
   previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
   principalProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
+  referrals?: Maybe<Array<Maybe<PortalReferralModel>>>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  referralsSummary?: Maybe<Array<Maybe<PortalReferralsSummaryModel>>>;
   removalDetailsForPractitioner?: Maybe<PractitionerRemovalHistory>;
   removalDetailsForPractitioners?: Maybe<
     Array<Maybe<PractitionerRemovalHistory>>
@@ -15626,6 +15713,16 @@ export type QueryPrincipalProgressReportSummaryArgs = {
   reportingPeriod?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryReferralsArgs = {
+  clinicIds?: InputMaybe<Array<Scalars['UUID']>>;
+  endDate: Scalars['DateTime'];
+  order?: InputMaybe<Array<PortalReferralModelSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  startDate: Scalars['DateTime'];
+  type?: InputMaybe<Scalars['String']>;
+  where?: InputMaybe<PortalReferralModelFilterInput>;
+};
+
 export type QueryReferralsForInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
   visitId?: InputMaybe<Scalars['String']>;
@@ -15638,6 +15735,15 @@ export type QueryReferralsForMotherArgs = {
 
 export type QueryReferralsForVisitIdArgs = {
   visitId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryReferralsSummaryArgs = {
+  clinicIds?: InputMaybe<Array<Scalars['UUID']>>;
+  endDate: Scalars['DateTime'];
+  order?: InputMaybe<Array<PortalReferralsSummaryModelSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  startDate: Scalars['DateTime'];
+  where?: InputMaybe<PortalReferralsSummaryModelFilterInput>;
 };
 
 export type QueryRemovalDetailsForPractitionerArgs = {
@@ -17914,6 +18020,7 @@ export type Visit = {
 
 export type VisitBackReferral = {
   __typename?: 'VisitBackReferral';
+  adminComment?: Maybe<Scalars['String']>;
   answer?: Maybe<Scalars['String']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
@@ -17927,6 +18034,7 @@ export type VisitBackReferral = {
 };
 
 export type VisitBackReferralFilterInput = {
+  adminComment?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<VisitBackReferralFilterInput>>;
   answer?: InputMaybe<StringOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
@@ -17942,6 +18050,7 @@ export type VisitBackReferralFilterInput = {
 };
 
 export type VisitBackReferralInput = {
+  AdminComment?: InputMaybe<Scalars['String']>;
   Answer?: InputMaybe<Scalars['String']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -17962,6 +18071,7 @@ export type VisitBackReferralModelInput = {
 };
 
 export type VisitBackReferralSortInput = {
+  adminComment?: InputMaybe<SortEnumType>;
   answer?: InputMaybe<SortEnumType>;
   comment?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
