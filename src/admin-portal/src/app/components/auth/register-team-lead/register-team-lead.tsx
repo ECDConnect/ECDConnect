@@ -1,12 +1,20 @@
 import {
   Config,
   initialRegisterValues,
-  LocalStorageKeys,
   RegisterRequestModel,
   registerSchema,
   useTheme,
 } from '@ecdlink/core';
-import { Alert, Button, Divider, FormInput, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Alert,
+  Button,
+  Dialog,
+  DialogPosition,
+  Divider,
+  FormInput,
+  Typography,
+} from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -24,7 +32,7 @@ interface RouteParams {
 export default function RegisterTeamLead(
   props: RouteComponentProps<RouteParams>
 ) {
-  const { registerUser, logout } = useAuth();
+  const { logout, registerTeamLeadUser, verifyPhoneNumber } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
@@ -53,6 +61,8 @@ export default function RegisterTeamLead(
   console.log({ formValues });
   const [showPassword, setShowPassword] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
+  const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
+    useState<boolean>(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -69,36 +79,51 @@ export default function RegisterTeamLead(
   const acceptedTerms = termsState && isValid;
 
   console.log(resetToken);
-
+  console.log({ isValid });
   const registerNewUser = async () => {
-    if (isValid) {
-      setIsLoading(true);
-      const body: RegisterRequestModel = {
-        username: formValues.username,
-        password: formValues.password,
-        token: resetToken,
-        // acceptedTerms: formValues.acceptedTerms,
-      };
-      const isAuthenticated = await registerUser(body, Config.authApi).catch(
-        () => {
-          setDisplayError(true);
-          setIsLoading(false);
-        }
-      );
+    console.log('entrouuuuu');
 
-      if (isAuthenticated) {
-        setIsLoading(false);
-        logout();
-        history.push('/');
-      } else {
-        setIsLoading(false);
-        setDisplayError(true);
-      }
+    const informationVerified = await verifyPhoneNumber(Config.authApi, {
+      phoneNumber: formValues.phoneNumber,
+      token: resetToken || '',
+      username: formValues.idField || '',
+    });
 
-      setTimeout(() => {
-        setDisplayError(false);
-      }, 5000);
+    if (informationVerified.verified) {
+      // proceedToPhoneValidation(formValue, authToken || '');
+    } else if (informationVerified.errorCode === 1) {
+      setPresentCellNumberMismatch(true);
     }
+
+    console.log({ informationVerified });
+    // if (resetToken) {
+    //   setIsLoading(true);
+    //   const body: RegisterRequestModel = {
+    //     username: formValues.username,
+    //     password: formValues.password,
+    //     token: resetToken,
+    //     // acceptedTerms: formValues.acceptedTerms,
+    //   };
+    //   const isAuthenticated = await registerTeamLeadUser(body, Config.authApi).catch(
+    //     () => {
+    //       setDisplayError(true);
+    //       setIsLoading(false);
+    //     }
+    //   );
+
+    //   if (isAuthenticated) {
+    //     setIsLoading(false);
+    //     logout();
+    //     history.push('/');
+    //   } else {
+    //     setIsLoading(false);
+    //     setDisplayError(true);
+    //   }
+
+    //   setTimeout(() => {
+    //     setDisplayError(false);
+    //   }, 5000);
+    // }
   };
 
   const getLogoUrl = () => {
@@ -107,6 +132,10 @@ export default function RegisterTeamLead(
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
+  };
+
+  const call = () => {
+    window.open(`tel:0800 014 817`);
   };
 
   return (
@@ -267,7 +296,7 @@ export default function RegisterTeamLead(
                 type="outlined"
                 color="secondary"
                 // disabled={!isOnline}
-                onClick={() => history.push('/')}
+                onClick={() => history.push('/team-lead')}
               >
                 <Typography
                   type="help"
@@ -279,6 +308,43 @@ export default function RegisterTeamLead(
           </div>
         </div>
       </div>
+      <Dialog
+        visible={presentCellNumberMismatch}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor={'alertMain'}
+          importantText={`CHW Connect has a different cellphone number for you`}
+          detailText={
+            'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
+          }
+          paragraphs={[`Youve entered : ${formValues.phoneNumber}`]}
+          actionButtons={[
+            {
+              colour: 'secondary',
+              text: 'Edit cellphone number',
+              textColour: 'white',
+              leadingIcon: 'PencilIcon',
+              onClick: () => {
+                setPresentCellNumberMismatch(false);
+              },
+              type: 'filled',
+            },
+            {
+              colour: 'secondary',
+              text: 'Call 0800 014 817',
+              textColour: 'secondary',
+              leadingIcon: 'PhoneIcon',
+              onClick: () => {
+                setPresentCellNumberMismatch(false);
+                call();
+              },
+              type: 'outlined',
+            },
+          ]}
+        />
+      </Dialog>
     </div>
   );
 }

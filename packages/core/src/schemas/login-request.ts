@@ -11,6 +11,7 @@ export const initialRegisterValues: RegisterRequestModel = {
   preferId: undefined,
   passportField: undefined,
   phoneNumber: undefined,
+  idField: undefined,
 };
 export const initialLoginValues: LoginRequestModel = {
   email: '',
@@ -19,6 +20,8 @@ export const initialLoginValues: LoginRequestModel = {
 
 export const initialForgotPasswordValues: SimpleUserModel = {
   email: '',
+  idField: '',
+  passportField: '',
 };
 
 export const initialResetPasswordValues: PasswordResetModel = {

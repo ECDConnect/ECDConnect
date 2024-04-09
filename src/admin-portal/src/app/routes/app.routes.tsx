@@ -54,11 +54,14 @@ import ROUTES from './app.routes-constants';
 import { Referrals } from '../pages/referrals/referrals';
 import { ViewReferralDetail } from '../pages/referrals/view-referral-detail/view-referral-detail';
 import { EditBackReferral } from '../pages/referrals/edit-back-referral/edit-back-referral';
+import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
+import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
 
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
+      <Route exact path="/team-lead" component={LoginTeamLead} />
       <Route exact path="/register/:resetToken" component={Register} />
       <Route
         exact
@@ -66,6 +69,11 @@ const PublicRoutes: React.FC = () => {
         component={RegisterTeamLead}
       />
       <Route exact path="/forgot-password" component={ForgotPassword} />
+      <Route
+        exact
+        path="/team-lead-forgot-password"
+        component={TeamLeadForgotPassword}
+      />
       <Route exact path="/reset/:resetToken" component={ResetPassword} />
       <Route path={`/ecd-terms`} component={TermsPage}></Route>
     </Switch>
