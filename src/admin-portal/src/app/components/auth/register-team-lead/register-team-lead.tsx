@@ -77,7 +77,7 @@ export default function RegisterTeamLead(
 
   const termsState = watch('acceptedTerms');
   const acceptedTerms = termsState && isValid;
-
+  console.log({ formValues });
   console.log(resetToken);
   console.log({ isValid });
   const registerNewUser = async () => {
@@ -96,34 +96,35 @@ export default function RegisterTeamLead(
     }
 
     console.log({ informationVerified });
-    // if (resetToken) {
-    //   setIsLoading(true);
-    //   const body: RegisterRequestModel = {
-    //     username: formValues.username,
-    //     password: formValues.password,
-    //     token: resetToken,
-    //     // acceptedTerms: formValues.acceptedTerms,
-    //   };
-    //   const isAuthenticated = await registerTeamLeadUser(body, Config.authApi).catch(
-    //     () => {
-    //       setDisplayError(true);
-    //       setIsLoading(false);
-    //     }
-    //   );
+    if (resetToken) {
+      setIsLoading(true);
+      const body: RegisterRequestModel = {
+        username: formValues.idField,
+        password: formValues.password,
+        token: resetToken,
+        // acceptedTerms: formValues.acceptedTerms,
+      };
+      const isAuthenticated = await registerTeamLeadUser(
+        body,
+        Config.authApi
+      ).catch(() => {
+        setDisplayError(true);
+        setIsLoading(false);
+      });
 
-    //   if (isAuthenticated) {
-    //     setIsLoading(false);
-    //     logout();
-    //     history.push('/');
-    //   } else {
-    //     setIsLoading(false);
-    //     setDisplayError(true);
-    //   }
+      if (isAuthenticated) {
+        setIsLoading(false);
+        logout();
+        history.push('/');
+      } else {
+        setIsLoading(false);
+        setDisplayError(true);
+      }
 
-    //   setTimeout(() => {
-    //     setDisplayError(false);
-    //   }, 5000);
-    // }
+      setTimeout(() => {
+        setDisplayError(false);
+      }, 5000);
+    }
   };
 
   const getLogoUrl = () => {
