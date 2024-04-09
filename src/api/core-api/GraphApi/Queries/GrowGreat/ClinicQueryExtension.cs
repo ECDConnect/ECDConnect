@@ -65,8 +65,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
             var pointsLibraryRepo = repoFactory.CreateRepository<PointsLibrary>(userContext: uId);
 
-            referralService.GetReferralsSummaryForClinics(new List<Guid> { clinicId }, new DateTime(2024, 1, 1), DateTime.Now);
-
             var clinic = clinicRepo.GetAll()
                 .Where(x => x.Id == clinicId)
                 .Include(x => x.TeamLeads)
