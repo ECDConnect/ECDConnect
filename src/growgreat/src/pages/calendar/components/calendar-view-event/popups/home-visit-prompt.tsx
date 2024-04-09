@@ -33,7 +33,7 @@ export const HomeVisitPrompt = (props: HomeVisitPromptProps) => {
       return;
     }
     (async () => {
-      const nextVisitDate = await getClientPlannedCurrentVisit(
+      const nextVisit = await getClientPlannedCurrentVisit(
         {
           id: props.client.id || '',
           type: props.client.type as 'mother' | 'infant',
@@ -41,9 +41,9 @@ export const HomeVisitPrompt = (props: HomeVisitPromptProps) => {
         appDispatch
       );
       const buttons: ActionModalButton[] = [];
-      if (!!nextVisitDate) {
+      if (!!nextVisit) {
         buttons.push({
-          text: '2 month',
+          text: nextVisit.visitType?.normalizedName || '',
           textColour: 'primary',
           colour: 'primary',
           type: 'outlined',

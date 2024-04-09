@@ -65,7 +65,7 @@ const PublicRoutes: React.FC = () => {
       <Route exact path="/register/:resetToken" component={Register} />
       <Route
         exact
-        path="/register-team-lead/:resetToken"
+        path="/team-lead-register/:resetToken"
         component={RegisterTeamLead}
       />
       <Route exact path="/forgot-password" component={ForgotPassword} />

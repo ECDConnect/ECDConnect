@@ -107,10 +107,12 @@ export const getClientPlannedCurrentVisit = async (
   client: StartVisitClient,
   appDispatch: AppDispatch
 ) => {
-  const visits =
-    client.type === 'infant'
-      ? await getInfantVisits(client.id || '', appDispatch, 'visit')
-      : await getMotherVisits(client.id || '', appDispatch, 'visit');
+  var visits: VisitDto[] | undefined = undefined;
+  if (client.type === 'mother') {
+    visits = await getMotherVisits(client.id || '', appDispatch, 'visit');
+  } else if (client.type === 'infant') {
+    visits = await getInfantVisits(client.id || '', appDispatch);
+  }
   if (!visits) return undefined;
   return getCurrentVisit(visits);
 };

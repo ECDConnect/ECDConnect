@@ -1,5 +1,4 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
@@ -11,107 +10,77 @@ using ECDLink.Security.Extensions;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using System.Linq;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Security;
 
 namespace EcdLink.Api.CoreApi.Services
 {
     public class ReferralService : IReferralService
     {
+        private ApplicationUserManager _userManager;
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
-        private IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
 
         public ReferralService(
             [Service] IHttpContextAccessor contextAccessor,
+            ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
+            _userManager = userManager;
+
             _visitDataStatusRepo = repoFactory.CreateRepository<VisitDataStatus>(userContext: uId);
-            _healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
-        }
-
-        public List<PortalReferralsSummaryModel> GetReferralsSummaryForTeamLead(
-            Guid userId,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var healthCareWorkerIds = _healthCareWorkerRepo.GetAll()
-                    .Where(x => x.ClinicId.HasValue && x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId))
-                    .Select(x => x.Id)
-                    .ToList();
-
-            return GetReferralsSummary(healthCareWorkerIds, startDate, endDate);
-        }
-
-        public List<PortalReferralsSummaryModel> GetReferralsSummaryForClinics(
-            List<Guid> clinicIds,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var healthCareWorkerIds = _healthCareWorkerRepo.GetAll()
-                    .Where(x => x.ClinicId.HasValue && clinicIds.Contains(x.ClinicId.Value))
-                    .Select(x => x.Id)
-                    .ToList();
-
-            return GetReferralsSummary(healthCareWorkerIds, startDate, endDate);
-        }
-
-        public List<PortalReferralModel> GetReferralsForTeamLead(
-            Guid userId,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var healthCareWorkerIds = _healthCareWorkerRepo.GetAll()
-                    .Where(x => x.ClinicId.HasValue && x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId))
-                    .Select(x => x.Id)
-                    .ToList();
-
-            return GetReferrals(healthCareWorkerIds, startDate, endDate).ToList();
-        }
-
-        public List<PortalReferralModel> GetReferralsForClinics(
-            List<Guid> clinicIds,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var healthCareWorkerIds = _healthCareWorkerRepo.GetAll()
-                    .Where(x => x.ClinicId.HasValue && clinicIds.Contains(x.ClinicId.Value))
-                    .Select(x => x.Id)
-                    .ToList();
-
-            return GetReferrals(healthCareWorkerIds, startDate, endDate).ToList();
         }
 
         public IEnumerable<PortalReferralModel> GetReferrals(
-            List<Guid> healthCareWorkerIds,
+            Guid userId,
+            List<Guid> clinicIds,
             DateTime startDate,
             DateTime endDate)
         {
+            var currentUser = _userManager.FindByIdAsync(userId).Result;
+            var isTeamLead = _userManager.IsInRoleAsync(currentUser, RolesGG.TEAM_LEAD).Result;
+
             var referrals = _visitDataStatusRepo.GetAll()
                 .Where(x =>
                     x.Type == GGSettings.visit_data_client_referral
                     && x.VisitData.Visit.ActualVisitDate >= startDate
-                    && x.VisitData.Visit.ActualVisitDate <= endDate
-                    && (x.VisitData.Visit.MotherId.HasValue && x.VisitData.Visit.Mother.HealthCareWorkerId.HasValue && healthCareWorkerIds.Contains(x.VisitData.Visit.Mother.HealthCareWorkerId.Value)
-                        || x.VisitData.Visit.InfantId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.HasValue && healthCareWorkerIds.Contains(x.VisitData.Visit.Infant.Caregiver.HealthCareWorkerId.Value)))
-                .Select(x => new
-                {
-                    VisitDataStatusId = x.Id,
-                    IsPregnantMomVisit = x.VisitData.Visit.MotherId.HasValue, 
-                    x.VisitData.VisitName, 
-                    x.VisitData.VisitId, 
-                    x.VisitData.Question, 
-                    x.Comment, 
-                    x.IsCompleted, 
-                    x.BackReferralCompleted,
-                    BackReferral = x.BackReferral,
-                    CompletedDate = x.ReferralDateCompleted,
-                    CreatedDate = x.InsertedDate,
-                    Mother = x.VisitData.Visit.Mother,
-                    Infant = x.VisitData.Visit.Infant,
-                })
-                .ToList();
+                    && x.VisitData.Visit.ActualVisitDate <= endDate);
+               
 
-            foreach (var referral in referrals)
+            if (clinicIds.Any())
+            {
+                // Filter by CHWs at given clinics
+                referrals = referrals.Where(x =>
+                    (x.VisitData.Visit.MotherId.HasValue && x.VisitData.Visit.Mother.HealthCareWorker.ClinicId.HasValue && clinicIds.Contains(x.VisitData.Visit.Mother.HealthCareWorker.ClinicId.Value)
+                    || x.VisitData.Visit.InfantId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.HasValue && clinicIds.Contains(x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.Value)));
+            }
+            else if (isTeamLead)
+            {
+                // Filter to just the team leads CHWs
+                referrals = referrals.Where(x =>
+                   (x.VisitData.Visit.MotherId.HasValue && x.VisitData.Visit.Mother.HealthCareWorker.ClinicId.HasValue && x.VisitData.Visit.Mother.HealthCareWorker.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId))
+                   || x.VisitData.Visit.InfantId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId));
+            }
+
+            var basicReferrals = referrals.Select(x => new
+            {
+                VisitDataStatusId = x.Id,
+                IsPregnantMomVisit = x.VisitData.Visit.MotherId.HasValue,
+                x.VisitData.VisitName,
+                x.VisitData.VisitId,
+                x.VisitData.Question,
+                x.Comment,
+                x.IsCompleted,
+                x.BackReferralCompleted,
+                BackReferral = x.BackReferral,
+                CompletedDate = x.ReferralDateCompleted,
+                CreatedDate = x.InsertedDate,
+                Mother = x.VisitData.Visit.Mother,
+                Infant = x.VisitData.Visit.Infant,
+            }).ToList();
+
+            foreach (var referral in basicReferrals)
             {
                 var type = GetReferralType(referral.Comment, referral.IsPregnantMomVisit, referral.Question, referral.VisitName);
 
@@ -139,12 +108,13 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-        private List<PortalReferralsSummaryModel> GetReferralsSummary(
-            List<Guid> healthCareWorkerIds,
+        public List<PortalReferralsSummaryModel> GetReferralsSummary(
+            Guid userId,
+            List<Guid> clinicIds,
             DateTime startDate,
             DateTime endDate)
         {
-            var referrals = GetReferrals(healthCareWorkerIds, startDate, endDate);
+            var referrals = GetReferrals(userId, clinicIds, startDate, endDate);
 
             var referralModels = new Dictionary<string, PortalReferralsSummaryModel>
             {
