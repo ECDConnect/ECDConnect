@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -44,15 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             // Need to get list of relevant CHWs, for clinics or for the team leads clinics if none are provided
-            List<PortalReferralsSummaryModel> referrals;
-            if (clinicIds != null && clinicIds.Any())
-            {
-                referrals = referralService.GetReferralsSummaryForClinics(clinicIds, startDate, endDate);
-            }
-            else
-            {
-                referrals = referralService.GetReferralsSummaryForTeamLead(uId, startDate, endDate);
-            }
+            var referrals = referralService.GetReferralsSummary(uId, clinicIds, startDate, endDate);
 
             if (pagingInput == null)
             {
@@ -83,15 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             // Need to get list of relevant CHWs, for clinics or for the team leads clinics if none are provided
-            List<PortalReferralModel> referrals;
-            if (clinicIds != null && clinicIds.Any())
-            {
-                referrals = referralService.GetReferralsForClinics(clinicIds, startDate, endDate);
-            }
-            else
-            {
-                referrals = referralService.GetReferralsForTeamLead(uId, startDate, endDate);
-            }
+            var referrals = referralService.GetReferrals(uId, clinicIds, startDate, endDate).ToList();
 
             if (!string.IsNullOrWhiteSpace(type)) 
             {

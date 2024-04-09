@@ -57,7 +57,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public ClinicModel GetClinicById(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IPointsEngineService pointsEngineService,
-            [Service] IReferralService referralService,
             IGenericRepositoryFactory repoFactory,
             Guid clinicId)
         {
