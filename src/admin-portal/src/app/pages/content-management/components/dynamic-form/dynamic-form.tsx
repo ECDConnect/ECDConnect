@@ -174,13 +174,22 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Markdown:
+          if (
+            disableInputs &&
+            propName === 'dangerSignI' &&
+            !contentView?.content?.[propName]
+          ) {
+            return null;
+          }
           if (disableInputs) {
             return (
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
                   <Editor
                     label={
-                      isRequired
+                      isRequired ||
+                      (propName === 'dangerSignI' &&
+                        contentView?.content?.[propName])
                         ? `${title} "${contentView?.content?.[
                             propName
                           ]?.replace(/<[^>]*>?/gm, '')}" *`
