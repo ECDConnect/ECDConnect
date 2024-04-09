@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
 import { TenantContext } from '../../utils/constants';
+import ROUTES from '../../routes/app.routes-constants';
 
 export function Users() {
+  const location = useLocation();
+
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
@@ -92,7 +95,11 @@ export function Users() {
       <div className=" lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div
-            className="bg-adminPortalBg relative h-full rounded-xl p-12"
+            className={`bg-adminPortalBg relative h-full rounded-xl ${
+              location?.pathname?.includes(ROUTES.USERS.HEALTH_CARE_WORKERS)
+                ? ''
+                : 'p-12'
+            }  `}
             style={{ minHeight: '36rem' }}
           >
             <UserRoutes />
