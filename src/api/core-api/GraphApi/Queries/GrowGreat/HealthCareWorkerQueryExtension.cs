@@ -14,6 +14,7 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -40,6 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [UseSorting]
         public List<PortalUsersHCWModel> GetAllHealthCareWorkers(
             [Service] IHttpContextAccessor contextAccessor,
+            ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             CancellationToken cancellationToken, 
             PagedQueryInput pagingInput = null,
@@ -51,21 +53,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<string> connectUsageSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
+
+
+            // Check if team lead or admin
+            var currentUser = userManager.FindByIdAsync(uId).Result;
+            var isUserAdmin = userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR).Result;
+
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
+
+            // If only a team lead, filter to only CHWs at relavant clinics
+            var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput)
+                .Where(x => 
+                    isUserAdmin 
+                    || x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == uId));
+
+
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
             var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
             var hasFilters = false;
 
             if (cancellationToken.IsCancellationRequested)
+            {
                 return null;
+            }
 
             if (!string.IsNullOrWhiteSpace(search))
+            {
                 healthCareWorkers = healthCareWorkers
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+            }
 
             // Get ids and tokens
             List<Guid> userIds = healthCareWorkers.Select(x => (Guid)x.UserId).ToList();
