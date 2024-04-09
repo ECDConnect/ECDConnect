@@ -1,5 +1,5 @@
 import { Button, DatePicker, Typography } from '@ecdlink/ui';
-import { useLocation } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../main-view/admin-view/clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
 import { usePanel } from '@ecdlink/core';
@@ -16,6 +16,8 @@ import { PointsReportSummary } from './components/points-report-summary';
 import { useEffect, useState } from 'react';
 import { format, sub } from 'date-fns';
 import { ViewClinicReportProps } from './view-clinic-report.types';
+import ROUTES from '../../../../routes/app.routes-constants';
+import { ReferralsRouteState } from '../../../referrals/types';
 
 export interface PointsReportSummaryDto {
   childrenRankingPerc: number;
@@ -34,7 +36,9 @@ export interface PointsReportSummaryDto {
 export const ViewClinicReport = ({
   clinic: clinicFromProps,
 }: ViewClinicReportProps) => {
+  const isTeamLead = true;
   const location = useLocation<ClinicsRouteState>();
+  const history = useHistory();
   const panel = usePanel();
   const clinic = clinicFromProps || location?.state?.clinic;
   const today = new Date();
@@ -146,30 +150,32 @@ export const ViewClinicReport = ({
             />
           </div>
         ))}
-        <div className="mt-4 flex w-full justify-end gap-2">
-          <Button
-            className="rounded-xl px-2"
-            type="outlined"
-            color="errorMain"
-            textColor="tertiary"
-            text="Copy unique ID"
-            icon="DuplicateIcon"
-            iconPosition="start"
-            onClick={() => {
-              navigator.clipboard.writeText(clinic?.id);
-            }}
-          />
-          <Button
-            className="rounded-xl px-2"
-            type="filled"
-            color="secondary"
-            textColor="white"
-            text="Edit"
-            icon="PencilIcon"
-            iconPosition="start"
-            onClick={displayEditPanel}
-          />
-        </div>
+        {!isTeamLead && (
+          <div className="mt-4 flex w-full justify-end gap-2">
+            <Button
+              className="rounded-xl px-2"
+              type="outlined"
+              color="errorMain"
+              textColor="tertiary"
+              text="Copy unique ID"
+              icon="DuplicateIcon"
+              iconPosition="start"
+              onClick={() => {
+                navigator.clipboard.writeText(clinic?.id);
+              }}
+            />
+            <Button
+              className="rounded-xl px-2"
+              type="filled"
+              color="secondary"
+              textColor="white"
+              text="Edit"
+              icon="PencilIcon"
+              iconPosition="start"
+              onClick={displayEditPanel}
+            />
+          </div>
+        )}
       </div>
       <div className="mt-8">
         <PointsReportSummary
@@ -254,6 +260,32 @@ export const ViewClinicReport = ({
         isLoading={loading}
         clinicReportData={clinicReportData?.clinicVisitReportData}
       />
+      {isTeamLead && (
+        <div className="mt-9 flex gap-4">
+          <Button
+            className="rounded-xl px-2"
+            type="filled"
+            color="secondary"
+            textColor="white"
+            text="See referrals"
+            icon="ClipboardListIcon"
+            onClick={() =>
+              history.push(ROUTES.REFERRALS.ROOT, {
+                clinicIds: [clinic?.id],
+              } as ReferralsRouteState)
+            }
+          />
+          <Button
+            className="rounded-xl px-2"
+            type="outlined"
+            color="secondary"
+            textColor="secondary"
+            text="See CHWs"
+            icon="UserGroupIcon"
+            onClick={() => {}}
+          />
+        </div>
+      )}
     </div>
   );
 };

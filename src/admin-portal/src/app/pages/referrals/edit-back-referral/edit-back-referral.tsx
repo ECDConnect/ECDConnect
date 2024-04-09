@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 
 export const EditBackReferral = () => {
-  const { visitId, referralType } = useParams<
+  const { visitBackReferralId, referralType } = useParams<
     EditBackReferralRouteParams & ViewReferralDetailRouteParams
   >();
 
@@ -55,7 +55,7 @@ export const EditBackReferral = () => {
     }) || {};
 
   const selectedReferral = referrals?.find(
-    (referral) => referral.visitId === visitId
+    (referral) => referral.visitBackReferralId === visitBackReferralId
   );
 
   const [comment, setComment] = useState(
@@ -127,7 +127,7 @@ export const EditBackReferral = () => {
   const onSave = async () => {
     addVisitBackReferralAdminComment({
       variables: {
-        visitBackReferralId: visitId,
+        visitBackReferralId,
         comment,
       },
     });

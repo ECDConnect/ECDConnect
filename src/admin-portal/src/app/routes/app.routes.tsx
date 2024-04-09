@@ -103,6 +103,11 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
+      <Route
+        exact
+        path={ROUTES.HEALTH_CARE_WORKERS}
+        component={HealthCareWorkers}
+      ></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
@@ -166,7 +171,7 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/clinics`} component={Clinics}></Route>
       <Route path={`/users/team-leads`} component={TeamLeads}></Route>
       <Route
-        path={`/users/health-care-worker`}
+        path={ROUTES.USERS.HEALTH_CARE_WORKERS}
         component={HealthCareWorkers}
       ></Route>
       <Route path={`/users/mother`} component={Mothers}></Route>
