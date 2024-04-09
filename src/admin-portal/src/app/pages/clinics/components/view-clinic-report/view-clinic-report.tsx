@@ -18,6 +18,7 @@ import { format, sub } from 'date-fns';
 import { ViewClinicReportProps } from './view-clinic-report.types';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { ReferralsRouteState } from '../../../referrals/types';
+import { useUserRole } from '../../../../hooks/useUserRole';
 
 export interface PointsReportSummaryDto {
   childrenRankingPerc: number;
@@ -36,7 +37,7 @@ export interface PointsReportSummaryDto {
 export const ViewClinicReport = ({
   clinic: clinicFromProps,
 }: ViewClinicReportProps) => {
-  const isTeamLead = true;
+  const { isTeamLead } = useUserRole();
   const location = useLocation<ClinicsRouteState>();
   const history = useHistory();
   const panel = usePanel();
