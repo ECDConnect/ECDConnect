@@ -5,7 +5,7 @@ import { ClinicsTeamLeadView } from './main-view/team-lead-view/clinics';
 export const ClinicsMainPage = () => {
   const { isTeamLead } = useUserRole();
 
-  if (true) {
+  if (isTeamLead) {
     return <ClinicsTeamLeadView />;
   }
 
