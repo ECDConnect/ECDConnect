@@ -35,6 +35,7 @@ export const GetReferrals = gql`
       clinicIds: $clinicIds
       pagingInput: $pagingInput
     ) {
+      visitBackReferralId
       visitId
       visitDataStatusId
       type

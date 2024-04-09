@@ -1,4 +1,5 @@
 export interface ReferralDetails {
+  visitBackReferralId?: string;
   visitId?: string;
   visitDataStatusId?: string;
   type?: string;
