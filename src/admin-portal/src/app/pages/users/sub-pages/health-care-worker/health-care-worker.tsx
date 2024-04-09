@@ -541,6 +541,7 @@ export default function HealthCareWorkers() {
       })
     ) ?? [];
 
+  // INFO: Functions from src/admin-portal/src/app/pages/users/sub-pages/health-care-worker/components/ui-table
   const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
