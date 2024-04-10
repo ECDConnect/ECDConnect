@@ -5,7 +5,7 @@
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",
     "build:ui": "lerna bootstrap --force-local && lerna run --scope @ecdlink/ui tsc",
     "portal": "cd ./src/admin-portal && yarn start ",
-    "portal-gg": "cd ./src/admin-portal && set PORT=3001 && yarn start",
+    "portal-gg": "cd ./src/admin-portal && SET PORT=3001 && yarn start",
     "portal-wl": "cd ./src/admin-portal && SET PORT=3005 && yarn start",
     "fe": "cd ./src/lxp && yarn start",
     "fe-gg": "cd ./src/growgreat && yarn start",
