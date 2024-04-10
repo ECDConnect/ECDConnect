@@ -45,7 +45,7 @@ export default function TeamLeadForgotPassword() {
     defaultValues: initialForgotPasswordValues,
     mode: 'onChange',
   });
-  console.log(getValues());
+
   const toggleIdAndpassport = (visible: boolean) => {
     const flag = !visible;
     setTlRegistrationValue(flag ? 'passportField' : 'idField', '');
@@ -181,38 +181,25 @@ export default function TeamLeadForgotPassword() {
             <h2 className="font-h1 textLight mt-6 text-2xl">Forgot password</h2>
           </div>
           <p className="text-md mb-3 pt-2 text-center text-gray-700">
-            Fill in your email address and we will send you a link to reset your
+            Fill in your ID number and we will send you a link to reset your
             password.
           </p>
 
           <div className="mt-8">
             <div className="mt-6">
               <form className="space-y-6">
-                {/* <div>
-                  <FormField
-                    label={'Id number *'}
-                    nameProp={'idNumber'}
-                    register={register}
-                    error={errors.email?.message}
-                  />
-                </div> */}
-
                 {idFieldVisible && (
                   <FormField
                     label={'ID number *'}
-                    // visible={true}
                     nameProp={'idField'}
                     register={register}
-                    // error={errors['idField']}
                     placeholder={'E.g. 7601010338089'}
                   />
                 )}
                 {!idFieldVisible && (
                   <FormField
                     label={'Passport number *'}
-                    // visible={true}
                     nameProp={'passportField'}
-                    // error={errors['passportField']}
                     register={register}
                     placeholder="e.g EN000666"
                   />

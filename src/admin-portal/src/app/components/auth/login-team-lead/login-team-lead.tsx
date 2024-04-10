@@ -22,7 +22,7 @@ export default function LoginTeamLead() {
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
 
-  const { register, getValues, formState, watch, setValue } = useForm({
+  const { register, getValues, watch, setValue } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
@@ -30,8 +30,7 @@ export default function LoginTeamLead() {
 
   const formValues = getValues();
   let password = watch('password');
-  const { errors, isValid } = formState;
-  console.log({ formValues });
+
   const toggleIdAndpassport = (visible: boolean) => {
     const flag = !visible;
     setValue(flag ? 'passportField' : 'idField', '');

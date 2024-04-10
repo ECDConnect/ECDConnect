@@ -26,6 +26,7 @@ import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
 import { NavbarTypes } from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
+import { UserRoles } from '../../constants/user';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -105,18 +106,14 @@ export default function Shell() {
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
       if (
-        user?.roles?.some((x) => x.name === 'Administrator') ||
-        user?.roles?.some((x) => x.name === 'Super Admin')
+        user?.roles?.some((x) => x.name === UserRoles.Administrator) ||
+        user?.roles?.some((x) => x.name === UserRoles.SuperAdmin)
       ) {
         const sorted = navigationList
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
-      } else if (user?.roles?.some((x) => x.name === 'Team Lead')) {
-        console.log('hahaha');
-        // const filtered = teamLeadNavigationList.filter((x) =>
-        //   x.permissions.some((z) => userPermissionIds.includes(z.id))
-        // );
+      } else if (user?.roles?.some((x) => x.name === UserRoles.TeamLead)) {
         setNavigation(
           teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
         );
