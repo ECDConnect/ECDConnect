@@ -83,7 +83,7 @@ export const ViewReferralDetail = () => {
 
   const rows: Irow[] =
     data?.referrals.map((referral) => ({
-      visitBackReferralId: referral?.visitBackReferralId ?? '',
+      visitDataStatusId: referral?.visitDataStatusId ?? '',
       client: referral?.client ?? '-',
       chw: referral?.healthCareWorker ?? '-',
       referralsMade: referral?.isCompleted ? greenIcon : redIcon,
@@ -141,9 +141,11 @@ export const ViewReferralDetail = () => {
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.EDIT_BACK_REFERRAL.replace(
                 ':referralType',
                 formatTextToSlug(referralType)
-              )
-                // .replace(':visitBackReferralId', formatTextToSlug(row.visitBackReferralId)),
-                .replace(':visitBackReferralId', 'to-do'),
+              ).replace(
+                ':visitDataStatusId',
+                formatTextToSlug(row.visitDataStatusId)
+              ),
+              // .replace(':visitBackReferralId', 'to-do'),
               {
                 startDate,
                 endDate,

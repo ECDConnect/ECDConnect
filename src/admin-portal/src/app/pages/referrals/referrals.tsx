@@ -96,7 +96,7 @@ export const Referrals = () => {
   };
 
   useLayoutEffect(() => {
-    if (state?.clinicIds) {
+    if (state?.clinicIds && clinicsData?.allPortalClinics?.length > 1) {
       setSelectedClinic(
         clinicsData?.allPortalClinics
           ?.filter((clinic) => state?.clinicIds?.includes(clinic?.id))
@@ -128,6 +128,7 @@ export const Referrals = () => {
           }}
           filters={[
             {
+              hideFilter: clinicsData?.allPortalClinics?.length <= 1,
               className: 'mt-1',
               type: 'search-dropdown',
               placeholder: 'Clinic',

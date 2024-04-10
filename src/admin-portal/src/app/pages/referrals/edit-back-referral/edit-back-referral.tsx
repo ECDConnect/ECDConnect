@@ -14,8 +14,11 @@ import {
   EditBackReferralRouteState,
 } from './types';
 import {
+  NOTIFICATION,
   ReferralDetails,
   formatStringWithFirstLetterCapitalized,
+  useNotifications,
+  usePrevious,
 } from '@ecdlink/core';
 import ROUTES from '../../../routes/app.routes-constants';
 import {
@@ -31,7 +34,7 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 
 export const EditBackReferral = () => {
-  const { visitBackReferralId, referralType } = useParams<
+  const { visitDataStatusId, referralType } = useParams<
     EditBackReferralRouteParams & ViewReferralDetailRouteParams
   >();
 
@@ -50,19 +53,23 @@ export const EditBackReferral = () => {
         type: formatStringWithFirstLetterCapitalized(referralType),
         startDate: state?.startDate,
         endDate: state?.endDate,
-        clinicIds: state?.clinicIds,
+        clinicIds: state?.clinicIds ?? [],
       },
     }) || {};
 
   const selectedReferral = referrals?.find(
-    (referral) => referral.visitBackReferralId === visitBackReferralId
+    (referral) => referral.visitDataStatusId === visitDataStatusId
   );
 
   const [comment, setComment] = useState(
     selectedReferral?.adminBackReferralNote ?? ''
   );
 
+  const previousComment = usePrevious(comment);
+
   const history = useHistory();
+
+  const { setNotification } = useNotifications();
 
   const paths: BreadcrumbProps['paths'] = [
     { name: 'Referrals', url: ROUTES.REFERRALS.ROOT },
@@ -127,16 +134,21 @@ export const EditBackReferral = () => {
   const onSave = async () => {
     addVisitBackReferralAdminComment({
       variables: {
-        visitBackReferralId,
+        visitDataStatusId,
         comment,
       },
+    }).then((res) => {
+      if (!!res?.data?.addVisitBackReferralAdminComment) {
+        setNotification({
+          title: 'Back-referral note updated!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      }
     });
-
-    // TODO: add green snackbar
   };
 
   return (
-    <div className="bg-adminPortalBg h-full rounded-2xl p-4">
+    <div className="bg-adminPortalBg h-auto rounded-2xl p-4">
       <Breadcrumb paths={paths} />
       <div className="mt-9 mb-9 flex justify-between">
         <Typography
@@ -207,7 +219,11 @@ export const EditBackReferral = () => {
         icon="SaveIcon"
         className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
         isLoading={loading}
-        disabled={loading || !comment}
+        disabled={
+          loading ||
+          !comment ||
+          (!!previousComment && comment === previousComment)
+        }
         onClick={onSave}
       />
     </div>
