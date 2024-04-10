@@ -389,11 +389,9 @@ export default function ContentList({
   const viewSelectedRow = useCallback(
     (item?: any) => {
       if (selectedTab === 2 || selectedTab === 3) {
-        const selecteditem = natalData?.natalRecordsForType?.find(
-          (record, idx) => {
-            return record?.title === item?.title && idx === item?.key;
-          }
-        );
+        const selecteditem = natalData?.natalRecordsForType?.find((record) => {
+          return record?.title === item?.title;
+        });
         const currentType = dataTypes.contentTypes.find(
           (x: ContentTypeDto) =>
             Number(x.id) === Number(selecteditem?.childContentTypeId)

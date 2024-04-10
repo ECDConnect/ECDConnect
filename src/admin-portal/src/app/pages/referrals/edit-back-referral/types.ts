@@ -1,8 +1,9 @@
 export interface EditBackReferralRouteParams {
-  client: string;
+  visitBackReferralId: string;
 }
 
 export interface EditBackReferralRouteState {
   startDate: string;
   endDate: string;
+  clinicIds?: string[];
 }

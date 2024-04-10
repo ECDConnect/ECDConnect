@@ -13,9 +13,13 @@ const ROUTES = {
   }),
   REFERRALS: addPrefix('/referrals', {
     VIEW_REFERRAL_DETAIL: addPrefix('/view-referral-detail/:referralType', {
-      EDIT_BACK_REFERRAL: '/edit-back-referral/:client',
+      EDIT_BACK_REFERRAL: '/edit-back-referral/:visitBackReferralId',
     }),
   }),
+  USERS: addPrefix('/users', {
+    HEALTH_CARE_WORKERS: '/health-care-worker',
+  }),
+  HEALTH_CARE_WORKERS: '/health-care-workers',
   CLASSROOM: addPrefix('/classroom', {
     UPDATE_FEE: '/preschool-fee',
   }),

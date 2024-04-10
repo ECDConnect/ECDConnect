@@ -5,10 +5,12 @@ export const GetReferralsSummary = gql`
     $startDate: DateTime!
     $endDate: DateTime!
     $pagingInput: PagedQueryInput
+    $clinicIds: [UUID!]
   ) {
     referralsSummary(
       startDate: $startDate
       endDate: $endDate
+      clinicIds: $clinicIds
       pagingInput: $pagingInput
     ) {
       type
@@ -24,13 +26,16 @@ export const GetReferrals = gql`
     $endDate: DateTime!
     $type: String
     $pagingInput: PagedQueryInput
+    $clinicIds: [UUID!]
   ) {
     referrals(
       startDate: $startDate
       endDate: $endDate
       type: $type
+      clinicIds: $clinicIds
       pagingInput: $pagingInput
     ) {
+      visitBackReferralId
       visitId
       visitDataStatusId
       type
@@ -44,6 +49,20 @@ export const GetReferrals = gql`
       isBackReferralCompleted
       healthCareWorkerBackReferralNote
       adminBackReferralNote
+    }
+  }
+`;
+
+export const AddVisitBackReferralAdminComment = gql`
+  mutation AddVisitBackReferralAdminComment(
+    $visitBackReferralId: UUID!
+    $comment: String!
+  ) {
+    addVisitBackReferralAdminComment(
+      visitBackReferralId: $visitBackReferralId
+      comment: $comment
+    ) {
+      comment
     }
   }
 `;

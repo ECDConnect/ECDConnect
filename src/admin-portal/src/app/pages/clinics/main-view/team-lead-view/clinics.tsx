@@ -7,13 +7,12 @@ import { useState } from 'react';
 export const ClinicsTeamLeadView = () => {
   const [selectedClinicId, setSelectedClinicId] = useState<string>();
 
-  // TODO: replace with real query
+  // INFO: Same endpoint because the backend filters the clinics based on the user's role
   const { data } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
-  // TODO: replace with real clinics
-  const clinics = data?.allPortalClinics?.slice(0, 2);
+  const clinics = data?.allPortalClinics;
 
   const navigation =
     clinics?.map(

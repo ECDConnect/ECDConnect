@@ -1572,15 +1572,10 @@ namespace EcdLink.Api.CoreApi.Services
             return pointsTodoItems;
         }
 
-        public LeagueClinicsModel GetClinicRankingsForOpeningFolders(Guid leagueId, Guid pointsActivityId, Guid pointsCategoryId)
+        public List<LeagueClinicPointsModel> GetClinicRankingsForActivity(Guid pointsActivityId, Guid? pointsCategoryId, DateTime startDate, DateTime endDate)
         {
-            var league = _leagueRepo.GetAll()
-                .Where(x => x.Id == leagueId)
-                .Include(x => x.LeagueType)
-                .FirstOrDefault();
-
             var clinicsWithUsers = _clinicRepo.GetAll()
-                .Where(x => x.Leagues.Any(y => y.LeagueId == league.Id && y.IsActive))
+                .Where(x => x.IsActive)
                 .Select(x => new { ClinicId = x.Id, ClinicName = x.Name, UserIds = x.HealthCareWorkers.Select(x => x.UserId) })
                 .ToList();
 
@@ -1594,19 +1589,17 @@ namespace EcdLink.Api.CoreApi.Services
                 => x.UserId.HasValue
                 && allUserIds.Contains(x.UserId.Value)
                 && x.PointsActivityId == pointsActivityId
-                && x.DateScored >= league.StartDate
-                && x.DateScored <= league.EndDate)
+                && x.DateScored >= startDate
+                && x.DateScored <= endDate)
                 .ToList();
 
             // Get clinic points
             var allClinicPoints = _pointsClinicSummaryRepo.GetAll().Where(x =>
                 clinicsWithUsers.Select(x => x.ClinicId).Contains(x.ClinicId)
                 && x.PointsCategoryId == pointsCategoryId
-                && x.DateScored >= league.StartDate
-                && x.DateScored <= league.EndDate).ToList();
+                && x.DateScored >= startDate
+                && x.DateScored <= endDate).ToList();
 
-            var quarterStart = DateTimeHelper.GetCurrentGrowGreatQuarterStart();
-            var quarterEnd = DateTimeHelper.GetCurrentGrowGreatQuarterEnd();
 
             var clinicList = new List<LeagueClinicPointsModel>();
             foreach (var clinic in clinicsWithUsers)
@@ -1615,15 +1608,11 @@ namespace EcdLink.Api.CoreApi.Services
                     allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
                     + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
 
-                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal)
-                    + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart && x.DateScored <= quarterEnd).Sum(x => x.PointsTotal);
-
                 clinicList.Add(new LeagueClinicPointsModel()
                 {
                     ClinicId = clinic.ClinicId,
                     ClinicName = clinic.ClinicName,
                     PointsTotalForYear = pointsTotalForYear,
-                    PointsTotalForQuarter = pointsTotalForQuarter,
                 });
             }
 
@@ -1641,32 +1630,8 @@ namespace EcdLink.Api.CoreApi.Services
                     clinicList[i].LeagueRankingForYear = i + 1;
                 }
             }
-
-            // Set league ranks for year, keeping highest rank for all that have equal points
-            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForQuarter).ToList();
-            clinicList[0].LeagueRankingForQuarter = 1;
-            for (int i = 1; i < clinicList.Count; i++)
-            {
-                if (clinicList[i].PointsTotalForQuarter == clinicList[i - 1].PointsTotalForQuarter)
-                {
-                    clinicList[i].LeagueRankingForQuarter = clinicList[i - 1].LeagueRankingForQuarter;
-                }
-                else
-                {
-                    clinicList[i].LeagueRankingForQuarter = i + 1;
-                }
-            }
-
-            return new LeagueClinicsModel()
-            {
-                Id = league.Id,
-                StartDate = league.StartDate.HasValue ? league.StartDate.Value : DateTime.Now,
-                EndDate = league.EndDate.HasValue ? league.EndDate.Value : DateTime.Now,
-                LeagueTypeId = league.LeagueTypeId,
-                LeagueTypeName = league.LeagueType.Name,
-                Name = league.Name,
-                Clinics = clinicList
-            };
+           
+            return clinicList;
         }
 
     }

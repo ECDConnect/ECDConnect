@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { Icolumn, Irow } from 'react-tailwind-table';
 import { format, sub } from 'date-fns';
 import { Breadcrumb, BreadcrumbProps, Table, Typography } from '@ecdlink/ui';
-import { useHistory, useParams } from 'react-router';
-import { ViewReferralDetailRouteParams } from './types';
+import { useHistory, useLocation, useParams } from 'react-router';
+import {
+  ViewReferralDetailRouteParams,
+  ViewReferralDetailsRouteState,
+} from './types';
 import {
   ReferralDetails,
   formatStringWithFirstLetterCapitalized,
@@ -20,6 +23,9 @@ export const ViewReferralDetail = () => {
   const initialBefore30Days = sub(today, {
     days: 30,
   });
+  const minDate = sub(today, {
+    months: 6,
+  });
 
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDateRange, endDateRange] = dateRange;
@@ -27,6 +33,8 @@ export const ViewReferralDetail = () => {
   const endDate = format(endDateRange ?? startDateRange, 'yyyy-MM-dd');
 
   const { referralType } = useParams<ViewReferralDetailRouteParams>();
+
+  const { state } = useLocation<ViewReferralDetailsRouteState>();
 
   const history = useHistory();
 
@@ -37,6 +45,7 @@ export const ViewReferralDetail = () => {
         type: formatStringWithFirstLetterCapitalized(referralType),
         startDate,
         endDate,
+        clinicIds: state?.clinicIds ?? [],
       },
       fetchPolicy: 'cache-and-network',
     }
@@ -60,11 +69,11 @@ export const ViewReferralDetail = () => {
       use: 'Back-referral made?',
     },
     {
-      field: 'backReferralsMade',
+      field: 'backReferralNote',
       use: 'Back-referral note',
     },
     {
-      field: 'backReferralsMade',
+      field: 'referralDate',
       use: 'Referral date',
     },
   ];
@@ -74,18 +83,21 @@ export const ViewReferralDetail = () => {
 
   const rows: Irow[] =
     data?.referrals.map((referral) => ({
+      visitBackReferralId: referral?.visitBackReferralId ?? '',
       client: referral?.client ?? '-',
       chw: referral?.healthCareWorker ?? '-',
       referralsMade: referral?.isCompleted ? greenIcon : redIcon,
       backReferralsMade: referral?.isBackReferralCompleted
         ? greenIcon
         : redIcon,
-      backReferralNote: referral?.healthCareWorkerBackReferralNote,
-      referralDate: referral?.createdDate ?? '-',
+      backReferralNote: referral?.healthCareWorkerBackReferralNote ?? '-',
+      referralDate: referral?.createdDate
+        ? format(new Date(referral.createdDate), 'dd/MM/yyyy')
+        : '-',
     })) ?? [];
 
   const paths: BreadcrumbProps['paths'] = [
-    { name: 'Referrals', url: ROUTES.REFERRALS.ROOT },
+    { name: 'Referrals', url: ROUTES.REFERRALS.ROOT, state },
     { name: 'View referral detail', url: '' },
   ];
 
@@ -120,6 +132,7 @@ export const ViewReferralDetail = () => {
             selectsRange: true,
             startDate: startDateRange,
             endDate: endDateRange,
+            minDate,
             maxDate: today,
             onChange: (date) => setDateRange(date),
           }}
@@ -128,8 +141,14 @@ export const ViewReferralDetail = () => {
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.EDIT_BACK_REFERRAL.replace(
                 ':referralType',
                 formatTextToSlug(referralType)
-              ).replace(':client', formatTextToSlug(row.client)),
-              { startDate, endDate } as EditBackReferralRouteState
+              )
+                // .replace(':visitBackReferralId', formatTextToSlug(row.visitBackReferralId)),
+                .replace(':visitBackReferralId', 'to-do'),
+              {
+                startDate,
+                endDate,
+                clinicIds: state?.clinicIds,
+              } as EditBackReferralRouteState
             )
           }
         />

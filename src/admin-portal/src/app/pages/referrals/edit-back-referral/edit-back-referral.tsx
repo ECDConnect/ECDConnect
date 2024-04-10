@@ -18,17 +18,28 @@ import {
   formatStringWithFirstLetterCapitalized,
 } from '@ecdlink/core';
 import ROUTES from '../../../routes/app.routes-constants';
-import { ViewReferralDetailRouteParams } from '../view-referral-detail/types';
-import { useApolloClient } from '@apollo/client';
-import { GetReferrals } from '@ecdlink/graphql';
+import {
+  ViewReferralDetailRouteParams,
+  ViewReferralDetailsRouteState,
+} from '../view-referral-detail/types';
+import { useApolloClient, useMutation } from '@apollo/client';
+import {
+  AddVisitBackReferralAdminComment,
+  GetReferrals,
+} from '@ecdlink/graphql';
 import { format } from 'date-fns';
+import { useState } from 'react';
 
 export const EditBackReferral = () => {
-  const { client, referralType } = useParams<
+  const { visitBackReferralId, referralType } = useParams<
     EditBackReferralRouteParams & ViewReferralDetailRouteParams
   >();
 
   const { state } = useLocation<EditBackReferralRouteState>();
+
+  const [addVisitBackReferralAdminComment, { loading }] = useMutation(
+    AddVisitBackReferralAdminComment
+  );
 
   const apolloClient = useApolloClient();
 
@@ -39,11 +50,16 @@ export const EditBackReferral = () => {
         type: formatStringWithFirstLetterCapitalized(referralType),
         startDate: state?.startDate,
         endDate: state?.endDate,
+        clinicIds: state?.clinicIds,
       },
     }) || {};
 
-  const selectedClient = referrals?.find(
-    (referral) => referral.client === client
+  const selectedReferral = referrals?.find(
+    (referral) => referral.visitBackReferralId === visitBackReferralId
+  );
+
+  const [comment, setComment] = useState(
+    selectedReferral?.adminBackReferralNote ?? ''
   );
 
   const history = useHistory();
@@ -56,6 +72,7 @@ export const EditBackReferral = () => {
         ':referralType',
         referralType
       ),
+      state,
     },
     { name: 'Edit back-referral', url: '' },
   ];
@@ -68,44 +85,55 @@ export const EditBackReferral = () => {
   }[] = [
     {
       name: 'Client:',
-      value: selectedClient?.client ?? '-',
+      value: selectedReferral?.client ?? '-',
     },
     {
       name: 'CHW:',
-      value: selectedClient?.healthCareWorker ?? '-',
+      value: selectedReferral?.healthCareWorker ?? '-',
     },
     {
       name: 'Referral created on:',
-      value: !!selectedClient?.createdDate
-        ? format(new Date(selectedClient?.createdDate), 'dd MMMM yyyy')
+      value: !!selectedReferral?.createdDate
+        ? format(new Date(selectedReferral?.createdDate), 'dd MMMM yyyy')
         : '-',
       className: 'mt-4',
     },
     {
       name: 'Was the referral made?',
-      value: selectedClient?.isCompleted ? 'Yes' : 'No',
+      value: selectedReferral?.isCompleted ? 'Yes' : 'No',
     },
     {
       name: 'Referral made on:',
-      value: !!selectedClient?.completedDate
-        ? format(new Date(selectedClient?.completedDate), 'dd MMMM yyyy')
+      value: !!selectedReferral?.completedDate
+        ? format(new Date(selectedReferral?.completedDate), 'dd MMMM yyyy')
         : '-',
     },
     {
       name: 'Referral text:',
-      value: selectedClient?.text ?? '-',
+      value: selectedReferral?.text ?? '-',
       className: 'flex-col mb-4',
       type: 'markdown',
     },
     {
       name: 'Was a back-referral made?',
-      value: selectedClient?.isBackReferralCompleted ? 'Yes' : 'No',
+      value: selectedReferral?.isBackReferralCompleted ? 'Yes' : 'No',
     },
     {
       name: 'CHW back-referral note:',
-      value: selectedClient?.healthCareWorkerBackReferralNote ?? '-',
+      value: selectedReferral?.healthCareWorkerBackReferralNote ?? '-',
     },
   ];
+
+  const onSave = async () => {
+    addVisitBackReferralAdminComment({
+      variables: {
+        visitBackReferralId,
+        comment,
+      },
+    });
+
+    // TODO: add green snackbar
+  };
 
   return (
     <div className="bg-adminPortalBg h-full rounded-2xl p-4">
@@ -113,7 +141,7 @@ export const EditBackReferral = () => {
       <div className="mt-9 mb-9 flex justify-between">
         <Typography
           type="h1"
-          text={`${formatStringWithFirstLetterCapitalized(client)} - referral`}
+          text={`${selectedReferral?.client ?? ''} - referral`}
           color="textDark"
         />
         <Button
@@ -123,12 +151,15 @@ export const EditBackReferral = () => {
           text="Cancel"
           icon="XIcon"
           className="rounded-xl p-2 shadow-none hover:opacity-80"
+          isLoading={loading}
+          disabled={loading}
           onClick={() =>
             history.push(
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
                 ':referralType',
                 referralType
-              )
+              ),
+              { clinicIds: state.clinicIds } as ViewReferralDetailsRouteState
             )
           }
         />
@@ -141,7 +172,10 @@ export const EditBackReferral = () => {
           className="mb-4"
         />
         {details.map((detail) => (
-          <div className={classNames(detail.className, 'flex  gap-2')}>
+          <div
+            key={detail.name + detail.value}
+            className={classNames(detail.className, 'flex  gap-2')}
+          >
             <Typography type="h4" text={detail.name} color="textDark" />
             <Typography
               type={detail?.type ?? 'body'}
@@ -161,6 +195,8 @@ export const EditBackReferral = () => {
           className="mt-4"
           label="Add note *"
           hint="Add more information about the referral."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
         />
       </div>
       <Button
@@ -170,14 +206,9 @@ export const EditBackReferral = () => {
         text="Save"
         icon="SaveIcon"
         className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
-        onClick={() =>
-          history.push(
-            ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
-              ':referralType',
-              referralType
-            )
-          )
-        }
+        isLoading={loading}
+        disabled={loading || !comment}
+        onClick={onSave}
       />
     </div>
   );
