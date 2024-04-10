@@ -24,9 +24,13 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public DateTime? ReferralDateCompleted { get; set; }
         public bool BackReferralCompleted { get; set; }
         public DateTime? BackReferralDateCompleted { get; set; }
+        public string BackReferralAdminComment { get; set; }
         [NotMapped]
         public virtual VisitBackReferral BackReferral { get; set; }
-
+        [NotMapped]
+        public virtual ICollection<VisitDataStatusReferralType> VisitDataStatusReferralTypes { get; set; }
+        [NotMapped]
+        public virtual ICollection<ReferralType> ReferralTypes { get; set; }
     }
 
     public interface VisitDataStatusJoin<TKey>
