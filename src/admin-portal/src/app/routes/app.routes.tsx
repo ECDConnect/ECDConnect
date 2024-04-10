@@ -74,7 +74,7 @@ const PublicRoutes: React.FC = () => {
         path={ROUTES.TEAM_LEAD_RESET_PASSWORD}
         component={TeamLeadForgotPassword}
       />
-      <Route exact path="/reset/:resetToken" component={ResetPassword} />
+      <Route exact path={ROUTES.RESET} component={ResetPassword} />
       <Route path={`/ecd-terms`} component={TermsPage}></Route>
     </Switch>
   );

@@ -21,6 +21,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
+import ROUTES from '../../../routes/app.routes-constants';
 
 export default function TeamLeadForgotPassword() {
   const { theme } = useTheme();
@@ -36,9 +37,7 @@ export default function TeamLeadForgotPassword() {
   const {
     register,
     getValues,
-    formState,
     setValue: setTlRegistrationValue,
-    watch,
     control,
   } = useForm({
     resolver: yupResolver(resetSchema),
@@ -56,8 +55,6 @@ export default function TeamLeadForgotPassword() {
   const { idField, passportField } = useWatch({ control });
   const formValues = getValues();
 
-  const { errors, isValid } = formState;
-
   const requestResetPasword = async () => {
     if (idField || passportField) {
       setIsLoading(true);
@@ -68,7 +65,7 @@ export default function TeamLeadForgotPassword() {
 
       if (isLinkSent) {
         setIsLoading(false);
-        history.push('/reset');
+        history.push(ROUTES.RESET);
         localStorage.setItem('email', formValues.email);
       } else {
         setIsLoading(false);
