@@ -24,6 +24,7 @@ import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
+import { NavbarTypes } from './shell.types';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -89,7 +90,16 @@ export default function Shell() {
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
-      const navigationList: NavigationDto[] = navigationData.GetAllNavigation;
+      const teamLeadNavigationItems = [
+        NavbarTypes.Users,
+        NavbarTypes.Clinics,
+        NavbarTypes.Referrals,
+      ];
+      const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
+      const teamLeadNavigationList: NavigationDto[] =
+        navigationData?.GetAllNavigation?.filter((item) =>
+          teamLeadNavigationItems?.includes(item?.name)
+        );
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
       if (
@@ -100,6 +110,14 @@ export default function Shell() {
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
+      } else if (user?.roles?.some((x) => x.name === 'Team Lead')) {
+        console.log('hahaha');
+        // const filtered = teamLeadNavigationList.filter((x) =>
+        //   x.permissions.some((z) => userPermissionIds.includes(z.id))
+        // );
+        setNavigation(
+          teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
+        );
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))

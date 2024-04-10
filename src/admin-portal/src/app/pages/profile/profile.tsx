@@ -7,11 +7,13 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 
-import { Button, ProfileAvatar, Typography } from '@ecdlink/ui';
+import { Button, ProfileAvatar, SA_CELL_REGEX, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import {
+  GetTeamLead,
+  GetTeamLeadSummary,
   GetUserById,
   ResetUserPassword,
   UpdateUser,
@@ -29,6 +31,10 @@ export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
+  phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
+  whatsAppNumber: yup
+    .string()
+    .matches(SA_CELL_REGEX, 'Phone number is not valid'),
 });
 
 export function Profile(props: any) {
@@ -74,6 +80,27 @@ export function Profile(props: any) {
   const isSuperAdmin = userData?.userById?.roles?.find(
     (item) => item?.name === AdminTypes.SuperAdmin
   );
+
+  const isTeamLead = userData?.userById?.roles?.find(
+    (item) => item?.name === AdminTypes.TeamLead
+  );
+
+  const [getTeamLeadData, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
+    variables: {
+      userId: '',
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  useEffect(() => {
+    if (isTeamLead && userData?.userById?.id) {
+      getTeamLeadData({
+        variables: {
+          teamLeadId: userData?.userById?.id,
+        },
+      });
+    }
+  }, [getTeamLeadData, isTeamLead, userData?.userById?.id]);
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
@@ -157,6 +184,14 @@ export function Profile(props: any) {
       setValue('email', user.user?.email, {
         shouldValidate: true,
       });
+
+      setValue('phoneNumber', user.user?.phoneNumber, {
+        shouldValidate: true,
+      });
+
+      setValue('whatsAppNumber', user.user?.whatsAppNumber, {
+        shouldValidate: true,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -235,7 +270,7 @@ export function Profile(props: any) {
                       <SuperAdminProfile user={user} />
                     </div>
                   )}
-                  {!isAdministrator && !isSuperAdmin && (
+                  {!isAdministrator && !isSuperAdmin && !isTeamLead && (
                     <div>
                       <FormField
                         label={'Email address *'}
@@ -244,6 +279,28 @@ export function Profile(props: any) {
                         disabled
                         error={errors.email?.message}
                       />
+                    </div>
+                  )}
+
+                  {isTeamLead && (
+                    <div>
+                      <div className="w-full pt-10">
+                        <FormField
+                          label={'Cellphone number *'}
+                          nameProp={'phoneNumber'}
+                          register={register}
+                          error={errors.phoneNumber?.message}
+                        />
+                      </div>
+                      <div className="mt-2 w-full pt-10">
+                        <FormField
+                          label={'WhatsApp number'}
+                          subLabel="Optional. If your WhatsApp number is different from your cellphone number, you can add it below. This will help CHWs to connect with you through WhatsApp, if needed."
+                          nameProp={'whatsAppNumber'}
+                          register={register}
+                          error={errors.whatsappNumber?.message}
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -258,6 +315,23 @@ export function Profile(props: any) {
                       className="mb-9 "
                     />
                   </div>
+                  {isTeamLead && (
+                    <div className="mt-2 w-full pt-10">
+                      <FormField
+                        label={
+                          'In 4 or 5 words, share something about yourself with your CHWs!'
+                        }
+                        subLabel="Optional"
+                        defaultValue={
+                          teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage &&
+                          teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
+                        }
+                        nameProp={'lockoutEnd'}
+                        register={register}
+                        disabled={true}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

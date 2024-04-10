@@ -5,11 +5,14 @@ import SubNavigationLink from '../../components/sub-navigation-link/sub-navigati
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
 import { TenantContext } from '../../utils/constants';
+import { useUser } from '../../hooks/useUser';
+import { AdminTypes } from './sub-pages/application-admins/applications-admins.types';
 
 export function Users() {
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
+  const { user } = useUser();
 
   const getNavigationItems = () => {
     if (
@@ -17,6 +20,20 @@ export function Users() {
       data.tenantContext &&
       data.tenantContext.applicationName === TenantContext.GrowGreat
     ) {
+      if (
+        user?.roles?.some(
+          (x) =>
+            x.name === AdminTypes.TeamLead &&
+            !user?.roles?.some((x) => x.name === AdminTypes.Administrator)
+        )
+      ) {
+        return [
+          {
+            name: 'CHWs',
+            href: '/users/health-care-worker',
+          },
+        ];
+      }
       return [
         {
           name: 'All Roles',
@@ -68,6 +85,8 @@ export function Users() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const userSelected = localStorage.getItem('selectedUser');
+
+  console.log({ userSelected });
 
   return (
     <div className="">

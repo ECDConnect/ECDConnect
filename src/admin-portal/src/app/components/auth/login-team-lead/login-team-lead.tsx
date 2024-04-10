@@ -22,6 +22,7 @@ export default function LoginTeamLead() {
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [idFieldVisible, setIdFieldVisible] = useState(true);
 
   const { register, getValues, formState, watch, setValue } = useForm({
     resolver: yupResolver(loginSchema),
@@ -32,16 +33,26 @@ export default function LoginTeamLead() {
   const formValues = getValues();
   let password = watch('password');
   const { errors, isValid } = formState;
+  console.log({ formValues });
+  const toggleIdAndpassport = (visible: boolean) => {
+    const flag = !visible;
+    setValue(flag ? 'passportField' : 'idField', '');
+    setValue('preferId', flag);
+    setIdFieldVisible(flag);
+  };
 
   useEffect(() => {
     setValue('password', password);
   }, [password]);
 
   const signIn = async () => {
-    if (isValid) {
+    if (
+      (formValues?.idField || formValues?.passportField) &&
+      formValues?.password
+    ) {
       setIsLoading(true);
       const body: LoginRequestModel = {
-        username: formValues.email,
+        username: formValues?.idField || formValues?.passportField,
         password: formValues.password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
@@ -78,14 +89,67 @@ export default function LoginTeamLead() {
         <div className="mt-8">
           <div className="mt-6">
             <form className="space-y-6">
-              <div>
+              {/* <div>
                 <FormField
                   label={'Email address *'}
                   nameProp={'email'}
                   register={register}
                   error={errors.email?.message}
                 />
-              </div>
+              </div> */}
+
+              {idFieldVisible && (
+                <FormField
+                  label={'ID number *'}
+                  // visible={true}
+                  nameProp={'idField'}
+                  register={register}
+                  // error={errors['idField']}
+                  placeholder={'E.g. 7601010338089'}
+                />
+              )}
+              {!idFieldVisible && (
+                <FormField
+                  label={'Passport number *'}
+                  // visible={true}
+                  nameProp={'passportField'}
+                  // error={errors['passportField']}
+                  register={register}
+                  placeholder="e.g EN000666"
+                />
+              )}
+              {!idFieldVisible && (
+                <Button
+                  className={'mb-2 rounded-xl'}
+                  type="outlined"
+                  color="tertiary"
+                  background={'transparent'}
+                  size="small"
+                  onClick={() => toggleIdAndpassport(idFieldVisible)}
+                >
+                  <Typography
+                    type="buttonSmall"
+                    color="tertiary"
+                    text={'Enter ID number instead'}
+                  ></Typography>
+                </Button>
+              )}
+              {idFieldVisible && (
+                <Button
+                  className={'mb-2 rounded-xl'}
+                  type="outlined"
+                  color="tertiary"
+                  size="small"
+                  background={'transparent'}
+                  onClick={() => toggleIdAndpassport(idFieldVisible)}
+                >
+                  <Typography
+                    type="buttonSmall"
+                    color="tertiary"
+                    text={'Enter passport number instead'}
+                  ></Typography>
+                </Button>
+              )}
 
               <div className="space-y-1">
                 <PasswordInput
@@ -128,7 +192,7 @@ export default function LoginTeamLead() {
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  disabled={!isValid}
+                  disabled={!formValues.password || !formValues.idField}
                   onClick={signIn}
                 >
                   <Typography
