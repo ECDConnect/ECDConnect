@@ -69,13 +69,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       dateOfBirth: new Date(),
       isSouthAfricanCitizen: true,
       verifiedByHomeAffairs: true,
+      isAdmin: true,
     };
 
     try {
       const response = await createUser({
         variables: {
           input: { ...userInputModel },
-          IsAdmin: true,
         },
       });
 
