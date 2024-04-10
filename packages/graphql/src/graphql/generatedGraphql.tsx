@@ -6326,6 +6326,7 @@ export type Mutation = {
   createTeamLead?: Maybe<TeamLead>;
   createTheme?: Maybe<Scalars['String']>;
   createThemeDay?: Maybe<Scalars['String']>;
+  createTopic?: Maybe<Scalars['String']>;
   createTrainee?: Maybe<Trainee>;
   createUserConsent?: Maybe<UserConsent>;
   createUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
@@ -6470,6 +6471,7 @@ export type Mutation = {
   deleteTeamLead?: Maybe<Scalars['Boolean']>;
   deleteTheme?: Maybe<Scalars['Boolean']>;
   deleteThemeDay?: Maybe<Scalars['Boolean']>;
+  deleteTopic?: Maybe<Scalars['Boolean']>;
   deleteTrainee?: Maybe<Scalars['Boolean']>;
   deleteUser: Scalars['Boolean'];
   deleteUserConsent?: Maybe<Scalars['Boolean']>;
@@ -6787,6 +6789,7 @@ export type Mutation = {
   updateTenantTheme: Scalars['Boolean'];
   updateTheme?: Maybe<Theme>;
   updateThemeDay?: Maybe<ThemeDay>;
+  updateTopic?: Maybe<Topic>;
   updateTrainee?: Maybe<Trainee>;
   updateTraineeAddress?: Maybe<Trainee>;
   updateUser?: Maybe<ApplicationUser>;
@@ -7687,6 +7690,12 @@ export type MutationCreateThemeDayArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationCreateTopicArgs = {
+  input: TopicInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationCreateTraineeArgs = {
   input?: InputMaybe<TraineeInput>;
 };
@@ -8326,6 +8335,12 @@ export type MutationDeleteThemeArgs = {
 };
 
 export type MutationDeleteThemeDayArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationDeleteTopicArgs = {
   id: Scalars['String'];
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -9894,6 +9909,13 @@ export type MutationUpdateThemeArgs = {
 export type MutationUpdateThemeDayArgs = {
   id: Scalars['String'];
   input: ThemeDayInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateTopicArgs = {
+  id: Scalars['String'];
+  input: TopicInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -12511,6 +12533,7 @@ export type Query = {
   GetAllTeamLead?: Maybe<Array<Maybe<TeamLead>>>;
   GetAllTheme: Array<Maybe<Theme>>;
   GetAllThemeDay: Array<Maybe<ThemeDay>>;
+  GetAllTopic: Array<Maybe<Topic>>;
   GetAllTrainee?: Maybe<Array<Maybe<Trainee>>>;
   GetAllUserConsent?: Maybe<Array<Maybe<UserConsent>>>;
   GetAllUserHierarchyEntity?: Maybe<Array<Maybe<UserHierarchyEntity>>>;
@@ -12644,6 +12667,7 @@ export type Query = {
   GetTeamLeadById?: Maybe<TeamLead>;
   GetThemeById: Array<Maybe<Theme>>;
   GetThemeDayById: Array<Maybe<ThemeDay>>;
+  GetTopicById: Array<Maybe<Topic>>;
   GetTraineeById?: Maybe<Trainee>;
   GetUserConsentById?: Maybe<UserConsent>;
   GetUserHierarchyEntityById?: Maybe<UserHierarchyEntity>;
@@ -13704,6 +13728,11 @@ export type QueryGetAllThemeDayArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryGetAllTopicArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryGetAllTraineeArgs = {
   order?: InputMaybe<Array<TraineeSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -14404,6 +14433,12 @@ export type QueryGetThemeByIdArgs = {
 };
 
 export type QueryGetThemeDayByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryGetTopicByIdArgs = {
   id?: InputMaybe<Scalars['Int']>;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -17495,6 +17530,30 @@ export type TokenAccessPractitionerDetailModel = {
   firstname?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
   surname?: Maybe<Scalars['String']>;
+};
+
+export type Topic = {
+  __typename?: 'Topic';
+  availableLanguages?: Maybe<Array<Maybe<Language>>>;
+  id?: Maybe<Scalars['Int']>;
+  infoGraphic?: Maybe<Scalars['String']>;
+  knowledgeContent?: Maybe<Scalars['String']>;
+  selfCareContent?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  topicContent?: Maybe<Scalars['String']>;
+  topicTitle?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
+};
+
+export type TopicInput = {
+  availableLanguages?: InputMaybe<Scalars['String']>;
+  infoGraphic?: InputMaybe<Scalars['String']>;
+  knowledgeContent?: InputMaybe<Scalars['String']>;
+  selfCareContent?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  topicContent?: InputMaybe<Scalars['String']>;
+  topicTitle?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
 };
 
 export type TotalAttendanceStatsReport = {
