@@ -11,6 +11,7 @@ const ROUTES = {
   UPLOAD_USERS: '/upload-users',
   DOCUMENTS: '/documents',
   VIEW_USERS: '/users/view-user',
+  PROFILE: '/profile',
   CLINICS: addPrefix('/clinics', {
     ALL_CLINICS: '/clinics',
     VIEW_CLINICS: '/view-clinics',

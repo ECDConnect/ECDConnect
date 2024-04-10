@@ -26,6 +26,7 @@ import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
 import { NavbarTypes } from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
+import ROUTES from '../../routes/app.routes-constants';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -142,14 +143,14 @@ export default function Shell() {
     logout();
 
     if (isTeamLead) {
-      history.push('/team-lead');
+      history.push(ROUTES.ROOT_TEAM_LEAD);
       return;
     }
     history.push('/');
   };
 
   const gotToProfile = () => {
-    history.push('/profile');
+    history.push(ROUTES.PROFILE);
   };
 
   const displayInformationPanel = () => {

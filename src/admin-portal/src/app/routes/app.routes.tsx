@@ -112,7 +112,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/dashboard`} component={Dashboard}></Route>
       <Route path={`/settings`} component={Settings}></Route>
       <Route path={`/data`} component={StaticData}></Route>
-      <Route path={`/profile`} component={Profile}></Route>
+      <Route path={ROUTES.PROFILE} component={Profile}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
