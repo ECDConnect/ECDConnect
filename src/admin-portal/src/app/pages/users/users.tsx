@@ -11,6 +11,7 @@ import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 
 export function Users() {
+  const { isTeamLead } = useUserRole();
   const location = useLocation();
 
   const { data } = useQuery(GetTenantContext, {
@@ -20,6 +21,15 @@ export function Users() {
   const { isTeamLead, isAdministrator } = useUserRole();
 
   const getNavigationItems = () => {
+    if (isTeamLead) {
+      return [
+        {
+          name: 'CHWs',
+          href: ROUTES.USERS.HEALTH_CARE_WORKERS,
+        },
+      ];
+    }
+
     if (
       data &&
       data.tenantContext &&
@@ -40,7 +50,7 @@ export function Users() {
         },
         {
           name: 'CHWs',
-          href: '/users/health-care-worker',
+          href: ROUTES.USERS.HEALTH_CARE_WORKERS,
         },
         {
           name: 'Team Leads',
@@ -86,7 +96,7 @@ export function Users() {
 
   return (
     <div className="">
-      <div className="flex justify-center bg-white ">
+      <div className="flex bg-white">
         {window.location.pathname !== '/users/view-user' &&
           navigation.map((item) => (
             <div
@@ -104,10 +114,10 @@ export function Users() {
           ))}
       </div>
 
-      <div className=" lg:min-w-0 lg:flex-1">
+      <div className=" bg-adminPortalBg rounded-xl rounded-t-none lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div
-            className={`bg-adminPortalBg relative h-full rounded-xl ${
+            className={` relative h-full  ${
               location?.pathname?.includes(ROUTES.USERS.HEALTH_CARE_WORKERS)
                 ? ''
                 : 'p-12'

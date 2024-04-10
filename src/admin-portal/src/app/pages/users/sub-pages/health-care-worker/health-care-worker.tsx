@@ -94,7 +94,7 @@ export default function HealthCareWorkers() {
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [handleAdduser, setHandleAdduser] = useState(false);
+  const [handleAddUser, setHandleAddUser] = useState(false);
 
   const [selectedCHWs, setSelectedCHWs] = useState<Irow[]>([]);
 
@@ -106,7 +106,7 @@ export default function HealthCareWorkers() {
   const disableInviteBulkAction =
     selectedCHWs?.length <= registeredOrInactiveUsers?.length;
 
-  // TODO: Why need to filter by phoneNumber?
+  // INFO: It’s being filtered by phoneNumber, because if the user doesn’t have the phoneNumber field filled, it’s breaking the sendInvitation mutation
   const chwIdsToSendInvitation = selectedCHWs
     ?.filter((item) => !item?.isRegistered && item?.user?.phoneNumber)
     ?.map((item) => item?.id);
@@ -180,7 +180,7 @@ export default function HealthCareWorkers() {
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([sortByClientStatusOptions[0]]);
+  >(isTeamLead ? [] : [sortByClientStatusOptions[0]]);
 
   const [connectUsageFilter, setConnectUsageFilter] = useState<
     SearchDropDownOption<string>[]
@@ -688,7 +688,11 @@ export default function HealthCareWorkers() {
             onClearFilters={clearFilters}
             onChangeSelectedRows={setSelectedCHWs}
             onClickRow={viewSelectedRow}
-            noContentText="No entries found"
+            noContentText={
+              isTeamLead
+                ? "You don't have any CHWs yet! Contact Grow Great for more information"
+                : 'No entries found'
+            }
             loading={{
               isLoading: tableData === undefined || isLoading,
               size: 'medium',
@@ -700,7 +704,7 @@ export default function HealthCareWorkers() {
               (!isTeamLead || isAdministrator)
                 ? {
                     text: 'Add CHWs',
-                    onClick: () => setHandleAdduser(true),
+                    onClick: () => setHandleAddUser(true),
                     icon: 'PlusIcon',
                   }
                 : undefined
@@ -737,6 +741,8 @@ export default function HealthCareWorkers() {
             ]}
             filters={[
               {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
                 className: 'mt-1',
                 options: sortByConnectUsage,
                 selectedOptions: connectUsageFilter,
@@ -746,6 +752,7 @@ export default function HealthCareWorkers() {
                 info: { name: 'CHW Connect usage:' },
               },
               {
+                hideFilter: isTeamLead,
                 className: 'w-64 h-11',
                 isFullWidth: false,
                 colour: !!startDate ? 'secondary' : 'adminPortalBg',
@@ -763,15 +770,20 @@ export default function HealthCareWorkers() {
                 shouldCloseOnSelect: true,
               },
               {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
                 className: 'mt-1',
                 options: sortByAppActivity,
                 selectedOptions: appActivityFilter,
                 onChange: setAppActivityFilter,
-                placeholder: 'App activity',
+                placeholder: 'App visit activity',
                 multiple: true,
-                info: { name: 'App activity:' },
+                info: { name: 'App visit activity:' },
               },
               {
+                type: 'search-dropdown',
+                hideFilter: clinicData?.allPortalClinics?.length <= 1,
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
                 className: 'mt-1',
                 options: clinics,
                 selectedOptions: clinicsFiltered,
@@ -781,6 +793,9 @@ export default function HealthCareWorkers() {
                 info: { name: 'Clinic:' },
               },
               {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: isTeamLead,
                 className: 'mt-1',
                 options: subDistricts,
                 selectedOptions: subDistrictsFiltered,
@@ -790,6 +805,9 @@ export default function HealthCareWorkers() {
                 info: { name: 'Sub-district:' },
               },
               {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: isTeamLead,
                 className: 'mt-1',
                 options: provinces,
                 selectedOptions: provincesFiltered,
@@ -799,6 +817,9 @@ export default function HealthCareWorkers() {
                 info: { name: 'Province:' },
               },
               {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: isTeamLead,
                 className: 'mt-1',
                 options: sortByClientStatusOptions,
                 selectedOptions: statusFilter,
@@ -814,7 +835,7 @@ export default function HealthCareWorkers() {
       <Dialog
         className="absolute left-56 bottom-96 mb-44 w-6/12"
         stretch
-        visible={handleAdduser}
+        visible={handleAddUser}
         position={DialogPosition.Middle}
       >
         <ActionModal
@@ -842,7 +863,7 @@ export default function HealthCareWorkers() {
               type: 'outlined',
               onClick: () => {
                 displayPanel();
-                setHandleAdduser(false);
+                setHandleAddUser(false);
               },
               leadingIcon: 'UserIcon',
             },

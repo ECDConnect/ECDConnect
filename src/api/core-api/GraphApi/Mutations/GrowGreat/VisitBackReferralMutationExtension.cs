@@ -21,12 +21,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public VisitBackReferral AddVisitBackReferralAdminComment(
+        public bool AddVisitBackReferralAdminComment(
             [Service] VisitBackReferralManager visitBackReferralManager, 
-            Guid visitBackReferralId,
+            Guid visitDataStatusId,
             string comment)
         {
-            return visitBackReferralManager.AddVisitBackReferralAdminComment(visitBackReferralId, comment);
+            visitBackReferralManager.AddVisitBackReferralAdminComment(visitDataStatusId, comment);
+            return true;
         }
     }
 }

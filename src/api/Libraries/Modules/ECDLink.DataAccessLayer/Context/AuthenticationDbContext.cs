@@ -139,6 +139,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitGrowthDataDay> VisitGrowthDataDay { get; set; }
         public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
         public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
+        public DbSet<ReferralType> ReferralTypes { get; set; }
+        public DbSet<VisitDataStatusReferralType> VisitDataStatusReferralTypes { get; set; }        
 
         // Licenses
         public DbSet<LicenseType> LicenseType { get; set; }

@@ -55,14 +55,12 @@ export const GetReferrals = gql`
 
 export const AddVisitBackReferralAdminComment = gql`
   mutation AddVisitBackReferralAdminComment(
-    $visitBackReferralId: UUID!
+    $visitDataStatusId: UUID!
     $comment: String!
   ) {
     addVisitBackReferralAdminComment(
-      visitBackReferralId: $visitBackReferralId
+      visitDataStatusId: $visitDataStatusId
       comment: $comment
-    ) {
-      comment
-    }
+    )
   }
 `;

@@ -285,8 +285,7 @@ export const ViewClinicReport = ({
             textColor="secondary"
             text="See CHWs"
             icon="UserGroupIcon"
-            // TODO: add integration with CHWs
-            onClick={() => {}}
+            onClick={() => history.push(ROUTES.USERS.ROOT)}
           />
         </div>
       )}

@@ -19,6 +19,7 @@ namespace EcdLink.Api.CoreApi.Services
     {
         private ApplicationUserManager _userManager;
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
+        private IGenericRepository<VisitDataStatusReferralType, Guid> _referralTypeRepo;
 
         public ReferralService(
             [Service] IHttpContextAccessor contextAccessor,
@@ -30,6 +31,7 @@ namespace EcdLink.Api.CoreApi.Services
             _userManager = userManager;
 
             _visitDataStatusRepo = repoFactory.CreateRepository<VisitDataStatus>(userContext: uId);
+            _referralTypeRepo = repoFactory.CreateRepository<VisitDataStatusReferralType>(userContext: uId);
         }
 
         public IEnumerable<PortalReferralModel> GetReferrals(
@@ -41,56 +43,51 @@ namespace EcdLink.Api.CoreApi.Services
             var currentUser = _userManager.FindByIdAsync(userId).Result;
             var isTeamLead = _userManager.IsInRoleAsync(currentUser, RolesGG.TEAM_LEAD).Result;
 
-            var referrals = _visitDataStatusRepo.GetAll()
-                .Where(x =>
-                    x.Type == GGSettings.visit_data_client_referral
-                    && x.VisitData.Visit.ActualVisitDate >= startDate
-                    && x.VisitData.Visit.ActualVisitDate <= endDate);
+            var referrals = _referralTypeRepo.GetAll();
                
 
-            if (clinicIds.Any())
+            if (clinicIds != null && clinicIds.Any())
             {
                 // Filter by CHWs at given clinics
                 referrals = referrals.Where(x =>
-                    (x.VisitData.Visit.MotherId.HasValue && x.VisitData.Visit.Mother.HealthCareWorker.ClinicId.HasValue && clinicIds.Contains(x.VisitData.Visit.Mother.HealthCareWorker.ClinicId.Value)
-                    || x.VisitData.Visit.InfantId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.HasValue && clinicIds.Contains(x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.Value)));
+                    (x.VisitDataStatus.VisitData.Visit.MotherId.HasValue && x.VisitDataStatus.VisitData.Visit.Mother.HealthCareWorker.ClinicId.HasValue && clinicIds.Contains(x.VisitDataStatus.VisitData.Visit.Mother.HealthCareWorker.ClinicId.Value)
+                    || x.VisitDataStatus.VisitData.Visit.InfantId.HasValue && x.VisitDataStatus.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.HasValue && clinicIds.Contains(x.VisitDataStatus.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.Value)));
             }
             else if (isTeamLead)
             {
                 // Filter to just the team leads CHWs
                 referrals = referrals.Where(x =>
-                   (x.VisitData.Visit.MotherId.HasValue && x.VisitData.Visit.Mother.HealthCareWorker.ClinicId.HasValue && x.VisitData.Visit.Mother.HealthCareWorker.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId))
-                   || x.VisitData.Visit.InfantId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.HasValue && x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId));
+                   (x.VisitDataStatus.VisitData.Visit.MotherId.HasValue && x.VisitDataStatus.VisitData.Visit.Mother.HealthCareWorker.ClinicId.HasValue && x.VisitDataStatus.VisitData.Visit.Mother.HealthCareWorker.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId))
+                   || x.VisitDataStatus.VisitData.Visit.InfantId.HasValue && x.VisitDataStatus.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId.HasValue && x.VisitDataStatus.VisitData.Visit.Infant.Caregiver.HealthCareWorker.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == userId));
             }
 
             var basicReferrals = referrals.Select(x => new
             {
-                VisitDataStatusId = x.Id,
-                IsPregnantMomVisit = x.VisitData.Visit.MotherId.HasValue,
-                x.VisitData.VisitName,
-                x.VisitData.VisitId,
-                x.VisitData.Question,
-                x.Comment,
-                x.IsCompleted,
-                x.BackReferralCompleted,
-                BackReferral = x.BackReferral,
-                CompletedDate = x.ReferralDateCompleted,
+                VisitDataStatusId = x.VisitDataStatusId,
+                Type = x.ReferralType.Name,
+                IsPregnantMomVisit = x.VisitDataStatus.VisitData.Visit.MotherId.HasValue,
+                //x.VisitData.VisitName,
+                x.VisitDataStatus.VisitData.VisitId,
+                x.VisitDataStatus.Comment,
+                x.VisitDataStatus.IsCompleted,
+                x.VisitDataStatus.BackReferralCompleted,
+                x.VisitDataStatus.BackReferralAdminComment,
+                BackReferral = x.VisitDataStatus.BackReferral,
+                CompletedDate = x.VisitDataStatus.ReferralDateCompleted,
                 CreatedDate = x.InsertedDate,
-                Mother = x.VisitData.Visit.Mother,
-                Infant = x.VisitData.Visit.Infant,
+                Mother = x.VisitDataStatus.VisitData.Visit.Mother,
+                Infant = x.VisitDataStatus.VisitData.Visit.Infant,
             }).ToList();
 
             foreach (var referral in basicReferrals)
             {
-                var type = GetReferralType(referral.Comment, referral.IsPregnantMomVisit, referral.Question, referral.VisitName);
-
                 yield return new PortalReferralModel()
                 {
                     VisitId = referral.VisitId,
                     VisitDataStatusId = referral.VisitDataStatusId,
                     VisitBackReferralId = referral.BackReferral?.Id,
-                    Type = type,
-                    AdminBackReferralNote = referral.BackReferral?.AdminComment,
+                    Type = referral.Type,
+                    AdminBackReferralNote = referral.BackReferralAdminComment,
                     CompletedDate = referral.CompletedDate,
                     CreatedDate = referral.CreatedDate,
                     HealthCareWorkerId = referral.IsPregnantMomVisit ? referral.Mother.HealthCareWorkerId.Value : referral.Infant.Caregiver.HealthCareWorkerId.Value,
@@ -167,293 +164,6 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return referralModels.Values.ToList();
-        }
-
-        private string GetReferralType(string comment, bool isPregnantMomVisit, string question, string visitName)
-        {
-            #region EarlyIdentificationOfPregnancy
-
-            if (comment == GGSettings.pregnancy_not_booked)
-            {
-                return ReferralTypes.EarlyIdentificationOfPregnancy;
-            }
-
-            #endregion
-
-            #region MaternalDistress
-
-            if (comment.EndsWith(GGSettings.maternal_distress))
-            {
-                return ReferralTypes.MaternalDistress;
-            }
-
-            #endregion
-
-            #region DangerSignsChildsMother
-
-            if (!isPregnantMomVisit && question == GGSettings.q_danger_signs && visitName == GGSettings.cfm_name)
-            {
-                return ReferralTypes.DangerSignsChildsMother;
-            }
-
-            #endregion
-
-            #region DangerSignsPregnantMom
-
-            if (isPregnantMomVisit && question == GGSettings.q_danger_signs)
-            {
-                return ReferralTypes.DangerSignsPregnantMom;
-            }
-
-            #endregion
-
-            #region MaternalMalnutrition
-
-            if (comment == GGSettings.IndicatorMotherUnderweight)
-            {
-                return ReferralTypes.MaternalMalnutrition;
-            }
-
-            #endregion
-
-            // Referral always saved on tolerance question, but should we include the other in the check in case?
-            #region SubstanceAbuse
-
-            if (question == GGSettings.QuestionAlcoholTolerance)
-            {
-                return ReferralTypes.SubstanceAbuse;
-            }
-
-            #endregion
-
-            #region CaregiverIDBook
-
-            if (comment.EndsWith(GGSettings.no_id_book))
-            {
-                return ReferralTypes.CaregiverIDBook;
-            }
-
-            #endregion
-
-            // Child referrals
-
-            #region ChildSupportGrant
-
-            if (comment == GGSettings.has_csg3)
-            {
-                return ReferralTypes.ChildSupportGrant;
-            }
-
-            #endregion
-
-            // Too many comparisons
-            #region DevelopmentalDelays
-
-            if (
-                question == GGSettings.q_hearing1 ||
-                question == GGSettings.q_hearing2 ||
-                question == GGSettings.q_hearing3 ||
-                question == GGSettings.q_hearing4 ||
-                question == GGSettings.q_hearing5 ||
-                question == GGSettings.q_hearing6 ||
-                question == GGSettings.q_hearing7 ||
-                question == GGSettings.q_hearing8 ||
-                question == GGSettings.q_hearing9 ||
-                question == GGSettings.q_seeing1 ||
-                question == GGSettings.q_seeing2 ||
-                question == GGSettings.q_seeing3 ||
-                question == GGSettings.q_seeing4 ||
-                question == GGSettings.q_seeing5 ||
-                question == GGSettings.q_seeing6 ||
-                question == GGSettings.q_seeing7 ||
-                question == GGSettings.q_brain1 ||
-                question == GGSettings.q_brain2 ||
-                question == GGSettings.q_brain3 ||
-                question == GGSettings.q_brain4 ||
-                question == GGSettings.q_brain5 ||
-                question == GGSettings.q_brain6 ||
-                question == GGSettings.q_brain7 ||
-                question == GGSettings.q_moving1 ||
-                question == GGSettings.q_moving2 ||
-                question == GGSettings.q_moving3 ||
-                question == GGSettings.q_moving4 ||
-                question == GGSettings.q_moving5 ||
-                question == GGSettings.q_moving6 ||
-                question == GGSettings.q_moving7)
-            {
-                return ReferralTypes.DevelopmentalDelays;
-            }
-
-            #endregion
-
-            #region ClinicVisitsNotUpToDate
-
-            if (comment == GGSettings.clinic_visits_not_up_to_date
-                || comment == GGSettings.infant_missed_clinic_visit)
-            {
-                return ReferralTypes.ClinicVisitsNotUpToDate;
-            }
-
-            #endregion
-
-            #region DangerSignsChild
-
-            if (visitName != GGSettings.cfm_name
-                && question == GGSettings.q_danger_signs)
-            {
-                return ReferralTypes.DangerSignsChildsMother;
-            }
-
-            #endregion
-
-            #region LowBirthWeight
-
-            if (question == GGSettings.QuestionWeight
-                && comment.Contains(GGSettings.IndicatorLowBirthWeight))
-            {
-                return ReferralTypes.LowBirthWeight;
-            }
-
-            #endregion
-
-            #region GrowthFaltering
-            
-            if (question == GGSettings.QuestionWeight
-                && comment.Contains(GGSettings.IndicatorGrowthFaltering))
-            {
-                return ReferralTypes.GrowthFaltering;
-            }
-
-            #endregion
-
-            #region SeverlyUnderweight
-
-            if (question == GGSettings.QuestionWeight
-                && comment.Contains(GGSettings.IndicatorSeverelyUnderweight))
-            {
-                return ReferralTypes.SeverlyUnderweight;
-            }
-
-            #endregion
-
-            #region Underweight
-
-            if (question == GGSettings.QuestionWeight
-                    && comment.Contains(GGSettings.IndicatorUnderweight))
-            {
-                return ReferralTypes.Underweight;
-            }
-
-            #endregion
-
-            #region Overweight
-
-            if (question == GGSettings.QuestionWeight
-                    && comment.Contains(GGSettings.IndicatorOverweight))
-            {
-                return ReferralTypes.Overweight;
-            }
-
-            #endregion
-
-            #region Obese
-
-            if (question == GGSettings.QuestionWeight
-                    && comment.Contains(GGSettings.IndicatorObese))
-            {
-                return ReferralTypes.Obese;
-            }
-
-            #endregion
-
-            #region SeverlyStunted
-
-            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && comment.Contains(GGSettings.IndicatorSeverelyStunted))
-            {
-                return ReferralTypes.SeverlyStunted;
-            }
-
-            #endregion
-
-            // This referral still needs to be added
-            #region LowBirthLength
-
-            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && comment.Contains(GGSettings.IndicatorLowBirthLength))
-            {
-                return ReferralTypes.LowBirthLength;
-            }
-
-            #endregion
-
-            #region Stunted
-
-            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && comment.Contains(GGSettings.IndicatorStunted))
-            {
-                return ReferralTypes.Stunted;
-            }
-
-            #endregion
-
-            #region SevereAcuteMalnutrition
-
-            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && comment.Contains(GGSettings.IndicatorSevereAcuteMalnutrition))
-            {
-                return ReferralTypes.SevereAcuteMalnutrition;
-            }
-
-            #endregion
-
-            #region ModerateAcuteMalnutrition
-
-            if (question == GGSettings.QuestionWeight // Referral for measurement always saved on the weight question
-                    && comment.Contains(GGSettings.IndicatorModerateAcuteMalnutrition))
-            {
-                return ReferralTypes.ModerateAcuteMalnutrition;
-            }
-
-            #endregion
-
-            #region VitaminANotUpToDate
-
-            if (comment == GGSettings.VitaminANotUpToDate)
-            {
-                return ReferralTypes.VitaminANotUpToDate;
-            }
-
-            #endregion
-
-            #region DewormingNotUpToDate
-
-            if (comment == GGSettings.DewormingNotUpToDate)
-            {
-                return ReferralTypes.DewormingNotUpToDate;
-            }
-
-            #endregion
-
-            #region ImmunisationNotUpToDate
-
-            if (comment == GGSettings.DewormingNotUpToDate)
-            {
-                return ReferralTypes.ImmunisationNotUpToDate;
-            }
-
-            #endregion
-
-            #region ChildBirthCertificate
-
-            if (comment.EndsWith(GGSettings.no_birth_certificate))
-            {
-                return ReferralTypes.ChildBirthCertificate;
-            }
-
-            #endregion
-
-            return "Unknown";
         }
     }
 }

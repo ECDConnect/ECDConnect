@@ -1,5 +1,5 @@
 export interface EditBackReferralRouteParams {
-  visitBackReferralId: string;
+  visitDataStatusId: string;
 }
 
 export interface EditBackReferralRouteState {

@@ -63,13 +63,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         )}
       >
         <ReactDatePicker
+          {...props}
           className={`text-${textColour} relative z-10 w-full rounded-md border-0 bg-transparent ${
             showChevronIcon ? 'pr-7' : ''
           }`}
           wrapperClassName="w-full"
           onCalendarOpen={() => setIsOpen(true)}
           onCalendarClose={() => setIsOpen(false)}
-          {...props}
         />
         {!hideCalendarIcon &&
           renderIcon(

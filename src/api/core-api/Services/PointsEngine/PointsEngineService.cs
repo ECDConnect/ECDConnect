@@ -1390,7 +1390,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
 
-            // Set league ranks for year, keeping highest rank for all that have equal points
+            // Set league ranks for quarter, keeping highest rank for all that have equal points
             clinicList = clinicList.OrderByDescending(x => x.PointsTotalForQuarter).ToList();
             clinicList[0].LeagueRankingForQuarter = 1;
             for (int i = 1; i < clinicList.Count; i++)
