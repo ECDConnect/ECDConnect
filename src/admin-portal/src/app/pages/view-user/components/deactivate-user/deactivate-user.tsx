@@ -119,7 +119,7 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
   return (
     <div>
       <Button
-        className={'mt-3 w-full rounded-2xl p-16'}
+        className={'w-full rounded-2xl lg:w-56'}
         type="outlined"
         // isLoading={isLoading}
         color="tertiary"

@@ -69,7 +69,7 @@ export const SendInvite: React.FC<SendInviteProps> = ({
 
   return (
     <Button
-      className={'mt-3 w-4/12 rounded-2xl'}
+      className={'w-full rounded-2xl lg:w-52'}
       type="filled"
       // isLoading={isLoading}
       color="secondary"
