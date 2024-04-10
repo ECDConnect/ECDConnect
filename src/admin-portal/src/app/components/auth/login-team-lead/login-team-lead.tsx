@@ -3,9 +3,8 @@ import {
   initialLoginValues,
   LoginRequestModel,
   loginSchema,
-  useTheme,
 } from '@ecdlink/core';
-import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -18,7 +17,6 @@ import { PasswordInput } from '../../password-input/password-input';
 
 export default function LoginTeamLead() {
   const { login } = useAuth();
-  const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -89,31 +87,18 @@ export default function LoginTeamLead() {
         <div className="mt-8">
           <div className="mt-6">
             <form className="space-y-6">
-              {/* <div>
-                <FormField
-                  label={'Email address *'}
-                  nameProp={'email'}
-                  register={register}
-                  error={errors.email?.message}
-                />
-              </div> */}
-
               {idFieldVisible && (
                 <FormField
                   label={'ID number *'}
-                  // visible={true}
                   nameProp={'idField'}
                   register={register}
-                  // error={errors['idField']}
                   placeholder={'E.g. 7601010338089'}
                 />
               )}
               {!idFieldVisible && (
                 <FormField
                   label={'Passport number *'}
-                  // visible={true}
                   nameProp={'passportField'}
-                  // error={errors['passportField']}
                   register={register}
                   placeholder="e.g EN000666"
                 />

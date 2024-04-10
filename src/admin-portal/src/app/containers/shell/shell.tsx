@@ -25,6 +25,7 @@ import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
 import { NavbarTypes } from './shell.types';
+import { useUserRole } from '../../hooks/useUserRole';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -64,6 +65,7 @@ export default function Shell() {
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
+  const { isTeamLead } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const history = useHistory();
   const location = useLocation();
@@ -145,6 +147,11 @@ export default function Shell() {
 
   const signOutClick = () => {
     logout();
+
+    if (isTeamLead) {
+      history.push('/team-lead');
+      return;
+    }
     history.push('/');
   };
 

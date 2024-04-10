@@ -17,7 +17,7 @@ import {
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
@@ -45,6 +45,7 @@ export default function RegisterTeamLead(
     formState,
     watch,
     setValue: setTlRegistrationValue,
+    control,
   } = useForm({
     resolver: yupResolver(registerSchema),
     defaultValues: initialRegisterValues,
@@ -56,9 +57,9 @@ export default function RegisterTeamLead(
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
-  const { errors, isValid } = formState;
+  const { errors } = formState;
   const formValues = getValues();
-  console.log({ formValues });
+
   const [showPassword, setShowPassword] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
@@ -75,14 +76,14 @@ export default function RegisterTeamLead(
     setIdFieldVisible(flag);
   };
 
-  const termsState = watch('acceptedTerms');
-  const acceptedTerms = termsState && isValid;
-  console.log({ formValues });
-  console.log(resetToken);
-  console.log({ isValid });
-  const registerNewUser = async () => {
-    console.log('entrouuuuu');
+  const { acceptedTerms, idField, passportField, phoneNumber } = useWatch({
+    control,
+  });
 
+  const disableButton =
+    !acceptedTerms || (!idField && !passportField) || !phoneNumber;
+
+  const registerNewUser = async () => {
     const informationVerified = await verifyPhoneNumber(Config.authApi, {
       phoneNumber: formValues.phoneNumber,
       token: resetToken || '',
@@ -90,19 +91,17 @@ export default function RegisterTeamLead(
     });
 
     if (informationVerified.verified) {
-      // proceedToPhoneValidation(formValue, authToken || '');
     } else if (informationVerified.errorCode === 1) {
       setPresentCellNumberMismatch(true);
     }
 
-    console.log({ informationVerified });
     if (resetToken) {
       setIsLoading(true);
       const body: RegisterRequestModel = {
         username: formValues.idField,
         password: formValues.password,
         token: resetToken,
-        // acceptedTerms: formValues.acceptedTerms,
+        acceptedTerms: formValues.acceptedTerms,
       };
       const isAuthenticated = await registerTeamLeadUser(
         body,
@@ -151,45 +150,18 @@ export default function RegisterTeamLead(
         <div className="mt-8">
           <div className="mt-6">
             <form className="mb-8 space-y-6">
-              {/* <div>
-                <FormField
-                  label={'Email address *'}
-                  nameProp={'username'}
-                  type="email"
-                  register={register}
-                  error={errors.username?.message}
-                  instructions={[
-                    'Make sure to use the same address where you received the invitation email.',
-                  ]}
-                  placeholder="e.g. work@email.com"
-                />
-              </div> */}
-
-              {/* <div className="myt-4 sm:col-span-3">
-            <FormField
-              label={'Id number / passport *'}
-              nameProp={'idNumber'}
-              register={register}
-              // error={errors.idNumber?.message}
-              placeholder="e.g 6201014800088"
-            />
-          </div> */}
               {idFieldVisible && (
                 <FormField
                   label={'ID number *'}
-                  // visible={true}
                   nameProp={'idField'}
                   register={register}
-                  // error={errors['idField']}
                   placeholder={'E.g. 7601010338089'}
                 />
               )}
               {!idFieldVisible && (
                 <FormField
                   label={'Passport number *'}
-                  // visible={true}
                   nameProp={'passportField'}
-                  // error={errors['passportField']}
                   register={register}
                   placeholder="e.g EN000666"
                 />
@@ -276,7 +248,7 @@ export default function RegisterTeamLead(
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  // disabled={!acceptedTerms}
+                  disabled={disableButton}
                   onClick={registerNewUser}
                 >
                   <Typography

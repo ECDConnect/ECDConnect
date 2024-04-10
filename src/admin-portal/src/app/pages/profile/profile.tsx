@@ -7,13 +7,20 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 
-import { Button, ProfileAvatar, SA_CELL_REGEX, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Button,
+  Dialog,
+  DialogPosition,
+  ProfileAvatar,
+  SA_CELL_REGEX,
+  Typography,
+} from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import {
   GetTeamLead,
-  GetTeamLeadSummary,
   GetUserById,
   ResetUserPassword,
   UpdateUser,
@@ -44,6 +51,12 @@ export function Profile(props: any) {
   const [resetUserPassword] = useMutation(ResetUserPassword);
   const user = useUser();
   const { setNotification } = useNotifications();
+  const [handleChangePassword, setHandleChangePassword] = useState(false);
+  const [handleChangePhoneNumber, setHandleChangePhoneNumber] = useState(false);
+  const [
+    handleChangePasswordAndPhoneNumber,
+    setHandleChangePasswordAndPhoneNumber,
+  ] = useState(false);
 
   const { register, formState, getValues, handleSubmit, setValue } = useForm({
     resolver: yupResolver(userSchema),
@@ -56,6 +69,7 @@ export function Profile(props: any) {
     register: passwordRegister,
     formState: passwordFormState,
     getValues: passwordGetValues,
+    setValue: passwordSetValue,
     watch,
   } = useForm({
     resolver: yupResolver(passwordSchema),
@@ -115,6 +129,7 @@ export function Profile(props: any) {
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
       profileImageUrl: profileImage ?? userData.userById?.profileImageUrl,
+      phoneNumber: userDetailForm?.phoneNumber,
     };
 
     await updateUser({
@@ -135,6 +150,7 @@ export function Profile(props: any) {
           variant: NOTIFICATION.ERROR,
         });
       });
+    refetch();
 
     if (passwordChange) {
       await resetUserPassword({
@@ -142,6 +158,9 @@ export function Profile(props: any) {
           id: user.user?.id,
           newPassword: passwordForm.password,
         },
+      });
+      passwordSetValue('password', '', {
+        shouldValidate: true,
       });
     }
     refetch();
@@ -151,9 +170,26 @@ export function Profile(props: any) {
     let passwordChange = false;
     let internalIsPasswordValid = true;
 
+    if (
+      passwordForm.password.length > 0 &&
+      userDetailForm?.phoneNumber !== user.user?.phoneNumber
+    ) {
+      passwordChange = true;
+      internalIsPasswordValid = isPasswordValid;
+      setHandleChangePasswordAndPhoneNumber(true);
+      return;
+    }
+
     if (passwordForm.password.length > 0) {
       passwordChange = true;
       internalIsPasswordValid = isPasswordValid;
+      setHandleChangePassword(true);
+      return;
+    }
+
+    if (userDetailForm?.phoneNumber !== user.user?.phoneNumber) {
+      setHandleChangePhoneNumber(true);
+      return;
     }
 
     if (avatarFile) {
@@ -354,6 +390,120 @@ export function Profile(props: any) {
             ></Typography>
           </Button>
         </div>
+        <Dialog
+          className="right-50 absolute w-6/12"
+          stretch
+          visible={handleChangePassword}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Are you sure you want to change your password?`}
+            detailText="You will need to use the new password to log in."
+            actionButtons={[
+              {
+                text: 'Yes, change password',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: async () => {
+                  avatarFile
+                    ? await saveUser(true, avatarFile)
+                    : await saveUser(true);
+                  setHandleChangePassword(false);
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No, cancel',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => setHandleChangePassword(false),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
+        <Dialog
+          className="right-50 absolute w-6/12"
+          stretch
+          visible={handleChangePhoneNumber}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Are you sure you want to edit your cellphone number?`}
+            detailText="You will need to verify the new cellphone number."
+            actionButtons={[
+              {
+                text: 'Yes, save new cellphone number',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: async () => {
+                  avatarFile
+                    ? await saveUser(false, avatarFile)
+                    : await saveUser(false);
+                  setHandleChangePhoneNumber(false);
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No, cancel',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setHandleChangePhoneNumber(false),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
+        <Dialog
+          className="right-50 absolute w-6/12"
+          stretch
+          visible={handleChangePasswordAndPhoneNumber}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Are you sure you want to change your password and cellphone number?`}
+            detailText="You will need to verify the new cellphone number and use the new password to log in."
+            actionButtons={[
+              {
+                text: 'Yes, change login details',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: async () => {
+                  avatarFile
+                    ? await saveUser(true, avatarFile)
+                    : await saveUser(true);
+                  setHandleChangePasswordAndPhoneNumber(false);
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No, cancel',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setHandleChangePasswordAndPhoneNumber(false),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </form>
     </div>
   );

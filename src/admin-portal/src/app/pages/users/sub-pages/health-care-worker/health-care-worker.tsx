@@ -47,6 +47,7 @@ import { AppVisitActivity, ConnectUsage } from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
+import { useUserRole } from '../../../../hooks/useUserRole';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -81,6 +82,7 @@ export const sortByAppActivity: SearchDropDownOption<string>[] = [
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
+  const { isTeamLead, isAdministrator } = useUserRole();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
   const [tableData, setTableData] = useState<any[]>([]);
@@ -694,13 +696,14 @@ export default function HealthCareWorkers() {
               backgroundColor: 'secondary',
             }}
             actionButton={
-              hasPermission(PermissionEnum.create_user)
+              hasPermission(PermissionEnum.create_user) &&
+              (!isTeamLead || isAdministrator)
                 ? {
                     text: 'Add CHWs',
                     onClick: () => setHandleAdduser(true),
                     icon: 'PlusIcon',
                   }
-                : {}
+                : undefined
             }
             search={{
               placeholder: 'Search by id number or name...',
