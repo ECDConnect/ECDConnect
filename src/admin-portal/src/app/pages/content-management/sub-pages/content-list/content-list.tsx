@@ -390,7 +390,6 @@ export default function ContentList({
     (item?: any) => {
       if (selectedTab === 2 || selectedTab === 3) {
         const selecteditem = natalData?.natalRecordsForType?.find((record) => {
-          console.log({ record });
           return record?.title === item?.title;
         });
         const currentType = dataTypes.contentTypes.find(
