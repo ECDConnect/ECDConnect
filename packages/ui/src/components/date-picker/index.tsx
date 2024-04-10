@@ -12,6 +12,7 @@ interface BaseDatePickerProps
   hint?: string;
   hideCalendarIcon?: boolean;
   showChevronIcon?: boolean;
+  chevronIconColour?: Colours;
   colour?: Colours;
   textColour?: Colours;
   isFullWidth?: boolean;
@@ -44,6 +45,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   className,
   showChevronIcon,
   isFullWidth = true,
+  chevronIconColour = 'white',
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,7 +78,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           )}
         {showChevronIcon && (
           <ChevronDownIcon
-            className={`absolute right-2 top-1/2 z-0 h-6 w-6 transform text-white ${
+            className={`absolute right-2 top-1/2 z-0 h-6 w-6 transform text-${chevronIconColour} ${
               isOpen ? 'rotate-180' : ''
             } -translate-y-1/2`}
           />

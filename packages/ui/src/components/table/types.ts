@@ -50,4 +50,9 @@ export interface TableProps {
   onClearFilters?: () => void;
   onClickRow?: (row: Irow) => void;
   onChangePage?: (page: number) => void;
+  onChangeSelectedRows?: (rows: Irow[]) => void;
+}
+
+export interface TableRefMethods {
+  resetSelectedRows: () => void;
 }
