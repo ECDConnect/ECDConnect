@@ -54,7 +54,7 @@ namespace ECDLink.Core.Services.Interfaces
 
         ClinicPointsModel GetPointsDetailsForClinic(Guid clinicId);
         LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId, DateTime? quarterStart = null, DateTime? quarterEnd = null);
-        LeagueClinicsModel GetClinicRankingsForOpeningFolders(Guid leagueId, Guid pointsActivityId, Guid categoryId);
+        List<LeagueClinicPointsModel> GetClinicRankingsForActivity(Guid pointsActivityId, Guid? pointsCategoryId, DateTime startDate, DateTime endDate);
 
         List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId);
     }
