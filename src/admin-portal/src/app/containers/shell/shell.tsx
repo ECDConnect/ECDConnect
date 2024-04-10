@@ -26,7 +26,6 @@ import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
 import { NavbarTypes } from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
-import { UserRoles } from '../../constants/user';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -66,7 +65,7 @@ export default function Shell() {
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
-  const { isTeamLead } = useUserRole();
+  const { isTeamLead, isAdministrator, isSuperAdmin } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const history = useHistory();
   const location = useLocation();
@@ -105,15 +104,12 @@ export default function Shell() {
         );
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
-      if (
-        user?.roles?.some((x) => x.name === UserRoles.Administrator) ||
-        user?.roles?.some((x) => x.name === UserRoles.SuperAdmin)
-      ) {
+      if (isAdministrator || isSuperAdmin) {
         const sorted = navigationList
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
-      } else if (user?.roles?.some((x) => x.name === UserRoles.TeamLead)) {
+      } else if (isTeamLead) {
         setNavigation(
           teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
         );
@@ -124,7 +120,7 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData]);
+  }, [user, navigationData, isAdministrator, isSuperAdmin, isTeamLead]);
 
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',

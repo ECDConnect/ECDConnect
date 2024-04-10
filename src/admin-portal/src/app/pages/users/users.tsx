@@ -8,6 +8,7 @@ import { TenantContext } from '../../utils/constants';
 import { useUser } from '../../hooks/useUser';
 import { AdminTypes } from './sub-pages/application-admins/applications-admins.types';
 import ROUTES from '../../routes/app.routes-constants';
+import { useUserRole } from '../../hooks/useUserRole';
 
 export function Users() {
   const location = useLocation();
@@ -16,6 +17,7 @@ export function Users() {
     fetchPolicy: 'cache-and-network',
   });
   const { user } = useUser();
+  const { isTeamLead, isAdministrator } = useUserRole();
 
   const getNavigationItems = () => {
     if (
@@ -23,13 +25,7 @@ export function Users() {
       data.tenantContext &&
       data.tenantContext.applicationName === TenantContext.GrowGreat
     ) {
-      if (
-        user?.roles?.some(
-          (x) =>
-            x.name === AdminTypes.TeamLead &&
-            !user?.roles?.some((x) => x.name === AdminTypes.Administrator)
-        )
-      ) {
+      if (isTeamLead && !isAdministrator) {
         return [
           {
             name: 'CHWs',
@@ -87,9 +83,6 @@ export function Users() {
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const userSelected = localStorage.getItem('selectedUser');
-
-  console.log({ userSelected });
 
   return (
     <div className="">

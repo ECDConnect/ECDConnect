@@ -61,17 +61,17 @@ const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
-      <Route exact path="/team-lead" component={LoginTeamLead} />
+      <Route exact path={ROUTES.ROOT_TEAM_LEAD} component={LoginTeamLead} />
       <Route exact path="/register/:resetToken" component={Register} />
       <Route
         exact
-        path="/team-lead-register/:resetToken"
+        path={ROUTES.TEAM_LEAD_REGISTER}
         component={RegisterTeamLead}
       />
-      <Route exact path="/forgot-password" component={ForgotPassword} />
+      <Route exact path={ROUTES.FORGOT_PASSWORD} component={ForgotPassword} />
       <Route
         exact
-        path="/team-lead-forgot-password"
+        path={ROUTES.TEAM_LEAD_RESET_PASSWORD}
         component={TeamLeadForgotPassword}
       />
       <Route exact path="/reset/:resetToken" component={ResetPassword} />

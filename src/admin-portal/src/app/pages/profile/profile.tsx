@@ -18,7 +18,6 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
 import {
   GetTeamLead,
   GetUserById,
@@ -31,8 +30,8 @@ import { useUser } from '../../hooks/useUser';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { PasswordInput } from '../../components/password-input/password-input';
-import { AdminTypes } from '../users/sub-pages/application-admins/applications-admins.types';
 import { SuperAdminProfile } from './components/superAdminProfile';
+import { useUserRole } from '../../hooks/useUserRole';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
@@ -45,9 +44,6 @@ export const userSchema = yup.object().shape({
 });
 
 export function Profile(props: any) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const history = useHistory();
   const [resetUserPassword] = useMutation(ResetUserPassword);
   const user = useUser();
   const { setNotification } = useNotifications();
@@ -70,7 +66,6 @@ export function Profile(props: any) {
     formState: passwordFormState,
     getValues: passwordGetValues,
     setValue: passwordSetValue,
-    watch,
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
@@ -88,16 +83,7 @@ export function Profile(props: any) {
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
-  const isAdministrator = userData?.userById?.roles?.find(
-    (item) => item?.name === AdminTypes.Administrator
-  );
-  const isSuperAdmin = userData?.userById?.roles?.find(
-    (item) => item?.name === AdminTypes.SuperAdmin
-  );
-
-  const isTeamLead = userData?.userById?.roles?.find(
-    (item) => item?.name === AdminTypes.TeamLead
-  );
+  const { isAdministrator, isSuperAdmin, isTeamLead } = useUserRole();
 
   const [getTeamLeadData, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
     variables: {
