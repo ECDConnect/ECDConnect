@@ -12,6 +12,7 @@ import {
   GetReferralsSummary,
 } from '@ecdlink/graphql';
 import { ViewReferralDetailsRouteState } from './view-referral-detail/types';
+import { ReferralsRouteState } from './types';
 
 export const Referrals = () => {
   const today = new Date();
@@ -33,7 +34,7 @@ export const Referrals = () => {
 
   const history = useHistory();
 
-  const { state } = useLocation<ViewReferralDetailsRouteState>();
+  const { state } = useLocation<ReferralsRouteState>();
 
   const selectedClinicIds = useMemo(
     () => selectedClinic?.map((clinic) => clinic.value),
@@ -46,7 +47,7 @@ export const Referrals = () => {
       variables: {
         startDate,
         endDate,
-        clinicIds: selectedClinicIds,
+        clinicIds: selectedClinicIds ?? [],
       },
       fetchPolicy: 'cache-and-network',
     }

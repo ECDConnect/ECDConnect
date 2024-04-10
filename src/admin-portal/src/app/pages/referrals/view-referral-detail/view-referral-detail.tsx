@@ -45,7 +45,7 @@ export const ViewReferralDetail = () => {
         type: formatStringWithFirstLetterCapitalized(referralType),
         startDate,
         endDate,
-        clinicIds: state?.clinicIds,
+        clinicIds: state?.clinicIds ?? [],
       },
       fetchPolicy: 'cache-and-network',
     }
@@ -83,7 +83,7 @@ export const ViewReferralDetail = () => {
 
   const rows: Irow[] =
     data?.referrals.map((referral) => ({
-      visitId: referral?.visitId ?? '',
+      visitBackReferralId: referral?.visitBackReferralId ?? '',
       client: referral?.client ?? '-',
       chw: referral?.healthCareWorker ?? '-',
       referralsMade: referral?.isCompleted ? greenIcon : redIcon,
@@ -141,7 +141,9 @@ export const ViewReferralDetail = () => {
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.EDIT_BACK_REFERRAL.replace(
                 ':referralType',
                 formatTextToSlug(referralType)
-              ).replace(':visitId', formatTextToSlug(row.visitId)),
+              )
+                // .replace(':visitBackReferralId', formatTextToSlug(row.visitBackReferralId)),
+                .replace(':visitBackReferralId', 'to-do'),
               {
                 startDate,
                 endDate,
