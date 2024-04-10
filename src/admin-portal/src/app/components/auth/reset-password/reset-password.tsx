@@ -71,8 +71,7 @@ export default function ResetPassword() {
     }
   };
 
-  const { errors, isValid } = formState;
-  console.log(isValid);
+  const { isValid } = formState;
 
   const submitResetPassword = async () => {
     if (isValid) {

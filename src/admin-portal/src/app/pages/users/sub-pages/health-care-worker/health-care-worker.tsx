@@ -81,8 +81,8 @@ export const sortByAppActivity: SearchDropDownOption<string>[] = [
 }));
 
 export default function HealthCareWorkers() {
-  const { isTeamLead } = useUserRole();
   const { hasPermission } = useUser();
+  const { isTeamLead, isAdministrator } = useUserRole();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
   const [tableData, setTableData] = useState<any[]>([]);
@@ -700,7 +700,8 @@ export default function HealthCareWorkers() {
               backgroundColor: 'secondary',
             }}
             actionButton={
-              hasPermission(PermissionEnum.create_user) && !isTeamLead
+              hasPermission(PermissionEnum.create_user) &&
+              (!isTeamLead || isAdministrator)
                 ? {
                     text: 'Add CHWs',
                     onClick: () => setHandleAddUser(true),

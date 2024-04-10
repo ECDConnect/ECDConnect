@@ -24,6 +24,9 @@ import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
+import { NavbarTypes } from './shell.types';
+import { useUserRole } from '../../hooks/useUserRole';
+import ROUTES from '../../routes/app.routes-constants';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -63,6 +66,7 @@ export default function Shell() {
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
+  const { isTeamLead, isAdministrator, isSuperAdmin } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const history = useHistory();
   const location = useLocation();
@@ -89,17 +93,27 @@ export default function Shell() {
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
-      const navigationList: NavigationDto[] = navigationData.GetAllNavigation;
+      const teamLeadNavigationItems = [
+        NavbarTypes.Users,
+        NavbarTypes.Clinics,
+        NavbarTypes.Referrals,
+      ];
+      const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
+      const teamLeadNavigationList: NavigationDto[] =
+        navigationData?.GetAllNavigation?.filter((item) =>
+          teamLeadNavigationItems?.includes(item?.name)
+        );
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
-      if (
-        user?.roles?.some((x) => x.name === 'Administrator') ||
-        user?.roles?.some((x) => x.name === 'Super Admin')
-      ) {
+      if (isAdministrator || isSuperAdmin) {
         const sorted = navigationList
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
+      } else if (isTeamLead) {
+        setNavigation(
+          teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
+        );
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -107,7 +121,7 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData]);
+  }, [user, navigationData, isAdministrator, isSuperAdmin, isTeamLead]);
 
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
@@ -127,11 +141,16 @@ export default function Shell() {
 
   const signOutClick = () => {
     logout();
+
+    if (isTeamLead) {
+      history.push(ROUTES.ROOT_TEAM_LEAD);
+      return;
+    }
     history.push('/');
   };
 
   const gotToProfile = () => {
-    history.push('/profile');
+    history.push(ROUTES.PROFILE);
   };
 
   const displayInformationPanel = () => {
