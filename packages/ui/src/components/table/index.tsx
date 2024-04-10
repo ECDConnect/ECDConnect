@@ -265,6 +265,10 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
             <div className="mb-4 flex items-center justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 {filters?.map((filterProps, index) => {
+                  if (filterProps?.hideFilter) {
+                    return null;
+                  }
+
                   if (filterProps?.type === 'date-picker') {
                     return (
                       <DatePicker
