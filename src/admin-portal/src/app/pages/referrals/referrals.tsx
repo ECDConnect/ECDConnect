@@ -74,6 +74,10 @@ export const Referrals = () => {
     },
     {
       field: 'referralsRaised',
+      use: '# referrals raised',
+    },
+    {
+      field: 'referralsMade',
       use: '# referrals made',
     },
     {
@@ -110,8 +114,8 @@ export const Referrals = () => {
   }, [clinicsData?.allPortalClinics, state?.clinicIds]);
 
   return (
-    <div className="bg-adminPortalBg h-full rounded-2xl p-4">
-      <div className="rounded-xl bg-white p-12">
+    <div className="bg-adminPortalBg min-h-full rounded-2xl p-4">
+      <div className="h-auto rounded-xl bg-white p-12">
         <Table
           rows={rows}
           columns={columns}
