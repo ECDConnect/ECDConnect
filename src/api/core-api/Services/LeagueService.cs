@@ -1,0 +1,108 @@
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using HotChocolate;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System;
+using ECDLink.Security.Extensions;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using System.Linq;
+using ECDLink.DataAccessLayer.Entities.Leagues;
+using ECDLink.DataAccessLayer.Entities;
+using EcdLink.Api.CoreApi.Services.Interfaces;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+
+namespace EcdLink.Api.CoreApi.Services
+{
+    public class LeagueService : ILeagueService
+    {
+        private IGenericRepository<League, Guid> _leagueRepo;
+        private IGenericRepository<Clinic, Guid> _clinicRepo;
+        private IGenericRepository<District, Guid> _districtRepo;
+
+        public LeagueService(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            _leagueRepo = repoFactory.CreateRepository<League>(userContext: uId);
+            _clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
+            _districtRepo = repoFactory.CreateRepository<District>(userContext: uId);
+        }
+
+        public LeagueSetupModel GetLeagueSetup()
+        {
+            // TODO - Reset this so it is working for the next season (should be this year, to next year)
+            var startDate = new DateTime(DateTime.Now.Year - 1, 10, 1);
+            var endDate = new DateTime(DateTime.Now.Year, 9, 30);
+
+            // Districts
+            var districts = _districtRepo.GetAll().Where(x => x.IsActive).ToList();
+
+
+            // Unassigned clinics
+            var unassignedClinics = _clinicRepo.GetAll()
+                .Where(x => !x.Leagues.Any(x => x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
+                .Select(x => new
+                {
+                    x.SubDistrict.DistrictId,
+                    DistrictName = x.SubDistrict.District.Name,
+                    Clinic = new BaseClinicModel { Id = x.Id, Name = x.Name }
+                }
+                ).ToList();
+
+
+            // Leagues
+            var leagues = _leagueRepo.GetAll()
+                .Where(x =>
+                    x.StartDate == startDate
+                    && x.EndDate == endDate)
+                .Select(x => new
+                {
+                    x.DistrictId,
+                    LeagueTypeName = x.LeagueType.Name,
+                    League = new LeagueWithClinicsModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Clinics = x.Clinics.Select(x => new BaseClinicModel { Id = x.Clinic.Id, Name = x.Clinic.Name }).ToList()
+                    },
+                })
+                .ToList();
+
+            // Organise districts
+            var districtModels = new List<DistrictLeaguesModel>();
+            foreach (var district in districts)
+            {
+                var unassignedDistrictClinics = unassignedClinics
+                    .Where(x => x.DistrictId == district.Id)
+                    .Select(x => x.Clinic)
+                    .ToList();
+
+                var districtLeagues = leagues
+                    .Where(x => x.DistrictId.HasValue && x.DistrictId == district.Id)
+                    .Select(x => x.League)
+                    .ToList();
+
+                districtModels.Add(new DistrictLeaguesModel
+                {
+                    Id = district.Id,
+                    Name = district.Name,
+                    Leagues = districtLeagues,
+                    UnassignedClinics = unassignedDistrictClinics
+                });
+            }
+
+            return new LeagueSetupModel
+            {
+                SuperLeagues = leagues
+                    .Where(x => x.LeagueTypeName == "Super League")
+                    .Select(x => x.League).ToList(),
+
+                Districts = districtModels
+            };
+        }
+    }
+}
