@@ -265,17 +265,18 @@ export default function HealthCareWorkers() {
   const isLoading =
     loading || loadingClinics || loadingProvince || loadingDistricts;
 
+  const isFilterActive =
+    !!connectUsageFilter?.length ||
+    !!appActivityFilter?.length ||
+    !!startDate ||
+    !!endDate ||
+    !!clinicsFiltered?.length ||
+    !!subDistrictsFiltered?.length ||
+    !!provincesFiltered?.length ||
+    !!statusFilter?.length;
+
   const noContentText = useMemo(() => {
-    if (
-      connectUsageFilter?.length ||
-      appActivityFilter?.length ||
-      startDate ||
-      endDate ||
-      clinicsFiltered?.length ||
-      subDistrictsFiltered?.length ||
-      provincesFiltered?.length ||
-      statusFilter?.length
-    ) {
+    if (isFilterActive) {
       return 'No results found. Try changing the filters selected';
     }
 
@@ -284,17 +285,7 @@ export default function HealthCareWorkers() {
     }
 
     return 'No entries found';
-  }, [
-    appActivityFilter?.length,
-    clinicsFiltered?.length,
-    connectUsageFilter?.length,
-    endDate,
-    isTeamLead,
-    provincesFiltered?.length,
-    startDate,
-    statusFilter?.length,
-    subDistrictsFiltered?.length,
-  ]);
+  }, [isFilterActive, isTeamLead]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
