@@ -80,7 +80,7 @@ export const ViewClinicReport = ({
   const dataFromClinicPointsData = clinicPointsData?.clinicPointsData;
 
   const clinicInformation = [
-    { name: 'Unique ID:', value: clinic?.id },
+    ...(isTeamLead ? [] : [{ name: 'Unique ID:', value: clinic?.id }]),
     { name: 'Phone number:', value: clinic?.phoneNumber },
     { name: 'Address:', value: clinic?.siteAddress?.addressLine1 },
     { name: 'Sub-district:', value: clinic?.subDistrict?.name },
@@ -211,7 +211,6 @@ export const ViewClinicReport = ({
         </div>
         <div className="flex gap-x-4">
           <ReportsDataChart
-            key={clinicPointsData}
             clinic={clinic}
             targetPerc={clinicPointsData?.clinicPointsData?.momsTargetPerc}
             targetPercColor={
@@ -233,7 +232,6 @@ export const ViewClinicReport = ({
             icon={Pregnant}
           />
           <ReportsDataChart
-            key={clinicPointsData}
             clinic={clinic}
             targetPerc={clinicPointsData?.clinicPointsData?.childrenTargetPerc}
             targetPercColor={

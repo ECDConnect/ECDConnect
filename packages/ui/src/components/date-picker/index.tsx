@@ -57,14 +57,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       <div
         className={classNames(
           className,
-          `bg-${colour} relative z-20 mt-2 rounded-md p-1 ${
-            isFullWidth ? 'w-full' : ''
-          }`
+          `bg-${colour} relative ${
+            !!label || !!hint ? 'mt-2' : ''
+          } rounded-md ${isFullWidth ? 'w-full' : ''}`
         )}
       >
         <ReactDatePicker
           {...props}
-          className={`text-${textColour} relative z-10 w-full rounded-md border-0 bg-transparent ${
+          className={`text-${textColour} relative w-full rounded-md border-0 bg-transparent ${
             showChevronIcon ? 'pr-7' : ''
           }`}
           wrapperClassName="w-full"

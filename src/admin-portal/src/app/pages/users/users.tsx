@@ -5,8 +5,6 @@ import SubNavigationLink from '../../components/sub-navigation-link/sub-navigati
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
 import { TenantContext } from '../../utils/constants';
-import { useUser } from '../../hooks/useUser';
-import { AdminTypes } from './sub-pages/application-admins/applications-admins.types';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 
@@ -16,19 +14,9 @@ export function Users() {
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
-  const { user } = useUser();
   const { isTeamLead, isAdministrator } = useUserRole();
 
   const getNavigationItems = () => {
-    if (isTeamLead) {
-      return [
-        {
-          name: 'CHWs',
-          href: ROUTES.USERS.HEALTH_CARE_WORKERS,
-        },
-      ];
-    }
-
     if (
       data &&
       data.tenantContext &&
@@ -38,10 +26,11 @@ export function Users() {
         return [
           {
             name: 'CHWs',
-            href: '/users/health-care-worker',
+            href: ROUTES.USERS.HEALTH_CARE_WORKERS,
           },
         ];
       }
+
       return [
         {
           name: 'All Roles',
