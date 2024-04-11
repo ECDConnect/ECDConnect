@@ -407,12 +407,7 @@ export function Profile(props: any) {
             ></Typography>
           </Button>
         </div>
-        <Dialog
-          className="right-50 absolute w-6/12"
-          stretch
-          visible={handleChangePassword}
-          position={DialogPosition.Middle}
-        >
+        <Dialog visible={handleChangePassword} position={DialogPosition.Middle}>
           <ActionModal
             className="z-80"
             icon={'InformationCircleIcon'}
@@ -446,8 +441,6 @@ export function Profile(props: any) {
           />
         </Dialog>
         <Dialog
-          className="right-50 absolute w-6/12"
-          stretch
           visible={handleChangePhoneNumber}
           position={DialogPosition.Middle}
         >
@@ -484,8 +477,6 @@ export function Profile(props: any) {
           />
         </Dialog>
         <Dialog
-          className="right-50 absolute w-6/12"
-          stretch
           visible={handleChangePasswordAndPhoneNumber}
           position={DialogPosition.Middle}
         >
