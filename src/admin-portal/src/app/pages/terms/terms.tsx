@@ -1,13 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
-import { ArrowLeftIcon, XIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
-import { Typography } from '@ecdlink/ui';
+import { LoadingSpinner, Typography } from '@ecdlink/ui';
 import { Config } from '@ecdlink/core';
+import { LanguagesModels } from './terms-types';
+import LanguageSelector from '../../components/language-selector/language-selector';
 
 export function TermsPage(props: any) {
   const [content, setContent] = useState(null);
   const history = useHistory();
+  const languages = LanguagesModels;
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    languages?.find((item) => item?.locale === 'en-za')?.id
+  );
+
+  const selectedLocale = useMemo(
+    () => languages?.find((item) => item?.id === selectedLanguage)?.locale,
+    [languages, selectedLanguage]
+  );
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     var myHeaders = new Headers();
@@ -17,13 +30,13 @@ export function TermsPage(props: any) {
     var raw = JSON.stringify({
       operationName: 'openConsent',
       variables: {
-        locale: 'en-za',
+        locale: selectedLocale,
         type: 'TermsAndConditions',
       },
       query:
         'query openConsent($locale: String, $type: String) {  openConsent(locale: $locale, type: $type) {    id    name    type    description  }}',
     });
-
+    setIsLoading(true);
     fetch(Config.graphQlApi, {
       method: 'POST',
       headers: myHeaders,
@@ -31,9 +44,17 @@ export function TermsPage(props: any) {
       redirect: 'follow',
     })
       .then((response) => response.json())
-      .then((result) => setContent(result?.data?.openConsent[0].description))
-      .catch((error) => console.log('error', error));
-  });
+      .then((result) => {
+        setContent(result?.data?.openConsent[0].description);
+        setErrorMessage('');
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log('error', error);
+        setErrorMessage("There's no consent in the language selected.");
+        setIsLoading(false);
+      });
+  }, [selectedLocale]);
 
   return (
     <div>
@@ -79,6 +100,17 @@ export function TermsPage(props: any) {
       </header>
 
       <div className="flex h-screen flex-col items-center justify-center">
+        <div className="bg-adminPortalBg w-full px-12 py-4">
+          <div className="justify-left my-4 mt-2 flex w-6/12 items-center gap-2">
+            <Typography type={'body'} text={'Change language:'} />
+            <LanguageSelector
+              languages={languages}
+              selectLanguage={setSelectedLanguage}
+              currentLanguageId={selectedLanguage}
+              disabled={false}
+            />
+          </div>
+        </div>
         <div
           className="p-12 pr-60"
           style={{
@@ -86,8 +118,23 @@ export function TermsPage(props: any) {
             overflow: ' auto',
           }}
         >
-          {content && (
+          {isLoading && (
+            <LoadingSpinner
+              size="big"
+              className="my-12 p-4"
+              spinnerColor="white"
+              backgroundColor="secondary"
+            />
+          )}
+          {content && !errorMessage && !isLoading && (
             <Typography type={'markdown'} text={content} className="w-full" />
+          )}
+          {errorMessage && !isLoading && (
+            <Typography
+              type={'markdown'}
+              text={errorMessage}
+              className="w-full"
+            />
           )}
         </div>
       </div>
