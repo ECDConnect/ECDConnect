@@ -12,6 +12,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
+  FormInput,
   ProfileAvatar,
   SA_CELL_REGEX,
   Typography,
@@ -22,6 +23,7 @@ import {
   GetTeamLead,
   GetUserById,
   ResetUserPassword,
+  UpdateTeamLeadMessage,
   UpdateUser,
   UserModelInput,
 } from '@ecdlink/graphql';
@@ -83,6 +85,7 @@ export function Profile(props: any) {
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
+  const [updateWelcomeMessage] = useMutation(UpdateTeamLeadMessage);
   const { isAdministrator, isSuperAdmin, isTeamLead } = useUserRole();
 
   const [getTeamLeadData, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
@@ -105,6 +108,7 @@ export function Profile(props: any) {
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
   const [avatarFile, setAvatarFile] = useState(null);
+  const [teamLeadWelcomeMessage, setTeamLeadWelcomeMessage] = useState('');
 
   const saveUser = async (passwordChange: boolean, profileImage?: string) => {
     const userInputModel: UserModelInput = {
@@ -147,6 +151,25 @@ export function Profile(props: any) {
       });
       passwordSetValue('password', '', {
         shouldValidate: true,
+      });
+    }
+
+    if (
+      isTeamLead &&
+      teamLeadWelcomeMessage &&
+      teamLeadWelcomeMessage !==
+        teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
+    ) {
+      updateWelcomeMessage({
+        variables: {
+          teamLeadUserId: userData?.userById?.id,
+          welcomeMessage: teamLeadWelcomeMessage,
+        },
+      });
+      getTeamLeadData({
+        variables: {
+          teamLeadId: userData?.userById?.id!,
+        },
       });
     }
     refetch();
@@ -192,6 +215,16 @@ export function Profile(props: any) {
       },
     });
   }, [user]);
+  console.log(teamLeadData);
+  console.log(teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage);
+
+  useEffect(() => {
+    if (teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage) {
+      setTeamLeadWelcomeMessage(
+        teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
+      );
+    }
+  }, [teamLeadData?.GetAllTeamLead]);
 
   useEffect(() => {
     if (user) {
@@ -338,19 +371,17 @@ export function Profile(props: any) {
                     />
                   </div>
                   {isTeamLead && (
-                    <div className="mt-2 w-full pt-10">
-                      <FormField
-                        label={
-                          'In 4 or 5 words, share something about yourself with your CHWs!'
+                    <div>
+                      <FormInput
+                        className="mt-2 w-full pt-10"
+                        isAdminPortalField={true}
+                        label="In 4 or 5 words, share something about yourself with your CHWs!"
+                        value={teamLeadWelcomeMessage}
+                        onChange={(e) =>
+                          setTeamLeadWelcomeMessage(e?.target?.value)
                         }
-                        subLabel="Optional"
-                        defaultValue={
-                          teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage &&
-                          teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
-                        }
-                        nameProp={'lockoutEnd'}
-                        register={register}
-                        disabled={true}
+                        textInputType="input"
+                        placeholder={'Add a text...'}
                       />
                     </div>
                   )}
@@ -376,12 +407,7 @@ export function Profile(props: any) {
             ></Typography>
           </Button>
         </div>
-        <Dialog
-          className="right-50 absolute w-6/12"
-          stretch
-          visible={handleChangePassword}
-          position={DialogPosition.Middle}
-        >
+        <Dialog visible={handleChangePassword} position={DialogPosition.Middle}>
           <ActionModal
             className="z-80"
             icon={'InformationCircleIcon'}
@@ -415,8 +441,6 @@ export function Profile(props: any) {
           />
         </Dialog>
         <Dialog
-          className="right-50 absolute w-6/12"
-          stretch
           visible={handleChangePhoneNumber}
           position={DialogPosition.Middle}
         >
@@ -453,8 +477,6 @@ export function Profile(props: any) {
           />
         </Dialog>
         <Dialog
-          className="right-50 absolute w-6/12"
-          stretch
           visible={handleChangePasswordAndPhoneNumber}
           position={DialogPosition.Middle}
         >

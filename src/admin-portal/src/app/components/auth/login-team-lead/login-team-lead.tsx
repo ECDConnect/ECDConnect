@@ -7,13 +7,14 @@ import {
 import { Alert, Button, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import { ArrowRightIcon } from '@heroicons/react/solid';
 import { PasswordInput } from '../../password-input/password-input';
+import ROUTES from '../../../routes/app.routes-constants';
 
 export default function LoginTeamLead() {
   const { login } = useAuth();
@@ -22,14 +23,14 @@ export default function LoginTeamLead() {
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
 
-  const { register, getValues, watch, setValue } = useForm({
+  const { register, getValues, setValue, control } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
 
   const formValues = getValues();
-  let password = watch('password');
+  const { passportField, idField, password } = useWatch({ control });
 
   const toggleIdAndpassport = (visible: boolean) => {
     const flag = !visible;
@@ -59,7 +60,7 @@ export default function LoginTeamLead() {
 
       if (isAuthenticated) {
         setIsLoading(false);
-        history.push('/dashboard');
+        history.push('/clinics');
       } else {
         setIsLoading(false);
         setDisplayError(true);
@@ -76,7 +77,7 @@ export default function LoginTeamLead() {
   };
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="m-8 rounded-xl bg-white p-8 shadow md:w-1/3">
+      <div className="m-8 rounded-xl bg-white py-8 px-2 shadow sm:h-screen sm:overflow-y-scroll md:h-full md:w-1/3 md:overflow-y-scroll">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
@@ -85,26 +86,30 @@ export default function LoginTeamLead() {
         </div>
         <div className="mt-8">
           <div className="mt-6">
-            <form className="space-y-6">
+            <form className="space-y-2">
               {idFieldVisible && (
-                <FormField
-                  label={'ID number *'}
-                  nameProp={'idField'}
-                  register={register}
-                  placeholder={'E.g. 7601010338089'}
-                />
+                <div className="mb-2">
+                  <FormField
+                    label={'ID number *'}
+                    nameProp={'idField'}
+                    register={register}
+                    placeholder={'E.g. 7601010338089'}
+                  />
+                </div>
               )}
               {!idFieldVisible && (
-                <FormField
-                  label={'Passport number *'}
-                  nameProp={'passportField'}
-                  register={register}
-                  placeholder="e.g EN000666"
-                />
+                <div className="mb-2">
+                  <FormField
+                    label={'Passport number *'}
+                    nameProp={'passportField'}
+                    register={register}
+                    placeholder="e.g EN000666"
+                  />
+                </div>
               )}
               {!idFieldVisible && (
                 <Button
-                  className={'mb-2 rounded-xl'}
+                  className={'my-2 rounded-xl'}
                   type="outlined"
                   color="tertiary"
                   background={'transparent'}
@@ -120,7 +125,7 @@ export default function LoginTeamLead() {
               )}
               {idFieldVisible && (
                 <Button
-                  className={'mb-2 rounded-xl'}
+                  className={'my-2 rounded-xl'}
                   type="outlined"
                   color="tertiary"
                   size="small"
@@ -141,18 +146,17 @@ export default function LoginTeamLead() {
                   nameProp={'password'}
                   value={formValues.password}
                   register={register}
-                  // strengthMeterVisible={true}
-                  className="mb-9 "
+                  className="mb-4"
                 />
               </div>
 
               <Button
                 className={
-                  ' focus:outline-none my-6 inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white '
+                  ' focus:outline-none my-2 inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white '
                 }
                 type="ghost"
                 color="secondary"
-                onClick={() => history.push('/team-lead-forgot-password')}
+                onClick={() => history.push(ROUTES.TEAM_LEAD_RESET_PASSWORD)}
               >
                 <Typography
                   type="help"
@@ -172,11 +176,13 @@ export default function LoginTeamLead() {
               )}
               <div>
                 <Button
-                  className={'mt-3 w-full rounded'}
+                  className={'mt-2 mb-3 w-full rounded'}
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  disabled={!formValues.password || !formValues.idField}
+                  disabled={
+                    !formValues.password || (!passportField && !idField)
+                  }
                   onClick={signIn}
                 >
                   <Typography

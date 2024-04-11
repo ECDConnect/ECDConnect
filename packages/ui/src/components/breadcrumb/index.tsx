@@ -20,16 +20,25 @@ export const Breadcrumb = ({ paths }: BreadcrumbProps) => {
               }`}
             >
               {!isLast ? (
-                <Link
-                  to={{
-                    pathname: path.url,
-                    state: path.state,
-                  }}
-                  className="inline-flex items-center text-sm font-medium hover:text-gray-900"
-                >
-                  {path.name}
-                  <ArrowSmRightIcon className="text-textMid ml-3 mr-2 h-5 w-5" />
-                </Link>
+                <>
+                  {path.url ? (
+                    <Link
+                      to={{
+                        pathname: path.url,
+                        state: path.state,
+                      }}
+                      className="inline-flex items-center text-sm font-medium hover:text-gray-900"
+                    >
+                      {path.name}
+                      <ArrowSmRightIcon className="text-textMid ml-3 mr-2 h-5 w-5" />
+                    </Link>
+                  ) : (
+                    <span className="inline-flex cursor-not-allowed items-center text-sm font-medium">
+                      {path.name}
+                      <ArrowSmRightIcon className="text-textMid ml-3 mr-2 h-5 w-5" />
+                    </span>
+                  )}
+                </>
               ) : (
                 <span className="text-sm font-medium">{path.name}</span>
               )}

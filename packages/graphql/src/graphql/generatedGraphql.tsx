@@ -6811,6 +6811,7 @@ export type Mutation = {
   updateSubDistrict?: Maybe<SubDistrict>;
   updateSystemSetting?: Maybe<SystemSetting>;
   updateTeamLead?: Maybe<TeamLead>;
+  updateTeamLeadMessage?: Maybe<TeamLead>;
   updateTenantTheme: Scalars['Boolean'];
   updateTheme?: Maybe<Theme>;
   updateThemeDay?: Maybe<ThemeDay>;
@@ -9940,6 +9941,11 @@ export type MutationUpdateSystemSettingArgs = {
 export type MutationUpdateTeamLeadArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<TeamLeadInput>;
+};
+
+export type MutationUpdateTeamLeadMessageArgs = {
+  teamLeadUserId: Scalars['UUID'];
+  welcomeMessage?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateTenantThemeArgs = {
