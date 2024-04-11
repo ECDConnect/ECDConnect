@@ -283,10 +283,10 @@ export function Profile(props: any) {
             {/* Start main area*/}
 
             <div className="flex h-full " style={{ minHeight: '30rem' }}>
-              <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
+              <div className="w-full p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
                 {!isSuperAdmin && (
                   <div
-                    className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6  "
+                    className="flex w-full flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6"
                     style={{ width: '50rem' }}
                   >
                     <ProfileAvatar
