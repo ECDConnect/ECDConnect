@@ -173,3 +173,18 @@ export const GetTeamLead = gql`
     }
   }
 `;
+
+export const UpdateTeamLeadMessage = gql`
+  mutation UpdateTeamLeadMessage(
+    $teamLeadUserId: UUID!
+    $welcomeMessage: String!
+  ) {
+    updateTeamLeadMessage(
+      teamLeadUserId: $teamLeadUserId
+      welcomeMessage: $welcomeMessage
+    ) {
+      id
+      welcomeMessage
+    }
+  }
+`;
