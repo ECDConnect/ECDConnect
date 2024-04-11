@@ -371,22 +371,6 @@ export function Profile(props: any) {
                     />
                   </div>
                   {isTeamLead && (
-                    // <div className="mt-2 w-full pt-10">
-                    //   <FormField
-                    //     label={
-                    //       'In 4 or 5 words, share something about yourself with your CHWs!'
-                    //     }
-                    //     subLabel="Optional"
-                    //     defaultValue={
-                    //       teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage &&
-                    //       teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
-                    //     }
-                    //     nameProp={'lockoutEnd'}
-
-                    //     register={register}
-                    //     disabled={true}
-                    //   />
-                    // </div>
                     <div>
                       <FormInput
                         className="mt-2 w-full pt-10"
