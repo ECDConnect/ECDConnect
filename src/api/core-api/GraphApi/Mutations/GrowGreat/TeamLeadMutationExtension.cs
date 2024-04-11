@@ -45,6 +45,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return new PortalUserTLModel(teamLead);
         }
 
+        public TeamLead UpdateTeamLeadMessage(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid teamLeadUserId,
+            string welcomeMessage)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: applicationUserId);
+
+            var teamLead = teamLeadRepo.GetByUserId(teamLeadUserId);
+            if (teamLead != null)
+            {
+                teamLead.WelcomeMessage = welcomeMessage;
+                teamLead.UpdatedDate = DateTime.Now;
+                teamLead.UpdatedBy = applicationUserId.ToString();
+                return teamLeadRepo.Update(teamLead);
+            }
+            return null;
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<PortalUserTLModel> DeactivateTeamLead(
             [Service] IHttpContextAccessor contextAccessor,
