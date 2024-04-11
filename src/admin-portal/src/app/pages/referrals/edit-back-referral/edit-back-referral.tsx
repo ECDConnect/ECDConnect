@@ -1,7 +1,9 @@
 import {
+  ActionModal,
   Breadcrumb,
   BreadcrumbProps,
   Button,
+  DialogPosition,
   Divider,
   FormInput,
   Typography,
@@ -17,8 +19,8 @@ import {
   NOTIFICATION,
   ReferralDetails,
   formatStringWithFirstLetterCapitalized,
+  useDialog,
   useNotifications,
-  usePrevious,
 } from '@ecdlink/core';
 import ROUTES from '../../../routes/app.routes-constants';
 import {
@@ -61,24 +63,28 @@ export const EditBackReferral = () => {
     (referral) => referral.visitDataStatusId === visitDataStatusId
   );
 
+  const [isCommentSaved, setIsCommentSaved] = useState(true);
+
   const [comment, setComment] = useState(
     selectedReferral?.adminBackReferralNote ?? ''
   );
 
-  const previousComment = usePrevious(comment);
-
   const history = useHistory();
+
+  const dialog = useDialog();
 
   const { setNotification } = useNotifications();
 
   const paths: BreadcrumbProps['paths'] = [
-    { name: 'Referrals', url: ROUTES.REFERRALS.ROOT },
+    { name: 'Referrals', url: isCommentSaved ? ROUTES.REFERRALS.ROOT : '' },
     {
       name: 'View referral detail',
-      url: ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
-        ':referralType',
-        referralType
-      ),
+      url: isCommentSaved
+        ? ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
+            ':referralType',
+            referralType
+          )
+        : '',
       state,
     },
     { name: 'Edit back-referral', url: '' },
@@ -139,12 +145,64 @@ export const EditBackReferral = () => {
       },
     }).then((res) => {
       if (!!res?.data?.addVisitBackReferralAdminComment) {
+        setIsCommentSaved(true);
         setNotification({
           title: 'Back-referral note updated!',
           variant: NOTIFICATION.SUCCESS,
         });
       }
     });
+  };
+
+  const onBack = () => {
+    history.push(
+      ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
+        ':referralType',
+        referralType
+      ),
+      { clinicIds: state.clinicIds } as ViewReferralDetailsRouteState
+    );
+  };
+
+  const onCancel = () => {
+    if (!isCommentSaved) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onClose) => (
+          <ActionModal
+            buttonClass="rounded-xl"
+            iconColor="alertMain"
+            icon="ExclamationCircleIcon"
+            title="Are you sure you want to leave without saving your changes?"
+            detailText="If you leave now, you will lose all of your changes."
+            actionButtons={[
+              {
+                leadingIcon: 'TrashIcon',
+                text: 'Delete changes',
+                type: 'filled',
+                colour: 'secondary',
+                textColour: 'white',
+                onClick: () => {
+                  onClose();
+                  onBack();
+                },
+              },
+              {
+                leadingIcon: 'PencilIcon',
+                text: 'Keep editing',
+                type: 'outlined',
+                colour: 'secondary',
+                textColour: 'secondary',
+                onClick: onClose,
+              },
+            ]}
+          />
+        ),
+      });
+    }
+
+    onBack();
   };
 
   return (
@@ -165,15 +223,7 @@ export const EditBackReferral = () => {
           className="rounded-xl p-2 shadow-none hover:opacity-80"
           isLoading={loading}
           disabled={loading}
-          onClick={() =>
-            history.push(
-              ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
-                ':referralType',
-                referralType
-              ),
-              { clinicIds: state.clinicIds } as ViewReferralDetailsRouteState
-            )
-          }
+          onClick={onCancel}
         />
       </div>
       <div className="gap-2 rounded-xl bg-white p-12">
@@ -208,7 +258,10 @@ export const EditBackReferral = () => {
           label="Add note *"
           hint="Add more information about the referral."
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          onChange={(e) => {
+            setIsCommentSaved(false);
+            setComment(e.target.value);
+          }}
         />
       </div>
       <Button
@@ -219,11 +272,7 @@ export const EditBackReferral = () => {
         icon="SaveIcon"
         className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
         isLoading={loading}
-        disabled={
-          loading ||
-          !comment ||
-          (!!previousComment && comment === previousComment)
-        }
+        disabled={loading || !comment || isCommentSaved}
         onClick={onSave}
       />
     </div>
