@@ -59,7 +59,7 @@ export default function LoginTeamLead() {
 
       if (isAuthenticated) {
         setIsLoading(false);
-        history.push('/dashboard');
+        history.push('/clinics');
       } else {
         setIsLoading(false);
         setDisplayError(true);
