@@ -87,7 +87,7 @@ export function Profile(props: any) {
 
   const [getTeamLeadData, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
     variables: {
-      userId: '',
+      teamLeadId: '',
     },
     fetchPolicy: 'cache-and-network',
   });
@@ -96,7 +96,7 @@ export function Profile(props: any) {
     if (isTeamLead && userData?.userById?.id) {
       getTeamLeadData({
         variables: {
-          teamLeadId: userData?.userById?.id,
+          teamLeadId: userData?.userById?.id!,
         },
       });
     }

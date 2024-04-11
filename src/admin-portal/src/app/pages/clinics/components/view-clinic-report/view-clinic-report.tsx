@@ -21,17 +21,24 @@ import { ReferralsRouteState } from '../../../referrals/types';
 import { useUserRole } from '../../../../hooks/useUserRole';
 
 export interface PointsReportSummaryDto {
-  childrenRankingPerc: number;
-  childrenTargetPerc: number;
-  childrenTargetPercColor: string;
-  childrenTopLeagueTeamPerc: number;
   leagueRanking: number;
-  momsRankingPerc: number;
-  momsTargetPerc: number;
-  momsTargetPercColor: string;
-  momsTopLeagueTeamPerc: number;
   pointsTotal: number;
   totalHCWs: number;
+
+  momsTargetPerc: number;
+  momsTargetPercColor: string;
+  momsClinicHigherThan50Perc: string;
+  momsTeamsBottomPerc: number;
+  momsTeamsTopPerc: number;
+  momsClinicLowerThan50Perc: number;
+  momsTopTeamPerc: number;
+  childrenTargetPerc: number;
+  childrenTargetPercColor: string;
+  childrenClinicHigherThan50Perc: string;
+  childrenTeamsBottomPerc: number;
+  childrenTeamsTopPerc: number;
+  childrenClinicLowerThan50Perc: number;
+  childrenTopTeamPerc: number;
 }
 
 export const ViewClinicReport = ({
@@ -210,9 +217,17 @@ export const ViewClinicReport = ({
             targetPercColor={
               clinicPointsData?.clinicPointsData?.momsTargetPercColor
             }
-            topTeamPerc={
-              clinicPointsData?.clinicPointsData?.momsTopLeagueTeamPerc
+            clinicHigherThan50Perc={
+              clinicPointsData?.clinicPointsData?.momsClinicHigherThan50Perc
             }
+            clinicLowerThan50Perc={
+              clinicPointsData?.clinicPointsData?.momsClinicLowerThan50Perc
+            }
+            teamsBottomPerc={
+              clinicPointsData?.clinicPointsData?.momsTeamsBottomPerc
+            }
+            teamsTopPerc={clinicPointsData?.clinicPointsData?.momsTeamsTopPerc}
+            topTeamPerc={clinicPointsData?.clinicPointsData?.momsTopTeamPerc}
             targetRanking={clinicPointsData?.clinicPointsData?.momsRankingPerc}
             title={'Pregnant moms'}
             icon={Pregnant}
@@ -224,8 +239,20 @@ export const ViewClinicReport = ({
             targetPercColor={
               clinicPointsData?.clinicPointsData?.childrenTargetPercColor
             }
+            clinicHigherThan50Perc={
+              clinicPointsData?.clinicPointsData?.childrenClinicHigherThan50Perc
+            }
+            clinicLowerThan50Perc={
+              clinicPointsData?.clinicPointsData?.childrenClinicLowerThan50Perc
+            }
+            teamsBottomPerc={
+              clinicPointsData?.clinicPointsData?.childrenTeamsBottomPerc
+            }
+            teamsTopPerc={
+              clinicPointsData?.clinicPointsData?.childrenTeamsTopPerc
+            }
             topTeamPerc={
-              clinicPointsData?.clinicPointsData?.childrenTopLeagueTeamPerc
+              clinicPointsData?.clinicPointsData?.childrenTopTeamPerc
             }
             targetRanking={
               clinicPointsData?.clinicPointsData?.childrenRankingPerc

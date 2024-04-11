@@ -23,4 +23,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public int LeagueRankingForQuarter { get; set; }
         public int PointsTotalForQuarter { get; set; }
     }
+
+    public class ClinicRankingTargetModel
+    {
+        public Guid ClinicId { get; set; }
+        public string ClinicName { get; set; }
+        public int RankingForYear { get; set; }
+        public int PointsTotalForYear { get; set; }
+        public int TotalCHWs { get; set; }
+        public double TargetPercentage { get; set; }
+        public string TargetPercentageColor { get; set; }
+    }
 }

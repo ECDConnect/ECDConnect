@@ -1572,11 +1572,13 @@ namespace EcdLink.Api.CoreApi.Services
             return pointsTodoItems;
         }
 
-        public List<LeagueClinicPointsModel> GetClinicRankingsForActivity(Guid pointsActivityId, Guid? pointsCategoryId, DateTime startDate, DateTime endDate)
+        public List<ClinicRankingTargetModel> GetClinicRankingsForActivity(Guid pointsActivityId, DateTime startDate, DateTime endDate)
         {
+            var maxPoints = (pointsActivityId == Constants.PointsActivityConstants.PregnantMomFolderOpenedActivityId ?  50 : 100) * 12;
+
             var clinicsWithUsers = _clinicRepo.GetAll()
                 .Where(x => x.IsActive)
-                .Select(x => new { ClinicId = x.Id, ClinicName = x.Name, UserIds = x.HealthCareWorkers.Select(x => x.UserId) })
+                .Select(x => new { ClinicId = x.Id, ClinicName = x.Name, UserIds = x.HealthCareWorkers.Where(x => x.IsActive).Select(x => x.UserId) })
                 .ToList();
 
             var allUserIds = clinicsWithUsers
@@ -1593,41 +1595,46 @@ namespace EcdLink.Api.CoreApi.Services
                 && x.DateScored <= endDate)
                 .ToList();
 
-            // Get clinic points
-            var allClinicPoints = _pointsClinicSummaryRepo.GetAll().Where(x =>
-                clinicsWithUsers.Select(x => x.ClinicId).Contains(x.ClinicId)
-                && x.PointsCategoryId == pointsCategoryId
-                && x.DateScored >= startDate
-                && x.DateScored <= endDate).ToList();
-
-
-            var clinicList = new List<LeagueClinicPointsModel>();
+            var clinicList = new List<ClinicRankingTargetModel>();
             foreach (var clinic in clinicsWithUsers)
             {
-                var pointsTotalForYear =
-                    allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
-                    + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
+                var pointsTotalForYear = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal);
 
-                clinicList.Add(new LeagueClinicPointsModel()
+                var targetPerc = Math.Round((double)pointsTotalForYear / (double)(maxPoints * clinic.UserIds.Count()) * 100);
+                
+                var targetPercentageColor = MetricsColorEnum.Error.ToString();
+                if (targetPerc > 50 && targetPerc <= 74)
+                {
+                    targetPercentageColor = MetricsColorEnum.Warning.ToString();
+                }
+                else if (targetPerc > 74)
+                {
+                    targetPercentageColor = MetricsColorEnum.Success.ToString();
+                }
+
+                clinicList.Add(new ClinicRankingTargetModel()
                 {
                     ClinicId = clinic.ClinicId,
                     ClinicName = clinic.ClinicName,
                     PointsTotalForYear = pointsTotalForYear,
+                    TargetPercentage = targetPerc,
+                    TargetPercentageColor = targetPercentageColor,
+                    TotalCHWs = clinic.UserIds.Count()
                 });
             }
 
             // Set league ranks for year, keeping highest rank for all that have equal points
-            clinicList = clinicList.OrderByDescending(x => x.PointsTotalForYear).ToList();
-            clinicList[0].LeagueRankingForYear = 1;
+            clinicList = clinicList.OrderByDescending(x => x.TargetPercentage).ToList();
+            clinicList[0].RankingForYear = 1;
             for (int i = 1; i < clinicList.Count; i++)
             {
-                if (clinicList[i].PointsTotalForYear == clinicList[i - 1].PointsTotalForYear)
+                if (clinicList[i].TargetPercentage == clinicList[i - 1].TargetPercentage)
                 {
-                    clinicList[i].LeagueRankingForYear = clinicList[i - 1].LeagueRankingForYear;
+                    clinicList[i].RankingForYear = clinicList[i - 1].RankingForYear;
                 }
                 else
                 {
-                    clinicList[i].LeagueRankingForYear = i + 1;
+                    clinicList[i].RankingForYear = i + 1;
                 }
             }
            
