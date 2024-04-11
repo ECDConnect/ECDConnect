@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   FormInput,
+  LoadingSpinner,
   Typography,
   TypographyProps,
   classNames,
@@ -25,13 +26,13 @@ import {
   ViewReferralDetailRouteParams,
   ViewReferralDetailsRouteState,
 } from '../view-referral-detail/types';
-import { useApolloClient, useMutation } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import {
   AddVisitBackReferralAdminComment,
   GetReferrals,
 } from '@ecdlink/graphql';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export const EditBackReferral = () => {
   const { visitDataStatusId, referralType } = useParams<
@@ -40,9 +41,8 @@ export const EditBackReferral = () => {
 
   const { state } = useLocation<EditBackReferralRouteState>();
 
-  const [addVisitBackReferralAdminComment, { loading }] = useMutation(
-    AddVisitBackReferralAdminComment
-  );
+  const [addVisitBackReferralAdminComment, { loading: addingComment }] =
+    useMutation(AddVisitBackReferralAdminComment);
 
   const apolloClient = useApolloClient();
 
@@ -57,19 +57,36 @@ export const EditBackReferral = () => {
       },
     }) || {};
 
+  const { loading: loadingReferrals } = useQuery<{
+    referrals: ReferralDetails[];
+  }>(GetReferrals, {
+    variables: {
+      type: formatStringWithFirstLetterCapitalized(referralType),
+      startDate: state?.startDate,
+      endDate: state?.endDate,
+      clinicIds: state?.clinicIds ?? [],
+    },
+    fetchPolicy: 'cache-and-network',
+    skip: !!referrals,
+  });
+
   const selectedReferral = referrals?.find(
     (referral) => referral.visitDataStatusId === visitDataStatusId
   );
 
-  const [comment, setComment] = useState(
-    selectedReferral?.adminBackReferralNote ?? ''
-  );
+  const [comment, setComment] = useState<string>();
 
   const previousComment = usePrevious(comment);
 
   const history = useHistory();
 
   const { setNotification } = useNotifications();
+
+  useEffect(() => {
+    if (!comment && !!selectedReferral?.adminBackReferralNote) {
+      setComment(selectedReferral?.adminBackReferralNote);
+    }
+  }, [comment, selectedReferral?.adminBackReferralNote]);
 
   const paths: BreadcrumbProps['paths'] = [
     { name: 'Referrals', url: ROUTES.REFERRALS.ROOT },
@@ -147,6 +164,16 @@ export const EditBackReferral = () => {
     });
   };
 
+  if (loadingReferrals) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="adminPortalBg"
+        backgroundColor="secondary"
+      />
+    );
+  }
+
   return (
     <div className="bg-adminPortalBg h-auto rounded-2xl p-4">
       <Breadcrumb paths={paths} />
@@ -163,8 +190,8 @@ export const EditBackReferral = () => {
           text="Cancel"
           icon="XIcon"
           className="rounded-xl p-2 shadow-none hover:opacity-80"
-          isLoading={loading}
-          disabled={loading}
+          isLoading={addingComment}
+          disabled={addingComment}
           onClick={() =>
             history.push(
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
@@ -218,9 +245,9 @@ export const EditBackReferral = () => {
         text="Save"
         icon="SaveIcon"
         className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
-        isLoading={loading}
+        isLoading={addingComment}
         disabled={
-          loading ||
+          addingComment ||
           !comment ||
           (!!previousComment && comment === previousComment)
         }
