@@ -11,7 +11,6 @@ import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 
 export function Users() {
-  const { isTeamLead } = useUserRole();
   const location = useLocation();
 
   const { data } = useQuery(GetTenantContext, {
