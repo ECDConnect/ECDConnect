@@ -393,20 +393,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
 
-            if (!string.IsNullOrWhiteSpace(input.WelcomeMessage))
-            {
-                var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: currentUserId);
-                var teamLead = teamLeadRepo.GetByUserId(user.Id);
-                if (teamLead != null)
-                {
-                    auditFields.Add(new AuditChanges() { FieldName = "WelcomeMessage", ValueBefore = teamLead.WelcomeMessage, ValueAfter = input.WelcomeMessage });
-                    teamLead.WelcomeMessage = input.WelcomeMessage;
-                    teamLead.UpdatedDate = DateTime.Now;
-                    teamLead.UpdatedBy = currentUserId.ToString();
-                    teamLeadRepo.Update(teamLead);
-                }
-            }
-          
             user.UpdatedDate = DateTime.UtcNow;
             var updateResult = await userManager.UpdateAsync(user);
 
