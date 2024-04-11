@@ -376,7 +376,6 @@ export function Profile(props: any) {
                         className="mt-2 w-full pt-10"
                         isAdminPortalField={true}
                         label="In 4 or 5 words, share something about yourself with your CHWs!"
-                        // id={item?.id}
                         value={teamLeadWelcomeMessage}
                         onChange={(e) =>
                           setTeamLeadWelcomeMessage(e?.target?.value)
