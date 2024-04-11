@@ -15,6 +15,7 @@ export const GetReferralsSummary = gql`
     ) {
       type
       referralsRaised
+      referralsMade
       backReferralsMade
     }
   }

@@ -18,5 +18,6 @@ export interface ReferralDetails {
 export interface ReferralSummary {
   type?: string;
   referralsRaised?: number;
+  referralsMade?: number;
   backReferralsMade?: number;
 }
