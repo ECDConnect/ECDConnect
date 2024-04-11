@@ -1,19 +1,18 @@
 import { useQuery } from '@apollo/client';
 import { GetAllPortalClinics } from '@ecdlink/graphql';
 import { ViewClinicReport } from '../../components/view-clinic-report/view-clinic-report';
-import { TabItem, TabList } from '@ecdlink/ui';
+import { LoadingSpinner, TabItem, TabList } from '@ecdlink/ui';
 import { useState } from 'react';
 
 export const ClinicsTeamLeadView = () => {
   const [selectedClinicId, setSelectedClinicId] = useState<string>();
 
-  // TODO: replace with real query
-  const { data } = useQuery(GetAllPortalClinics, {
+  // INFO: Same endpoint because the backend filters the clinics based on the user's role
+  const { data, loading } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
 
-  // TODO: replace with real clinics
-  const clinics = data?.allPortalClinics?.slice(0, 2);
+  const clinics = data?.allPortalClinics;
 
   const navigation =
     clinics?.map(
@@ -24,9 +23,18 @@ export const ClinicsTeamLeadView = () => {
       })
     ) ?? [];
 
-  const selectedClinic = clinics?.find(
-    (clinic) => clinic?.id === selectedClinicId
-  );
+  const selectedClinic =
+    clinics?.find((clinic) => clinic?.id === selectedClinicId) ?? clinics?.[0];
+
+  if (loading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        backgroundColor="secondary"
+        spinnerColor="adminPortalBg"
+      />
+    );
+  }
 
   return (
     <>

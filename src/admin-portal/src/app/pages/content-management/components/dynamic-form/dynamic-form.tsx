@@ -19,7 +19,7 @@ import Editor from '../../../../components/form-markdown-editor/form-markdown-ed
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 const accpedFormatsWithPdf = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg', 'pdf'];
-const acceptedVideoFormats = ['mp4', 'mov'];
+const acceptedVideoFormats = ['mp4'];
 const allowedVideoFileSize = 13631488;
 
 export interface DynamicFormProps {

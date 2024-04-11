@@ -29,7 +29,7 @@ type IDatePicker = {
   actionType?: 'date-picker';
 } & (DatePickerSingleProps | DatePickerRangeProps);
 
-type Filter = ISearchDropDown | IDatePickerFilter;
+type Filter = { hideFilter?: boolean } & (ISearchDropDown | IDatePickerFilter);
 
 type ActionButton = IButton | IDatePicker;
 
@@ -50,4 +50,9 @@ export interface TableProps {
   onClearFilters?: () => void;
   onClickRow?: (row: Irow) => void;
   onChangePage?: (page: number) => void;
+  onChangeSelectedRows?: (rows: Irow[]) => void;
+}
+
+export interface TableRefMethods {
+  resetSelectedRows: () => void;
 }

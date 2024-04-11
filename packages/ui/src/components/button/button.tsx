@@ -32,6 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
       data-testid={testId}
       type={buttonType}
       className={classNames(
+        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         styles.getButtonClassName(
           type,
           disabled ?? false,

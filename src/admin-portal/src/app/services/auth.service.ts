@@ -4,10 +4,70 @@ import {
   PasswordResetModel,
   RegisterRequestModel,
   SimpleUserModel,
+  VerifyInvitationModel,
 } from '@ecdlink/core';
 import { api } from '../utils/axios.helper';
+import { AxiosResponse } from 'axios';
+
+export interface DataError {
+  errorCode?: number;
+  error: string;
+}
+export interface DataResponse<T> {
+  data?: T;
+  dataError?: DataError;
+}
+
+export declare const Config: {
+  graphQlApi: string;
+  authApi: string;
+  themeUrl: string;
+};
+
+const handlerError = (error: any) => {
+  return error?.response;
+};
 
 const headers = { 'Content-Type': 'application/json' };
+
+enum HttpResponseCodes {
+  success = 200,
+  badRequest = 400,
+  serviceError = 500,
+}
+
+export const getDataResponse = <T>(
+  response: AxiosResponse<any>
+): DataResponse<T> => {
+  let dataResponse: DataResponse<T> = {};
+
+  if (!response) {
+    dataResponse.dataError = {
+      error: 'Response was empty',
+    };
+    return dataResponse;
+  }
+
+  switch (response.status) {
+    case HttpResponseCodes.success:
+      dataResponse.data = response.data;
+      break;
+    case HttpResponseCodes.badRequest:
+      dataResponse.dataError = response.data;
+      break;
+    case HttpResponseCodes.serviceError:
+      dataResponse.dataError = {
+        error: 'Ooops... we could not complete your request',
+      };
+      break;
+    default:
+      dataResponse.dataError = {
+        error: 'Unhandleld Error code',
+      };
+  }
+
+  return dataResponse;
+};
 
 export async function AuthenticateUser(
   baseEndPoint: string,
@@ -75,4 +135,27 @@ export async function RegisterNewTeamLead(
       headers: headers,
     }
   );
+}
+
+export async function VerifyInvitationRequest(
+  baseEndPoint: string,
+  verifyInvitationModel: VerifyInvitationModel
+) {
+  const response = await api(baseEndPoint)
+    .post(APIs.verifyInvitation, JSON.stringify(verifyInvitationModel))
+    .catch(handlerError);
+
+  const dataResponse = getDataResponse<boolean>(response);
+
+  if (dataResponse.dataError) {
+    return {
+      verified: false,
+      errorMessage: dataResponse.dataError.error,
+      errorCode: dataResponse.dataError.errorCode,
+    };
+  }
+
+  return {
+    verified: true,
+  };
 }

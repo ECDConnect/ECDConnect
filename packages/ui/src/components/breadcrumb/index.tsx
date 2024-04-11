@@ -2,7 +2,7 @@ import { ArrowSmRightIcon } from '@heroicons/react/solid';
 import { Link } from 'react-router-dom';
 
 export interface BreadcrumbProps {
-  paths: { name: string; url: string }[];
+  paths: { name: string; url: string; state?: unknown }[];
 }
 
 export const Breadcrumb = ({ paths }: BreadcrumbProps) => {
@@ -21,8 +21,11 @@ export const Breadcrumb = ({ paths }: BreadcrumbProps) => {
             >
               {!isLast ? (
                 <Link
-                  to={path.url}
-                  className="inline-flex items-center text-sm font-medium hover:text-gray-900 "
+                  to={{
+                    pathname: path.url,
+                    state: path.state,
+                  }}
+                  className="inline-flex items-center text-sm font-medium hover:text-gray-900"
                 >
                   {path.name}
                   <ArrowSmRightIcon className="text-textMid ml-3 mr-2 h-5 w-5" />

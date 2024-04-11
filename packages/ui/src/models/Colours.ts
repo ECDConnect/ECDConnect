@@ -9,6 +9,7 @@ export type Colours =
   | 'tertiary'
   | 'tertiaryAccent1'
   | 'tertiaryAccent2'
+  | 'tertiaryAccent3'
   | 'textDark'
   | 'textLight'
   | 'uiMidDark'

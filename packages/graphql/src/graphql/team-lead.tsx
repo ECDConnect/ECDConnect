@@ -144,11 +144,11 @@ export const GetTeamLead = gql`
   query GetAllTeamLeadById(
     $teamLeadId: UUID
     $fetchImage: Boolean = true
-    $fetchClinic: Boolean = true
     $fetchRoles: Boolean = true
   ) {
     GetAllTeamLead(where: { id: { eq: $teamLeadId } }) {
       id
+      welcomeMessage
       user {
         id
         isActive

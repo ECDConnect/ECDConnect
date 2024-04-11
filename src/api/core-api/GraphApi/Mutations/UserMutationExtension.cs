@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input?.IsAdmin ?? false)
             {
-                currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+                currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
                 if (!currentUserIsAdmin)
                 {

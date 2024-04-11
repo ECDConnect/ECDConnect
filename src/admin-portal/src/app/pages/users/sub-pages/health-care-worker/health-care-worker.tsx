@@ -7,7 +7,6 @@ import {
   usePanel,
 } from '@ecdlink/core';
 import debounce from 'lodash.debounce';
-import ReactDatePicker from 'react-datepicker';
 import { HealthCareWorkerDto } from '@ecdlink/core/lib/models/dto/Users/health-care-worker.dto';
 import {
   SendInviteToApplication,
@@ -15,36 +14,40 @@ import {
   GetAllPortalClinics,
   GetAllProvince,
   GetSubDistrictsAndStats,
+  sentInviteToMultipleUsers,
+  deleteMultipleUsers,
 } from '@ecdlink/graphql';
 import {
   ActionModal,
   Dialog,
   DialogPosition,
-  Dropdown,
-  SearchDropDown,
   SearchDropDownOption,
-  Typography,
+  Table,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ContentLoader } from '../../../../components/content-loader/content-loader';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PlusIcon,
-  SearchIcon,
-  UploadIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  XCircleIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
-import UiTable from './components/ui-table';
 import { ConenctUsage } from '../team-leads/team-leads.types';
 import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
-import { AppVisitActivity } from './health-care-worker.types';
+import { AppVisitActivity, ConnectUsage } from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
+import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
+import { useUserRole } from '../../../../hooks/useUserRole';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -79,33 +82,61 @@ export const sortByAppActivity: SearchDropDownOption<string>[] = [
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
+  const { isTeamLead, isAdministrator } = useUserRole();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
   const [tableData, setTableData] = useState<any[]>([]);
   const history = useHistory();
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
-  const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [handleAdduser, setHandleAdduser] = useState(false);
+  const [handleAddUser, setHandleAddUser] = useState(false);
+
+  const [selectedCHWs, setSelectedCHWs] = useState<Irow[]>([]);
+
+  const isAllInactive = selectedCHWs.every((obj) => obj?.isActive === false);
+
+  const registeredOrInactiveUsers = selectedCHWs?.filter(
+    (item) => item?.isRegistered === true || item?.isActive === false
+  );
+  const disableInviteBulkAction =
+    selectedCHWs?.length <= registeredOrInactiveUsers?.length;
+
+  // INFO: It’s being filtered by phoneNumber, because if the user doesn’t have the phoneNumber field filled, it’s breaking the sendInvitation mutation
+  const chwIdsToSendInvitation = selectedCHWs
+    ?.filter((item) => !item?.isRegistered && item?.user?.phoneNumber)
+    ?.map((item) => item?.id);
+
+  const [sendInvitations, { loading: invitationsLoading }] = useMutation(
+    sentInviteToMultipleUsers,
+    {
+      variables: {
+        userIds: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+  const [deactivateUsers, { loading: deactivating }] = useMutation(
+    deleteMultipleUsers,
+    {
+      variables: {
+        ids: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const tableRef = useRef<TableRefMethods>(null);
 
   const onChange = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
   };
-
-  const dateDropdownValue = useMemo(
-    () =>
-      startDate && endDate
-        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
-        : '',
-    [endDate, startDate]
-  );
 
   const handleSetDateFilter = useCallback(() => {
     setFilterDateAdded(!filterDateAdded);
@@ -149,7 +180,7 @@ export default function HealthCareWorkers() {
 
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
-  >([sortByClientStatusOptions[0]]);
+  >(isTeamLead ? [] : [sortByClientStatusOptions[0]]);
 
   const [connectUsageFilter, setConnectUsageFilter] = useState<
     SearchDropDownOption<string>[]
@@ -211,16 +242,28 @@ export default function HealthCareWorkers() {
     fetchPolicy: 'network-only',
   });
 
-  const { data: clinicData } = useQuery(GetAllPortalClinics, {
-    fetchPolicy: 'cache-and-network',
-  });
-  const { data: provinceData } = useQuery(GetAllProvince, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: clinicData, loading: loadingClinics } = useQuery(
+    GetAllPortalClinics,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+  const { data: provinceData, loading: loadingProvince } = useQuery(
+    GetAllProvince,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
-  const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: subDistrictData, loading: loadingDistricts } = useQuery(
+    GetSubDistrictsAndStats,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
+  const isLoading =
+    loading || loadingClinics || loadingProvince || loadingDistricts;
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -296,6 +339,7 @@ export default function HealthCareWorkers() {
     }
   }, [data, endDate, startDate, statusFilter]);
 
+  // TODO: Is this function used?
   const sendInvite = async (practitioner: HealthCareWorkerDto) => {
     dialog({
       position: DialogPosition.Middle,
@@ -341,27 +385,6 @@ export default function HealthCareWorkers() {
       ),
     });
   };
-
-  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
-  const numberOfFilters = useMemo(
-    () =>
-      statusFilter?.length +
-      connectUsageFilter?.length +
-      provincesFiltered?.length +
-      clinicsFiltered?.length +
-      appActivityFilter?.length +
-      subDistrictsFiltered?.length +
-      hasDateFilter,
-    [
-      statusFilter?.length,
-      connectUsageFilter?.length,
-      provincesFiltered?.length,
-      clinicsFiltered?.length,
-      appActivityFilter?.length,
-      subDistrictsFiltered?.length,
-      hasDateFilter,
-    ]
-  );
 
   const clearFilters = () => {
     setStatusFilter([]);
@@ -434,331 +457,419 @@ export default function HealthCareWorkers() {
     }
   }, [provinceData?.GetAllProvince]);
 
-  const renderFilterButtonText = useMemo(() => {
-    if (numberOfFilters) {
-      if (numberOfFilters === 1) {
-        return `${numberOfFilters} Filter`;
-      }
-      return `${numberOfFilters} Filters`;
-    }
+  const handleResetSelectedRows = () => {
+    tableRef?.current?.resetSelectedRows();
+  };
 
-    return 'Filter';
-  }, [numberOfFilters]);
-
-  if (tableData) {
-    return (
+  const ColumnStatusIndicator = ({ icon, iconColor, text }) => (
+    <div className="flex items-center gap-0.5">
       <div>
-        <div className="flex flex-col">
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <div className="text-body w-full sm:flex  ">
-              <div className="text-body w-full flex-col sm:flex sm:justify-around">
-                <div className="relative w-full">
-                  <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                    {searchValue === '' && (
-                      <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                    )}
-                  </span>
-                  <input
-                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="      Search by id number or name..."
-                    onChange={search}
-                  />
-                </div>
-              </div>
-            </div>
+        {React.createElement(icon, { className: `${iconColor} h-5 w-5` })}
+      </div>
+      <span className={iconColor}>{text}</span>
+    </div>
+  );
 
-            <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
-              <div className="pr-2 ">
-                <span className=" text-lg font-medium leading-6 text-gray-900">
-                  <button
-                    onClick={() => setShowFilter(!showFilter)}
-                    id="dropdownHoverButton"
-                    className={`${
-                      numberOfFilters
-                        ? ' bg-secondary'
-                        : 'border-secondary border-2 bg-white'
-                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
-                      numberOfFilters ? 'text-white' : 'text-textMid'
-                    } hover:bg-gray-300 focus:ring-2`}
-                    type="button"
-                  >
-                    <div className="flex items-center gap-1">
-                      <Typography
-                        className="truncate"
-                        type="help"
-                        color={numberOfFilters ? 'white' : 'textLight'}
-                        text={renderFilterButtonText}
-                      />
-                      {!showFilter ? (
-                        <span>
-                          <ChevronDownIcon
-                            className={`h-6 w-6 ${
-                              numberOfFilters ? 'text-white' : 'text-textLight'
-                            }`}
-                          />
-                        </span>
-                      ) : (
-                        <span>
-                          <ChevronUpIcon
-                            className={`h-6 w-6 ${
-                              numberOfFilters ? 'text-white' : 'text-textLight'
-                            }`}
-                          />
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                </span>
-              </div>
-              <div>
-                <div className="flex w-full">
-                  {hasPermission(PermissionEnum.create_user) && (
-                    <button
-                      onClick={() => setHandleAdduser(true)}
-                      type="button"
-                      className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                    >
-                      <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                      Add CHWs
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          {showFilter && (
-            <div className="mb-4 grid auto-cols-min grid-cols-5 items-center">
-              <div className="flex w-full items-center gap-2">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-0.5 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={sortByConnectUsage}
-                  selectedOptions={connectUsageFilter}
-                  onChange={setConnectUsageFilter}
-                  placeholder={'CHW Connect usage'}
-                  multiple={true}
-                  color={'secondary'}
-                  info={{
-                    name: `CHW Connect usage:`,
-                  }}
-                />
-              </div>
-              {!filterDateAdded && (
-                <div
-                  onClick={() => setFilterDateAdded(!filterDateAdded)}
-                  className="mr-1"
-                >
-                  <Dropdown
-                    fillType="filled"
-                    textColor={'textLight'}
-                    fillColor={endDate ? 'secondary' : 'white'}
-                    placeholder={dateDropdownValue || 'Date invited'}
-                    labelColor={endDate ? 'white' : 'textLight'}
-                    list={[]}
-                    onChange={(item) => {}}
-                    className="w-full text-sm text-white"
-                  />
-                </div>
-              )}
+  const columnColor = (value?: string) => {
+    const iconMapping = {
+      [ConnectUsage?.InvitationActive]: {
+        icon: ClockIcon,
+        color: 'text-infoMain',
+      },
+      [ConnectUsage?.InvitationExpired]: {
+        icon: XCircleIcon,
+        color: 'text-alertMain',
+      },
+      'Removed:': { icon: XCircleIcon, color: 'text-alertMain' },
+      default: { icon: CheckCircleIcon, color: 'text-successMain' },
+    };
 
-              {filterDateAdded && (
-                <div>
-                  <ReactDatePicker
-                    selected={startDate}
-                    onChange={onChange}
-                    startDate={startDate}
-                    endDate={endDate}
-                    selectsRange={true}
-                    inline
-                    shouldCloseOnSelect={true}
-                  />
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-0.5 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={sortByAppActivity}
-                  selectedOptions={appActivityFilter}
-                  onChange={setAppActivityFilter}
-                  placeholder={'App activity'}
-                  multiple={true}
-                  color={'secondary'}
-                  info={{
-                    name: `App activity:`,
-                  }}
-                />
-              </div>
-              <div className="w-full">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={clinics}
-                  selectedOptions={clinicsFiltered}
-                  onChange={setClinicsFiltered}
-                  placeholder={'Clinic'}
-                  info={{
-                    name: `Clinic:`,
-                  }}
-                  multiple={true}
-                  color={'secondary'}
-                />
-              </div>
-              <div className="w-full">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={subDistricts}
-                  selectedOptions={subDistrictsFiltered}
-                  onChange={setSubDistrictsFiltered}
-                  placeholder={'Sub-district'}
-                  info={{
-                    name: `Sub-district:`,
-                  }}
-                  multiple={true}
-                  color={'secondary'}
-                />
-              </div>
-              <div className="w-full">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={provinces}
-                  selectedOptions={provincesFiltered}
-                  onChange={setProvincesFiltered}
-                  placeholder={'Province'}
-                  info={{
-                    name: `Province:`,
-                  }}
-                  multiple={true}
-                  color={'secondary'}
-                />
-              </div>
-              <div className="mr-2 flex items-center gap-2">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={sortByClientStatusOptions}
-                  selectedOptions={statusFilter}
-                  onChange={setStatusFilter}
-                  placeholder={'Status'}
-                  multiple={true}
-                  color={'secondary'}
-                  info={{
-                    name: `Status:`,
-                  }}
-                />
-              </div>
+    const firstWord = value?.split(' ')[0];
+    const key = Object.hasOwn(iconMapping, value)
+      ? value
+      : firstWord === 'Removed:'
+      ? 'Removed:'
+      : 'default';
+    const { icon, color } = iconMapping[key];
 
-              <div className=" flex-end flex">
-                <button
-                  onClick={clearFilters}
-                  type="button"
-                  className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
-                >
-                  Clear All
-                </button>
-              </div>
-              <div></div>
-            </div>
-          )}
+    return <ColumnStatusIndicator icon={icon} iconColor={color} text={value} />;
+  };
 
-          <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                <UiTable
-                  columns={[
-                    {
-                      field: 'displayColumnIdPassportEmail',
-                      use: 'id / Passport',
-                    },
-                    { field: 'fullName', use: 'name' },
-                    { field: 'connectUsage', use: 'CHW Connect usage' },
-                    { field: 'insertedDate', use: 'Date invited' },
-                    { field: 'isActive', use: 'Active' },
-                  ]}
-                  rows={
-                    searchValue !== 'Search by title or content...'
-                      ? filterByValue(tableData, searchValue)
-                      : tableData
+  const columns: Icolumn[] = [
+    {
+      field: 'displayColumnIdPassportEmail',
+      use: 'id / Passport',
+    },
+    {
+      field: 'fullName',
+      use: 'name',
+    },
+    {
+      field: 'connectUsageComponent',
+      use: 'CHW Connect usage',
+    },
+    {
+      field: 'insertedDateFormatted',
+      use: 'Date invited',
+    },
+    {
+      field: 'isActiveComponent',
+      use: 'Active',
+    },
+  ];
+
+  const rows: Irow[] =
+    (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
+      (item) => ({
+        ...item,
+        displayColumnIdPassportEmail:
+          item?.user?.userName ?? item?.idNumber ?? item?.user?.email ?? '-',
+        fullName: `${item?.user?.firstName} ${item?.user?.surname}`,
+        connectUsageComponent: item?.user?.connectUsage
+          ? columnColor(item.user.connectUsage)
+          : '-',
+        insertedDateFormatted: item?.user?.insertedDate
+          ? format(new Date(item?.user?.insertedDate), 'dd/MM/yyyy')
+          : '-',
+        isActiveComponent: (
+          <p
+            className={
+              item?.user?.isActive ? 'text-successMain' : 'text-errorMain'
+            }
+          >
+            {item?.user?.isActive ? 'Active' : 'Inactive'}
+          </p>
+        ),
+      })
+    ) ?? [];
+
+  // INFO: Functions from src/admin-portal/src/app/pages/users/sub-pages/health-care-worker/components/ui-table
+  const inviteUsers = useCallback(() => {
+    sendInvitations({
+      variables: {
+        userIds: chwIdsToSendInvitation,
+      },
+    })
+      .then((res) => {
+        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          setSelectedCHWs([]);
+          handleResetSelectedRows();
+        }
+        if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedCHWs([]);
+          handleResetSelectedRows();
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to send invitations',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  }, [chwIdsToSendInvitation, sendInvitations, setNotification]);
+
+  const deactivateUser = useCallback(() => {
+    deactivateUsers({
+      variables: {
+        ids: selectedCHWs?.map((item) => item?.id),
+      },
+    })
+      .then((res) => {
+        if (res.data?.bulkDeleteUser?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Deactivated ${res.data?.bulkDeleteUser?.success.length} Users!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          refetch();
+          setSelectedCHWs([]);
+          handleResetSelectedRows();
+        }
+        if (res.data?.bulkDeleteUser?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Deactivate ${res.data?.bulkDeleteUser?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedCHWs([]);
+          handleResetSelectedRows();
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to deactivate',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  }, [deactivateUsers, selectedCHWs, setNotification, refetch]);
+
+  const handleBulkDelete = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title={`Deactivate ${
+            selectedCHWs?.length - registeredOrInactiveUsers?.length
+          } CHWs?`}
+          message={`Are you sure you want to deactivate these CHWs? CHWs will lose their access to CHW Connect immediately. Make sure you have communicated this to CHWs before deactivating them.`}
+          btnText={['Yes, deactivate CHWs', 'No, Cancel']}
+          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          alertMessage={`Note: ${registeredOrInactiveUsers?.length} CHWs selected have already been deactivated.`}
+          alertType="error"
+          onCancel={() => {
+            onClose();
+            setSelectedCHWs([]);
+            handleResetSelectedRows();
+          }}
+          onSubmit={() => {
+            deactivateUser();
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [
+    deactivateUser,
+    dialog,
+    isAllInactive,
+    registeredOrInactiveUsers?.length,
+    selectedCHWs?.length,
+  ]);
+
+  const handleBulkInvitation = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title={`Resend invitation to ${
+            selectedCHWs?.length - registeredOrInactiveUsers?.length
+          } CHWs?`}
+          message={`Are you sure you want to send the invitation to the ${
+            selectedCHWs?.length - registeredOrInactiveUsers?.length
+          } CHWs selected?`}
+          btnText={['Yes, resend', 'No, Cancel']}
+          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          alertMessage={`Note: ${registeredOrInactiveUsers?.length} selected CHWs are already registered or have been deactivated so you cannot resend these invitations.`}
+          alertType="error"
+          onCancel={() => {
+            onClose();
+            setSelectedCHWs([]);
+            handleResetSelectedRows();
+          }}
+          onSubmit={() => {
+            inviteUsers();
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [
+    dialog,
+    selectedCHWs?.length,
+    isAllInactive,
+    registeredOrInactiveUsers?.length,
+    inviteUsers,
+  ]);
+
+  return (
+    <>
+      <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
+        <div className="rounded-xl bg-white p-12">
+          <Table
+            ref={tableRef}
+            rows={rows}
+            columns={columns}
+            onClearFilters={clearFilters}
+            onChangeSelectedRows={setSelectedCHWs}
+            onClickRow={viewSelectedRow}
+            noContentText={
+              isTeamLead
+                ? "You don't have any CHWs yet! Contact Grow Great for more information"
+                : 'No entries found'
+            }
+            loading={{
+              isLoading: tableData === undefined || isLoading,
+              size: 'medium',
+              spinnerColor: 'adminPortalBg',
+              backgroundColor: 'secondary',
+            }}
+            actionButton={
+              hasPermission(PermissionEnum.create_user) &&
+              (!isTeamLead || isAdministrator)
+                ? {
+                    text: 'Add CHWs',
+                    onClick: () => setHandleAddUser(true),
+                    icon: 'PlusIcon',
                   }
-                  sendRow={
-                    hasPermission(PermissionEnum.update_user) && sendInvite
-                  }
-                  component={'chw'}
-                  viewRow={viewSelectedRow}
-                  isLoading={loading}
-                  refetchData={refetch}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <Dialog
-          className="absolute left-56 bottom-96 mb-44 w-6/12"
-          stretch
-          visible={handleAdduser}
-          position={DialogPosition.Middle}
-        >
-          <ActionModal
-            className="z-80"
-            icon={'ExclamationCircleIcon'}
-            iconColor="white"
-            iconBorderColor="infoMain"
-            importantText={`Would you like to add one CHW or multiple?`}
-            actionButtons={[
+                : undefined
+            }
+            search={{
+              placeholder: 'Search by id number or name...',
+              onChange: search,
+            }}
+            bulkActions={[
               {
-                text: 'Add multiple CHWs',
-                textColour: 'white',
-                colour: 'secondary',
                 type: 'filled',
-                onClick: () =>
-                  history.push({
-                    pathname: ROUTES.UPLOAD_USERS,
-                  }),
-                leadingIcon: 'UsersIcon',
+                color: 'secondary',
+                textColor: 'white',
+                text: 'Resend Invitations',
+                icon: 'PaperAirplaneIcon',
+                isLoading: invitationsLoading,
+                disabled:
+                  invitationsLoading ||
+                  disableInviteBulkAction ||
+                  isAllInactive,
+                onClick: handleBulkInvitation,
               },
               {
-                text: 'Add one CHW',
-                textColour: 'secondary',
-                colour: 'secondary',
                 type: 'outlined',
-                onClick: () => {
-                  displayPanel();
-                  setHandleAdduser(false);
-                },
-                leadingIcon: 'UserIcon',
+                color: 'tertiary',
+                textColor:
+                  deactivating || isAllInactive ? 'uiLight' : 'tertiary',
+                icon: 'TrashIcon',
+                text: 'Deactivate User',
+                isLoading: deactivating,
+                disabled: deactivating || isAllInactive,
+                onClick: handleBulkDelete,
+              },
+            ]}
+            filters={[
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                className: 'mt-1',
+                options: sortByConnectUsage,
+                selectedOptions: connectUsageFilter,
+                onChange: setConnectUsageFilter,
+                placeholder: 'CHW Connect usage',
+                multiple: true,
+                info: { name: 'CHW Connect usage:' },
+              },
+              {
+                hideFilter: isTeamLead,
+                className: 'w-64 h-11',
+                isFullWidth: false,
+                colour: !!startDate ? 'secondary' : 'adminPortalBg',
+                textColour: !!startDate ? 'white' : 'textMid',
+                placeholderText: 'Date invited',
+                type: 'date-picker',
+                showChevronIcon: true,
+                chevronIconColour: !!startDate ? 'white' : 'primary',
+                hideCalendarIcon: true,
+                selected: startDate,
+                onChange,
+                startDate,
+                endDate,
+                selectsRange: true,
+                shouldCloseOnSelect: true,
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                className: 'mt-1',
+                options: sortByAppActivity,
+                selectedOptions: appActivityFilter,
+                onChange: setAppActivityFilter,
+                placeholder: 'App visit activity',
+                multiple: true,
+                info: { name: 'App visit activity:' },
+              },
+              {
+                type: 'search-dropdown',
+                hideFilter: clinicData?.allPortalClinics?.length <= 1,
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                className: 'mt-1',
+                options: clinics,
+                selectedOptions: clinicsFiltered,
+                onChange: setClinicsFiltered,
+                placeholder: 'Clinic',
+                multiple: true,
+                info: { name: 'Clinic:' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: isTeamLead,
+                className: 'mt-1',
+                options: subDistricts,
+                selectedOptions: subDistrictsFiltered,
+                onChange: setSubDistrictsFiltered,
+                placeholder: 'Sub-district',
+                multiple: true,
+                info: { name: 'Sub-district:' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: isTeamLead,
+                className: 'mt-1',
+                options: provinces,
+                selectedOptions: provincesFiltered,
+                onChange: setProvincesFiltered,
+                placeholder: 'Province',
+                multiple: true,
+                info: { name: 'Province:' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: isTeamLead,
+                className: 'mt-1',
+                options: sortByClientStatusOptions,
+                selectedOptions: statusFilter,
+                onChange: setStatusFilter,
+                placeholder: 'Status',
+                multiple: true,
+                info: { name: 'Status:' },
               },
             ]}
           />
-        </Dialog>
+        </div>
       </div>
-    );
-  } else {
-    return <ContentLoader />;
-  }
+      <Dialog
+        className="absolute left-56 bottom-96 mb-44 w-6/12"
+        stretch
+        visible={handleAddUser}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          className="z-80"
+          icon={'ExclamationCircleIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          importantText={`Would you like to add one CHW or multiple?`}
+          actionButtons={[
+            {
+              text: 'Add multiple CHWs',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () =>
+                history.push({
+                  pathname: ROUTES.UPLOAD_USERS,
+                }),
+              leadingIcon: 'UsersIcon',
+            },
+            {
+              text: 'Add one CHW',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => {
+                displayPanel();
+                setHandleAddUser(false);
+              },
+              leadingIcon: 'UserIcon',
+            },
+          ]}
+        />
+      </Dialog>
+    </>
+  );
 }

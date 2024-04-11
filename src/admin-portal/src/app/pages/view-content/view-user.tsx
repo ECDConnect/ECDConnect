@@ -43,16 +43,13 @@ import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
-  GetHealthCareWorkerHighlights,
   GetTenantContext,
   GetUserById,
   ResetUserPassword,
   UpdateUser,
   UserModelInput,
-  healthCareWorkerVisitStatus,
   SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
-  GetAllTeamLead,
   GetTeamLead,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';

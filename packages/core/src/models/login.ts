@@ -3,6 +3,9 @@ export interface LoginRequestModel {
   email?: string;
   phoneNumber?: string;
   password: string;
+  preferId?: boolean;
+  passportField?: string;
+  idField?: string;
 }
 
 export interface AuthUser {
@@ -17,4 +20,8 @@ export interface RegisterRequestModel {
   password: string;
   token: string;
   acceptedTerms?: boolean;
+  passportField?: string | undefined;
+  idField?: string | undefined;
+  preferId?: boolean | undefined;
+  phoneNumber?: string;
 }

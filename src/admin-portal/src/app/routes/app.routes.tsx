@@ -49,18 +49,32 @@ import ClinicsSubPage from '../pages/clinics/sub-pages/clinics-sub-page/clinics-
 import DistrictsSubPage from '../pages/clinics/sub-pages/districts-sub-page/districts-sub-page';
 import SubDistrictsSubPage from '../pages/clinics/sub-pages/sub-districts-sub-page/sub-districts-sub-page';
 import { ViewClinicReport } from '../pages/clinics/components/view-clinic-report/view-clinic-report';
+import RegisterTeamLead from '../components/auth/register-team-lead/register-team-lead';
 import ROUTES from './app.routes-constants';
 import { Referrals } from '../pages/referrals/referrals';
 import { ViewReferralDetail } from '../pages/referrals/view-referral-detail/view-referral-detail';
 import { EditBackReferral } from '../pages/referrals/edit-back-referral/edit-back-referral';
+import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
+import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
 
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
+      <Route exact path={ROUTES.ROOT_TEAM_LEAD} component={LoginTeamLead} />
       <Route exact path="/register/:resetToken" component={Register} />
-      <Route exact path="/forgot-password" component={ForgotPassword} />
-      <Route exact path="/reset/:resetToken" component={ResetPassword} />
+      <Route
+        exact
+        path={ROUTES.TEAM_LEAD_REGISTER}
+        component={RegisterTeamLead}
+      />
+      <Route exact path={ROUTES.FORGOT_PASSWORD} component={ForgotPassword} />
+      <Route
+        exact
+        path={ROUTES.TEAM_LEAD_RESET_PASSWORD}
+        component={TeamLeadForgotPassword}
+      />
+      <Route exact path={ROUTES.RESET} component={ResetPassword} />
       <Route path={`/ecd-terms`} component={TermsPage}></Route>
     </Switch>
   );
@@ -98,7 +112,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/dashboard`} component={Dashboard}></Route>
       <Route path={`/settings`} component={Settings}></Route>
       <Route path={`/data`} component={StaticData}></Route>
-      <Route path={`/profile`} component={Profile}></Route>
+      <Route path={ROUTES.PROFILE} component={Profile}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
@@ -166,7 +180,7 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/clinics`} component={Clinics}></Route>
       <Route path={`/users/team-leads`} component={TeamLeads}></Route>
       <Route
-        path={`/users/health-care-worker`}
+        path={ROUTES.USERS.HEALTH_CARE_WORKERS}
         component={HealthCareWorkers}
       ></Route>
       <Route path={`/users/mother`} component={Mothers}></Route>
