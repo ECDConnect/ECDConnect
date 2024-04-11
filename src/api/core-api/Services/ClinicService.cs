@@ -234,101 +234,78 @@ namespace EcdLink.Api.CoreApi.Services
                     clinicReportModel.MaxPointsTotal = allPoints.MaxPointsTotal;
                 }
             }
-
-            var userActivityPoints = _pointsUserSummaryRepo.GetAll().Where(x => hcwUserIds.Contains(x.UserId)
-                                                                        && x.DateScored >= prevYearDec.Date
-                                                                        && x.DateScored <= DateTime.Now.Date).ToList();
-
            
-            var momData = GetMomPointsData(hcwUserIds.Count, userActivityPoints, clinicId, prevYearDec);
+            var momData = GetMomPointsData(clinicId, prevYearDec, Constants.PointsActivityConstants.PregnantMomFolderOpenedActivityId);
             clinicReportModel.MomsTargetPerc = momData.MomsTargetPerc;
             clinicReportModel.MomsTargetPercColor = momData.MomsTargetPercColor;
-            clinicReportModel.MomsTopLeagueTeamPerc = momData.MomsTopLeagueTeamPerc;
-            clinicReportModel.MomsRankingPerc = momData.MomsRankingPerc;
+            clinicReportModel.MomsClinicHigherThan50Perc = momData.MomsClinicHigherThan50Perc;
+            clinicReportModel.MomsClinicLowerThan50Perc = momData.MomsClinicLowerThan50Perc;
+            clinicReportModel.MomsTeamsBottomPerc = momData.MomsTeamsBottomPerc;
+            clinicReportModel.MomsTeamsTopPerc = momData.MomsTeamsTopPerc;
+            clinicReportModel.MomsTopTeamPerc = momData.MomsTopTeamPerc;
 
-            var childData = GetChildPointsData(hcwUserIds.Count, userActivityPoints, clinicId, prevYearDec);
+            var childData = GetChildPointsData(clinicId, prevYearDec, Constants.PointsActivityConstants.ChildFoldersOpenedActivityId);
             clinicReportModel.ChildrenTargetPerc = childData.ChildrenTargetPerc;
             clinicReportModel.ChildrenTargetPercColor = childData.ChildrenTargetPercColor;
-            clinicReportModel.ChildrenTopLeagueTeamPerc = childData.ChildrenTopLeagueTeamPerc;
-            clinicReportModel.ChildrenRankingPerc = childData.ChildrenRankingPerc;
+            clinicReportModel.ChildrenClinicHigherThan50Perc = childData.ChildrenClinicHigherThan50Perc;
+            clinicReportModel.ChildrenClinicLowerThan50Perc = childData.ChildrenClinicLowerThan50Perc;
+            clinicReportModel.ChildrenTeamsBottomPerc = childData.ChildrenTeamsBottomPerc;
+            clinicReportModel.ChildrenTeamsTopPerc = childData.ChildrenTeamsTopPerc;
+            clinicReportModel.ChildrenTopTeamPerc = childData.ChildrenTopTeamPerc;
 
             return clinicReportModel;
         }
 
-        private ClinicReportModel GetMomPointsData(int hcwCount, List<PointsUserSummary> userActivityPoints, Guid clinicId, DateTime startDate)
+        private ClinicReportModel GetMomPointsData(Guid clinicId, DateTime startDate, Guid ActivityId)
         {
-            ClinicReportModel clinicReportModel = new ClinicReportModel();
-            var momsActivity = _pointsActivityRepo.GetAll().Where(x => x.Id == Constants.PointsActivityConstants.PregnantMomFolderOpenedActivityId).FirstOrDefault();
+            var clinicReportModel = new ClinicReportModel();
 
-            // Maximum = 50* 12 * (number of active CHWs currently)
-            // Points earned = total number of points earned by the team for opening pregnant mom folders from Dec of the previous year to today's date
-            // Calculation: (points earned / maximum)%
-            // IF the percentage is greater than 100 %, show 100 %
-            var momsMax = 50 * 12 * hcwCount;
-            var momsPoints = userActivityPoints.Where(x => x.PointsActivityId == momsActivity.Id).Sum(x => x.PointsTotal);
-            var momsTargetPerc = Math.Round((double)momsPoints / (double)momsMax * 100);
-            var momsTargetPercColor = MetricsColorEnum.Error.ToString();
-            if (momsTargetPerc > 50 && momsTargetPerc <= 74)
-            {
-                momsTargetPercColor = MetricsColorEnum.Warning.ToString();
-            }
-            else if (momsTargetPerc > 74)
-            {
-                momsTargetPercColor = MetricsColorEnum.Success.ToString();
-            }
+            var allClinicRankingData = _pointsEngineService.GetClinicRankingsForActivity(ActivityId, startDate, DateTime.Now.Date);
+            var currentClinic = allClinicRankingData.Where(x => x.ClinicId == clinicId).FirstOrDefault();
+            var totalClinicsBelowClinicRank = allClinicRankingData.Where(x => x.TargetPercentage < currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
+            var totalClinicsAboveClinicRank = allClinicRankingData.Where(x => x.TargetPercentage >= currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
 
-            clinicReportModel.MomsTargetPerc = momsTargetPerc > 100 ? 100 : momsTargetPerc;
-            clinicReportModel.MomsTargetPercColor = momsTargetPercColor;
-
-            var momsActivityRankingData = _pointsEngineService.GetClinicRankingsForActivity(momsActivity.Id, momsActivity.PointsCategoryId, startDate, DateTime.Now.Date);
-            var momsClinicPoints = momsActivityRankingData.Where(x => x.ClinicId == clinicId).FirstOrDefault();
-            var totalClinicsBelowClinicRank = momsActivityRankingData.Where(x => x.PointsTotalForYear < momsClinicPoints.PointsTotalForYear).Count();
-            var totalClinicsAboveClinicRank = momsActivityRankingData.Where(x => x.PointsTotalForYear >= momsClinicPoints.PointsTotalForYear).Count();
-
-            //where X% equals the % of clinics on CHW Connect that have a lower percentage than the current clinic being viewed
-            clinicReportModel.MomsRankingPerc = (double)totalClinicsBelowClinicRank / (double)momsActivityRankingData.Count() * 100;
-            // where X % equals the 100 minus the % of clinics on CHW Connect that have a percentage higher than or equal to the percentage that the current clinic has
-            clinicReportModel.MomsTopLeagueTeamPerc = 100 - ((double)totalClinicsAboveClinicRank / (double)momsActivityRankingData.Count() * 100);
+            clinicReportModel.MomsTargetPerc = currentClinic.TargetPercentage > 100 ? 100 : currentClinic.TargetPercentage;
+            clinicReportModel.MomsTargetPercColor = currentClinic.TargetPercentageColor;
+            clinicReportModel.MomsTopTeamPerc = allClinicRankingData.GetItemByIndex(0).TargetPercentage;
+            clinicReportModel.MomsClinicHigherThan50Perc = currentClinic.RankingForYear < (allClinicRankingData.Count() / 2)  ? "Yes" : "No";
             
+            if (clinicReportModel.MomsClinicHigherThan50Perc == "Yes")
+            {
+                clinicReportModel.MomsTeamsBottomPerc = Math.Round((double)totalClinicsBelowClinicRank / (double)allClinicRankingData.Count() * 100);
+            } else
+            {
+                clinicReportModel.MomsTeamsTopPerc = Math.Round(((double)totalClinicsAboveClinicRank / (double)allClinicRankingData.Count() * 100));
+                clinicReportModel.MomsClinicLowerThan50Perc = Math.Round(100 - clinicReportModel.MomsTeamsTopPerc);
+
+            }
             return clinicReportModel;
         }
 
-        private ClinicReportModel GetChildPointsData(int hcwCount, List<PointsUserSummary> userActivityPoints, Guid clinicId, DateTime startDate)
+        private ClinicReportModel GetChildPointsData(Guid clinicId, DateTime startDate, Guid ActivityId)
         {
-            ClinicReportModel clinicReportModel = new ClinicReportModel();
-            var childrenActivity = _pointsActivityRepo.GetAll().Where(x => x.Id == Constants.PointsActivityConstants.ChildFoldersOpenedActivityId).FirstOrDefault();
+            var clinicReportModel = new ClinicReportModel();
 
-            // Maximum = 100 * 12 * (number of active CHWs currently)
-            // Points earned = total number of points earned by the team for opening pregnant mom folders from Dec of the previous year to today's date
-            // Calculation: (points earned / maximum)%
-            // IF the percentage is greater than 100 %, show 100 %
-            var childMax = 100 * 12 * hcwCount;
-            var childPoints = userActivityPoints.Where(x => x.PointsActivityId == childrenActivity.Id).Sum(x => x.PointsTotal);
-            var childTargetPerc = Math.Round((double)childPoints / (double)childMax * 100);
-            var childTargetPercColor = MetricsColorEnum.Error.ToString();
+            var allClinicRankingData = _pointsEngineService.GetClinicRankingsForActivity(ActivityId, startDate, DateTime.Now.Date);
+            var currentClinic = allClinicRankingData.Where(x => x.ClinicId == clinicId).FirstOrDefault();
+            var totalClinicsBelowClinicRank = allClinicRankingData.Where(x => x.TargetPercentage < currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
+            var totalClinicsAboveClinicRank = allClinicRankingData.Where(x => x.TargetPercentage >= currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
 
-            if (childTargetPerc > 50 && childTargetPerc <= 74)
+            clinicReportModel.ChildrenTargetPerc = currentClinic.TargetPercentage > 100 ? 100 : currentClinic.TargetPercentage;
+            clinicReportModel.ChildrenTargetPercColor = currentClinic.TargetPercentageColor;
+            clinicReportModel.ChildrenTopTeamPerc = allClinicRankingData.GetItemByIndex(0).TargetPercentage;
+            clinicReportModel.ChildrenClinicHigherThan50Perc = currentClinic.RankingForYear < (allClinicRankingData.Count() / 2) ? "Yes" : "No";
+
+            if (clinicReportModel.ChildrenClinicHigherThan50Perc == "Yes")
             {
-                childTargetPercColor = MetricsColorEnum.Warning.ToString();
+                clinicReportModel.ChildrenTeamsBottomPerc = Math.Round((double)totalClinicsBelowClinicRank / (double)allClinicRankingData.Count() * 100);
             }
-            else if (childTargetPerc > 74)
+            else
             {
-                childTargetPercColor = MetricsColorEnum.Success.ToString();
+                clinicReportModel.ChildrenTeamsTopPerc = Math.Round(((double)totalClinicsAboveClinicRank / (double)allClinicRankingData.Count() * 100));
+                clinicReportModel.ChildrenClinicLowerThan50Perc = Math.Round(100 - clinicReportModel.ChildrenTeamsTopPerc);
+
             }
-
-            clinicReportModel.ChildrenTargetPerc = childTargetPerc > 100 ? 100 : childTargetPerc;
-            clinicReportModel.ChildrenTargetPercColor = childTargetPercColor;
-
-            var childrenActivityRankingData = _pointsEngineService.GetClinicRankingsForActivity(childrenActivity.Id, childrenActivity.PointsCategoryId, startDate, DateTime.Now.Date);
-            var childrenClinicRank = childrenActivityRankingData.Where(x => x.ClinicId == clinicId).FirstOrDefault();
-            var totalClinicsBelowClinicRank = childrenActivityRankingData.Where(x => x.PointsTotalForYear > childrenClinicRank.PointsTotalForYear).Count();
-            var totalClinicsAboveClinicRank = childrenActivityRankingData.Where(x => x.PointsTotalForYear >= childrenClinicRank.PointsTotalForYear).Count();
-
-            //where X% equals the % of clinics on CHW Connect that have a lower percentage than the current clinic being viewed
-            clinicReportModel.ChildrenRankingPerc = (double)totalClinicsBelowClinicRank / (double)childrenActivityRankingData.Count() * 100;
-            // where X % equals the 100 minus the % of clinics on CHW Connect that have a percentage higher than or equal to the percentage that the current clinic has
-            clinicReportModel.ChildrenTopLeagueTeamPerc = 100 - ((double)totalClinicsAboveClinicRank / (double)childrenActivityRankingData.Count() * 100);
-            
             return clinicReportModel;
         }
 
