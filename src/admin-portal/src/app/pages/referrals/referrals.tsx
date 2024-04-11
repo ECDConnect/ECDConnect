@@ -129,7 +129,7 @@ export const Referrals = () => {
           filters={[
             {
               hideFilter: clinicsData?.allPortalClinics?.length <= 1,
-              className: 'mt-1',
+              menuItemClassName: 'ml-24',
               type: 'search-dropdown',
               placeholder: 'Clinic',
               options: clinicOptions,
@@ -137,7 +137,7 @@ export const Referrals = () => {
               onChange: setSelectedClinic,
             },
             {
-              className: 'w-64 h-11',
+              className: 'w-64 border-2 mt-1',
               colour: 'secondary',
               textColour: 'white',
               showChevronIcon: true,

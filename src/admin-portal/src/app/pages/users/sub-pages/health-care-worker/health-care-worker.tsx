@@ -265,6 +265,28 @@ export default function HealthCareWorkers() {
   const isLoading =
     loading || loadingClinics || loadingProvince || loadingDistricts;
 
+  const isFilterActive =
+    !!connectUsageFilter?.length ||
+    !!appActivityFilter?.length ||
+    !!startDate ||
+    !!endDate ||
+    !!clinicsFiltered?.length ||
+    !!subDistrictsFiltered?.length ||
+    !!provincesFiltered?.length ||
+    !!statusFilter?.length;
+
+  const noContentText = useMemo(() => {
+    if (isFilterActive) {
+      return 'No results found. Try changing the filters selected';
+    }
+
+    if (isTeamLead) {
+      return "You don't have any CHWs yet! Contact Grow Great for more information";
+    }
+
+    return 'No entries found';
+  }, [isFilterActive, isTeamLead]);
+
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
@@ -688,11 +710,7 @@ export default function HealthCareWorkers() {
             onClearFilters={clearFilters}
             onChangeSelectedRows={setSelectedCHWs}
             onClickRow={viewSelectedRow}
-            noContentText={
-              isTeamLead
-                ? "You don't have any CHWs yet! Contact Grow Great for more information"
-                : 'No entries found'
-            }
+            noContentText={noContentText}
             loading={{
               isLoading: tableData === undefined || isLoading,
               size: 'medium',
@@ -743,7 +761,6 @@ export default function HealthCareWorkers() {
               {
                 type: 'search-dropdown',
                 menuItemClassName: 'w-11/12 mx-8 mt-1',
-                className: 'mt-1',
                 options: sortByConnectUsage,
                 selectedOptions: connectUsageFilter,
                 onChange: setConnectUsageFilter,
@@ -753,7 +770,7 @@ export default function HealthCareWorkers() {
               },
               {
                 hideFilter: isTeamLead,
-                className: 'w-64 h-11',
+                className: 'w-64 h-11 mt-1 border-2 border-transparent',
                 isFullWidth: false,
                 colour: !!startDate ? 'secondary' : 'adminPortalBg',
                 textColour: !!startDate ? 'white' : 'textMid',
@@ -772,7 +789,6 @@ export default function HealthCareWorkers() {
               {
                 type: 'search-dropdown',
                 menuItemClassName: 'w-11/12 mx-8 mt-1',
-                className: 'mt-1',
                 options: sortByAppActivity,
                 selectedOptions: appActivityFilter,
                 onChange: setAppActivityFilter,
@@ -784,7 +800,6 @@ export default function HealthCareWorkers() {
                 type: 'search-dropdown',
                 hideFilter: clinicData?.allPortalClinics?.length <= 1,
                 menuItemClassName: 'w-11/12 mx-8 mt-1',
-                className: 'mt-1',
                 options: clinics,
                 selectedOptions: clinicsFiltered,
                 onChange: setClinicsFiltered,
@@ -796,7 +811,6 @@ export default function HealthCareWorkers() {
                 type: 'search-dropdown',
                 menuItemClassName: 'w-11/12 mx-8 mt-1',
                 hideFilter: isTeamLead,
-                className: 'mt-1',
                 options: subDistricts,
                 selectedOptions: subDistrictsFiltered,
                 onChange: setSubDistrictsFiltered,
@@ -808,7 +822,6 @@ export default function HealthCareWorkers() {
                 type: 'search-dropdown',
                 menuItemClassName: 'w-11/12 mx-8 mt-1',
                 hideFilter: isTeamLead,
-                className: 'mt-1',
                 options: provinces,
                 selectedOptions: provincesFiltered,
                 onChange: setProvincesFiltered,
@@ -820,7 +833,6 @@ export default function HealthCareWorkers() {
                 type: 'search-dropdown',
                 menuItemClassName: 'w-11/12 mx-8 mt-1',
                 hideFilter: isTeamLead,
-                className: 'mt-1',
                 options: sortByClientStatusOptions,
                 selectedOptions: statusFilter,
                 onChange: setStatusFilter,
