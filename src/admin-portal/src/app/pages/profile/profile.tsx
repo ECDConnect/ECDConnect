@@ -279,7 +279,7 @@ export function Profile(props: any) {
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
         <div className="m-10 rounded-2xl bg-white  lg:min-w-0 lg:flex-1">
-          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+          <div className="h-full px-2">
             {/* Start main area*/}
 
             <div className="flex h-full " style={{ minHeight: '30rem' }}>
