@@ -7,7 +7,7 @@ import {
 } from '@/store/community/community.actions';
 import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformationPage } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { TeamTabState } from '../../types';
@@ -34,6 +34,17 @@ export const TeamTabInfoPage = () => {
 
   const section = 'Community - Team - Points';
 
+  const infoLanguageOptions = useMemo(
+    () =>
+      info &&
+      info.availableLanguages &&
+      info.availableLanguages.map((language) => ({
+        value: language?.locale || selectedLanguage,
+        label: language?.description || selectedLanguage,
+      })),
+    [info, selectedLanguage]
+  );
+
   const languagesOptions = useMemo(
     () =>
       languages.map((language) => ({
@@ -43,10 +54,15 @@ export const TeamTabInfoPage = () => {
     [languages]
   );
 
-  const handleLanguageChange = (language: string) => {
-    appDispatch(getMoreInformation({ locale: language, section, tab: 'team' }));
-    setSelectedLanguage(language);
-  };
+  const handleLanguageChange = useCallback(
+    async (language: string) => {
+      await appDispatch(
+        getMoreInformation({ locale: language, section, tab: 'team' })
+      ).unwrap();
+      setSelectedLanguage(language);
+    },
+    [appDispatch]
+  );
 
   const onClose = () => {
     history.push(
@@ -57,18 +73,21 @@ export const TeamTabInfoPage = () => {
     );
   };
 
-  useEffect(() => {
-    appDispatch(getMoreInformation({ locale: 'en-za', section, tab: 'team' }));
+  const getContent = useCallback(async () => {
+    await appDispatch(
+      getMoreInformation({ locale: 'en-za', section, tab: 'team' })
+    ).unwrap();
+  }, [appDispatch]);
 
-    // trigger on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => {
+    getContent();
+  }, [getContent]);
 
   return (
     <MoreInformationPage
       title="Points"
       isLoading={isLoading}
-      languages={languagesOptions}
+      languages={infoLanguageOptions || languagesOptions}
       moreInformation={info}
       onClose={onClose}
       selectedLanguage={selectedLanguage}

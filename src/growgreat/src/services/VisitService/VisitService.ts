@@ -119,6 +119,7 @@ class Visit {
           availableLanguages {
             id
             description
+            locale
           }
         }
       }    
@@ -154,6 +155,11 @@ class Visit {
             section
             type
             visit
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,
@@ -187,6 +193,11 @@ class Visit {
             type
             video
             visit
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,
