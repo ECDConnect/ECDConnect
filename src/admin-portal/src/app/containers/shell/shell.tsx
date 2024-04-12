@@ -103,7 +103,9 @@ export default function Shell() {
         navigationData?.GetAllNavigation?.filter((item) =>
           teamLeadNavigationItems?.includes(item?.name)
         );
-      const userRolePermissions = user.roles.map((x) => x.permissions).flat();
+      const userRolePermissions = user?.roles
+        ?.map((x) => x?.permissions)
+        .flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
       if (isAdministrator || isSuperAdmin) {
         const sorted = navigationList
