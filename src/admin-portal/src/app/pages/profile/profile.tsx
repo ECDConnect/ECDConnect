@@ -172,7 +172,6 @@ export function Profile(props: any) {
         },
       });
     }
-    refetch();
   };
 
   const onSave = async () => {
@@ -203,8 +202,10 @@ export function Profile(props: any) {
 
     if (avatarFile) {
       await saveUser(passwordChange, avatarFile);
+      refetch();
     } else {
       await saveUser(passwordChange);
+      refetch();
     }
   };
 
@@ -215,8 +216,6 @@ export function Profile(props: any) {
       },
     });
   }, [user]);
-  console.log(teamLeadData);
-  console.log(teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage);
 
   useEffect(() => {
     if (teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage) {
@@ -382,6 +381,8 @@ export function Profile(props: any) {
                         }
                         textInputType="input"
                         placeholder={'Add a text...'}
+                        maxCharacters={125}
+                        maxLength={125}
                       />
                     </div>
                   )}
