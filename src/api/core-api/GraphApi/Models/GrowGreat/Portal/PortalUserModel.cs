@@ -65,7 +65,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             Id = entity.Id;
             UserId = entity.UserId;
             IsRegistered = entity.IsRegistered;
-            ClinicIds = entity.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList();
+            ClinicIds = entity.Clinics != null ? entity.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList() : new List<Guid>();
             WelcomeMessage = entity.WelcomeMessage;
         }
     }
