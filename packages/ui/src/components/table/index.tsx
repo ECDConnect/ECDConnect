@@ -210,7 +210,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
     return (
       <>
         <div className="flex  flex-col">
-          <div className="mb-8 flex w-full flex-row items-center justify-between">
+          <div className="flex w-full flex-row items-center justify-between">
             {search && (
               <div
                 className={`flex ${
@@ -261,8 +261,13 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
               )}
             </div>
           </div>
+          {(!!Object.keys(search ?? {})?.length ||
+            !!filters?.length ||
+            !!Object.keys(actionButton ?? {})?.length) && (
+            <div className="mt-8" />
+          )}
           {openFilters && (
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-8 flex items-center justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 {filters?.map((filterProps, index) => {
                   if (filterProps?.hideFilter) {
