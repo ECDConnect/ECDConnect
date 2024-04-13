@@ -14,7 +14,7 @@ import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
 import { useEffect, useState } from 'react';
-import { format, sub } from 'date-fns';
+import { format, lastDayOfMonth, sub } from 'date-fns';
 import { ViewClinicReportProps } from './view-clinic-report.types';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { ReferralsRouteState } from '../../../referrals/types';
@@ -43,6 +43,7 @@ export interface PointsReportSummaryDto {
 
 export const ViewClinicReport = ({
   clinic: clinicFromProps,
+  isFromTeamMeetings,
 }: ViewClinicReportProps) => {
   const { isTeamLead } = useUserRole();
   const location = useLocation<ClinicsRouteState>();
@@ -56,7 +57,9 @@ export const ViewClinicReport = ({
   const lastYear = sub(today, {
     years: 1,
   });
-
+  const currentDateFormatted = format(today, 'MMMM y');
+  const lastDayOfMonthDate = lastDayOfMonth(today);
+  console.log({ lastDayOfMonthDate });
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDate, endDate] = dateRange;
 
@@ -188,6 +191,8 @@ export const ViewClinicReport = ({
       <div className="mt-8">
         <PointsReportSummary
           dataFromClinicPointsData={dataFromClinicPointsData}
+          isFromTeamMeetings={isFromTeamMeetings}
+          clinic={clinic}
         />
       </div>
 
@@ -265,7 +270,11 @@ export const ViewClinicReport = ({
           type="h1"
           weight="bold"
           color="textDark"
-          text={`Visit information`}
+          text={
+            isTeamLead
+              ? `Visit information: ${currentDateFormatted}`
+              : `Visit information`
+          }
           align="left"
         />
         <DatePicker

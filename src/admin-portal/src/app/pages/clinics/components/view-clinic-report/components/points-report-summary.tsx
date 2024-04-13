@@ -2,14 +2,18 @@ import { StatusChip, Typography, ScoreCard } from '@ecdlink/ui';
 import { PointsReportSummaryDto } from '../view-clinic-report';
 import { calculateTierPercentages, getTierDetails } from './points-utils';
 import { LeagueType } from '../view-clinic-report.types';
-import { getCommunityQuarterDescription } from '@ecdlink/core';
+import { ClinicDto, getCommunityQuarterDescription } from '@ecdlink/core';
 
 interface PointsReportSummaryProps {
   dataFromClinicPointsData: PointsReportSummaryDto;
+  isFromTeamMeetings?: boolean;
+  clinic?: ClinicDto;
 }
 
 export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
   dataFromClinicPointsData,
+  isFromTeamMeetings,
+  clinic,
 }) => {
   const today = new Date();
   const { quarter } = getCommunityQuarterDescription(today);
@@ -22,7 +26,7 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
     LeagueType.SuperLeague,
     dataFromClinicPointsData?.pointsTotal ?? 0
   );
-
+  console.log({ dataFromClinicPointsData });
   return (
     <>
       <div className="mt-8">
@@ -31,7 +35,7 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
           type="h1"
           weight="bold"
           color="textMid"
-          text={`Summary`}
+          text={isFromTeamMeetings ? `${clinic?.name} Summary` : `Summary`}
         />
         <div className="mt-2 flex w-full items-center gap-2">
           <StatusChip

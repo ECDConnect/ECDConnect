@@ -35,6 +35,18 @@ function classNames(...classes: any[]) {
 type menuItemProps = {
   item: NavigationDto;
 };
+
+export const tlMeetings = {
+  description: 'Team meetings',
+  icon: 'PresentationChartBarIcon',
+  id: '96d4070a-e5a6-4148-961b-20d9c05dje41',
+  isActive: true,
+  name: 'Team meetings',
+  permissions: [],
+  route: '/team-meetings',
+  sequence: 8,
+};
+
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeMatch = useRouteMatch(item.route);
 
@@ -90,19 +102,20 @@ export default function Shell() {
   useEffect(() => {
     setAvatarColor(getAvatarColor());
   }, []);
-
+  console.log(navigationData?.GetAllNavigation);
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
       const teamLeadNavigationItems = [
         NavbarTypes.Users,
         NavbarTypes.Clinics,
         NavbarTypes.Referrals,
+        NavbarTypes.TeamMeetings,
       ];
       const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
-      const teamLeadNavigationList: NavigationDto[] =
-        navigationData?.GetAllNavigation?.filter((item) =>
-          teamLeadNavigationItems?.includes(item?.name)
-        );
+      const newnav = [...navigationData?.GetAllNavigation, tlMeetings];
+      const teamLeadNavigationList: NavigationDto[] = newnav?.filter((item) =>
+        teamLeadNavigationItems?.includes(item?.name)
+      );
       const userRolePermissions = user?.roles
         ?.map((x) => x?.permissions)
         .flat();
@@ -364,7 +377,7 @@ export default function Shell() {
         </div>
 
         <main className="focus:outline-none relative flex-1 overflow-y-auto bg-white">
-          <div className="h-full py-6">
+          <div className="h-full">
             <div className="mx-auto h-full bg-white">
               <AuthRoutes />
             </div>
