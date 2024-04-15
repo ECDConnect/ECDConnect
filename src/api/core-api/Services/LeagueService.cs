@@ -14,6 +14,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 
 namespace EcdLink.Api.CoreApi.Services
 {
