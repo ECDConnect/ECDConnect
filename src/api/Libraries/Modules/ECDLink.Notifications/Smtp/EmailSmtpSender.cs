@@ -57,6 +57,11 @@ namespace ECDLink.Notifications.Smtp
 
         public async Task SendMessageAsync(CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(_optionsAccessor.SmtpServerAddress))
+            {
+                _logger.LogWarning("SMTP Server not configured");
+                throw new Exception("SMTP Server not configured");
+            }
             if (string.IsNullOrEmpty(_message.To))
             {
                 throw new KeyNotFoundException("No receiver address specified");
@@ -113,7 +118,7 @@ namespace ECDLink.Notifications.Smtp
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError("Could not connect to Mail Server. Mail not sent.", exception);
+                    _logger.LogError(exception, "Could not connect to STMP Server {0}. Mail not sent.", _optionsAccessor.SmtpServerAddress);
                     throw;
                 }
 
@@ -121,49 +126,58 @@ namespace ECDLink.Notifications.Smtp
                 if (!string.IsNullOrEmpty(_optionsAccessor?.Username)
                     && !string.IsNullOrEmpty(_optionsAccessor?.Password))
                 {
-                    await client.AuthenticateAsync(_optionsAccessor.Username, _optionsAccessor.Password, cancellationToken);
+                    try
+                    {
+                        await client.AuthenticateAsync(_optionsAccessor.Username, _optionsAccessor.Password, cancellationToken);
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.LogError(exception, "Could not authenticate using {0} with STMP Server {1}. Mail not sent.", _optionsAccessor?.Username, _optionsAccessor.SmtpServerAddress);
+                        throw;
+                    }
                 }
 
                 var emailRetryWaitMs = _optionsAccessor?.RetryWaitMiliseconds ?? 300;
 
+                string messageTo = message?.To?.FirstOrDefault().ToString();
                 // Send message
                 try
                 {
-                    _logger.LogDebug("Sending email from:{fromAddress}, to: {toAddress}", message?.From?.FirstOrDefault(), message?.To?.FirstOrDefault());
+                    _logger.LogDebug("Sending email to {0} using {1} ", messageTo, _optionsAccessor.SmtpServerAddress);
                     var mailServerResponse = await client.SendAsync(message, cancellationToken);
-                    _logger.LogInformation(mailServerResponse);
+                    _logger.LogInformation("Sending email to {0} using {1}, response: {2}", message?.To.FirstOrDefault(), _optionsAccessor.SmtpServerAddress, mailServerResponse);
                 }
                 catch (IOException ioException)
                 {
-                    _logger.LogWarning(ioException, "Warning: Smtp Email: Failed to send mail, retrying in: {emailRetryWaitMs}ms", emailRetryWaitMs);
+                    _logger.LogWarning(ioException, "Failed sending email to {0} using {1}, retrying in: {2}ms", messageTo, _optionsAccessor.SmtpServerAddress, emailRetryWaitMs);
                     await Task.Delay(emailRetryWaitMs);
-                    _logger.LogInformation("Retrying mail send.");
+                    _logger.LogDebug("Retry sending email to {0} using {1} ", messageTo, _optionsAccessor.SmtpServerAddress);
                     var mailServerResponse = await client.SendAsync(message, cancellationToken);
-                    _logger.LogInformation(mailServerResponse);
+                    _logger.LogInformation("Sending email to {0} using {1}, response: {2}", message?.To.FirstOrDefault(), _optionsAccessor.SmtpServerAddress, mailServerResponse);
                 }
                 catch (ProtocolException protocolException)
                 {
-                    _logger.LogWarning(protocolException, "Smtp Email Send: Protocol Exception, retrying in {emailRetryWaitMs}ms", emailRetryWaitMs);
+                    _logger.LogWarning(protocolException, "Failed (protocol exception) sending email to {0} using {1}, retrying in: {2}ms", messageTo, _optionsAccessor.SmtpServerAddress, emailRetryWaitMs);
                     await Task.Delay(emailRetryWaitMs);
 
                     if (client.IsConnected)
                     {
-                        _logger.LogInformation("Retrying mail send.");
+                        _logger.LogDebug("Retry sending email to {0} using {1} ", messageTo, _optionsAccessor.SmtpServerAddress);
                         var mailServerResponse = await client.SendAsync(message, cancellationToken);
-                        _logger.LogInformation(mailServerResponse);
+                        _logger.LogInformation("Sending email to {0} using {1}, response: {2}", message?.To.FirstOrDefault(), _optionsAccessor.SmtpServerAddress, mailServerResponse);
                     }
                     else
                     {
-                        _logger.LogInformation("Reconnecting mail client.");
+                        _logger.LogInformation("Reconnecting to {0}.", _optionsAccessor.SmtpServerAddress);
                         await client.ConnectAsync(_optionsAccessor.SmtpServerAddress, _optionsAccessor.SmtpServerPort, _optionsAccessor.SmtpServerUseTLS);
-                        _logger.LogInformation("Retrying mail send.");
+                        _logger.LogDebug("Retry sending email to {0} using {1} ", messageTo, _optionsAccessor.SmtpServerAddress);
                         var mailServerResponse = await client.SendAsync(message, cancellationToken);
-                        _logger.LogInformation(mailServerResponse);
+                        _logger.LogInformation("Sending email to {0} using {1}, response: {2}", message?.To.FirstOrDefault(), _optionsAccessor.SmtpServerAddress, mailServerResponse);
                     }
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, "Fatal error sending email. Giving up.");
+                    _logger.LogError(exception, "Fatal error sending email to {0} via {1}. Giving up.", messageTo, _optionsAccessor.SmtpServerAddress);
                 }
 
                 // Close client (TODO: should this be pooled)
