@@ -5,7 +5,7 @@ using ECDLink.Security.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities
+namespace ECDLink.DataAccessLayer.Entities.Clinics
 {
     [Table(nameof(ClinicLeague))]
     [EntityPermission(PermissionGroups.GENERAL)]

@@ -1,6 +1,5 @@
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.Services;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -8,7 +7,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,10 +22,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
           [Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory)
         {
-
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            
-
             var sheet1Name = $"CHW";
             var sheet2Name = $"Mothers";
             var sheet3Name = $"Children";
@@ -42,6 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             {
                 new List<string>{"First Name","Surname","ID Number","Cellphone Number","Registered"}
             };
+
             var sheet2HeaderData = new List<List<string>>
             {
                 new List<string>{"Mother First Name","Mother Surname","Expected Date of Delivery","Age","HCW First Name","HCW Surname"}

@@ -1,4 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities;
+﻿using ECDLink.DataAccessLayer.Entities.Clinics;
 using System;
 using System.Collections.Generic;
 using System.Linq;

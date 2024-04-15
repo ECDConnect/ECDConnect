@@ -1,11 +1,12 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
-using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -30,12 +31,16 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<District, Guid> _districtRepo;
         private readonly IGenericRepository<SubDistrict, Guid> _subDistrictRepo;
         private readonly IGenericRepository<Clinic, Guid> _clinicRepo;
+        private readonly IGenericRepository<ClinicMeeting, Guid> _clinicMeetingRepo;
+        private readonly IGenericRepository<ClinicMeetingParticipantOptedOut, Guid> _clinicMeetingCHWsOptedOutRepo;
+        private readonly IGenericRepository<ClinicMeetingParticipantInField, Guid> _clinicMeetingCHWsInFieldRepo;
         private readonly IGenericRepository<ClinicTeamLead, Guid> _clinicTeamRepo;
         private readonly IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
         private readonly IGenericRepository<Infant, Guid> _infantRepo;
         private readonly IGenericRepository<VisitData, Guid> _visitDataRepo;
         private readonly IGenericRepository<BreastFeedingClub, Guid> _breastFeedingClubRepo;
         private readonly IGenericRepository<Caregiver, Guid> _caregiverRepo;
+        private readonly IGenericRepository<TeamLead, Guid> _teamLeadRepo;
 
         private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
         private readonly IGenericRepository<PointsActivity, Guid> _pointsActivityRepo;
@@ -66,6 +71,10 @@ namespace EcdLink.Api.CoreApi.Services
             _caregiverRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
             _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _applicationUserId);
             _pointsActivityRepo = _repositoryFactory.CreateGenericRepository<PointsActivity>(userContext: _applicationUserId);
+            _clinicMeetingRepo = _repositoryFactory.CreateGenericRepository<ClinicMeeting>(userContext: _applicationUserId);
+            _clinicMeetingCHWsOptedOutRepo = _repositoryFactory.CreateGenericRepository<ClinicMeetingParticipantOptedOut>(userContext: _applicationUserId);
+            _clinicMeetingCHWsInFieldRepo = _repositoryFactory.CreateGenericRepository<ClinicMeetingParticipantInField>(userContext: _applicationUserId);
+            _teamLeadRepo = _repositoryFactory.CreateGenericRepository<TeamLead>(userContext: _applicationUserId);
 
             _pointsEngineService = pointsEngineService;
 
@@ -616,6 +625,96 @@ namespace EcdLink.Api.CoreApi.Services
                 .Select(x => x.Caregiver).ToList();
 
             return caregiversForInfantsUnderTwoYears;
+        }
+
+        #endregion
+
+        #region Clinic Meetings
+        public ClinicMeeting AddClinicMeeting(AddClinicMeetingInputModel input)
+        {
+            var teamLead = _teamLeadRepo.GetByUserId(input.TeamLeadUserId);
+            var clinicMeeting = _clinicMeetingRepo.Insert(new ClinicMeeting()
+            {
+                Id = new Guid(),
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _applicationUserId.ToStringOrNull(),
+                MeetingDate = input.MeetingDate,
+                MeetingTypeId = Constants.MeetingTypes.TeamLeadMonthlyMeetingId,
+                ClinicId = input.ClinicId,
+                TeamLeadId = teamLead.Id,
+                PositiveStory = input.PositiveStory,
+                ReportingIssue = input.ReportingIssue,
+                TotalSupportVisits = input.TotalSupportVisits
+            }
+            );
+
+            if (input.ParticipantsOptedOutIds.Count > 0)
+            {
+                List<ClinicMeetingParticipantOptedOut> clinicMeetingParticipantOptedOuts = new List<ClinicMeetingParticipantOptedOut>();
+                foreach (Guid item in input.ParticipantsOptedOutIds)
+                {
+                    clinicMeetingParticipantOptedOuts.Add(new ClinicMeetingParticipantOptedOut()
+                    {
+                        Id = new Guid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _applicationUserId.ToStringOrNull(),
+                        HealthCareWorkerId = item,
+                        ClinicMeetingId = clinicMeeting.Id
+                    });
+                }
+                _clinicMeetingCHWsOptedOutRepo.InsertMany(clinicMeetingParticipantOptedOuts);
+            }
+            if (input.ParticipantsInFieldIds.Count > 0)
+            {
+                List<ClinicMeetingParticipantInField> clinicMeetingParticipantInFields = new List<ClinicMeetingParticipantInField>();
+                foreach (Guid item in input.ParticipantsInFieldIds)
+                {
+                    clinicMeetingParticipantInFields.Add(new ClinicMeetingParticipantInField()
+                    {
+                        Id = new Guid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _applicationUserId.ToStringOrNull(),
+                        HealthCareWorkerId = item,
+                        ClinicMeetingId = clinicMeeting.Id
+                    });
+                }
+                _clinicMeetingCHWsInFieldRepo.InsertMany(clinicMeetingParticipantInFields);
+            }
+
+            return clinicMeeting;
+        }
+
+        public PortalClinicMeetingModel GetClinicMeetingForMonth(Guid clinicId)
+        {
+            // Always show report from 8 of current month to 7th of next month
+            var startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 07);
+            var endDate = startDate.AddMonths(1);
+            endDate = endDate.AddDays(1);
+
+            var clinicMeeting =  _clinicMeetingRepo.GetAll()
+                .Where(x => x.IsActive && 
+                            x.MeetingDate.Date >= startDate && x.MeetingDate.Date <= endDate.Date &&
+                            x.ClinicId == clinicId)
+                .FirstOrDefault();
+
+            return new PortalClinicMeetingModel(clinicMeeting);
+        }
+        public List<PortalClinicMeetingModel> GetAllClinicMeetings()
+        {
+            List<PortalClinicMeetingModel> records = new List<PortalClinicMeetingModel>();
+            var clinicMeetings = _clinicMeetingRepo.GetAll().Where(x => x.IsActive).ToList();
+            foreach (var item in clinicMeetings)
+            {
+                records.Add(new PortalClinicMeetingModel(item));
+            }
+
+            return records;
         }
 
         #endregion
