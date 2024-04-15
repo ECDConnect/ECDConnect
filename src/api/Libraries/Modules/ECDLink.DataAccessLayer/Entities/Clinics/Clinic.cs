@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities
+namespace ECDLink.DataAccessLayer.Entities.Clinics
 {
     [Table(nameof(Clinic))]
     [EntityPermission(PermissionGroups.USER)]

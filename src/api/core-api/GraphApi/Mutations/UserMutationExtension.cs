@@ -187,12 +187,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             // Phone Number
-
-            // If the user changing the PhoneNumber, is different to the user being changed
-            // If the user is changing their own phone number (changes from portal must be verified)
-
-
-
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {

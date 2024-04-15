@@ -1022,7 +1022,6 @@ namespace EcdLink.Api.CoreApi
 
         }
 
-
         public static class PortalSettings
         {
             public const string visit_high_activity = "High activity (at least 20 visits in past month)";
@@ -1040,6 +1039,11 @@ namespace EcdLink.Api.CoreApi
             public const string usage_red = "errorMain";
             public const string usage_blue = "infoMain";
 
+        }
+
+        public static class MeetingTypes
+        {
+            public static readonly Guid TeamLeadMonthlyMeetingId = new Guid("2497b684-2d62-46ea-af56-34b1746891be");
         }
     }
 }
