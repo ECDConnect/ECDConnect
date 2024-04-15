@@ -23,6 +23,7 @@ import { useLocation, useParams } from 'react-router';
 import { activitiesTypes } from '../activities-list';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
+import { ButtonProps } from '@ecdlink/ui/lib/components/button/button.types';
 
 export interface Question {
   question: string;
@@ -52,9 +53,12 @@ export interface DynamicFormProps {
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setReferralsInput?: (value?: VisitDataStatusFilterInput[]) => void;
   setEnableButton?: (value: boolean) => void;
+  setButtonProperties?: (value?: ButtonProps) => void;
+  setExtraButtons?: (buttons?: JSX.Element[]) => void;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
+  onSubmit?: () => void;
 }
 
 export interface MotherProfileParams {
@@ -78,6 +82,12 @@ export const DynamicForm = ({
   onClose,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
+  const [buttonProperties, setButtonProperties] = useState<
+    ButtonProps | undefined
+  >(undefined);
+  const [extraButtons, setExtraButtons] = useState<JSX.Element[] | undefined>(
+    undefined
+  );
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [referralsInput, setReferralsInput] =
@@ -170,6 +180,8 @@ export const DynamicForm = ({
   );
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
+    setButtonProperties(undefined);
+    setExtraButtons(undefined);
     onNextStep?.();
   }, [onNextStep]);
 
@@ -278,7 +290,10 @@ export const DynamicForm = ({
         setSectionQuestions={handleSetQuestions}
         setReferralsInput={handleSetReferrals}
         setEnableButton={setIsEnableButton}
+        setButtonProperties={setButtonProperties}
+        setExtraButtons={setExtraButtons}
         onNextStep={onNextStep}
+        onSubmit={onSubmit}
       />
     );
   }, [
@@ -289,6 +304,7 @@ export const DynamicForm = ({
     isTipPage,
     mother,
     onNextStep,
+    onSubmit,
     sectionQuestions,
     setIsTip,
     steps,
@@ -316,10 +332,10 @@ export const DynamicForm = ({
 
     return {
       action: onSubmit,
-      text: 'Save',
+      text: buttonProperties?.text || 'Save',
       icon: 'SaveIcon',
     };
-  }, [currentStep, handleOnNext, onSubmit, steps?.length]);
+  }, [currentStep, handleOnNext, onSubmit, steps?.length, buttonProperties]);
 
   useEffect(() => {
     if (
@@ -339,15 +355,21 @@ export const DynamicForm = ({
     wasLoadingReferral,
   ]);
 
+  const renderExtraButtons = useCallback(() => {
+    if (!extraButtons || extraButtons.length === 0) return null;
+    return extraButtons.map((el, index) => el);
+  }, [extraButtons]);
+
   return (
     <div className="flex h-full flex-col">
       {renderContent}
       {!isTipPage && (
-        <div id="button" className="mx-4 mt-auto flex items-end">
+        <div id="button" className="mx-4 mt-auto flex flex-col items-end">
+          {renderExtraButtons()}
           <Button
-            type="filled"
-            color="primary"
-            textColor="white"
+            type={buttonProperties?.type || 'filled'}
+            color={buttonProperties?.color || 'primary'}
+            textColor={buttonProperties?.textColor || 'white'}
             icon={renderButton.icon}
             className="mb-4 w-full"
             text={renderButton.text}
