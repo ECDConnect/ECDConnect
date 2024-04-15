@@ -430,6 +430,7 @@ export function ViewUser(props: any) {
             showChevronIcon
             isFullWidth={false}
             className="w-64 self-end rounded-xl"
+            dateFormat={'d MMM yyyy'}
           />
         )}
 

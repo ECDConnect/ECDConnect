@@ -12,5 +12,6 @@
         public const string SYSTEM = "System";
         public const string INCOMESTATEMENTS = "IncomeStatements";
         public const string INTEGRATION = "Integration";
+        public const string LEAGUE = "League";
     }
 }

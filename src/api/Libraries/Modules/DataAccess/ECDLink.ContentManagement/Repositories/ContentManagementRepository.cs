@@ -187,6 +187,10 @@ namespace ECDLink.ContentManagement.Repositories
                                     && x.IsActive
                                     && x.TenantId == currentTenant)
                             .FirstOrDefault();
+            if (content == null || content == default)
+            {
+                return null;
+            }       
             return content.ContentType;
         }
 

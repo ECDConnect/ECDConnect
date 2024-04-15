@@ -1,4 +1,4 @@
-import * as HIcons from '@heroicons/react/outline';
+import * as HIcons from '@heroicons/react/solid';
 
 const { ...icons } = HIcons;
 

@@ -56,6 +56,9 @@ import { ViewReferralDetail } from '../pages/referrals/view-referral-detail/view
 import { EditBackReferral } from '../pages/referrals/edit-back-referral/edit-back-referral';
 import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
 import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
+import { Leagues } from '../pages/clinics/leagues/leagues';
+import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/view-league-season';
+import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -161,6 +164,21 @@ const ClinicsRoutes: React.FC = () => {
       <Route
         path={`/clinics/sub-districts`}
         component={SubDistrictsSubPage}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.ROOT}
+        component={Leagues}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT}
+        component={ViewLeagueSeason}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.LEAGUE_DETAILS}
+        component={LeagueDetails}
       ></Route>
     </Switch>
   );

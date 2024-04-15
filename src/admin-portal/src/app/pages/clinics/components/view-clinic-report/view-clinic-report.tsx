@@ -282,6 +282,7 @@ export const ViewClinicReport = ({
           onChange={(update) => {
             setDateRange(update);
           }}
+          dateFormat={'d MMM yyyy'}
         />
       </div>
       <ClientRegistration

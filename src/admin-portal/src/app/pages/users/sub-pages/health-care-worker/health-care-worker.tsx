@@ -769,6 +769,7 @@ export default function HealthCareWorkers() {
                 info: { name: 'CHW Connect usage:' },
               },
               {
+                dateFormat: 'd MMM yyyy',
                 hideFilter: isTeamLead,
                 className: 'w-64 h-11 mt-1 border-2 border-transparent',
                 isFullWidth: false,
