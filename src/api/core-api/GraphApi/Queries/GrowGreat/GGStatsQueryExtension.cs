@@ -8,8 +8,10 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
@@ -24,12 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         {
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
+            
 
             var sheet1Name = $"CHW";
             var sheet2Name = $"Mothers";
@@ -97,6 +94,217 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
+
+        private List<HealthCareWorker> GetHealthCareWorkers([Service] IHttpContextAccessor contextAccessor,
+                                                            IGenericRepositoryFactory repoFactory,
+                                                            List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
+            return hcwRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.ClinicId)).ToList();
+
+            /* select anu."FirstName", anu."Surname", anu."IdNumber", anu."PhoneNumber", case when hcw."IsRegistered" = true then 'Yes' else 'No' end as Registered
+             from "HealthCareWorker" hcw
+             inner join "AspNetUsers" anu on anu."Id" = hcw."UserId"
+             where "ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G', 'Tladi Local - Reg D', 'Protea Glen - Reg D')) and hcw."IsActive" = true
+             order by anu."Surname", anu."FirstName"*/
+        }
+
+        private List<Mother> GetMothers([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
+            return motherRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.HealthCareWorker.ClinicId) && x.IsActive).ToList();
+
+            /*select 
+            anu1."FirstName" as "Mother Firstname", anu1."Surname" as "Mother Surname", m."ExpectedDateOfDelivery", m."Age",
+            anu."FirstName" as "HCW Firstname", anu."Surname" as "HCW Surname" 
+            from "Mother" m
+            inner join "AspNetUsers" anu1 on anu1."Id" = m."UserId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = m."HealthCareWorkerId" 
+            inner join "AspNetUsers" anu on anu."Id" = hcw."UserId"
+            where hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            order by anu."FirstName"
+             */
+        }
+
+        private List<Visit> GetMotherVisits([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            return visitRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) && 
+                                            x.DueDate.HasValue && x.DueDate.Value.Year == DateTime.Now.Year &&
+                                            x.DueDate.Value.Month == DateTime.Now.Month &&
+                                            x.Mother.IsActive && 
+                                            x.MotherId != null).ToList();
+
+            /*select distinct anu1."FirstName" as "Mother Firstname", anu1."Surname" as "Mother Surname", vt."Description" , 
+            v."PlannedVisitDate" as "Start Date", v."DueDate" as "End Date",
+            case when v."Attended"  = true then 'Yes' else 'No' end as Completed
+            from "Visit" v 
+            inner join "VisitType" vt on vt."Id" = v."VisitTypeId" 
+            inner join "Mother" m on m."Id" = v."MotherId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = m."UserId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = m."HealthCareWorkerId" and hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            where EXTRACT('Year' FROM v."DueDate") = 2024 and EXTRACT('month' FROM v."DueDate") = 4
+            order by anu1."FirstName", v."PlannedVisitDate" 
+             */
+        }
+
+        private List<VisitData> GetMotherVisitData([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
+            return visitDataRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.Visit.Mother.HealthCareWorker.ClinicId) && x.Visit.Mother.IsActive && x.Visit.MotherId != null).ToList();
+
+            /*select distinct anu1."FirstName" as "Mother Firstname", anu1."Surname" as "Mother Surname", vd."VisitName" , vd."VisitSection", vd."Question", vd."QuestionAnswer" 
+            from "Visit" v 
+            inner join "VisitType" vt on vt."Id" = v."VisitTypeId" 
+            inner join "VisitData" vd on vd."VisitId" = v."Id" 
+            inner join "Mother" m on m."Id" = v."MotherId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = m."UserId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = m."HealthCareWorkerId" and hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            order by anu1."FirstName"
+             */
+        }
+
+        private List<VisitDataStatus> GetMotherVisitAlerts([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
+            return visitDataStatusRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.VisitData.Visit.Mother.HealthCareWorker.ClinicId) && 
+                                                      x.VisitData.Visit.Mother.IsActive && 
+                                                      x.VisitData.Visit.MotherId != null).ToList();
+
+            /*select distinct anu1."FirstName" as "Mother Firstname", anu1."Surname" as "Mother Surname", vd."VisitName" , vd."VisitSection", vds."Comment", vds."Color", vds."Type"  
+            from "Visit" v 
+            inner join "VisitType" vt on vt."Id" = v."VisitTypeId" 
+            inner join "VisitData" vd on vd."VisitId" = v."Id" 
+            inner join "VisitDataStatus" vds on vds."VisitDataId" = vd."Id" 
+            inner join "Mother" m on m."Id" = v."MotherId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = m."UserId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = m."HealthCareWorkerId" and hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            order by anu1."FirstName"
+             */
+        }
+
+        private List<Infant> GetInfants([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
+            return infantRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.Caregiver.HealthCareWorker.ClinicId) && x.IsActive).ToList();
+
+            /*select distinct
+            anu1."FirstName" as "Child Firstname", anu1."DateOfBirth", i."WeightAtBirth", i."LengthAtBirth", g."Description" as "Gender",
+            c."FirstName" as "Caregiver Firstname", c."Surname" as "Caregiver Surname",
+            anu."FirstName" as "HCW Firstname", anu."Surname" as "HCW Surname" 
+            from "Infant" i 
+            inner join "Gender" g on g."Id" = i."GenderId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = i."UserId" 
+            inner join "Caregiver" c on c."Id" = i."CaregiverId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = c."HealthCareWorkerId" 
+            inner join "AspNetUsers" anu on anu."Id" = hcw."UserId"
+            where hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            --order by anu1."FirstName"
+            union
+            -- get all infants linked to mother linked to healthcare workers
+            select distinct
+            anu1."FirstName" as "Child Firstname", anu1."DateOfBirth", i."WeightAtBirth", i."LengthAtBirth", g."Description" as "Gender",
+            anu2."FirstName" as "Mother Firstname", anu2."Surname" as "Mother Surname",
+            anu."FirstName" as "HCW Firstname", anu."Surname" as "HCW Surname" 
+            from "Infant" i 
+            inner join "Gender" g on g."Id" = i."GenderId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = i."UserId" 
+            inner join "Mother" m on m."Id" = i."MotherCaregiverId"
+            inner join "AspNetUsers" anu2 on anu2."Id" = m."UserId"
+            inner join "HealthCareWorker" hcw on hcw."Id" = m."HealthCareWorkerId" 
+            inner join "AspNetUsers" anu on anu."Id" = hcw."UserId"
+            where hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            order by "Child Firstname"
+             * */
+        }
+
+        private List<Visit> GetInfantVisits([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            return visitRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId) &&
+                                            x.DueDate.HasValue && x.DueDate.Value.Year == DateTime.Now.Year &&
+                                            x.DueDate.Value.Month == DateTime.Now.Month &&
+                                            x.Infant.IsActive &&
+                                            x.InfantId != null).ToList();
+
+            /*select distinct anu1."FirstName" as "Child name", vt."Description" as "Visit Name" , v."PlannedVisitDate" as "Start Date", v."DueDate" as "End Date",case when v."Attended"  = true then 'Yes' else 'No' end as Completed 
+            from "Visit" v 
+            inner join "VisitType" vt on vt."Id" = v."VisitTypeId" 
+            inner join "Infant" m on m."Id" = v."InfantId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = m."UserId" 
+            inner join "Caregiver" c on c."Id" = m."CaregiverId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = c."HealthCareWorkerId" and hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            where EXTRACT('Year' FROM v."DueDate") = 2024 and EXTRACT('month' FROM v."DueDate") = 4
+            order by anu1."FirstName", v."PlannedVisitDate" 
+             * */
+        }
+
+        private List<VisitData> GetInfantVisitData([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
+            return visitDataRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.Visit.Infant.Caregiver.HealthCareWorker.ClinicId) && x.Visit.Infant.IsActive && x.Visit.InfantId != null).ToList();
+
+            /*select distinct anu1."FirstName" as "Child name", vd."VisitName" , vd."VisitSection", vd."Question", 
+            case when vd."Question" = 'Take a photo of page ii of the Road to Health Book.' then 'base64' else vd."QuestionAnswer" end as  QuestionAnswer
+            from "Visit" v 
+            inner join "VisitType" vt on vt."Id" = v."VisitTypeId" 
+            inner join "VisitData" vd on vd."VisitId" = v."Id" 
+            inner join "Infant" m on m."Id" = v."InfantId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = m."UserId" 
+            inner join "Caregiver" c on c."Id" = m."CaregiverId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = c."HealthCareWorkerId" and hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            order by anu1."FirstName"
+             * */
+        }
+
+        private List<VisitDataStatus> GetInfantVisitAlerts([Service] IHttpContextAccessor contextAccessor,
+                                        IGenericRepositoryFactory repoFactory,
+                                        List<Guid> clinicIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
+            return visitDataStatusRepo.GetAll().Where(x => clinicIds.Contains((Guid)x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.ClinicId) && x.VisitData.Visit.Infant.IsActive &&
+                                            x.VisitData.Visit.InfantId != null).ToList();
+
+            /*select distinct anu1."FirstName" as "Child name", vd."VisitName" , vd."VisitSection", vds."Comment", vds."Color", vds."Type"  
+            from "Visit" v 
+            inner join "VisitType" vt on vt."Id" = v."VisitTypeId" 
+            inner join "VisitData" vd on vd."VisitId" = v."Id" 
+            inner join "VisitDataStatus" vds on vds."VisitDataId" = vd."Id" 
+            inner join "Infant" m on m."Id" = v."InfantId" 
+            inner join "AspNetUsers" anu1 on anu1."Id" = m."UserId" 
+            inner join "Caregiver" c on c."Id" = m."CaregiverId" 
+            inner join "HealthCareWorker" hcw on hcw."Id" = c."HealthCareWorkerId" and hcw."ClinicId" in (select c."Id" from "Clinic" c where "Name"  in ('Kliptown - Reg G','Tladi Local - Reg D','Protea Glen - Reg D'))
+            order by anu1."FirstName"
+             */
+        }
+
+
+
+
+
 
     }
 }
