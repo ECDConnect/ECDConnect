@@ -12,6 +12,7 @@ using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -21,15 +22,17 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<Clinic, Guid> _clinicRepo;
         private IGenericRepository<District, Guid> _districtRepo;
 
+        private Guid _uId;
+
         public LeagueService(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            _uId = contextAccessor.HttpContext.GetUser().Id;
 
-            _leagueRepo = repoFactory.CreateRepository<League>(userContext: uId);
-            _clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
-            _districtRepo = repoFactory.CreateRepository<District>(userContext: uId);
+            _leagueRepo = repoFactory.CreateRepository<League>(userContext: _uId);
+            _clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: _uId);
+            _districtRepo = repoFactory.CreateRepository<District>(userContext: _uId);
         }
 
         public LeagueSetupModel GetLeagueSetup()
@@ -103,6 +106,45 @@ namespace EcdLink.Api.CoreApi.Services
 
                 Districts = districtModels
             };
+        }
+    
+        public void AddLeagues(List<LeagueInputModel> input)
+        {
+            // TODO - Reset this so it is working for the next season (should be this year, to next year)
+            var startDate = new DateTime(DateTime.Now.Year - 1, 10, 1);
+            var endDate = new DateTime(DateTime.Now.Year, 9, 30);
+
+            // Should we validate that all league types and clinics exist?
+
+            var newLeagues = new List<League>();
+            foreach (var leagueInput in input)
+            {
+                var leagueId = Guid.NewGuid();
+                var league = new League()
+                {
+                    Id = leagueId,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _uId.ToString(),
+                    DistrictId = leagueInput.DistrictId,
+                    Name = leagueInput.Name,
+                    LeagueTypeId = leagueInput.TypeId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    IsActive = true,
+                    TenantId = Constants.Tenants.GrowGreatTenantId,
+                    Clinics = leagueInput.ClinicIds.Select(x => new ClinicLeague
+                    {
+                        LeagueId = leagueId,
+                        ClinicId = x,
+                        TenantId = Constants.Tenants.GrowGreatTenantId,
+                    }).ToList(),                    
+                };
+
+                newLeagues.Add(league);
+            }
+
+            _leagueRepo.InsertMany(newLeagues);
         }
     }
 }

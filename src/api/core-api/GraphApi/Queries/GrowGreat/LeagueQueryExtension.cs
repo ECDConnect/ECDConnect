@@ -1,6 +1,8 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -9,6 +11,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -33,6 +36,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var leagueSetup = leagueService.GetLeagueSetup();
 
             return leagueSetup;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public LeagueClinicsModel GetLeagueById([Service] IPointsEngineService pointsService, Guid leagueId)
+        {
+            var league = pointsService.GetLeagueWithClinicRankings(leagueId);
+            return league;
         }
     }
 }
