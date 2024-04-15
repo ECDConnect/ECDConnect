@@ -138,7 +138,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
     }
   };
 
-  const startVisitHome = async (type: '2month' | 'other') => {
+  const startVisitHome = async (type: 'planned' | 'other') => {
     setShowHomeVisitPrompt(false);
     setShowHomeVisitMultipleClientsPrompt(false);
     props.onClose();

@@ -86,12 +86,16 @@ export const Referrals = () => {
     },
   ];
 
+  const sortedReferralsSummary = [...(data?.referralsSummary ?? [])]?.sort(
+    (a, b) => b?.referralsRaised - a?.referralsRaised
+  );
+
   const rows: Irow[] =
     (search
-      ? data?.referralsSummary?.filter((item) =>
-          item?.type?.toLocaleLowerCase().includes(search)
+      ? sortedReferralsSummary?.filter((item) =>
+          item?.type?.toLocaleLowerCase().includes(search.toLocaleLowerCase())
         )
-      : data?.referralsSummary) ?? [];
+      : sortedReferralsSummary) ?? [];
 
   const onClearFilters = () => {
     setSearch('');
@@ -133,7 +137,7 @@ export const Referrals = () => {
           filters={[
             {
               hideFilter: clinicsData?.allPortalClinics?.length <= 1,
-              menuItemClassName: 'ml-24',
+              menuItemClassName: 'ml-16',
               type: 'search-dropdown',
               placeholder: 'Clinic',
               options: clinicOptions,
@@ -141,6 +145,7 @@ export const Referrals = () => {
               onChange: setSelectedClinic,
             },
             {
+              dateFormat: 'd MMM yyyy',
               className: 'w-64 border-2 mt-1',
               colour: 'secondary',
               textColour: 'white',

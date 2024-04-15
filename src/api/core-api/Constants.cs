@@ -5,6 +5,10 @@ namespace EcdLink.Api.CoreApi
 {
     public static class Constants
     {
+        public static class Tenants
+        {
+            public static readonly Guid GrowGreatTenantId = Guid.Parse("39077d0e-e443-4076-aaf2-978dc6805aa0");
+        }
         public static class ApplicationSettings
         {
             public const string DefaultDbConnection = "ConnectionStrings:DefaultConnection";
