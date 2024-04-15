@@ -11,6 +11,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string Name { get; set; }
     }
 
+    public class SimpleClinicModel : BaseClinicModel
+    {
+        public List<BaseTeamLeadModel> TeamLeads { get; set; }
+        public string SubDistrictName { get; set; }
+    }
+
+    public class ClinicWithPointsModel : SimpleClinicModel
+    {
+        public int LeagueRanking { get; set; }
+        public int PointsTotal { get; set; }
+    }
+
     public class ClinicModel : BaseClinicModel
     {
         public string PhoneNumber { get; set; }

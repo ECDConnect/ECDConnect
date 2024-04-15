@@ -1315,6 +1315,7 @@ namespace EcdLink.Api.CoreApi.Services
             };
         }
 
+        // TODO refactor to use generic methoid below
         public LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId, DateTime? quarterStart = null, DateTime? quarterEnd = null)
         {
             var league = _leagueRepo.GetAll()
@@ -1415,6 +1416,78 @@ namespace EcdLink.Api.CoreApi.Services
                 Name = league.Name,
                 Clinics = clinicList
             };
+        }
+
+        public List<ClinicWithPointsModel> GetLeagueRankings(Guid leagueId, DateTime startDate, DateTime endDate)
+        {
+            var clinicsWithUsers = _clinicRepo.GetAll()
+                .Where(x => x.IsActive && x.Leagues.Any(y => y.LeagueId == leagueId && y.IsActive))
+                .Select(x => new 
+                {
+                    x.Id, 
+                    x.Name, 
+                    SubDistrictName = x.SubDistrict.Name, 
+                    TeamLeads = x.TeamLeads.Select(y => new BaseTeamLeadModel 
+                    { 
+                        Id = y.TeamLead.Id, 
+                        FirstName = y.TeamLead.User.FirstName, 
+                        Surname = y.TeamLead.User.Surname
+                    }).ToList(), 
+                    UserIds = x.HealthCareWorkers.Select(x => x.UserId) 
+                })
+                .ToList();
+
+            var allUserIds = clinicsWithUsers
+                .SelectMany(x => x.UserIds)
+                .Where(x => x.HasValue)
+                .Select(x => x.Value)
+                .ToList();
+
+            var allUserPoints = _pointsUserSummaryRepo.GetAll().Where(x
+                => x.UserId.HasValue
+                && allUserIds.Contains(x.UserId.Value)
+                && x.DateScored >= startDate
+                && x.DateScored <= endDate)
+                .ToList();
+
+            // Get clinic points
+            var allClinicPoints = _pointsClinicSummaryRepo.GetAll().Where(x =>
+                clinicsWithUsers.Select(x => x.Id).Contains(x.ClinicId)
+                && x.DateScored >= startDate
+                && x.DateScored <= endDate).ToList();
+
+            var clinicList = new List<ClinicWithPointsModel>();
+            foreach (var clinic in clinicsWithUsers)
+            {
+                var pointsTotal = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= startDate && x.DateScored <= endDate).Sum(x => x.PointsTotal)
+                    + allClinicPoints.Where(x => clinic.Id == x.ClinicId && x.DateScored >= startDate && x.DateScored <= endDate).Sum(x => x.PointsTotal);
+
+                clinicList.Add(new ClinicWithPointsModel()
+                {
+                    Id = clinic.Id,
+                    Name = clinic.Name,
+                    SubDistrictName = clinic.SubDistrictName,
+                    TeamLeads = clinic.TeamLeads,
+                    PointsTotal = pointsTotal,
+                });
+            }
+
+            // Set league ranks for year, keeping highest rank for all that have equal points
+            clinicList = clinicList.OrderByDescending(x => x.PointsTotal).ToList();
+            clinicList[0].LeagueRanking = 1;
+            for (int i = 1; i < clinicList.Count; i++)
+            {
+                if (clinicList[i].PointsTotal == clinicList[i - 1].PointsTotal)
+                {
+                    clinicList[i].LeagueRanking = clinicList[i - 1].LeagueRanking;
+                }
+                else
+                {
+                    clinicList[i].LeagueRanking = i + 1;
+                }
+            }
+
+            return clinicList;
         }
 
         public List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId)

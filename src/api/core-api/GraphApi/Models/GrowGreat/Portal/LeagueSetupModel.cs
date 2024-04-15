@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public List<BaseClinicModel> Clinics { get; set; }
+        public List<SimpleClinicModel> Clinics { get; set; }
     }
 
     public class DistrictLeaguesModel
@@ -21,6 +21,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public Guid Id { get; set; }
         public string Name { get; set; }
         public List<LeagueWithClinicsModel> Leagues { get; set; }
-        public List<BaseClinicModel> UnassignedClinics { get; set; }
+        public List<SimpleClinicModel> UnassignedClinics { get; set; }
     }
 }

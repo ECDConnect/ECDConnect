@@ -1,5 +1,4 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +12,8 @@ using ECDLink.DataAccessLayer.Entities;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
+using ECDLink.Abstractrions.GraphQL.Attributes;
+using ECDLink.Core.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -22,10 +23,13 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<Clinic, Guid> _clinicRepo;
         private IGenericRepository<District, Guid> _districtRepo;
 
+        private IPointsEngineService _pointsEngineService;
+
         private Guid _uId;
 
         public LeagueService(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IPointsEngineService pointsEngineService,
             IGenericRepositoryFactory repoFactory)
         {
             _uId = contextAccessor.HttpContext.GetUser().Id;
@@ -33,6 +37,8 @@ namespace EcdLink.Api.CoreApi.Services
             _leagueRepo = repoFactory.CreateRepository<League>(userContext: _uId);
             _clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: _uId);
             _districtRepo = repoFactory.CreateRepository<District>(userContext: _uId);
+
+            _pointsEngineService = pointsEngineService;
         }
 
         public LeagueSetupModel GetLeagueSetup()
@@ -52,7 +58,19 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     x.SubDistrict.DistrictId,
                     DistrictName = x.SubDistrict.District.Name,
-                    Clinic = new BaseClinicModel { Id = x.Id, Name = x.Name }
+                    Clinic = new SimpleClinicModel 
+                    { 
+                        Id = x.Id, 
+                        Name = x.Name, 
+                        SubDistrictName = x.SubDistrict.Name, 
+                        TeamLeads = x.TeamLeads.Select(x => new BaseTeamLeadModel 
+                        {
+                            Id = x.TeamLeadId,
+                            FirstName = x.TeamLead.User.FirstName,
+                            Surname = x.TeamLead.User.Surname
+                        }).ToList()
+
+                    }
                 }
                 ).ToList();
 
@@ -70,7 +88,19 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         Id = x.Id,
                         Name = x.Name,
-                        Clinics = x.Clinics.Select(x => new BaseClinicModel { Id = x.Clinic.Id, Name = x.Clinic.Name }).ToList()
+                        Clinics = x.Clinics.Select(x => new SimpleClinicModel
+                        {
+                            Id = x.Clinic.Id,
+                            Name = x.Clinic.Name,
+                            SubDistrictName = x.Clinic.SubDistrict.Name,
+                            TeamLeads = x.Clinic.TeamLeads.Select(x => new BaseTeamLeadModel
+                            {
+                                Id = x.TeamLeadId,
+                                FirstName = x.TeamLead.User.FirstName,
+                                Surname = x.TeamLead.User.Surname
+                            }).ToList()
+
+                        }).ToList()
                     },
                 })
                 .ToList();
@@ -135,6 +165,7 @@ namespace EcdLink.Api.CoreApi.Services
                     TenantId = Constants.Tenants.GrowGreatTenantId,
                     Clinics = leagueInput.ClinicIds.Select(x => new ClinicLeague
                     {
+                        IsActive = true,
                         LeagueId = leagueId,
                         ClinicId = x,
                         TenantId = Constants.Tenants.GrowGreatTenantId,
@@ -145,6 +176,54 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             _leagueRepo.InsertMany(newLeagues);
+        }
+
+        public List<PortalLeagueModel> GetLeagues(string searchString, Guid? districtId = null, PagedQueryInput pagingInput = null)
+        {
+            var startDate = DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year, 10, 1) : new DateTime(DateTime.Now.Year - 1, 10, 1);
+            var endDate = DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
+
+            var leagues = _leagueRepo.GetAll(pagingInput)
+                .Where(x => x.StartDate >= startDate 
+                    && x.EndDate <= endDate
+                    && (!districtId.HasValue || x.DistrictId == districtId)
+                    && (string.IsNullOrWhiteSpace(searchString) || x.Name.Contains(searchString)))
+                .Select(x => new PortalLeagueModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    InsertedDate = x.InsertedDate,
+                    LeagueTypeId = x.LeagueTypeId,
+                    LeagueTypeName = x.LeagueType.Name,
+                    Clinics = x.Clinics.Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name}).ToList()
+                })
+                .ToList();
+
+            return leagues;
+        }
+
+        public LeagueWithRankingsModel GetLeague(Guid leagueId, DateTime startDate, DateTime endDate)
+        {
+            var league = _leagueRepo.GetAll()
+                .Where(x => x.Id == leagueId)
+                .Select(x => new LeagueWithRankingsModel
+                {
+                    Id = x.Id,
+                    InsertedDate = x.InsertedDate,
+                    LeagueTypeId = x.LeagueTypeId,
+                    LeagueTypeName = x.LeagueType.Name,
+                    Name = x.Name
+                })
+                .FirstOrDefault();
+
+            if (league == null)
+            {
+                return null;
+            }
+
+            league.Clinics = _pointsEngineService.GetLeagueRankings(leagueId, startDate, endDate);
+
+            return league;
         }
     }
 }
