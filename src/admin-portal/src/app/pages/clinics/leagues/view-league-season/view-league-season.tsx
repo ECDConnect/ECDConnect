@@ -4,10 +4,14 @@ import ROUTES from '../../../../routes/app.routes-constants';
 
 import { LeagueManagement } from './league-management/league-management';
 import { LeaguePerformance } from './league-performance/league-performance';
+import { useLocation } from 'react-router';
+import { LeagueSeasonRouteState } from './types';
 
 export const ViewLeagueSeason = () => {
+  const { state } = useLocation<LeagueSeasonRouteState>();
+
   // TODO: add logic to determine if its league management
-  const isLeagueManagement = false;
+  const isLeagueManagement = true;
 
   const paths: BreadcrumbProps['paths'] = [
     {
@@ -19,7 +23,7 @@ export const ViewLeagueSeason = () => {
       url: ROUTES.CLINICS.LEAGUES.ROOT,
     },
     {
-      name: '{startDate} - {endDate} Leagues',
+      name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
       url: '',
     },
   ];

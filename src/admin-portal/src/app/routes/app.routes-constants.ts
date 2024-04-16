@@ -20,6 +20,7 @@ const ROUTES = {
     VIEW_CLINICS: '/view-clinics',
     LEAGUES: addPrefix('/leagues', {
       VIEW_LEAGUE_SEASON: addPrefix('/view-season', {
+        ADD_LEAGUES: '/add-leagues',
         LEAGUE_DETAILS: '/league-details/:leagueId',
       }),
     }),

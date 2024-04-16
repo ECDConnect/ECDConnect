@@ -376,11 +376,9 @@ export default function Shell() {
           </div>
         </div>
 
-        <main className="focus:outline-none relative flex-1 overflow-y-auto bg-white">
-          <div className="h-full">
-            <div className="mx-auto h-full bg-white">
-              <AuthRoutes />
-            </div>
+        <main className="focus:outline-none bg-adminPortalBg relative flex-1 overflow-y-auto">
+          <div className="bg-adminPortalBg h-full">
+            <AuthRoutes />
           </div>
         </main>
       </div>

@@ -75,11 +75,18 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({
               <p className={classNames(styles.menuTitle, item.titleStyle)}>
                 {item.title}
               </p>
-              <p
-                className={classNames(styles.menuSubTitle, item.subTitleStyle)}
-              >
-                <span>{item.subTitle}</span>
-              </p>
+              {typeof item.subTitle === 'string' ? (
+                <p
+                  className={classNames(
+                    styles.menuSubTitle,
+                    item.subTitleStyle
+                  )}
+                >
+                  <span>{item.subTitle}</span>
+                </p>
+              ) : (
+                item.subTitle
+              )}
             </div>
           </div>
         </div>

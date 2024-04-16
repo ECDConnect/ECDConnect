@@ -60,6 +60,7 @@ import { TeamMeetingsMainPage } from '../pages/team-meetings/team-meetings';
 import { Leagues } from '../pages/clinics/leagues/leagues';
 import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/view-league-season';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
+import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
 
 const PublicRoutes: React.FC = () => {
@@ -190,6 +191,11 @@ const ClinicsRoutes: React.FC = () => {
         exact
         path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.LEAGUE_DETAILS}
         component={LeagueDetails}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES}
+        component={AddLeagues}
       ></Route>
     </Switch>
   );
