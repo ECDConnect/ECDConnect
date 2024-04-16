@@ -59,6 +59,7 @@ import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password
 import { Leagues } from '../pages/clinics/leagues/leagues';
 import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/view-league-season';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
+import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -179,6 +180,11 @@ const ClinicsRoutes: React.FC = () => {
         exact
         path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.LEAGUE_DETAILS}
         component={LeagueDetails}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES}
+        component={AddLeagues}
       ></Route>
     </Switch>
   );
