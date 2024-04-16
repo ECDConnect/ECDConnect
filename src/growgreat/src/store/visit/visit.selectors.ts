@@ -2,6 +2,7 @@ import {
   ClientSummaryByPriority,
   HcwHighlights,
   HealthPromotion,
+  Infographics,
   MoreInformation,
   Progress_VisitDataStatus,
   VisitData,
@@ -16,6 +17,10 @@ export const getVisitStatus = (state: RootState): VisitStatusDto | undefined =>
 export const getHealthPromotionSelector = (
   state: RootState
 ): HealthPromotion[] | undefined => state.visits.healthPromotion;
+
+export const getInfographicsSelector = (
+  state: RootState
+): Infographics[] | undefined => state.visits.infographics;
 
 export const getMoreInformationSelector = (
   state: RootState

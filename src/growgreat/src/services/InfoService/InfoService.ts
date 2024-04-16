@@ -42,6 +42,7 @@ class InfoService {
             availableLanguages {
               id
               description
+              locale
             }
           }
         }    

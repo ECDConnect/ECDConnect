@@ -22,6 +22,7 @@ import { getHealthPromotionSelector } from '@/store/visit/visit.selectors';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { LanguageCode } from '@/i18n/types';
 
 export const HealthPromotion = ({
   section,
@@ -37,6 +38,20 @@ export const HealthPromotion = ({
   onClose: () => void;
 }) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [healthPromotionList, setHealthPromotionList] = useState(
+    useSelector(getHealthPromotionSelector)
+  );
+
+  const healthPromotionItem = healthPromotionList?.find(
+    (item) => item.section === section
+  );
+
+  const availableLanguages: LanguageCode[] =
+    healthPromotionItem?.availableLanguages
+      ? healthPromotionItem.availableLanguages?.map((item) => {
+          return item?.locale as LanguageCode;
+        })
+      : [language.locale as LanguageCode];
 
   const { isOnline } = useOnlineStatus();
 
@@ -47,10 +62,8 @@ export const HealthPromotion = ({
     VisitActions.GET_HEALTH_PROMOTION
   );
 
-  const healthPromotions = useSelector(getHealthPromotionSelector);
-
   const formattedHealthPromotion = useMemo(() => {
-    const healthPromotion = healthPromotions?.find(
+    const healthPromotion = healthPromotionList?.find(
       (item) => item?.section === section
     );
 
@@ -90,16 +103,19 @@ export const HealthPromotion = ({
       description: formattedDescription,
       header: formattedHeader,
     };
-  }, [healthPromotions, section]);
+  }, [healthPromotionList, section]);
 
   const getContent = useCallback(async () => {
     if (!isOnline) return;
-    await appDispatch(
+    const newHealthPromtionList = await appDispatch(
       visitThunkActions.getHealthPromotion({
         section,
         locale: language.locale,
       })
     ).unwrap();
+    if (newHealthPromtionList) {
+      setHealthPromotionList([newHealthPromtionList]);
+    }
   }, [appDispatch, isOnline, language.locale, section]);
 
   const renderHeader = useMemo(() => {
@@ -183,7 +199,11 @@ export const HealthPromotion = ({
         subTitle={subTitle}
       />
       <div className="bg-uiBg border-primary border-t px-4">
-        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
+        <LanguageSelector
+          showOfflineAlert
+          selectLanguage={setLanguage}
+          availableLanguages={availableLanguages}
+        />
       </div>
       <div className="flex h-full flex-col p-4">
         {renderHeader}

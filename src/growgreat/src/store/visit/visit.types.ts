@@ -3,6 +3,7 @@ import {
   CmsVisitDataInputModelInput,
   HcwHighlights,
   HealthPromotion,
+  Infographics,
   MoreInformation,
   Progress_VisitDataStatus,
   VisitData,
@@ -20,6 +21,7 @@ export interface VisitState {
   visitFormData?: CmsVisitDataInputModelInput[];
   visitFormDataForMother?: CmsVisitDataInputModelInput[];
   healthPromotion?: HealthPromotion[];
+  infographics?: Infographics[];
   moreInformation?: MoreInformation[];
   completedVisitsForVisitId?: CompletedVisitsForVisitId[];
   momcompletedVisitsForVisitId?: CompletedVisitsForVisitId[];

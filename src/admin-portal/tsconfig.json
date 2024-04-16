@@ -18,7 +18,8 @@
     "outDir": "./lib",
     "experimentalDecorators": true,
     "noImplicitAny": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "typeRoots": ["types.d.ts"]
   },
   "include": ["src"]
 }

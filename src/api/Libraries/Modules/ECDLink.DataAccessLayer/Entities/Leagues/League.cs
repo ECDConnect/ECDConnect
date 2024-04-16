@@ -1,5 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;

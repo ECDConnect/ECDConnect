@@ -1,6 +1,9 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.Security.Models.Requests;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -9,10 +12,13 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
+using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,6 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return new PortalUserTLModel(teamLead);
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public TeamLead UpdateTeamLeadMessage(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -62,6 +69,52 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 teamLead.UpdatedBy = applicationUserId.ToString();
                 return teamLeadRepo.Update(teamLead);
             }
+            return null;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public async Task<IdentityResult> VerifyCellphoneNumber(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] ShortUrlManager shortUrlManager,
+            ApplicationUserManager userManager,
+            IGenericRepositoryFactory repoFactory,
+            VerifyCellphoneNumberModel input)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: applicationUserId);
+
+            var user = await userManager.FindByNameAsync(input.Username);
+            var token = TokenHelper.DecodeToken(input.Token);
+
+            if (user == default(ApplicationUser))
+            {
+                return null;
+            }
+
+            var auditChange = new IntegrationAudit()
+            {
+                ChangeType = "update",
+                Entity = "ApplicationUser",
+                Property = "PhoneNumber",
+                ValueBefore = user.PhoneNumber,
+                ValueAfter = user.PendingPhoneNumber,
+                UserId = applicationUserId,
+                RelatedId = user.Id.ToString(),
+                TenantId = tenantId
+            };
+
+            var updatedNumber = await userManager.ChangePhoneNumberAsync(user, user.PendingPhoneNumber, token);
+
+            if (updatedNumber.Succeeded)
+            {
+                user.PendingPhoneNumber = "";
+                var updatedUser =  await userManager.UpdateAsync(user);
+                auditInsertRepo.Insert(auditChange);
+                shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.VerifyCellphoneNumber);
+                return updatedUser;
+            }
+
             return null;
         }
 

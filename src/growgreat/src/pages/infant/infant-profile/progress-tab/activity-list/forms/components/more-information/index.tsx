@@ -16,6 +16,7 @@ import { getMoreInformationSelector } from '@/store/visit/visit.selectors';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { replaceBraces } from '@ecdlink/core';
+import { LanguageCode } from '@/i18n/types';
 
 export const MoreInformation = ({
   section,
@@ -31,6 +32,9 @@ export const MoreInformation = ({
   title?: string;
 }) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [moreInformationList, setMoreInformationList] = useState(
+    useSelector(getMoreInformationSelector)
+  );
 
   const { isOnline } = useOnlineStatus();
 
@@ -41,7 +45,15 @@ export const MoreInformation = ({
     VisitActions.GET_MORE_INFORMATION
   );
 
-  const moreInformationList = useSelector(getMoreInformationSelector);
+  const moreInformationItem = moreInformationList?.find(
+    (item) => item.section === section
+  );
+  const availableLanguages: LanguageCode[] =
+    moreInformationItem?.availableLanguages
+      ? moreInformationItem.availableLanguages?.map((item) => {
+          return item?.locale as LanguageCode;
+        })
+      : [language.locale as LanguageCode];
 
   const renderContent = useMemo(() => {
     const moreInformation = moreInformationList?.find(
@@ -90,8 +102,6 @@ export const MoreInformation = ({
               </div>
             </div>
           )}
-          <Typography type="h4" text="Share these activities:" />
-          <Divider dividerType="dashed" className="my-2" />
           {/* ------- A ------- */}
           {!!moreInformation.headerA && (
             <Typography
@@ -230,13 +240,15 @@ export const MoreInformation = ({
 
   const getContent = useCallback(async () => {
     if (!isOnline) return;
-
-    appDispatch(
+    const newMoreInformation = await appDispatch(
       visitThunkActions.getMoreInformation({
         section,
         locale: language.locale,
       })
-    );
+    ).unwrap();
+    if (newMoreInformation) {
+      setMoreInformationList([newMoreInformation]);
+    }
   }, [appDispatch, isOnline, language.locale, section]);
 
   useEffect(() => {
@@ -258,7 +270,11 @@ export const MoreInformation = ({
         subTitle={subTitle}
       />
       <div className="bg-uiBg border-primary border-t px-4">
-        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
+        <LanguageSelector
+          showOfflineAlert
+          selectLanguage={setLanguage}
+          availableLanguages={availableLanguages}
+        />
       </div>
       <div className="flex h-full flex-col p-4">
         {renderContent}

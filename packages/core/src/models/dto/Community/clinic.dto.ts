@@ -2,6 +2,7 @@ import {} from '../StaticData/education-level.dto';
 import { SiteAddressDto } from '../SiteAddress';
 import { TeamLeadDto } from '../Users/team-lead.dto';
 import { SubDistrictDto } from './sub-district.dto';
+import { MeetingReportHealthCareWorkerDto } from '../Users';
 
 export interface ClinicDto {
   id: string;
@@ -82,4 +83,15 @@ export interface ClinicVisitReportDto {
   pregnantMoms?: PregnantMomsReport;
   childClients?: ChildClientsReport;
   breastFeedingClub?: BreastFeedingClubReport;
+}
+
+export interface ClinicMeetingReportDto {
+  id?: string;
+  meetingDate?: string;
+  participantsInField?: MeetingReportHealthCareWorkerDto[];
+  participantsOptedOut?: MeetingReportHealthCareWorkerDto[];
+  positiveStory?: string;
+  reportingIssue?: string;
+  teamLeadName?: string;
+  totalSupportVisits: number;
 }

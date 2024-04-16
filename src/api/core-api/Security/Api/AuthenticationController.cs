@@ -222,25 +222,5 @@ namespace ECDLink.Security.Api
             return Ok(changeResult);
         }
 
-        [Route("verify-cellphone-number")]
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> VerifyCellphoneNumber([FromQuery] VerifyCellphoneNumberModel verifyCellphoneNumberModel)
-        {
-            var user = await _securityManager.GetUserByNameAsync(verifyCellphoneNumberModel.Username);
-            var token = TokenHelper.DecodeToken(verifyCellphoneNumberModel.Token);
-
-            if (user == default(ApplicationUser))
-            {
-                return BadRequest();
-            }
-
-            //RequestVerifyEmailAsync
-            var changeResult = await _securityManager.ChangeCellphoneNumberAsync(user, token);
-            if (changeResult == true)
-                return new OkObjectResult(user.PendingPhoneNumber);
-
-            return Ok(changeResult);
-        }
     }
 }
