@@ -201,6 +201,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
                     if (userIsTL)
                     {
+                        user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
                         user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
                         user.PhoneNumberConfirmed = false;
                         try
