@@ -9,7 +9,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -557,6 +557,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var pointsTodoItems = pointsService.GetHealthCareWorkerPointsTodoItems(healthCareWorkerId);
 
             return pointsTodoItems;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<HealthCareWorker> GetHealthCareWorkersForClinicId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid clinicId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
+
+            return healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.ClinicId == clinicId).ToList();
         }
     }
 }

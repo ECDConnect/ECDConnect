@@ -30,12 +30,12 @@ export const Breadcrumb = ({ paths }: BreadcrumbProps) => {
                       className="inline-flex items-center text-sm font-medium hover:text-gray-900"
                     >
                       {path.name}
-                      <ArrowSmRightIcon className="text-textMid ml-3 mr-2 h-5 w-5" />
+                      <ArrowSmRightIcon className="text-textMid ml-3 h-5 w-5" />
                     </Link>
                   ) : (
                     <span className="inline-flex cursor-not-allowed items-center text-sm font-medium">
                       {path.name}
-                      <ArrowSmRightIcon className="text-textMid ml-3 mr-2 h-5 w-5" />
+                      <ArrowSmRightIcon className="text-textMid ml-3 h-5 w-5" />
                     </span>
                   )}
                 </>

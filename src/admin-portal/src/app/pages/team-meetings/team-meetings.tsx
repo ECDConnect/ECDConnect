@@ -220,7 +220,7 @@ export const TeamMeetingsMainPage = () => {
               text={'///////// Get values from CMS /////////'}
               color={'textMid'}
             />
-            <div>
+            {/* <div>
               <img src={TempIfographic} alt="infographic" />
               <div className="my-2 flex w-full justify-end">
                 <Button
@@ -233,7 +233,7 @@ export const TeamMeetingsMainPage = () => {
                   icon="DownloadIcon"
                 />
               </div>
-            </div>
+            </div> */}
             <div className="mb-4">
               <Typography
                 type={'h4'}
@@ -315,9 +315,9 @@ export const TeamMeetingsMainPage = () => {
             />
           </Card>
         </div>
-        <div>
+        {/* <div>
           <ClinicsTeamLeadView />
-        </div>
+        </div> */}
         <div className="mb-4">
           <Card className="my-8 rounded-xl bg-white p-6">
             <Typography

@@ -5,6 +5,7 @@ import {
   CmsVisitDataInputModelInput,
   HcwHighlights,
   HealthPromotion,
+  Infographics,
   MoreInformation,
   Progress_VisitDataStatus,
   VisitData,
@@ -24,6 +25,7 @@ export const VisitActions = {
   ADD_VISIT_FOR_MOM_FORM_DATA: 'addVisitForMomFormData',
   GET_HEALTH_PROMOTION: 'getHealthPromotion',
   GET_VISIT_VIDEOS: 'getVisitVideos',
+  GET_INFO_GRAPHICS: 'getInfographics',
   GET_MORE_INFORMATION: 'getMoreInformation',
   GET_COMPLETED_VISITS_FOR_VISIT_ID: 'getCompletedVisitsForVisitId',
   GET_MOM_COMPLETED_VISITS_FOR_VISIT_ID: 'getMomCompletedVisitsForVisitId',
@@ -172,6 +174,33 @@ export const getVisitVideos = createAsyncThunk<
       }
 
       return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getInfographics = createAsyncThunk<
+  Infographics,
+  { section: string; locale: string },
+  ThunkApiType<RootState>
+>(
+  VisitActions.GET_INFO_GRAPHICS,
+  async ({ locale, section }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const [content] = await new Visit(
+          userAuth?.auth_token ?? ''
+        ).getInfographics(section, locale);
+
+        return content;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

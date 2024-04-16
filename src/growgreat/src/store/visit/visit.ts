@@ -13,6 +13,7 @@ import {
   getPreviousVisitInformationForInfant,
   getVisitAnswersForInfant,
   getVisitVideos,
+  getInfographics,
   getHealthCareWorkerHighlights,
   getPreviousVisitInformationForMother,
   getMomCompletedVisitsForVisitId,
@@ -169,6 +170,25 @@ const visitSlice = createSlice({
 
       state.healthPromotion = state.healthPromotion?.length
         ? [...state.healthPromotion, ...[action.payload]]
+        : [action.payload];
+    });
+    builder.addCase(getInfographics.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+      const updatedDataIndex = state.infographics?.findIndex(
+        (item) => item?.id === action.payload.id
+      );
+
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.infographics
+      ) {
+        state.infographics[updatedDataIndex] = action.payload;
+        return;
+      }
+
+      state.infographics = state.infographics?.length
+        ? [...state.infographics, ...[action.payload]]
         : [action.payload];
     });
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {

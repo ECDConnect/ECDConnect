@@ -145,6 +145,7 @@ export const Referrals = () => {
               onChange: setSelectedClinic,
             },
             {
+              dateFormat: 'd MMM yyyy',
               className: 'w-64 border-2 mt-1',
               colour: 'secondary',
               textColour: 'white',

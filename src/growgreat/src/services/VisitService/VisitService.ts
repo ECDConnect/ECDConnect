@@ -8,6 +8,7 @@ import {
   Progress_VisitDataStatus,
   VisitData,
   VisitVideos,
+  Infographics,
 } from '@ecdlink/graphql';
 import { HealthPromotion } from '@ecdlink/graphql';
 
@@ -119,6 +120,7 @@ class Visit {
           availableLanguages {
             id
             description
+            locale
           }
         }
       }    
@@ -154,6 +156,11 @@ class Visit {
             section
             type
             visit
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,
@@ -187,6 +194,11 @@ class Visit {
             type
             video
             visit
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,
@@ -201,6 +213,43 @@ class Visit {
     }
 
     return response.data.data.visitVideos;
+  }
+
+  async getInfographics(
+    section: string,
+    locale: string
+  ): Promise<Infographics[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { infographics: Infographics[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetInfographics($section: String, $locale: String) {
+          infographics(section: $section, locale: $locale){
+            id
+            section
+            type
+            imageA
+            availableLanguages {
+              id
+              description
+              locale
+            }
+          }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Infographics Failed - Server connection error');
+    }
+
+    return response.data.data.infographics;
   }
 
   async getCompletedVisitsForVisitId(visitId: string): Promise<string[]> {

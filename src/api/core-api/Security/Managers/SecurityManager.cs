@@ -229,23 +229,6 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             return verified;
         }
-
-        public async Task<bool> ChangeCellphoneNumberAsync(ApplicationUser user, string token)
-        {
-            // no user, no PhoneNumber or PhoneNumber is same
-            if (user is null || string.IsNullOrWhiteSpace(user.PendingPhoneNumber) || user.PhoneNumberConfirmed == true)
-                return false;
-
-            var cellphoneNumberChangeRequest = await _userManager.ChangePhoneNumberAsync(user, user.PendingPhoneNumber, token);
-
-            if (cellphoneNumberChangeRequest.Succeeded)
-            {
-                user.PendingPhoneNumber = "";
-                user.PhoneNumberConfirmed = true;
-                await _userManager.UpdateAsync(user);
-            }
-
-            return cellphoneNumberChangeRequest.Succeeded;
-        }
+        
     }
 }

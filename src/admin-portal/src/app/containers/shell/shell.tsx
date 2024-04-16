@@ -66,7 +66,7 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
           routeMatch ? 'text-white' : 'text-white group-hover:text-gray-500',
           'mr-3 h-6 w-6 flex-shrink-0'
         )}
-        color="transparent"
+        color="white"
       />
       {item.name}
     </Link>
@@ -379,6 +379,9 @@ export default function Shell() {
         <main className="focus:outline-none relative flex-1 overflow-y-auto bg-white">
           <div className="h-full">
             <div className="mx-auto h-full bg-white">
+              <AuthRoutes />
+            </div>
+            <div className="bg-adminPortalBg h-full">
               <AuthRoutes />
             </div>
           </div>

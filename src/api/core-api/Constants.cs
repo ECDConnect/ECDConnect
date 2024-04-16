@@ -5,6 +5,10 @@ namespace EcdLink.Api.CoreApi
 {
     public static class Constants
     {
+        public static class Tenants
+        {
+            public static readonly Guid GrowGreatTenantId = Guid.Parse("39077d0e-e443-4076-aaf2-978dc6805aa0");
+        }
         public static class ApplicationSettings
         {
             public const string DefaultDbConnection = "ConnectionStrings:DefaultConnection";
@@ -1018,7 +1022,6 @@ namespace EcdLink.Api.CoreApi
 
         }
 
-
         public static class PortalSettings
         {
             public const string visit_high_activity = "High activity (at least 20 visits in past month)";
@@ -1036,6 +1039,11 @@ namespace EcdLink.Api.CoreApi
             public const string usage_red = "errorMain";
             public const string usage_blue = "infoMain";
 
+        }
+
+        public static class MeetingTypes
+        {
+            public static readonly Guid TeamLeadMonthlyMeetingId = new Guid("2497b684-2d62-46ea-af56-34b1746891be");
         }
     }
 }
