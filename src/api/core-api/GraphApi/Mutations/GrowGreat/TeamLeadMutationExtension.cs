@@ -51,7 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return new PortalUserTLModel(teamLead);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public TeamLead UpdateTeamLeadMessage(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return null;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<IdentityResult> VerifyCellphoneNumber(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] ShortUrlManager shortUrlManager,
