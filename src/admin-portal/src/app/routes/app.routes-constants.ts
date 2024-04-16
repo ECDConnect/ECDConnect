@@ -6,6 +6,7 @@ const ROUTES = {
   ROOT_TEAM_LEAD: '/team-lead',
   TEAM_LEAD_REGISTER: '/team-lead-register/:resetToken',
   TEAM_LEAD_RESET_PASSWORD: '/team-lead-forgot-password',
+  VERIFY_PHONE_NUMBER: '/verify-cellphone-number',
   TEAM_MEETINGS: '/team-meetings',
   LOGIN: '/login',
   LOGOUT: '/logout',
