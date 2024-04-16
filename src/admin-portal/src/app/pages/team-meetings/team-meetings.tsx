@@ -102,7 +102,7 @@ export const TeamMeetingsMainPage = () => {
             className={`rounded-2xl p-4`}
             type={'filled'}
             color={'secondary'}
-            onClick={() => {}}
+            onClick={displayEditPanel}
             text="Add meeting report"
             textColor="white"
             icon="PlusCircleIcon"
