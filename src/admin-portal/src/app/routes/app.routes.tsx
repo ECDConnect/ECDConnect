@@ -56,6 +56,7 @@ import { ViewReferralDetail } from '../pages/referrals/view-referral-detail/view
 import { EditBackReferral } from '../pages/referrals/edit-back-referral/edit-back-referral';
 import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
 import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
+import { TeamMeetingsMainPage } from '../pages/team-meetings/team-meetings';
 import { Leagues } from '../pages/clinics/leagues/leagues';
 import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/view-league-season';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
@@ -119,6 +120,10 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
+      <Route
+        path={ROUTES.TEAM_MEETINGS}
+        component={TeamMeetingsMainPage}
+      ></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>

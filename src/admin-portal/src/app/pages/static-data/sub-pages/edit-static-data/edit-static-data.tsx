@@ -427,7 +427,6 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
           },
         })
           .then((response: any) => {
-            console.log(response);
             if (response) {
               refetch();
               onCancel();

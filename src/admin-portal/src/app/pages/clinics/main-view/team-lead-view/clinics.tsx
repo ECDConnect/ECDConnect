@@ -2,9 +2,15 @@ import { useQuery } from '@apollo/client';
 import { GetAllPortalClinics } from '@ecdlink/graphql';
 import { ViewClinicReport } from '../../components/view-clinic-report/view-clinic-report';
 import { LoadingSpinner, TabItem, TabList } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export const ClinicsTeamLeadView = () => {
+interface ClinicsTeamLeadViewProps {
+  setSelectedTabId?: (item: string) => void;
+}
+
+export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
+  setSelectedTabId,
+}) => {
   const [selectedClinicId, setSelectedClinicId] = useState<string>();
 
   // INFO: Same endpoint because the backend filters the clinics based on the user's role
@@ -13,6 +19,14 @@ export const ClinicsTeamLeadView = () => {
   });
 
   const clinics = data?.allPortalClinics;
+
+  useEffect(() => {
+    if (selectedClinicId) {
+      setSelectedTabId(selectedClinicId);
+    } else {
+      setSelectedTabId(clinics?.[0].id);
+    }
+  }, [clinics, selectedClinicId, setSelectedTabId]);
 
   const navigation =
     clinics?.map(
