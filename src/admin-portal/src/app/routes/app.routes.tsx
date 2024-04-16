@@ -60,6 +60,7 @@ import { TeamMeetingsMainPage } from '../pages/team-meetings/team-meetings';
 import { Leagues } from '../pages/clinics/leagues/leagues';
 import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/view-league-season';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
+import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -73,6 +74,11 @@ const PublicRoutes: React.FC = () => {
         component={RegisterTeamLead}
       />
       <Route exact path={ROUTES.FORGOT_PASSWORD} component={ForgotPassword} />
+      <Route
+        exact
+        path={ROUTES.VERIFY_PHONE_NUMBER}
+        component={VerifyPhoneNumber}
+      />
       <Route
         exact
         path={ROUTES.TEAM_LEAD_RESET_PASSWORD}
