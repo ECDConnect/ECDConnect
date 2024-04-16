@@ -21,10 +21,10 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   const clinics = data?.allPortalClinics;
 
   useEffect(() => {
-    if (selectedClinicId) {
+    if (selectedClinicId && setSelectedTabId) {
       setSelectedTabId(selectedClinicId);
     } else {
-      setSelectedTabId(clinics?.[0].id);
+      setSelectedTabId(clinics?.[0]?.id);
     }
   }, [clinics, selectedClinicId, setSelectedTabId]);
 

@@ -29,7 +29,7 @@ export function Settings() {
   const history = useHistory();
   useEffect(() => {
     async function init() {
-      if (!overrideDefaultUrl) history.push(navigation[0].href);
+      if (!overrideDefaultUrl) history.push(navigation?.[0]?.href);
       else history.push(overrideDefaultUrl);
     }
 

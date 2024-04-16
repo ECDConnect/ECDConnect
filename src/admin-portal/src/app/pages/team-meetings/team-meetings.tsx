@@ -1,7 +1,7 @@
 import { Button, Card, Typography } from '@ecdlink/ui';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import { add, format, getDate } from 'date-fns';
-import { useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetAllLanguage,
   GetAllPortalClinics,
@@ -10,7 +10,7 @@ import {
 import { ClinicsTeamLeadView } from '../clinics/main-view/team-lead-view/clinics';
 import TempIfographic from '../../../assets/infographics/Breastfeeding-infographic.png';
 import LanguageSelector from '../../components/language-selector/language-selector';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AddTeamMeetingReport } from './components/add-meeting-report/add-meeting-report';
 import { ClinicMeetingReportDto, usePanel } from '@ecdlink/core';
 import { useUser } from '../../hooks/useUser';
@@ -51,13 +51,22 @@ export const TeamMeetingsMainPage = () => {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: clinicMeetingData, refetch: refetchClinicMeetingData } =
-    useQuery(GetClinicMeetingForMonth, {
-      variables: {
-        clinicId: selectedTabId,
-      },
-      fetchPolicy: 'cache-and-network',
-    });
+  const [
+    fetchMeetinReportData,
+    { data: clinicMeetingData, refetch: refetchClinicMeetingData },
+  ] = useLazyQuery(GetClinicMeetingForMonth, {
+    variables: {
+      clinicId: selectedTabId,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  useEffect(() => {
+    if (selectedTabId) {
+      fetchMeetinReportData();
+    }
+  }, [selectedTabId, fetchMeetinReportData]);
+
   const clinicMeetingReport: ClinicMeetingReportDto =
     clinicMeetingData?.clinicMeetingForMonth;
   const monthMeetingSubmitted = clinicMeetingReport?.id;

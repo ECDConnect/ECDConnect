@@ -63,7 +63,7 @@ export function ClinicsAdminView() {
   useEffect(() => {
     // GO TO DEFAULT ROUTE
     async function init() {
-      history.push(navigation[0].href);
+      history.push(navigation?.[0]?.href);
     }
 
     init()?.catch(console.error);
