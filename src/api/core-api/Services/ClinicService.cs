@@ -703,7 +703,13 @@ namespace EcdLink.Api.CoreApi.Services
                             x.ClinicId == clinicId)
                 .FirstOrDefault();
 
-            return new PortalClinicMeetingModel(clinicMeeting);
+            if (clinicMeeting != null)
+            {
+                return new PortalClinicMeetingModel(clinicMeeting);
+            }
+
+            return null;
+
         }
         public List<PortalClinicMeetingModel> GetAllClinicMeetings()
         {
