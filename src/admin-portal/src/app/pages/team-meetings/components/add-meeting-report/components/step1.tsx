@@ -4,6 +4,7 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
   Dropdown,
+  LoadingSpinner,
   SearchDropDown,
   SearchDropDownOption,
   Typography,
@@ -21,6 +22,7 @@ interface Step1Props {
   handleNextButton?: () => void;
   setClinic?: (item: string) => void;
   clinic?: string;
+  loadingHCWs?: boolean;
 }
 
 export const Step1: React.FC<Step1Props> = ({
@@ -32,12 +34,10 @@ export const Step1: React.FC<Step1Props> = ({
   handleNextButton,
   setClinic,
   clinic,
+  loadingHCWs,
 }) => {
   const [optOutValue, setOptOutValue] = useState<boolean | boolean[]>(false);
-
-  //   const participantsInFieldIds = useMemo(() => (
-  //     healthCareWorkers?.filter(item => !selectedOptOutHcws?.includes(item?.id))
-  // ), [healthCareWorkers, selectedOptOutHcws])
+  const disableButton = !clinic || (optOutValue && optOutHcws?.length <= 0);
 
   return (
     <div className="mt-4s">
@@ -49,7 +49,6 @@ export const Step1: React.FC<Step1Props> = ({
           list={clinics}
           onChange={(item) => {
             setClinic(item);
-            //   setHasClinicChange(true);
           }}
           fullWidth
           labelColor="textMid"
@@ -78,7 +77,15 @@ export const Step1: React.FC<Step1Props> = ({
           textColor="tertiary"
         />
       </div>
-      {optOutValue && (
+      {optOutValue && loadingHCWs && (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor="secondary"
+          backgroundColor="uiLight"
+          className="my-8"
+        />
+      )}
+      {optOutValue && !loadingHCWs && (
         <div className="my-8 mr-2 flex w-full items-center gap-2">
           <SearchDropDown<string>
             displayMenuOverlay={true}
@@ -107,6 +114,7 @@ export const Step1: React.FC<Step1Props> = ({
           color="secondary"
           className={'mt-1 mb-2 w-full'}
           onClick={handleNextButton}
+          disabled={disableButton}
         >
           {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
           <Typography type={'help'} text={'Next'} color={'white'} />

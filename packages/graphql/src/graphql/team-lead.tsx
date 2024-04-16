@@ -188,3 +188,60 @@ export const UpdateTeamLeadMessage = gql`
     }
   }
 `;
+
+export const GetClinicMeetingForMonth = gql`
+  query GetClinicMeetingForMonth($clinicId: UUID!) {
+    clinicMeetingForMonth(clinicId: $clinicId) {
+      id
+      meetingDate
+      teamLeadName
+      positiveStory
+      reportingIssue
+      totalSupportVisits
+      participantsOptedOut {
+        hCWId
+        hCWName
+      }
+      participantsInField {
+        hCWId
+        hCWName
+      }
+    }
+  }
+`;
+
+export const AddClinicMeeting = gql`
+  mutation AddClinicMeeting($input: AddClinicMeetingInputModelInput) {
+    addClinicMeeting(input: $input) {
+      id
+      meetingDate
+      positiveStory
+      reportingIssue
+      totalSupportVisits
+      teamLead {
+        user {
+          id
+          fullName
+        }
+      }
+      participantsOptedOut {
+        healthCareWorkerId
+      }
+      participantsInField {
+        healthCareWorkerId
+      }
+    }
+  }
+`;
+
+export const GetHealthCareWorkersForClinicId = gql`
+  query GetHealthCareWorkersForClinicId($clinicId: UUID!) {
+    healthCareWorkersForClinicId(clinicId: $clinicId) {
+      id
+      user {
+        id
+        fullName
+      }
+    }
+  }
+`;

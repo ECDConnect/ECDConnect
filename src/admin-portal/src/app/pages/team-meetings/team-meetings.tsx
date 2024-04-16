@@ -1,18 +1,18 @@
 import { Button, Card, Typography } from '@ecdlink/ui';
-import { InformationCircleIcon } from '@heroicons/react/solid';
-import { add, format } from 'date-fns';
+import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/solid';
+import { add, format, getDate } from 'date-fns';
 import { useQuery } from '@apollo/client';
 import {
-  GetAllHealthCareWorker,
   GetAllLanguage,
   GetAllPortalClinics,
+  GetClinicMeetingForMonth,
 } from '@ecdlink/graphql';
 import { ClinicsTeamLeadView } from '../clinics/main-view/team-lead-view/clinics';
 import TempIfographic from '../../../assets/infographics/Breastfeeding-infographic.png';
 import LanguageSelector from '../../components/language-selector/language-selector';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AddTeamMeetingReport } from './components/add-meeting-report/add-meeting-report';
-import { usePanel } from '@ecdlink/core';
+import { ClinicMeetingReportDto, usePanel } from '@ecdlink/core';
 import { useUser } from '../../hooks/useUser';
 
 export const TeamMeetingsMainPage = () => {
@@ -21,12 +21,27 @@ export const TeamMeetingsMainPage = () => {
   const today = new Date();
   const titleDateFormatted = format(today, 'MMMM y');
   const title = `${titleDateFormatted} Meeting topic`;
-  const currentMonthName = format(today, 'MMMM');
-  const next = add(today, {
+  const nextMonth = add(today, {
     months: 1,
   });
-  const nextMonthName = format(next, 'MMMM');
-  const dateInfoText = `You must submit the ${currentMonthName} meeting report by 7 ${nextMonthName}`;
+  const nextMonthName = format(nextMonth, 'MMMM');
+  const previousMonth = add(today, {
+    months: 1,
+  });
+  const todaysDateNumber = getDate(today);
+  const availableDateToAddReport =
+    todaysDateNumber >= 24 && todaysDateNumber <= 7;
+  const isUntilDaySevenOfTheMonth = todaysDateNumber < 7;
+  const previousMonthName = format(previousMonth, 'MMMM');
+  const currentMonthName = format(today, 'MMMM');
+  const blueAlertMonthName = isUntilDaySevenOfTheMonth
+    ? previousMonthName
+    : currentMonthName;
+  const reportSubmittedText = `Great job, ${currentMonthName} report submitted!`;
+  const dateInfoText = `You must submit the ${blueAlertMonthName} meeting report by 7 ${
+    isUntilDaySevenOfTheMonth ? currentMonthName : nextMonthName
+  }`;
+  const [selectedTabId, setSelectedTabId] = useState('');
 
   const { data } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
@@ -36,26 +51,19 @@ export const TeamMeetingsMainPage = () => {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: hcwData } = useQuery(GetAllHealthCareWorker, {
-    variables: {
-      search: '',
-      clinicSearch: [],
-      provinceSearch: [],
-      subDistrictSearch: [],
-      visitSearch: [],
-      connectUsageSearch: [],
-      pagingInput: {
-        pageNumber: 1,
-        pageSize: null,
+  const { data: clinicMeetingData, refetch: refetchClinicMeetingData } =
+    useQuery(GetClinicMeetingForMonth, {
+      variables: {
+        clinicId: selectedTabId,
       },
-      order: [
-        {
-          insertedDate: 'DESC',
-        },
-      ],
-    },
-    fetchPolicy: 'network-only',
-  });
+      fetchPolicy: 'cache-and-network',
+    });
+  const clinicMeetingReport: ClinicMeetingReportDto =
+    clinicMeetingData?.clinicMeetingForMonth;
+  const monthMeetingSubmitted = clinicMeetingReport?.id;
+  const submittedDateFormatted =
+    clinicMeetingReport?.meetingDate &&
+    format(new Date(clinicMeetingReport?.meetingDate), 'd MMMM');
 
   const languages = useMemo(
     () => languagesData?.GetAllLanguage,
@@ -72,13 +80,17 @@ export const TeamMeetingsMainPage = () => {
       render: (onSubmit: any) => (
         <AddTeamMeetingReport
           key={`clinicPanelCreate`}
-          closeDialog={(clinicCreated: boolean) => {
+          closeDialog={(reportCreated: boolean) => {
             onSubmit();
+
+            if (reportCreated) {
+              refetchClinicMeetingData();
+            }
           }}
           clinics={clinics}
           isEdit={false}
-          healthCareWorkersData={hcwData?.allHealthCareWorkers}
           user={user}
+          selectedTabId={selectedTabId}
         />
       ),
     });
@@ -96,24 +108,49 @@ export const TeamMeetingsMainPage = () => {
   return (
     <div className="bg-adminPortalBg h-100vh p-4">
       <div className="bg-adminPortalBg">
-        <div className="flex w-full items-center justify-between">
-          <Typography type={'h1'} text={title} color={'textDark'} />
-          <Button
-            className={`rounded-2xl p-4`}
-            type={'filled'}
-            color={'secondary'}
-            onClick={displayEditPanel}
-            text="Add meeting report"
-            textColor="white"
-            icon="PlusCircleIcon"
-          />
-        </div>
-        <div>
-          <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
-            <InformationCircleIcon className="h-5 w-5 text-white" />
-            <Typography type={'h4'} text={dateInfoText} color={'white'} />
-          </Card>
-        </div>
+        {monthMeetingSubmitted && availableDateToAddReport && (
+          <div className="flex w-full items-center justify-between">
+            <Typography type={'h1'} text={title} color={'textDark'} />
+            <Button
+              className={`rounded-2xl p-4`}
+              type={'filled'}
+              color={'secondary'}
+              onClick={displayEditPanel}
+              text="Add meeting report"
+              textColor="white"
+              icon="PlusCircleIcon"
+            />
+          </div>
+        )}
+        {!monthMeetingSubmitted && (
+          <div>
+            <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
+              <InformationCircleIcon className="h-5 w-5 text-white" />
+              <Typography type={'h4'} text={dateInfoText} color={'white'} />
+            </Card>
+          </div>
+        )}
+
+        {monthMeetingSubmitted && (
+          <div>
+            <Card className="bg-successMain my-8 rounded-xl p-4">
+              <div className="flex items-center gap-4">
+                <CheckCircleIcon className="h-5 w-5 text-white" />
+                <Typography
+                  type={'h4'}
+                  text={reportSubmittedText}
+                  color={'white'}
+                />
+              </div>
+              <Typography
+                type={'body'}
+                text={`• You submitted the ${currentMonthName} report on ${submittedDateFormatted}.`}
+                color={'white'}
+                className="my-2 ml-8"
+              />
+            </Card>
+          </div>
+        )}
 
         <div>
           <Card className="my-8 rounded-xl bg-white p-6">
@@ -315,9 +352,9 @@ export const TeamMeetingsMainPage = () => {
             />
           </Card>
         </div>
-        {/* <div>
-          <ClinicsTeamLeadView />
-        </div> */}
+        <div>
+          <ClinicsTeamLeadView setSelectedTabId={setSelectedTabId} />
+        </div>
         <div className="mb-4">
           <Card className="my-8 rounded-xl bg-white p-6">
             <Typography
@@ -368,17 +405,19 @@ export const TeamMeetingsMainPage = () => {
             />
           </Card>
         </div>
-        <div className="mb-8">
-          <Button
-            className={`rounded-2xl py-4 px-8`}
-            type={'filled'}
-            color={'secondary'}
-            onClick={displayEditPanel}
-            text="Add meeting report"
-            textColor="white"
-            icon="PlusCircleIcon"
-          />
-        </div>
+        {monthMeetingSubmitted && availableDateToAddReport && (
+          <div className="mb-8">
+            <Button
+              className={`rounded-2xl py-4 px-8`}
+              type={'filled'}
+              color={'secondary'}
+              onClick={displayEditPanel}
+              text="Add meeting report"
+              textColor="white"
+              icon="PlusCircleIcon"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

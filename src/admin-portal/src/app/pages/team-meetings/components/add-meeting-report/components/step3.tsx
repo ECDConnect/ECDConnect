@@ -1,12 +1,12 @@
 import {
   Button,
   FormInput,
+  LoadingSpinner,
   SearchDropDown,
   SearchDropDownOption,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useState } from 'react';
 import { numberInputInvalidChars } from '../../../team-meetings-types';
 
 interface Step3Props {
@@ -16,6 +16,7 @@ interface Step3Props {
   participantsInFields?: SearchDropDownOption<string>[];
   setInFieldSupportVisits?: (item: string) => void;
   inFieldSupportVisits?: string;
+  loadingHCWs?: boolean;
 }
 export const Step3: React.FC<Step3Props> = ({
   healthCareWorkers,
@@ -24,7 +25,10 @@ export const Step3: React.FC<Step3Props> = ({
   participantsInFields,
   setInFieldSupportVisits,
   inFieldSupportVisits,
+  loadingHCWs,
 }) => {
+  const disableButton =
+    !inFieldSupportVisits || participantsInFields?.length <= 0;
   return (
     <div>
       <Typography type="h3" text={'In-field & supervision'} className="mb-4" />
@@ -43,31 +47,43 @@ export const Step3: React.FC<Step3Props> = ({
           }
         }}
       />
-      <div className="my-8 mr-2 flex w-full items-center gap-2">
-        <SearchDropDown<string>
-          displayMenuOverlay={true}
-          className={'mr-1 w-full'}
-          menuItemClassName={'w-full left-4 overflow-y-scroll bg-adminPortalBg'}
-          overlayTopOffset={'120'}
-          options={healthCareWorkers}
-          selectedOptions={participantsInFields}
-          onChange={setParticipantsInFields}
-          placeholder={'Choose CHWs'}
-          multiple={true}
-          color={'secondary'}
-          bgColor="adminPortalBg"
-          info={{
-            name: `CHWs:`,
-          }}
-          label="Select all CHWs you went into the field with. *"
+      {loadingHCWs && (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor="secondary"
+          backgroundColor="uiMid"
         />
-      </div>
+      )}
+      {!loadingHCWs && (
+        <div className="my-8 mr-2 flex w-full items-center gap-2">
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            className={'mr-1 w-full'}
+            menuItemClassName={
+              'w-full left-4 overflow-y-scroll bg-adminPortalBg'
+            }
+            overlayTopOffset={'120'}
+            options={healthCareWorkers}
+            selectedOptions={participantsInFields}
+            onChange={setParticipantsInFields}
+            placeholder={'Choose CHWs'}
+            multiple={true}
+            color={'secondary'}
+            bgColor="adminPortalBg"
+            info={{
+              name: `CHWs:`,
+            }}
+            label="Select all CHWs you went into the field with. *"
+          />
+        </div>
+      )}
       <div>
         <Button
           type="filled"
           color="secondary"
           className={'mt-1 mb-2 w-full'}
           onClick={handleSaveMeetingReport}
+          disabled={disableButton}
         >
           {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
           <Typography type={'help'} text={'Save'} color={'white'} />
