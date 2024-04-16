@@ -381,9 +381,6 @@ export default function Shell() {
             <div className="mx-auto h-full bg-white">
               <AuthRoutes />
             </div>
-            <div className="bg-adminPortalBg h-full">
-              <AuthRoutes />
-            </div>
           </div>
         </main>
       </div>
