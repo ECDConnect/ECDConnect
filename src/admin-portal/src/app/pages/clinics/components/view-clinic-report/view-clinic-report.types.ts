@@ -18,5 +18,4 @@ export enum Tier {
 export interface ViewClinicReportProps {
   // TODO: replace any with the real type
   clinic?: any;
-  isFromTeamMeetings?: boolean;
 }

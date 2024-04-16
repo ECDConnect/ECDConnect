@@ -6,13 +6,11 @@ import { ClinicDto, getCommunityQuarterDescription } from '@ecdlink/core';
 
 interface PointsReportSummaryProps {
   dataFromClinicPointsData: PointsReportSummaryDto;
-  isFromTeamMeetings?: boolean;
   clinic?: ClinicDto;
 }
 
 export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
   dataFromClinicPointsData,
-  isFromTeamMeetings,
   clinic,
 }) => {
   const today = new Date();
@@ -26,7 +24,7 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
     LeagueType.SuperLeague,
     dataFromClinicPointsData?.pointsTotal ?? 0
   );
-  console.log({ dataFromClinicPointsData });
+
   return (
     <>
       <div className="mt-8">
@@ -35,7 +33,7 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
           type="h1"
           weight="bold"
           color="textMid"
-          text={isFromTeamMeetings ? `${clinic?.name} Summary` : `Summary`}
+          text={`Summary`}
         />
         <div className="mt-2 flex w-full items-center gap-2">
           <StatusChip

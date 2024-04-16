@@ -43,7 +43,6 @@ export interface PointsReportSummaryDto {
 
 export const ViewClinicReport = ({
   clinic: clinicFromProps,
-  isFromTeamMeetings,
 }: ViewClinicReportProps) => {
   const { isTeamLead } = useUserRole();
   const location = useLocation<ClinicsRouteState>();
@@ -58,8 +57,7 @@ export const ViewClinicReport = ({
     years: 1,
   });
   const currentDateFormatted = format(today, 'MMMM y');
-  const lastDayOfMonthDate = lastDayOfMonth(today);
-  console.log({ lastDayOfMonthDate });
+
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDate, endDate] = dateRange;
 
@@ -191,7 +189,6 @@ export const ViewClinicReport = ({
       <div className="mt-8">
         <PointsReportSummary
           dataFromClinicPointsData={dataFromClinicPointsData}
-          isFromTeamMeetings={isFromTeamMeetings}
           clinic={clinic}
         />
       </div>
