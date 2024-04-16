@@ -15,6 +15,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clinics;
+using NPOI.SS.Formula.Functions;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -23,6 +24,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<League, Guid> _leagueRepo;
         private IGenericRepository<Clinic, Guid> _clinicRepo;
         private IGenericRepository<District, Guid> _districtRepo;
+        private IGenericRepository<ClinicLeague, Guid> _clinicLeagueRepo;
 
         private IPointsEngineService _pointsEngineService;
 
@@ -38,6 +40,7 @@ namespace EcdLink.Api.CoreApi.Services
             _leagueRepo = repoFactory.CreateRepository<League>(userContext: _uId);
             _clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: _uId);
             _districtRepo = repoFactory.CreateRepository<District>(userContext: _uId);
+            _clinicLeagueRepo = repoFactory.CreateRepository<ClinicLeague>(userContext: _uId);
 
             _pointsEngineService = pointsEngineService;
         }
@@ -54,7 +57,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Unassigned clinics
             var unassignedClinics = _clinicRepo.GetAll()
-                .Where(x => !x.Leagues.Any(x => x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
+                .Where(x => !x.Leagues.Any(x => x.IsActive && x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
                 .Select(x => new
                 {
                     x.SubDistrict.DistrictId,
@@ -79,7 +82,8 @@ namespace EcdLink.Api.CoreApi.Services
             // Leagues
             var leagues = _leagueRepo.GetAll()
                 .Where(x =>
-                    x.StartDate == startDate
+                    x.IsActive
+                    && x.StartDate == startDate
                     && x.EndDate == endDate)
                 .Select(x => new
                 {
@@ -89,7 +93,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         Id = x.Id,
                         Name = x.Name,
-                        Clinics = x.Clinics.Select(x => new SimpleClinicModel
+                        Clinics = x.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new SimpleClinicModel
                         {
                             Id = x.Clinic.Id,
                             Name = x.Clinic.Name,
@@ -181,11 +185,13 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<PortalLeagueModel> GetLeagues(string searchString, Guid? districtId = null, PagedQueryInput pagingInput = null)
         {
-            var startDate = DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year, 10, 1) : new DateTime(DateTime.Now.Year - 1, 10, 1);
-            var endDate = DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
+            var startDate = GetCurrentSeasonStartDate();
+            var endDate = GetCurrentSeasonEndDate();
 
             var leagues = _leagueRepo.GetAll(pagingInput)
-                .Where(x => x.StartDate >= startDate 
+                .Where(x => 
+                    x.IsActive
+                    && x.StartDate >= startDate 
                     && x.EndDate <= endDate
                     && (!districtId.HasValue || x.DistrictId == districtId)
                     && (string.IsNullOrWhiteSpace(searchString) || x.Name.Contains(searchString)))
@@ -196,7 +202,7 @@ namespace EcdLink.Api.CoreApi.Services
                     InsertedDate = x.InsertedDate,
                     LeagueTypeId = x.LeagueTypeId,
                     LeagueTypeName = x.LeagueType.Name,
-                    Clinics = x.Clinics.Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name}).ToList()
+                    Clinics = x.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name}).ToList()
                 })
                 .ToList();
 
@@ -225,6 +231,107 @@ namespace EcdLink.Api.CoreApi.Services
             league.Clinics = _pointsEngineService.GetLeagueRankings(leagueId, startDate, endDate);
 
             return league;
+        }
+
+        public void DeleteLeague(Guid leagueId)
+        {
+            var league = _leagueRepo.GetById(leagueId);
+
+            foreach (var clinicLeague in league.Clinics)
+            {
+                _clinicLeagueRepo.Delete(clinicLeague.Id);
+            }
+
+            _leagueRepo.Delete(leagueId);
+        }
+
+        public void AddClinicToLeague(Guid leagueId, Guid clinicId)
+        {
+            var startDate = GetCurrentSeasonStartDate();
+            var endDate = GetCurrentSeasonEndDate();
+
+            var league = _leagueRepo.GetById(leagueId);
+            var clinic = _clinicRepo.GetById(clinicId);
+
+            // Check clinic is not already in a league
+            if (clinic.Leagues.Any(x => x.IsActive && x.League.StartDate >= startDate && x.League.EndDate <= endDate))
+            {
+                throw new ArgumentException("Clinic is already in a league");
+            }
+
+            // If league is a normal league with a district, validate all new clinics are in the same district
+            if (league.DistrictId != null && clinic.SubDistrict.DistrictId != league.DistrictId)
+            {
+                throw new ArgumentException("Some new clinics are not in the correct district");
+            }
+
+            _clinicLeagueRepo.Insert(new ClinicLeague
+            {
+                IsActive = true,
+                LeagueId = leagueId,
+                ClinicId = clinicId,
+                TenantId = Constants.Tenants.GrowGreatTenantId,
+            });
+        }
+
+        public void EditLeague(Guid leagueId, string name, List<Guid> clinicsToAdd, List<Guid> clinicsToRemove)
+        {
+            var league = _leagueRepo.GetById(leagueId);
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                league.Name = name;
+            }
+
+            // Remove clinics
+            if (clinicsToRemove != null && clinicsToRemove.Any())
+            {
+                league.Clinics = league.Clinics.Where(x => !clinicsToRemove.Contains(x.ClinicId)).ToList();
+            }
+
+            // Add clinics
+            if (clinicsToAdd != null && clinicsToAdd.Any())
+            {
+                // If league is a normal league with a district, validate all new clinics are in the same district
+                if (league.DistrictId != null)
+                {
+                    if (_clinicRepo.GetAll().Where(x => clinicsToAdd.Contains(x.Id) && x.SubDistrict.DistrictId != league.DistrictId).Any())
+                    {
+                        throw new ArgumentException("Some new clinics are not in the correct district");
+                    }
+                }
+
+                var startDate = GetCurrentSeasonStartDate();
+                var endDate = GetCurrentSeasonEndDate();
+
+                foreach (var clinicId in clinicsToAdd)
+                {
+                    if (_clinicLeagueRepo.GetAll().Any(x => x.ClinicId == clinicId && x.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
+                    {
+                        throw new ArgumentException("Clinic is already in a league");
+                    }
+
+                    league.Clinics.Add(new ClinicLeague
+                    {
+                        IsActive = true,
+                        LeagueId = leagueId,
+                        ClinicId = clinicId,
+                        TenantId = Constants.Tenants.GrowGreatTenantId,
+                    });
+                }
+            }
+
+            _leagueRepo.Update(league);
+        }
+
+        private DateTime GetCurrentSeasonStartDate()
+        {
+            return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year, 10, 1) : new DateTime(DateTime.Now.Year - 1, 10, 1);
+        }
+
+        private DateTime GetCurrentSeasonEndDate()
+        {
+            return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
         }
     }
 }

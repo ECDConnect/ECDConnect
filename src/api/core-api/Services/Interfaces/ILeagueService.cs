@@ -13,5 +13,9 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
         LeagueSetupModel GetLeagueSetup();
         List<PortalLeagueModel> GetLeagues(string searchString, Guid? districtId = null, PagedQueryInput pagingInput = null);
         LeagueWithRankingsModel GetLeague(Guid leagueId, DateTime startDate, DateTime endDate);
+
+        void AddClinicToLeague(Guid leagueId, Guid clinicId);
+        void EditLeague(Guid leagueId, string name, List<Guid> clinicsToAdd, List<Guid> clinicsToRemove);
+        void DeleteLeague(Guid leagueId);
     }
 }
