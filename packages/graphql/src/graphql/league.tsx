@@ -30,31 +30,3 @@ export const GetLeagueSetup = gql`
     }
   }
 `;
-
-// leagues {
-//   superLeagues {
-//     id
-//     name
-//     clinics {
-//       id
-//       name
-//     }
-//   }
-//   districts {
-//     id
-//     name
-//     leagues {
-//       id
-//       name
-//       clinics {
-//         id
-//         name
-//       }
-//     }
-//     unassignedClinics {
-//       id
-//       name
-//     }
-//   }
-// }
-// }
