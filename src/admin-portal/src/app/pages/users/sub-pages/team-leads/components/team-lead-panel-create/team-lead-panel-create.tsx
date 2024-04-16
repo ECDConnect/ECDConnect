@@ -118,7 +118,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
       const userId = response.data.addUser.id;
       if (userId) {
         await saveTeamLead(userId);
-        await saveRoles(userId);
       }
     });
   };
@@ -162,6 +161,8 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
         title: 'Successfully Sent Team Lead Invite!',
         variant: NOTIFICATION.SUCCESS,
       });
+
+      await saveRoles(userId);
     }
   };
 
