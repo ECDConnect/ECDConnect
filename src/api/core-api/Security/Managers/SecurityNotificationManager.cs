@@ -109,7 +109,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             var token = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PendingPhoneNumber);
 
             var encodedToken = TokenHelper.EncodeToken(token);
-            var defaultVerificationUrl = new Uri(hostUrl, "/api/authentication/" + TemplateTypeConstants.VerifyCellphoneNumber.ToString()).ToString();
+            var defaultVerificationUrl = new Uri(hostUrl, "/" + TemplateTypeConstants.VerifyCellphoneNumber.ToString()).ToString();
             var verificationUrl = $"{_options?.Value?.VerifyCellphoneNumberUrl ?? defaultVerificationUrl}";
             var verifyCellphoneNumberCallback = $"{verificationUrl}?username={user.UserName}&token={encodedToken}";
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
