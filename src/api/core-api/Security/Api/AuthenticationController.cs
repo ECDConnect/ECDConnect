@@ -224,8 +224,8 @@ namespace ECDLink.Security.Api
 
         [Route("verify-cellphone-number")]
         [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> VerifyCellphoneNumber([FromQuery] VerifyCellphoneNumberModel verifyCellphoneNumberModel)
+        [HttpPost]
+        public async Task<IActionResult> VerifyCellphoneNumber([FromBody] VerifyCellphoneNumberModel verifyCellphoneNumberModel)
         {
             var user = await _securityManager.GetUserByNameAsync(verifyCellphoneNumberModel.Username);
             var token = TokenHelper.DecodeToken(verifyCellphoneNumberModel.Token);
