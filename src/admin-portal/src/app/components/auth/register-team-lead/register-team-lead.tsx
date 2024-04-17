@@ -1,9 +1,7 @@
 import {
   Config,
-  initialRegisterValues,
   NOTIFICATION,
   RegisterRequestModel,
-  registerSchema,
   useNotifications,
   useTheme,
 } from '@ecdlink/core';
@@ -67,26 +65,6 @@ const tlRegisterSchema = Yup.object().shape({
     .matches(containsUpperCaseRegex, 'At least 1 capital letter'),
 });
 
-export const signUpSchema = Yup.object().shape({
-  preferedId: Yup.string().when('preferId', {
-    is: true,
-    then: Yup.string()
-      .matches(SA_ID_REGEX, 'Please enter a valid ID number')
-      .required(),
-    otherwise: Yup.string()
-      .matches(SA_PASSPORT_REGEX, 'Please enter a valid passport number')
-      .required(),
-  }),
-  cellphone: Yup.string()
-    .required('Cellphone number is required')
-    .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
-  password: Yup.string()
-    .required('Password is required')
-    .min(8, 'At least 8 characters')
-    .matches(containsNumericRegex, 'At least 1 number')
-    .matches(containsUpperCaseRegex, 'At least 1 capital letter'),
-});
-
 export default function RegisterTeamLead(
   props: RouteComponentProps<RouteParams>
 ) {
@@ -101,7 +79,6 @@ export default function RegisterTeamLead(
     register,
     getValues,
     formState,
-    watch,
     setValue: setTlRegistrationValue,
     control,
   } = useForm({
