@@ -72,52 +72,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return null;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public async Task<IdentityResult> VerifyCellphoneNumber(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] ShortUrlManager shortUrlManager,
-            ApplicationUserManager userManager,
-            IGenericRepositoryFactory repoFactory,
-            VerifyCellphoneNumberModel input)
-        {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-            var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: applicationUserId);
-
-            var user = await userManager.FindByNameAsync(input.Username);
-            var token = TokenHelper.DecodeToken(input.Token);
-
-            if (user == default(ApplicationUser))
-            {
-                return null;
-            }
-
-            var auditChange = new IntegrationAudit()
-            {
-                ChangeType = "update",
-                Entity = "ApplicationUser",
-                Property = "PhoneNumber",
-                ValueBefore = user.PhoneNumber,
-                ValueAfter = user.PendingPhoneNumber,
-                UserId = applicationUserId,
-                RelatedId = user.Id.ToString(),
-                TenantId = tenantId
-            };
-
-            var updatedNumber = await userManager.ChangePhoneNumberAsync(user, user.PendingPhoneNumber, token);
-
-            if (updatedNumber.Succeeded)
-            {
-                user.PendingPhoneNumber = "";
-                var updatedUser =  await userManager.UpdateAsync(user);
-                auditInsertRepo.Insert(auditChange);
-                shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.VerifyCellphoneNumber);
-                return updatedUser;
-            }
-
-            return null;
-        }
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<PortalUserTLModel> DeactivateTeamLead(
             [Service] IHttpContextAccessor contextAccessor,

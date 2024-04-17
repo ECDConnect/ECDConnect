@@ -1,10 +1,7 @@
 import { Button, Typography } from '@ecdlink/ui';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
-import {
-  VerifyCellphoneNumber,
-  VerifyCellphoneNumberModelInput,
-} from '@ecdlink/graphql';
+import { VerifyCellphoneNumber } from '@ecdlink/graphql';
 import { useMutation } from '@apollo/client';
 import ROUTES from '../../../routes/app.routes-constants';
 import { useCallback, useEffect } from 'react';
@@ -25,7 +22,7 @@ export default function VerifyPhoneNumber(
   const [verifyCellphoneNumber] = useMutation(VerifyCellphoneNumber);
 
   const verfyPhone = useCallback(() => {
-    const inputModel: VerifyCellphoneNumberModelInput = {
+    const inputModel: RouteParams = {
       token,
       username,
     };

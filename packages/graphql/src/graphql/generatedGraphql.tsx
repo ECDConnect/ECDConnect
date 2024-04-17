@@ -4740,18 +4740,6 @@ export type HolidayInput = {
   day: Scalars['DateTime'];
 };
 
-export type IdentityError = {
-  __typename?: 'IdentityError';
-  code: Scalars['String'];
-  description: Scalars['String'];
-};
-
-export type IdentityResult = {
-  __typename?: 'IdentityResult';
-  errors: Array<IdentityError>;
-  succeeded: Scalars['Boolean'];
-};
-
 export type IncomeExpensePdfDataModel = {
   __typename?: 'IncomeExpensePDFDataModel';
   amount: Scalars['Float'];
@@ -6465,6 +6453,7 @@ export type Mutation = {
   addChildRegistrationPoints: Scalars['Boolean'];
   addClinic?: Maybe<Clinic>;
   addClinicMeeting?: Maybe<ClinicMeeting>;
+  addClinicToLeague: Scalars['Boolean'];
   addClubMeeting?: Maybe<ClubMeeting>;
   addCoachCircleMeeting?: Maybe<ClubMeeting>;
   addCoachFranchiseeAgreementForTrainee?: Maybe<Visit>;
@@ -6733,7 +6722,7 @@ export type Mutation = {
   deleteIntegrationEntityMapping?: Maybe<Scalars['Boolean']>;
   deleteIntegrationLog?: Maybe<Scalars['Boolean']>;
   deleteLanguage?: Maybe<Scalars['Boolean']>;
-  deleteLeague?: Maybe<Scalars['Boolean']>;
+  deleteLeague: Scalars['Boolean'];
   deleteLeagueType?: Maybe<Scalars['Boolean']>;
   deleteLearner?: Maybe<Scalars['Boolean']>;
   deleteLicense?: Maybe<Scalars['Boolean']>;
@@ -6826,6 +6815,7 @@ export type Mutation = {
   editAbsentee?: Maybe<Absentees>;
   editClinic?: Maybe<Clinic>;
   editDistrict?: Maybe<District>;
+  editLeague: Scalars['Boolean'];
   editSubDistrict?: Maybe<SubDistrict>;
   editVisitData: Scalars['Boolean'];
   expireNotification: Scalars['Boolean'];
@@ -7148,7 +7138,6 @@ export type Mutation = {
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
   updateWorkflowStatusType?: Maybe<WorkflowStatusType>;
   uploadChildProgressReport: Scalars['Boolean'];
-  verifyCellphoneNumber?: Maybe<IdentityResult>;
 };
 
 export type MutationAcceptNewClubLeaderRoleArgs = {
@@ -7202,6 +7191,11 @@ export type MutationAddClinicArgs = {
 
 export type MutationAddClinicMeetingArgs = {
   input?: InputMaybe<AddClinicMeetingInputModelInput>;
+};
+
+export type MutationAddClinicToLeagueArgs = {
+  clinicId: Scalars['UUID'];
+  leagueId: Scalars['UUID'];
 };
 
 export type MutationAddClubMeetingArgs = {
@@ -8402,6 +8396,7 @@ export type MutationDeleteLanguageArgs = {
 
 export type MutationDeleteLeagueArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+  leagueId: Scalars['UUID'];
 };
 
 export type MutationDeleteLeagueTypeArgs = {
@@ -8822,6 +8817,13 @@ export type MutationEditClinicArgs = {
 
 export type MutationEditDistrictArgs = {
   input?: InputMaybe<DistrictInputModelInput>;
+};
+
+export type MutationEditLeagueArgs = {
+  clinicsToAdd?: InputMaybe<Array<Scalars['UUID']>>;
+  clinicsToRemove?: InputMaybe<Array<Scalars['UUID']>>;
+  leagueId: Scalars['UUID'];
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationEditSubDistrictArgs = {
@@ -10426,10 +10428,6 @@ export type MutationUpdateWorkflowStatusTypeArgs = {
 
 export type MutationUploadChildProgressReportArgs = {
   report?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationVerifyCellphoneNumberArgs = {
-  input?: InputMaybe<VerifyCellphoneNumberModelInput>;
 };
 
 export type Natal = {
@@ -18684,11 +18682,6 @@ export type UserModelInput = {
   verifiedByHomeAffairs?: InputMaybe<Scalars['Boolean']>;
   welcomeMessage?: InputMaybe<Scalars['String']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
-};
-
-export type VerifyCellphoneNumberModelInput = {
-  token?: InputMaybe<Scalars['String']>;
-  username?: InputMaybe<Scalars['String']>;
 };
 
 export type Visit = {
