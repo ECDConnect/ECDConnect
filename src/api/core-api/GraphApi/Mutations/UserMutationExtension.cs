@@ -6,7 +6,6 @@ using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -187,13 +186,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             // Phone Number
+            var sendPhoneNumberVerification = false;
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {
+                auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+
                 if (user.Id != currentUserId)
                 {
-                    auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
-                    user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
                     user.PendingPhoneNumber = null;
                 } 
                 else
@@ -201,18 +202,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
                     if (userIsTL)
                     {
-                        user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+                        sendPhoneNumberVerification = true;
                         user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
                         user.PhoneNumberConfirmed = false;
-                        try
-                        {
-                            var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
-                            await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
-                        }
-                        catch (Exception exception)
-                        {
-                            logger?.LogError("Could not send cellphone number verification for change of user cellphone number.", new { userId = user.Id, exception });
-                        }
                     }
                 }
             }
@@ -398,6 +390,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (!updateResult.Succeeded)
                 {
                     throw new QueryException(updateResult.Errors.First().Description);
+                }
+
+                // Send the verification after the new number is saved, otherwise it sends the sms to the old number
+                if (sendPhoneNumberVerification)
+                {
+                    try
+                    {
+                        var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
+                        await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
+                    }
+                    catch (Exception exception)
+                    {
+                        logger?.LogError("Could not send cellphone number verification for change of user cellphone number.", new { userId = user.Id, exception });
+                    }
                 }
             }
 
