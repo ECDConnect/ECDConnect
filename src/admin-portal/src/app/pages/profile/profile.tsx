@@ -178,8 +178,6 @@ export function Profile(props: any) {
     }
   };
 
-  console.log(phoneNumber !== user.user?.phoneNumber);
-
   const onSave = async () => {
     let passwordChange = false;
     let internalIsPasswordValid = true;
