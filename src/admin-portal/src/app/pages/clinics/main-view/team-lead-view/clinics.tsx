@@ -2,7 +2,8 @@ import { useQuery } from '@apollo/client';
 import { GetAllPortalClinics } from '@ecdlink/graphql';
 import { ViewClinicReport } from '../../components/view-clinic-report/view-clinic-report';
 import { LoadingSpinner, TabItem, TabList } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { EmptyClinic } from './components/empty-clinic';
 
 interface ClinicsTeamLeadViewProps {
   setSelectedTabId?: (item: string) => void;
@@ -21,10 +22,12 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   const clinics = data?.allPortalClinics;
 
   useEffect(() => {
-    if (selectedClinicId && setSelectedTabId) {
-      setSelectedTabId(selectedClinicId);
-    } else {
-      setSelectedTabId(clinics?.[0]?.id || '');
+    if (typeof setSelectedTabId === 'function') {
+      if (selectedClinicId) {
+        setSelectedTabId(selectedClinicId);
+      } else {
+        setSelectedTabId(clinics?.[0]?.id || '');
+      }
     }
   }, [clinics, selectedClinicId, setSelectedTabId]);
 
@@ -39,6 +42,14 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
 
   const selectedClinic =
     clinics?.find((clinic) => clinic?.id === selectedClinicId) ?? clinics?.[0];
+
+  const renderClinicView = useMemo(() => {
+    if (selectedClinic) {
+      return <ViewClinicReport clinic={selectedClinic} />;
+    } else {
+      return <EmptyClinic />;
+    }
+  }, [selectedClinic]);
 
   if (loading) {
     return (
@@ -61,7 +72,7 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
         />
       )}
       <div className="bg-adminPortalBg rounded-b-2xl p-4">
-        <ViewClinicReport clinic={selectedClinic} />
+        {renderClinicView}
       </div>
     </>
   );
