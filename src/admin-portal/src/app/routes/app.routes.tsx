@@ -62,6 +62,7 @@ import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/vi
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
+import { NotificationsView } from '../notifications/notificationsView';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -137,6 +138,10 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
+      <Route
+        path={ROUTES.NOTIFICATIONS_VIEW}
+        component={NotificationsView}
+      ></Route>
     </Switch>
   );
 };

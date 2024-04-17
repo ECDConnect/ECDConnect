@@ -5,11 +5,14 @@ import {
   usePanel,
   useTheme,
 } from '@ecdlink/core';
-import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
-import { Avatar, Button, Typography, UserAvatar } from '@ecdlink/ui';
+import {
+  GetAllNavigation,
+  GetAllNotifications,
+  GetTenantContext,
+} from '@ecdlink/graphql';
+import { Avatar, Button, IconBadge, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
-  ArrowLeftIcon,
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
@@ -90,6 +93,15 @@ export default function Shell() {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: notificationsData } = useQuery(GetAllNotifications, {
+    variables: {
+      userId: user?.id,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const notifications = notificationsData?.allNotifications;
+  console.log({ notifications });
   useEffect(() => {
     if (navigation && location && location.pathname) {
       const current = navigation.find((x) =>
@@ -119,7 +131,7 @@ export default function Shell() {
       const userRolePermissions = user?.roles
         ?.map((x) => x?.permissions)
         .flat();
-      const userPermissionIds = userRolePermissions.map((x) => x.id);
+      const userPermissionIds = userRolePermissions?.map((x) => x.id);
       if (isAdministrator || isSuperAdmin) {
         const sorted = navigationList
           .slice()
@@ -341,7 +353,20 @@ export default function Shell() {
                 {activeNavigation?.name}
               </span>
             </div>
-            <div className="ml-4 flex items-center md:ml-6">
+            <div className="ml-4 flex items-center gap-2 md:ml-6">
+              <div className="cursor-pointer">
+                <IconBadge
+                  onClick={() => history.push(ROUTES.NOTIFICATIONS_VIEW)}
+                  badgeColor={'errorMain'}
+                  badgeTextColor={'white'}
+                  icon={'BellIcon'}
+                  iconColor={'darkBackground'}
+                  badgeText={
+                    !!notifications?.length ? `${notifications?.length}` : ''
+                  }
+                  className="mt-4"
+                />
+              </div>
               <Menu as="div" className="relative ml-3">
                 {({ open }) => (
                   <>
