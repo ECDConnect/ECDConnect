@@ -24,7 +24,7 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
     if (selectedClinicId && setSelectedTabId) {
       setSelectedTabId(selectedClinicId);
     } else {
-      setSelectedTabId(clinics?.[0]?.id);
+      setSelectedTabId(clinics?.[0]?.id || '');
     }
   }, [clinics, selectedClinicId, setSelectedTabId]);
 

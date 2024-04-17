@@ -19,7 +19,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import {
   GetTeamLead,
   GetUserById,
@@ -57,11 +57,12 @@ export function Profile(props: any) {
     setHandleChangePasswordAndPhoneNumber,
   ] = useState(false);
 
-  const { register, formState, getValues, handleSubmit, setValue } = useForm({
-    resolver: yupResolver(userSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onChange',
-  });
+  const { register, formState, getValues, handleSubmit, setValue, control } =
+    useForm({
+      resolver: yupResolver(userSchema),
+      defaultValues: initialUserDetailsValues,
+      mode: 'onChange',
+    });
 
   const { errors, isValid } = formState;
   const {
@@ -108,6 +109,7 @@ export function Profile(props: any) {
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
+  const { phoneNumber } = useWatch({ control });
   const [avatarFile, setAvatarFile] = useState(null);
   const [teamLeadWelcomeMessage, setTeamLeadWelcomeMessage] = useState('');
   const [showSMSMessage, setShowSMSMessage] = useState(false);
@@ -121,7 +123,7 @@ export function Profile(props: any) {
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
       profileImageUrl: profileImage ?? userData.userById?.profileImageUrl,
-      phoneNumber: userDetailForm?.phoneNumber,
+      phoneNumber: phoneNumber,
     };
 
     await updateUser({
@@ -176,13 +178,15 @@ export function Profile(props: any) {
     }
   };
 
+  console.log(phoneNumber !== user.user?.phoneNumber);
+
   const onSave = async () => {
     let passwordChange = false;
     let internalIsPasswordValid = true;
 
     if (
       passwordForm.password.length > 0 &&
-      userDetailForm?.phoneNumber !== user.user?.phoneNumber
+      phoneNumber !== user.user?.phoneNumber
     ) {
       passwordChange = true;
       internalIsPasswordValid = isPasswordValid;
@@ -197,7 +201,7 @@ export function Profile(props: any) {
       return;
     }
 
-    if (userDetailForm?.phoneNumber !== user.user?.phoneNumber) {
+    if (phoneNumber !== user.user?.phoneNumber) {
       setHandleChangePhoneNumber(true);
       return;
     }

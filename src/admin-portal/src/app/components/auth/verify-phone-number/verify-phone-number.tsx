@@ -1,11 +1,16 @@
 import { Button, Typography } from '@ecdlink/ui';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
-import { VerifyCellphoneNumber } from '@ecdlink/graphql';
-import { useMutation } from '@apollo/client';
 import ROUTES from '../../../routes/app.routes-constants';
 import { useCallback, useEffect } from 'react';
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps, useHistory } from 'react-router';
+import {
+  AuthCodeModel,
+  Config,
+  NOTIFICATION,
+  useNotifications,
+} from '@ecdlink/core';
+import { VerifyCellPhoneNumber } from '../../../services/auth.service';
 
 interface RouteParams {
   username: string;
@@ -15,23 +20,26 @@ interface RouteParams {
 export default function VerifyPhoneNumber(
   props: RouteComponentProps<RouteParams>
 ) {
+  const history = useHistory();
+  const { setNotification } = useNotifications();
   const urlParams = new URLSearchParams(window.location.search);
   const username = urlParams.get('username');
   const token = urlParams.get('token');
 
-  const [verifyCellphoneNumber] = useMutation(VerifyCellphoneNumber);
-
-  const verfyPhone = useCallback(() => {
-    const inputModel: RouteParams = {
-      token,
+  const verfyPhone = useCallback(async () => {
+    const body: AuthCodeModel = {
       username,
+      token,
     };
-    verifyCellphoneNumber({
-      variables: {
-        input: inputModel,
-      },
-    });
-  }, [token, username, verifyCellphoneNumber]);
+    const isLinkSent = await VerifyCellPhoneNumber(Config.authApi, body);
+
+    if (isLinkSent) {
+      setNotification({
+        title: 'Successfully Updated  Phone Number!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (token && username) {
@@ -65,7 +73,7 @@ export default function VerifyPhoneNumber(
             className={'mt-3 w-full rounded-xl'}
             type="outlined"
             color="secondary"
-            onClick={() => ROUTES.ROOT_TEAM_LEAD}
+            onClick={() => history.push(ROUTES.ROOT_TEAM_LEAD)}
             icon="ArrowCircleRightIcon"
             textColor="secondary"
           >
