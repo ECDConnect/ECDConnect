@@ -1034,7 +1034,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 previousWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
             }
 
-            var weightIncreased = weight >= previousWeight;
+            var weightIncreased = weight > previousWeight;
 
             double? height = null;
             if (lengthQuestion != null && lengthQuestion.QuestionAnswer != "undefined" && lengthQuestion.QuestionAnswer != "")
