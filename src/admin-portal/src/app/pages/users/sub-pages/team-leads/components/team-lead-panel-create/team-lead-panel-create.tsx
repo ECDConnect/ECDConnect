@@ -146,6 +146,8 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
         });
       });
     if (userId) {
+      await saveRoles(userId);
+
       await sendInviteToApplication({
         variables: {
           userId: userId,
@@ -161,8 +163,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
         title: 'Successfully Sent Team Lead Invite!',
         variant: NOTIFICATION.SUCCESS,
       });
-
-      await saveRoles(userId);
     }
   };
 

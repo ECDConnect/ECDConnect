@@ -21,10 +21,12 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   const clinics = data?.allPortalClinics;
 
   useEffect(() => {
-    if (selectedClinicId && setSelectedTabId) {
-      setSelectedTabId(selectedClinicId);
-    } else {
-      setSelectedTabId(clinics?.[0]?.id || '');
+    if (typeof setSelectedTabId === 'function') {
+      if (selectedClinicId) {
+        setSelectedTabId(selectedClinicId);
+      } else {
+        setSelectedTabId(clinics?.[0]?.id || '');
+      }
     }
   }, [clinics, selectedClinicId, setSelectedTabId]);
 
