@@ -9,6 +9,7 @@ import {
 
 import jwt_decode from 'jwt-decode';
 import {
+  AuthCodeModel,
   AuthUser,
   Config,
   LocalStorageKeys,
@@ -26,6 +27,7 @@ import {
   RegisterNewUser,
   RegisterNewTeamLead,
   VerifyInvitationRequest,
+  VerifyCellPhoneNumber,
 } from '../services/auth.service';
 
 export interface AuthContextType {
@@ -45,6 +47,11 @@ export interface AuthContextType {
   verifyPhoneNumber: (
     baseEndPoint: string,
     body: VerifyInvitationModel
+  ) => Promise<boolean | any>;
+
+  verifyCellphoneNumber: (
+    body: AuthCodeModel,
+    baseEndPoint: string
   ) => Promise<boolean | any>;
 
   forgotPassword: (
@@ -243,6 +250,23 @@ export function AuthProvider({
     }
   };
 
+  const verifyCellphoneNumber = async (
+    body: AuthCodeModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
+    try {
+      const response = await VerifyCellPhoneNumber(baseEndPoint, body);
+
+      if (response) {
+        localStorage.setItem(LocalStorageKeys.user, JSON.stringify(response));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
   const logout = () => {
     setAuthenticatedUser(undefined);
     localStorage.removeItem(LocalStorageKeys.user);
@@ -260,6 +284,7 @@ export function AuthProvider({
       getAccessTokenPromise,
       registerTeamLeadUser,
       verifyPhoneNumber,
+      verifyCellphoneNumber,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [authenticatedUser]

@@ -222,12 +222,3 @@ export const getTeamLeadCount = gql`
     )
   }
 `;
-
-export const VerifyCellphoneNumber = gql`
-  mutation VerifyCellphoneNumber($input: VerifyCellphoneNumberModel) {
-    verifyCellphoneNumber(input: $input) {
-      succeeded
-      __typename
-    }
-  }
-`;
