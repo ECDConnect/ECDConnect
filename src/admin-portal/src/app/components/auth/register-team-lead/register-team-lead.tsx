@@ -29,6 +29,7 @@ import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import { PasswordInput } from '../../password-input/password-input';
 import * as Yup from 'yup';
+import ROUTES from '../../../routes/app.routes-constants';
 
 interface RouteParams {
   resetToken: string;
@@ -158,7 +159,7 @@ export default function RegisterTeamLead(
       if (isAuthenticated) {
         setIsLoading(false);
         logout();
-        history.push('/team-lead');
+        history.push(ROUTES.ROOT_TEAM_LEAD);
         setNotification({
           title: ` Successfully registered!`,
           variant: NOTIFICATION.SUCCESS,
@@ -318,7 +319,7 @@ export default function RegisterTeamLead(
                 className={'mt-5 mb-5 w-full rounded-2xl'}
                 type="outlined"
                 color="secondary"
-                onClick={() => history.push('/team-lead')}
+                onClick={() => history.push(ROUTES.ROOT_TEAM_LEAD)}
               >
                 <Typography
                   type="help"
