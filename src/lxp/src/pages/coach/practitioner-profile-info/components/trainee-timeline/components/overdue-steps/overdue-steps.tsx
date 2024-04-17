@@ -106,7 +106,7 @@ export const OverdueSteps: React.FC<OverdueStepsoProps> = ({
                     title={step.title}
                     titleTypographyType="h4"
                     titleColor="textDark"
-                    subTitle={step.subTitle}
+                    // subTitle={step.subTitle}
                     subTitleTypographyType="help"
                     subTitleColor="textMid"
                     showIcon
