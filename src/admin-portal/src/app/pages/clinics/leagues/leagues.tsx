@@ -8,6 +8,8 @@ import Trophy from '../../../../assets/trophy.svg';
 import { useHistory } from 'react-router';
 import ROUTES from '../../../routes/app.routes-constants';
 import { LeagueSeasonRouteState } from './view-league-season/types';
+import { useQuery } from '@apollo/client';
+import { GetLeagues } from '@ecdlink/graphql';
 
 export const Leagues = () => {
   const history = useHistory();
@@ -15,6 +17,11 @@ export const Leagues = () => {
   const lastYear = new Date().getFullYear() - 1;
   const currentYear = new Date().getFullYear();
   const nextYear = new Date().getFullYear() + 1;
+
+  // TODO: Add integration and interface
+  const { data, loading } = useQuery<{ leagues?: any }>(GetLeagues, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const leagues: MenuListDataItem[] = [
     {

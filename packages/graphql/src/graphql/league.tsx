@@ -25,8 +25,54 @@ export const GetLeagueSetup = gql`
         unassignedClinics {
           id
           name
+          subDistrictName
+          teamLeads {
+            id
+            firstName
+            surname
+          }
         }
       }
     }
+  }
+`;
+
+export const GetLeagues = gql`
+  query GetLeagues(
+    $searchString: String
+    $districtId: UUID
+    $pagingInput: PagedQueryInput
+    $where: PortalLeagueModelFilterInput
+    $order: [PortalLeagueModelSortInput!]
+  ) {
+    leagues(
+      searchString: $searchString
+      districtId: $districtId
+      pagingInput: $pagingInput
+      where: $where
+      order: $order
+    ) {
+      id
+      name
+      leagueTypeId
+      leagueTypeName
+      insertedDate
+      clinics {
+        id
+        name
+        subDistrictName
+        teamLeads {
+          id
+          firstName
+          surname
+        }
+      }
+    }
+  }
+`;
+
+export const AddLeagues = gql`
+  mutation AddLeagues($input: [LeagueInputModelInput]) {
+    addLeagues(input: $input)
   }
 `;

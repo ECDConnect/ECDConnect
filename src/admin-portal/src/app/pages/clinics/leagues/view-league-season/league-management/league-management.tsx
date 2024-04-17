@@ -12,14 +12,15 @@ import {
 } from '@ecdlink/ui';
 import { useQuery } from '@apollo/client';
 import { GetLeagueSetup } from '@ecdlink/graphql';
-import { LeagueSetupDto } from '@ecdlink/core';
+import { LeagueIdEnum, LeagueSetupDto } from '@ecdlink/core';
 
 import ROUTES from '../../../../../routes/app.routes-constants';
 
 import { LeagueSeasonRouteState } from '../types';
+import { AddLeaguesRouteState } from './add-leagues/types';
 
 export const LeagueManagement = () => {
-  const history = useHistory();
+  const history = useHistory<AddLeaguesRouteState>();
 
   const { state } = useLocation<LeagueSeasonRouteState>();
 
@@ -79,7 +80,11 @@ export const LeagueManagement = () => {
         titleStyle: 'text-lg text-textMid font-semibold',
         subTitleStyle: 'text-sm text-textLight',
         onActionClick: () =>
-          history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES),
+          history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES, {
+            ...state,
+            districtId: item.id,
+            leagueType: LeagueIdEnum.League,
+          }),
       };
     });
 
@@ -137,6 +142,16 @@ export const LeagueManagement = () => {
               textColor="white"
               className="rounded-2xl px-16"
               icon="PlusCircleIcon"
+              onClick={() =>
+                history.push(
+                  ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES,
+                  {
+                    ...state,
+                    districtId: undefined,
+                    leagueType: LeagueIdEnum.SuperLeague,
+                  }
+                )
+              }
             />
           </div>
         )}
