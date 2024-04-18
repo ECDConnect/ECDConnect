@@ -134,7 +134,7 @@ export default function RegisterTeamLead(
         }, 6000);
       }
       if (informationVerified.errorCode === 2) {
-        setPresentCellNumberMismatch(false);
+        setPresentCellNumberMismatch(true);
         setIsLoading(false);
       }
       return;
