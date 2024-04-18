@@ -2,8 +2,10 @@ import { CheckCircleIcon, ExclamationIcon } from '@heroicons/react/solid';
 import { useHistory, useLocation } from 'react-router';
 
 import {
+  ActionModal,
   Alert,
   Button,
+  DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
   StackedList,
@@ -12,7 +14,7 @@ import {
 } from '@ecdlink/ui';
 import { useQuery } from '@apollo/client';
 import { GetLeagueSetup } from '@ecdlink/graphql';
-import { LeagueIdEnum, LeagueSetupDto } from '@ecdlink/core';
+import { LeagueIdEnum, LeagueSetupDto, useDialog } from '@ecdlink/core';
 
 import ROUTES from '../../../../../routes/app.routes-constants';
 
@@ -24,6 +26,8 @@ export const LeagueManagement = () => {
 
   const { state } = useLocation<LeagueSeasonRouteState>();
 
+  const dialog = useDialog();
+
   const { data, loading } = useQuery<{ leagueSetupDetails?: LeagueSetupDto }>(
     GetLeagueSetup,
     {
@@ -33,12 +37,77 @@ export const LeagueManagement = () => {
 
   const currentYear = new Date().getFullYear();
 
+  const isEmptyState =
+    !data?.leagueSetupDetails?.districts.some(
+      (district) => district.unassignedClinics.length > 0
+    ) &&
+    !data?.leagueSetupDetails?.districts.some(
+      (district) => district.leagues.length > 0
+    ) &&
+    !data?.leagueSetupDetails?.superLeagues.length;
+
+  const superLeaguesLength = data?.leagueSetupDetails?.superLeagues.length;
+
   const unassignedClinics = data?.leagueSetupDetails?.districts?.reduce(
     (acc, item) => {
       return acc + item.unassignedClinics.length;
     },
     0
   );
+
+  const onActionOptions = (districtId?: string) => {
+    dialog({
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => (
+        <ActionModal
+          icon="QuestionMarkCircleIcon"
+          iconColor="infoMain"
+          title="What would you like to do?"
+          buttonClass="rounded-2xl"
+          actionButtons={[
+            {
+              leadingIcon: 'PlusCircleIcon',
+              type: 'outlined',
+              colour: 'secondary',
+              textColour: 'secondary',
+              text: 'Add a league',
+              onClick: () => {
+                history.push(
+                  ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES,
+                  {
+                    ...state,
+                    allowMultipleLeagues: false,
+                    districtId,
+                    leagueType: districtId
+                      ? LeagueIdEnum.League
+                      : LeagueIdEnum.SuperLeague,
+                  }
+                );
+                onClose();
+              },
+            },
+            {
+              leadingIcon: 'TrashIcon',
+              type: 'outlined',
+              colour: 'secondary',
+              textColour: 'secondary',
+              text: 'Remove a league',
+              onClick: () => {},
+            },
+            {
+              leadingIcon: 'PencilIcon',
+              type: 'outlined',
+              colour: 'secondary',
+              textColour: 'secondary',
+              text: 'Add or remove clinics from a league',
+              onClick: () => {},
+            },
+          ]}
+        />
+      ),
+    });
+  };
 
   const districts: MenuListDataItem[] =
     data?.leagueSetupDetails?.districts?.map((item, index) => {
@@ -79,14 +148,56 @@ export const LeagueManagement = () => {
             : 'border-b border-gray-200',
         titleStyle: 'text-lg text-textMid font-semibold',
         subTitleStyle: 'text-sm text-textLight',
-        onActionClick: () =>
-          history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES, {
-            ...state,
-            districtId: item.id,
-            leagueType: LeagueIdEnum.League,
-          }),
+        onActionClick: () => {
+          if (item.leagues.length) {
+            onActionOptions(item.id);
+          } else {
+            history.push(
+              ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES,
+              {
+                ...state,
+                allowMultipleLeagues: true,
+                districtId: item.id,
+                leagueType: LeagueIdEnum.League,
+              }
+            );
+          }
+        },
       };
     });
+
+  const superLeagues: MenuListDataItem = {
+    title: `${superLeaguesLength} super league${
+      superLeaguesLength > 1 ? 's' : ''
+    } added`,
+    subTitle: (
+      <div className="flex items-center gap-2">
+        <div>
+          <CheckCircleIcon className="text-successMain h-6 w-6" />
+        </div>
+        <Typography
+          type="help"
+          text={data?.leagueSetupDetails?.superLeagues
+            .map(
+              (item) =>
+                `${item.name} - ${item.clinics?.length} clinic${
+                  item.clinics?.length > 1 ? 's' : ''
+                }`
+            )
+            .join('; ')}
+          color="successMain"
+        />
+      </div>
+    ),
+    id: String(superLeaguesLength),
+    backgroundColor: 'white',
+    iconBackgroundColor: 'secondary',
+    iconColor: 'white',
+    showIcon: true,
+    titleStyle: 'text-lg text-textMid font-semibold',
+    subTitleStyle: 'text-sm text-textLight',
+    onActionClick: () => onActionOptions(),
+  };
 
   return (
     <>
@@ -119,40 +230,62 @@ export const LeagueManagement = () => {
         color="textLight"
         className="mb-4"
       />
-      <div className="rounded-2xl bg-white">
-        {loading ? (
+      <div className="overflow-hidden rounded-2xl bg-white">
+        {loading && (
           <LoadingSpinner
             className="p-7"
             backgroundColor="secondary"
             spinnerColor="adminPortalBg"
             size="medium"
           />
-        ) : (
-          <div className="p-7">
-            <Typography
-              type="help"
-              text="You haven’t added any super leagues yet."
-              color="textLight"
-              className="mb-4"
-            />
-            <Button
-              type="filled"
-              color="secondary"
-              text="Add a super league"
-              textColor="white"
-              className="rounded-2xl px-16"
-              icon="PlusCircleIcon"
-              onClick={() =>
-                history.push(
-                  ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES,
-                  {
-                    ...state,
-                    districtId: undefined,
-                    leagueType: LeagueIdEnum.SuperLeague,
-                  }
-                )
-              }
-            />
+        )}
+        {!loading && (
+          <div className={superLeaguesLength ? '' : 'p-7'}>
+            {isEmptyState && (
+              <Typography
+                type="help"
+                text="There are no clinics on the admin portal yet. Add clinics first."
+                color="textLight"
+              />
+            )}
+            {!isEmptyState && (
+              <>
+                {superLeaguesLength > 0 ? (
+                  <StackedList
+                    type={'MenuList' as StackedListType}
+                    listItems={[superLeagues]}
+                  />
+                ) : (
+                  <>
+                    <Typography
+                      type="help"
+                      text="You haven’t added any super leagues yet."
+                      color="textLight"
+                      className="mb-4"
+                    />
+                    <Button
+                      type="filled"
+                      color="secondary"
+                      text="Add a super league"
+                      textColor="white"
+                      className="rounded-2xl px-16"
+                      icon="PlusCircleIcon"
+                      onClick={() =>
+                        history.push(
+                          ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES,
+                          {
+                            ...state,
+                            allowMultipleLeagues: true,
+                            districtId: undefined,
+                            leagueType: LeagueIdEnum.SuperLeague,
+                          }
+                        )
+                      }
+                    />
+                  </>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>
@@ -172,10 +305,20 @@ export const LeagueManagement = () => {
             size="medium"
           />
         ) : (
-          <StackedList
-            type={'MenuList' as StackedListType}
-            listItems={districts}
-          />
+          <>
+            {isEmptyState ? (
+              <Typography
+                type="help"
+                text="There are no clinics on the admin portal yet. Add clinics first."
+                color="textLight"
+              />
+            ) : (
+              <StackedList
+                type={'MenuList' as StackedListType}
+                listItems={districts}
+              />
+            )}
+          </>
         )}
       </div>
     </>
