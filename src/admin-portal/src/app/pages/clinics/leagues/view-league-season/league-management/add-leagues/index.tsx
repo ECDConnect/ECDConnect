@@ -29,9 +29,13 @@ export const AddLeagues = () => {
   >([]);
   const [quantityLeagues, setQuantityLeagues] = useState<number>();
 
-  const [currentStep, setCurrentStep] = useState(0);
-
   const { state } = useLocation<AddLeaguesRouteState>();
+
+  const allowMultipleLeagues = state?.allowMultipleLeagues;
+
+  const initialStep = allowMultipleLeagues === false ? 1 : 0;
+
+  const [currentStep, setCurrentStep] = useState(initialStep);
 
   const history = useHistory();
 
@@ -68,9 +72,18 @@ export const AddLeagues = () => {
       return accumulator.concat(district.unassignedClinics);
     }, []);
 
+  const leagueNumber = allowMultipleLeagues
+    ? currentStep
+    : isToAddSuperLeagues
+    ? leagueSetupDetails?.superLeagues.length + 1
+    : district?.leagues.length + 1;
+
   const currentLeagueData = Object.values(
-    leagues?.find((item) => Object.keys(item)[0] === `league-${currentStep}`) ??
-      {}
+    leagues?.find(
+      (item) =>
+        Object.keys(item)[0] ===
+        `league-${allowMultipleLeagues ? currentStep : leagueNumber}`
+    ) ?? {}
   )?.[0];
 
   const allSelectedClinicsIds = leagues.flatMap(
@@ -86,11 +99,14 @@ export const AddLeagues = () => {
         currentLeagueData?.clinicIds.includes(clinic.id)
     ) ?? [];
 
-  const isToShowPreviousButton = currentStep > 0;
-  const isLastStep = currentStep === quantityLeagues;
+  const isToShowPreviousButton = currentStep > initialStep;
+  const isLastStep =
+    allowMultipleLeagues === false || currentStep === quantityLeagues;
   const isDisabledNextButton =
-    (currentStep === 0 && !quantityLeagues) ||
-    (currentStep > 0 &&
+    (allowMultipleLeagues !== false &&
+      currentStep === initialStep &&
+      !quantityLeagues) ||
+    ((currentStep > initialStep || allowMultipleLeagues === false) &&
       (!currentLeagueData?.name ||
         currentLeagueData?.name.length > 30 ||
         !currentLeagueData?.clinicIds?.length));
@@ -214,7 +230,7 @@ export const AddLeagues = () => {
           availableClinics={availableClinics}
           currentLeagueData={currentLeagueData}
           district={district}
-          leagueNumber={currentStep}
+          leagueNumber={leagueNumber}
           onChange={onUpdatedLeagues}
         />
       )}

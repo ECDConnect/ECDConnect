@@ -1,5 +1,6 @@
 import {
   DistrictLeagues,
+  LeagueIdEnum,
   LeagueInputModelInput,
   SimpleClinicDto,
   usePrevious,
@@ -43,6 +44,8 @@ export const Step2 = ({
   const history = useHistory();
 
   const { state } = useLocation<AddLeaguesRouteState>();
+
+  const isToAddSuperLeagues = state?.leagueType === LeagueIdEnum.SuperLeague;
 
   const columns: Icolumn[] = [
     {
@@ -103,7 +106,7 @@ export const Step2 = ({
       clinicIds: selectedRows.map((row) => row.id),
       ...(state?.districtId && { districtId: district.id }),
       name: leagueName,
-      typeId: state.leagueType,
+      typeId: state?.leagueType,
     }),
     [district, leagueName, selectedRows, state]
   );
@@ -172,7 +175,9 @@ export const Step2 = ({
           <Typography
             type="h1"
             color="textDark"
-            text={`Add clinics to League ${leagueNumber}`}
+            text={`Add clinics to ${
+              isToAddSuperLeagues ? 'Super' : ''
+            } League ${leagueNumber}`}
             className="mt-9"
           />
           <Typography
@@ -201,7 +206,7 @@ export const Step2 = ({
         <Typography
           type="h2"
           color="textDark"
-          text={`League ${leagueNumber}`}
+          text={`${isToAddSuperLeagues ? 'Super ' : ''}League ${leagueNumber}`}
           className="mb-4"
         />
         <FormInput
@@ -238,7 +243,7 @@ export const Step2 = ({
           ]}
           onChangeSelectedRows={onChangeSelectedRows}
           onClearFilters={() => setSubDistrictFilter([])}
-          noContentText="No clinics available"
+          noContentText="All clinics are assigned to a group, or your filters may be hiding available clinics. To add clinics to this league, try adjusting your filters or remove clinics from another league to make them available."
         />
       </form>
       {!!selectedRows.length && (
