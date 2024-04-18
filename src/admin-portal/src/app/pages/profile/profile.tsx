@@ -117,14 +117,15 @@ export function Profile(props: any) {
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
-  const { phoneNumber, firstName, surname } = useWatch({ control });
-  const tlDisableButton =
-    !!errors?.firstName || !!errors?.surname || !!errors?.phoneNumber;
+  const { phoneNumber } = useWatch({ control });
   const [avatarFile, setAvatarFile] = useState(null);
   const [teamLeadWelcomeMessage, setTeamLeadWelcomeMessage] = useState('');
-  const [showSMSMessage, setShowSMSMessage] = useState(false);
 
-  const saveUser = async (passwordChange: boolean, profileImage?: string) => {
+  const saveUser = async (
+    passwordChange: boolean,
+    profileImage?: string,
+    resendSms?: boolean
+  ) => {
     const userInputModel: UserModelInput = {
       firstName: userDetailForm?.firstName,
       surname: userDetailForm?.surname,
@@ -133,7 +134,9 @@ export function Profile(props: any) {
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
       profileImageUrl: profileImage ?? userData.userById?.profileImageUrl,
-      phoneNumber: phoneNumber,
+      phoneNumber: resendSms
+        ? userData?.userById?.pendingPhoneNumber
+        : phoneNumber,
     };
 
     await updateUser({
@@ -274,6 +277,8 @@ export function Profile(props: any) {
     }
   };
 
+  console.log(userDetailForm?.phoneNumber);
+
   const displayProfilePicturePrompt = () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -295,10 +300,10 @@ export function Profile(props: any) {
 
             <div className="flex h-full " style={{ minHeight: '30rem' }}>
               <div className="w-full p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
-                {showSMSMessage && (
+                {userData?.userById?.pendingPhoneNumber && (
                   <Alert
                     className="mb-12 rounded-md"
-                    title={`Verify your cellphone number! We have sent you an SMS to ${userDetailForm?.phoneNumber}. Please verify the cellphone number by clicking the link.`}
+                    title={`Verify your cellphone number! We have sent you an SMS to ${userData?.userById?.pendingPhoneNumber}. Please verify the cellphone number by clicking the link.`}
                     list={[
                       `If you’ve made a mistake, please edit your cellphone number below.`,
                     ]}
@@ -311,7 +316,7 @@ export function Profile(props: any) {
                         textColor="white"
                         text="Resend SMS"
                         icon="MailIcon"
-                        onClick={async () => await saveUser(false)}
+                        onClick={async () => await saveUser(false, '', true)}
                       />
                     }
                   />
@@ -496,7 +501,6 @@ export function Profile(props: any) {
                     ? await saveUser(false, avatarFile)
                     : await saveUser(false);
                   setHandleChangePhoneNumber(false);
-                  setShowSMSMessage(true);
                 },
                 leadingIcon: 'CheckCircleIcon',
               },
