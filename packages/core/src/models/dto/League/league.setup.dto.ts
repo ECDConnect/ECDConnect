@@ -1,12 +1,19 @@
 import { SimpleClinicDto } from '../Clinics';
 
-interface LeagueWithClinics {
+export interface LeagueInputModelInput {
+  clinicIds: string[];
+  districtId: string;
+  name: string;
+  typeId: string;
+}
+
+export interface LeagueWithClinics {
   id: string;
   name: string;
   clinics: SimpleClinicDto[];
 }
 
-interface District {
+export interface DistrictLeagues {
   id: string;
   name: string;
   leagues: LeagueWithClinics[];
@@ -15,5 +22,5 @@ interface District {
 
 export interface LeagueSetupDto {
   superLeagues: LeagueWithClinics[];
-  districts: District[];
+  districts: DistrictLeagues[];
 }

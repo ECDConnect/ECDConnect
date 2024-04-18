@@ -473,7 +473,7 @@ export function ViewUser(props: any) {
           !isAdministrator &&
           !isTeamLeadRole && (
             <div className="flex flex-col gap-2 lg:flex-row">
-              {isRegistered && (
+              {!isRegistered && (
                 <SendInvite
                   userData={userData?.userById}
                   chwData={chwData?.GetHealthCareWorkerById}

@@ -15,6 +15,8 @@ import LoadingSpinner from '../loading-spinner/loading-spinner';
 export const Table = forwardRef<TableRefMethods, TableProps>(
   (
     {
+      selectedRows: initialSelectedRows,
+      multiSelect,
       rows,
       columns,
       rowsPerPage = 10,
@@ -52,9 +54,11 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
       return (filter as SearchDropDownProps<string>)?.selectedOptions?.length;
     });
 
-    const rowsWithKey = rows?.map((row, index) => ({ ...row, key: index }));
-
-    const tableKey = rowsWithKey.map((row) => row.key).join('-');
+    const rowsWithKey = rows?.map((row, index) => ({
+      ...row,
+      key: index,
+      checked: false,
+    }));
 
     const handleRowSelect = (row: Irow) => {
       const rowIndex = selectedRows.findIndex(
@@ -77,9 +81,11 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
 
     const handleColumnSelect = () => {
       if (selectedRows.length) {
+        onChangeSelectedRows?.([]);
         return setSelectedRows([]);
       }
 
+      onChangeSelectedRows?.(rowsWithKey);
       return setSelectedRows(rowsWithKey);
     };
 
@@ -103,41 +109,57 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
       return <div>{displayValue}</div>;
     };
 
-    const mergedColumns = bulkActions?.length
-      ? ([
-          {
-            field: 'select',
-            use: (
-              <Checkbox
-                checkboxColor="textLight"
-                indeterminate={
-                  selectedRows?.length > 0 && selectedRows.length < rows.length
-                }
-                checked={selectedRows?.length === rows?.length}
-                onCheckboxChange={handleColumnSelect}
-              />
-            ),
-          },
-          ...columns,
-        ] as Icolumn[])
-      : columns;
+    const mergedColumns =
+      bulkActions?.length || multiSelect
+        ? ([
+            {
+              field: 'select',
+              use: (
+                <Checkbox
+                  checkboxColor="textLight"
+                  indeterminate={
+                    selectedRows?.length > 0 &&
+                    selectedRows.length < rows.length
+                  }
+                  checked={selectedRows?.length === rows?.length}
+                  onCheckboxChange={handleColumnSelect}
+                />
+              ),
+            },
+            ...columns,
+          ] as Icolumn[])
+        : columns;
 
-    const mergedRows = bulkActions?.length
-      ? rowsWithKey?.map((row) => {
-          return {
-            select: (
-              <Checkbox
-                checkboxColor="textLight"
-                checked={selectedRows?.some(
-                  (selectedRow) => selectedRow.key === row.key
-                )}
-                onCheckboxChange={() => handleRowSelect(row)}
-              />
-            ),
-            ...row,
-          };
-        })
-      : rowsWithKey;
+    const mergedRows =
+      bulkActions?.length || multiSelect
+        ? rowsWithKey?.map((row) => {
+            const checked = selectedRows?.some(
+              (selectedRow) => selectedRow.key === row.key
+            );
+
+            return {
+              ...row,
+              checked,
+              select: (
+                <Checkbox
+                  checkboxColor="textLight"
+                  checked={checked}
+                  onCheckboxChange={() => handleRowSelect(row)}
+                />
+              ),
+            };
+          })
+        : rowsWithKey;
+
+    const tableKey = mergedRows
+      .map((row) => `${row.key}_${row.checked}`)
+      .join('-');
+
+    useEffect(() => {
+      if (initialSelectedRows !== undefined) {
+        setSelectedRows(initialSelectedRows);
+      }
+    }, [initialSelectedRows]);
 
     useEffect(() => {
       const nextButton = document.querySelector('.next-button');

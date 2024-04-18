@@ -7,11 +7,7 @@ import {
   ViewReferralDetailRouteParams,
   ViewReferralDetailsRouteState,
 } from './types';
-import {
-  ReferralDetails,
-  formatStringWithFirstLetterCapitalized,
-  formatTextToSlug,
-} from '@ecdlink/core';
+import { ReferralDetails, formatTextToSlug } from '@ecdlink/core';
 import ROUTES from '../../../routes/app.routes-constants';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/solid';
 import { useQuery } from '@apollo/client';
@@ -42,7 +38,7 @@ export const ViewReferralDetail = () => {
     GetReferrals,
     {
       variables: {
-        type: formatStringWithFirstLetterCapitalized(referralType),
+        typeId: referralType,
         startDate,
         endDate,
         clinicIds: state?.clinicIds ?? [],
@@ -83,6 +79,7 @@ export const ViewReferralDetail = () => {
 
   const rows: Irow[] =
     data?.referrals.map((referral) => ({
+      referral: referral,
       visitDataStatusId: referral?.visitDataStatusId ?? '',
       client: referral?.client ?? '-',
       chw: referral?.healthCareWorker ?? '-',
@@ -107,7 +104,7 @@ export const ViewReferralDetail = () => {
       <Typography
         className="mt-9 mb-9"
         type="h1"
-        text={formatStringWithFirstLetterCapitalized(referralType)}
+        text={state.type}
         color="textDark"
       />
       <div className="rounded-xl bg-white px-12 pb-12 pt-4">
@@ -140,16 +137,15 @@ export const ViewReferralDetail = () => {
             history.push(
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.EDIT_BACK_REFERRAL.replace(
                 ':referralType',
-                formatTextToSlug(referralType)
+                referralType
               ).replace(
                 ':visitDataStatusId',
                 formatTextToSlug(row.visitDataStatusId)
               ),
               // .replace(':visitBackReferralId', 'to-do'),
               {
-                startDate,
-                endDate,
-                clinicIds: state?.clinicIds,
+                clinicIds: state.clinicIds,
+                referral: row.referral,
               } as EditBackReferralRouteState
             )
           }

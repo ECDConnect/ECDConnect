@@ -166,9 +166,12 @@ export const Referrals = () => {
             history.push(
               ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
                 ':referralType',
-                formatTextToSlug(row.type)
+                row.typeId
               ),
-              { clinicIds: selectedClinicIds } as ViewReferralDetailsRouteState
+              {
+                clinicIds: selectedClinicIds,
+                type: row.type,
+              } as ViewReferralDetailsRouteState
             )
           }
         />

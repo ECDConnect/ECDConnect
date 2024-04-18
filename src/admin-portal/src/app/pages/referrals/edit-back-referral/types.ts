@@ -1,9 +1,10 @@
+import { ReferralDetails } from '@ecdlink/core';
+
 export interface EditBackReferralRouteParams {
   visitDataStatusId: string;
 }
 
 export interface EditBackReferralRouteState {
-  startDate: string;
-  endDate: string;
-  clinicIds?: string[];
+  clinicIds: string[];
+  referral: ReferralDetails;
 }

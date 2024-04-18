@@ -126,6 +126,13 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
         public const string GGPointsTeamPlacementBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
+        // GG portal notifications
+        public const string GGPortalCHWNotCompletedVisitIn2Weeks = "gg-portal-chw-not-completed-visit-in-2-weeks";
+        public const string GGPortalTLMissingMonthlyReport = "gg-portal-tl-missing-monthly-report";
+        public const string GGPortalClinicSilverGoldTierPointsTeam = "gg-portal-clinic-points-silver-gold-tier-team";
+        public const string GGPortalClinicBronzeTierPointsTeam = "gg-portal-clinic-points-bronze-tier-team";
+        public const string GGPortalCHWMaternalDistress = "gg-portal-chw-maternal-distress";
+        public const string GGPortalCHWMissingMonthlyPoints = "gg-portal-chw-missing-monthly-points";
 
         //Bulk messaging
         public const string GenericMessage = "generic-message";

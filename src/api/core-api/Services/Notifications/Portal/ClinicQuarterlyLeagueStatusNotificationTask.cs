@@ -1,4 +1,5 @@
 ﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services
 {
-    public class TeamQuarterlyLeagueRankNotificationTask : INotificationTask
+    public class ClinicQuarterlyLeagueStatusNotificationTask : INotificationTask
     {
         private readonly INotificationService _notificationService;
         private readonly IPointsEngineService _pointsEngineService;
@@ -22,7 +23,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<League, Guid> _leagueRepo;
         private IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
 
-        public TeamQuarterlyLeagueRankNotificationTask(
+        public ClinicQuarterlyLeagueStatusNotificationTask(
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] IPointsEngineService pointsEngineService,
@@ -39,8 +40,11 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool ShouldRunToday()
         {
-            return DateTime.Now.Day == 1 &&
-                (DateTime.Now.Month == 3 || DateTime.Now.Month == 6 || DateTime.Now.Month == 12);
+            return 
+                (DateTime.Now.Month == 12 && DateTime.Now.Day == 24) ||
+                (DateTime.Now.Month == 3 && DateTime.Now.Day == 24) ||
+                (DateTime.Now.Month == 6 && DateTime.Now.Day == 23) ||
+                (DateTime.Now.Month == 9 && DateTime.Now.Day == 23);
         }
 
         public async Task SendNotifications()
@@ -49,11 +53,13 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach (var leagueId in leagueIds)
             {
+                var currentQuarterText =
+                    DateTime.Now.Month == 12 ? "1"
+                    : DateTime.Now.Month == 3 ? "2"
+                    : DateTime.Now.Month == 6 ? "3"
+                    : "4";
+
                 var clinicsWithRankings = _pointsEngineService.GetLeagueWithClinicRankings(leagueId);
-
-                var topTeam = clinicsWithRankings.Clinics.FirstOrDefault();
-
-
 
                 foreach (var clinic in clinicsWithRankings.Clinics)
                 {
@@ -62,8 +68,10 @@ namespace EcdLink.Api.CoreApi.Services
                         .Select(x => x.User)
                         .ToList();
 
-                    // Top ranked
-                    if (clinic.LeagueRankingForQuarter == 1)
+                    // Gold Tier
+                    if (
+                        (clinicsWithRankings.LeagueTypeName == "Super League" && clinic.PointsTotalForQuarter > 8000)
+                        || (clinicsWithRankings.LeagueTypeName == "League" && clinic.PointsTotalForQuarter > 3000))
                     {
                         foreach (var user in teamUsers)
                         {
@@ -73,14 +81,21 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     FindValue = "TotalTeamPoints",
                                     ReplacementValue = clinic.PointsTotalForQuarter.ToString()
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "Quarter",
+                                    ReplacementValue = currentQuarterText
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTopPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGGoldTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.GetEndOfMonth());
                         }
                     }
-                    // Top 25%
-                    else if ((float)clinicsWithRankings.Clinics.Where(x => x.PointsTotalForQuarter < clinic.PointsTotalForQuarter).Count() / clinicsWithRankings.Clinics.Count() * 100 >= 75)
+                    // Silver Tier
+                    else if (
+                        (clinicsWithRankings.LeagueTypeName == "Super League" && clinic.PointsTotalForQuarter > 5000)
+                        || (clinicsWithRankings.LeagueTypeName == "League" && clinic.PointsTotalForQuarter > 1000))
                     {
                         foreach (var user in teamUsers)
                         {
@@ -88,22 +103,17 @@ namespace EcdLink.Api.CoreApi.Services
                             {
                                 new TagsReplacements()
                                 {
-                                    FindValue = "Ranking",
-                                    ReplacementValue = clinic.LeagueRankingForQuarter.ToString()
-                                },
-                                new TagsReplacements()
-                                {
                                     FindValue = "TotalTeamPoints",
                                     ReplacementValue = clinic.PointsTotalForQuarter.ToString()
                                 },
                                 new TagsReplacements()
                                 {
-                                    FindValue = "PointsBehindWinningTeam",
-                                    ReplacementValue = (topTeam.PointsTotalForQuarter - clinic.PointsTotalForQuarter).ToString()
+                                    FindValue = "Quarter",
+                                    ReplacementValue = currentQuarterText
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTop25PercPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGSilverTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.GetEndOfMonth());
                         }
                     }
                     else
@@ -112,19 +122,20 @@ namespace EcdLink.Api.CoreApi.Services
                         {
                             var replacements = new List<TagsReplacements>
                             {
-                                new TagsReplacements()
-                                {
-                                    FindValue = "Ranking",
-                                    ReplacementValue = clinic.LeagueRankingForQuarter.ToString()
-                                },
+
                                 new TagsReplacements()
                                 {
                                     FindValue = "TotalTeamPoints",
                                     ReplacementValue = clinic.PointsTotalForQuarter.ToString()
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "Quarter",
+                                    ReplacementValue = currentQuarterText
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBottom75PercPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(7));
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBronzeTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, DateTime.Now.GetEndOfMonth());
                         }
                     }
                 }

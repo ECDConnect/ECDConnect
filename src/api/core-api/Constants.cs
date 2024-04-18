@@ -901,7 +901,7 @@ namespace EcdLink.Api.CoreApi
             public const string ChildSupportGrant = "Child support grant";
             public const string DevelopmentalDelays = "Developmental delays";
             public const string MaternalDistress = "Maternal distress";
-            public const string SeverlyUnderweight = "Severly underweight";
+            public const string SeverelyUnderweight = "Severely underweight";
             public const string VitaminANotUpToDate = "Vitamin A not up to date";
             public const string ClinicVisitsNotUpToDate = "Clinic visits not up to date";
             public const string DangerSignsChildsMother = "Danger signs - child's mother";
@@ -911,7 +911,7 @@ namespace EcdLink.Api.CoreApi
             public const string DangerSignsChild = "Danger signs - child";
             public const string CaregiverIDBook = "Caregiver ID book";
             public const string SevereAcuteMalnutrition = "Severe acute malnutrition";
-            public const string SeverlyStunted = "Severly stunted";
+            public const string SeverelyStunted = "Severely stunted";
             public const string LowBirthWeight = "Low birth weight";
             public const string GrowthFaltering = "Growth faltering";
             public const string Underweight = "Underweight";

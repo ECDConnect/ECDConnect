@@ -59,14 +59,16 @@ export default function TeamLeadForgotPassword() {
     if (idField || passportField) {
       setIsLoading(true);
       const body = {
-        email: idField || passportField,
+        username: idField || passportField,
       };
       const isLinkSent = await forgotPassword(body, Config.authApi);
 
       if (isLinkSent) {
         setIsLoading(false);
-        history.push(ROUTES.RESET);
-        localStorage.setItem('email', formValues.email);
+        localStorage.setItem(
+          'email',
+          formValues.idField || formValues?.passportField
+        );
       } else {
         setIsLoading(false);
         setDisplayError(true);

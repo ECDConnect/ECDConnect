@@ -3,5 +3,6 @@ export interface ViewReferralDetailRouteParams {
 }
 
 export interface ViewReferralDetailsRouteState {
+  type: string;
   clinicIds: string[];
 }

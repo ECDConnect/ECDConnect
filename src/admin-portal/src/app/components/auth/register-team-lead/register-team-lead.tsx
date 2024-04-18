@@ -1,18 +1,23 @@
 import {
   Config,
-  initialRegisterValues,
+  NOTIFICATION,
   RegisterRequestModel,
-  registerSchema,
+  useNotifications,
   useTheme,
 } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
   Button,
+  containsNumericRegex,
+  containsUpperCaseRegex,
   Dialog,
   DialogPosition,
   Divider,
   FormInput,
+  SA_CELL_REGEX,
+  SA_ID_REGEX,
+  SA_PASSPORT_REGEX,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -22,20 +27,52 @@ import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
-import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../password-input/password-input';
+import * as Yup from 'yup';
+import ROUTES from '../../../routes/app.routes-constants';
 
 interface RouteParams {
   resetToken: string;
 }
+
+export const initialRegisterValuesForTL: RegisterRequestModel = {
+  username: '',
+  password: '',
+  token: '',
+  acceptedTerms: false,
+  preferId: true,
+  passportField: undefined,
+  phoneNumber: undefined,
+  idField: undefined,
+};
+
+const tlRegisterSchema = Yup.object().shape({
+  idField: Yup.string().when('preferId', {
+    is: true,
+    then: Yup.string()
+      .matches(SA_ID_REGEX, 'Please enter a valid ID number')
+      .required(),
+    otherwise: Yup.string()
+      .matches(SA_PASSPORT_REGEX, 'Please enter a valid passport number')
+      .required(),
+  }),
+  phoneNumber: Yup.string()
+    .required('Cellphone number is required')
+    .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
+  password: Yup.string()
+    .required('Password is required')
+    .min(8, 'At least 8 characters')
+    .matches(containsNumericRegex, 'At least 1 number')
+    .matches(containsUpperCaseRegex, 'At least 1 capital letter'),
+});
 
 export default function RegisterTeamLead(
   props: RouteComponentProps<RouteParams>
 ) {
   const { logout, registerTeamLeadUser, verifyPhoneNumber } = useAuth();
   const { theme } = useTheme();
+  const { setNotification } = useNotifications();
   const history = useHistory();
-  const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { resetToken } = useParams<RouteParams>();
 
@@ -43,31 +80,23 @@ export default function RegisterTeamLead(
     register,
     getValues,
     formState,
-    watch,
     setValue: setTlRegistrationValue,
     control,
   } = useForm({
-    resolver: yupResolver(registerSchema),
-    defaultValues: initialRegisterValues,
+    resolver: yupResolver(tlRegisterSchema),
+    defaultValues: initialRegisterValuesForTL,
     mode: 'onChange',
   });
 
   //check password strength
-  const password = watch('password');
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-
   const { errors } = formState;
   const formValues = getValues();
-
-  const [showPassword, setShowPassword] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
     useState<boolean>(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const [displayErrorMessage, setDiplayErrorMessage] = useState<string[]>([]);
+  const errorsList = Object?.values(errors);
+  const errorListFormatted = errorsList?.map((item) => item?.message);
 
   const toggleIdAndpassport = (visible: boolean) => {
     const flag = !visible;
@@ -81,48 +110,71 @@ export default function RegisterTeamLead(
   });
 
   const disableButton =
-    !acceptedTerms || (!idField && !passportField) || !phoneNumber;
+    !acceptedTerms ||
+    (!idField && !passportField) ||
+    !phoneNumber ||
+    !!errors?.password?.message ||
+    !!errors?.phoneNumber?.message ||
+    !!errors?.idField?.message;
 
   const registerNewUser = async () => {
+    setIsLoading(true);
     const informationVerified = await verifyPhoneNumber(Config.authApi, {
       phoneNumber: formValues.phoneNumber,
       token: resetToken || '',
       username: formValues.idField || '',
     });
 
-    if (informationVerified.verified) {
-    } else if (informationVerified.errorCode === 1) {
-      setPresentCellNumberMismatch(true);
+    if (informationVerified.verified === false) {
+      if (informationVerified.errorCode === 1) {
+        setDiplayErrorMessage([informationVerified?.errorMessage]);
+        setIsLoading(false);
+        setTimeout(() => {
+          setDiplayErrorMessage([]);
+        }, 6000);
+      }
+      if (informationVerified.errorCode === 2) {
+        setPresentCellNumberMismatch(true);
+        setIsLoading(false);
+      }
+      return;
     }
 
     if (resetToken) {
       setIsLoading(true);
       const body: RegisterRequestModel = {
-        username: formValues.idField,
+        username: formValues.idField || formValues.passportField,
         password: formValues.password,
         token: resetToken,
         acceptedTerms: formValues.acceptedTerms,
       };
+
       const isAuthenticated = await registerTeamLeadUser(
         body,
         Config.authApi
       ).catch(() => {
-        setDisplayError(true);
+        setNotification({
+          title: ` Failed to Sign Up!`,
+          variant: NOTIFICATION.ERROR,
+        });
         setIsLoading(false);
       });
 
       if (isAuthenticated) {
         setIsLoading(false);
         logout();
-        history.push('/');
+        history.push(ROUTES.ROOT_TEAM_LEAD);
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
       } else {
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
         setIsLoading(false);
-        setDisplayError(true);
       }
-
-      setTimeout(() => {
-        setDisplayError(false);
-      }, 5000);
     }
   };
 
@@ -156,6 +208,7 @@ export default function RegisterTeamLead(
                   nameProp={'idField'}
                   register={register}
                   placeholder={'E.g. 7601010338089'}
+                  error={formState.errors['idField']?.message}
                 />
               )}
               {!idFieldVisible && (
@@ -206,6 +259,7 @@ export default function RegisterTeamLead(
                   register={register}
                   placeholder="e.g 0123456789"
                   value={formValues.phoneNumber}
+                  error={formState.errors['phoneNumber']}
                 />
               </div>
 
@@ -233,14 +287,29 @@ export default function RegisterTeamLead(
                   />
                 </div>
               </div>
-              {displayError && (
-                <Alert
-                  className={'mt-5 mb-3'}
-                  message={
-                    'Oh no! There are 2 problems above. Please fix them:'
-                  }
-                  type={'error'}
-                />
+              {errorListFormatted?.length > 0 && (
+                <div className="w-72">
+                  <Alert
+                    className={'mt-5 mb-3'}
+                    title={`Oh no! There are ${errorListFormatted?.length} ${
+                      errorListFormatted?.length === 1 ? 'problem' : 'problems'
+                    } above. Please fix them:`}
+                    list={errorListFormatted}
+                    type={'error'}
+                  />
+                </div>
+              )}
+              {displayErrorMessage?.length > 0 && (
+                <div className="w-72">
+                  <Alert
+                    className={'mt-5 mb-3'}
+                    title={`Oh no! There are ${displayErrorMessage?.length} ${
+                      displayErrorMessage?.length === 1 ? 'problem' : 'problems'
+                    } above. Please fix them:`}
+                    list={displayErrorMessage}
+                    type={'error'}
+                  />
+                </div>
               )}
               <div>
                 <Button
@@ -259,7 +328,7 @@ export default function RegisterTeamLead(
                 </Button>
               </div>
               <Divider
-                title={'Already have a Funda App account?'}
+                title={'Already have a CHW Connect?'}
                 dividerType={'solid'}
                 className={'mt-2 mb-2'}
               />
@@ -268,8 +337,7 @@ export default function RegisterTeamLead(
                 className={'mt-5 mb-5 w-full rounded-2xl'}
                 type="outlined"
                 color="secondary"
-                // disabled={!isOnline}
-                onClick={() => history.push('/team-lead')}
+                onClick={() => history.push(ROUTES.ROOT_TEAM_LEAD)}
               >
                 <Typography
                   type="help"
@@ -292,7 +360,7 @@ export default function RegisterTeamLead(
           detailText={
             'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
           }
-          paragraphs={[`Youve entered : ${formValues.phoneNumber}`]}
+          paragraphs={[`You entered : ${formValues.phoneNumber}`]}
           actionButtons={[
             {
               colour: 'secondary',

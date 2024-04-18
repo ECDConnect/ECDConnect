@@ -38,6 +38,8 @@ interface Loading extends LoadingSpinnerProps {
 }
 
 export interface TableProps {
+  selectedRows?: Irow[];
+  multiSelect?: boolean;
   columns: Icolumn[];
   rows: Irow[];
   rowsPerPage?: number;
