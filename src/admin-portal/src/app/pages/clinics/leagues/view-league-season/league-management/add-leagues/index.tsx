@@ -241,7 +241,7 @@ export const AddLeagues = () => {
             icon="ArrowCircleLeftIcon"
             type="outlined"
             color="secondary"
-            textColor="secondary"
+            textColor={addingLeagues ? 'textMid' : 'secondary'}
             text="Previous"
             isLoading={addingLeagues}
             disabled={addingLeagues}

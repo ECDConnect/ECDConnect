@@ -2,7 +2,6 @@ import { CheckCircleIcon, ExclamationIcon } from '@heroicons/react/solid';
 import { useHistory, useLocation } from 'react-router';
 
 import {
-  ActionModal,
   Alert,
   Button,
   DialogPosition,
@@ -14,12 +13,18 @@ import {
 } from '@ecdlink/ui';
 import { useQuery } from '@apollo/client';
 import { GetLeagueSetup } from '@ecdlink/graphql';
-import { LeagueIdEnum, LeagueSetupDto, useDialog } from '@ecdlink/core';
+import {
+  DistrictLeagues,
+  LeagueIdEnum,
+  LeagueSetupDto,
+  useDialog,
+} from '@ecdlink/core';
 
 import ROUTES from '../../../../../routes/app.routes-constants';
 
 import { LeagueSeasonRouteState } from '../types';
 import { AddLeaguesRouteState } from './add-leagues/types';
+import { LeagueActionModal } from './components/LeagueActionModal';
 
 export const LeagueManagement = () => {
   const history = useHistory<AddLeaguesRouteState>();
@@ -28,12 +33,11 @@ export const LeagueManagement = () => {
 
   const dialog = useDialog();
 
-  const { data, loading } = useQuery<{ leagueSetupDetails?: LeagueSetupDto }>(
-    GetLeagueSetup,
-    {
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const { data, loading, refetch } = useQuery<{
+    leagueSetupDetails?: LeagueSetupDto;
+  }>(GetLeagueSetup, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const currentYear = new Date().getFullYear();
 
@@ -55,55 +59,20 @@ export const LeagueManagement = () => {
     0
   );
 
-  const onActionOptions = (districtId?: string) => {
+  const onActionOptions = (district?: DistrictLeagues) => {
     dialog({
       position: DialogPosition.Middle,
       color: 'bg-white',
       render: (onClose) => (
-        <ActionModal
-          icon="QuestionMarkCircleIcon"
-          iconColor="infoMain"
-          title="What would you like to do?"
-          buttonClass="rounded-2xl"
-          actionButtons={[
-            {
-              leadingIcon: 'PlusCircleIcon',
-              type: 'outlined',
-              colour: 'secondary',
-              textColour: 'secondary',
-              text: 'Add a league',
-              onClick: () => {
-                history.push(
-                  ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES,
-                  {
-                    ...state,
-                    allowMultipleLeagues: false,
-                    districtId,
-                    leagueType: districtId
-                      ? LeagueIdEnum.League
-                      : LeagueIdEnum.SuperLeague,
-                  }
-                );
-                onClose();
-              },
-            },
-            {
-              leadingIcon: 'TrashIcon',
-              type: 'outlined',
-              colour: 'secondary',
-              textColour: 'secondary',
-              text: 'Remove a league',
-              onClick: () => {},
-            },
-            {
-              leadingIcon: 'PencilIcon',
-              type: 'outlined',
-              colour: 'secondary',
-              textColour: 'secondary',
-              text: 'Add or remove clinics from a league',
-              onClick: () => {},
-            },
-          ]}
+        <LeagueActionModal
+          onRefetchData={refetch}
+          onClose={onClose}
+          district={district}
+          leagues={
+            !!district
+              ? district.leagues
+              : data?.leagueSetupDetails?.superLeagues
+          }
         />
       ),
     });
@@ -150,7 +119,7 @@ export const LeagueManagement = () => {
         subTitleStyle: 'text-sm text-textLight',
         onActionClick: () => {
           if (item.leagues.length) {
-            onActionOptions(item.id);
+            onActionOptions(item);
           } else {
             history.push(
               ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES,
