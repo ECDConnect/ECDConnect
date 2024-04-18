@@ -76,3 +76,9 @@ export const AddLeagues = gql`
     addLeagues(input: $input)
   }
 `;
+
+export const DeleteLeague = gql`
+  mutation DeleteLeague($id: UUID, $leagueId: UUID!) {
+    deleteLeague(id: $id, leagueId: $leagueId)
+  }
+`;
