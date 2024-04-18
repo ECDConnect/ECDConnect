@@ -43,8 +43,6 @@ export default function ResetPassword() {
     let _email = localStorage.getItem('email') ?? email;
 
     if (isValid) {
-      console.log(Config.authApi);
-
       setIsLoading(true);
       const body: PasswordResetModel = {
         username: _email,

@@ -65,7 +65,6 @@ export default function TeamLeadForgotPassword() {
 
       if (isLinkSent) {
         setIsLoading(false);
-        history.push(ROUTES.RESET);
         localStorage.setItem(
           'email',
           formValues.idField || formValues?.passportField
