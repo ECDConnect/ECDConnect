@@ -39,9 +39,10 @@ export const WalkthroughInfoPage = ({
   availableLanguages,
 }: WalkthroughInfoPageProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
-  const [moreInformationList, setMoreInformationList] = useState(
-    useSelector(getMoreInformationSelector)
-  );
+
+  const moreInformation = useSelector(getMoreInformationSelector);
+  const [moreInformationList, setMoreInformationList] =
+    useState(moreInformation);
 
   const { isOnline } = useOnlineStatus();
 
@@ -60,7 +61,7 @@ export const WalkthroughInfoPage = ({
   );
 
   const moreInformationItem = moreInformationList?.find(
-    (item) => item.section === sectionName
+    (item) => item?.section === sectionName
   );
 
   const moreInformationLanguages: LanguageCode[] =
