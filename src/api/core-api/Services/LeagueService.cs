@@ -15,6 +15,9 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clinics;
+using ECDLink.Abstractrions.Constants;
+using ECDLink.Security;
+using ECDLink.DataAccessLayer.Managers;
 using NPOI.SS.Formula.Functions;
 
 namespace EcdLink.Api.CoreApi.Services
@@ -27,12 +30,16 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<ClinicLeague, Guid> _clinicLeagueRepo;
 
         private IPointsEngineService _pointsEngineService;
+        private readonly INotificationService _notificationService;
+        private readonly ApplicationUserManager _applicationUserManager;
 
         private Guid _uId;
 
         public LeagueService(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IPointsEngineService pointsEngineService,
+            [Service] INotificationService notificationService,
+            ApplicationUserManager applicationUserManager,
             IGenericRepositoryFactory repoFactory)
         {
             _uId = contextAccessor.HttpContext.GetUser().Id;
@@ -43,6 +50,8 @@ namespace EcdLink.Api.CoreApi.Services
             _clinicLeagueRepo = repoFactory.CreateRepository<ClinicLeague>(userContext: _uId);
 
             _pointsEngineService = pointsEngineService;
+            _notificationService = notificationService;
+            _applicationUserManager = applicationUserManager;
         }
 
         public LeagueSetupModel GetLeagueSetup()
@@ -181,12 +190,14 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             _leagueRepo.InsertMany(newLeagues);
+
+            CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.LeagueSetupUnassignedClinics);
         }
 
         public List<PortalLeagueModel> GetLeagues(string searchString, Guid? districtId = null, PagedQueryInput pagingInput = null)
         {
-            var startDate = GetCurrentSeasonStartDate();
-            var endDate = GetCurrentSeasonEndDate();
+            var startDate = LeagueHelpers.GetCurrentSeasonStartDate();
+            var endDate = LeagueHelpers.GetCurrentSeasonEndDate();
 
             var leagues = _leagueRepo.GetAll(pagingInput)
                 .Where(x => 
@@ -241,14 +252,18 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 _clinicLeagueRepo.Delete(clinicLeague.Id);
             }
-
             _leagueRepo.Delete(leagueId);
+
+            // TODO - Reset this so it is working for the next season (should be this year, to next year)
+            var startDate = new DateTime(DateTime.Now.Year - 1, 10, 1);
+            var endDate = new DateTime(DateTime.Now.Year, 9, 30);
+            CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.LeagueSetupUnassignedClinics);
         }
 
         public void AddClinicToLeague(Guid leagueId, Guid clinicId)
         {
-            var startDate = GetCurrentSeasonStartDate();
-            var endDate = GetCurrentSeasonEndDate();
+            var startDate = LeagueHelpers.GetCurrentSeasonStartDate();
+            var endDate = LeagueHelpers.GetCurrentSeasonEndDate();
 
             var league = _leagueRepo.GetById(leagueId);
             var clinic = _clinicRepo.GetById(clinicId);
@@ -272,6 +287,8 @@ namespace EcdLink.Api.CoreApi.Services
                 ClinicId = clinicId,
                 TenantId = Constants.Tenants.GrowGreatTenantId,
             });
+
+            CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.UnassignedClinics);
         }
 
         public void EditLeague(Guid leagueId, string name, List<Guid> clinicsToAdd, List<Guid> clinicsToRemove)
@@ -301,8 +318,8 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
 
-                var startDate = GetCurrentSeasonStartDate();
-                var endDate = GetCurrentSeasonEndDate();
+                var startDate = LeagueHelpers.GetCurrentSeasonStartDate();
+                var endDate = LeagueHelpers.GetCurrentSeasonEndDate();
 
                 foreach (var clinicId in clinicsToAdd)
                 {
@@ -322,16 +339,41 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             _leagueRepo.Update(league);
+
+            CheckAndExpireNotifications(LeagueHelpers.GetCurrentSeasonStartDate(), LeagueHelpers.GetCurrentSeasonEndDate(), TemplateTypeConstants.LeagueSetupUnassignedClinics);
         }
 
-        private DateTime GetCurrentSeasonStartDate()
+        private void CheckAndExpireNotifications(DateTime startDate, DateTime endDate, string notificationTemplate)
         {
-            return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year, 10, 1) : new DateTime(DateTime.Now.Year - 1, 10, 1);
+            var anyUnassignedClinics = _clinicRepo.GetAll()
+                .Where(x => !x.Leagues.Any(x => x.IsActive && x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
+                .Any();
+
+            if (anyUnassignedClinics)
+            {
+                return;
+            }
+
+            var adminUsers = _applicationUserManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
+
+            foreach (var user in adminUsers)
+            {
+                _notificationService.ExpireNotificationsTypesForUser(user.Id.ToString(), notificationTemplate);
+            }
         }
 
-        private DateTime GetCurrentSeasonEndDate()
+        public static class LeagueHelpers
         {
-            return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
+            public static DateTime GetCurrentSeasonStartDate()
+            {
+                return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year, 10, 1) : new DateTime(DateTime.Now.Year - 1, 10, 1);
+            }
+
+            public static DateTime GetCurrentSeasonEndDate()
+            {
+                return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
+            }
+
         }
     }
 }

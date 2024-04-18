@@ -140,5 +140,9 @@ namespace ECDLink.Abstractrions.Constants
         //SMS messaging
         public const string Offline30Days = "30days-offline";
         public const string Offline21Days = "21days-offline";
+
+        // GG portal notifications
+        public const string LeagueSetupUnassignedClinics = "league-setup-unassigned-clinics";
+        public const string UnassignedClinics = "unassigned-clinics";
     }
 }

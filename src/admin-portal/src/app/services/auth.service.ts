@@ -1,5 +1,6 @@
 import {
   APIs,
+  AuthCodeModel,
   LoginRequestModel,
   PasswordResetModel,
   RegisterRequestModel,
@@ -158,4 +159,17 @@ export async function VerifyInvitationRequest(
   return {
     verified: true,
   };
+}
+
+export async function VerifyCellPhoneNumber(
+  baseEndPoint: string,
+  body: AuthCodeModel
+) {
+  return await api(baseEndPoint).post(
+    APIs.verifyCellPhoneNumber,
+    JSON.stringify(body),
+    {
+      headers: headers,
+    }
+  );
 }

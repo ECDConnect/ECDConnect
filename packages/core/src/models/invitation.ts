@@ -11,6 +11,11 @@ export interface VerifyInvitationModel {
   phoneNumber: string;
 }
 
+export interface VerifyCellphoneNumberModel {
+  Username: string;
+  Token: string;
+}
+
 export interface AuthCodeModel {
   username: string;
   token: string;

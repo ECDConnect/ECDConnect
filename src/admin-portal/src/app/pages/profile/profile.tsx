@@ -19,7 +19,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import {
   GetTeamLead,
   GetUserById,
@@ -46,6 +46,12 @@ export const userSchema = yup.object().shape({
     .matches(SA_CELL_REGEX, 'Phone number is not valid'),
 });
 
+export const tlSchema = yup.object().shape({
+  firstName: yup.string().required('First name is Required'),
+  surname: yup.string().required('Surname is Required'),
+  phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
+});
+
 export function Profile(props: any) {
   const [resetUserPassword] = useMutation(ResetUserPassword);
   const user = useUser();
@@ -57,13 +63,17 @@ export function Profile(props: any) {
     setHandleChangePasswordAndPhoneNumber,
   ] = useState(false);
 
-  const { register, formState, getValues, handleSubmit, setValue } = useForm({
-    resolver: yupResolver(userSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onChange',
-  });
+  const { isAdministrator, isSuperAdmin, isTeamLead } = useUserRole();
+
+  const { register, formState, getValues, handleSubmit, setValue, control } =
+    useForm({
+      resolver: yupResolver(isTeamLead ? tlSchema : userSchema),
+      defaultValues: initialUserDetailsValues,
+      mode: 'onChange',
+    });
 
   const { errors, isValid } = formState;
+
   const {
     register: passwordRegister,
     formState: passwordFormState,
@@ -87,7 +97,6 @@ export function Profile(props: any) {
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
   const [updateWelcomeMessage] = useMutation(UpdateTeamLeadMessage);
-  const { isAdministrator, isSuperAdmin, isTeamLead } = useUserRole();
 
   const [getTeamLeadData, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
     variables: {
@@ -108,6 +117,9 @@ export function Profile(props: any) {
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
+  const { phoneNumber, firstName, surname } = useWatch({ control });
+  const tlDisableButton =
+    !!errors?.firstName || !!errors?.surname || !!errors?.phoneNumber;
   const [avatarFile, setAvatarFile] = useState(null);
   const [teamLeadWelcomeMessage, setTeamLeadWelcomeMessage] = useState('');
   const [showSMSMessage, setShowSMSMessage] = useState(false);
@@ -121,7 +133,7 @@ export function Profile(props: any) {
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
       profileImageUrl: profileImage ?? userData.userById?.profileImageUrl,
-      phoneNumber: userDetailForm?.phoneNumber,
+      phoneNumber: phoneNumber,
     };
 
     await updateUser({
@@ -182,7 +194,7 @@ export function Profile(props: any) {
 
     if (
       passwordForm.password.length > 0 &&
-      userDetailForm?.phoneNumber !== user.user?.phoneNumber
+      phoneNumber !== user.user?.phoneNumber
     ) {
       passwordChange = true;
       internalIsPasswordValid = isPasswordValid;
@@ -197,7 +209,7 @@ export function Profile(props: any) {
       return;
     }
 
-    if (userDetailForm?.phoneNumber !== user.user?.phoneNumber) {
+    if (phoneNumber !== user.user?.phoneNumber) {
       setHandleChangePhoneNumber(true);
       return;
     }
@@ -245,9 +257,7 @@ export function Profile(props: any) {
         shouldValidate: true,
       });
 
-      setValue('whatsAppNumber', user.user?.whatsAppNumber, {
-        shouldValidate: true,
-      });
+      setValue('whatsAppNumber', user.user?.whatsAppNumber, {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -301,7 +311,7 @@ export function Profile(props: any) {
                         textColor="white"
                         text="Resend SMS"
                         icon="MailIcon"
-                        onClick={() => {}}
+                        onClick={async () => await saveUser(false)}
                       />
                     }
                   />
