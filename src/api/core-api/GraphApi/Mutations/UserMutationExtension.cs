@@ -187,14 +187,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // Phone Number
             var sendPhoneNumberVerification = false;
+            var userPhoneNumberBeforeChange = user.PhoneNumber;
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
-                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-
                 if (user.Id != currentUserId)
                 {
+                    user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
                     user.PendingPhoneNumber = null;
                 } 
                 else
@@ -203,6 +203,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (userIsTL)
                     {
                         sendPhoneNumberVerification = true;
+                        user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
                         user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
                         user.PhoneNumberConfirmed = false;
                     }
@@ -399,6 +400,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
                         await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
+
+                        // revert phone number to old one for verification
+                        user.PhoneNumber = userPhoneNumberBeforeChange;
+                        await userManager.UpdateAsync(user);
                     }
                     catch (Exception exception)
                     {
