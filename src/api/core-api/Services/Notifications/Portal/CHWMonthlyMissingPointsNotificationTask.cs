@@ -1,5 +1,4 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clinics;
@@ -28,7 +27,6 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
         public CHWMonthlyMissingPointsNotificationTask(
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
-            [Service] IClinicService clinicService,
             HierarchyEngine hierarchyEngine)
         {
             _notificationService = notificationService;

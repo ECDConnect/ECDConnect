@@ -56,9 +56,9 @@ namespace EcdLink.Api.CoreApi.Services
             foreach (var leagueId in leagueIds)
             {
                 var currentQuarterText =
-                    DateTime.Now.Month == 12 ? "1"
-                    : DateTime.Now.Month == 3 ? "2"
-                    : DateTime.Now.Month == 6 ? "3"
+                    DateTime.Now.Month == 3 ? "1"
+                    : DateTime.Now.Month == 6 ? "2"
+                    : DateTime.Now.Month == 9 ? "3"
                     : "4";
 
                 var clinicsWithRankings = _pointsEngineService.GetLeagueWithClinicRankings(leagueId);
