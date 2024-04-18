@@ -118,7 +118,6 @@ export const LeagueManagement = () => {
         titleStyle: 'text-lg text-textMid font-semibold',
         subTitleStyle: 'text-sm text-textLight',
         onActionClick: () => {
-          console.log({ item });
           if (item.leagues.length || !item.unassignedClinics?.length) {
             onActionOptions(item);
           } else {
