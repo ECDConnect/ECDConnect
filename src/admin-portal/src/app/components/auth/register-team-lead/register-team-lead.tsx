@@ -149,32 +149,32 @@ export default function RegisterTeamLead(
         acceptedTerms: formValues.acceptedTerms,
       };
 
-      // const isAuthenticated = await registerTeamLeadUser(
-      //   body,
-      //   Config.authApi
-      // ).catch(() => {
-      //   setNotification({
-      //     title: ` Failed to Sign Up!`,
-      //     variant: NOTIFICATION.ERROR,
-      //   });
-      //   setIsLoading(false);
-      // });
+      const isAuthenticated = await registerTeamLeadUser(
+        body,
+        Config.authApi
+      ).catch(() => {
+        setNotification({
+          title: ` Failed to Sign Up!`,
+          variant: NOTIFICATION.ERROR,
+        });
+        setIsLoading(false);
+      });
 
-      // if (isAuthenticated) {
-      //   setIsLoading(false);
-      //   logout();
-      //   history.push(ROUTES.ROOT_TEAM_LEAD);
-      //   setNotification({
-      //     title: ` Successfully registered!`,
-      //     variant: NOTIFICATION.SUCCESS,
-      //   });
-      // } else {
-      //   setNotification({
-      //     title: ` Successfully registered!`,
-      //     variant: NOTIFICATION.SUCCESS,
-      //   });
-      //   setIsLoading(false);
-      // }
+      if (isAuthenticated) {
+        setIsLoading(false);
+        logout();
+        history.push(ROUTES.ROOT_TEAM_LEAD);
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      } else {
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        setIsLoading(false);
+      }
     }
   };
 
