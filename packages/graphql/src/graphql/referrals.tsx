@@ -14,6 +14,7 @@ export const GetReferralsSummary = gql`
       pagingInput: $pagingInput
     ) {
       type
+      typeId
       referralsRaised
       referralsMade
       backReferralsMade
@@ -25,20 +26,21 @@ export const GetReferrals = gql`
   query GetReferrals(
     $startDate: DateTime!
     $endDate: DateTime!
-    $type: String
+    $typeId: UUID!
     $pagingInput: PagedQueryInput
     $clinicIds: [UUID!]
   ) {
     referrals(
       startDate: $startDate
       endDate: $endDate
-      type: $type
+      typeId: $typeId
       clinicIds: $clinicIds
       pagingInput: $pagingInput
     ) {
       visitBackReferralId
       visitId
       visitDataStatusId
+      typeId
       type
       client
       healthCareWorker

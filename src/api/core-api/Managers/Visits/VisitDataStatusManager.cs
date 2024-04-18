@@ -1086,7 +1086,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     if (weightIndicator == "Severely underweight")
                     {
-                        referrals.Add(referralTypes[ReferralTypes.SeverlyUnderweight]);
+                        referrals.Add(referralTypes[ReferralTypes.SeverelyUnderweight]);
                         weightColor = StatusColours.Red;
 
                         // Red progress
@@ -1171,7 +1171,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (lengthIndicator == "Severely stunted")
                 {
-                    referrals.Add(referralTypes[ReferralTypes.SeverlyStunted]);
+                    referrals.Add(referralTypes[ReferralTypes.SeverelyStunted]);
                     lengthColor = StatusColours.Red;
 
                     // Red progress

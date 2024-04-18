@@ -48,33 +48,7 @@ export const EditBackReferral = () => {
 
   const apolloClient = useApolloClient();
 
-  const { referrals } =
-    apolloClient.readQuery<{ referrals?: ReferralDetails[] }>({
-      query: GetReferrals,
-      variables: {
-        type: formatStringWithFirstLetterCapitalized(referralType),
-        startDate: state?.startDate,
-        endDate: state?.endDate,
-        clinicIds: state?.clinicIds ?? [],
-      },
-    }) || {};
-
-  const { loading: loadingReferrals } = useQuery<{
-    referrals: ReferralDetails[];
-  }>(GetReferrals, {
-    variables: {
-      type: formatStringWithFirstLetterCapitalized(referralType),
-      startDate: state?.startDate,
-      endDate: state?.endDate,
-      clinicIds: state?.clinicIds ?? [],
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !!referrals,
-  });
-
-  const selectedReferral = referrals?.find(
-    (referral) => referral.visitDataStatusId === visitDataStatusId
-  );
+  const referral = state.referral;
 
   const [comment, setComment] = useState<string>();
   const [isCommentSaved, setIsCommentSaved] = useState(true);
@@ -86,10 +60,10 @@ export const EditBackReferral = () => {
   const { setNotification } = useNotifications();
 
   useEffect(() => {
-    if (!comment && !!selectedReferral?.adminBackReferralNote) {
-      setComment(selectedReferral?.adminBackReferralNote);
+    if (!comment && !!referral?.adminBackReferralNote) {
+      setComment(referral?.adminBackReferralNote);
     }
-  }, [comment, selectedReferral?.adminBackReferralNote]);
+  }, [comment, referral?.adminBackReferralNote]);
 
   const paths: BreadcrumbProps['paths'] = [
     { name: 'Referrals', url: isCommentSaved ? ROUTES.REFERRALS.ROOT : '' },
@@ -114,42 +88,42 @@ export const EditBackReferral = () => {
   }[] = [
     {
       name: 'Client:',
-      value: selectedReferral?.client ?? '-',
+      value: referral?.client ?? '-',
     },
     {
       name: 'CHW:',
-      value: selectedReferral?.healthCareWorker ?? '-',
+      value: referral?.healthCareWorker ?? '-',
     },
     {
       name: 'Referral created on:',
-      value: !!selectedReferral?.createdDate
-        ? format(new Date(selectedReferral?.createdDate), 'dd MMMM yyyy')
+      value: !!referral?.createdDate
+        ? format(new Date(referral?.createdDate), 'dd MMMM yyyy')
         : '-',
       className: 'mt-4',
     },
     {
       name: 'Was the referral made?',
-      value: selectedReferral?.isCompleted ? 'Yes' : 'No',
+      value: referral?.isCompleted ? 'Yes' : 'No',
     },
     {
       name: 'Referral made on:',
-      value: !!selectedReferral?.completedDate
-        ? format(new Date(selectedReferral?.completedDate), 'dd MMMM yyyy')
+      value: !!referral?.completedDate
+        ? format(new Date(referral?.completedDate), 'dd MMMM yyyy')
         : '-',
     },
     {
       name: 'Referral text:',
-      value: selectedReferral?.text ?? '-',
+      value: referral?.text ?? '-',
       className: 'flex-col mb-4',
       type: 'markdown',
     },
     {
       name: 'Was a back-referral made?',
-      value: selectedReferral?.isBackReferralCompleted ? 'Yes' : 'No',
+      value: referral?.isBackReferralCompleted ? 'Yes' : 'No',
     },
     {
       name: 'CHW back-referral note:',
-      value: selectedReferral?.healthCareWorkerBackReferralNote ?? '-',
+      value: referral?.healthCareWorkerBackReferralNote ?? '-',
     },
   ];
 
@@ -170,15 +144,6 @@ export const EditBackReferral = () => {
     });
   };
 
-  if (loadingReferrals) {
-    return (
-      <LoadingSpinner
-        size="medium"
-        spinnerColor="adminPortalBg"
-        backgroundColor="secondary"
-      />
-    );
-  }
   const onBack = () => {
     history.push(
       ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
@@ -236,7 +201,7 @@ export const EditBackReferral = () => {
       <div className="mt-9 mb-9 flex justify-between">
         <Typography
           type="h1"
-          text={`${selectedReferral?.client ?? ''} - referral`}
+          text={`${referral?.client ?? ''} - referral`}
           color="textDark"
         />
         <Button

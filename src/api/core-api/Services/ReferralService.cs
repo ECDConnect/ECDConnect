@@ -64,6 +64,7 @@ namespace EcdLink.Api.CoreApi.Services
             var basicReferrals = referrals.Select(x => new
             {
                 VisitDataStatusId = x.VisitDataStatusId,
+                TypeId = x.ReferralTypeId,
                 Type = x.ReferralType.Name,
                 IsPregnantMomVisit = x.VisitDataStatus.VisitData.Visit.MotherId.HasValue,
                 //x.VisitData.VisitName,
@@ -86,6 +87,7 @@ namespace EcdLink.Api.CoreApi.Services
                     VisitId = referral.VisitId,
                     VisitDataStatusId = referral.VisitDataStatusId,
                     VisitBackReferralId = referral.BackReferral?.Id,
+                    TypeId = referral.TypeId,
                     Type = referral.Type,
                     AdminBackReferralNote = referral.BackReferralAdminComment,
                     CompletedDate = referral.CompletedDate,
@@ -119,7 +121,7 @@ namespace EcdLink.Api.CoreApi.Services
                 { ReferralTypes.ChildSupportGrant, new PortalReferralsSummaryModel { Type = ReferralTypes.ChildSupportGrant, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.DevelopmentalDelays, new PortalReferralsSummaryModel { Type = ReferralTypes.DevelopmentalDelays, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.MaternalDistress, new PortalReferralsSummaryModel { Type = ReferralTypes.MaternalDistress, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
-                { ReferralTypes.SeverlyUnderweight, new PortalReferralsSummaryModel { Type = ReferralTypes.SeverlyUnderweight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.SeverelyUnderweight, new PortalReferralsSummaryModel { Type = ReferralTypes.SeverelyUnderweight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.VitaminANotUpToDate, new PortalReferralsSummaryModel { Type = ReferralTypes.VitaminANotUpToDate, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.ClinicVisitsNotUpToDate, new PortalReferralsSummaryModel { Type = ReferralTypes.ClinicVisitsNotUpToDate, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.DangerSignsChildsMother, new PortalReferralsSummaryModel { Type = ReferralTypes.DangerSignsChildsMother, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
@@ -129,7 +131,7 @@ namespace EcdLink.Api.CoreApi.Services
                 { ReferralTypes.DangerSignsChild, new PortalReferralsSummaryModel { Type = ReferralTypes.DangerSignsChild, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.CaregiverIDBook, new PortalReferralsSummaryModel { Type = ReferralTypes.CaregiverIDBook, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.SevereAcuteMalnutrition, new PortalReferralsSummaryModel { Type = ReferralTypes.SevereAcuteMalnutrition, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
-                { ReferralTypes.SeverlyStunted, new PortalReferralsSummaryModel { Type = ReferralTypes.SeverlyStunted, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
+                { ReferralTypes.SeverelyStunted, new PortalReferralsSummaryModel { Type = ReferralTypes.SeverelyStunted, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.LowBirthWeight, new PortalReferralsSummaryModel { Type = ReferralTypes.LowBirthWeight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.GrowthFaltering, new PortalReferralsSummaryModel { Type = ReferralTypes.GrowthFaltering, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
                 { ReferralTypes.Underweight, new PortalReferralsSummaryModel { Type = ReferralTypes.Underweight, BackReferralsMade = 0, ReferralsMade = 0, ReferralsRaised = 0 } },
@@ -150,6 +152,7 @@ namespace EcdLink.Api.CoreApi.Services
                     continue;
                 }
 
+                referralModels[referral.Type].TypeId = referral.TypeId;
                 referralModels[referral.Type].ReferralsRaised++;
 
                 if (referral.IsCompleted)

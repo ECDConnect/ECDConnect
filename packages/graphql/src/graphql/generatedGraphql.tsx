@@ -11547,6 +11547,7 @@ export type PortalReferralModel = {
   isCompleted: Scalars['Boolean'];
   text?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
+  typeId: Scalars['UUID'];
   visitBackReferralId?: Maybe<Scalars['UUID']>;
   visitDataStatusId: Scalars['UUID'];
   visitId: Scalars['UUID'];
@@ -11566,6 +11567,7 @@ export type PortalReferralModelFilterInput = {
   or?: InputMaybe<Array<PortalReferralModelFilterInput>>;
   text?: InputMaybe<StringOperationFilterInput>;
   type?: InputMaybe<StringOperationFilterInput>;
+  typeId?: InputMaybe<ComparableGuidOperationFilterInput>;
   visitBackReferralId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   visitDataStatusId?: InputMaybe<ComparableGuidOperationFilterInput>;
   visitId?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -11583,6 +11585,7 @@ export type PortalReferralModelSortInput = {
   isCompleted?: InputMaybe<SortEnumType>;
   text?: InputMaybe<SortEnumType>;
   type?: InputMaybe<SortEnumType>;
+  typeId?: InputMaybe<SortEnumType>;
   visitBackReferralId?: InputMaybe<SortEnumType>;
   visitDataStatusId?: InputMaybe<SortEnumType>;
   visitId?: InputMaybe<SortEnumType>;
@@ -11594,6 +11597,7 @@ export type PortalReferralsSummaryModel = {
   referralsMade: Scalars['Int'];
   referralsRaised: Scalars['Int'];
   type?: Maybe<Scalars['String']>;
+  typeId: Scalars['UUID'];
 };
 
 export type PortalReferralsSummaryModelFilterInput = {
@@ -11603,6 +11607,7 @@ export type PortalReferralsSummaryModelFilterInput = {
   referralsMade?: InputMaybe<ComparableInt32OperationFilterInput>;
   referralsRaised?: InputMaybe<ComparableInt32OperationFilterInput>;
   type?: InputMaybe<StringOperationFilterInput>;
+  typeId?: InputMaybe<ComparableGuidOperationFilterInput>;
 };
 
 export type PortalReferralsSummaryModelSortInput = {
@@ -11610,6 +11615,7 @@ export type PortalReferralsSummaryModelSortInput = {
   referralsMade?: InputMaybe<SortEnumType>;
   referralsRaised?: InputMaybe<SortEnumType>;
   type?: InputMaybe<SortEnumType>;
+  typeId?: InputMaybe<SortEnumType>;
 };
 
 export type PortalTeamLeadModel = {
@@ -16382,7 +16388,7 @@ export type QueryReferralsArgs = {
   order?: InputMaybe<Array<PortalReferralModelSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   startDate: Scalars['DateTime'];
-  type?: InputMaybe<Scalars['String']>;
+  typeId?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<PortalReferralModelFilterInput>;
 };
 

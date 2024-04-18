@@ -67,7 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IReferralService referralService,
             DateTime startDate,
             DateTime endDate,
-            string type,
+            Guid? typeId,
             PagedQueryInput pagingInput = null,
             List<Guid> clinicIds = null)
         {
@@ -76,9 +76,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Need to get list of relevant CHWs, for clinics or for the team leads clinics if none are provided
             var referrals = referralService.GetReferrals(uId, clinicIds, startDate, endDate).ToList();
 
-            if (!string.IsNullOrWhiteSpace(type)) 
+            if (typeId.HasValue) 
             {
-                referrals = referrals.Where(x => x.Type == type).ToList();
+                referrals = referrals.Where(x => x.TypeId == typeId).ToList();
             }
 
             if (pagingInput == null)
