@@ -4670,6 +4670,15 @@ export type HealthPromotion = {
   __typename?: 'HealthPromotion';
   availableLanguages?: Maybe<Array<Maybe<Language>>>;
   description?: Maybe<Scalars['String']>;
+  descriptionB?: Maybe<Scalars['String']>;
+  descriptionC?: Maybe<Scalars['String']>;
+  descriptionD?: Maybe<Scalars['String']>;
+  descriptionE?: Maybe<Scalars['String']>;
+  descriptionF?: Maybe<Scalars['String']>;
+  descriptionG?: Maybe<Scalars['String']>;
+  descriptionH?: Maybe<Scalars['String']>;
+  descriptionI?: Maybe<Scalars['String']>;
+  descriptionJ?: Maybe<Scalars['String']>;
   descriptionListIcon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   section?: Maybe<Scalars['String']>;
@@ -4680,6 +4689,15 @@ export type HealthPromotion = {
 export type HealthPromotionInput = {
   availableLanguages?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  descriptionB?: InputMaybe<Scalars['String']>;
+  descriptionC?: InputMaybe<Scalars['String']>;
+  descriptionD?: InputMaybe<Scalars['String']>;
+  descriptionE?: InputMaybe<Scalars['String']>;
+  descriptionF?: InputMaybe<Scalars['String']>;
+  descriptionG?: InputMaybe<Scalars['String']>;
+  descriptionH?: InputMaybe<Scalars['String']>;
+  descriptionI?: InputMaybe<Scalars['String']>;
+  descriptionJ?: InputMaybe<Scalars['String']>;
   descriptionListIcon?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
@@ -13393,6 +13411,7 @@ export type Query = {
   countWorkflowStatus?: Maybe<Scalars['Int']>;
   countWorkflowStatusType?: Maybe<Scalars['Int']>;
   dailyAttendance?: Maybe<Array<Maybe<Attendance>>>;
+  dangerSigns: Array<Maybe<DangerSign>>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   districtsAndStats?: Maybe<Array<Maybe<DistrictStatsModel>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
@@ -16077,6 +16096,11 @@ export type QueryCountWorkflowStatusTypeArgs = {
 export type QueryDailyAttendanceArgs = {
   attendanceDate: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryDangerSignsArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  section?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryDisplayMetricsArgs = {

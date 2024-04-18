@@ -152,6 +152,15 @@ class Visit {
           healthPromotion(section: $section, locale: $locale){
             description
             descriptionListIcon
+            descriptionB
+            descriptionC
+            descriptionD
+            descriptionE
+            descriptionF
+            descriptionG
+            descriptionH
+            descriptionI
+            descriptionJ
             id
             section
             type

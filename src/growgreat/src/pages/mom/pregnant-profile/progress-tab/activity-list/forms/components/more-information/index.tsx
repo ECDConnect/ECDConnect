@@ -44,7 +44,7 @@ export const MoreInformation = ({
   );
 
   const moreInformationItem = moreInformationList?.find(
-    (item) => item.section === section
+    (item) => item?.section === section
   );
   const availableLanguages: LanguageCode[] =
     moreInformationItem?.availableLanguages
