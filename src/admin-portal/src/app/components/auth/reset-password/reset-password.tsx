@@ -10,12 +10,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory, useParams } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
-import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../password-input/password-input';
+import { useAuth } from '../../../hooks/useAuth';
 
 interface RouteParams {
   resetToken: string;
@@ -29,18 +27,16 @@ export default function ResetPassword() {
   const { resetPassword } = useAuth();
   const { resetToken } = useParams<RouteParams>();
   const { email } = useParams<RouteParams>();
-  const [displayError, setDisplayError] = useState(false);
 
   const history = useHistory();
 
-  const { register, getValues, formState, watch } = useForm({
+  const { register, getValues, formState } = useForm({
     resolver: yupResolver(resetPasswordSchema),
     defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
 
   //check password strength
-  const password = watch('password');
   const formValues = getValues();
 
   const requestResetPasword = async () => {
