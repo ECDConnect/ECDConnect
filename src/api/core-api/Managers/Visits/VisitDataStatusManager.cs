@@ -1,12 +1,12 @@
-﻿using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -16,10 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using static EcdLink.Api.CoreApi.Constants;
-using Microsoft.EntityFrameworkCore;
-using EcdLink.Api.CoreApi.Managers.Notifications;
 using System.Text;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -872,10 +870,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
                     _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infant.UserId.ToString());
+                    _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), infant);
                 } else if (clientType == GGSettings.client_child)
                 {
                     Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
                     _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString());
+                    _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), mother);
                 }
             }
             else

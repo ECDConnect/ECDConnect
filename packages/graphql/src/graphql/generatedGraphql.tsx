@@ -2005,6 +2005,7 @@ export type ClientSummaryByPriority = {
 
 export type Clinic = {
   __typename?: 'Clinic';
+  clinicMeetings?: Maybe<Array<Maybe<ClinicMeeting>>>;
   emergencyContactNumber?: Maybe<Scalars['String']>;
   emergencyContactPerson?: Maybe<Scalars['String']>;
   healthCareWorkers?: Maybe<Array<Maybe<HealthCareWorker>>>;
@@ -2025,6 +2026,7 @@ export type Clinic = {
 
 export type ClinicFilterInput = {
   and?: InputMaybe<Array<ClinicFilterInput>>;
+  clinicMeetings?: InputMaybe<ListFilterInputTypeOfClinicMeetingFilterInput>;
   emergencyContactNumber?: InputMaybe<StringOperationFilterInput>;
   emergencyContactPerson?: InputMaybe<StringOperationFilterInput>;
   healthCareWorkers?: InputMaybe<ListFilterInputTypeOfHealthCareWorkerFilterInput>;
@@ -2045,6 +2047,7 @@ export type ClinicFilterInput = {
 };
 
 export type ClinicInput = {
+  ClinicMeetings?: InputMaybe<Array<InputMaybe<ClinicMeetingInput>>>;
   EmergencyContactNumber?: InputMaybe<Scalars['String']>;
   EmergencyContactPerson?: InputMaybe<Scalars['String']>;
   HealthCareWorkers?: InputMaybe<Array<InputMaybe<HealthCareWorkerInput>>>;
@@ -4670,6 +4673,15 @@ export type HealthPromotion = {
   __typename?: 'HealthPromotion';
   availableLanguages?: Maybe<Array<Maybe<Language>>>;
   description?: Maybe<Scalars['String']>;
+  descriptionB?: Maybe<Scalars['String']>;
+  descriptionC?: Maybe<Scalars['String']>;
+  descriptionD?: Maybe<Scalars['String']>;
+  descriptionE?: Maybe<Scalars['String']>;
+  descriptionF?: Maybe<Scalars['String']>;
+  descriptionG?: Maybe<Scalars['String']>;
+  descriptionH?: Maybe<Scalars['String']>;
+  descriptionI?: Maybe<Scalars['String']>;
+  descriptionJ?: Maybe<Scalars['String']>;
   descriptionListIcon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   section?: Maybe<Scalars['String']>;
@@ -4680,6 +4692,15 @@ export type HealthPromotion = {
 export type HealthPromotionInput = {
   availableLanguages?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  descriptionB?: InputMaybe<Scalars['String']>;
+  descriptionC?: InputMaybe<Scalars['String']>;
+  descriptionD?: InputMaybe<Scalars['String']>;
+  descriptionE?: InputMaybe<Scalars['String']>;
+  descriptionF?: InputMaybe<Scalars['String']>;
+  descriptionG?: InputMaybe<Scalars['String']>;
+  descriptionH?: InputMaybe<Scalars['String']>;
+  descriptionI?: InputMaybe<Scalars['String']>;
+  descriptionJ?: InputMaybe<Scalars['String']>;
   descriptionListIcon?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
@@ -5771,6 +5792,13 @@ export type ListFilterInputTypeOfClinicLeagueFilterInput = {
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<ClinicLeagueFilterInput>;
   some?: InputMaybe<ClinicLeagueFilterInput>;
+};
+
+export type ListFilterInputTypeOfClinicMeetingFilterInput = {
+  all?: InputMaybe<ClinicMeetingFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClinicMeetingFilterInput>;
+  some?: InputMaybe<ClinicMeetingFilterInput>;
 };
 
 export type ListFilterInputTypeOfClinicMeetingParticipantInFieldFilterInput = {

@@ -1,5 +1,4 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -40,17 +39,20 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool ShouldRunToday()
         {
-            return 
-                (DateTime.Now.Month == 12 && DateTime.Now.Day == 24) ||
-                (DateTime.Now.Month == 3 && DateTime.Now.Day == 24) ||
-                (DateTime.Now.Month == 6 && DateTime.Now.Day == 23) ||
-                (DateTime.Now.Month == 9 && DateTime.Now.Day == 23);
+            return
+                (DateTime.Now.Month == 3 && DateTime.Now.Day == 31) ||
+                (DateTime.Now.Month == 6 && DateTime.Now.Day == 30) ||
+                (DateTime.Now.Month == 9 && DateTime.Now.Day == 30) ||
+                (DateTime.Now.Month == 11 && DateTime.Now.Day == 30);
         }
 
         public async Task SendNotifications()
         {
             var leagueIds = _leagueRepo.GetAll().Where(x => x.IsActive).Select(x => x.Id).ToList();
 
+            var nextMonth = DateTime.Now.AddMonths(1);
+            var expireDate = new DateTime(nextMonth.Year, nextMonth.Month, 7);
+            
             foreach (var leagueId in leagueIds)
             {
                 var currentQuarterText =
@@ -79,17 +81,17 @@ namespace EcdLink.Api.CoreApi.Services
                             {
                                 new TagsReplacements()
                                 {
-                                    FindValue = "TotalTeamPoints",
-                                    ReplacementValue = clinic.PointsTotalForQuarter.ToString()
+                                    FindValue = "ClinicName",
+                                    ReplacementValue = clinic.ClinicName
                                 },
                                 new TagsReplacements()
                                 {
-                                    FindValue = "Quarter",
+                                    FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGGoldTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.GetEndOfMonth());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicGoldTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate);
                         }
                     }
                     // Silver Tier
@@ -103,17 +105,17 @@ namespace EcdLink.Api.CoreApi.Services
                             {
                                 new TagsReplacements()
                                 {
-                                    FindValue = "TotalTeamPoints",
-                                    ReplacementValue = clinic.PointsTotalForQuarter.ToString()
+                                    FindValue = "ClinicName",
+                                    ReplacementValue = clinic.ClinicName
                                 },
                                 new TagsReplacements()
                                 {
-                                    FindValue = "Quarter",
+                                    FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGSilverTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.GetEndOfMonth());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicSilverTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate);
                         }
                     }
                     else
@@ -125,17 +127,17 @@ namespace EcdLink.Api.CoreApi.Services
 
                                 new TagsReplacements()
                                 {
-                                    FindValue = "TotalTeamPoints",
-                                    ReplacementValue = clinic.PointsTotalForQuarter.ToString()
+                                    FindValue = "ClinicName",
+                                    ReplacementValue = clinic.ClinicName
                                 },
                                 new TagsReplacements()
                                 {
-                                    FindValue = "Quarter",
+                                    FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBronzeTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, DateTime.Now.GetEndOfMonth());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicBronzeTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, expireDate);
                         }
                     }
                 }

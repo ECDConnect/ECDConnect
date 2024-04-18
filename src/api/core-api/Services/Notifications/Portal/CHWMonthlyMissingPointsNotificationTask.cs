@@ -41,18 +41,8 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
 
         public bool ShouldRunToday()
         {
-            return
-               (DateTime.Now.Month == 1 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 2 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 3 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 4 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 5 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 6 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 7 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 8 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 9 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 10 && DateTime.Now.Day == 25) ||
-               (DateTime.Now.Month == 12 && DateTime.Now.Day == 25);
+            // On the 25th of every month IF the CHW has earned zero points so far in the current month (ie from the 1st to the 25th).
+            return DateTime.Now.Day == 25;
         }
 
         public async Task SendNotifications()
@@ -109,8 +99,8 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                                 ReplacementValue = user.FullName
                             },
                         };
-
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWMissingMonthlyPoints, DateTime.Now.Date, teamUsers[user.UserId], "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(7));
+                        // Valid for 7 days after the notification was triggered.
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWMissingMonthlyPoints, DateTime.Now.Date, teamUsers[user.UserId], "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
                     }
                 }
             }
