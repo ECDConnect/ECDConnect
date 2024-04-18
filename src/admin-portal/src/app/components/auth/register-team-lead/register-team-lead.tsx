@@ -127,7 +127,7 @@ export default function RegisterTeamLead(
 
     if (informationVerified.verified === false) {
       if (informationVerified.errorCode === 1) {
-        setDiplayErrorMessage(['You entered incorrect detail']);
+        setDiplayErrorMessage(['You entered incorrect details']);
         setIsLoading(false);
         setTimeout(() => {
           setDiplayErrorMessage([]);
