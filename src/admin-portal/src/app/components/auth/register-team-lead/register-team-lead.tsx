@@ -94,8 +94,7 @@ export default function RegisterTeamLead(
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
     useState<boolean>(false);
-  const [presentIdNumberMismatch, setPresentIdNumberMismatch] =
-    useState<boolean>(false);
+  const [displayErrorMessage, setDiplayErrorMessage] = useState<string[]>([]);
   const errorsList = Object?.values(errors);
   const errorListFormatted = errorsList?.map((item) => item?.message);
 
@@ -114,7 +113,9 @@ export default function RegisterTeamLead(
     !acceptedTerms ||
     (!idField && !passportField) ||
     !phoneNumber ||
-    !!errors?.password?.message;
+    !!errors?.password?.message ||
+    !!errors?.phoneNumber?.message ||
+    !!errors?.idField?.message;
 
   const registerNewUser = async () => {
     setIsLoading(true);
@@ -126,8 +127,11 @@ export default function RegisterTeamLead(
 
     if (informationVerified.verified === false) {
       if (informationVerified.errorCode === 1) {
-        setPresentIdNumberMismatch(true);
+        setDiplayErrorMessage([informationVerified?.errorMessage]);
         setIsLoading(false);
+        setTimeout(() => {
+          setDiplayErrorMessage([]);
+        }, 6000);
       }
       if (informationVerified.errorCode === 2) {
         setPresentCellNumberMismatch(false);
@@ -145,32 +149,32 @@ export default function RegisterTeamLead(
         acceptedTerms: formValues.acceptedTerms,
       };
 
-      const isAuthenticated = await registerTeamLeadUser(
-        body,
-        Config.authApi
-      ).catch(() => {
-        setNotification({
-          title: ` Failed to Sign Up!`,
-          variant: NOTIFICATION.ERROR,
-        });
-        setIsLoading(false);
-      });
+      // const isAuthenticated = await registerTeamLeadUser(
+      //   body,
+      //   Config.authApi
+      // ).catch(() => {
+      //   setNotification({
+      //     title: ` Failed to Sign Up!`,
+      //     variant: NOTIFICATION.ERROR,
+      //   });
+      //   setIsLoading(false);
+      // });
 
-      if (isAuthenticated) {
-        setIsLoading(false);
-        logout();
-        history.push(ROUTES.ROOT_TEAM_LEAD);
-        setNotification({
-          title: ` Successfully registered!`,
-          variant: NOTIFICATION.SUCCESS,
-        });
-      } else {
-        setNotification({
-          title: ` Successfully registered!`,
-          variant: NOTIFICATION.SUCCESS,
-        });
-        setIsLoading(false);
-      }
+      // if (isAuthenticated) {
+      //   setIsLoading(false);
+      //   logout();
+      //   history.push(ROUTES.ROOT_TEAM_LEAD);
+      //   setNotification({
+      //     title: ` Successfully registered!`,
+      //     variant: NOTIFICATION.SUCCESS,
+      //   });
+      // } else {
+      //   setNotification({
+      //     title: ` Successfully registered!`,
+      //     variant: NOTIFICATION.SUCCESS,
+      //   });
+      //   setIsLoading(false);
+      // }
     }
   };
 
@@ -287,8 +291,22 @@ export default function RegisterTeamLead(
                 <div className="w-72">
                   <Alert
                     className={'mt-5 mb-3'}
-                    title={`Oh no! There are ${errorListFormatted?.length} problems above. Please fix them:`}
+                    title={`Oh no! There are ${errorListFormatted?.length} ${
+                      errorListFormatted?.length === 1 ? 'problem' : 'problems'
+                    } above. Please fix them:`}
                     list={errorListFormatted}
+                    type={'error'}
+                  />
+                </div>
+              )}
+              {displayErrorMessage?.length > 0 && (
+                <div className="w-72">
+                  <Alert
+                    className={'mt-5 mb-3'}
+                    title={`Oh no! There are ${displayErrorMessage?.length} ${
+                      displayErrorMessage?.length === 1 ? 'problem' : 'problems'
+                    } above. Please fix them:`}
+                    list={displayErrorMessage}
                     type={'error'}
                   />
                 </div>
@@ -310,7 +328,7 @@ export default function RegisterTeamLead(
                 </Button>
               </div>
               <Divider
-                title={'Already have a Funda App account?'}
+                title={'Already have a CHW Connect?'}
                 dividerType={'solid'}
                 className={'mt-2 mb-2'}
               />
@@ -361,45 +379,6 @@ export default function RegisterTeamLead(
               leadingIcon: 'PhoneIcon',
               onClick: () => {
                 setPresentCellNumberMismatch(false);
-                call();
-              },
-              type: 'outlined',
-            },
-          ]}
-        />
-      </Dialog>
-      <Dialog
-        visible={presentIdNumberMismatch}
-        position={DialogPosition.Middle}
-      >
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor={'alertMain'}
-          importantText={`CHW Connect has a different ID number for you`}
-          detailText={
-            'Please check you have entered the correct ID number or call our toll free number to have it changed.'
-          }
-          paragraphs={[
-            `You entered : ${formValues.idField || formValues?.passportField}`,
-          ]}
-          actionButtons={[
-            {
-              colour: 'secondary',
-              text: 'Edit ID number',
-              textColour: 'white',
-              leadingIcon: 'PencilIcon',
-              onClick: () => {
-                setPresentIdNumberMismatch(false);
-              },
-              type: 'filled',
-            },
-            {
-              colour: 'secondary',
-              text: 'Call 0800 014 817',
-              textColour: 'secondary',
-              leadingIcon: 'PhoneIcon',
-              onClick: () => {
-                setPresentIdNumberMismatch(false);
                 call();
               },
               type: 'outlined',

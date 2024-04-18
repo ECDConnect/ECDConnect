@@ -60,15 +60,13 @@ export function TermsPage(props: any) {
     <div>
       <header className="bg-primary static">
         <div className="container mx-auto flex h-16 justify-between">
-          <div className="hidden items-stretch  lg:flex">
+          <div className="visible items-stretch sm:flex  md:flex lg:flex">
             <button
               onClick={() => history.goBack()}
               type="button"
-              className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+              className="text-secondary outline-none text-14 inline-flex w-16 cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
             >
-              <ArrowLeftIcon className="mr-1 text-white md:h-6 md:w-6">
-                {' '}
-              </ArrowLeftIcon>
+              <ArrowLeftIcon className="mr-1 text-white md:h-6 md:w-6" />
             </button>
           </div>
           <a
@@ -99,7 +97,7 @@ export function TermsPage(props: any) {
         </div>
       </header>
 
-      <div className="flex h-screen flex-col items-center justify-center">
+      <div className="h-100vh flex flex-col items-center justify-center">
         <div className="bg-adminPortalBg w-full px-12 py-4">
           <div className="justify-left my-4 mt-2 flex w-6/12 items-center gap-2">
             <Typography type={'body'} text={'Change language:'} />
@@ -112,7 +110,7 @@ export function TermsPage(props: any) {
           </div>
         </div>
         <div
-          className="p-12 pr-60"
+          className="p-12"
           style={{
             height: '100vh' /* Adjust the height as needed */,
             overflow: ' auto',
