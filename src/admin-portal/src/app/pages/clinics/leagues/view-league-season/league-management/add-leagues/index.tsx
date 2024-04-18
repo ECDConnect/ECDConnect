@@ -1,17 +1,99 @@
-import { Breadcrumb, BreadcrumbProps, Button } from '@ecdlink/ui';
+import {
+  Breadcrumb,
+  BreadcrumbProps,
+  Button,
+  LoadingSpinner,
+} from '@ecdlink/ui';
 import ROUTES from '../../../../../../routes/app.routes-constants';
 import { useState } from 'react';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
+import { useHistory, useLocation } from 'react-router';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
+import {
+  LeagueIdEnum,
+  LeagueInputModelInput,
+  LeagueSetupDto,
+  NOTIFICATION,
+  useNotifications,
+} from '@ecdlink/core';
+import {
+  GetLeagueSetup,
+  AddLeagues as AddLeaguesMutation,
+} from '@ecdlink/graphql';
+import { AddLeaguesRouteState } from './types';
 
 export const AddLeagues = () => {
+  const [leagues, setLeagues] = useState<
+    { [league: string]: LeagueInputModelInput }[]
+  >([]);
   const [quantityLeagues, setQuantityLeagues] = useState<number>();
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
 
-  const isToShowPreviousButton = currentStep > 1;
-  const isLastStep = currentStep === quantityLeagues + 1;
-  const isDisabledNextButton = currentStep === 1 && !quantityLeagues;
+  const { state } = useLocation<AddLeaguesRouteState>();
+
+  const history = useHistory();
+
+  const { setNotification } = useNotifications();
+
+  const apolloClient = useApolloClient();
+
+  const { leagueSetupDetails } =
+    apolloClient.readQuery<{ leagueSetupDetails?: LeagueSetupDto }>({
+      query: GetLeagueSetup,
+    }) || {};
+
+  const { loading } = useQuery<{ leagueSetupDetails?: LeagueSetupDto }>(
+    GetLeagueSetup,
+    {
+      fetchPolicy: 'cache-and-network',
+      skip: !!leagueSetupDetails,
+    }
+  );
+
+  const [addLeagues, { loading: addingLeagues }] = useMutation(
+    AddLeaguesMutation,
+    {}
+  );
+
+  const isToAddSuperLeagues = state?.leagueType === LeagueIdEnum.SuperLeague;
+
+  const district = leagueSetupDetails?.districts?.find(
+    (item) => item.id === state?.districtId
+  );
+
+  const allUnassignedClinicsForSuperLeagues =
+    leagueSetupDetails?.districts.reduce((accumulator, district) => {
+      return accumulator.concat(district.unassignedClinics);
+    }, []);
+
+  const currentLeagueData = Object.values(
+    leagues?.find((item) => Object.keys(item)[0] === `league-${currentStep}`) ??
+      {}
+  )?.[0];
+
+  const allSelectedClinicsIds = leagues.flatMap(
+    (item) => Object.values(item)[0].clinicIds
+  );
+  const availableClinics =
+    (isToAddSuperLeagues
+      ? allUnassignedClinicsForSuperLeagues
+      : district?.unassignedClinics
+    )?.filter(
+      (clinic) =>
+        !allSelectedClinicsIds.includes(clinic.id) ||
+        currentLeagueData?.clinicIds.includes(clinic.id)
+    ) ?? [];
+
+  const isToShowPreviousButton = currentStep > 0;
+  const isLastStep = currentStep === quantityLeagues;
+  const isDisabledNextButton =
+    (currentStep === 0 && !quantityLeagues) ||
+    (currentStep > 0 &&
+      (!currentLeagueData?.name ||
+        currentLeagueData?.name.length > 30 ||
+        !currentLeagueData?.clinicIds?.length));
 
   const paths: BreadcrumbProps['paths'] = [
     {
@@ -23,14 +105,54 @@ export const AddLeagues = () => {
       url: ROUTES.CLINICS.LEAGUES.ROOT,
     },
     {
-      name: '{startDate} - {endDate} Leagues',
+      name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
       url: ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
+      state,
     },
     {
-      name: 'Add Leagues - {District}, {startDate} to {endDate}',
+      name: `${
+        isToAddSuperLeagues
+          ? 'Add Super Leagues -'
+          : `Add Leagues - ${district?.name ?? ''},`
+      } ${state?.startDate ?? ''} to ${state?.endDate ?? ''}`,
       url: '',
     },
   ];
+
+  const onUpdatedLeagues = (updatedLeague: {
+    [league: string]: LeagueInputModelInput;
+  }) => {
+    if (!leagues.length) {
+      return setLeagues([updatedLeague]);
+    }
+
+    const updatedLeagueKey = Object.keys(updatedLeague)[0];
+
+    const leagueIndex = leagues.findIndex(
+      (item) => Object.keys(item)[0] === updatedLeagueKey
+    );
+
+    if (leagueIndex === -1) {
+      setLeagues([...leagues, updatedLeague]);
+      return;
+    }
+
+    const updatedLeagues = leagues?.map((item) => {
+      const itemKey = Object.keys(item)[0];
+
+      if (itemKey === updatedLeagueKey) {
+        return updatedLeague;
+      }
+      return item;
+    });
+
+    setLeagues(updatedLeagues);
+  };
+
+  const onChangeQuantityLeagues = (quantity: number) => {
+    setLeagues([]);
+    setQuantityLeagues(quantity);
+  };
 
   const onPreviousStep = () => {
     if (isToShowPreviousButton) {
@@ -45,19 +167,57 @@ export const AddLeagues = () => {
   };
 
   const onSave = () => {
-    console.log('Saving leagues...');
+    const input = leagues.map((item) => Object.values(item)[0]);
+
+    addLeagues({
+      variables: {
+        input,
+      },
+    }).then((res) => {
+      if (!!res?.data?.addLeagues) {
+        setNotification({
+          title: isToAddSuperLeagues
+            ? 'Super leagues added!'
+            : 'Leagues added!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+        history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
+          ...state,
+        });
+      }
+    });
   };
+
+  if (loading) {
+    return (
+      <LoadingSpinner
+        className="mt-8"
+        size="medium"
+        backgroundColor="secondary"
+        spinnerColor="adminPortalBg"
+      />
+    );
+  }
 
   return (
     <div>
       <Breadcrumb paths={paths} />
-      {currentStep === 1 && (
+      {currentStep === 0 && (
         <Step1
+          district={district}
           quantityLeagues={quantityLeagues}
-          setQuantityLeagues={setQuantityLeagues}
+          setQuantityLeagues={onChangeQuantityLeagues}
         />
       )}
-      {currentStep > 1 && <Step2 />}
+      {currentStep > 0 && (
+        <Step2
+          availableClinics={availableClinics}
+          currentLeagueData={currentLeagueData}
+          district={district}
+          leagueNumber={currentStep}
+          onChange={onUpdatedLeagues}
+        />
+      )}
       <div className="mt-8 flex gap-2">
         {isToShowPreviousButton && (
           <Button
@@ -67,6 +227,8 @@ export const AddLeagues = () => {
             color="secondary"
             textColor="secondary"
             text="Previous"
+            isLoading={addingLeagues}
+            disabled={addingLeagues}
             onClick={onPreviousStep}
           />
         )}
@@ -76,7 +238,8 @@ export const AddLeagues = () => {
           type="filled"
           color="secondary"
           textColor="white"
-          disabled={isDisabledNextButton}
+          isLoading={addingLeagues}
+          disabled={isDisabledNextButton || addingLeagues}
           text={isLastStep ? 'Save' : 'Next'}
           onClick={() => (isLastStep ? onSave() : onNextStep())}
         />
