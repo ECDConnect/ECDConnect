@@ -83,17 +83,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var user = await userManager.FindByIdAsync(userId);
             var userPhoneNumberBeforeChange = user.PhoneNumber;
 
+            // save pending number to phone number
+            user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, pendingPhoneNumber));
+            user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PendingPhoneNumber, pendingPhoneNumber)); ;
+            user.PhoneNumberConfirmed = false;
+            var updatedUser = await userManager.UpdateAsync(user);
+
             try
             {
-                // save pending number to phonenumber
-                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, pendingPhoneNumber));
-                user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PendingPhoneNumber, pendingPhoneNumber)); ;
-                user.PhoneNumberConfirmed = false;
-                await userManager.UpdateAsync(user);
-
-                // send sms
-                var apiUrl = new Uri("https://" + TenantExecutionContext.Tenant.AdminSiteAddress.ToString());
-                await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
+                if (updatedUser.Succeeded)
+                {
+                    // send sms
+                    var apiUrl = new Uri("https://" + TenantExecutionContext.Tenant.AdminSiteAddress.ToString());
+                    await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
+                }
 
                 // revert phone number to old one
                 user.PhoneNumber = userPhoneNumberBeforeChange;
