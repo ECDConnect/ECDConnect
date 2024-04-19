@@ -27,7 +27,7 @@ import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
-import { NavbarTypes } from './shell.types';
+import { NavbarTypes, NotificationNavigationModel } from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
 import ROUTES from '../../routes/app.routes-constants';
 
@@ -101,7 +101,7 @@ export default function Shell() {
   });
 
   const notifications = notificationsData?.allNotifications;
-  console.log({ notifications });
+
   useEffect(() => {
     if (navigation && location && location.pathname) {
       const current = navigation.find((x) =>
@@ -356,7 +356,12 @@ export default function Shell() {
             <div className="ml-4 flex items-center gap-2 md:ml-6">
               <div className="cursor-pointer">
                 <IconBadge
-                  onClick={() => history.push(ROUTES.NOTIFICATIONS_VIEW)}
+                  onClick={() => {
+                    history.push(ROUTES.NOTIFICATIONS_VIEW);
+                    setActiveNavigation(
+                      NotificationNavigationModel?.name as any
+                    );
+                  }}
                   badgeColor={'errorMain'}
                   badgeTextColor={'white'}
                   icon={'BellIcon'}
