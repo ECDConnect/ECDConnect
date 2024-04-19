@@ -199,7 +199,7 @@ export default function RegisterTeamLead(
 
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="m-8 mb-12 h-screen overflow-y-scroll rounded-xl bg-white p-8 shadow lg:w-1/3">
+      <div className="mb-12 h-screen overflow-y-scroll rounded-xl bg-white p-8 shadow lg:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
