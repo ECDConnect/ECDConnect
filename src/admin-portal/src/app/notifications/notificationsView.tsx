@@ -4,6 +4,7 @@ import { useQuery } from '@apollo/client';
 import { GetAllNotifications } from '@ecdlink/graphql';
 import { NotificationsMessages } from '../components/notifications-messages/notifications-messages';
 import { format } from 'date-fns';
+import { useCallback } from 'react';
 
 export const NotificationsView = () => {
   const { user } = useUser();
@@ -15,6 +16,10 @@ export const NotificationsView = () => {
   });
 
   const notifications = notificationsData?.allNotifications;
+
+  const handleReadMessage = useCallback(() => {
+    // TODO: Update when the read notification mutation be ready
+  }, []);
 
   return (
     <div className="p-4">
