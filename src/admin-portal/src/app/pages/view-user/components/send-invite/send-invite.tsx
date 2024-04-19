@@ -26,7 +26,10 @@ export const SendInvite: React.FC<SendInviteProps> = ({
   const { setNotification } = useNotifications();
 
   const isAdminUser = userData?.roles?.some(
-    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
+    (role: any) =>
+      role.name === 'Administrator' ||
+      role.name === 'Super Admin' ||
+      role.name === 'Team Lead'
   );
 
   const sendInvite = async () => {
