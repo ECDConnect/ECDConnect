@@ -9,6 +9,7 @@ import {
   VisitData,
   VisitVideos,
   Infographics,
+  DangerSign,
 } from '@ecdlink/graphql';
 import { HealthPromotion } from '@ecdlink/graphql';
 
@@ -140,7 +141,8 @@ class Visit {
 
   async getHealthPromotion(
     section: string,
-    locale: string
+    locale: string,
+    title?: string
   ): Promise<HealthPromotion[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -148,8 +150,8 @@ class Visit {
       errors?: {};
     }>(``, {
       query: `
-        query GetHealthPromotion($section: String, $locale: String) {
-          healthPromotion(section: $section, locale: $locale){
+        query GetHealthPromotion($section: String, $locale: String, $title: String, ) {
+          healthPromotion(section: $section, locale: $locale, title: $title,){
             description
             descriptionListIcon
             descriptionB
@@ -176,6 +178,7 @@ class Visit {
       variables: {
         section,
         locale,
+        title,
       },
     });
 
@@ -259,6 +262,40 @@ class Visit {
     }
 
     return response.data.data.infographics;
+  }
+
+  async getDangerSigns(section: string, locale: string): Promise<DangerSign[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { dangerSigns: DangerSign[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetDangerSigns($section: String, $locale: String) {
+          dangerSigns(section: $section, locale: $locale){
+            id
+            section
+            type
+            imageA
+            availableLanguages {
+              id
+              description
+              locale
+            }
+          }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get DangerSigns Failed - Server connection error');
+    }
+
+    return response.data.data.dangerSigns;
   }
 
   async getCompletedVisitsForVisitId(visitId: string): Promise<string[]> {

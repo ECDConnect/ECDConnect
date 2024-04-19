@@ -1,6 +1,7 @@
 import {
   ClientSummaryByPriority,
   CmsVisitDataInputModelInput,
+  DangerSign,
   HcwHighlights,
   HealthPromotion,
   Infographics,
@@ -23,6 +24,7 @@ export interface VisitState {
   healthPromotion?: HealthPromotion[];
   infographics?: Infographics[];
   moreInformation?: MoreInformation[];
+  dangerSigns?: DangerSign[];
   completedVisitsForVisitId?: CompletedVisitsForVisitId[];
   momcompletedVisitsForVisitId?: CompletedVisitsForVisitId[];
   previousVisitInformationForInfant?: Progress_VisitDataStatus;

@@ -16,6 +16,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { replaceBraces } from '@ecdlink/core';
 import { visitThunkActions } from '@/store/visit';
 import { useSelector } from 'react-redux';
 import { getHealthPromotionSelector } from '@/store/visit/visit.selectors';
@@ -30,10 +31,12 @@ export const HealthPromotion = ({
   subTitle,
   client,
   onClose,
+  sectionTitle,
 }: {
   title: string;
   subTitle?: string;
   section: string;
+  sectionTitle?: string;
   client?: string;
   onClose: () => void;
 }) => {
@@ -68,12 +71,13 @@ export const HealthPromotion = ({
       visitThunkActions.getHealthPromotion({
         section,
         locale: language.locale,
+        title: sectionTitle,
       })
     ).unwrap();
     if (newHealthPromtionList) {
       setHealthPromotionList([newHealthPromtionList]);
     }
-  }, [appDispatch, isOnline, language.locale, section]);
+  }, [appDispatch, isOnline, language.locale, section, sectionTitle]);
 
   const renderText = (text: string) => {
     return (
@@ -88,7 +92,7 @@ export const HealthPromotion = ({
           type="markdown"
           align="left"
           weight="normal"
-          text={text}
+          text={replaceBraces(text, client || '')}
           className="text-infoDark"
         />
         <Divider dividerType="dashed" className="my-2" />

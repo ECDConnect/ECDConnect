@@ -123,6 +123,7 @@ export const FormulaMilkNotesStep = ({
           title={`Discuss with ${caregiverName}`}
           subTitle={visitSection}
           section={visitSection}
+          sectionTitle="Pillar 1: Nutrition (first visit)"
           client={caregiverName}
           onClose={() => setIsTip && setIsTip(false)}
         />
