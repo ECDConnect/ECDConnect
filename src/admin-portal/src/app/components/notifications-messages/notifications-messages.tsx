@@ -17,6 +17,7 @@ interface NotificationsMessagesProps {
   ctaText: string;
   action?: string;
   cTA: string;
+  readDate?: string;
 }
 
 export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
@@ -27,6 +28,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   ctaText,
   action,
   cTA,
+  readDate,
 }) => {
   const history = useHistory();
   const handleIcon = (type: string) => {
@@ -50,13 +52,15 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   };
 
-  const handleRedirectURL = useMemo(() => {
-    if (cTA === '[[AddMeetingReport]]') {
-      return ROUTES.TEAM_MEETINGS;
+  const handleRedirectURL = (value: string) => {
+    // TODO: Add more switch cases accordingly with the BE types
+    switch (value) {
+      case '[[AddMeetingReport]]':
+        return ROUTES.TEAM_MEETINGS;
+      default:
+        return null;
     }
-  }, [cTA]);
-
-  console.log({ handleRedirectURL });
+  };
 
   return (
     <div className="w-full">
@@ -64,8 +68,11 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
         <div className="flex gap-3">
           {handleIcon(statusColor)}
           <div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               <Typography type={'help'} text={date} color={'textLight'} />
+              {!readDate && (
+                <div className="bg-infoMain h-2 w-2 rounded-full" />
+              )}
             </div>
             <Typography
               type={'body'}
@@ -80,7 +87,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
               type="filled"
               color="secondary"
               textColor="white"
-              onClick={() => history?.push(handleRedirectURL)}
+              onClick={() => history?.push(handleRedirectURL(cTA))}
             />
           </div>
         </div>

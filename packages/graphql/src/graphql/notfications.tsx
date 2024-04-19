@@ -14,6 +14,7 @@ export const GetAllNotifications = gql`
       id
       messageDate
       messageEndDate
+      readDate
       status
       cTA
       cTAText

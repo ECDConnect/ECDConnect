@@ -17,7 +17,7 @@ import {
   MenuAlt2Icon,
   XIcon,
 } from '@heroicons/react/outline';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
@@ -101,6 +101,10 @@ export default function Shell() {
   });
 
   const notifications = notificationsData?.allNotifications;
+  const notReadNotifications = useMemo(
+    () => notifications?.filter((item) => !item?.readDate),
+    [notifications]
+  );
 
   useEffect(() => {
     if (navigation && location && location.pathname) {
@@ -367,7 +371,9 @@ export default function Shell() {
                   icon={'BellIcon'}
                   iconColor={'darkBackground'}
                   badgeText={
-                    !!notifications?.length ? `${notifications?.length}` : ''
+                    !!notReadNotifications?.length
+                      ? `${notReadNotifications?.length}`
+                      : ''
                   }
                   className="mt-4"
                 />

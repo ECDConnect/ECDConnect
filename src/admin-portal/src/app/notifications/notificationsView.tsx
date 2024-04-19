@@ -15,14 +15,16 @@ export const NotificationsView = () => {
   });
 
   const notifications = notificationsData?.allNotifications;
+
   return (
     <div className="p-4">
       {notifications?.length === 0 && (
-        <div>
+        <div className="h-100vh flex items-center justify-center">
           <Typography
             type={'h4'}
-            color={'white'}
+            color={'textDark'}
             text={'There are not notifications'}
+            className="p-12"
           />
         </div>
       )}
