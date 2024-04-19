@@ -6,7 +6,6 @@ import {
   DialogPosition,
   Divider,
   FormInput,
-  LoadingSpinner,
   Typography,
   TypographyProps,
   classNames,
@@ -16,23 +15,14 @@ import {
   EditBackReferralRouteParams,
   EditBackReferralRouteState,
 } from './types';
-import {
-  NOTIFICATION,
-  ReferralDetails,
-  formatStringWithFirstLetterCapitalized,
-  useDialog,
-  useNotifications,
-} from '@ecdlink/core';
+import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import ROUTES from '../../../routes/app.routes-constants';
 import {
   ViewReferralDetailRouteParams,
   ViewReferralDetailsRouteState,
 } from '../view-referral-detail/types';
-import { useApolloClient, useMutation, useQuery } from '@apollo/client';
-import {
-  AddVisitBackReferralAdminComment,
-  GetReferrals,
-} from '@ecdlink/graphql';
+import { useMutation } from '@apollo/client';
+import { AddVisitBackReferralAdminComment } from '@ecdlink/graphql';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
@@ -45,8 +35,6 @@ export const EditBackReferral = () => {
 
   const [addVisitBackReferralAdminComment, { loading: addingComment }] =
     useMutation(AddVisitBackReferralAdminComment);
-
-  const apolloClient = useApolloClient();
 
   const referral = state.referral;
 

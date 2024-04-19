@@ -1,4 +1,4 @@
-import { SimpleClinicDto } from '../Clinics';
+import { BaseClinicDto, SimpleClinicDto } from '../Clinics';
 
 export interface LeagueInputModelInput {
   clinicIds: string[];
@@ -23,4 +23,13 @@ export interface DistrictLeagues {
 export interface LeagueSetupDto {
   superLeagues: LeagueWithClinics[];
   districts: DistrictLeagues[];
+}
+
+export interface PortalLeagueDto {
+  clinics?: BaseClinicDto[];
+  id: string;
+  insertedDate: string;
+  leagueTypeId: string;
+  leagueTypeName?: string;
+  name?: string;
 }

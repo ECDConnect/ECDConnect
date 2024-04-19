@@ -10,3 +10,10 @@ export interface SimpleClinicDto {
   subDistrictName: string;
   teamLeads: BaseTeamLeadDto[];
 }
+
+export interface BaseClinicDto {
+  id: string;
+  name: string;
+  leagueRanking?: number;
+  pointsTotal?: number;
+}

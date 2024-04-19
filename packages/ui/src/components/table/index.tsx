@@ -234,11 +234,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
         <div className="flex  flex-col">
           <div className="flex w-full flex-row items-center justify-between">
             {search && (
-              <div
-                className={`flex ${
-                  !!actionButton ? 'w-3/5' : 'w-full'
-                } items-center gap-4`}
-              >
+              <div className="flex w-3/5 items-center gap-4">
                 <FormInput
                   {...search}
                   startIcon="SearchIcon"
