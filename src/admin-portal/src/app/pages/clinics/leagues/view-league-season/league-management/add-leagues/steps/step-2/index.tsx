@@ -40,6 +40,7 @@ export const Step2 = ({
     useState<SearchDropDownOption<string>[]>();
 
   const previousLeagueNumber = usePrevious(leagueNumber);
+  const previousLeagueData = usePrevious(currentLeagueData);
 
   const history = useHistory();
 
@@ -65,6 +66,17 @@ export const Step2 = ({
       use: 'Sub-district',
     },
   ];
+
+  const title = useMemo(() => {
+    if (!!state?.leagueToEdit) {
+      return leagueName;
+    }
+    if (isToAddSuperLeagues) {
+      return 'Super League';
+    }
+
+    return `League ${leagueNumber}`;
+  }, [isToAddSuperLeagues, leagueName, leagueNumber, state?.leagueToEdit]);
 
   const searchedClinics = useMemo(
     () =>
@@ -148,7 +160,12 @@ export const Step2 = ({
   };
 
   useEffect(() => {
-    if (previousLeagueNumber !== leagueNumber) {
+    if (
+      previousLeagueNumber !== leagueNumber ||
+      (!!state.leagueToEdit &&
+        previousLeagueData === undefined &&
+        currentLeagueData !== undefined)
+    ) {
       setLeagueName(currentLeagueData?.name ?? '');
       setSelectedRows(
         rows.filter((clinic) =>
@@ -160,12 +177,13 @@ export const Step2 = ({
   }, [
     previousLeagueNumber,
     leagueNumber,
-    currentLeagueData?.name,
-    currentLeagueData?.clinicIds,
+    currentLeagueData,
     rows,
     onUpdate,
     leagueKey,
     league,
+    previousLeagueData,
+    state.leagueToEdit,
   ]);
 
   return (
@@ -175,9 +193,7 @@ export const Step2 = ({
           <Typography
             type="h1"
             color="textDark"
-            text={`Add clinics to ${
-              isToAddSuperLeagues ? 'Super' : ''
-            } League ${leagueNumber}`}
+            text={`Add clinics to ${title}`}
             className="mt-9"
           />
           <Typography
@@ -197,18 +213,14 @@ export const Step2 = ({
           iconPosition="end"
           onClick={() =>
             history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
-              ...state,
-            })
+              startDate: state?.startDate,
+              endDate: state?.endDate,
+            } as AddLeaguesRouteState)
           }
         />
       </div>
       <form className="rounded-2xl bg-white p-7">
-        <Typography
-          type="h2"
-          color="textDark"
-          text={`${isToAddSuperLeagues ? 'Super ' : ''}League ${leagueNumber}`}
-          className="mb-4"
-        />
+        <Typography type="h2" color="textDark" text={title} className="mb-4" />
         <FormInput
           isAdminPortalField
           className="w- mb-11 mt-8"

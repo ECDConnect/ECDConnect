@@ -39,6 +39,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clinics
         public virtual ICollection<ClinicTeamLead> TeamLeads { get; set; }
         public virtual ICollection<ClinicLeague> Leagues { get; set; }
         public virtual ICollection<HealthCareWorker> HealthCareWorkers { get; set; }
+        public virtual ICollection<ClinicMeeting> ClinicMeetings { get; set; }
     }
 
     public interface ClinicJoin<TKey>

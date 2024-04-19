@@ -9,6 +9,7 @@ using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -23,10 +24,12 @@ namespace ECDLink.Security.Api
     public class AuthenticationController : ControllerBase
     {
         private readonly SecurityManager _securityManager;
+        private readonly ApplicationUserManager _userManager;
 
-        public AuthenticationController(SecurityManager securityManager)
+        public AuthenticationController(SecurityManager securityManager, ApplicationUserManager userManager)
         {
             _securityManager = securityManager;
+            _userManager = userManager; 
         }
 
         // POST api/auth/login
@@ -229,19 +232,32 @@ namespace ECDLink.Security.Api
         {
             var user = await _securityManager.GetUserByNameAsync(verifyCellphoneNumberModel.Username);
             var token = TokenHelper.DecodeToken(verifyCellphoneNumberModel.Token);
+            var currentPhoneNumber = user.PhoneNumber;
 
             if (user == default(ApplicationUser))
             {
                 return BadRequest();
-            }
-
-            var changeResult = await _securityManager.ChangeCellphoneNumberAsync(user, token);
-            if (changeResult)
+            } 
+            
+            user.PhoneNumber = user.PendingPhoneNumber;
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
             {
-                return new OkObjectResult(user.PendingPhoneNumber);
+                var changeResult = await _securityManager.ChangeCellphoneNumberAsync(user, token);
+                if (changeResult)
+                {
+                    return new OkObjectResult(user.PendingPhoneNumber);
+                }
+                else
+                {
+                    // change number back to previous one if the token fails
+                    user.PhoneNumber = currentPhoneNumber;
+                    await _userManager.UpdateAsync(user);
+                }
+                return Ok(result);
             }
 
-            return Ok(changeResult);
+            return Ok(result);
         }
 
     }

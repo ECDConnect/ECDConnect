@@ -398,7 +398,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     try
                     {
-                        var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
+                        
+                        var apiUrl = new Uri("https://" + TenantExecutionContext.Tenant.AdminSiteAddress.ToString());
                         await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
 
                         // revert phone number to old one for verification

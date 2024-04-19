@@ -5,7 +5,7 @@ import {
   LoadingSpinner,
 } from '@ecdlink/ui';
 import ROUTES from '../../../../../../routes/app.routes-constants';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { useHistory, useLocation } from 'react-router';
@@ -16,10 +16,14 @@ import {
   LeagueSetupDto,
   NOTIFICATION,
   useNotifications,
+  usePrevious,
 } from '@ecdlink/core';
 import {
   GetLeagueSetup,
   AddLeagues as AddLeaguesMutation,
+  EditLeague,
+  MutationEditLeagueArgs,
+  SimpleClinicModel,
 } from '@ecdlink/graphql';
 import { AddLeaguesRouteState } from './types';
 
@@ -30,6 +34,8 @@ export const AddLeagues = () => {
   const [quantityLeagues, setQuantityLeagues] = useState<number>();
 
   const { state } = useLocation<AddLeaguesRouteState>();
+
+  const previousState = usePrevious(state) as AddLeaguesRouteState;
 
   const allowMultipleLeagues = state?.allowMultipleLeagues;
 
@@ -60,6 +66,7 @@ export const AddLeagues = () => {
     AddLeaguesMutation,
     {}
   );
+  const [editLeague, { loading: editingLeagues }] = useMutation(EditLeague, {});
 
   const isToAddSuperLeagues = state?.leagueType === LeagueIdEnum.SuperLeague;
 
@@ -78,26 +85,48 @@ export const AddLeagues = () => {
     ? leagueSetupDetails?.superLeagues.length + 1
     : district?.leagues.length + 1;
 
-  const currentLeagueData = Object.values(
-    leagues?.find(
-      (item) =>
-        Object.keys(item)[0] ===
-        `league-${allowMultipleLeagues ? currentStep : leagueNumber}`
-    ) ?? {}
-  )?.[0];
+  const leagueKey = `league-${
+    allowMultipleLeagues ? currentStep : leagueNumber
+  }`;
+
+  const currentLeagueData = useMemo(
+    () =>
+      Object.values(
+        leagues?.find((item) => Object.keys(item)[0] === leagueKey) ?? {}
+      )?.[0],
+    [leagueKey, leagues]
+  );
 
   const allSelectedClinicsIds = leagues.flatMap(
     (item) => Object.values(item)[0].clinicIds
   );
-  const availableClinics =
-    (isToAddSuperLeagues
+
+  const availableClinics = useMemo(() => {
+    const unassignedClinics = isToAddSuperLeagues
       ? allUnassignedClinicsForSuperLeagues
-      : district?.unassignedClinics
-    )?.filter(
-      (clinic) =>
-        !allSelectedClinicsIds.includes(clinic.id) ||
-        currentLeagueData?.clinicIds.includes(clinic.id)
-    ) ?? [];
+      : district?.unassignedClinics;
+
+    let available = unassignedClinics ?? [];
+
+    if (!!state?.leagueToEdit) {
+      available = [...(state?.leagueToEdit?.clinics ?? []), ...available];
+    }
+
+    return (
+      available?.filter(
+        (clinic) =>
+          !allSelectedClinicsIds.includes(clinic.id) ||
+          currentLeagueData?.clinicIds.includes(clinic.id)
+      ) ?? []
+    );
+  }, [
+    allSelectedClinicsIds,
+    allUnassignedClinicsForSuperLeagues,
+    currentLeagueData?.clinicIds,
+    district?.unassignedClinics,
+    isToAddSuperLeagues,
+    state?.leagueToEdit,
+  ]);
 
   const isToShowPreviousButton = currentStep > initialStep;
   const isLastStep =
@@ -123,7 +152,10 @@ export const AddLeagues = () => {
     {
       name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
       url: ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
-      state,
+      state: {
+        endDate: state?.endDate,
+        startDate: state?.startDate,
+      } as AddLeaguesRouteState,
     },
     {
       name: `${
@@ -182,27 +214,90 @@ export const AddLeagues = () => {
     }
   };
 
+  const onBack = () => {
+    history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
+      startDate: state?.startDate,
+      endDate: state?.endDate,
+    } as AddLeaguesRouteState);
+  };
+
+  const findChanges = (
+    initialClinics: SimpleClinicModel[],
+    finalIds: string[]
+  ) => {
+    const initialIds = initialClinics.map((clinic) => clinic.id);
+
+    const clinicsToRemove = initialIds.filter((id) => !finalIds.includes(id));
+
+    const clinicsToAdd = finalIds.filter((id) => !initialIds.includes(id));
+
+    return { clinicsToRemove, clinicsToAdd };
+  };
+
   const onSave = () => {
     const input = leagues.map((item) => Object.values(item)[0]);
 
-    addLeagues({
-      variables: {
-        input,
-      },
-    }).then((res) => {
-      if (!!res?.data?.addLeagues) {
-        setNotification({
-          title: isToAddSuperLeagues
-            ? 'Super leagues added!'
-            : 'Leagues added!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-        history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
-          ...state,
-        });
-      }
-    });
+    if (state?.leagueToEdit) {
+      const { clinicsToAdd, clinicsToRemove } = findChanges(
+        state?.leagueToEdit?.clinics,
+        input[0].clinicIds
+      );
+
+      editLeague({
+        variables: {
+          leagueId: state?.leagueToEdit.id,
+          name: input?.[0].name,
+          clinicsToAdd,
+          clinicsToRemove,
+        } as MutationEditLeagueArgs,
+      }).then((res) => {
+        if (!!res?.data?.editLeague) {
+          setNotification({
+            title: 'League updated!',
+            variant: NOTIFICATION.SUCCESS,
+          });
+          onBack();
+        }
+      });
+    } else {
+      addLeagues({
+        variables: {
+          input,
+        },
+      }).then((res) => {
+        if (!!res?.data?.addLeagues) {
+          setNotification({
+            title: isToAddSuperLeagues
+              ? 'Super leagues added!'
+              : 'Leagues added!',
+            variant: NOTIFICATION.SUCCESS,
+          });
+          onBack();
+        }
+      });
+    }
   };
+
+  useEffect(() => {
+    if (state?.leagueToEdit && previousState !== state) {
+      setLeagues([
+        {
+          [leagueKey]: {
+            ...currentLeagueData,
+            clinicIds: state?.leagueToEdit?.clinics.map((clinic) => clinic.id),
+            name: state?.leagueToEdit?.name,
+          },
+        },
+      ]);
+    }
+  }, [
+    currentLeagueData,
+    leagueKey,
+    leagues,
+    previousState,
+    state,
+    state?.leagueToEdit,
+  ]);
 
   if (loading) {
     return (
@@ -241,10 +336,12 @@ export const AddLeagues = () => {
             icon="ArrowCircleLeftIcon"
             type="outlined"
             color="secondary"
-            textColor={addingLeagues ? 'textMid' : 'secondary'}
+            textColor={
+              addingLeagues || editingLeagues ? 'textMid' : 'secondary'
+            }
             text="Previous"
-            isLoading={addingLeagues}
-            disabled={addingLeagues}
+            isLoading={addingLeagues || editingLeagues}
+            disabled={addingLeagues || editingLeagues}
             onClick={onPreviousStep}
           />
         )}
@@ -254,8 +351,8 @@ export const AddLeagues = () => {
           type="filled"
           color="secondary"
           textColor="white"
-          isLoading={addingLeagues}
-          disabled={isDisabledNextButton || addingLeagues}
+          isLoading={addingLeagues || editingLeagues}
+          disabled={isDisabledNextButton || addingLeagues || editingLeagues}
           text={isLastStep ? 'Save' : 'Next'}
           onClick={() => (isLastStep ? onSave() : onNextStep())}
         />

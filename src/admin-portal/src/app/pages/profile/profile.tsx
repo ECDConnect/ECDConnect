@@ -18,12 +18,13 @@ import {
   SA_CELL_REGEX,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import {
   GetTeamLead,
   GetUserById,
   ResetUserPassword,
+  SendTeamLeadVerifyPhoneNumberSMS,
   UpdateTeamLeadMessage,
   UpdateUser,
   UserModelInput,
@@ -54,6 +55,7 @@ export const tlSchema = yup.object().shape({
 
 export function Profile(props: any) {
   const [resetUserPassword] = useMutation(ResetUserPassword);
+  const [resendSms] = useMutation(SendTeamLeadVerifyPhoneNumberSMS);
   const user = useUser();
   const { setNotification } = useNotifications();
   const [handleChangePassword, setHandleChangePassword] = useState(false);
@@ -92,7 +94,7 @@ export function Profile(props: any) {
     variables: {
       userId: user.user?.id,
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -117,14 +119,15 @@ export function Profile(props: any) {
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
-  const { phoneNumber, firstName, surname } = useWatch({ control });
-  const tlDisableButton =
-    !!errors?.firstName || !!errors?.surname || !!errors?.phoneNumber;
+  const { phoneNumber } = useWatch({ control });
   const [avatarFile, setAvatarFile] = useState(null);
   const [teamLeadWelcomeMessage, setTeamLeadWelcomeMessage] = useState('');
-  const [showSMSMessage, setShowSMSMessage] = useState(false);
 
-  const saveUser = async (passwordChange: boolean, profileImage?: string) => {
+  const saveUser = async (
+    passwordChange: boolean,
+    profileImage?: string,
+    resendSms?: boolean
+  ) => {
     const userInputModel: UserModelInput = {
       firstName: userDetailForm?.firstName,
       surname: userDetailForm?.surname,
@@ -133,7 +136,9 @@ export function Profile(props: any) {
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
       profileImageUrl: profileImage ?? userData.userById?.profileImageUrl,
-      phoneNumber: phoneNumber,
+      phoneNumber: resendSms
+        ? userData?.userById?.pendingPhoneNumber
+        : phoneNumber,
     };
 
     await updateUser({
@@ -147,6 +152,7 @@ export function Profile(props: any) {
           title: 'Successfully Updated User!',
           variant: NOTIFICATION.SUCCESS,
         });
+        getUserById();
       })
       .catch((error) => {
         setNotification({
@@ -154,7 +160,6 @@ export function Profile(props: any) {
           variant: NOTIFICATION.ERROR,
         });
       });
-    refetch();
 
     if (passwordChange) {
       await resetUserPassword({
@@ -286,6 +291,35 @@ export function Profile(props: any) {
     fileInput.click();
   };
 
+  const handleResendSms = useCallback(async () => {
+    await resendSms({
+      variables: {
+        userId: userData?.userById?.id,
+        pendingPhoneNumber: userData?.userById?.pendingPhoneNumber,
+      },
+    })
+      .then(() => {
+        setNotification({
+          title: 'Successfully resend SMS!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((error) => {
+        setNotification({
+          title: 'Failed to resend SMS!',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+
+    getUserById();
+  }, [
+    getUserById,
+    resendSms,
+    setNotification,
+    userData?.userById?.id,
+    userData?.userById?.pendingPhoneNumber,
+  ]);
+
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
@@ -295,10 +329,10 @@ export function Profile(props: any) {
 
             <div className="flex h-full " style={{ minHeight: '30rem' }}>
               <div className="w-full p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
-                {showSMSMessage && (
+                {userData?.userById?.pendingPhoneNumber && (
                   <Alert
                     className="mb-12 rounded-md"
-                    title={`Verify your cellphone number! We have sent you an SMS to ${userDetailForm?.phoneNumber}. Please verify the cellphone number by clicking the link.`}
+                    title={`Verify your cellphone number! We have sent you an SMS to ${userData?.userById?.pendingPhoneNumber}. Please verify the cellphone number by clicking the link.`}
                     list={[
                       `If you’ve made a mistake, please edit your cellphone number below.`,
                     ]}
@@ -311,7 +345,7 @@ export function Profile(props: any) {
                         textColor="white"
                         text="Resend SMS"
                         icon="MailIcon"
-                        onClick={async () => await saveUser(false)}
+                        onClick={() => handleResendSms()}
                       />
                     }
                   />
@@ -496,7 +530,6 @@ export function Profile(props: any) {
                     ? await saveUser(false, avatarFile)
                     : await saveUser(false);
                   setHandleChangePhoneNumber(false);
-                  setShowSMSMessage(true);
                 },
                 leadingIcon: 'CheckCircleIcon',
               },

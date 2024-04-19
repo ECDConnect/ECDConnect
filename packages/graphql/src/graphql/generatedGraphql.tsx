@@ -2005,6 +2005,7 @@ export type ClientSummaryByPriority = {
 
 export type Clinic = {
   __typename?: 'Clinic';
+  clinicMeetings?: Maybe<Array<Maybe<ClinicMeeting>>>;
   emergencyContactNumber?: Maybe<Scalars['String']>;
   emergencyContactPerson?: Maybe<Scalars['String']>;
   healthCareWorkers?: Maybe<Array<Maybe<HealthCareWorker>>>;
@@ -2025,6 +2026,7 @@ export type Clinic = {
 
 export type ClinicFilterInput = {
   and?: InputMaybe<Array<ClinicFilterInput>>;
+  clinicMeetings?: InputMaybe<ListFilterInputTypeOfClinicMeetingFilterInput>;
   emergencyContactNumber?: InputMaybe<StringOperationFilterInput>;
   emergencyContactPerson?: InputMaybe<StringOperationFilterInput>;
   healthCareWorkers?: InputMaybe<ListFilterInputTypeOfHealthCareWorkerFilterInput>;
@@ -2045,6 +2047,7 @@ export type ClinicFilterInput = {
 };
 
 export type ClinicInput = {
+  ClinicMeetings?: InputMaybe<Array<InputMaybe<ClinicMeetingInput>>>;
   EmergencyContactNumber?: InputMaybe<Scalars['String']>;
   EmergencyContactPerson?: InputMaybe<Scalars['String']>;
   HealthCareWorkers?: InputMaybe<Array<InputMaybe<HealthCareWorkerInput>>>;
@@ -5789,6 +5792,13 @@ export type ListFilterInputTypeOfClinicLeagueFilterInput = {
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<ClinicLeagueFilterInput>;
   some?: InputMaybe<ClinicLeagueFilterInput>;
+};
+
+export type ListFilterInputTypeOfClinicMeetingFilterInput = {
+  all?: InputMaybe<ClinicMeetingFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClinicMeetingFilterInput>;
+  some?: InputMaybe<ClinicMeetingFilterInput>;
 };
 
 export type ListFilterInputTypeOfClinicMeetingParticipantInFieldFilterInput = {
