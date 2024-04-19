@@ -1,8 +1,8 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
-using EcdLink.Api.CoreApi.Security.Models.Requests;
-using ECDLink.Abstractrions.Constants;
+using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
@@ -12,13 +12,12 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
-using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,6 +69,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 return teamLeadRepo.Update(teamLead);
             }
             return null;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public async Task<ApplicationUser> SendTeamLeadVerifyPhoneNumberSMS(
+            ApplicationUserManager userManager,
+            [Service] SecurityNotificationManager securityNotificationManager,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] ILogger<UserMutationExtension> logger,
+            Guid userId,
+            string pendingPhoneNumber)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            var userPhoneNumberBeforeChange = user.PhoneNumber;
+
+            try
+            {
+                // save pending number to phonenumber
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, pendingPhoneNumber));
+                user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PendingPhoneNumber, pendingPhoneNumber)); ;
+                user.PhoneNumberConfirmed = false;
+                await userManager.UpdateAsync(user);
+
+                // send sms
+                var apiUrl = new Uri("https://" + TenantExecutionContext.Tenant.AdminSiteAddress.ToString());
+                await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
+
+                // revert phone number to old one
+                user.PhoneNumber = userPhoneNumberBeforeChange;
+                await userManager.UpdateAsync(user);
+            }
+            catch (Exception exception)
+            {
+                logger?.LogError("Could not send cellphone number verification for change of user cellphone number.", new { userId = userId, exception });
+            }
+            
+            return user;
+        }
+        private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
+        {
+            return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
