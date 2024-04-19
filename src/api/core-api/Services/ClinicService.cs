@@ -2,12 +2,13 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -41,9 +42,8 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<BreastFeedingClub, Guid> _breastFeedingClubRepo;
         private readonly IGenericRepository<Caregiver, Guid> _caregiverRepo;
         private readonly IGenericRepository<TeamLead, Guid> _teamLeadRepo;
+        private readonly IGenericRepository<MessageLog, Guid> _messageRepo;
 
-        private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
-        private readonly IGenericRepository<PointsActivity, Guid> _pointsActivityRepo;
 
         private readonly Guid? _applicationUserId;
 
@@ -69,12 +69,11 @@ namespace EcdLink.Api.CoreApi.Services
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _breastFeedingClubRepo = _repositoryFactory.CreateGenericRepository<BreastFeedingClub>(userContext: _applicationUserId);
             _caregiverRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
-            _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _applicationUserId);
-            _pointsActivityRepo = _repositoryFactory.CreateGenericRepository<PointsActivity>(userContext: _applicationUserId);
             _clinicMeetingRepo = _repositoryFactory.CreateGenericRepository<ClinicMeeting>(userContext: _applicationUserId);
             _clinicMeetingCHWsOptedOutRepo = _repositoryFactory.CreateGenericRepository<ClinicMeetingParticipantOptedOut>(userContext: _applicationUserId);
             _clinicMeetingCHWsInFieldRepo = _repositoryFactory.CreateGenericRepository<ClinicMeetingParticipantInField>(userContext: _applicationUserId);
             _teamLeadRepo = _repositoryFactory.CreateGenericRepository<TeamLead>(userContext: _applicationUserId);
+            _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _applicationUserId);
 
             _pointsEngineService = pointsEngineService;
 
@@ -685,6 +684,23 @@ namespace EcdLink.Api.CoreApi.Services
                     });
                 }
                 _clinicMeetingCHWsInFieldRepo.InsertMany(clinicMeetingParticipantInFields);
+            }
+
+            // Remove notifications when the report has been submitted for the TLs clinic(s) for the month
+            var notification = _messageRepo.GetAll().Where(x =>
+                    x.MessageProtocol == "push" &&
+                    x.MessageTemplateType == TemplateTypeConstants.GGPortalTLMissingMonthlyReport &&
+                    x.To == clinicMeeting.TeamLeadId.ToString() &&
+                    x.IsActive == true &&
+                    (x.MessageDate.Value.Date.Year == clinicMeeting.MeetingDate.Year && x.MessageDate.Value.Date.Month == clinicMeeting.MeetingDate.Month)
+                ).FirstOrDefault();
+
+            if (notification != null)
+            {
+                notification.IsActive = false;
+                notification.MessageEndDate = DateTime.Now;
+                notification.UpdatedDate = DateTime.Now;
+                _messageRepo.Update(notification);
             }
 
             return clinicMeeting;

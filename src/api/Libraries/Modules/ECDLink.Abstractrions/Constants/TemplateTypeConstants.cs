@@ -129,9 +129,11 @@ namespace ECDLink.Abstractrions.Constants
         // GG portal notifications
         public const string GGPortalCHWNotCompletedVisitIn2Weeks = "gg-portal-chw-not-completed-visit-in-2-weeks";
         public const string GGPortalTLMissingMonthlyReport = "gg-portal-tl-missing-monthly-report";
-        public const string GGPortalClinicSilverGoldTierPointsTeam = "gg-portal-clinic-points-silver-gold-tier-team";
+        public const string GGPortalClinicGoldTierPointsTeam = "gg-portal-clinic-points-gold-tier-team";
+        public const string GGPortalClinicSilverTierPointsTeam = "gg-portal-clinic-points-silver-tier-team";
         public const string GGPortalClinicBronzeTierPointsTeam = "gg-portal-clinic-points-bronze-tier-team";
-        public const string GGPortalCHWMaternalDistress = "gg-portal-chw-maternal-distress";
+        public const string GGPortalCHWMaternalDistressInfant = "gg-portal-chw-maternal-distress-infant";
+        public const string GGPortalCHWMaternalDistressMother = "gg-portal-chw-maternal-distress-mother";
         public const string GGPortalCHWMissingMonthlyPoints = "gg-portal-chw-missing-monthly-points";
 
         //Bulk messaging

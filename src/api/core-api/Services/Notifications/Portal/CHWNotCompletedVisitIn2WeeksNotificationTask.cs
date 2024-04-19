@@ -1,11 +1,8 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -20,92 +17,83 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
     public class CHWNotCompletedVisitIn2WeeksNotificationTask : INotificationTask
     {
         private readonly INotificationService _notificationService;
-        private readonly IClinicService _clinicService;
 
-        private IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
-        private IGenericRepository<Clinic, Guid> _clinicRepo;
         private IGenericRepository<HealthCareWorker, Guid> _healthCareWorkerRepo;
+        private IGenericRepository<Visit, Guid> _visitRepo;
+        private IGenericRepository<MessageLog, Guid> _messageRepo;
 
         public CHWNotCompletedVisitIn2WeeksNotificationTask(
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
-            [Service] IClinicService clinicService,
             HierarchyEngine hierarchyEngine)
         {
             _notificationService = notificationService;
-            _clinicService = clinicService;
 
             var applicationUserId = hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
-            _pointsUserSummaryRepo = repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: applicationUserId);
-            _clinicRepo = repositoryFactory.CreateGenericRepository<Clinic>(userContext: applicationUserId);
             _healthCareWorkerRepo = repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
+            _visitRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            _messageRepo = repositoryFactory.CreateGenericRepository<MessageLog>(userContext: applicationUserId);
         }
 
         public bool ShouldRunToday()
         {
-            return DateTime.Now.IsSevenDaysUntilMonthEnd();
+            return true;
         }
 
         public async Task SendNotifications()
         {
-            var clinicIds = _clinicRepo.GetAll().Where(x => x.IsActive).Select(x => x.Id).ToList();
+            var twoWeeksBack = DateTime.Now.AddDays(-14);
 
-            var noQualifyingClubsReplacements = new List<TagsReplacements>
+            var healthCareWorkers = _healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
+            var hcwIds = healthCareWorkers.Select(x => x.Id.ToString()).ToList();
+            var notifications = _messageRepo.GetAll().Where(x =>
+                                                            x.MessageProtocol == "push" &&
+                                                            x.MessageTemplateType == TemplateTypeConstants.GGPortalCHWNotCompletedVisitIn2Weeks &&
+                                                            hcwIds.Contains(x.To) &&
+                                                            x.IsActive == true
+                                                            ).ToList();
+
+            // get all visits submitted the past 2 weeks for moms and infants
+            var visits = _visitRepo.GetAll().Where(x => x.IsActive && x.Attended &&
+                                                   (x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= twoWeeksBack.Date && x.ActualVisitDate.Value.Date <= DateTime.Now.Date) &&
+                                                   (x.InfantId.HasValue || x.MotherId.HasValue)
+                                                   ).ToList();
+
+            // Retrieve all health care worker ids from the visits
+            var visitHcwIds = visits.Where(x => x.MotherId.HasValue).Select(x => x.Mother.HealthCareWorkerId).Distinct().ToList();
+            visitHcwIds.AddRange(visits.Where(x => x.InfantId.HasValue).Select(x => x.Infant.Caregiver.HealthCareWorkerId).Distinct().ToList());
+
+            foreach (var hcw in healthCareWorkers)
             {
-                new TagsReplacements()
+                var hasVisitInPast2Weeks = visitHcwIds.Contains(hcw.Id);
+                var hcwNotifications = notifications.Where(x => x.To == hcw.User.Id.ToString()).Select(x => x.Id.ToString()).ToList();
+
+                if (hasVisitInPast2Weeks)
                 {
-                    FindValue = "CurrentMonth",
-                    ReplacementValue = DateTime.Now.ToString("MMMM")
-                }
-            };
-
-            var nextMonth = DateTime.Now.AddMonths(1).GetStartOfMonth();
-
-            var notificationTasks = new List<Task>();
-            foreach (var clinicId in clinicIds)
-            {
-                var breastFeedingClubsForClinic = _clinicService.GetBreastFeedingClubs(clinicId);
-
-                var qualifyingClubs = breastFeedingClubsForClinic
-                    .Where(x =>
-                        x.MeetingDate >= DateTime.Now.GetStartOfMonth()
-                        && x.MeetingDate <= DateTime.Now.GetEndOfMonth()
-                        && x.Clients.Count() >= 4
-                        && x.Clients.Count() <= 6)
-                    .Count();
-
-                var teamUsers = _healthCareWorkerRepo.GetAll()
-                        .Where(x => x.ClinicId == clinicId && x.IsActive)
-                        .Select(x => x.User)
-                        .ToList();
-
-                if (qualifyingClubs == 0)
-                {
-                    foreach (var user in teamUsers)
+                    // disable notifications if there is a visit completed
+                    if (hcwNotifications.Count > 0)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddBreastfeedingClub, DateTime.Now.Date, user, "", MessageStatusConstants.Red, noQualifyingClubsReplacements, nextMonth);
+                        foreach (var notificationId in hcwNotifications)
+                        {
+                            await _notificationService.DisableNotification(notificationId);
+                        }
                     }
                 }
                 else
                 {
-                    var replacements = new List<TagsReplacements>
+                    if (hcwNotifications.Count == 0)
                     {
-                        new TagsReplacements()
+                        // add 
+                        var replacements = new List<TagsReplacements>
                         {
-                            FindValue = "CurrentClubs",
-                            ReplacementValue = qualifyingClubs.ToString()
-                        },
-                        new TagsReplacements()
-                        {
-                            FindValue = "CurrentMonth",
-                            ReplacementValue = DateTime.Now.ToString("MMMM")
-                        }
-                    };
-
-                    foreach (var user in teamUsers)
-                    {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddedABreastfeedingClub, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements, nextMonth);
+                            new TagsReplacements()
+                            {
+                                FindValue = "CHWFirstName",
+                                ReplacementValue = hcw.User.FirstName
+                            }
+                        };
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWNotCompletedVisitIn2Weeks, DateTime.Now.Date, hcw.User, "", MessageStatusConstants.Amber, replacements, null);
                     }
                 }
             }
