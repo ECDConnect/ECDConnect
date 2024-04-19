@@ -18,12 +18,13 @@ import {
   SA_CELL_REGEX,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import {
   GetTeamLead,
   GetUserById,
   ResetUserPassword,
+  SendTeamLeadVerifyPhoneNumberSMS,
   UpdateTeamLeadMessage,
   UpdateUser,
   UserModelInput,
@@ -54,6 +55,7 @@ export const tlSchema = yup.object().shape({
 
 export function Profile(props: any) {
   const [resetUserPassword] = useMutation(ResetUserPassword);
+  const [resendSms] = useMutation(SendTeamLeadVerifyPhoneNumberSMS);
   const user = useUser();
   const { setNotification } = useNotifications();
   const [handleChangePassword, setHandleChangePassword] = useState(false);
@@ -277,8 +279,6 @@ export function Profile(props: any) {
     }
   };
 
-  console.log(userDetailForm?.phoneNumber);
-
   const displayProfilePicturePrompt = () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -290,6 +290,32 @@ export function Profile(props: any) {
     document.body.appendChild(fileInput);
     fileInput.click();
   };
+
+  const handleResendSms = useCallback(async () => {
+    await resendSms({
+      variables: {
+        userId: userData?.userById?.id,
+        pendingPhoneNumber: userData?.userById?.pendingPhoneNumber,
+      },
+    })
+      .then(() => {
+        setNotification({
+          title: 'Successfully resend SMS!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((error) => {
+        setNotification({
+          title: 'Failed to resend SMS!',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  }, [
+    resendSms,
+    setNotification,
+    userData?.userById?.id,
+    userData?.userById?.pendingPhoneNumber,
+  ]);
 
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
@@ -316,7 +342,7 @@ export function Profile(props: any) {
                         textColor="white"
                         text="Resend SMS"
                         icon="MailIcon"
-                        onClick={async () => await saveUser(false, '', true)}
+                        onClick={() => handleResendSms()}
                       />
                     }
                   />

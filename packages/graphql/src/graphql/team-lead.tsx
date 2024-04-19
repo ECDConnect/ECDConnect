@@ -245,3 +245,19 @@ export const GetHealthCareWorkersForClinicId = gql`
     }
   }
 `;
+
+export const SendTeamLeadVerifyPhoneNumberSMS = gql`
+  mutation SendTeamLeadVerifyPhoneNumberSMS(
+    $userId: UUID!
+    $pendingPhoneNumber: String
+  ) {
+    sendTeamLeadVerifyPhoneNumberSMS(
+      userId: $userId
+      pendingPhoneNumber: $pendingPhoneNumber
+    ) {
+      id
+      pendingPhoneNumber
+      phoneNumber
+    }
+  }
+`;

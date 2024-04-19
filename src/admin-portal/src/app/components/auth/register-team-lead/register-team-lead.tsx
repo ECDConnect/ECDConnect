@@ -21,7 +21,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
@@ -82,6 +82,7 @@ export default function RegisterTeamLead(
     formState,
     setValue: setTlRegistrationValue,
     control,
+    clearErrors,
   } = useForm({
     resolver: yupResolver(tlRegisterSchema),
     defaultValues: initialRegisterValuesForTL,
@@ -109,6 +110,12 @@ export default function RegisterTeamLead(
     control,
   });
 
+  useEffect(() => {
+    if (idFieldVisible === false) {
+      clearErrors('idField');
+    }
+  }, [clearErrors, idFieldVisible]);
+
   const disableButton =
     !acceptedTerms ||
     (!idField && !passportField) ||
@@ -122,7 +129,7 @@ export default function RegisterTeamLead(
     const informationVerified = await verifyPhoneNumber(Config.authApi, {
       phoneNumber: formValues.phoneNumber,
       token: resetToken || '',
-      username: formValues.idField || '',
+      username: formValues.idField || formValues.passportField,
     });
 
     if (informationVerified.verified === false) {
