@@ -94,7 +94,7 @@ export function Profile(props: any) {
     variables: {
       userId: user.user?.id,
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -152,6 +152,7 @@ export function Profile(props: any) {
           title: 'Successfully Updated User!',
           variant: NOTIFICATION.SUCCESS,
         });
+        getUserById();
       })
       .catch((error) => {
         setNotification({
@@ -159,7 +160,6 @@ export function Profile(props: any) {
           variant: NOTIFICATION.ERROR,
         });
       });
-    refetch();
 
     if (passwordChange) {
       await resetUserPassword({
@@ -310,7 +310,10 @@ export function Profile(props: any) {
           variant: NOTIFICATION.ERROR,
         });
       });
+
+    getUserById();
   }, [
+    getUserById,
     resendSms,
     setNotification,
     userData?.userById?.id,
