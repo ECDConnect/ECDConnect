@@ -9,6 +9,12 @@ export const GetLeagueSetup = gql`
         clinics {
           id
           name
+          subDistrictName
+          teamLeads {
+            id
+            firstName
+            surname
+          }
         }
       }
       districts {
@@ -20,6 +26,12 @@ export const GetLeagueSetup = gql`
           clinics {
             id
             name
+            subDistrictName
+            teamLeads {
+              id
+              firstName
+              surname
+            }
           }
         }
         unassignedClinics {
@@ -80,5 +92,21 @@ export const AddLeagues = gql`
 export const DeleteLeague = gql`
   mutation DeleteLeague($id: UUID, $leagueId: UUID!) {
     deleteLeague(id: $id, leagueId: $leagueId)
+  }
+`;
+
+export const EditLeague = gql`
+  mutation EditLeague(
+    $leagueId: UUID!
+    $name: String
+    $clinicsToAdd: [UUID!]
+    $clinicsToRemove: [UUID!]
+  ) {
+    editLeague(
+      leagueId: $leagueId
+      name: $name
+      clinicsToAdd: $clinicsToAdd
+      clinicsToRemove: $clinicsToRemove
+    )
   }
 `;

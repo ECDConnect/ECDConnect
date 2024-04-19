@@ -24,7 +24,7 @@ import ROUTES from '../../../../../routes/app.routes-constants';
 
 import { LeagueSeasonRouteState } from '../types';
 import { AddLeaguesRouteState } from './add-leagues/types';
-import { LeagueActionModal } from './components/LeagueActionModal';
+import { LeagueActionModal } from './components/league-action-modal';
 
 export const LeagueManagement = () => {
   const history = useHistory<AddLeaguesRouteState>();
@@ -118,7 +118,7 @@ export const LeagueManagement = () => {
         titleStyle: 'text-lg text-textMid font-semibold',
         subTitleStyle: 'text-sm text-textLight',
         onActionClick: () => {
-          if (item.leagues.length) {
+          if (item.leagues.length || !item.unassignedClinics?.length) {
             onActionOptions(item);
           } else {
             history.push(

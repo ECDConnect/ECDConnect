@@ -55,8 +55,9 @@ export const Step1 = ({
           iconPosition="end"
           onClick={() =>
             history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
-              ...state,
-            })
+              startDate: state?.startDate,
+              endDate: state?.endDate,
+            } as AddLeaguesRouteState)
           }
         />
       </div>
