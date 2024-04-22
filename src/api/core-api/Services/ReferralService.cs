@@ -43,7 +43,10 @@ namespace EcdLink.Api.CoreApi.Services
             var currentUser = _userManager.FindByIdAsync(userId).Result;
             var isTeamLead = _userManager.IsInRoleAsync(currentUser, RolesGG.TEAM_LEAD).Result;
 
-            var referrals = _referralTypeRepo.GetAll();
+            var referrals = _referralTypeRepo.GetAll()
+                .Where(x => 
+                    x.VisitDataStatus.InsertedDate >= startDate
+                    && x.VisitDataStatus.InsertedDate <= endDate);
                
 
             if (clinicIds != null && clinicIds.Any())

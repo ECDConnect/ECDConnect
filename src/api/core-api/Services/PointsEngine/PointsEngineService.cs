@@ -604,7 +604,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             var teamUserIds = _healthCareWorkerRepo.GetAll()
-                .Where(x => x.ClinicId == clinicId.Value && x.IsActive)
+                .Where(x => x.ClinicId == clinicId.Value && x.IsActive && x.User.IsActive)
                 .Select(x => x.UserId)
                 .ToList();
 
