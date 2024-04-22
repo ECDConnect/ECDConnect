@@ -23,6 +23,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<PortalClinicMeetingModel> GetAllClinicMeetings([Service] IClinicService clinicService)
+        {
+            return clinicService.GetAllClinicMeetings();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [GraphQLType("[Topic]!")]
         public IEnumerable<object> GetCMSTopicForMonth([Service] ContentManagementRepository contentRepo, Guid localeId)
         {
