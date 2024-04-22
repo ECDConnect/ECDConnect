@@ -213,6 +213,8 @@ namespace EcdLink.Api.CoreApi.Services
                     InsertedDate = x.InsertedDate,
                     LeagueTypeId = x.LeagueTypeId,
                     LeagueTypeName = x.LeagueType.Name,
+                    DistrictId = x.DistrictId,
+                    DistrictName = x.District.Name,
                     Clinics = x.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name}).ToList()
                 })
                 .ToList();
@@ -230,7 +232,9 @@ namespace EcdLink.Api.CoreApi.Services
                     InsertedDate = x.InsertedDate,
                     LeagueTypeId = x.LeagueTypeId,
                     LeagueTypeName = x.LeagueType.Name,
-                    Name = x.Name
+                    Name = x.Name,
+                    DistrictId = x.DistrictId,
+                    DistrictName = x.District.Name,
                 })
                 .FirstOrDefault();
 

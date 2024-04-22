@@ -1473,17 +1473,20 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Set league ranks for year, keeping highest rank for all that have equal points
-            clinicList = clinicList.OrderByDescending(x => x.PointsTotal).ToList();
-            clinicList[0].LeagueRanking = 1;
-            for (int i = 1; i < clinicList.Count; i++)
+            if (clinicList.Any())
             {
-                if (clinicList[i].PointsTotal == clinicList[i - 1].PointsTotal)
+                clinicList = clinicList.OrderByDescending(x => x.PointsTotal).ToList();
+                clinicList[0].LeagueRanking = 1;
+                for (int i = 1; i < clinicList.Count; i++)
                 {
-                    clinicList[i].LeagueRanking = clinicList[i - 1].LeagueRanking;
-                }
-                else
-                {
-                    clinicList[i].LeagueRanking = i + 1;
+                    if (clinicList[i].PointsTotal == clinicList[i - 1].PointsTotal)
+                    {
+                        clinicList[i].LeagueRanking = clinicList[i - 1].LeagueRanking;
+                    }
+                    else
+                    {
+                        clinicList[i].LeagueRanking = i + 1;
+                    }
                 }
             }
 
