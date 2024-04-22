@@ -20,7 +20,7 @@ export const AssignClinicsToALeague = ({
   const [assignedClinics, setAssignedClinics] = useState<{
     [clinicId: string]: LeagueId;
   }>({});
-  console.log('unassignedClinics', unassignedClinics);
+
   const { setNotification } = useNotifications();
 
   const [addClinicToLeague, { loading: addingClinic }] =
@@ -138,8 +138,8 @@ export const AssignClinicsToALeague = ({
         text="Save"
         isLoading={addingClinic}
         disabled={
-          addingClinic ||
-          Object.keys(assignedClinics).length !== unassignedClinics.length
+          addingClinic /* ||
+          Object.keys(assignedClinics).length !== unassignedClinics.length */
         }
         onClick={onSave}
       />

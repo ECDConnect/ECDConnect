@@ -8,38 +8,35 @@ import Trophy from '../../../../assets/trophy.svg';
 import { useHistory } from 'react-router';
 import ROUTES from '../../../routes/app.routes-constants';
 import { LeagueSeasonRouteState } from './view-league-season/types';
-import { useQuery } from '@apollo/client';
-import { GetLeagues } from '@ecdlink/graphql';
-import { PortalLeagueDto } from '@ecdlink/core';
+// import { checkIfIsNextSeasonManagement } from './utils';
 
 export const Leagues = () => {
   const history = useHistory();
 
-  const lastYear = new Date().getFullYear() - 1;
-  const currentYear = new Date().getFullYear();
-  const nextYear = new Date().getFullYear() + 1;
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const lastYear = currentYear - 1;
+  const nextYear = currentYear + 1;
 
-  // TODO: Add integration
-  const { data, loading } = useQuery<{ leagues?: PortalLeagueDto[] }>(
-    GetLeagues,
-    {
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
+  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
 
   const leagues: MenuListDataItem[] = [
     {
-      // TODO: Integrate use case 11
       hide: false,
       startDate: `Oct ${lastYear}`,
       endDate: `Sep ${currentYear}`,
       description: 'See this year’s scoreboards.',
     },
-    {
-      startDate: `Oct ${currentYear}`,
-      endDate: `Sep ${nextYear}`,
-      description: 'Start assigning clinics to leagues for next year.',
-    },
+    ...(isNextSeasonManagement
+      ? [
+          {
+            startDate: `Oct ${currentYear}`,
+            endDate: `Sep ${nextYear}`,
+            description: 'Start assigning clinics to leagues for next year.',
+          },
+        ]
+      : []),
   ]
     .filter((item) => !item.hide)
     .map((item) => ({

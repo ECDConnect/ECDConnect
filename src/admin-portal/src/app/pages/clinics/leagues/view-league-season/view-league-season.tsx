@@ -6,12 +6,13 @@ import { LeagueManagement } from './league-management/league-management';
 import { LeaguePerformance } from './league-performance/league-performance';
 import { useLocation } from 'react-router';
 import { LeagueSeasonRouteState } from './types';
+// import { checkIfIsNextSeasonManagement } from '../utils';
 
 export const ViewLeagueSeason = () => {
   const { state } = useLocation<LeagueSeasonRouteState>();
 
-  // TODO: add logic to determine if its league management
-  const isLeagueManagement = false;
+  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
+  const isLeagueManagement = /* checkIfIsNextSeasonManagement() */ true;
 
   const paths: BreadcrumbProps['paths'] = [
     {
