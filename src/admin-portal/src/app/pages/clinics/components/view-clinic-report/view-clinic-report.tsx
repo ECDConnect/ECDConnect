@@ -49,6 +49,7 @@ export const ViewClinicReport = ({
   const history = useHistory();
   const panel = usePanel();
   const clinic = clinicFromProps || location?.state?.clinic;
+  const isFromTeamMeetings = location?.state?.isFromTeamMeetings;
   const today = new Date();
   const initialBefore30Days = sub(today, {
     days: 30,
@@ -268,7 +269,7 @@ export const ViewClinicReport = ({
           weight="bold"
           color="textDark"
           text={
-            isTeamLead
+            isTeamLead && isFromTeamMeetings
               ? `Visit information: ${currentDateFormatted}`
               : `Visit information`
           }

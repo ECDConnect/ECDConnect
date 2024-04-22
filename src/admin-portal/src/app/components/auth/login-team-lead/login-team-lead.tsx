@@ -60,7 +60,7 @@ export default function LoginTeamLead() {
 
       if (isAuthenticated) {
         setIsLoading(false);
-        history.push('/clinics');
+        history.push(ROUTES.ROOT_TEAM_LEAD);
       } else {
         setIsLoading(false);
         setDisplayError(true);

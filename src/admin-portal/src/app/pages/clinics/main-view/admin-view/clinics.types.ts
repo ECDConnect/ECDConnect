@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 
 export interface ClinicsRouteState {
   clinic?: ClinicDto;
+  isFromTeamMeetings?: boolean;
 }
 
 export interface ClinicPanelCreateProps {

@@ -117,7 +117,7 @@ export const TeamMeetingsMainPage = () => {
   return (
     <div className="bg-adminPortalBg h-100vh p-4">
       <div className="bg-adminPortalBg">
-        {monthMeetingSubmitted && availableDateToAddReport && (
+        {monthMeetingSubmitted && (
           <div className="flex w-full items-center justify-between">
             <Typography type={'h1'} text={title} color={'textDark'} />
             <Button
