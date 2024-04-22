@@ -1995,7 +1995,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             foreach (var item in allReferrals)
             {
-                item.BackReferral = _visitBackReferralManager.GetBackReferralDataForId(item.Id);
+                item.VisitBackReferral = _visitBackReferralManager.GetBackReferralDataForId(item.Id);
             }
 
             return allReferrals;

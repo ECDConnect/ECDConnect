@@ -26,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public DateTime? BackReferralDateCompleted { get; set; }
         public string BackReferralAdminComment { get; set; }
         [NotMapped]
-        public virtual VisitBackReferral BackReferral { get; set; }
+        public virtual VisitBackReferral VisitBackReferral { get; set; }
         [NotMapped]
         public virtual ICollection<VisitDataStatusReferralType> VisitDataStatusReferralTypes { get; set; }
         [NotMapped]

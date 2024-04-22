@@ -16849,21 +16849,6 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
-export type Setting_IncomeStatementSubmitEnd = {
-  __typename?: 'Setting_IncomeStatementSubmitEnd';
-  IncomeStatementSubmitEnd: Scalars['String'];
-};
-
-export type Setting_IncomeStatementSubmitStart = {
-  __typename?: 'Setting_IncomeStatementSubmitStart';
-  IncomeStatementSubmitStart: Scalars['String'];
-};
-
-export type Setting_IntegrationDelay = {
-  __typename?: 'Setting_IntegrationDelay';
-  IntegrationDelay: Scalars['String'];
-};
-
 export type Setting_InvitationCutoffDelay = {
   __typename?: 'Setting_InvitationCutoffDelay';
   InvitationCutoffDelay: Scalars['String'];
@@ -16873,6 +16858,7 @@ export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
   Signup: Scalars['String'];
+  TeamLeadSignup: Scalars['String'];
 };
 
 export type Setting_Jwts = {
@@ -16908,17 +16894,6 @@ export type Setting_Security = {
   Login: Scalars['String'];
 };
 
-export type Setting_SmartLinkApi = {
-  __typename?: 'Setting_SmartLinkApi';
-  BaseUrl: Scalars['String'];
-  Key: Scalars['String'];
-  MaskDataEmail: Scalars['String'];
-  MaskDataIdNumber: Scalars['String'];
-  MaskDataMode: Scalars['String'];
-  MaskDataNumber: Scalars['String'];
-  Mode: Scalars['String'];
-};
-
 export type Setting_Sms = {
   __typename?: 'Setting_Sms';
   Provider: Scalars['String'];
@@ -16926,6 +16901,7 @@ export type Setting_Sms = {
 
 export type Setting_Smtp = {
   __typename?: 'Setting_Smtp';
+  DevOverrideEmailAddress: Scalars['String'];
   FromEmail: Scalars['String'];
   FromEmailDisplayName: Scalars['String'];
   Password: Scalars['String'];
@@ -16955,13 +16931,6 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
-export type Setting_ITouch = {
-  __typename?: 'Setting_iTouch';
-  BaseUrl: Scalars['String'];
-  Password: Scalars['String'];
-  Username: Scalars['String'];
-};
-
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -16969,9 +16938,6 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
-  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
-  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
-  IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
   Jwts: Setting_Jwts;
@@ -16979,13 +16945,11 @@ export type SettingsType = {
   Reporting: Setting_Reporting;
   SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
-  SmartLinkApi: Setting_SmartLinkApi;
   Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
-  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {
@@ -18887,7 +18851,6 @@ export type VisitDataSortInput = {
 
 export type VisitDataStatus = {
   __typename?: 'VisitDataStatus';
-  backReferral?: Maybe<VisitBackReferral>;
   backReferralAdminComment?: Maybe<Scalars['String']>;
   backReferralCompleted: Scalars['Boolean'];
   backReferralDateCompleted?: Maybe<Scalars['DateTime']>;
@@ -18903,6 +18866,7 @@ export type VisitDataStatus = {
   type?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  visitBackReferral?: Maybe<VisitBackReferral>;
   visitData?: Maybe<VisitData>;
   visitDataId: Scalars['UUID'];
   visitDataStatusReferralTypes?: Maybe<
@@ -18912,7 +18876,6 @@ export type VisitDataStatus = {
 
 export type VisitDataStatusFilterInput = {
   and?: InputMaybe<Array<VisitDataStatusFilterInput>>;
-  backReferral?: InputMaybe<VisitBackReferralFilterInput>;
   backReferralAdminComment?: InputMaybe<StringOperationFilterInput>;
   backReferralCompleted?: InputMaybe<BooleanOperationFilterInput>;
   backReferralDateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -18929,13 +18892,13 @@ export type VisitDataStatusFilterInput = {
   type?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visitBackReferral?: InputMaybe<VisitBackReferralFilterInput>;
   visitData?: InputMaybe<VisitDataFilterInput>;
   visitDataId?: InputMaybe<ComparableGuidOperationFilterInput>;
   visitDataStatusReferralTypes?: InputMaybe<ListFilterInputTypeOfVisitDataStatusReferralTypeFilterInput>;
 };
 
 export type VisitDataStatusInput = {
-  BackReferral?: InputMaybe<VisitBackReferralInput>;
   BackReferralAdminComment?: InputMaybe<Scalars['String']>;
   BackReferralCompleted: Scalars['Boolean'];
   BackReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
@@ -18949,6 +18912,7 @@ export type VisitDataStatusInput = {
   Section?: InputMaybe<Scalars['String']>;
   Type?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  VisitBackReferral?: InputMaybe<VisitBackReferralInput>;
   VisitData?: InputMaybe<VisitDataInput>;
   VisitDataId: Scalars['UUID'];
   VisitDataStatusReferralTypes?: InputMaybe<
@@ -19024,7 +18988,6 @@ export type VisitDataStatusReferralTypeSortInput = {
 };
 
 export type VisitDataStatusSortInput = {
-  backReferral?: InputMaybe<VisitBackReferralSortInput>;
   backReferralAdminComment?: InputMaybe<SortEnumType>;
   backReferralCompleted?: InputMaybe<SortEnumType>;
   backReferralDateCompleted?: InputMaybe<SortEnumType>;
@@ -19039,6 +19002,7 @@ export type VisitDataStatusSortInput = {
   type?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+  visitBackReferral?: InputMaybe<VisitBackReferralSortInput>;
   visitData?: InputMaybe<VisitDataSortInput>;
   visitDataId?: InputMaybe<SortEnumType>;
 };
