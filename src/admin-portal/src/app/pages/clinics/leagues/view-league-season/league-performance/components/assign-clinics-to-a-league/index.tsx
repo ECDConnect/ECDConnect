@@ -138,8 +138,8 @@ export const AssignClinicsToALeague = ({
         text="Save"
         isLoading={addingClinic}
         disabled={
-          addingClinic /* ||
-          Object.keys(assignedClinics).length !== unassignedClinics.length */
+          addingClinic ||
+          Object.keys(assignedClinics).length !== unassignedClinics.length
         }
         onClick={onSave}
       />
