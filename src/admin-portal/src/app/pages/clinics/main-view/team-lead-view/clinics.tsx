@@ -7,10 +7,12 @@ import { EmptyClinic } from './components/empty-clinic';
 
 interface ClinicsTeamLeadViewProps {
   setSelectedTabId?: (item: string) => void;
+  isFromTeamMeetings?: boolean;
 }
 
 export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   setSelectedTabId,
+  isFromTeamMeetings,
 }) => {
   const [selectedClinicId, setSelectedClinicId] = useState<string>();
 
@@ -45,11 +47,16 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
 
   const renderClinicView = useMemo(() => {
     if (selectedClinic) {
-      return <ViewClinicReport clinic={selectedClinic} />;
+      return (
+        <ViewClinicReport
+          clinic={selectedClinic}
+          isFromTeamMeetings={isFromTeamMeetings}
+        />
+      );
     } else {
       return <EmptyClinic />;
     }
-  }, [selectedClinic]);
+  }, [selectedClinic, isFromTeamMeetings]);
 
   if (loading) {
     return (
