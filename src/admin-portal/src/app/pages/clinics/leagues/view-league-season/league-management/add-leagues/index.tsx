@@ -178,14 +178,18 @@ export const AddLeagues = () => {
         (league) => league.name === leagueName
       );
 
-    if (leagueNameExists) {
+    const nameExists = state?.leagueToEdit
+      ? state?.leagueToEdit.name !== leagueName && leagueNameExists
+      : leagueNameExists;
+
+    if (nameExists) {
       setNotification({
         title: 'League name already exists!',
         variant: NOTIFICATION.ERROR,
       });
     }
 
-    return leagueNameExists;
+    return nameExists;
   };
 
   const onUpdatedLeagues = (updatedLeague: {
