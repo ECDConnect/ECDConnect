@@ -20,22 +20,19 @@ export const AssignClinicsToALeague = ({
   const [assignedClinics, setAssignedClinics] = useState<{
     [clinicId: string]: LeagueId;
   }>({});
-
+  console.log('unassignedClinics', unassignedClinics);
   const { setNotification } = useNotifications();
 
   const [addClinicToLeague, { loading: addingClinic }] =
     useMutation(AddClinicToLeague);
 
   const getLeaguesInDistrict = (districtId: string) => {
-    return (
-      leagues
-        // TODO: league needs to have a districtId property
-        ?.filter((league) => /* league.districtId === districtId */ league)
-        ?.map((league) => ({
-          value: league.id,
-          label: league.name,
-        }))
-    );
+    return leagues
+      ?.filter((league) => league.districtId === districtId)
+      ?.map((league) => ({
+        value: league.id,
+        label: league.name,
+      }));
   };
 
   const onChange = (clinicId: string, leagueId: string) => {

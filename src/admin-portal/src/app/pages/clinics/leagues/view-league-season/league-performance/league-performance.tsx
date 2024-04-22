@@ -3,6 +3,7 @@ import {
   Alert,
   Button,
   DialogPosition,
+  SearchDropDownOption,
   Table,
   Typography,
 } from '@ecdlink/ui';
@@ -13,13 +14,16 @@ import { useApolloClient, useQuery } from '@apollo/client';
 import { PortalLeagueDto, useDialog, usePanel } from '@ecdlink/core';
 import { Clinic, GetAllPortalClinics, GetLeagues } from '@ecdlink/graphql';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LeagueDetailsRouteState } from './league-details/types';
 import { LeagueSeasonRouteState } from '../types';
 import { AssignClinicsToALeague } from './components/assign-clinics-to-a-league';
 
 export const LeaguePerformance = () => {
   const [allowRefetch, setAllowRefetch] = useState(false);
+  const [districtFilter, setDistrictFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
   const [search, setSearch] = useState('');
 
   const history = useHistory();
@@ -32,7 +36,7 @@ export const LeaguePerformance = () => {
 
   const apolloClient = useApolloClient();
 
-  const data = apolloClient.readQuery<{ leagues?: PortalLeagueDto[] }>({
+  const leaguesData = apolloClient.readQuery<{ leagues?: PortalLeagueDto[] }>({
     query: GetLeagues,
   });
   const clinics = apolloClient.readQuery<{ allPortalClinics?: Clinic[] }>({
@@ -43,7 +47,7 @@ export const LeaguePerformance = () => {
     leagues?: PortalLeagueDto[];
   }>(GetLeagues, {
     fetchPolicy: 'cache-and-network',
-    skip: !!data?.leagues && !allowRefetch,
+    skip: !!leaguesData?.leagues && !allowRefetch,
     onCompleted: () => setAllowRefetch(false),
   });
   const { loading: loadingClinics } = useQuery(GetAllPortalClinics, {
@@ -67,39 +71,72 @@ export const LeaguePerformance = () => {
       use: '# clinics',
     },
     {
+      field: 'district',
+      use: 'District',
+    },
+    {
       field: 'dateAdded',
       use: 'Date added',
     },
   ];
 
-  const formattedLeagues: Irow[] =
-    data?.leagues
-      ?.slice()
-      ?.sort(
-        (a, b) =>
-          new Date(b.insertedDate).getTime() -
-          new Date(a.insertedDate).getTime()
-      )
-      ?.map((league) => ({
-        leagueId: league?.id,
-        name: league?.name ?? '-',
-        type: league?.leagueTypeName ?? '-',
-        clinics: league?.clinics?.length ?? 0,
-        dateAdded: league?.insertedDate
-          ? format(new Date(league.insertedDate), 'dd/MM/yyyy')
-          : '-',
-      })) || [];
+  const formattedLeagues: Irow[] = useMemo(
+    () =>
+      leaguesData?.leagues
+        ?.slice()
+        ?.sort(
+          (a, b) =>
+            new Date(b.insertedDate).getTime() -
+            new Date(a.insertedDate).getTime()
+        )
+        ?.map((league) => ({
+          leagueId: league?.id,
+          name: league?.name ?? '-',
+          type: league?.leagueTypeName ?? '-',
+          clinics: league?.clinics?.length ?? 0,
+          districtId: league?.districtId,
+          dateAdded: league?.insertedDate
+            ? format(new Date(league.insertedDate), 'dd/MM/yyyy')
+            : '-',
+        })) || [],
+    [leaguesData?.leagues]
+  );
 
-  const rows = search
-    ? formattedLeagues.filter((league) =>
-        league.name.toLowerCase().includes(search.toLowerCase())
-      )
-    : formattedLeagues;
+  const searchedLeagues = formattedLeagues.filter((league) =>
+    league.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const rows = useMemo(() => {
+    const leagues = search ? searchedLeagues : formattedLeagues;
+
+    if (!!districtFilter?.length) {
+      return leagues.filter((league) =>
+        districtFilter.some((filter) => league.districtId === filter.id)
+      );
+    }
+
+    return leagues;
+  }, [districtFilter, formattedLeagues, search, searchedLeagues]);
 
   const unassignedClinics = clinics?.allPortalClinics
-    ?.filter((clinic) => !clinic.leagues?.length)
+    ?.filter((clinic) => !clinic.leagues?.length && !!clinic.isActive)
     // TODO: remove this slice after the tests
     ?.slice(0, 2);
+
+  const districtsFilterOptions = useMemo(() => {
+    const seenDistrictIds = new Set();
+    return leaguesData?.leagues?.reduce((unique, league) => {
+      if (league.districtId && !seenDistrictIds.has(league.districtId)) {
+        seenDistrictIds.add(league.districtId);
+        unique.push({
+          id: league.districtId,
+          label: league.districtName,
+          value: league.districtId,
+        });
+      }
+      return unique;
+    }, []);
+  }, [leaguesData?.leagues]);
 
   const onCancelAssignToLeague = (onClose) => {
     dialog({
@@ -149,7 +186,7 @@ export const LeaguePerformance = () => {
       render: (_, onClose) => (
         <AssignClinicsToALeague
           unassignedClinics={unassignedClinics}
-          leagues={data?.leagues}
+          leagues={leaguesData?.leagues}
           onClose={() => {
             setAllowRefetch(true);
             onClose();
@@ -210,11 +247,14 @@ export const LeaguePerformance = () => {
           filters={[
             {
               type: 'search-dropdown',
+              menuItemClassName: 'ml-20 w-11/12',
               placeholder: 'District',
-              // TODO: getLeagues isn't returning district data
-              options: [],
+              options: districtsFilterOptions,
+              selectedOptions: districtFilter,
+              onChange: (selectedOptions) => setDistrictFilter(selectedOptions),
             },
           ]}
+          onClearFilters={() => setDistrictFilter([])}
           onClickRow={(row) =>
             history.push(
               ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.LEAGUE_DETAILS.replace(

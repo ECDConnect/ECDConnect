@@ -66,6 +66,8 @@ export const GetLeagues = gql`
     ) {
       id
       name
+      districtId
+      districtName
       leagueTypeId
       leagueTypeName
       insertedDate
@@ -114,6 +116,8 @@ export const GetLeague = gql`
     league(leagueId: $leagueId, startDate: $startDate, endDate: $endDate) {
       id
       name
+      districtId
+      districtName
       leagueTypeId
       leagueTypeName
       insertedDate

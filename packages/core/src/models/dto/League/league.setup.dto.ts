@@ -28,6 +28,8 @@ export interface LeagueSetupDto {
 export interface PortalLeagueDto {
   clinics?: BaseClinicDto[];
   id: string;
+  districtId?: string;
+  districtName?: string;
   insertedDate: string;
   leagueTypeId: string;
   leagueTypeName?: string;
