@@ -11,7 +11,7 @@ export const ViewLeagueSeason = () => {
   const { state } = useLocation<LeagueSeasonRouteState>();
 
   // TODO: add logic to determine if its league management
-  const isLeagueManagement = true;
+  const isLeagueManagement = false;
 
   const paths: BreadcrumbProps['paths'] = [
     {

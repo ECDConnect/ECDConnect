@@ -10,6 +10,7 @@ import ROUTES from '../../../routes/app.routes-constants';
 import { LeagueSeasonRouteState } from './view-league-season/types';
 import { useQuery } from '@apollo/client';
 import { GetLeagues } from '@ecdlink/graphql';
+import { PortalLeagueDto } from '@ecdlink/core';
 
 export const Leagues = () => {
   const history = useHistory();
@@ -18,10 +19,13 @@ export const Leagues = () => {
   const currentYear = new Date().getFullYear();
   const nextYear = new Date().getFullYear() + 1;
 
-  // TODO: Add integration and interface
-  const { data, loading } = useQuery<{ leagues?: any }>(GetLeagues, {
-    fetchPolicy: 'cache-and-network',
-  });
+  // TODO: Add integration
+  const { data, loading } = useQuery<{ leagues?: PortalLeagueDto[] }>(
+    GetLeagues,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const leagues: MenuListDataItem[] = [
     {
