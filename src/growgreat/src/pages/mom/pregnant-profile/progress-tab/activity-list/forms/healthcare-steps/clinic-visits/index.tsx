@@ -72,7 +72,8 @@ export const ClinicVisitsStep = ({
         <HealthPromotion
           title={`Discuss with ${motherName}`}
           subTitle="Clinic check-ups"
-          section={clinicVisitsSectionName}
+          sectionTitle={clinicVisitsSectionName}
+          section={'Care for mom'}
           onClose={() => setIsTip && setIsTip(false)}
         />
       </Dialog>

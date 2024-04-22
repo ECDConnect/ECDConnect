@@ -21,6 +21,7 @@ import {
   getVisitAnswersForMother,
   GetMotherSummaryByPriority,
   GetInfantSummaryByPriority,
+  getDangerSigns,
 } from './visit.actions';
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
@@ -189,6 +190,25 @@ const visitSlice = createSlice({
 
       state.infographics = state.infographics?.length
         ? [...state.infographics, ...[action.payload]]
+        : [action.payload];
+    });
+    builder.addCase(getDangerSigns.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+      const updatedDataIndex = state.dangerSigns?.findIndex(
+        (item) => item?.id === action.payload.id
+      );
+
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.dangerSigns
+      ) {
+        state.dangerSigns[updatedDataIndex] = action.payload;
+        return;
+      }
+
+      state.dangerSigns = state.dangerSigns?.length
+        ? [...state.dangerSigns, ...[action.payload]]
         : [action.payload];
     });
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {

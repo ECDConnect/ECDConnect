@@ -17,11 +17,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
            string section,
-           string locale)
+           string locale,
+           string title)
         {
             var language = localeService.GetLocale(locale);
+            var natalData = new List<object>();  
 
-            var natalData = contentRepo.GetByValueKey("NatalHealth", "title", section, language.Id);
+            if (String.IsNullOrEmpty(title))
+            {
+                natalData = (List<object>)contentRepo.GetByValueKey("NatalHealth", "title", section, language.Id);
+            } else
+            {
+                natalData = (List<object>)contentRepo.GetContentByTitleAndSection("NatalHealth", section, language.Id, title);
+
+            }
 
             if (natalData.Any())
             {

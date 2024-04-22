@@ -4,6 +4,7 @@ import {
   Divider,
   LoadingSpinner,
   Typography,
+  RoundIcon,
 } from '@ecdlink/ui';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
@@ -52,6 +53,43 @@ export const MoreInformation = ({
           return item?.locale as LanguageCode;
         })
       : [language.locale as LanguageCode];
+
+  const renderLighbulbText = (text: string) => {
+    return (
+      <div className="flex gap-2">
+        <RoundIcon
+          size={{ h: '9', w: '9' }}
+          icon="LightBulbIcon"
+          backgroundColor="infoMain"
+          iconColor="white"
+        />
+        <Typography
+          type="markdown"
+          align="left"
+          weight="normal"
+          text={replaceBraces(text, client || '')}
+          className="text-infoDark"
+        />
+        <Divider dividerType="dashed" className="my-2" />
+      </div>
+    );
+  };
+
+  const renderContentText = (text: string) => {
+    return (
+      <div className="flex gap-2">
+        <Typography
+          type="markdown"
+          align="left"
+          weight="normal"
+          text={replaceBraces(text, client || '')}
+          className={'textDark'}
+          color="infoDark"
+        />
+        <Divider dividerType="dashed" className="my-2" />
+      </div>
+    );
+  };
 
   const renderContent = useMemo(() => {
     const moreInformation = moreInformationList?.find(
@@ -102,105 +140,34 @@ export const MoreInformation = ({
           )}
           {/* ------- A ------- */}
           {!!moreInformation.headerA && (
-            <Typography
-              type="h4"
-              text={replaceBraces(moreInformation.headerA, client || '')}
-              className="mb-4"
-            />
+            <>{renderContentText(moreInformation.headerA)}</>
           )}
           {!!moreInformation?.descriptionA && (
-            <Typography
-              type="markdown"
-              className={`text-${
-                moreInformation?.descriptionAColor || 'textDark'
-              } font-normal`}
-              color="infoDark"
-              text={replaceBraces(moreInformation.descriptionA, client || '')}
-            />
+            <>
+              {renderLighbulbText(moreInformation.descriptionA)}
+              <Divider dividerType="dashed" className="my-2" />
+            </>
           )}
-          {!!moreInformation?.showDividerA && (
-            <Divider dividerType="dashed" className="my-2" />
-          )}
+
           {/* ------- B ------- */}
           {!!moreInformation.headerB && (
-            <Typography
-              type="h4"
-              text={replaceBraces(moreInformation.headerB, client || '')}
-              className="mb-4"
-            />
+            <>{renderContentText(moreInformation.headerB)}</>
           )}
-          {!!moreInformation.descriptionB && (
-            <div className="flex gap-2">
-              {!!moreInformation?.descriptionBIcon && (
-                <img
-                  alt="icon"
-                  src={moreInformation.descriptionBIcon}
-                  className="h-9 w-9"
-                />
-              )}
-              {!!moreInformation?.descriptionB && (
-                <Typography
-                  type="markdown"
-                  color="infoDark"
-                  text={replaceBraces(
-                    moreInformation.descriptionB,
-                    client || ''
-                  )}
-                  style={{
-                    color: moreInformation?.descriptionBColor || '#5A5A5A',
-                    fontWeight: !!moreInformation.descriptionBColor
-                      ? '500'
-                      : '400',
-                  }}
-                />
-              )}
-            </div>
-          )}
-          {!!moreInformation?.showDividerB && (
-            <Divider dividerType="dashed" className="my-2" />
+          {!!moreInformation?.descriptionB && (
+            <>
+              {renderLighbulbText(moreInformation.descriptionB)}
+              <Divider dividerType="dashed" className="my-2" />
+            </>
           )}
           {/* ------- C ------- */}
           {!!moreInformation.headerC && (
-            <Typography
-              type="h4"
-              text={replaceBraces(moreInformation.headerC, client || '')}
-              className="mb-4"
-            />
+            <>{renderContentText(moreInformation.headerC)}</>
           )}
           {!!moreInformation?.descriptionC && (
-            <Typography
-              type="markdown"
-              className={`text-${
-                moreInformation?.descriptionCColor || 'textDark'
-              } font-normal`}
-              color="infoDark"
-              text={replaceBraces(moreInformation.descriptionC, client || '')}
-            />
-          )}
-          {/* ------- D ------- */}
-          {!!moreInformation.descriptionD && (
-            <div className="flex gap-2">
-              {!!moreInformation?.descriptionDIcon && (
-                <img
-                  alt="icon"
-                  src={moreInformation.descriptionDIcon}
-                  className="h-9 w-9"
-                />
-              )}
-              {!!moreInformation?.descriptionD && (
-                <Typography
-                  type="markdown"
-                  className={`text-${
-                    moreInformation?.descriptionDColor || 'textDark'
-                  } font-normal`}
-                  color="infoDark"
-                  text={replaceBraces(
-                    moreInformation.descriptionD,
-                    client || ''
-                  )}
-                />
-              )}
-            </div>
+            <>
+              {renderLighbulbText(moreInformation.descriptionC)}
+              <Divider dividerType="dashed" className="my-2" />
+            </>
           )}
         </div>
       );
