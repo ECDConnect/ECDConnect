@@ -639,7 +639,10 @@ export const ReferralsTab: React.FC = () => {
 
       {((!isReferralsView &&
         completedreferralsForMother &&
-        completedreferralsForMother?.length > 0) ||
+        completedreferralsForMother?.length > 0 &&
+        !completedreferralsForMother.every(
+          (referral) => referral.backReferralCompleted
+        )) ||
         (Number(walkthroughState?.stepIndex) >= 1 &&
           Number(walkthroughState?.stepIndex) < 3)) && (
         <div className="px-4 pb-4 pt-7">
@@ -830,45 +833,51 @@ export const ReferralsTab: React.FC = () => {
         )}
 
       {/* EMPTY BODY: BACK-REFERRALS -----------------------------------------*/}
-      {!isReferralsView && completedreferralsForMother?.length === 0 && (
-        <div className="px-4 pb-4 pt-7">
-          <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
-            <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
-              <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
-            </div>
-            <div className="flex w-full justify-center">
+      {!isReferralsView &&
+        (completedreferralsForMother?.length === 0 ||
+          (completedreferralsForMother &&
+            completedreferralsForMother?.length > 0 &&
+            completedreferralsForMother.every(
+              (referral) => referral.backReferralCompleted
+            ))) && (
+          <div className="px-4 pb-4 pt-7">
+            <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
+              <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
+                <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
+              </div>
+              <div className="flex w-full justify-center">
+                <Typography
+                  type="h3"
+                  color={'textDark'}
+                  text={`All back-referrals are completed for ${
+                    mother?.user?.firstName || ''
+                  }! `}
+                  className="pt-2"
+                  align="center"
+                />
+              </div>
               <Typography
-                type="h3"
-                color={'textDark'}
-                text={`All back-referrals are completed for ${
-                  mother?.user?.firstName || ''
-                }! `}
-                className="pt-2"
+                type="body"
                 align="center"
+                weight="skinny"
+                text="You can see your completed back-referrals here."
+                color="textMid"
               />
             </div>
-            <Typography
-              type="body"
-              align="center"
-              weight="skinny"
-              text="You can see your completed back-referrals here."
-              color="textMid"
+
+            {/* Show referral button here when there are no back-referral   */}
+            <Button
+              text="Manage referrals"
+              icon="ClipboardCheckIcon"
+              type="outlined"
+              color="primary"
+              textColor="primary"
+              className="mt-4 w-full"
+              iconPosition="start"
+              onClick={onShowReferrals}
             />
           </div>
-
-          {/* Show referral button here when there are no back-referral   */}
-          <Button
-            text="Manage referrals"
-            icon="ClipboardCheckIcon"
-            type="outlined"
-            color="primary"
-            textColor="primary"
-            className="mt-4 w-full"
-            iconPosition="start"
-            onClick={onShowReferrals}
-          />
-        </div>
-      )}
+        )}
     </div>
   );
 };
