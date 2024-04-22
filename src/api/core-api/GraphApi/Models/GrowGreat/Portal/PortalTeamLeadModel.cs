@@ -27,6 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             TotalChildren = totalChildren;
             TotalMeetingReportsSubmitted = totalMeetingReportsSubmitted;
             TotalInFieldVisitsCompleted = totalInFieldVisitsCompleted;
+            Clinics = clinics;
         }
 
         public DateTime LastSeen { get; set; }

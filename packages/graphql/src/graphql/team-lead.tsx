@@ -135,6 +135,10 @@ export const GetTeamLeadSummary = gql`
       totalChildren
       totalMeetingReportsSubmitted
       totalInFieldVisitsCompleted
+      clinics {
+        id
+        name
+      }
       __typename
     }
   }
