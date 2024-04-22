@@ -33,3 +33,11 @@ export const GetAllNotifications = gql`
     }
   }
 `;
+
+export const MarkAsReadNotification = gql`
+  mutation markAsReadNotification($id: UUID) {
+    markAsReadNotification(id: $id) {
+      id
+    }
+  }
+`;

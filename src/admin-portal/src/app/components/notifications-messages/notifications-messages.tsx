@@ -4,10 +4,12 @@ import {
   InformationCircleIcon,
   StarIcon,
 } from '@heroicons/react/solid';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router';
 import ROUTES from '../../routes/app.routes-constants';
 import { MessageStatusConstants } from './notifications-messages.types';
+import { useMutation } from '@apollo/client';
+import { MarkAsReadNotification } from '@ecdlink/graphql';
 
 interface NotificationsMessagesProps {
   title: string;
@@ -31,6 +33,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   readDate,
 }) => {
   const history = useHistory();
+  const [markAsRead] = useMutation(MarkAsReadNotification);
   const handleIcon = (type: string) => {
     switch (type) {
       case MessageStatusConstants.Amber:
@@ -62,6 +65,15 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   };
 
+  const handleNotificationClick = useCallback(() => {
+    history?.push(handleRedirectURL(cTA));
+    // markAsRead({
+    //   variables: {
+    //     id: 'ajdoifjdsif'
+    //   }
+    // })
+  }, [cTA, history]);
+
   return (
     <div className="w-full">
       <Card className="rounded-xl bg-white p-4">
@@ -87,7 +99,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
               type="filled"
               color="secondary"
               textColor="white"
-              onClick={() => history?.push(handleRedirectURL(cTA))}
+              onClick={handleNotificationClick}
             />
           </div>
         </div>

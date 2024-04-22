@@ -16,7 +16,7 @@ export const NotificationsView = () => {
   });
 
   const notifications = notificationsData?.allNotifications;
-
+  console.log({ notifications });
   const handleReadMessage = useCallback(() => {
     // TODO: Update when the read notification mutation be ready
   }, []);
