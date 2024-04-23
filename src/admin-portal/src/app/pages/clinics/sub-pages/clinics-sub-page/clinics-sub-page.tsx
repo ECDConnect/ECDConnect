@@ -10,11 +10,10 @@ import { useUser } from '../../../../hooks/useUser';
 import { SearchIcon } from '@heroicons/react/solid';
 import { CreateClinicPanel } from '../../components/create-clinic-panel/create-edit-clinic-panel';
 import { useHistory } from 'react-router';
-import { AdminTypes } from '../../../users/sub-pages/application-admins/applications-admins.types';
 import { useUserRole } from '../../../../hooks/useUserRole';
 
 export default function ClinicsSubPage() {
-  const { hasPermission, user } = useUser();
+  const { hasPermission } = useUser();
   const { isAdministrator, isSuperAdmin } = useUserRole();
   const { data, refetch } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',

@@ -12,6 +12,7 @@ export const GetAllNotifications = gql`
       sentByUserId
       from
       id
+      relatedToUserId
       messageDate
       messageEndDate
       readDate
@@ -35,9 +36,7 @@ export const GetAllNotifications = gql`
 `;
 
 export const MarkAsReadNotification = gql`
-  mutation markAsReadNotification($id: UUID) {
-    markAsReadNotification(id: $id) {
-      id
-    }
+  mutation MarkAsReadNotification($notificationId: String) {
+    markAsReadNotification(notificationId: $notificationId)
   }
 `;

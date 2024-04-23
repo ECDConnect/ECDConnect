@@ -8,8 +8,12 @@ import { useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router';
 import ROUTES from '../../routes/app.routes-constants';
 import { MessageStatusConstants } from './notifications-messages.types';
-import { useMutation } from '@apollo/client';
-import { MarkAsReadNotification } from '@ecdlink/graphql';
+import { useMutation, useQuery } from '@apollo/client';
+import {
+  GetAllHealthCareWorker,
+  GetAllPortalClinics,
+  MarkAsReadNotification,
+} from '@ecdlink/graphql';
 
 interface NotificationsMessagesProps {
   title: string;
@@ -20,6 +24,8 @@ interface NotificationsMessagesProps {
   action?: string;
   cTA: string;
   readDate?: string;
+  id: string;
+  relatedToUserId?: string;
 }
 
 export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
@@ -31,9 +37,51 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   action,
   cTA,
   readDate,
+  id,
+  relatedToUserId,
 }) => {
   const history = useHistory();
   const [markAsRead] = useMutation(MarkAsReadNotification);
+
+  const { data, loading: loadingClinicsData } = useQuery(GetAllPortalClinics, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const { data: hcwData, loading: loadingHcwData } = useQuery(
+    GetAllHealthCareWorker,
+    {
+      variables: {
+        search: '',
+        clinicSearch: [],
+        provinceSearch: [],
+        subDistrictSearch: [],
+        visitSearch: [],
+        connectUsageSearch: [],
+        pagingInput: {
+          pageNumber: 1,
+          pageSize: null,
+        },
+        order: [
+          {
+            insertedDate: 'DESC',
+          },
+        ],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  console.log({ data });
+  console.log({ hcwData });
+
+  const targetClinic = data?.allPortalClinics?.find(
+    (item) => item?.id === relatedToUserId
+  );
+  const targetHcw = data?.allHealthCareWorkers?.find(
+    (item) => item?.id === relatedToUserId
+  );
+  console.log({ targetClinic });
+
   const handleIcon = (type: string) => {
     switch (type) {
       case MessageStatusConstants.Amber:
@@ -55,24 +103,50 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   };
 
-  const handleRedirectURL = (value: string) => {
-    // TODO: Add more switch cases accordingly with the BE types
-    switch (value) {
-      case '[[AddMeetingReport]]':
-        return ROUTES.TEAM_MEETINGS;
-      default:
-        return null;
-    }
-  };
+  const handleRedirectURL = useCallback(
+    (value: string) => {
+      // TODO: Add more switch cases accordingly with the BE types
+      switch (value) {
+        case '[[AddMeetingReport]]':
+          return history.push(ROUTES.TEAM_MEETINGS);
+        case '[[SeeClinicSummary]]':
+          return history.push(ROUTES.TEAM_MEETINGS);
+        case '[[ContactCHW]]':
+          return history.push({
+            pathname: ROUTES.VIEW_USERS,
+            state: {
+              component: 'chw',
+              userId: targetHcw?.userId,
+              clinicId: targetHcw?.clinicId,
+              hcwId: targetHcw?.id,
+              isRegistered: targetHcw?.isRegistered,
+              connectUsage: targetHcw?.user?.connectUsage,
+              connectUsageColor: targetHcw?.user?.connectUsageColor,
+            },
+          });
+        default:
+          return null;
+      }
+    },
+    [
+      history,
+      targetHcw?.clinicId,
+      targetHcw?.id,
+      targetHcw?.isRegistered,
+      targetHcw?.user?.connectUsage,
+      targetHcw?.user?.connectUsageColor,
+      targetHcw?.userId,
+    ]
+  );
 
   const handleNotificationClick = useCallback(() => {
-    history?.push(handleRedirectURL(cTA));
-    // markAsRead({
-    //   variables: {
-    //     id: 'ajdoifjdsif'
-    //   }
-    // })
-  }, [cTA, history]);
+    handleRedirectURL(cTA);
+    markAsRead({
+      variables: {
+        notificationId: id,
+      },
+    });
+  }, [cTA, handleRedirectURL, id, markAsRead]);
 
   return (
     <div className="w-full">

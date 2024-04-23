@@ -43,6 +43,9 @@ export const NotificationsView = () => {
             title={item?.message}
             action={item?.action}
             cTA={item?.cTA}
+            id={item?.id}
+            relatedToUserId={item?.relatedToUserId}
+            readDate={item?.readDate}
           />
         ))}
     </div>
