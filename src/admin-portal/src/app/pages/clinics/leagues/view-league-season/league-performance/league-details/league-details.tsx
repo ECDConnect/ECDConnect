@@ -2,15 +2,21 @@ import {
   Breadcrumb,
   BreadcrumbProps,
   DatePicker,
+  LoadingSpinner,
   PointsDetailsCard,
   StatusChip,
+  Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 
 import ROUTES from '../../../../../../routes/app.routes-constants';
-import { getCommunityQuarterDescription } from '@ecdlink/core';
+import { PortalLeagueDto, getCommunityQuarterDescription } from '@ecdlink/core';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import { useState } from 'react';
+import { useQuery } from '@apollo/client';
+import { GetLeague, QueryLeagueArgs } from '@ecdlink/graphql';
+import { useLocation, useParams } from 'react-router';
+import { LeagueDetailsRouteParams, LeagueDetailsRouteState } from './types';
 
 export const LeagueDetails = () => {
   const today = new Date();
@@ -26,6 +32,19 @@ export const LeagueDetails = () => {
   const [startDate, setStartDate] = useState(startQuarter);
   const [endDate, setEndDate] = useState(endQuarter);
 
+  const { leagueId } = useParams<LeagueDetailsRouteParams>();
+  const { state } = useLocation<LeagueDetailsRouteState>();
+
+  const { data, loading } = useQuery<{ league?: PortalLeagueDto }>(GetLeague, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      startDate,
+      endDate,
+      leagueId,
+    } as QueryLeagueArgs,
+    skip: !startDate || !endDate,
+  });
+
   const paths: BreadcrumbProps['paths'] = [
     {
       name: 'Clinics',
@@ -36,19 +55,17 @@ export const LeagueDetails = () => {
       url: ROUTES.CLINICS.LEAGUES.ROOT,
     },
     {
-      name: '{startDate} - {endDate} Leagues',
+      name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
       url: ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
+      state,
     },
     {
-      name: '{leagueName}',
+      name: state?.leagueName ?? data?.league?.name ?? 'League',
       url: '',
     },
   ];
 
-  // TODO: fetch clinics
-  const clinics = [1, 2, 3, 4, 5, 6];
-
-  const onChange = (dates) => {
+  const onChange = (dates: [Date, Date]) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
@@ -59,21 +76,27 @@ export const LeagueDetails = () => {
       <Breadcrumb paths={paths} />
       <div className="my-8 flex items-center justify-between">
         <div className="flex items-center justify-start gap-2">
-          <StatusChip
-            className="h-7"
-            backgroundColour="primary"
-            borderColour="primary"
-            textColour="white"
-            text={`{leagueType}`}
-            iconPosition="start"
-          />
-          <StatusChip
-            className="h-7"
-            backgroundColour="successMain"
-            borderColour="successMain"
-            textColour="white"
-            text={`{districtName}`}
-          />
+          {!!data?.league && !loading && (
+            <>
+              <StatusChip
+                className="h-7"
+                backgroundColour="primary"
+                borderColour="primary"
+                textColour="white"
+                text={data?.league?.leagueTypeName ?? ''}
+                iconPosition="start"
+              />
+              {!!data?.league?.districtName && (
+                <StatusChip
+                  className="h-7"
+                  backgroundColour="successMain"
+                  borderColour="successMain"
+                  textColour="white"
+                  text={data.league.districtName}
+                />
+              )}
+            </>
+          )}
         </div>
         <DatePicker
           selectsRange
@@ -90,25 +113,37 @@ export const LeagueDetails = () => {
           dateFormat={'d MMM yyyy'}
         />
       </div>
-      {clinics.map((clinic, index) => (
-        <PointsDetailsCard
-          key={index}
-          pointsEarned={0}
-          activityCount={0}
-          title={'{ClinicName}'}
+
+      {loading || !startDate || !endDate ? (
+        <LoadingSpinner
+          backgroundColor="secondary"
+          spinnerColor="adminPortalBg"
           size="medium"
-          className="mb-1 rounded-2xl"
-          textColour="textMid"
-          colour="white"
-          badgeTextColour="white"
-          badgeImage={
-            <Badge
-              className="absolute z-0 h-full w-full"
-              fill={'var(--primary)'}
-            />
-          }
         />
-      ))}
+      ) : (
+        data?.league?.clinics?.map((clinic) => (
+          <PointsDetailsCard
+            key={clinic.id}
+            pointsEarned={clinic?.pointsTotal ?? 0}
+            activityCount={clinic.leagueRanking ?? 1}
+            title={clinic.name}
+            size="medium"
+            className="mb-1 rounded-2xl"
+            textColour="textMid"
+            colour="white"
+            badgeTextColour="white"
+            badgeImage={
+              <Badge
+                className="absolute z-0 h-full w-full"
+                fill={'var(--primary)'}
+              />
+            }
+          />
+        ))
+      )}
+      {!loading && !data && !!startDate && !!endDate && (
+        <Typography type="h2" text="No clinics found" color="textMid" />
+      )}
     </>
   );
 };

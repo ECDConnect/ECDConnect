@@ -7,6 +7,7 @@ import {
   RoundIcon,
 } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
+import { replaceBraces } from '@ecdlink/core';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
@@ -24,9 +25,11 @@ export const HealthPromotion = ({
   subTitle,
   client,
   onClose,
+  sectionTitle,
 }: {
   title: string;
   subTitle?: string;
+  sectionTitle?: string;
   section: string;
   client?: string;
   onClose: () => void;
@@ -69,7 +72,7 @@ export const HealthPromotion = ({
           type="markdown"
           align="left"
           weight="normal"
-          text={text}
+          text={replaceBraces(text, client || '')}
           className="text-infoDark"
         />
         <Divider dividerType="dashed" className="my-2" />
@@ -83,12 +86,13 @@ export const HealthPromotion = ({
       visitThunkActions.getHealthPromotion({
         section,
         locale: language.locale,
+        title: sectionTitle,
       })
     ).unwrap();
     if (newHealthPromtionList) {
       setHealthPromotionList([newHealthPromtionList]);
     }
-  }, [appDispatch, isOnline, language.locale, section]);
+  }, [appDispatch, isOnline, language.locale, section, sectionTitle]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {

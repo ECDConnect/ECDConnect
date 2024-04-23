@@ -117,7 +117,7 @@ export const TeamMeetingsMainPage = () => {
   return (
     <div className="bg-adminPortalBg h-100vh p-4">
       <div className="bg-adminPortalBg">
-        {monthMeetingSubmitted && availableDateToAddReport && (
+        {!monthMeetingSubmitted && availableDateToAddReport && (
           <div className="flex w-full items-center justify-between">
             <Typography type={'h1'} text={title} color={'textDark'} />
             <Button
@@ -362,7 +362,10 @@ export const TeamMeetingsMainPage = () => {
           </Card>
         </div>
         <div>
-          <ClinicsTeamLeadView setSelectedTabId={setSelectedTabId} />
+          <ClinicsTeamLeadView
+            setSelectedTabId={setSelectedTabId}
+            isFromTeamMeetings={true}
+          />
         </div>
         <div className="mb-4">
           <Card className="my-8 rounded-xl bg-white p-6">
@@ -414,7 +417,7 @@ export const TeamMeetingsMainPage = () => {
             />
           </Card>
         </div>
-        {monthMeetingSubmitted && availableDateToAddReport && (
+        {!monthMeetingSubmitted && availableDateToAddReport && (
           <div className="mb-8">
             <Button
               className={`rounded-2xl py-4 px-8`}

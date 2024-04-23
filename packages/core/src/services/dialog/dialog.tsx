@@ -8,6 +8,7 @@ import { classNames, DialogPosition } from '@ecdlink/ui';
 interface DialogModalProps extends DialogModalOptions {
   open: boolean;
   color?: string;
+  transitionClassName?: string;
   onSubmit: () => void;
   onClose: () => void;
 }
@@ -18,6 +19,7 @@ export const DialogModal: React.FC<DialogModalProps> = ({
   onSubmit,
   onClose,
   position = DialogPosition.Full,
+  transitionClassName,
   color = 'bg-uiBg ',
 }) => {
   return (
@@ -25,7 +27,7 @@ export const DialogModal: React.FC<DialogModalProps> = ({
       <Dialog
         as="div"
         static
-        className={styles.transitionRoot}
+        className={classNames(transitionClassName, styles.transitionRoot)}
         open={open}
         onClose={onClose}
       >

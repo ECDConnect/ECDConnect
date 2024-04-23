@@ -265,6 +265,11 @@ namespace ECDLink.DataAccessLayer.Context
             {
                 x.HasKey(e => new { e.GrantId, e.UserId });
             });
+            builder.Entity<VisitDataStatus>()
+                .HasOne(e => e.VisitBackReferral)
+                .WithOne(e => e.VisitDataStatus)
+                .HasForeignKey<VisitBackReferral>(e => e.VisitDataStatusId)
+                .IsRequired();
         }
     }
 }

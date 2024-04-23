@@ -8,54 +8,59 @@ import Trophy from '../../../../assets/trophy.svg';
 import { useHistory } from 'react-router';
 import ROUTES from '../../../routes/app.routes-constants';
 import { LeagueSeasonRouteState } from './view-league-season/types';
-import { useQuery } from '@apollo/client';
-import { GetLeagues } from '@ecdlink/graphql';
+// import { checkIfIsNextSeasonManagement } from './utils';
 
 export const Leagues = () => {
   const history = useHistory();
 
-  const lastYear = new Date().getFullYear() - 1;
-  const currentYear = new Date().getFullYear();
-  const nextYear = new Date().getFullYear() + 1;
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const lastYear = currentYear - 1;
+  const nextYear = currentYear + 1;
 
-  // TODO: Add integration and interface
-  const { data, loading } = useQuery<{ leagues?: any }>(GetLeagues, {
-    fetchPolicy: 'cache-and-network',
-  });
+  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
+  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
 
   const leagues: MenuListDataItem[] = [
     {
-      // TODO: Integrate use case 11
-      hide: false,
+      type: 'view-leagues',
       startDate: `Oct ${lastYear}`,
       endDate: `Sep ${currentYear}`,
       description: 'See this year’s scoreboards.',
     },
-    {
-      startDate: `Oct ${currentYear}`,
-      endDate: `Sep ${nextYear}`,
-      description: 'Start assigning clinics to leagues for next year.',
-    },
-  ]
-    .filter((item) => !item.hide)
-    .map((item) => ({
-      title: `${item.startDate} - ${item.endDate} Leagues`,
-      subTitle: item.description,
-      id: 'league1',
-      backgroundColor: 'white',
-      menuIconUrl: Trophy,
-      iconBackgroundColor: 'secondary',
-      iconColor: 'white',
-      showIcon: true,
-      className: 'border-b border-gray-200',
-      titleStyle: 'text-lg text-textMid font-semibold',
-      subTitleStyle: 'text-sm text-textLight',
-      onActionClick: () =>
-        history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
+    ...(isNextSeasonManagement
+      ? [
+          {
+            type: 'league-management',
+            startDate: `Oct ${currentYear}`,
+            endDate: `Sep ${nextYear}`,
+            description: 'Start assigning clinics to leagues for next year.',
+          },
+        ]
+      : []),
+  ].map((item) => ({
+    title: `${item.startDate} - ${item.endDate} Leagues`,
+    subTitle: item.description,
+    id: 'league1',
+    backgroundColor: 'white',
+    menuIconUrl: Trophy,
+    iconBackgroundColor: 'secondary',
+    iconColor: 'white',
+    showIcon: true,
+    className: 'border-b border-gray-200',
+    titleStyle: 'text-lg text-textMid font-semibold',
+    subTitleStyle: 'text-sm text-textLight',
+    onActionClick: () =>
+      history.push(
+        item.type === 'view-leagues'
+          ? ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT
+          : ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
+        {
           startDate: item.startDate,
           endDate: item.endDate,
-        } as LeagueSeasonRouteState),
-    }));
+        } as LeagueSeasonRouteState
+      ),
+  }));
 
   return (
     <>

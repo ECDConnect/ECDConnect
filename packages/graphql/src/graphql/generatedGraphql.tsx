@@ -6962,6 +6962,7 @@ export type Mutation = {
   sendReportDeadlinePassedNotification: Scalars['Boolean'];
   sendSetAbsenteeNotification: Scalars['Boolean'];
   sendSetLeaveNotification: Scalars['Boolean'];
+  sendTeamLeadVerifyPhoneNumberSMS?: Maybe<ApplicationUser>;
   sendTopSmartStarterPointsNotification: Scalars['Boolean'];
   sendTrainee2WeekOnboardingWarningNotification: Scalars['Boolean'];
   sendTraineeJourneyStartSelfNotification: Scalars['Boolean'];
@@ -9399,6 +9400,11 @@ export type MutationSendSetLeaveNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendTeamLeadVerifyPhoneNumberSmsArgs = {
+  pendingPhoneNumber?: InputMaybe<Scalars['String']>;
+  userId: Scalars['UUID'];
+};
+
 export type MutationSendTopSmartStarterPointsNotificationArgs = {
   previousMonth?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -11491,6 +11497,9 @@ export type PortalClinicInputModelInput = {
 
 export type PortalClinicMeetingModel = {
   __typename?: 'PortalClinicMeetingModel';
+  clinicId: Scalars['UUID'];
+  clinicName?: Maybe<Scalars['String']>;
+  dateSubmitted: Scalars['DateTime'];
   id: Scalars['UUID'];
   meetingDate: Scalars['DateTime'];
   meetingTypeId: Scalars['UUID'];
@@ -13234,6 +13243,7 @@ export type Query = {
   allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClientRecords?: Maybe<Array<Maybe<Document>>>;
+  allClinicMeetings?: Maybe<Array<Maybe<PortalClinicMeetingModel>>>;
   allClubsForCoachSimple?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allCoachingCircleClubsForCoach?: Maybe<CircleTabClubs>;
@@ -18887,7 +18897,6 @@ export type VisitDataSortInput = {
 
 export type VisitDataStatus = {
   __typename?: 'VisitDataStatus';
-  backReferral?: Maybe<VisitBackReferral>;
   backReferralAdminComment?: Maybe<Scalars['String']>;
   backReferralCompleted: Scalars['Boolean'];
   backReferralDateCompleted?: Maybe<Scalars['DateTime']>;
@@ -18903,6 +18912,7 @@ export type VisitDataStatus = {
   type?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  visitBackReferral?: Maybe<VisitBackReferral>;
   visitData?: Maybe<VisitData>;
   visitDataId: Scalars['UUID'];
   visitDataStatusReferralTypes?: Maybe<
@@ -18912,7 +18922,6 @@ export type VisitDataStatus = {
 
 export type VisitDataStatusFilterInput = {
   and?: InputMaybe<Array<VisitDataStatusFilterInput>>;
-  backReferral?: InputMaybe<VisitBackReferralFilterInput>;
   backReferralAdminComment?: InputMaybe<StringOperationFilterInput>;
   backReferralCompleted?: InputMaybe<BooleanOperationFilterInput>;
   backReferralDateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -18929,13 +18938,13 @@ export type VisitDataStatusFilterInput = {
   type?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visitBackReferral?: InputMaybe<VisitBackReferralFilterInput>;
   visitData?: InputMaybe<VisitDataFilterInput>;
   visitDataId?: InputMaybe<ComparableGuidOperationFilterInput>;
   visitDataStatusReferralTypes?: InputMaybe<ListFilterInputTypeOfVisitDataStatusReferralTypeFilterInput>;
 };
 
 export type VisitDataStatusInput = {
-  BackReferral?: InputMaybe<VisitBackReferralInput>;
   BackReferralAdminComment?: InputMaybe<Scalars['String']>;
   BackReferralCompleted: Scalars['Boolean'];
   BackReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
@@ -18949,6 +18958,7 @@ export type VisitDataStatusInput = {
   Section?: InputMaybe<Scalars['String']>;
   Type?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  VisitBackReferral?: InputMaybe<VisitBackReferralInput>;
   VisitData?: InputMaybe<VisitDataInput>;
   VisitDataId: Scalars['UUID'];
   VisitDataStatusReferralTypes?: InputMaybe<
@@ -19024,7 +19034,6 @@ export type VisitDataStatusReferralTypeSortInput = {
 };
 
 export type VisitDataStatusSortInput = {
-  backReferral?: InputMaybe<VisitBackReferralSortInput>;
   backReferralAdminComment?: InputMaybe<SortEnumType>;
   backReferralCompleted?: InputMaybe<SortEnumType>;
   backReferralDateCompleted?: InputMaybe<SortEnumType>;
@@ -19039,6 +19048,7 @@ export type VisitDataStatusSortInput = {
   type?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+  visitBackReferral?: InputMaybe<VisitBackReferralSortInput>;
   visitData?: InputMaybe<VisitDataSortInput>;
   visitDataId?: InputMaybe<SortEnumType>;
 };

@@ -6,6 +6,7 @@ export interface DialogModalOptions {
   render: (onSubmit: () => void, onCancel: () => void) => React.ReactNode;
   position?: DialogPosition;
   color?: string;
+  transitionClassName?: string;
   blocking?: boolean;
 }
 const DialogServiceContext = React.createContext<

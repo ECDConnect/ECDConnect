@@ -43,7 +43,10 @@ namespace EcdLink.Api.CoreApi.Services
             var currentUser = _userManager.FindByIdAsync(userId).Result;
             var isTeamLead = _userManager.IsInRoleAsync(currentUser, RolesGG.TEAM_LEAD).Result;
 
-            var referrals = _referralTypeRepo.GetAll();
+            var referrals = _referralTypeRepo.GetAll()
+                .Where(x => 
+                    x.VisitDataStatus.InsertedDate >= startDate
+                    && x.VisitDataStatus.InsertedDate <= endDate);
                
 
             if (clinicIds != null && clinicIds.Any())
@@ -73,7 +76,7 @@ namespace EcdLink.Api.CoreApi.Services
                 x.VisitDataStatus.IsCompleted,
                 x.VisitDataStatus.BackReferralCompleted,
                 x.VisitDataStatus.BackReferralAdminComment,
-                BackReferral = x.VisitDataStatus.BackReferral,
+                x.VisitDataStatus.VisitBackReferral,
                 CompletedDate = x.VisitDataStatus.ReferralDateCompleted,
                 CreatedDate = x.InsertedDate,
                 Mother = x.VisitDataStatus.VisitData.Visit.Mother,
@@ -86,7 +89,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     VisitId = referral.VisitId,
                     VisitDataStatusId = referral.VisitDataStatusId,
-                    VisitBackReferralId = referral.BackReferral?.Id,
+                    VisitBackReferralId = referral.VisitBackReferral?.Id,
                     TypeId = referral.TypeId,
                     Type = referral.Type,
                     AdminBackReferralNote = referral.BackReferralAdminComment,
@@ -99,7 +102,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Client = referral.IsPregnantMomVisit
                         ? $"{referral.Mother.User.FirstName} {referral.Mother.User.Surname}"
                         : $"{referral.Infant.User.FirstName} & {referral.Infant.Caregiver.FirstName} {referral.Infant.Caregiver.Surname}",
-                    HealthCareWorkerBackReferralNote = referral.BackReferral?.Comment,
+                    HealthCareWorkerBackReferralNote = referral.VisitBackReferral?.Comment,
                     IsBackReferralCompleted = referral.BackReferralCompleted,
                     IsCompleted = referral.IsCompleted,
                     Text = referral.Comment

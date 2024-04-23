@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Fragment } from 'react';
 
 export interface SharedPanelOptions {
+  onCancelCallback?: (onCancel: () => void) => void;
   catchOnCancel?: boolean;
   title?: string;
   presentationStyle?:
@@ -28,6 +29,7 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
   presentationStyle,
   onSubmit,
   onClose,
+  onCancelCallback,
   noPadding,
 }) => {
   return (
@@ -37,7 +39,9 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
         static
         className="fixed inset-0 z-10 overflow-y-auto"
         open={open}
-        onClose={onClose}
+        onClose={() =>
+          !!onCancelCallback ? onCancelCallback(onClose) : onClose()
+        }
       >
         <div className="absolute inset-0 overflow-hidden">
           <Dialog.Overlay className="absolute inset-0" />
@@ -68,7 +72,11 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
                       <div className="ml-3 flex h-7 items-center">
                         <button
                           className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
-                          onClick={() => onClose()}
+                          onClick={() =>
+                            !!onCancelCallback
+                              ? onCancelCallback(onClose)
+                              : onClose()
+                          }
                         >
                           <span className="sr-only">Close panel</span>
                           <XIcon className="h-6 w-6" aria-hidden="true" />

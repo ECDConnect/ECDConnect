@@ -66,18 +66,14 @@ export const GetLeagues = gql`
     ) {
       id
       name
+      districtId
+      districtName
       leagueTypeId
       leagueTypeName
       insertedDate
       clinics {
         id
         name
-        subDistrictName
-        teamLeads {
-          id
-          firstName
-          surname
-        }
       }
     }
   }
@@ -108,5 +104,35 @@ export const EditLeague = gql`
       clinicsToAdd: $clinicsToAdd
       clinicsToRemove: $clinicsToRemove
     )
+  }
+`;
+
+export const GetLeague = gql`
+  query GetLeague(
+    $leagueId: UUID!
+    $startDate: DateTime!
+    $endDate: DateTime!
+  ) {
+    league(leagueId: $leagueId, startDate: $startDate, endDate: $endDate) {
+      id
+      name
+      districtId
+      districtName
+      leagueTypeId
+      leagueTypeName
+      insertedDate
+      clinics {
+        id
+        name
+        leagueRanking
+        pointsTotal
+      }
+    }
+  }
+`;
+
+export const AddClinicToLeague = gql`
+  mutation AddClinicToLeague($leagueId: UUID!, $clinicId: UUID!) {
+    addClinicToLeague(leagueId: $leagueId, clinicId: $clinicId)
   }
 `;

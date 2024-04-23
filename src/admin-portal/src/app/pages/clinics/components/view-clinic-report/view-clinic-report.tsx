@@ -13,8 +13,8 @@ import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
-import { useEffect, useState } from 'react';
-import { format, lastDayOfMonth, sub } from 'date-fns';
+import { useEffect, useMemo, useState } from 'react';
+import { format, lastDayOfMonth, startOfMonth, sub } from 'date-fns';
 import { ViewClinicReportProps } from './view-clinic-report.types';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { ReferralsRouteState } from '../../../referrals/types';
@@ -43,13 +43,14 @@ export interface PointsReportSummaryDto {
 
 export const ViewClinicReport = ({
   clinic: clinicFromProps,
+  isFromTeamMeetings,
 }: ViewClinicReportProps) => {
   const { isTeamLead } = useUserRole();
   const location = useLocation<ClinicsRouteState>();
   const history = useHistory();
   const panel = usePanel();
   const clinic = clinicFromProps || location?.state?.clinic;
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const initialBefore30Days = sub(today, {
     days: 30,
   });
@@ -57,6 +58,8 @@ export const ViewClinicReport = ({
     years: 1,
   });
   const currentDateFormatted = format(today, 'MMMM y');
+  const lastMonthDay = useMemo(() => lastDayOfMonth(today), [today]);
+  const firstMonthDay = useMemo(() => startOfMonth(today), [today]);
 
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDate, endDate] = dateRange;
@@ -93,7 +96,18 @@ export const ViewClinicReport = ({
   ];
 
   useEffect(() => {
-    if (startDate && endDate) {
+    if ((startDate && endDate) || isFromTeamMeetings) {
+      if (isFromTeamMeetings) {
+        fetchVisitInformation({
+          fetchPolicy: 'cache-and-network',
+          variables: {
+            clinicId: clinic?.id,
+            startDate: firstMonthDay,
+            endDate: lastMonthDay,
+          },
+        });
+        return;
+      }
       fetchVisitInformation({
         fetchPolicy: 'cache-and-network',
         variables: {
@@ -103,7 +117,15 @@ export const ViewClinicReport = ({
         },
       });
     }
-  }, [clinic?.id, endDate, fetchVisitInformation, startDate]);
+  }, [
+    clinic?.id,
+    endDate,
+    fetchVisitInformation,
+    firstMonthDay,
+    isFromTeamMeetings,
+    lastMonthDay,
+    startDate,
+  ]);
 
   const displayEditPanel = () => {
     panel({
@@ -268,28 +290,30 @@ export const ViewClinicReport = ({
           weight="bold"
           color="textDark"
           text={
-            isTeamLead
+            isTeamLead && isFromTeamMeetings
               ? `Visit information: ${currentDateFormatted}`
               : `Visit information`
           }
           align="left"
         />
-        <DatePicker
-          isFullWidth={false}
-          showChevronIcon
-          hideCalendarIcon
-          className="w-64 rounded-xl"
-          selectsRange
-          startDate={startDate}
-          endDate={endDate}
-          maxDate={today}
-          colour="secondary"
-          textColour="white"
-          onChange={(update) => {
-            setDateRange(update);
-          }}
-          dateFormat={'d MMM yyyy'}
-        />
+        {!isFromTeamMeetings && (
+          <DatePicker
+            isFullWidth={false}
+            showChevronIcon
+            hideCalendarIcon
+            className="w-64 rounded-xl"
+            selectsRange
+            startDate={startDate}
+            endDate={endDate}
+            maxDate={today}
+            colour="secondary"
+            textColour="white"
+            onChange={(update) => {
+              setDateRange(update);
+            }}
+            dateFormat={'d MMM yyyy'}
+          />
+        )}
       </div>
       <ClientRegistration
         isLoading={loading}

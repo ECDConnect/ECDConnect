@@ -57,10 +57,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     { "type", Convert.ToString(typeValue) },
                     { "infoBoxTitle", Convert.ToString(infoTitleValue)},
                     { "infoBoxDescription", Convert.ToString(infoDescriptionValue)},
-                    { "descriptionA", headerAValue},
-                    { "descriptionB", headerBValue},
+                    { "headerA", Convert.ToString(headerAValue)},
+                    { "descriptionA", Convert.ToString(descriptionAValue)},
+                    { "headerB", Convert.ToString(headerBValue)},
+                    { "descriptionB", Convert.ToString(descriptionBValue)},
                     { "headerC", Convert.ToString(headerCValue)},
-                    { "descriptionC", descriptionCValue},
+                    { "descriptionC", Convert.ToString( descriptionCValue)},                    
                     { "availableLanguages", Convert.ToString(availableLanguages) },
                 };
                     allContentValuePairs.Add(dataDict);

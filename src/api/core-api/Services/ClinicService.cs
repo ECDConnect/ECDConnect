@@ -730,7 +730,7 @@ namespace EcdLink.Api.CoreApi.Services
         public List<PortalClinicMeetingModel> GetAllClinicMeetings()
         {
             List<PortalClinicMeetingModel> records = new List<PortalClinicMeetingModel>();
-            var clinicMeetings = _clinicMeetingRepo.GetAll().Where(x => x.IsActive).ToList();
+            var clinicMeetings = _clinicMeetingRepo.GetAll().Where(x => x.IsActive && x.MeetingDate.Year == DateTime.Now.Year).ToList();
             foreach (var item in clinicMeetings)
             {
                 records.Add(new PortalClinicMeetingModel(item));

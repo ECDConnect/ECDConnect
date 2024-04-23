@@ -74,7 +74,8 @@ export const ClinicVisitsUpToDateStep = ({
         <HealthPromotion
           title={`Discuss with ${motherName}`}
           subTitle="Clinic check-ups"
-          section={'Clinic visits'}
+          sectionTitle={'Clinic visits'}
+          section={'Care for mom'}
           onClose={() => setIsTip && setIsTip(false)}
         />
       </Dialog>

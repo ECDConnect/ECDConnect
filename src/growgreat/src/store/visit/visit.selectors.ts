@@ -1,5 +1,6 @@
 import {
   ClientSummaryByPriority,
+  DangerSign,
   HcwHighlights,
   HealthPromotion,
   Infographics,
@@ -21,6 +22,10 @@ export const getHealthPromotionSelector = (
 export const getInfographicsSelector = (
   state: RootState
 ): Infographics[] | undefined => state.visits.infographics;
+
+export const getDangerSignsSelector = (
+  state: RootState
+): DangerSign[] | undefined => state.visits.dangerSigns;
 
 export const getMoreInformationSelector = (
   state: RootState
@@ -45,7 +50,7 @@ export const getVisitVideoBySectionAndLocale = (
   locale: string
 ) =>
   state.visits.visitVideos?.find(
-    (item) => item.section === section && item.locale === locale
+    (item) => item?.section === section && item?.locale === locale
   );
 
 export const getGrowthDataForInfantSelector = (

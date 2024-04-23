@@ -7,6 +7,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -404,6 +405,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var clinicNameList = new List<string>();
                 var clinicIds = new List<Guid>();
                 var clinics = new List<BaseClinicModel>();
+                var totalClinicMeetings = 0;
+                var totalVisitsCompleted = 0;
                 foreach (var item in clinicTeamLeadRecords)
                 {
                     var league = item.Clinic.Leagues.Where(x => x.IsActive).FirstOrDefault();
@@ -420,6 +423,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                         Id = item.Clinic.Id,
                         Name = item.Clinic.Name,
                     });
+                    totalClinicMeetings += item.Clinic.ClinicMeetings.Where(x => x.IsActive && x.MeetingDate.Year == DateTime.Now.Year).Count();
+                    totalVisitsCompleted += item.Clinic.ClinicMeetings.Where(x => x.IsActive && x.MeetingDate.Year == DateTime.Now.Year).Select(x => x.TotalSupportVisits).Sum();
                 }
                 var healthCareWorkers = hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId != null && clinicIds.Contains((Guid)x.ClinicId))
                     .Include(x => x.Mothers)
@@ -431,9 +436,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var totalHealthCareWorkers = healthCareWorkers.Count();
                 var totalPregnantMoms = healthCareWorkers.SelectMany(x => x.Mothers.Where(x => x.IsActive)).Distinct().Count();
                 var totalChildren = infantRepo.GetAll().Where(x => x.IsActive && caregiverIds.Contains((Guid)x.CaregiverId)).Distinct().Count();
-                // TODO: get these totals when app dev is done
-                var totalMeetingReportsSubmitted = 0;
-                var totalInFieldVisitsCompleted = 0;
+                var totalMeetingReportsSubmitted = totalClinicMeetings;
+                var totalInFieldVisitsCompleted = totalVisitsCompleted;
                 return new PortalTeamLeadModel(teamLead.User, clinicNames, siteAddress, clinicNameList.Count, totalHealthCareWorkers,
                                           totalPregnantMoms, totalChildren, totalMeetingReportsSubmitted, totalInFieldVisitsCompleted, clinics);
             }

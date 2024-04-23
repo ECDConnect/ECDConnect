@@ -66,7 +66,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Unassigned clinics
             var unassignedClinics = _clinicRepo.GetAll()
-                .Where(x => !x.Leagues.Any(x => x.IsActive && x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
+                .Where(x => x.IsActive && !x.Leagues.Any(x => x.IsActive && x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
                 .Select(x => new
                 {
                     x.SubDistrict.DistrictId,
@@ -82,7 +82,6 @@ namespace EcdLink.Api.CoreApi.Services
                             FirstName = x.TeamLead.User.FirstName,
                             Surname = x.TeamLead.User.Surname
                         }).ToList()
-
                     }
                 }
                 ).ToList();
@@ -194,10 +193,17 @@ namespace EcdLink.Api.CoreApi.Services
             CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.LeagueSetupUnassignedClinics);
         }
 
-        public List<PortalLeagueModel> GetLeagues(string searchString, Guid? districtId = null, PagedQueryInput pagingInput = null)
+        public List<PortalLeagueModel> GetLeagues(DateTime? startDate, DateTime? endDate, string searchString = null, Guid? districtId = null, PagedQueryInput pagingInput = null)
         {
-            var startDate = LeagueHelpers.GetCurrentSeasonStartDate();
-            var endDate = LeagueHelpers.GetCurrentSeasonEndDate();
+            if (startDate == null)
+            {
+                startDate = LeagueHelpers.GetCurrentSeasonStartDate();
+            }
+
+            if (endDate == null)
+            {
+                endDate = LeagueHelpers.GetCurrentSeasonEndDate();
+            }
 
             var leagues = _leagueRepo.GetAll(pagingInput)
                 .Where(x => 
@@ -213,6 +219,8 @@ namespace EcdLink.Api.CoreApi.Services
                     InsertedDate = x.InsertedDate,
                     LeagueTypeId = x.LeagueTypeId,
                     LeagueTypeName = x.LeagueType.Name,
+                    DistrictId = x.DistrictId,
+                    DistrictName = x.District.Name,
                     Clinics = x.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name}).ToList()
                 })
                 .ToList();
@@ -230,7 +238,9 @@ namespace EcdLink.Api.CoreApi.Services
                     InsertedDate = x.InsertedDate,
                     LeagueTypeId = x.LeagueTypeId,
                     LeagueTypeName = x.LeagueType.Name,
-                    Name = x.Name
+                    Name = x.Name,
+                    DistrictId = x.DistrictId,
+                    DistrictName = x.District.Name,
                 })
                 .FirstOrDefault();
 
@@ -316,6 +326,12 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         throw new ArgumentException("Some new clinics are not in the correct district");
                     }
+                }
+
+                // Validate that all clinics are active
+                if (_clinicRepo.GetAll().Where(x => clinicsToAdd.Contains(x.Id) && !x.IsActive).Any())
+                {
+                    throw new ArgumentException("Some new clinics are inactive");
                 }
 
                 var startDate = LeagueHelpers.GetCurrentSeasonStartDate();

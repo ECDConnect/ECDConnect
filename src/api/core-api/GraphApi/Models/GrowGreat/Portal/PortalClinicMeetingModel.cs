@@ -23,6 +23,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             ReportingIssue = clinicMeeting.ReportingIssue;
             TotalSupportVisits = clinicMeeting.TotalSupportVisits;
             TeamLeadName = clinicMeeting.TeamLead.User.FullName;
+            ClinicId = clinicMeeting.ClinicId;
+            ClinicName = clinicMeeting.Clinic.Name;
+            DateSubmitted = clinicMeeting.InsertedDate;
         }
 
         private void SetMeetingParticipantsOptedOut(ICollection<ClinicMeetingParticipantOptedOut> participantsOptedOut)
@@ -63,7 +66,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public string ReportingIssue { get; set; }
         public int TotalSupportVisits { get; set; }
         public string TeamLeadName{ get; set; }
-
+        public Guid ClinicId { get; set; }
+        public string ClinicName { get; set; }
+        public DateTime DateSubmitted { get; set; }
     }
 
     public class Participant
