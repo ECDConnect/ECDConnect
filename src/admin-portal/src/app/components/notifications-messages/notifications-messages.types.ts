@@ -4,3 +4,9 @@ export const enum MessageStatusConstants {
   Red = 'red',
   Green = 'green',
 }
+
+export const enum NotificationsCTAText {
+  AddMeetingReport = '[[AddMeetingReport]]',
+  SeeClinicSummary = '[[SeeClinicSummary]]',
+  ContactCHW = '[[ContactCHW]]',
+}

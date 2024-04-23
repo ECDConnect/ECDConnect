@@ -7,7 +7,10 @@ import {
 import { useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router';
 import ROUTES from '../../routes/app.routes-constants';
-import { MessageStatusConstants } from './notifications-messages.types';
+import {
+  MessageStatusConstants,
+  NotificationsCTAText,
+} from './notifications-messages.types';
 import { useMutation, useQuery } from '@apollo/client';
 import {
   GetAllHealthCareWorker,
@@ -71,17 +74,12 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   );
 
-  console.log({ data });
-  console.log({ hcwData });
-
   const targetClinic = data?.allPortalClinics?.find(
     (item) => item?.id === relatedToUserId
   );
   const targetHcw = data?.allHealthCareWorkers?.find(
     (item) => item?.id === relatedToUserId
   );
-  console.log({ targetClinic });
-
   const handleIcon = (type: string) => {
     switch (type) {
       case MessageStatusConstants.Amber:
@@ -107,11 +105,12 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     (value: string) => {
       // TODO: Add more switch cases accordingly with the BE types
       switch (value) {
-        case '[[AddMeetingReport]]':
-          return history.push(ROUTES.TEAM_MEETINGS);
-        case '[[SeeClinicSummary]]':
-          return history.push(ROUTES.TEAM_MEETINGS);
-        case '[[ContactCHW]]':
+        case NotificationsCTAText.AddMeetingReport ||
+          NotificationsCTAText.SeeClinicSummary:
+          return history.push(ROUTES.TEAM_MEETINGS, {
+            clinicId: targetClinic?.id,
+          });
+        case NotificationsCTAText.ContactCHW:
           return history.push({
             pathname: ROUTES.VIEW_USERS,
             state: {
@@ -130,6 +129,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     },
     [
       history,
+      targetClinic?.id,
       targetHcw?.clinicId,
       targetHcw?.id,
       targetHcw?.isRegistered,
@@ -141,12 +141,14 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
 
   const handleNotificationClick = useCallback(() => {
     handleRedirectURL(cTA);
-    markAsRead({
-      variables: {
-        notificationId: id,
-      },
-    });
-  }, [cTA, handleRedirectURL, id, markAsRead]);
+    if (!readDate) {
+      markAsRead({
+        variables: {
+          notificationId: id,
+        },
+      });
+    }
+  }, [cTA, handleRedirectURL, id, markAsRead, readDate]);
 
   return (
     <div className="w-full">
