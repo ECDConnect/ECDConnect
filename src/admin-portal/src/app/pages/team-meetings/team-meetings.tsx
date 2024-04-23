@@ -59,10 +59,14 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
 
   const [
     fetchMeetinReportData,
-    { data: clinicMeetingData, refetch: refetchClinicMeetingData },
+    {
+      data: clinicMeetingData,
+      refetch: refetchClinicMeetingData,
+      loading: loadingClinicMeetingData,
+    },
   ] = useLazyQuery(GetClinicMeetingForMonth, {
     variables: {
-      clinicId: clinicId ?? selectedTabId,
+      clinicId: selectedTabId,
     },
     fetchPolicy: 'cache-and-network',
   });
@@ -137,7 +141,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
             />
           </div>
         )}
-        {!monthMeetingSubmitted && (
+        {!monthMeetingSubmitted && !loadingClinicMeetingData && (
           <div>
             <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
               <InformationCircleIcon className="h-5 w-5 text-white" />
@@ -146,7 +150,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
           </div>
         )}
 
-        {monthMeetingSubmitted && (
+        {monthMeetingSubmitted && !loadingClinicMeetingData && (
           <div>
             <Card className="bg-successMain my-8 rounded-xl p-4">
               <div className="flex items-center gap-4">

@@ -5,16 +5,19 @@ import {
   usePanel,
   useTheme,
 } from '@ecdlink/core';
-import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
-import { Avatar, Button, Typography, UserAvatar } from '@ecdlink/ui';
+import {
+  GetAllNavigation,
+  GetAllNotifications,
+  GetTenantContext,
+} from '@ecdlink/graphql';
+import { Avatar, Button, IconBadge, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
-  ArrowLeftIcon,
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
 } from '@heroicons/react/outline';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
@@ -24,7 +27,7 @@ import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
-import { NavbarTypes } from './shell.types';
+import { NavbarTypes, NotificationNavigationModel } from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
 import ROUTES from '../../routes/app.routes-constants';
 
@@ -89,6 +92,19 @@ export default function Shell() {
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: notificationsData } = useQuery(GetAllNotifications, {
+    variables: {
+      userId: user?.id,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const notifications = notificationsData?.allNotifications;
+  const notReadNotifications = useMemo(
+    () => notifications?.filter((item) => !item?.readDate),
+    [notifications]
+  );
 
   useEffect(() => {
     if (navigation && location && location.pathname) {
@@ -341,7 +357,27 @@ export default function Shell() {
                 {activeNavigation?.name}
               </span>
             </div>
-            <div className="ml-4 flex items-center md:ml-6">
+            <div className="ml-4 flex items-center gap-2 md:ml-6">
+              <div className="cursor-pointer">
+                <IconBadge
+                  onClick={() => {
+                    history.push(ROUTES.NOTIFICATIONS_VIEW);
+                    setActiveNavigation(
+                      NotificationNavigationModel?.name as any
+                    );
+                  }}
+                  badgeColor={'errorMain'}
+                  badgeTextColor={'white'}
+                  icon={'BellIcon'}
+                  iconColor={'darkBackground'}
+                  badgeText={
+                    !!notReadNotifications?.length
+                      ? `${notReadNotifications?.length}`
+                      : ''
+                  }
+                  className="mt-4"
+                />
+              </div>
               <Menu as="div" className="relative ml-3">
                 {({ open }) => (
                   <>

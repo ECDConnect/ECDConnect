@@ -26,6 +26,10 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   const clinics = data?.allPortalClinics;
 
   useEffect(() => {
+    if (clinicId) {
+      setSelectedTabId(clinicId);
+      return;
+    }
     if (typeof setSelectedTabId === 'function') {
       if (selectedClinicId) {
         setSelectedTabId(selectedClinicId);
@@ -33,7 +37,7 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
         setSelectedTabId(clinics?.[0]?.id || '');
       }
     }
-  }, [clinics, selectedClinicId, setSelectedTabId]);
+  }, [clinicId, clinics, selectedClinicId, setSelectedTabId]);
 
   const navigation =
     clinics?.map(
@@ -65,7 +69,7 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   }, [selectedClinic, isFromTeamMeetings]);
 
   const renderClinicViewFromTeamMeetings = useMemo(() => {
-    if (clinicId && clinics?.length > 1) {
+    if (clinicId && clinics?.length > 0) {
       return (
         <ViewClinicReport
           clinic={teamMeetingBodyClinic}
@@ -79,11 +83,13 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
 
   if (loading) {
     return (
-      <LoadingSpinner
-        size="medium"
-        backgroundColor="secondary"
-        spinnerColor="adminPortalBg"
-      />
+      <div className="mt-16">
+        <LoadingSpinner
+          size="medium"
+          backgroundColor="secondary"
+          spinnerColor="adminPortalBg"
+        />
+      </div>
     );
   }
 
