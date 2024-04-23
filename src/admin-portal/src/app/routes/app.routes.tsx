@@ -62,6 +62,8 @@ import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/vi
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
+import TLMeetings from '../pages/tl-meetings/tl-meetings';
+import { SeeReports } from '../pages/tl-meetings/components/see-reports';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -117,6 +119,21 @@ const ReferralRoutes: React.FC = () => {
   );
 };
 
+const TlMeetingsRoutes: React.FC = () => {
+  return (
+    <Switch>
+      <Route
+        path={ROUTES.TL_MEETINGS.SEE_REPORTS}
+        component={SeeReports}
+      ></Route>
+      <Route
+        path={ROUTES.CLINICS.ALL_CLINICS}
+        component={ClinicsSubPage}
+      ></Route>
+    </Switch>
+  );
+};
+
 const AuthRoutes: React.FC = () => {
   return (
     <Switch>
@@ -127,6 +144,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
+      <Route path={ROUTES.TL_MEETINGS.ROOT} component={TLMeetings}></Route>
       <Route
         path={ROUTES.TEAM_MEETINGS}
         component={TeamMeetingsMainPage}
@@ -259,4 +277,5 @@ export {
   UserRoutes,
   MessageRoutes,
   ClinicsRoutes,
+  TlMeetingsRoutes,
 };

@@ -9,7 +9,6 @@ import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
 import { Avatar, Button, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
-  ArrowLeftIcon,
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
@@ -103,6 +102,8 @@ export default function Shell() {
     setAvatarColor(getAvatarColor());
   }, []);
 
+  console.log(navigationData?.GetAllNavigation);
+
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
       const teamLeadNavigationItems = [
@@ -111,7 +112,10 @@ export default function Shell() {
         NavbarTypes.Referrals,
         NavbarTypes.TeamMeetings,
       ];
-      const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
+      const navigationList: NavigationDto[] = [
+        ...navigationData?.GetAllNavigation,
+      ];
+
       const newnav = [...navigationData?.GetAllNavigation, tlMeetings];
       const teamLeadNavigationList: NavigationDto[] = newnav?.filter((item) =>
         teamLeadNavigationItems?.includes(item?.name)
@@ -119,7 +123,7 @@ export default function Shell() {
       const userRolePermissions = user?.roles
         ?.map((x) => x?.permissions)
         .flat();
-      const userPermissionIds = userRolePermissions.map((x) => x.id);
+      const userPermissionIds = userRolePermissions?.map((x) => x.id);
       if (isAdministrator || isSuperAdmin) {
         const sorted = navigationList
           .slice()
