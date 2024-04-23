@@ -63,6 +63,7 @@ import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-m
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
 import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
 import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
+import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -128,10 +129,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
-      <Route
-        path={ROUTES.TEAM_MEETINGS}
-        component={TeamMeetingsMainPage}
-      ></Route>
+      <Route path={ROUTES.TEAM_MEETINGS} component={TeamMeetingsRoot}></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>

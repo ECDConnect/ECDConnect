@@ -8,11 +8,13 @@ import { EmptyClinic } from './components/empty-clinic';
 interface ClinicsTeamLeadViewProps {
   setSelectedTabId?: (item: string) => void;
   isFromTeamMeetings?: boolean;
+  clinicId?: string;
 }
 
 export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   setSelectedTabId,
   isFromTeamMeetings,
+  clinicId,
 }) => {
   const [selectedClinicId, setSelectedClinicId] = useState<string>();
 
@@ -45,6 +47,10 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   const selectedClinic =
     clinics?.find((clinic) => clinic?.id === selectedClinicId) ?? clinics?.[0];
 
+  const teamMeetingBodyClinic = clinics?.find(
+    (clinic) => clinic?.id === clinicId
+  );
+
   const renderClinicView = useMemo(() => {
     if (selectedClinic) {
       return (
@@ -58,6 +64,19 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
     }
   }, [selectedClinic, isFromTeamMeetings]);
 
+  const renderClinicViewFromTeamMeetings = useMemo(() => {
+    if (clinicId && clinics?.length > 1) {
+      return (
+        <ViewClinicReport
+          clinic={teamMeetingBodyClinic}
+          isFromTeamMeetings={isFromTeamMeetings}
+        />
+      );
+    } else {
+      return <EmptyClinic />;
+    }
+  }, [clinicId, clinics?.length, isFromTeamMeetings, teamMeetingBodyClinic]);
+
   if (loading) {
     return (
       <LoadingSpinner
@@ -65,6 +84,14 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
         backgroundColor="secondary"
         spinnerColor="adminPortalBg"
       />
+    );
+  }
+
+  if (clinicId && isFromTeamMeetings) {
+    return (
+      <div className="bg-adminPortalBg rounded-b-2xl p-4">
+        {renderClinicViewFromTeamMeetings}
+      </div>
     );
   }
 
