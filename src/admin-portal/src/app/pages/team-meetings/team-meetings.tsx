@@ -15,7 +15,13 @@ import { AddTeamMeetingReport } from './components/add-meeting-report/add-meetin
 import { ClinicMeetingReportDto, usePanel } from '@ecdlink/core';
 import { useUser } from '../../hooks/useUser';
 
-export const TeamMeetingsMainPage = () => {
+interface TeamMeetingsMainPageProps {
+  clinicId?: string;
+}
+
+export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
+  clinicId,
+}) => {
   const { user } = useUser();
   const panel = usePanel();
   const today = new Date();
@@ -53,7 +59,11 @@ export const TeamMeetingsMainPage = () => {
 
   const [
     fetchMeetinReportData,
-    { data: clinicMeetingData, refetch: refetchClinicMeetingData },
+    {
+      data: clinicMeetingData,
+      refetch: refetchClinicMeetingData,
+      loading: loadingClinicMeetingData,
+    },
   ] = useLazyQuery(GetClinicMeetingForMonth, {
     variables: {
       clinicId: selectedTabId,
@@ -131,7 +141,7 @@ export const TeamMeetingsMainPage = () => {
             />
           </div>
         )}
-        {!monthMeetingSubmitted && (
+        {!monthMeetingSubmitted && !loadingClinicMeetingData && (
           <div>
             <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
               <InformationCircleIcon className="h-5 w-5 text-white" />
@@ -140,7 +150,7 @@ export const TeamMeetingsMainPage = () => {
           </div>
         )}
 
-        {monthMeetingSubmitted && (
+        {monthMeetingSubmitted && !loadingClinicMeetingData && (
           <div>
             <Card className="bg-successMain my-8 rounded-xl p-4">
               <div className="flex items-center gap-4">
@@ -363,6 +373,7 @@ export const TeamMeetingsMainPage = () => {
         </div>
         <div>
           <ClinicsTeamLeadView
+            clinicId={clinicId}
             setSelectedTabId={setSelectedTabId}
             isFromTeamMeetings={true}
           />

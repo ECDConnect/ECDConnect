@@ -8,11 +8,13 @@ import { EmptyClinic } from './components/empty-clinic';
 interface ClinicsTeamLeadViewProps {
   setSelectedTabId?: (item: string) => void;
   isFromTeamMeetings?: boolean;
+  clinicId?: string;
 }
 
 export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   setSelectedTabId,
   isFromTeamMeetings,
+  clinicId,
 }) => {
   const [selectedClinicId, setSelectedClinicId] = useState<string>();
 
@@ -24,6 +26,10 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
   const clinics = data?.allPortalClinics;
 
   useEffect(() => {
+    if (clinicId) {
+      setSelectedTabId(clinicId);
+      return;
+    }
     if (typeof setSelectedTabId === 'function') {
       if (selectedClinicId) {
         setSelectedTabId(selectedClinicId);
@@ -31,7 +37,7 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
         setSelectedTabId(clinics?.[0]?.id || '');
       }
     }
-  }, [clinics, selectedClinicId, setSelectedTabId]);
+  }, [clinicId, clinics, selectedClinicId, setSelectedTabId]);
 
   const navigation =
     clinics?.map(
@@ -44,6 +50,10 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
 
   const selectedClinic =
     clinics?.find((clinic) => clinic?.id === selectedClinicId) ?? clinics?.[0];
+
+  const teamMeetingBodyClinic = clinics?.find(
+    (clinic) => clinic?.id === clinicId
+  );
 
   const renderClinicView = useMemo(() => {
     if (selectedClinic) {
@@ -58,13 +68,36 @@ export const ClinicsTeamLeadView: React.FC<ClinicsTeamLeadViewProps> = ({
     }
   }, [selectedClinic, isFromTeamMeetings]);
 
+  const renderClinicViewFromTeamMeetings = useMemo(() => {
+    if (clinicId && clinics?.length > 0) {
+      return (
+        <ViewClinicReport
+          clinic={teamMeetingBodyClinic}
+          isFromTeamMeetings={isFromTeamMeetings}
+        />
+      );
+    } else {
+      return <EmptyClinic />;
+    }
+  }, [clinicId, clinics?.length, isFromTeamMeetings, teamMeetingBodyClinic]);
+
   if (loading) {
     return (
-      <LoadingSpinner
-        size="medium"
-        backgroundColor="secondary"
-        spinnerColor="adminPortalBg"
-      />
+      <div className="mt-16">
+        <LoadingSpinner
+          size="medium"
+          backgroundColor="secondary"
+          spinnerColor="adminPortalBg"
+        />
+      </div>
+    );
+  }
+
+  if (clinicId && isFromTeamMeetings) {
+    return (
+      <div className="bg-adminPortalBg rounded-b-2xl p-4">
+        {renderClinicViewFromTeamMeetings}
+      </div>
     );
   }
 

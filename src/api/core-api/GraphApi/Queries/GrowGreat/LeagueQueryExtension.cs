@@ -52,12 +52,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [UseFiltering]
         [UseSorting]
         public List<PortalLeagueModel> GetLeagues(
-            [Service] ILeagueService pointsService, 
+            [Service] ILeagueService leagueService, 
+            DateTime? startDate,
+            DateTime? endDate,
             string searchString,
             Guid? districtId,
             PagedQueryInput pagingInput)
         {
-            var leagues = pointsService.GetLeagues(searchString, districtId, pagingInput);
+            var leagues = leagueService.GetLeagues(startDate, endDate, searchString, districtId, pagingInput);
             return leagues;
         }
 

@@ -66,6 +66,7 @@ export const AddLeagues = () => {
     AddLeaguesMutation,
     {}
   );
+
   const [editLeague, { loading: editingLeagues }] = useMutation(EditLeague, {});
 
   const isToAddSuperLeagues = state?.leagueType === LeagueIdEnum.SuperLeague;
@@ -151,7 +152,7 @@ export const AddLeagues = () => {
     },
     {
       name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
-      url: ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
+      url: ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
       state: {
         endDate: state?.endDate,
         startDate: state?.startDate,
@@ -166,6 +167,30 @@ export const AddLeagues = () => {
       url: '',
     },
   ];
+
+  const checkLeagueNameExist = () => {
+    const leagueName = currentLeagueData?.name;
+    const leagueNameExists =
+      leagueSetupDetails?.districts?.find((district) =>
+        district.leagues.some((league) => league.name === leagueName)
+      ) ||
+      leagueSetupDetails?.superLeagues.some(
+        (league) => league.name === leagueName
+      );
+
+    const nameExists = state?.leagueToEdit
+      ? state?.leagueToEdit.name !== leagueName && leagueNameExists
+      : leagueNameExists;
+
+    if (nameExists) {
+      setNotification({
+        title: 'League name already exists!',
+        variant: NOTIFICATION.ERROR,
+      });
+    }
+
+    return nameExists;
+  };
 
   const onUpdatedLeagues = (updatedLeague: {
     [league: string]: LeagueInputModelInput;
@@ -210,12 +235,18 @@ export const AddLeagues = () => {
 
   const onNextStep = () => {
     if (currentStep < quantityLeagues + 1) {
+      const leagueNameExists = checkLeagueNameExist();
+
+      if (leagueNameExists) {
+        return;
+      }
+
       setCurrentStep((prevState) => prevState + 1);
     }
   };
 
   const onBack = () => {
-    history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
+    history.push(ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT, {
       startDate: state?.startDate,
       endDate: state?.endDate,
     } as AddLeaguesRouteState);
@@ -237,6 +268,10 @@ export const AddLeagues = () => {
   const onSave = () => {
     const input = leagues.map((item) => Object.values(item)[0]);
 
+    const leagueNameExists = checkLeagueNameExist();
+
+    if (leagueNameExists) return;
+
     if (state?.leagueToEdit) {
       const { clinicsToAdd, clinicsToRemove } = findChanges(
         state?.leagueToEdit?.clinics,
@@ -245,7 +280,7 @@ export const AddLeagues = () => {
 
       editLeague({
         variables: {
-          leagueId: state?.leagueToEdit.id,
+          leagueId: state?.leagueToEdit?.id,
           name: input?.[0].name,
           clinicsToAdd,
           clinicsToRemove,

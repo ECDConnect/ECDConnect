@@ -1,5 +1,6 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -67,7 +68,7 @@ namespace EcdLink.Api.CoreApi.Services
                             }
                         };
                         // When the deadline has passed(ie on 00:01 of the 8th of the month)
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalTLMissingMonthlyReport, DateTime.Now.Date, teamLead.TeamLead.User, "", MessageStatusConstants.Amber, replacements, expireDate);
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalTLMissingMonthlyReport, DateTime.Now.Date, teamLead.TeamLead.User, "", MessageStatusConstants.Amber, replacements, expireDate, false, false, null, clinic.Id.ToString());
                     }
 
                 }

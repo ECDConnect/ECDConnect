@@ -58,12 +58,15 @@ import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
 import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
 import { TeamMeetingsMainPage } from '../pages/team-meetings/team-meetings';
 import { Leagues } from '../pages/clinics/leagues/leagues';
-import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/view-league-season';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
 import TLMeetings from '../pages/tl-meetings/tl-meetings';
 import { SeeReports } from '../pages/tl-meetings/components/see-reports';
+import { NotificationsView } from '../notifications/notificationsView';
+import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
+import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
+import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -149,12 +152,17 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.TEAM_MEETINGS}
         component={TeamMeetingsMainPage}
       ></Route>
+      <Route path={ROUTES.TEAM_MEETINGS} component={TeamMeetingsRoot}></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
+      <Route
+        path={ROUTES.NOTIFICATIONS_VIEW}
+        component={NotificationsView}
+      ></Route>
     </Switch>
   );
 };
@@ -203,7 +211,12 @@ const ClinicsRoutes: React.FC = () => {
       <Route
         exact
         path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT}
-        component={ViewLeagueSeason}
+        component={LeaguePerformance}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT}
+        component={LeagueManagement}
       ></Route>
       <Route
         exact

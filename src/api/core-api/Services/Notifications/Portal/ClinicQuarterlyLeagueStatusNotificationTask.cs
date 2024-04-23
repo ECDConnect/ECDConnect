@@ -91,7 +91,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicGoldTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate);
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicGoldTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate, false, false, null, clinic.ClinicId.ToString());
                         }
                     }
                     // Silver Tier
@@ -115,7 +115,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicSilverTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate);
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicSilverTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate, false, false, null, clinic.ClinicId.ToString());
                         }
                     }
                     else
@@ -137,7 +137,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicBronzeTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, expireDate);
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicBronzeTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, expireDate, false, false, null, clinic.ClinicId.ToString());
                         }
                     }
                 }

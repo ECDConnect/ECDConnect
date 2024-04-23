@@ -86,13 +86,15 @@ export const LeagueDetails = () => {
                 text={data?.league?.leagueTypeName ?? ''}
                 iconPosition="start"
               />
-              <StatusChip
-                className="h-7"
-                backgroundColour="successMain"
-                borderColour="successMain"
-                textColour="white"
-                text={`{districtName}`}
-              />
+              {!!data?.league?.districtName && (
+                <StatusChip
+                  className="h-7"
+                  backgroundColour="successMain"
+                  borderColour="successMain"
+                  textColour="white"
+                  text={data.league.districtName}
+                />
+              )}
             </>
           )}
         </div>

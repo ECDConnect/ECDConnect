@@ -1,8 +1,13 @@
 import { useMutation } from '@apollo/client';
-import { NOTIFICATION, PortalLeagueDto, useNotifications } from '@ecdlink/core';
+import {
+  LeagueIdEnum,
+  NOTIFICATION,
+  PortalLeagueDto,
+  useNotifications,
+} from '@ecdlink/core';
 import { Clinic, AddClinicToLeague } from '@ecdlink/graphql';
 import { Alert, Button, Divider, Dropdown, Typography } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface AssignClinicsToALeagueProps {
   unassignedClinics: Clinic[];
@@ -26,17 +31,23 @@ export const AssignClinicsToALeague = ({
   const [addClinicToLeague, { loading: addingClinic }] =
     useMutation(AddClinicToLeague);
 
-  const getLeaguesInDistrict = (districtId: string) => {
-    return (
-      leagues
-        // TODO: league needs to have a districtId property
-        ?.filter((league) => /* league.districtId === districtId */ league)
-        ?.map((league) => ({
-          value: league.id,
-          label: league.name,
-        }))
-    );
-  };
+  const getDistrictOptions = useCallback(
+    (districtId: string) => {
+      return (
+        leagues
+          ?.filter(
+            (league) =>
+              league.districtId === districtId ||
+              league.leagueTypeId === LeagueIdEnum.SuperLeague
+          )
+          ?.map((league) => ({
+            value: league.id,
+            label: league.name,
+          })) ?? []
+      );
+    },
+    [leagues]
+  );
 
   const onChange = (clinicId: string, leagueId: string) => {
     setAssignedClinics((prevState) => ({
@@ -129,7 +140,7 @@ export const AssignClinicsToALeague = ({
           }) to a league *`}
           selectedValue={assignedClinics?.[clinic.id]}
           onChange={(leagueId) => onChange(clinic.id, leagueId)}
-          list={getLeaguesInDistrict(clinic?.subDistrict?.district?.id ?? '')}
+          list={getDistrictOptions(clinic?.subDistrict?.district?.id ?? '')}
         />
       ))}
       <Button

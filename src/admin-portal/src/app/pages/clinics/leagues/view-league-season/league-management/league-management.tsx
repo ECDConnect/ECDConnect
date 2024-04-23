@@ -3,6 +3,8 @@ import { useHistory, useLocation } from 'react-router';
 
 import {
   Alert,
+  Breadcrumb,
+  BreadcrumbProps,
   Button,
   DialogPosition,
   LoadingSpinner,
@@ -39,6 +41,9 @@ export const LeagueManagement = () => {
     fetchPolicy: 'cache-and-network',
   });
 
+  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
+  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
+
   const currentYear = new Date().getFullYear();
 
   const isEmptyState =
@@ -58,6 +63,21 @@ export const LeagueManagement = () => {
     },
     0
   );
+
+  const paths: BreadcrumbProps['paths'] = [
+    {
+      name: 'Clinics',
+      url: ROUTES.CLINICS.ALL_CLINICS,
+    },
+    {
+      name: 'Leagues',
+      url: ROUTES.CLINICS.LEAGUES.ROOT,
+    },
+    {
+      name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
+      url: '',
+    },
+  ];
 
   const onActionOptions = (district?: DistrictLeagues) => {
     dialog({
@@ -168,8 +188,11 @@ export const LeagueManagement = () => {
     onActionClick: () => onActionOptions(),
   };
 
+  if (!isNextSeasonManagement) return <></>;
+
   return (
     <>
+      <Breadcrumb paths={paths} />
       <Typography
         type="h1"
         text={`${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`}

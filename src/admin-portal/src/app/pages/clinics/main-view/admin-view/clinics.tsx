@@ -10,8 +10,6 @@ import ROUTES from '../../../../routes/app.routes-constants';
 export function ClinicsAdminView() {
   const location = useLocation();
 
-  const isLocalhost = window.location.host.includes('localhost');
-
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
@@ -27,15 +25,10 @@ export function ClinicsAdminView() {
           name: 'Clinics',
           href: ROUTES.CLINICS.ALL_CLINICS,
         },
-        // TODO: remove this condition once the feature is ready
-        ...(isLocalhost
-          ? [
-              {
-                name: 'Leagues',
-                href: ROUTES.CLINICS.LEAGUES.ROOT,
-              },
-            ]
-          : []),
+        {
+          name: 'Leagues',
+          href: ROUTES.CLINICS.LEAGUES.ROOT,
+        },
         {
           name: 'Districts',
           href: '/clinics/districts',
@@ -54,6 +47,7 @@ export function ClinicsAdminView() {
 
   const routesToHideSubNavigation = [
     ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
+    ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
   ];
 
   const isToHideSubNavigation = routesToHideSubNavigation.some((route) =>
