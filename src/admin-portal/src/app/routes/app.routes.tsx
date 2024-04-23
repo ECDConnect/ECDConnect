@@ -58,10 +58,11 @@ import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
 import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
 import { TeamMeetingsMainPage } from '../pages/team-meetings/team-meetings';
 import { Leagues } from '../pages/clinics/leagues/leagues';
-import { ViewLeagueSeason } from '../pages/clinics/leagues/view-league-season/view-league-season';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
+import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
+import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -185,7 +186,12 @@ const ClinicsRoutes: React.FC = () => {
       <Route
         exact
         path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT}
-        component={ViewLeagueSeason}
+        component={LeaguePerformance}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT}
+        component={LeagueManagement}
       ></Route>
       <Route
         exact

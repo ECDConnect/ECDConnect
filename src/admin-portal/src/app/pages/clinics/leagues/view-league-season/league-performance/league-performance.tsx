@@ -1,6 +1,8 @@
 import {
   ActionModal,
   Alert,
+  Breadcrumb,
+  BreadcrumbProps,
   Button,
   DialogPosition,
   SearchDropDownOption,
@@ -18,6 +20,7 @@ import { useMemo, useState } from 'react';
 import { LeagueDetailsRouteState } from './league-details/types';
 import { LeagueSeasonRouteState } from '../types';
 import { AssignClinicsToALeague } from './components/assign-clinics-to-a-league';
+// import { checkIfIsNextSeasonManagement } from '../../utils';
 
 export const LeaguePerformance = () => {
   const [allowRefetch, setAllowRefetch] = useState(false);
@@ -36,26 +39,77 @@ export const LeaguePerformance = () => {
 
   const apolloClient = useApolloClient();
 
-  const leaguesData = apolloClient.readQuery<{ leagues?: PortalLeagueDto[] }>({
-    query: GetLeagues,
-  });
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const lastYear = currentYear - 1;
+
+  // Oct ${lastYear}
+  const startDatePreviousSeason = new Date(lastYear, 9, 1)
+    .toISOString()
+    .replace('Z', '');
+  // Sep ${currentYear}
+  const endDatePreviousSeason = new Date(currentYear, 8, 30)
+    .toISOString()
+    .replace('Z', '');
+
+  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
+  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ false;
+
   const clinics = apolloClient.readQuery<{ allPortalClinics?: Clinic[] }>({
     query: GetAllPortalClinics,
   });
 
-  const { loading: loadingLeagues, refetch: refetchLeagues } = useQuery<{
-    leagues?: PortalLeagueDto[];
-  }>(GetLeagues, {
+  const {
+    data: previousSeason,
+    loading: loadingPreviousSeason,
+    refetch: refetchPreviousSeason,
+  } = useQuery<{ leagues?: PortalLeagueDto[] }>(GetLeagues, {
     fetchPolicy: 'cache-and-network',
-    skip: !!leaguesData?.leagues && !allowRefetch,
+    variables: {
+      startDate: startDatePreviousSeason,
+      endDate: endDatePreviousSeason,
+    },
+    skip: !isNextSeasonManagement && !allowRefetch,
     onCompleted: () => setAllowRefetch(false),
   });
+
+  const {
+    data: currentSeason,
+    loading: loadingCurrentSeason,
+    refetch: refetchCurrentSeason,
+  } = useQuery<{ leagues?: PortalLeagueDto[] }>(GetLeagues, {
+    fetchPolicy: 'cache-and-network',
+    skip: isNextSeasonManagement && !allowRefetch,
+    onCompleted: () => setAllowRefetch(false),
+  });
+
+  const loadingLeagues = loadingPreviousSeason || loadingCurrentSeason;
+  const leaguesData = isNextSeasonManagement ? previousSeason : currentSeason;
+  const refetchLeagues = isNextSeasonManagement
+    ? refetchPreviousSeason
+    : refetchCurrentSeason;
+
   const { loading: loadingClinics } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
     skip: !!clinics?.allPortalClinics,
   });
 
   const loading = loadingLeagues || loadingClinics;
+
+  const paths: BreadcrumbProps['paths'] = [
+    {
+      name: 'Clinics',
+      url: ROUTES.CLINICS.ALL_CLINICS,
+    },
+    {
+      name: 'Leagues',
+      url: ROUTES.CLINICS.LEAGUES.ROOT,
+    },
+    {
+      name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
+      url: '',
+    },
+  ];
 
   const columns: Icolumn[] = [
     {
@@ -69,10 +123,6 @@ export const LeaguePerformance = () => {
     {
       field: 'clinics',
       use: '# clinics',
-    },
-    {
-      field: 'district',
-      use: 'District',
     },
     {
       field: 'dateAdded',
@@ -118,10 +168,14 @@ export const LeaguePerformance = () => {
     return leagues;
   }, [districtFilter, formattedLeagues, search, searchedLeagues]);
 
-  const unassignedClinics = clinics?.allPortalClinics
-    ?.filter((clinic) => !clinic.leagues?.length && !!clinic.isActive)
-    // TODO: remove this slice after the tests
-    ?.slice(0, 2);
+  const unassignedClinics = clinics?.allPortalClinics?.filter(
+    (clinic) =>
+      !leaguesData?.leagues?.find((league) =>
+        league?.clinics?.some((leagueClinic) => leagueClinic.id === clinic.id)
+      ) && !!clinic.isActive
+  );
+  // TODO: remove this slice after the tests
+  // ?.slice(0, 2);
 
   const districtsFilterOptions = useMemo(() => {
     const seenDistrictIds = new Set();
@@ -199,13 +253,14 @@ export const LeaguePerformance = () => {
 
   return (
     <>
+      <Breadcrumb paths={paths} />
       <Typography
         type="h1"
         text={`${state?.startDate ?? ''} to ${state?.endDate ?? ''} Leagues`}
         color="textMid"
         className="my-8"
       />
-      {!!unassignedClinics?.length && (
+      {!!unassignedClinics?.length && !isNextSeasonManagement && (
         <Alert
           className="rounded-lg"
           type="warning"

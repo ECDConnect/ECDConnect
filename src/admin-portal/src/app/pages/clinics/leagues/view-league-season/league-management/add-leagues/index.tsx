@@ -152,7 +152,7 @@ export const AddLeagues = () => {
     },
     {
       name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
-      url: ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
+      url: ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
       state: {
         endDate: state?.endDate,
         startDate: state?.startDate,
@@ -246,7 +246,7 @@ export const AddLeagues = () => {
   };
 
   const onBack = () => {
-    history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
+    history.push(ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT, {
       startDate: state?.startDate,
       endDate: state?.endDate,
     } as AddLeaguesRouteState);
