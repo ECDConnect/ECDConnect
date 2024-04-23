@@ -162,7 +162,7 @@ export const Step2 = ({
   useEffect(() => {
     if (
       previousLeagueNumber !== leagueNumber ||
-      (!!state.leagueToEdit &&
+      (!!state?.leagueToEdit &&
         previousLeagueData === undefined &&
         currentLeagueData !== undefined)
     ) {
@@ -183,7 +183,7 @@ export const Step2 = ({
     leagueKey,
     league,
     previousLeagueData,
-    state.leagueToEdit,
+    state?.leagueToEdit,
   ]);
 
   return (
