@@ -23,7 +23,7 @@ export const Leagues = () => {
 
   const leagues: MenuListDataItem[] = [
     {
-      hide: false,
+      type: 'view-leagues',
       startDate: `Oct ${lastYear}`,
       endDate: `Sep ${currentYear}`,
       description: 'See this year’s scoreboards.',
@@ -31,32 +31,36 @@ export const Leagues = () => {
     ...(isNextSeasonManagement
       ? [
           {
+            type: 'league-management',
             startDate: `Oct ${currentYear}`,
             endDate: `Sep ${nextYear}`,
             description: 'Start assigning clinics to leagues for next year.',
           },
         ]
       : []),
-  ]
-    .filter((item) => !item.hide)
-    .map((item) => ({
-      title: `${item.startDate} - ${item.endDate} Leagues`,
-      subTitle: item.description,
-      id: 'league1',
-      backgroundColor: 'white',
-      menuIconUrl: Trophy,
-      iconBackgroundColor: 'secondary',
-      iconColor: 'white',
-      showIcon: true,
-      className: 'border-b border-gray-200',
-      titleStyle: 'text-lg text-textMid font-semibold',
-      subTitleStyle: 'text-sm text-textLight',
-      onActionClick: () =>
-        history.push(ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT, {
+  ].map((item) => ({
+    title: `${item.startDate} - ${item.endDate} Leagues`,
+    subTitle: item.description,
+    id: 'league1',
+    backgroundColor: 'white',
+    menuIconUrl: Trophy,
+    iconBackgroundColor: 'secondary',
+    iconColor: 'white',
+    showIcon: true,
+    className: 'border-b border-gray-200',
+    titleStyle: 'text-lg text-textMid font-semibold',
+    subTitleStyle: 'text-sm text-textLight',
+    onActionClick: () =>
+      history.push(
+        item.type === 'view-leagues'
+          ? ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT
+          : ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
+        {
           startDate: item.startDate,
           endDate: item.endDate,
-        } as LeagueSeasonRouteState),
-    }));
+        } as LeagueSeasonRouteState
+      ),
+  }));
 
   return (
     <>

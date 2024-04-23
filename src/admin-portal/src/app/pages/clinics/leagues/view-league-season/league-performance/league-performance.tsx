@@ -1,6 +1,8 @@
 import {
   ActionModal,
   Alert,
+  Breadcrumb,
+  BreadcrumbProps,
   Button,
   DialogPosition,
   SearchDropDownOption,
@@ -92,6 +94,21 @@ export const LeaguePerformance = () => {
   });
 
   const loading = loadingLeagues || loadingClinics;
+
+  const paths: BreadcrumbProps['paths'] = [
+    {
+      name: 'Clinics',
+      url: ROUTES.CLINICS.ALL_CLINICS,
+    },
+    {
+      name: 'Leagues',
+      url: ROUTES.CLINICS.LEAGUES.ROOT,
+    },
+    {
+      name: `${state?.startDate ?? ''} - ${state?.endDate ?? ''} Leagues`,
+      url: '',
+    },
+  ];
 
   const columns: Icolumn[] = [
     {
@@ -235,6 +252,7 @@ export const LeaguePerformance = () => {
 
   return (
     <>
+      <Breadcrumb paths={paths} />
       <Typography
         type="h1"
         text={`${state?.startDate ?? ''} to ${state?.endDate ?? ''} Leagues`}

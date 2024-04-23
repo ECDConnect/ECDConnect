@@ -54,6 +54,7 @@ export function ClinicsAdminView() {
 
   const routesToHideSubNavigation = [
     ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
+    ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
   ];
 
   const isToHideSubNavigation = routesToHideSubNavigation.some((route) =>

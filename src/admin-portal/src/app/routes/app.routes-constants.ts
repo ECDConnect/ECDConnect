@@ -19,6 +19,10 @@ const ROUTES = {
     ALL_CLINICS: '/clinics',
     VIEW_CLINICS: '/view-clinics',
     LEAGUES: addPrefix('/leagues', {
+      LEAGUE_MANAGEMENT: addPrefix('/league-management ', {
+        ADD_LEAGUES: '/add-leagues',
+        // LEAGUE_DETAILS: '/league-details/:leagueId',
+      }),
       VIEW_LEAGUE_SEASON: addPrefix('/view-season', {
         ADD_LEAGUES: '/add-leagues',
         LEAGUE_DETAILS: '/league-details/:leagueId',
