@@ -16,4 +16,5 @@ export interface BaseClinicDto {
   name: string;
   leagueRanking?: number;
   pointsTotal?: number;
+  teamLeads: BaseTeamLeadDto[];
 }

@@ -25,11 +25,12 @@ export const Step1 = ({
     const value = Number(event.target.value);
 
     if (value > 30) {
-      return setQuantityLeagues(undefined);
+      return setQuantityLeagues(0);
     }
 
-    setQuantityLeagues(Number(value));
+    setQuantityLeagues(event.target.value ? value : undefined);
   };
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -64,13 +65,15 @@ export const Step1 = ({
       <form className="rounded-2xl bg-white p-7">
         <FormInput
           isAdminPortalField
-          label={`How many leagues do you want to add for ${
-            district?.name ?? ''
-          } in the ${state?.startDate ?? ''} - ${state?.endDate} period? *`}
+          label={`How many ${
+            state?.districtId ? '' : 'super'
+          } leagues do you want to add for ${district?.name ?? ''} in the ${
+            state?.startDate ?? ''
+          } - ${state?.endDate} period? *`}
           type="number"
           value={quantityLeagues}
           onChange={onChange}
-          {...(quantityLeagues === 0 && {
+          {...((quantityLeagues === 0 || quantityLeagues > 30) && {
             error: {
               type: 'required',
               message: 'Enter a number greater than 0 and less than 30.',

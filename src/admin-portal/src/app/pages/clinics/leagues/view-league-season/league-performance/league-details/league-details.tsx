@@ -20,14 +20,16 @@ import { LeagueDetailsRouteParams, LeagueDetailsRouteState } from './types';
 
 export const LeagueDetails = () => {
   const today = new Date();
+  const currentYear = today.getFullYear();
+  const lastYear = currentYear - 1;
+
   const { quarter } = getCommunityQuarterDescription(today);
 
+  const startSeason = startOfMonth(new Date(lastYear, 9));
   const startQuarter = startOfMonth(
-    new Date(new Date().getFullYear(), quarter.startMonth - 1)
+    new Date(currentYear, quarter.startMonth - 1)
   );
-  const endQuarter = endOfMonth(
-    new Date(new Date().getFullYear(), quarter.endMonth - 1)
-  );
+  const endQuarter = endOfMonth(new Date(currentYear, quarter.endMonth - 1));
 
   const [startDate, setStartDate] = useState(startQuarter);
   const [endDate, setEndDate] = useState(endQuarter);
@@ -44,6 +46,10 @@ export const LeagueDetails = () => {
     } as QueryLeagueArgs,
     skip: !startDate || !endDate,
   });
+
+  const hideActivityCount =
+    data?.league?.clinics.length > 1 &&
+    data?.league?.clinics?.every((clinic) => clinic.leagueRanking === 1);
 
   const paths: BreadcrumbProps['paths'] = [
     {
@@ -104,6 +110,8 @@ export const LeagueDetails = () => {
           startDate={startDate}
           endDate={endDate}
           onChange={onChange}
+          minDate={startSeason}
+          maxDate={endQuarter}
           colour="secondary"
           showChevronIcon
           hideCalendarIcon
@@ -124,9 +132,17 @@ export const LeagueDetails = () => {
         data?.league?.clinics?.map((clinic) => (
           <PointsDetailsCard
             key={clinic.id}
+            hideActivityCount={hideActivityCount}
             pointsEarned={clinic?.pointsTotal ?? 0}
-            activityCount={clinic.leagueRanking ?? 1}
+            activityCount={clinic.leagueRanking ?? 0}
             title={clinic.name}
+            description={`Team Lead(s): ${
+              clinic.teamLeads
+                ?.map(
+                  (lead) => `${lead?.firstName ?? ''} ${lead?.surname ?? ''}`
+                )
+                ?.join(', ') || 'None'
+            }`}
             size="medium"
             className="mb-1 rounded-2xl"
             textColour="textMid"

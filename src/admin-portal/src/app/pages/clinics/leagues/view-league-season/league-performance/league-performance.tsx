@@ -16,7 +16,7 @@ import { useApolloClient, useQuery } from '@apollo/client';
 import { PortalLeagueDto, useDialog, usePanel } from '@ecdlink/core';
 import { Clinic, GetAllPortalClinics, GetLeagues } from '@ecdlink/graphql';
 import { format } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { LeagueDetailsRouteState } from './league-details/types';
 import { LeagueSeasonRouteState } from '../types';
 import { AssignClinicsToALeague } from './components/assign-clinics-to-a-league';
@@ -37,6 +37,10 @@ export const LeaguePerformance = () => {
 
   const dialog = useDialog();
 
+  const alertRef = useRef<HTMLDivElement>(null);
+
+  const displayAlertRef = useRef(false);
+
   const apolloClient = useApolloClient();
 
   const today = new Date();
@@ -47,8 +51,8 @@ export const LeaguePerformance = () => {
   const startDatePreviousSeason = new Date(lastYear, 9, 1)
     .toISOString()
     .replace('Z', '');
-  // Sep ${currentYear}
-  const endDatePreviousSeason = new Date(currentYear, 8, 30)
+  // Jul ${currentYear}
+  const endDatePreviousSeason = new Date(currentYear, 6, 31)
     .toISOString()
     .replace('Z', '');
 
@@ -192,44 +196,53 @@ export const LeaguePerformance = () => {
     }, []);
   }, [leaguesData?.leagues]);
 
-  const onCancelAssignToLeague = (onClose) => {
-    dialog({
-      blocking: true,
-      color: 'bg-white',
-      transitionClassName: 'relative z-50 ',
-      position: DialogPosition.Middle,
-      render: (onCloseDialog) => (
-        <ActionModal
-          icon="ExclamationCircleIcon"
-          iconColor="alertMain"
-          title="Discard unsaved changes?"
-          detailText="If you leave now, you will lose all of your changes."
-          buttonClass="rounded-2xl"
-          actionButtons={[
-            {
-              leadingIcon: 'PencilIcon',
-              text: 'Keep editing',
-              type: 'outlined',
-              colour: 'secondary',
-              textColour: 'secondary',
-              onClick: onCloseDialog,
-            },
-            {
-              leadingIcon: 'TrashIcon',
-              text: 'Discard changes',
-              type: 'filled',
-              colour: 'secondary',
-              textColour: 'white',
-              onClick: () => {
-                onCloseDialog();
-                onClose();
+  const onCancelAssignToLeague = useCallback(
+    (onClose) => {
+      if (!displayAlertRef.current) {
+        displayAlertRef.current = false;
+        return onClose();
+      }
+
+      dialog({
+        blocking: true,
+        color: 'bg-white',
+        transitionClassName: 'relative z-50 ',
+        position: DialogPosition.Middle,
+        render: (onCloseDialog) => (
+          <ActionModal
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            title="Discard unsaved changes?"
+            detailText="If you leave now, you will lose all of your changes."
+            buttonClass="rounded-2xl"
+            actionButtons={[
+              {
+                leadingIcon: 'PencilIcon',
+                text: 'Keep editing',
+                type: 'outlined',
+                colour: 'secondary',
+                textColour: 'secondary',
+                onClick: onCloseDialog,
               },
-            },
-          ]}
-        />
-      ),
-    });
-  };
+              {
+                leadingIcon: 'TrashIcon',
+                text: 'Discard changes',
+                type: 'filled',
+                colour: 'secondary',
+                textColour: 'white',
+                onClick: () => {
+                  onCloseDialog();
+                  onClose();
+                  displayAlertRef.current = false;
+                },
+              },
+            ]}
+          />
+        ),
+      });
+    },
+    [dialog]
+  );
 
   const onAssignToLeague = () => {
     panel({
@@ -241,10 +254,14 @@ export const LeaguePerformance = () => {
         <AssignClinicsToALeague
           unassignedClinics={unassignedClinics}
           leagues={leaguesData?.leagues}
+          onClinicAssigned={(clinics) => {
+            displayAlertRef.current = !!Object.keys(clinics)?.length;
+          }}
           onClose={() => {
             setAllowRefetch(true);
             onClose();
             refetchLeagues();
+            displayAlertRef.current = false;
           }}
         />
       ),
@@ -260,29 +277,31 @@ export const LeaguePerformance = () => {
         color="textMid"
         className="my-8"
       />
-      {!!unassignedClinics?.length && !isNextSeasonManagement && (
-        <Alert
-          className="rounded-lg"
-          type="warning"
-          title="Some clinics are not assigned to a league!"
-          list={[
-            `Assign clinic(s) to a league: ${unassignedClinics
-              ?.map((clinic) => clinic.name)
-              .join(', ')}`,
-          ]}
-          listColor="textMid"
-          button={
-            <Button
-              className="rounded-2xl px-2"
-              type="filled"
-              color="secondary"
-              textColor="white"
-              text="Assign to league"
-              icon="PlusCircleIcon"
-              onClick={onAssignToLeague}
-            />
-          }
-        />
+      {!!unassignedClinics?.length && !isNextSeasonManagement && !loading && (
+        <div ref={alertRef}>
+          <Alert
+            className="rounded-lg"
+            type="warning"
+            title="Some clinics are not assigned to a league!"
+            list={[
+              `Assign clinic(s) to a league: ${unassignedClinics
+                ?.map((clinic) => clinic.name)
+                .join(', ')}`,
+            ]}
+            listColor="textMid"
+            button={
+              <Button
+                className="rounded-2xl px-2"
+                type="filled"
+                color="secondary"
+                textColor="white"
+                text="Assign to league"
+                icon="PlusCircleIcon"
+                onClick={onAssignToLeague}
+              />
+            }
+          />
+        </div>
       )}
       <div className="mt-8 rounded-2xl bg-white p-12">
         <Table
@@ -303,9 +322,13 @@ export const LeaguePerformance = () => {
             {
               type: 'search-dropdown',
               menuItemClassName: 'ml-20 w-11/12',
+              menuItemStyle: {
+                marginTop: alertRef?.current?.clientHeight + 160,
+              },
               placeholder: 'District',
               options: districtsFilterOptions,
               selectedOptions: districtFilter,
+              multiple: true,
               onChange: (selectedOptions) => setDistrictFilter(selectedOptions),
             },
           ]}
