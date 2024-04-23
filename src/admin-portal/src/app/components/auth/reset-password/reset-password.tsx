@@ -8,33 +8,33 @@ import {
 import { Button, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useHistory, useParams } from 'react-router-dom';
+import { useForm, useWatch } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
 import { PasswordInput } from '../../password-input/password-input';
 import { useAuth } from '../../../hooks/useAuth';
-
-interface RouteParams {
-  resetToken: string;
-  email: string;
-}
+import ROUTES from '../../../routes/app.routes-constants';
 
 export default function ResetPassword() {
   const { theme } = useTheme();
   const [resetLinkSent, setResetLinkSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { resetPassword } = useAuth();
-  const { resetToken } = useParams<RouteParams>();
-  const { email } = useParams<RouteParams>();
+  const urlParams = new URLSearchParams(window.location.search);
+  const email = urlParams.get('username');
+  const username = urlParams.get('username');
+  const resetToken = urlParams.get('token');
 
   const history = useHistory();
 
-  const { register, getValues, formState } = useForm({
+  const { register, getValues, formState, control } = useForm({
     resolver: yupResolver(resetPasswordSchema),
     defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
+
+  const { password } = useWatch({ control });
 
   //check password strength
   const formValues = getValues();
@@ -45,23 +45,25 @@ export default function ResetPassword() {
     if (isValid) {
       setIsLoading(true);
       const body: PasswordResetModel = {
-        username: _email,
+        username: _email || username,
         password: formValues.password,
         resetToken: resetToken,
       };
+
       const isLinkSent = await resetPassword(body, Config.authApi);
 
       if (isLinkSent) {
         setIsLoading(false);
+        if (username) {
+          history.push(ROUTES.ROOT_TEAM_LEAD);
+          return;
+        }
         history.push('/login');
       } else {
         setIsLoading(false);
-        // setDisplayError(true);
       }
 
-      setTimeout(() => {
-        // setDisplayError(false);
-      }, 5000);
+      setTimeout(() => {}, 5000);
     }
   };
 
@@ -149,7 +151,7 @@ export default function ResetPassword() {
                     label={'Password'}
                     nameProp={'password'}
                     sufficIconColor="black"
-                    value={formValues.password}
+                    value={password}
                     register={register}
                     strengthMeterVisible={true}
                     className="mb-9 "

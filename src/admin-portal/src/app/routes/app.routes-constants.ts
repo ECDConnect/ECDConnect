@@ -14,7 +14,7 @@ const ROUTES = {
   DOCUMENTS: '/documents',
   VIEW_USERS: '/users/view-user',
   PROFILE: '/profile',
-  RESET: '/reset/:resetToken',
+  RESET: '/reset',
   CLINICS: addPrefix('/clinics', {
     ALL_CLINICS: '/clinics',
     VIEW_CLINICS: '/view-clinics',
