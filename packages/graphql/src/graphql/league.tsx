@@ -126,6 +126,11 @@ export const GetLeague = gql`
         name
         leagueRanking
         pointsTotal
+        teamLeads {
+          id
+          firstName
+          surname
+        }
       }
     }
   }

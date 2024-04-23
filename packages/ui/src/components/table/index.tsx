@@ -56,7 +56,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
 
     const rowsWithKey = rows?.map((row, index) => ({
       ...row,
-      key: index,
+      key: row?.key ?? index,
       checked: false,
     }));
 

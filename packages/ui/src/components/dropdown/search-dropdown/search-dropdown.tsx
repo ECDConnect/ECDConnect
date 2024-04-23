@@ -27,6 +27,7 @@ export interface SearchDropDownProps<T> extends ComponentBaseProps {
   color?: Colours;
   bgColor?: Colours;
   menuItemClassName?: string;
+  menuItemStyle?: React.CSSProperties;
   displayMenuOverlay?: boolean;
   overlayTopOffset?: string;
   isFullWidth?: boolean;
@@ -47,6 +48,7 @@ export function SearchDropDown<T>({
   className,
   displayMenuOverlay,
   menuItemClassName,
+  menuItemStyle,
   overlayTopOffset,
   color = 'primary',
   bgColor = 'white',
@@ -197,6 +199,7 @@ export function SearchDropDown<T>({
                     menuItemClassName,
                     displayMenuOverlay ? 'absolute' : ''
                   )}
+                  style={{ ...menuItemStyle }}
                 >
                   {info && (
                     <div className={styles.infoWrapper}>

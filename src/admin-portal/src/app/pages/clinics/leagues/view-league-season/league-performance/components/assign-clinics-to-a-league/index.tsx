@@ -9,22 +9,24 @@ import { Clinic, AddClinicToLeague } from '@ecdlink/graphql';
 import { Alert, Button, Divider, Dropdown, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 
+type LeagueId = string;
+
+type AssignedClinics = { [clinicId: string]: LeagueId };
+
 export interface AssignClinicsToALeagueProps {
   unassignedClinics: Clinic[];
   leagues: PortalLeagueDto[];
   onClose: () => void;
+  onClinicAssigned?: (assignedClinics: AssignedClinics) => void;
 }
-
-type LeagueId = string;
 
 export const AssignClinicsToALeague = ({
   unassignedClinics,
   leagues,
   onClose,
+  onClinicAssigned,
 }: AssignClinicsToALeagueProps) => {
-  const [assignedClinics, setAssignedClinics] = useState<{
-    [clinicId: string]: LeagueId;
-  }>({});
+  const [assignedClinics, setAssignedClinics] = useState<AssignedClinics>({});
 
   const { setNotification } = useNotifications();
 
@@ -50,10 +52,13 @@ export const AssignClinicsToALeague = ({
   );
 
   const onChange = (clinicId: string, leagueId: string) => {
-    setAssignedClinics((prevState) => ({
-      ...prevState,
-      [clinicId]: leagueId,
-    }));
+    const updatedObject = { ...assignedClinics, [clinicId]: leagueId };
+    setAssignedClinics(updatedObject);
+    onClinicAssigned?.(updatedObject);
+    // setAssignedClinics((prevState) => ({
+    //   ...prevState,
+    //   [clinicId]: leagueId,
+    // }));
   };
 
   const onSave = async () => {

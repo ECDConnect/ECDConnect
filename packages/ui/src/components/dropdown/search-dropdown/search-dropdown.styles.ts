@@ -17,7 +17,7 @@ export const label = 'font-medium block text-base font-body text-textDark';
 export const overlay = (overlayTopOffset?: string) =>
   `absolute top-${
     overlayTopOffset || '177'
-  } z-20 inset-0 bg-gray-500 bg-opacity-75`;
+  } z-20 inset-0 bg-gray-500 bg-opacity-75 h-screen`;
 export const infoWrapper = 'px-4 py-3 border-b border-uiBg';
 export const getButtonStyles = (
   colour: Colours,
