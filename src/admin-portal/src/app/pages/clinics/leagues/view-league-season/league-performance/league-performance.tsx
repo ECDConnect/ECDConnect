@@ -52,7 +52,7 @@ export const LeaguePerformance = () => {
     .toISOString()
     .replace('Z', '');
 
-  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
+  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ false;
 
   const clinics = apolloClient.readQuery<{ allPortalClinics?: Clinic[] }>({
     query: GetAllPortalClinics,
@@ -259,7 +259,7 @@ export const LeaguePerformance = () => {
         color="textMid"
         className="my-8"
       />
-      {!!unassignedClinics?.length && (
+      {!!unassignedClinics?.length && !isNextSeasonManagement && (
         <Alert
           className="rounded-lg"
           type="warning"
