@@ -4,3 +4,7 @@ export const yesOrNoOptions = [
 ];
 
 export const numberInputInvalidChars = ['-', '+', 'e', '.', ','];
+
+export interface TeamMeetingsRouteState {
+  clinicId: string;
+}

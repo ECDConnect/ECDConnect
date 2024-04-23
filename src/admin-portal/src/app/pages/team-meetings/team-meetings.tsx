@@ -15,7 +15,13 @@ import { AddTeamMeetingReport } from './components/add-meeting-report/add-meetin
 import { ClinicMeetingReportDto, usePanel } from '@ecdlink/core';
 import { useUser } from '../../hooks/useUser';
 
-export const TeamMeetingsMainPage = () => {
+interface TeamMeetingsMainPageProps {
+  clinicId?: string;
+}
+
+export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
+  clinicId,
+}) => {
   const { user } = useUser();
   const panel = usePanel();
   const today = new Date();
@@ -56,7 +62,7 @@ export const TeamMeetingsMainPage = () => {
     { data: clinicMeetingData, refetch: refetchClinicMeetingData },
   ] = useLazyQuery(GetClinicMeetingForMonth, {
     variables: {
-      clinicId: selectedTabId,
+      clinicId: clinicId ?? selectedTabId,
     },
     fetchPolicy: 'cache-and-network',
   });
@@ -363,6 +369,7 @@ export const TeamMeetingsMainPage = () => {
         </div>
         <div>
           <ClinicsTeamLeadView
+            clinicId={clinicId}
             setSelectedTabId={setSelectedTabId}
             isFromTeamMeetings={true}
           />
