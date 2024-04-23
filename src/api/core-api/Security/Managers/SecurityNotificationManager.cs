@@ -64,7 +64,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
-            var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}{encodedToken}/{user.UserName}";
+            //var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}{encodedToken}?username={user.UserName}";
+            var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}?username={user.UserName}&token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
             string firstName = user.FirstName;
