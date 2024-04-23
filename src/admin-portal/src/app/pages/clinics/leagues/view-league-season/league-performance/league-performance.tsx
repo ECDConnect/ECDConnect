@@ -52,6 +52,7 @@ export const LeaguePerformance = () => {
     .toISOString()
     .replace('Z', '');
 
+  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
   const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ false;
 
   const clinics = apolloClient.readQuery<{ allPortalClinics?: Clinic[] }>({

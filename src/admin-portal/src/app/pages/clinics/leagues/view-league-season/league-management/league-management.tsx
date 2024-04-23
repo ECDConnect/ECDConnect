@@ -41,6 +41,9 @@ export const LeagueManagement = () => {
     fetchPolicy: 'cache-and-network',
   });
 
+  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
+  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
+
   const currentYear = new Date().getFullYear();
 
   const isEmptyState =
@@ -184,6 +187,8 @@ export const LeagueManagement = () => {
     subTitleStyle: 'text-sm text-textLight',
     onActionClick: () => onActionOptions(),
   };
+
+  if (!isNextSeasonManagement) return <></>;
 
   return (
     <>
