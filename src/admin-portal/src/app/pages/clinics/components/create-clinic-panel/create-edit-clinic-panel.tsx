@@ -359,7 +359,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       siteAddressId: props?.clinic?.siteAddressId || siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
       teamLead2Id:
-        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
+        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : null,
     };
     const response = await editClinictMutation({
       variables: {
