@@ -4,6 +4,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -48,11 +49,13 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly Guid? _applicationUserId;
 
         IPointsEngineService _pointsEngineService;
+        ContentManagementRepository _contentRepo;
 
         public ClinicService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             [Service] IPointsEngineService pointsEngineService,
+            [Service] ContentManagementRepository contentRepo,
             HierarchyEngine hierarchyEngine
             )
         {
@@ -76,6 +79,7 @@ namespace EcdLink.Api.CoreApi.Services
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _applicationUserId);
 
             _pointsEngineService = pointsEngineService;
+            _contentRepo = contentRepo;
 
         }
 
@@ -721,7 +725,8 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (clinicMeeting != null)
             {
-                return new PortalClinicMeetingModel(clinicMeeting);
+                var meetingTopic = GetCMSTopicForMonth(clinicMeeting.MeetingDate.ToString("MMMM yyyy"));
+                return new PortalClinicMeetingModel(clinicMeeting, meetingTopic);
             }
 
             return null;
@@ -730,13 +735,46 @@ namespace EcdLink.Api.CoreApi.Services
         public List<PortalClinicMeetingModel> GetAllClinicMeetings()
         {
             List<PortalClinicMeetingModel> records = new List<PortalClinicMeetingModel>();
-            var clinicMeetings = _clinicMeetingRepo.GetAll().Where(x => x.IsActive && x.MeetingDate.Year == DateTime.Now.Year).ToList();
+            var clinicMeetings = _clinicMeetingRepo
+                                .GetAll()
+                                .Where(x => x.IsActive && x.MeetingDate.Year == DateTime.Now.Year).ToList();
+
             foreach (var item in clinicMeetings)
             {
-                records.Add(new PortalClinicMeetingModel(item));
+                var meetingTopic = GetCMSTopicForMonth(item.MeetingDate.ToString("MMMM yyyy"));
+                records.Add(new PortalClinicMeetingModel(item, meetingTopic));
             }
 
             return records;
+        }
+
+        public MeetingTopic GetCMSTopicForMonth(string title)
+        {
+            Guid localeId = Guid.Parse("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            var result = _contentRepo.GetByValueKey("Topic", "title", title, localeId);
+
+            if (result.Count()  > 0)
+            {
+                var field = (IDictionary<string, object>)result.GetItemByIndex(0);
+                field.TryGetValue("title", out var titleValue);
+                field.TryGetValue("topicTitle", out var topicTitleValue);
+                field.TryGetValue("topicContent", out var topicContentValue);
+                field.TryGetValue("infoGraphic", out var infoGraphicValue);
+                field.TryGetValue("knowledgeContent", out var knowledgeContentValue);
+                field.TryGetValue("selfCareContent", out var selfCareContentValue);
+
+                return new MeetingTopic()
+                {
+                    Title = Convert.ToString(titleValue),
+                    TopicTitle = Convert.ToString(topicTitleValue),
+                    TopicContent = Convert.ToString(topicContentValue),
+                    InfoGraphic = Convert.ToString(infoGraphicValue),
+                    KnowledgeContent = Convert.ToString(knowledgeContentValue),
+                    SelfCareContent = Convert.ToString(selfCareContentValue)
+                };
+            }
+
+            return new MeetingTopic();
         }
 
         #endregion
