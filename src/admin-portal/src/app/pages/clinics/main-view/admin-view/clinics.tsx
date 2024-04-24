@@ -31,11 +31,11 @@ export function ClinicsAdminView() {
         },
         {
           name: 'Districts',
-          href: '/clinics/districts',
+          href: ROUTES.CLINICS.DISTRICTS,
         },
         {
           name: 'Sub-districts',
-          href: '/clinics/sub-districts',
+          href: ROUTES.CLINICS.SUB_DISTRICTS,
         },
       ];
     }
@@ -57,7 +57,13 @@ export function ClinicsAdminView() {
   useEffect(() => {
     // GO TO DEFAULT ROUTE
     async function init() {
-      history.push(navigation?.[0]?.href);
+      const isValidRoute = getNavigationItems()?.some(
+        (route) => route.href === location.pathname
+      );
+
+      if (!isValidRoute) {
+        history.push(navigation?.[0]?.href);
+      }
     }
 
     init()?.catch(console.error);
