@@ -54,7 +54,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
         >
           {badgeImage}
           <Typography
-            className={`relative z-10 ${isShare ? 'mb-4' : ''}`}
+            className={`relative z-0 ${isShare ? 'mb-4' : ''}`}
             color={badgeTextColour}
             type="body"
             text={String(pointsEarned)}

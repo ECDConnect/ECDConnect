@@ -83,9 +83,10 @@ export const Step2 = ({
       availableClinics?.filter(
         (clinic) =>
           clinic.name.toLowerCase().includes(search.toLowerCase()) ||
-          clinic.id.toLowerCase().includes(search.toLowerCase())
+          clinic.id.toLowerCase().includes(search.toLowerCase()) ||
+          selectedRows.some((row) => row.id === clinic.id)
       ) ?? [],
-    [availableClinics, search]
+    [availableClinics, search, selectedRows]
   );
 
   const transformClinic = (clinic: SimpleClinicDto, index: number) => ({
