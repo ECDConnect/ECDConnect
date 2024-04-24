@@ -27,8 +27,10 @@ export interface SearchDropDownProps<T> extends ComponentBaseProps {
   color?: Colours;
   bgColor?: Colours;
   menuItemClassName?: string;
+  menuItemStyle?: React.CSSProperties;
   displayMenuOverlay?: boolean;
   overlayTopOffset?: string;
+  isFullWidth?: boolean;
   onChange?: (item: SearchDropDownOption<T>[]) => void;
 }
 
@@ -46,9 +48,11 @@ export function SearchDropDown<T>({
   className,
   displayMenuOverlay,
   menuItemClassName,
+  menuItemStyle,
   overlayTopOffset,
   color = 'primary',
   bgColor = 'white',
+  isFullWidth = true,
 }: SearchDropDownProps<T>) {
   const [selectedLabel, setSelectedLabel] = useState('');
   const [touched, setTouched] = useState(false);
@@ -142,7 +146,7 @@ export function SearchDropDown<T>({
   return (
     <div className={className}>
       {label && <label className={styles.label}>{label}</label>}
-      <Menu as="div" className={styles.menu}>
+      <Menu as="div" className={isFullWidth ? 'w-full' : ''}>
         {({ open }) => (
           <>
             <Menu.Button
@@ -195,6 +199,7 @@ export function SearchDropDown<T>({
                     menuItemClassName,
                     displayMenuOverlay ? 'absolute' : ''
                   )}
+                  style={{ ...menuItemStyle }}
                 >
                   {info && (
                     <div className={styles.infoWrapper}>

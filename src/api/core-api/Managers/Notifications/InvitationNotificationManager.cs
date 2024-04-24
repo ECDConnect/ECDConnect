@@ -4,6 +4,8 @@ using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Security;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
 using System.Threading.Tasks;
@@ -65,7 +67,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
-            var invitationUrl = $"{_options.Value.AdminSignup}{encodedToken}";
+            var invitationUrl = $"{_options.Value.TeamLeadSignup}{encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
 
@@ -79,11 +81,13 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
               .SendMessageAsync();
         }
 
-        public async Task SendSMSAsync(ApplicationUser user, string token)
+        public async Task SendSMSAsync(ApplicationUserManager userManager, ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
-            var invitationUrl = $"{_options.Value.AdminSignup}/{encodedToken}";
+            var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
+
+            var invitationUrl = userIsTL ? $"{_options.Value.TeamLeadSignup}/{encodedToken}" : $"{_options.Value.AdminSignup}/{encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
             string firstName = user.FirstName;

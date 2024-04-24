@@ -1,5 +1,5 @@
 import { HealthCareWorkerSummaryForPeriodDto } from '@ecdlink/core';
-import { Typography } from '@ecdlink/ui';
+import { Divider, Typography } from '@ecdlink/ui';
 import { ExclamationCircleIcon, ExclamationIcon } from '@heroicons/react/solid';
 
 interface HealthCareWorkerIssuesProps {
@@ -10,13 +10,13 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
   summaryData,
 }) => {
   return (
-    <div className="flex flex-row">
-      <div className="border-l-errorMain  border-errorMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+    <div className="mb-6 flex flex-col gap-6 lg:flex-row">
+      <div className="border-l-errorMain  border-errorMain w-full rounded-2xl border-2  border-l-8 bg-white lg:w-1/2">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           {/* Start main area*/}
-          <div className="flex flex-row border-b-4 border-dashed pb-0">
+          <div className="flex flex-row items-center gap-2">
             <ExclamationCircleIcon
-              className="h-12 w-12 pb-2"
+              className="h-12 w-12"
               style={{
                 color: '#ED1414',
               }}
@@ -29,8 +29,9 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
               color={'textMid'}
             />
           </div>
+          <Divider dividerType="dashed" className="my-4" />
           <div className="flex flex-col justify-evenly pt-4 text-current">
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2">
               <Typography
                 type={'h1'}
                 hasMarkup
@@ -39,14 +40,12 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
                 color={'errorMain'}
               />
               <Typography
-                type={'help'}
-                hasMarkup
-                fontSize="18"
+                type={'body'}
                 text={'visits missed'}
                 color={'textMid'}
               />
             </div>
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2">
               <Typography
                 type={'h1'}
                 hasMarkup
@@ -55,14 +54,12 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
                 color={'errorMain'}
               />
               <Typography
-                type={'help'}
-                hasMarkup
-                fontSize="18"
+                type={'body'}
                 text={'pregnant moms have urgent issues'}
                 color={'textMid'}
               />
             </div>
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2">
               <Typography
                 type={'h1'}
                 hasMarkup
@@ -73,9 +70,7 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
                 color={'errorMain'}
               />
               <Typography
-                type={'help'}
-                hasMarkup
-                fontSize="18"
+                type={'body'}
                 text={'caregivers & children have urgent issues'}
                 color={'textMid'}
               />
@@ -84,10 +79,10 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
           {/* End main area */}
         </div>
       </div>
-      <div className="border-l-alertMain  border-alertMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+      <div className="border-l-alertMain  border-alertMain w-full rounded-2xl border-2  border-l-8 bg-white lg:w-1/2">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           {/* Start main area*/}
-          <div className="flex flex-row border-b-4 border-dashed pb-0">
+          <div className="flex flex-row items-center gap-2">
             <ExclamationIcon className="text-alertMain h-12 w-12" />
             <Typography
               type={'h2'}
@@ -97,8 +92,9 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
               color={'textMid'}
             />
           </div>
+          <Divider dividerType="dashed" className="my-4" />
           <div className="flex flex-col justify-evenly pt-4 text-current">
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2">
               <Typography
                 type={'h1'}
                 hasMarkup
@@ -107,14 +103,12 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
                 color={'alertMain'}
               />
               <Typography
-                type={'help'}
-                hasMarkup
-                fontSize="18"
+                type={'body'}
                 text={'visits overdue'}
                 color={'textMid'}
               />
             </div>
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2">
               <Typography
                 type={'h1'}
                 hasMarkup
@@ -123,14 +117,12 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
                 color={'alertMain'}
               />
               <Typography
-                type={'help'}
-                hasMarkup
-                fontSize="18"
+                type={'body'}
                 text={'pregnant moms have other issues'}
                 color={'textMid'}
               />
             </div>
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2">
               <Typography
                 type={'h1'}
                 hasMarkup
@@ -139,9 +131,7 @@ export const HealthCareWorkerIssues: React.FC<HealthCareWorkerIssuesProps> = ({
                 color={'alertMain'}
               />
               <Typography
-                type={'help'}
-                hasMarkup
-                fontSize="18"
+                type={'body'}
                 text={'caregivers & children have other issues'}
                 color={'textMid'}
               />

@@ -1,35 +1,88 @@
 import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { renderIcon } from '../../utils';
+import { classNames, renderIcon } from '../../utils';
 import Typography from '../typography/typography';
+import { useState } from 'react';
+import { ChevronDownIcon } from '@heroicons/react/solid';
+import { Colours } from '../../models';
 
-interface DatePickerProps extends ReactDatePickerProps {
+interface BaseDatePickerProps
+  extends Omit<ReactDatePickerProps, 'selectsRange' | 'onChange'> {
   label?: string;
   hint?: string;
   hideCalendarIcon?: boolean;
+  showChevronIcon?: boolean;
+  chevronIconColour?: Colours;
+  colour?: Colours;
+  textColour?: Colours;
+  isFullWidth?: boolean;
 }
+
+export interface DatePickerSingleProps extends BaseDatePickerProps {
+  selectsRange?: false;
+  onChange: (
+    date: Date | null,
+    event: React.SyntheticEvent<any> | undefined
+  ) => void;
+}
+
+export interface DatePickerRangeProps extends BaseDatePickerProps {
+  selectsRange: true;
+  onChange: (
+    date: [Date | null, Date | null],
+    event: React.SyntheticEvent<any> | undefined
+  ) => void;
+}
+
+export type DatePickerProps = DatePickerSingleProps | DatePickerRangeProps;
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   label,
   hint,
   hideCalendarIcon,
+  colour = 'uiBg',
+  textColour = 'textDark',
+  className,
+  showChevronIcon,
+  isFullWidth = true,
+  chevronIconColour = 'white',
   ...props
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
       {label && <label className="text-textDark font-semibold">{label}</label>}
       {hint && <Typography type="help" color="textMid" text={hint} />}
-      <div className="bg-uiBg relative z-20 mt-2 w-full rounded-md p-1">
+      <div
+        className={classNames(
+          className,
+          `bg-${colour} relative ${
+            !!label || !!hint ? 'mt-2' : ''
+          } rounded-md ${isFullWidth ? 'w-full' : ''}`
+        )}
+      >
         <ReactDatePicker
-          className="text-textDark relative z-10 w-full rounded-md border-0 bg-transparent"
-          wrapperClassName="w-full"
           {...props}
+          className={`text-${textColour} relative w-full rounded-md border-0 bg-transparent ${
+            showChevronIcon ? 'pr-7' : ''
+          }`}
+          wrapperClassName="w-full"
+          onCalendarOpen={() => setIsOpen(true)}
+          onCalendarClose={() => setIsOpen(false)}
         />
         {!hideCalendarIcon &&
           renderIcon(
             'CalendarIcon',
             'absolute z-0 text-primary top-3 right-4 w-6 h-6'
           )}
+        {showChevronIcon && (
+          <ChevronDownIcon
+            className={`absolute right-2 top-1/2 z-0 h-6 w-6 transform text-${chevronIconColour} ${
+              isOpen ? 'rotate-180' : ''
+            } -translate-y-1/2`}
+          />
+        )}
       </div>
     </>
   );

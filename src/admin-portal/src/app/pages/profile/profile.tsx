@@ -7,13 +7,25 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 
-import { Button, ProfileAvatar, Typography } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
 import {
+  ActionModal,
+  Alert,
+  Button,
+  Dialog,
+  DialogPosition,
+  FormInput,
+  ProfileAvatar,
+  SA_CELL_REGEX,
+  Typography,
+} from '@ecdlink/ui';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import {
+  GetTeamLead,
   GetUserById,
   ResetUserPassword,
+  SendTeamLeadVerifyPhoneNumberSMS,
+  UpdateTeamLeadMessage,
   UpdateUser,
   UserModelInput,
 } from '@ecdlink/graphql';
@@ -22,35 +34,53 @@ import { useUser } from '../../hooks/useUser';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { PasswordInput } from '../../components/password-input/password-input';
-import { AdminTypes } from '../users/sub-pages/application-admins/applications-admins.types';
 import { SuperAdminProfile } from './components/superAdminProfile';
+import { useUserRole } from '../../hooks/useUserRole';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
+  phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
+  whatsAppNumber: yup
+    .string()
+    .matches(SA_CELL_REGEX, 'Phone number is not valid'),
+});
+
+export const tlSchema = yup.object().shape({
+  firstName: yup.string().required('First name is Required'),
+  surname: yup.string().required('Surname is Required'),
+  phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
 });
 
 export function Profile(props: any) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const history = useHistory();
   const [resetUserPassword] = useMutation(ResetUserPassword);
+  const [resendSms] = useMutation(SendTeamLeadVerifyPhoneNumberSMS);
   const user = useUser();
   const { setNotification } = useNotifications();
+  const [handleChangePassword, setHandleChangePassword] = useState(false);
+  const [handleChangePhoneNumber, setHandleChangePhoneNumber] = useState(false);
+  const [
+    handleChangePasswordAndPhoneNumber,
+    setHandleChangePasswordAndPhoneNumber,
+  ] = useState(false);
 
-  const { register, formState, getValues, handleSubmit, setValue } = useForm({
-    resolver: yupResolver(userSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onChange',
-  });
+  const { isAdministrator, isSuperAdmin, isTeamLead } = useUserRole();
+
+  const { register, formState, getValues, handleSubmit, setValue, control } =
+    useForm({
+      resolver: yupResolver(isTeamLead ? tlSchema : userSchema),
+      defaultValues: initialUserDetailsValues,
+      mode: 'onChange',
+    });
 
   const { errors, isValid } = formState;
+
   const {
     register: passwordRegister,
     formState: passwordFormState,
     getValues: passwordGetValues,
-    watch,
+    setValue: passwordSetValue,
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
@@ -64,22 +94,40 @@ export function Profile(props: any) {
     variables: {
       userId: user.user?.id,
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
-  const isAdministrator = userData?.userById?.roles?.find(
-    (item) => item?.name === AdminTypes.Administrator
-  );
-  const isSuperAdmin = userData?.userById?.roles?.find(
-    (item) => item?.name === AdminTypes.SuperAdmin
-  );
+  const [updateWelcomeMessage] = useMutation(UpdateTeamLeadMessage);
+
+  const [getTeamLeadData, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
+    variables: {
+      teamLeadId: '',
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  useEffect(() => {
+    if (isTeamLead && userData?.userById?.id) {
+      getTeamLeadData({
+        variables: {
+          teamLeadId: userData?.userById?.id!,
+        },
+      });
+    }
+  }, [getTeamLeadData, isTeamLead, userData?.userById?.id]);
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
+  const { phoneNumber } = useWatch({ control });
   const [avatarFile, setAvatarFile] = useState(null);
+  const [teamLeadWelcomeMessage, setTeamLeadWelcomeMessage] = useState('');
 
-  const saveUser = async (passwordChange: boolean, profileImage?: string) => {
+  const saveUser = async (
+    passwordChange: boolean,
+    profileImage?: string,
+    resendSms?: boolean
+  ) => {
     const userInputModel: UserModelInput = {
       firstName: userDetailForm?.firstName,
       surname: userDetailForm?.surname,
@@ -88,6 +136,9 @@ export function Profile(props: any) {
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
       profileImageUrl: profileImage ?? userData.userById?.profileImageUrl,
+      phoneNumber: resendSms
+        ? userData?.userById?.pendingPhoneNumber
+        : phoneNumber,
     };
 
     await updateUser({
@@ -101,6 +152,7 @@ export function Profile(props: any) {
           title: 'Successfully Updated User!',
           variant: NOTIFICATION.SUCCESS,
         });
+        getUserById();
       })
       .catch((error) => {
         setNotification({
@@ -116,23 +168,63 @@ export function Profile(props: any) {
           newPassword: passwordForm.password,
         },
       });
+      passwordSetValue('password', '', {
+        shouldValidate: true,
+      });
     }
-    refetch();
+
+    if (
+      isTeamLead &&
+      teamLeadWelcomeMessage &&
+      teamLeadWelcomeMessage !==
+        teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
+    ) {
+      updateWelcomeMessage({
+        variables: {
+          teamLeadUserId: userData?.userById?.id,
+          welcomeMessage: teamLeadWelcomeMessage,
+        },
+      });
+      getTeamLeadData({
+        variables: {
+          teamLeadId: userData?.userById?.id!,
+        },
+      });
+    }
   };
 
   const onSave = async () => {
     let passwordChange = false;
     let internalIsPasswordValid = true;
 
+    if (
+      passwordForm.password.length > 0 &&
+      phoneNumber !== user.user?.phoneNumber
+    ) {
+      passwordChange = true;
+      internalIsPasswordValid = isPasswordValid;
+      setHandleChangePasswordAndPhoneNumber(true);
+      return;
+    }
+
     if (passwordForm.password.length > 0) {
       passwordChange = true;
       internalIsPasswordValid = isPasswordValid;
+      setHandleChangePassword(true);
+      return;
+    }
+
+    if (phoneNumber !== user.user?.phoneNumber) {
+      setHandleChangePhoneNumber(true);
+      return;
     }
 
     if (avatarFile) {
       await saveUser(passwordChange, avatarFile);
+      refetch();
     } else {
       await saveUser(passwordChange);
+      refetch();
     }
   };
 
@@ -143,6 +235,14 @@ export function Profile(props: any) {
       },
     });
   }, [user]);
+
+  useEffect(() => {
+    if (teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage) {
+      setTeamLeadWelcomeMessage(
+        teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
+      );
+    }
+  }, [teamLeadData?.GetAllTeamLead]);
 
   useEffect(() => {
     if (user) {
@@ -157,6 +257,12 @@ export function Profile(props: any) {
       setValue('email', user.user?.email, {
         shouldValidate: true,
       });
+
+      setValue('phoneNumber', user.user?.phoneNumber, {
+        shouldValidate: true,
+      });
+
+      setValue('whatsAppNumber', user.user?.whatsAppNumber, {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -185,18 +291,68 @@ export function Profile(props: any) {
     fileInput.click();
   };
 
+  const handleResendSms = useCallback(async () => {
+    await resendSms({
+      variables: {
+        userId: userData?.userById?.id,
+        pendingPhoneNumber: userData?.userById?.pendingPhoneNumber,
+      },
+    })
+      .then(() => {
+        setNotification({
+          title: 'Successfully resend SMS!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((error) => {
+        setNotification({
+          title: 'Failed to resend SMS!',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+
+    getUserById();
+  }, [
+    getUserById,
+    resendSms,
+    setNotification,
+    userData?.userById?.id,
+    userData?.userById?.pendingPhoneNumber,
+  ]);
+
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
         <div className="m-10 rounded-2xl bg-white  lg:min-w-0 lg:flex-1">
-          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+          <div className="h-full px-2">
             {/* Start main area*/}
 
             <div className="flex h-full " style={{ minHeight: '30rem' }}>
-              <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
+              <div className="w-full p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
+                {userData?.userById?.pendingPhoneNumber && (
+                  <Alert
+                    className="mb-12 rounded-md"
+                    title={`Verify your cellphone number! We have sent you an SMS to ${userData?.userById?.pendingPhoneNumber}. Please verify the cellphone number by clicking the link.`}
+                    list={[
+                      `If you’ve made a mistake, please edit your cellphone number below.`,
+                    ]}
+                    type="warning"
+                    button={
+                      <Button
+                        className="my-2 rounded-2xl p-4"
+                        type="filled"
+                        color="secondary"
+                        textColor="white"
+                        text="Resend SMS"
+                        icon="MailIcon"
+                        onClick={() => handleResendSms()}
+                      />
+                    }
+                  />
+                )}
                 {!isSuperAdmin && (
                   <div
-                    className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6  "
+                    className="flex w-full flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6"
                     style={{ width: '50rem' }}
                   >
                     <ProfileAvatar
@@ -235,7 +391,7 @@ export function Profile(props: any) {
                       <SuperAdminProfile user={user} />
                     </div>
                   )}
-                  {!isAdministrator && !isSuperAdmin && (
+                  {!isAdministrator && !isSuperAdmin && !isTeamLead && (
                     <div>
                       <FormField
                         label={'Email address *'}
@@ -244,6 +400,28 @@ export function Profile(props: any) {
                         disabled
                         error={errors.email?.message}
                       />
+                    </div>
+                  )}
+
+                  {isTeamLead && (
+                    <div>
+                      <div className="w-full pt-10">
+                        <FormField
+                          label={'Cellphone number *'}
+                          nameProp={'phoneNumber'}
+                          register={register}
+                          error={errors.phoneNumber?.message}
+                        />
+                      </div>
+                      <div className="mt-2 w-full pt-10">
+                        <FormField
+                          label={'WhatsApp number'}
+                          subLabel="Optional. If your WhatsApp number is different from your cellphone number, you can add it below. This will help CHWs to connect with you through WhatsApp, if needed."
+                          nameProp={'whatsAppNumber'}
+                          register={register}
+                          error={errors.whatsappNumber?.message}
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -258,6 +436,23 @@ export function Profile(props: any) {
                       className="mb-9 "
                     />
                   </div>
+                  {isTeamLead && (
+                    <div>
+                      <FormInput
+                        className="mt-2 w-full pt-10"
+                        isAdminPortalField={true}
+                        label="In 4 or 5 words, share something about yourself with your CHWs!"
+                        value={teamLeadWelcomeMessage}
+                        onChange={(e) =>
+                          setTeamLeadWelcomeMessage(e?.target?.value)
+                        }
+                        textInputType="input"
+                        placeholder={'Add a text...'}
+                        maxCharacters={125}
+                        maxLength={125}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -280,6 +475,111 @@ export function Profile(props: any) {
             ></Typography>
           </Button>
         </div>
+        <Dialog visible={handleChangePassword} position={DialogPosition.Middle}>
+          <ActionModal
+            className="z-80"
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Are you sure you want to change your password?`}
+            detailText="You will need to use the new password to log in."
+            actionButtons={[
+              {
+                text: 'Yes, change password',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: async () => {
+                  avatarFile
+                    ? await saveUser(true, avatarFile)
+                    : await saveUser(true);
+                  setHandleChangePassword(false);
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No, cancel',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => setHandleChangePassword(false),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
+        <Dialog
+          visible={handleChangePhoneNumber}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Are you sure you want to edit your cellphone number?`}
+            detailText="You will need to verify the new cellphone number."
+            actionButtons={[
+              {
+                text: 'Yes, save new cellphone number',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: async () => {
+                  avatarFile
+                    ? await saveUser(false, avatarFile)
+                    : await saveUser(false);
+                  setHandleChangePhoneNumber(false);
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No, cancel',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setHandleChangePhoneNumber(false),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
+        <Dialog
+          visible={handleChangePasswordAndPhoneNumber}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            className="z-80"
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Are you sure you want to change your password and cellphone number?`}
+            detailText="You will need to verify the new cellphone number and use the new password to log in."
+            actionButtons={[
+              {
+                text: 'Yes, change login details',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: async () => {
+                  avatarFile
+                    ? await saveUser(true, avatarFile)
+                    : await saveUser(true);
+                  setHandleChangePasswordAndPhoneNumber(false);
+                },
+                leadingIcon: 'CheckCircleIcon',
+              },
+              {
+                text: 'No, cancel',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setHandleChangePasswordAndPhoneNumber(false),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </form>
     </div>
   );

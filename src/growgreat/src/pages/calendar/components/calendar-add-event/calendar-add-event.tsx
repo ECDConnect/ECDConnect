@@ -131,8 +131,12 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     useState<boolean>(false);
   const [hasChangesOnEvent, setHasChangesOnEvent] = useState<boolean>(false);
   const currentDate = new Date();
-  const startDate = !event.start ? undefined : new Date(event.start);
-  const endDate = !event.end ? undefined : new Date(event.end);
+  const defaultStartDate = new Date();
+  defaultStartDate.setHours(!event.allDay ? 12 : 0, 0, 0);
+  const defaultEndDate = new Date();
+  defaultEndDate.setHours(!event.allDay ? 12 : 0, 30, 0);
+  const startDate = !event.start ? defaultStartDate : new Date(event.start);
+  const endDate = !event.end ? defaultEndDate : new Date(event.end);
   const minDate = !!eventProps?.minDate
     ? new Date(eventProps.minDate)
     : new Date(
@@ -431,7 +435,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         onClose={() => exitUpdateEvent()}
         displayOffline={!isOnline}
       >
-        <div className={'mb-24 px-4 pt-4'}>
+        <div className={'mb-32 px-4 pt-4'}>
           <FormInput<CalendarAddEventFormModel>
             className="mb-4"
             label="Name your event"

@@ -148,11 +148,7 @@ class Referral {
                 orderDate
               }
             }
-            backReferral {
-              id
-              comment
-            }
-            backReferral {
+            visitBackReferral {
               id
               comment
             }
@@ -244,7 +240,7 @@ class Referral {
               visitSection
               question
             }
-            backReferral {
+            visitBackReferral {
               id
               comment
             }

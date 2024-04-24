@@ -59,12 +59,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public bool IsActive { get; set; }
         public bool IsRegistered { get; set; }
         public List<Guid> ClinicIds { get; set; }
+        public string WelcomeMessage { get; set; }
         public PortalUserTLModel(TeamLead entity)
         {
             Id = entity.Id;
             UserId = entity.UserId;
             IsRegistered = entity.IsRegistered;
-            ClinicIds = entity.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList();
+            ClinicIds = entity.Clinics != null ? entity.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList() : new List<Guid>();
+            WelcomeMessage = entity.WelcomeMessage;
         }
     }
 

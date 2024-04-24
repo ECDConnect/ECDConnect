@@ -37,3 +37,6 @@ export * from './dto/Reports';
 export * from './dto/Visit';
 export * from './dto/Statements';
 export * from './dto/MessageLog';
+export * from './dto/Referrals';
+export * from './dto/Clinics';
+export * from './dto/League';

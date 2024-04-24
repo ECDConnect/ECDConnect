@@ -8,6 +8,7 @@ using HotChocolate;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
 {
@@ -178,6 +179,65 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             });
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, true, null, infantUserId);
+        }
+
+        public async Task<bool> SendGGPortalCHWMaternalDistressNotificationMother(
+            [Service] ApplicationUserManager userManager,
+            [Service] INotificationService notificationService, string hcwUserId, Mother mother)
+        {
+            var userToSend = userManager.FindByIdAsync(hcwUserId).Result;
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>()
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "CHWFirstName",
+                    ReplacementValue = userToSend.FirstName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWFullName",
+                    ReplacementValue = userToSend.FullName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "PregnantMomFullName",
+                    ReplacementValue = mother.User.FullName
+                }
+            };
+
+            // Valid for 21 days after notification triggered.
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWMaternalDistressMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(21), false, true, null, mother.UserId.ToString());
+        }
+
+        public async Task<bool> SendGGPortalCHWMaternalDistressNotificationInfant(
+           [Service] ApplicationUserManager userManager,
+           [Service] INotificationService notificationService, 
+           string hcwUserId, Infant infant)
+        {
+            var userToSend = userManager.FindByIdAsync(hcwUserId).Result;
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>()
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "CHWFirstName",
+                    ReplacementValue = userToSend.FirstName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWFullName",
+                    ReplacementValue = userToSend.FullName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CaregiverFullName",
+                    ReplacementValue = infant.Caregiver.FullName
+                }
+            };
+            
+            // Valid for 21 days after notification triggered.
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWMaternalDistressInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(21), false, true, null, infant.UserId.ToString());
         }
 
     }

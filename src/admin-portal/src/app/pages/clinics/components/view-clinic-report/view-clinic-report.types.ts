@@ -14,3 +14,9 @@ export enum Tier {
   Silver = 'Silver',
   Gold = 'Gold',
 }
+
+export interface ViewClinicReportProps {
+  // TODO: replace any with the real type
+  clinic?: any;
+  isFromTeamMeetings?: boolean;
+}

@@ -354,7 +354,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var motherOverDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date <= DateTime.Today).Count();
 
             var motherDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
-            var childDueVisits = visits.Where(x => x.MotherId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+            var childDueVisits = visits.Where(x => x.InfantId.HasValue && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
 
             var lastCompletedVisit = visits.Where(x => x.Attended).OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
 

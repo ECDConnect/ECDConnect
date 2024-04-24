@@ -2,10 +2,42 @@ import addPrefix from './withParentPrefix';
 
 const ROUTES = {
   ROOT: '/',
+  FORGOT_PASSWORD: '/forgot-password',
+  ROOT_TEAM_LEAD: '/team-lead',
+  TEAM_LEAD_REGISTER: '/team-lead-register/:resetToken',
+  TEAM_LEAD_RESET_PASSWORD: '/team-lead-forgot-password',
+  VERIFY_PHONE_NUMBER: '/verify-cellphone-number',
+  TEAM_MEETINGS: '/team-meetings',
+  NOTIFICATIONS_VIEW: '/notifications-view',
   LOGIN: '/login',
   LOGOUT: '/logout',
   UPLOAD_USERS: '/upload-users',
+  DOCUMENTS: '/documents',
   VIEW_USERS: '/users/view-user',
+  PROFILE: '/profile',
+  RESET: '/reset',
+  CLINICS: addPrefix('/clinics', {
+    ALL_CLINICS: '/clinics',
+    VIEW_CLINICS: '/view-clinics',
+    LEAGUES: addPrefix('/leagues', {
+      LEAGUE_MANAGEMENT: addPrefix('/league-management ', {
+        ADD_LEAGUES: '/add-leagues',
+        // LEAGUE_DETAILS: '/league-details/:leagueId',
+      }),
+      VIEW_LEAGUE_SEASON: addPrefix('/view-season', {
+        ADD_LEAGUES: '/add-leagues',
+        LEAGUE_DETAILS: '/league-details/:leagueId',
+      }),
+    }),
+  }),
+  REFERRALS: addPrefix('/referrals', {
+    VIEW_REFERRAL_DETAIL: addPrefix('/view-referral-detail/:referralType', {
+      EDIT_BACK_REFERRAL: '/edit-back-referral/:visitDataStatusId',
+    }),
+  }),
+  USERS: addPrefix('/users', {
+    HEALTH_CARE_WORKERS: '/health-care-worker',
+  }),
   CLASSROOM: addPrefix('/classroom', {
     UPDATE_FEE: '/preschool-fee',
   }),

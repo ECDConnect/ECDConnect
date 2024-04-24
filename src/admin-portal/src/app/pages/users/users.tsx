@@ -1,15 +1,20 @@
 import { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
 import { TenantContext } from '../../utils/constants';
+import ROUTES from '../../routes/app.routes-constants';
+import { useUserRole } from '../../hooks/useUserRole';
 
 export function Users() {
+  const location = useLocation();
+
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
+  const { isTeamLead, isAdministrator } = useUserRole();
 
   const getNavigationItems = () => {
     if (
@@ -17,6 +22,15 @@ export function Users() {
       data.tenantContext &&
       data.tenantContext.applicationName === TenantContext.GrowGreat
     ) {
+      if (isTeamLead && !isAdministrator) {
+        return [
+          {
+            name: 'CHWs',
+            href: ROUTES.USERS.HEALTH_CARE_WORKERS,
+          },
+        ];
+      }
+
       return [
         {
           name: 'All Roles',
@@ -24,7 +38,7 @@ export function Users() {
         },
         {
           name: 'CHWs',
-          href: '/users/health-care-worker',
+          href: ROUTES.USERS.HEALTH_CARE_WORKERS,
         },
         {
           name: 'Team Leads',
@@ -61,17 +75,16 @@ export function Users() {
 
     // GO TO DEFAULT ROUTE
     async function init() {
-      history.push(navigation[0].href);
+      history.push(navigation?.[0]?.href);
     }
 
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const userSelected = localStorage.getItem('selectedUser');
 
   return (
     <div className="">
-      <div className="flex justify-center bg-white ">
+      <div className="flex bg-white">
         {window.location.pathname !== '/users/view-user' &&
           navigation.map((item) => (
             <div
@@ -89,10 +102,14 @@ export function Users() {
           ))}
       </div>
 
-      <div className=" lg:min-w-0 lg:flex-1">
+      <div className=" bg-adminPortalBg rounded-xl rounded-t-none lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div
-            className="bg-adminPortalBg relative h-full rounded-xl p-12"
+            className={` relative h-full  ${
+              location?.pathname?.includes(ROUTES.USERS.HEALTH_CARE_WORKERS)
+                ? ''
+                : 'p-12'
+            }  `}
             style={{ minHeight: '36rem' }}
           >
             <UserRoutes />

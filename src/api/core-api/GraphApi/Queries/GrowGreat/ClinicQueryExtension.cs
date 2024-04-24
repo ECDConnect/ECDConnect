@@ -6,6 +6,8 @@ using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
+using ECDLink.DataAccessLayer.Entities.Clinics;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -25,11 +27,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     {
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Clinic> GetAllPortalClinics([Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory)
+        public List<Clinic> GetAllPortalClinics(
+            [Service] IHttpContextAccessor contextAccessor,
+            ApplicationUserManager userManager,
+            IGenericRepositoryFactory repoFactory)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
-            return clinicRepo.GetAll().Where(x => x.IsActive)
+            var user = contextAccessor.HttpContext.GetUser();
+
+            // Check if team lead or admin
+            var currentUser = userManager.FindByIdAsync(user.Id).Result;
+            var isUserAdmin = userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR).Result;
+
+            var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: user.Id);
+            return clinicRepo.GetAll()
+                .Where(x => 
+                    x.IsActive
+                    && (isUserAdmin || x.TeamLeads.Any(y => y.TeamLead.UserId == user.Id)))
                 .Include(x => x.TeamLeads.Where(x => x.IsActive))
                 .Include(x => x.SiteAddress)
                 .Include(x => x.SubDistrict)

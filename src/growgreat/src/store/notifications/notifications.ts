@@ -43,6 +43,21 @@ const notificationsState = createSlice({
         ...newNotifications.map((n) => n.message.reference)
       );
     },
+    addNotification: (
+      state: NotificationsState,
+      action: PayloadAction<Message>
+    ) => {
+      const notification = state.notifications.find(
+        (n) => n.message.reference === action.payload.reference
+      );
+      if (!notification) {
+        state.notifications.push({
+          isNew: true,
+          message: action.payload,
+        });
+        state.notificationReferences.push(action.payload.reference);
+      }
+    },
     markAllNotificationsRead: (state) => {
       const notificationsCopy = [...state.notifications].map((x) => ({
         isNew: false,

@@ -3,6 +3,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
+  Divider,
   Dropdown,
   PasswordInput,
   SA_CELL_REGEX,
@@ -34,6 +35,7 @@ import {
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useUserRole } from '../../../../hooks/useUserRole';
 
 export interface PersonalInfoProps {
   userData: UserDto;
@@ -75,6 +77,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const [hasClinicChange, setHasClinicChange] = useState(false);
   const [handleClinicChange, setHandleClinicChange] = useState(false);
   const [idType, setIdType] = useState<string>('idNumber');
+
+  const { isTeamLead: isTeamLeadRole } = useUserRole();
 
   const chwSchema = yup.object().shape({
     idNumber:
@@ -267,12 +271,11 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   };
 
   return (
-    <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+    <div className="border-l-primary border-primary mb-6 rounded-2xl border-2  border-l-8 bg-white lg:min-w-0 lg:flex-1">
       <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
         {/* Start main area*/}
-        <h3 className="border-b-4 border-dashed pb-2 text-xl ">
-          Personal information
-        </h3>
+        <Typography type="h3" text="Personal information" color="textMid" />
+        <Divider dividerType="dashed" className="my-4" />
         <form key={'formKey'} className="space-y-3 divide-y divide-gray-200">
           {editActive ? (
             <>
@@ -450,56 +453,29 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               )}
             </>
           ) : userData && !isAdministrator ? (
-            <div>
-              <div className="grid grid-cols-3 justify-start gap-y-8 p-4 text-current">
-                <div className="flex items-center">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-x-12">
+                <div className="flex gap-2">
+                  <Typography type="h4" color="textMid" text={'ID:'} />
                   <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
-                    color="textMid"
-                    text={'ID:'}
-                    className="px-4"
-                  />
-                  <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
+                    type="body"
                     color="textMid"
                     text={userData?.idNumber || chwData?.user?.idNumber}
                   />
                 </div>
-                <div className="flex items-center">
+                <div className="flex gap-2">
+                  <Typography type="h4" color="textMid" text={'Cellphone:'} />
                   <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
-                    color="textMid"
-                    text={'Cellphone:'}
-                    className="px-4"
-                  />
-                  <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
+                    type="body"
                     color="textMid"
                     text={userData?.phoneNumber || chwData?.user?.phoneNumber}
                   />
                 </div>
                 {userData?.whatsAppNumber && (
-                  <div className="flex items-center">
+                  <div className="flex gap-2">
+                    <Typography type="h4" color="textMid" text={'WhatsApp:'} />
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'WhatsApp:'}
-                      className="px-4"
-                    />
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
                       text={
                         userData?.whatsAppNumber ||
@@ -510,59 +486,34 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 )}
               </div>
               {hcwClinic && (
-                <div className="ml-4 flex w-11/12 items-center justify-between">
-                  <div className="flex w-4/12 items-center">
+                <div className="flex flex-wrap gap-x-12">
+                  <div className="flex gap-2">
+                    <Typography type="h4" color="textMid" text={'Clinic:'} />
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'Clinic:'}
-                      className="px-4"
-                    />
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
                       text={hcwClinic?.name}
                     />
                   </div>
-                  <div className="flex w-full items-center gap-1">
+                  <div className="flex flex-wrap gap-x-2">
+                    <Typography type="h4" color="textMid" text={'Location:'} />
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
-                      text={'Location:'}
-                      className="pl-4"
+                      text={`${hcwClinic?.subDistrict?.name}, `}
                     />
-                    <div className="flex w-10/12 items-center gap-1">
-                      <Typography
-                        type="h2"
-                        hasMarkup
-                        fontSize="18"
-                        color="textMid"
-                        text={`${hcwClinic?.subDistrict?.name}, `}
-                      />
-                      <Typography
-                        type="h2"
-                        hasMarkup
-                        fontSize="18"
-                        color="textMid"
-                        text={`${hcwClinic?.subDistrict?.district?.name}, `}
-                      />
-                      <Typography
-                        type="h2"
-                        hasMarkup
-                        fontSize="18"
-                        color="textMid"
-                        text={
-                          hcwClinic?.subDistrict?.district?.province
-                            ?.description
-                        }
-                      />
-                    </div>
+                    <Typography
+                      type="body"
+                      color="textMid"
+                      text={`${hcwClinic?.subDistrict?.district?.name}, `}
+                    />
+                    <Typography
+                      type="body"
+                      color="textMid"
+                      text={
+                        hcwClinic?.subDistrict?.district?.province?.description
+                      }
+                    />
                   </div>
                 </div>
               )}
@@ -575,7 +526,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       fontSize="18"
                       color="textMid"
                       text={'Clinic(s):'}
-                      className="px-4"
                     />
                     {tlClinics?.map((item) => {
                       return (
@@ -641,19 +591,21 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       </div>
 
       <div className="flex justify-end p-4">
-        {isNotLockedOut(userData ?? chwData?.user) && !isAdministrator && (
-          <button
-            onClick={() => {
-              setEditActive(!editActive);
-            }}
-            id="dropdownHoverButton"
-            className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-            type="button"
-          >
-            {' '}
-            {editActive ? 'Close' : 'Edit'}
-          </button>
-        )}
+        {isNotLockedOut(userData ?? chwData?.user) &&
+          !isAdministrator &&
+          !isTeamLeadRole && (
+            <button
+              onClick={() => {
+                setEditActive(!editActive);
+              }}
+              id="dropdownHoverButton"
+              className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+              type="button"
+            >
+              {' '}
+              {editActive ? 'Close' : 'Edit'}
+            </button>
+          )}
       </div>
       <Dialog
         className="absolute left-40 bottom-80 w-6/12"

@@ -26,6 +26,7 @@ type SearchHeaderProps<T> = {
   heading?: string;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
   id?: string;
   onClickItem?: (item: any) => void;
 };
@@ -39,6 +40,7 @@ export const SearchHeader = <T extends {}>({
   isTextSearchActive,
   onSearchButtonClick,
   className,
+  contentClassName,
   heading,
   onBack,
   id,
@@ -97,7 +99,10 @@ export const SearchHeader = <T extends {}>({
 
             {!alternativeSearchItemRender && searchItems.length > 0 && (
               <StackedList
-                className={styles.dialogContentStackedList}
+                className={classNames(
+                  styles.dialogContentStackedList,
+                  contentClassName
+                )}
                 listItems={searchItems as any}
                 type={'UserAlertList'}
                 onScroll={onScroll}

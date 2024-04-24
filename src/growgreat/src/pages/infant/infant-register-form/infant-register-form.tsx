@@ -66,6 +66,9 @@ import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PregnantProfileRouteState } from '@/pages/mom/pregnant-profile/index.types';
 import { CLIENT_TABS } from '../../client/client-dashboard/class-dashboard';
+import { Message } from '@models/messages/messages';
+import { NotificationPriority } from '../../../services/NotificationService/NotificationService.types';
+import { notificationActions } from '@/store/notifications';
 
 const BANNER_HEIGHT = 64;
 
@@ -365,6 +368,29 @@ export const InfantRegisterForm: React.FC = () => {
           await appDispatch(
             documentThunkActions.createDocument(documentInputModel)
           ).unwrap();
+        } else {
+          const notification: Message = {
+            reference: `${childUserId}-docs`,
+            title: `Upload ${infantDetails?.firstName}'s Road to Health Book`,
+            message: `Add a picture of page ii of ${infantDetails?.firstName}'s Road to Health Book. Refer ${caregiverInput?.firstName} to the clinic if they do not have
+          ${infantDetails?.firstName}'s document.`,
+            dateCreated: new Date().toISOString(),
+            priority: NotificationPriority.higher,
+            viewOnDashboard: true,
+            area: 'child-registration',
+            icon: 'IdentificationIcon',
+            color: 'primary',
+            actionText: 'Upload image of RTH',
+            viewType: 'Both',
+            cta: 'RoadToHealth',
+            routeConfig: {
+              route: `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${childUserId}`,
+              params: {
+                isRoadToHealthBook: true,
+              },
+            },
+          };
+          appDispatch(notificationActions.addNotification(notification));
         }
       }
     },

@@ -6,6 +6,7 @@ import {
   ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
+  LanguageDto,
   NOTIFICATION,
   useDialog,
   useNotifications,
@@ -54,6 +55,7 @@ export interface ContentViewProps {
   contentView?: ContentManagementView;
   postNatalType?: ContentTypeDto;
   selectedTab?: number;
+  languages: LanguageDto[];
 }
 
 export interface RequirementProps {
@@ -76,6 +78,7 @@ export default function ContentEdit({
   contentView,
   postNatalType,
   selectedTab,
+  languages,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -196,6 +199,9 @@ export default function ContentEdit({
   const [smallLargeGroupsSkills, setSmallLargeGroupsSkills] = useState([]);
   const [dangerSignsDisableInputs, setDangerSignsDisableInputs] =
     useState(false);
+  const selectedLanguage = languages?.find(
+    (item) => item?.id === selectedLanguageId
+  );
 
   const disableButton =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
@@ -437,7 +443,7 @@ export default function ContentEdit({
     });
 
     savedContent();
-
+    setSearchValue('');
     setLoading(false);
 
     if (cancelEdit) {
@@ -447,7 +453,7 @@ export default function ContentEdit({
 
   useEffect(() => {
     if (
-      template?.title === TemplateTypenames.DanngerSigns &&
+      template?.title === TemplateTypenames.DangerSigns &&
       template?.fields?.[0]?.selectedLanguageId === defaultLanguageId
     ) {
       setDangerSignsDisableInputs(true);
@@ -556,9 +562,17 @@ export default function ContentEdit({
                 className="mt-2 mb-2 rounded-md"
                 title="Make sure you do the following:"
                 list={[
-                  `Upload the correct language version (English)`,
+                  `Upload the correct language version (${selectedLanguage?.description})`,
                   `Restrict the video size to standard smartphone resolution (300dpi) and make sure videos are 360px wide, 640px high at 15 frames per second. If the video is too large users will not be able to load the page.`,
                 ]}
+                type="warning"
+              />
+            )}
+
+            {Number(postNatalType?.id) === ContentTypeEnum?.NatalGraphic && (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                title={`Make sure you upload the correct language version (${selectedLanguage?.description}).`}
                 type="warning"
               />
             )}

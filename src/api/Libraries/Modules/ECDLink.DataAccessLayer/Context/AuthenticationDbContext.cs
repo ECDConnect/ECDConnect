@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
@@ -139,6 +140,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitGrowthDataDay> VisitGrowthDataDay { get; set; }
         public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
         public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
+        public DbSet<ReferralType> ReferralTypes { get; set; }
+        public DbSet<VisitDataStatusReferralType> VisitDataStatusReferralTypes { get; set; }        
 
         // Licenses
         public DbSet<LicenseType> LicenseType { get; set; }
@@ -163,11 +166,15 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ClubActivityUploadType> ClubActivityUploadType { get; set; }
 
         // Clinics, Districts, SubDistricts
-        public DbSet<District> District { get; set; }
-        public DbSet<SubDistrict> SubDistrict { get; set; }
-        public DbSet<ClinicLeague> ClinicLeague { get; set; }
-        public DbSet<ClinicTeamLead> ClinicTeamLead { get; set; }
+        public DbSet<Clinic> Clinics { get; set; }
+        public DbSet<District> Districts { get; set; }
+        public DbSet<SubDistrict> SubDistricts { get; set; }
+        public DbSet<ClinicLeague> ClinicLeagues { get; set; }
+        public DbSet<ClinicTeamLead> ClinicTeamLeads { get; set; }
         public DbSet<BreastFeedingClub> BreastFeedingClubs { get; set; }
+        public DbSet<ClinicMeeting> ClinicMeetings { get; set; }
+        public DbSet<ClinicMeetingParticipantInField> ClinicMeetingParticipantInField { get; set; }
+        public DbSet<ClinicMeetingParticipantOptedOut> ClinicMeetingParticipantOptedOut { get; set; }
 
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }
@@ -258,6 +265,11 @@ namespace ECDLink.DataAccessLayer.Context
             {
                 x.HasKey(e => new { e.GrantId, e.UserId });
             });
+            builder.Entity<VisitDataStatus>()
+                .HasOne(e => e.VisitBackReferral)
+                .WithOne(e => e.VisitDataStatus)
+                .HasForeignKey<VisitBackReferral>(e => e.VisitDataStatusId)
+                .IsRequired();
         }
     }
 }

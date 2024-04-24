@@ -5,6 +5,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -523,7 +524,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
                         continue;
                     }
-                    await notificationManager.SendInvitationAsync(user, token);
+                    await notificationManager.SendTeamLeadInvitationAsync(user, token);
                 }
                 catch (Exception ex)
                 {

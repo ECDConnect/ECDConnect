@@ -1,7 +1,6 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;

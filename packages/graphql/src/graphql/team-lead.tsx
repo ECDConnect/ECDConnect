@@ -135,6 +135,10 @@ export const GetTeamLeadSummary = gql`
       totalChildren
       totalMeetingReportsSubmitted
       totalInFieldVisitsCompleted
+      clinics {
+        id
+        name
+      }
       __typename
     }
   }
@@ -144,11 +148,11 @@ export const GetTeamLead = gql`
   query GetAllTeamLeadById(
     $teamLeadId: UUID
     $fetchImage: Boolean = true
-    $fetchClinic: Boolean = true
     $fetchRoles: Boolean = true
   ) {
     GetAllTeamLead(where: { id: { eq: $teamLeadId } }) {
       id
+      welcomeMessage
       user {
         id
         isActive
@@ -170,6 +174,94 @@ export const GetTeamLead = gql`
           name
         }
       }
+    }
+  }
+`;
+
+export const UpdateTeamLeadMessage = gql`
+  mutation UpdateTeamLeadMessage(
+    $teamLeadUserId: UUID!
+    $welcomeMessage: String!
+  ) {
+    updateTeamLeadMessage(
+      teamLeadUserId: $teamLeadUserId
+      welcomeMessage: $welcomeMessage
+    ) {
+      id
+      welcomeMessage
+    }
+  }
+`;
+
+export const GetClinicMeetingForMonth = gql`
+  query GetClinicMeetingForMonth($clinicId: UUID!) {
+    clinicMeetingForMonth(clinicId: $clinicId) {
+      id
+      meetingDate
+      teamLeadName
+      positiveStory
+      reportingIssue
+      totalSupportVisits
+      participantsOptedOut {
+        hCWId
+        hCWName
+      }
+      participantsInField {
+        hCWId
+        hCWName
+      }
+    }
+  }
+`;
+
+export const AddClinicMeeting = gql`
+  mutation AddClinicMeeting($input: AddClinicMeetingInputModelInput) {
+    addClinicMeeting(input: $input) {
+      id
+      meetingDate
+      positiveStory
+      reportingIssue
+      totalSupportVisits
+      teamLead {
+        user {
+          id
+          fullName
+        }
+      }
+      participantsOptedOut {
+        healthCareWorkerId
+      }
+      participantsInField {
+        healthCareWorkerId
+      }
+    }
+  }
+`;
+
+export const GetHealthCareWorkersForClinicId = gql`
+  query GetHealthCareWorkersForClinicId($clinicId: UUID!) {
+    healthCareWorkersForClinicId(clinicId: $clinicId) {
+      id
+      user {
+        id
+        fullName
+      }
+    }
+  }
+`;
+
+export const SendTeamLeadVerifyPhoneNumberSMS = gql`
+  mutation SendTeamLeadVerifyPhoneNumberSMS(
+    $userId: UUID!
+    $pendingPhoneNumber: String
+  ) {
+    sendTeamLeadVerifyPhoneNumberSMS(
+      userId: $userId
+      pendingPhoneNumber: $pendingPhoneNumber
+    ) {
+      id
+      pendingPhoneNumber
+      phoneNumber
     }
   }
 `;

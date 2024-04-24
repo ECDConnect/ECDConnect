@@ -207,5 +207,6 @@ namespace ECDLink.Security.Api
 
             return new OkObjectResult(ApplicationUserHelper.GetObscureMessagePrefenceValue(user));
         }
+
     }
 }

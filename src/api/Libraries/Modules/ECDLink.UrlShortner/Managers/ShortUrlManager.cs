@@ -128,7 +128,7 @@ namespace ECDLink.UrlShortner.Managers
 
         public void RemoveShortUrl(Guid userId, string messageType)
         {
-            var messages = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType));
+            var messages = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) & x.IsActive);
 
             if (messages.Any())
             {

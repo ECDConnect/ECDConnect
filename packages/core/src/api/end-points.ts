@@ -9,4 +9,5 @@ export const APIs = {
   sendAuthCode: `api/invitation/send-auth-code`,
   refreshJwtToken: `api/authentication/refresh-token`,
   onlineCheck: `api/authentication/online-check`,
+  verifyCellPhoneNumber: 'api/authentication/verify-cellphone-number',
 };

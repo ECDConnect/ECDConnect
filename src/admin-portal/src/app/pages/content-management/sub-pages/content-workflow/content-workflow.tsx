@@ -319,6 +319,7 @@ export default function ContentWorkflow({
                             contentView={contentView}
                             postNatalType={postNatalType}
                             selectedTab={selectedTab}
+                            languages={languages}
                           />
                         </div>
                       </div>

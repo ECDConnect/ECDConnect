@@ -17,6 +17,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string AdminPortalInvitation = "admin-portal-invitation";
         public const string TeamLeadInvitation = "team-lead-portal-invitation";
         public const string ForgotPasswordPortal = "forgot-password-portal";
+        public const string VerifyCellphoneNumber = "verify-cellphone-number";
 
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";
@@ -125,6 +126,15 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
         public const string GGPointsTeamPlacementBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
+        // GG portal notifications
+        public const string GGPortalCHWNotCompletedVisitIn2Weeks = "gg-portal-chw-not-completed-visit-in-2-weeks";
+        public const string GGPortalTLMissingMonthlyReport = "gg-portal-tl-missing-monthly-report";
+        public const string GGPortalClinicGoldTierPointsTeam = "gg-portal-clinic-points-gold-tier-team";
+        public const string GGPortalClinicSilverTierPointsTeam = "gg-portal-clinic-points-silver-tier-team";
+        public const string GGPortalClinicBronzeTierPointsTeam = "gg-portal-clinic-points-bronze-tier-team";
+        public const string GGPortalCHWMaternalDistressInfant = "gg-portal-chw-maternal-distress-infant";
+        public const string GGPortalCHWMaternalDistressMother = "gg-portal-chw-maternal-distress-mother";
+        public const string GGPortalCHWMissingMonthlyPoints = "gg-portal-chw-missing-monthly-points";
 
         //Bulk messaging
         public const string GenericMessage = "generic-message";
@@ -132,5 +142,9 @@ namespace ECDLink.Abstractrions.Constants
         //SMS messaging
         public const string Offline30Days = "30days-offline";
         public const string Offline21Days = "21days-offline";
+
+        // GG portal notifications
+        public const string LeagueSetupUnassignedClinics = "league-setup-unassigned-clinics";
+        public const string UnassignedClinics = "unassigned-clinics";
     }
 }

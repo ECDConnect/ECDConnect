@@ -10,9 +10,11 @@ import { useUser } from '../../../../hooks/useUser';
 import { SearchIcon } from '@heroicons/react/solid';
 import { CreateClinicPanel } from '../../components/create-clinic-panel/create-edit-clinic-panel';
 import { useHistory } from 'react-router';
+import { useUserRole } from '../../../../hooks/useUserRole';
 
 export default function ClinicsSubPage() {
   const { hasPermission } = useUser();
+  const { isAdministrator, isSuperAdmin } = useUserRole();
   const { data, refetch } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
@@ -234,15 +236,16 @@ export default function ClinicsSubPage() {
               </div>
             </div>
             <div className="mt-3 sm:mt-0 sm:ml-4">
-              {hasPermission(PermissionEnum.create_user) && (
-                <button
-                  onClick={displayPanel}
-                  type="button"
-                  className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                >
-                  + Add a Clinic
-                </button>
-              )}
+              {hasPermission(PermissionEnum.create_user) &&
+                (isAdministrator || isSuperAdmin) && (
+                  <button
+                    onClick={displayPanel}
+                    type="button"
+                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  >
+                    + Add a Clinic
+                  </button>
+                )}
             </div>
           </div>
 
