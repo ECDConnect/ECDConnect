@@ -1676,7 +1676,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var pointsTotalForYear = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal);
 
-                var targetPerc = Math.Round((double)pointsTotalForYear / (double)(maxPoints * clinic.UserIds.Count()) * 100);
+                var targetPerc = clinic.UserIds.Count() == 0 ? 0 : Math.Round((double)pointsTotalForYear / (double)(maxPoints * clinic.UserIds.Count()) * 100);
                 
                 var targetPercentageColor = MetricsColorEnum.Error.ToString();
                 if (targetPerc > 50 && targetPerc <= 74)
