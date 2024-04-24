@@ -544,6 +544,7 @@ export default function HealthCareWorkers() {
     (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
       (item) => ({
         ...item,
+        key: item?.id,
         displayColumnIdPassportEmail:
           item?.user?.userName ?? item?.idNumber ?? item?.user?.email ?? '-',
         fullName: `${item?.user?.firstName} ${item?.user?.surname}`,

@@ -11,7 +11,7 @@ import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neut
 
 import ROUTES from '../../../../../../routes/app.routes-constants';
 import { PortalLeagueDto, getCommunityQuarterDescription } from '@ecdlink/core';
-import { endOfMonth, startOfMonth } from 'date-fns';
+import { endOfMonth, startOfMonth, sub } from 'date-fns';
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GetLeague, QueryLeagueArgs } from '@ecdlink/graphql';
@@ -41,7 +41,7 @@ export const LeagueDetails = () => {
     fetchPolicy: 'cache-and-network',
     variables: {
       startDate,
-      endDate,
+      endDate: sub(endOfMonth(endDate), { days: 1 }),
       leagueId,
     } as QueryLeagueArgs,
     skip: !startDate || !endDate,
@@ -105,6 +105,7 @@ export const LeagueDetails = () => {
           )}
         </div>
         <DatePicker
+          showMonthYearPicker
           selectsRange
           selected={startDate}
           startDate={startDate}
@@ -116,9 +117,9 @@ export const LeagueDetails = () => {
           showChevronIcon
           hideCalendarIcon
           textColour="white"
-          className="w-60 rounded-xl"
+          className="z-10 w-60 rounded-xl"
           isFullWidth={false}
-          dateFormat={'d MMM yyyy'}
+          dateFormat={'MMM yyyy'}
         />
       </div>
 

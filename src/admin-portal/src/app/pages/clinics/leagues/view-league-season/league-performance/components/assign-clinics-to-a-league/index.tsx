@@ -55,10 +55,6 @@ export const AssignClinicsToALeague = ({
     const updatedObject = { ...assignedClinics, [clinicId]: leagueId };
     setAssignedClinics(updatedObject);
     onClinicAssigned?.(updatedObject);
-    // setAssignedClinics((prevState) => ({
-    //   ...prevState,
-    //   [clinicId]: leagueId,
-    // }));
   };
 
   const onSave = async () => {
