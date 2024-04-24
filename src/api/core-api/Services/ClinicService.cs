@@ -254,7 +254,7 @@ namespace EcdLink.Api.CoreApi.Services
             // IF the percentage is greater than 100 %, show 100 %
             var momsMax = 50 * 12 * hcwUserIds.Count;
             var momsPoints = userActivityPoints.Where(x => x.PointsActivityId == momsActivity.Id).Sum(x => x.PointsTotal);
-            var momsTargetPerc = Math.Round((double)momsPoints / (double)momsMax * 100);
+            var momsTargetPerc = Double.IsNaN(momsPoints) ? 0 : Math.Round((double)momsPoints / (double)momsMax * 100);
             var momsTargetPercColor = MetricsColorEnum.Error.ToString();
             if (momsTargetPerc > 50 && momsTargetPerc <= 74)
             {
@@ -283,7 +283,7 @@ namespace EcdLink.Api.CoreApi.Services
             // IF the percentage is greater than 100 %, show 100 %
             var childMax = 100 * 12 * hcwUserIds.Count;
             var childPoints = userActivityPoints.Where(x => x.PointsActivityId == childrenActivity.Id).Sum(x => x.PointsTotal);
-            var childTargetPerc = Math.Round((double)childPoints / (double)childMax * 100);
+            var childTargetPerc = Double.IsNaN(childPoints) ? 0 : Math.Round((double)childPoints / (double)childMax * 100);
             var childTargetPercColor = MetricsColorEnum.Error.ToString();
 
             if (childTargetPerc > 50 && childTargetPerc <= 74)
