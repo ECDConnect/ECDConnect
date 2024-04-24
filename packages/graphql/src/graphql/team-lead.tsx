@@ -223,8 +223,8 @@ export const GetClinicMeetingForMonth = gql`
 `;
 
 export const GetAllClinicMeetings = gql`
-query GetAllClinicMeetings() {
-  allClinicMeetings() {
+  query GetAllClinicMeetings {
+    allClinicMeetings {
       id
       meetingDate
       teamLeadId
@@ -235,24 +235,25 @@ query GetAllClinicMeetings() {
       clinicId
       clinicName
       dateSubmitted
-      participantsOptedOut{
-          hCWId
-          hCWName
+      participantsOptedOut {
+        hCWId
+        hCWName
       }
-      participantsInField{
-          hCWId
-          hCWName
+      participantsInField {
+        hCWId
+        hCWName
       }
       meetingTopic {
-          title
-          topicTitle
-          topicContent
-          infoGraphic
-          knowledgeContent
-          selfCareContent
+        title
+        topicTitle
+        topicContent
+        infoGraphic
+        knowledgeContent
+        selfCareContent
       }
+    }
   }
-}`;
+`;
 
 export const AddClinicMeeting = gql`
   mutation AddClinicMeeting($input: AddClinicMeetingInputModelInput) {
