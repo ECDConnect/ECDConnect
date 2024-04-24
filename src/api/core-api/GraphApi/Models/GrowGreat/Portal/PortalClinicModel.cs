@@ -21,12 +21,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public int MaxPointsTotal { get; set; }
         public double MomsTargetPerc { get; set; }
         public string MomsTargetPercColor { get; set; }
-        public double MomsTopLeagueTeamPerc { get; set; }
-        public double MomsRankingPerc { get; set; }
+
+        public string MomsClinicHigherThan50Perc { get; set; }
+        public double MomsClinicLowerThan50Perc { get; set; }
+        public double MomsTeamsBottomPerc { get; set; }
+        public double MomsTeamsTopPerc { get; set; }
+        public double MomsTopTeamPerc { get; set; }
+
         public double ChildrenTargetPerc { get; set; }
         public string ChildrenTargetPercColor { get; set; }
-        public double ChildrenTopLeagueTeamPerc { get; set; }
-        public double ChildrenRankingPerc { get; set; }
+        public string ChildrenClinicHigherThan50Perc { get; set; }
+        public double ChildrenClinicLowerThan50Perc { get; set; }
+        public double ChildrenTeamsBottomPerc { get; set; }
+        public double ChildrenTeamsTopPerc { get; set; }
+        public double ChildrenTopTeamPerc { get; set; }
+
     }
 
     public class ClinicVisitReportModel

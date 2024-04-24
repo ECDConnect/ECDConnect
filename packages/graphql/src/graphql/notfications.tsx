@@ -1,0 +1,42 @@
+import { gql } from '@apollo/client';
+
+export const GetAllNotifications = gql`
+  query allNotifications($userId: String) {
+    allNotifications(userId: $userId) {
+      id
+      fromUserId
+      messageProtocol
+      message
+      messageTemplateType
+      subject
+      sentByUserId
+      from
+      id
+      relatedToUserId
+      messageDate
+      messageEndDate
+      readDate
+      status
+      cTA
+      cTAText
+      ordering
+      messageTemplate {
+        id
+        ordering
+        templateType
+        subject
+        message
+        cTA
+        cTAText
+        typeCode
+      }
+      action
+    }
+  }
+`;
+
+export const MarkAsReadNotification = gql`
+  mutation MarkAsReadNotification($notificationId: String) {
+    markAsReadNotification(notificationId: $notificationId)
+  }
+`;

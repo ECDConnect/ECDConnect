@@ -169,38 +169,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static
                     IsSystemValue = true,
                 },
 
-                // Send Grid
-                new T
-                {
-                    Id = Guid.NewGuid(),
-                    Grouping = SettingGroups.Notifications.Email.SendGrid.SendGridGrouping,
-                    FullPath = SettingGroups.Notifications.Email.SendGrid.User,
-                    Name = SettingGroupHelper.GetSettingName(SettingGroups.Notifications.Email.SendGrid.User),
-                    Value = "",
-                    IsActive = false,
-                    IsSystemValue = true,
-                },
-                new T
-                {
-                    Id = Guid.NewGuid(),
-                    Grouping = SettingGroups.Notifications.Email.SendGrid.SendGridGrouping,
-                    FullPath = SettingGroups.Notifications.Email.SendGrid.Key,
-                    Name = SettingGroupHelper.GetSettingName(SettingGroups.Notifications.Email.SendGrid.Key),
-                    Value = "",
-                    IsActive = false,
-                    IsSystemValue = true,
-                },
-                new T
-                {
-                    Id = Guid.NewGuid(),
-                    Grouping = SettingGroups.Notifications.Email.SendGrid.SendGridGrouping,
-                    FullPath = SettingGroups.Notifications.Email.SendGrid.DefaultEmail,
-                    Name = SettingGroupHelper.GetSettingName(SettingGroups.Notifications.Email.SendGrid.DefaultEmail),
-                    Value = "",
-                    IsActive = false,
-                    IsSystemValue = true,
-                },
-
                 // RapidApi 
                 new T
                 {

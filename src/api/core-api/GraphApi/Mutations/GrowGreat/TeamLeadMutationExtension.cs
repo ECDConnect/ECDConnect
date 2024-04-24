@@ -1,7 +1,10 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -13,6 +16,8 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,6 +48,70 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             });
 
             return new PortalUserTLModel(teamLead);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public TeamLead UpdateTeamLeadMessage(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid teamLeadUserId,
+            string welcomeMessage)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: applicationUserId);
+
+            var teamLead = teamLeadRepo.GetByUserId(teamLeadUserId);
+            if (teamLead != null)
+            {
+                teamLead.WelcomeMessage = welcomeMessage;
+                teamLead.UpdatedDate = DateTime.Now;
+                teamLead.UpdatedBy = applicationUserId.ToString();
+                return teamLeadRepo.Update(teamLead);
+            }
+            return null;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public async Task<ApplicationUser> SendTeamLeadVerifyPhoneNumberSMS(
+            ApplicationUserManager userManager,
+            [Service] SecurityNotificationManager securityNotificationManager,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] ILogger<UserMutationExtension> logger,
+            Guid userId,
+            string pendingPhoneNumber)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            var userPhoneNumberBeforeChange = user.PhoneNumber;
+
+            // save pending number to phone number
+            user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, pendingPhoneNumber));
+            user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PendingPhoneNumber, pendingPhoneNumber)); ;
+            user.PhoneNumberConfirmed = false;
+            var updatedUser = await userManager.UpdateAsync(user);
+
+            try
+            {
+                if (updatedUser.Succeeded)
+                {
+                    // send sms
+                    var apiUrl = new Uri("https://" + TenantExecutionContext.Tenant.AdminSiteAddress.ToString());
+                    await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
+                }
+
+                // revert phone number to old one
+                user.PhoneNumber = userPhoneNumberBeforeChange;
+                await userManager.UpdateAsync(user);
+            }
+            catch (Exception exception)
+            {
+                logger?.LogError("Could not send cellphone number verification for change of user cellphone number.", new { userId = userId, exception });
+            }
+            
+            return user;
+        }
+        private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
+        {
+            return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]

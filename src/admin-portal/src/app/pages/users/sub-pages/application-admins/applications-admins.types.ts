@@ -3,6 +3,7 @@ export enum AdminTypes {
   Administrator = 'Administrator',
   ContentManager = 'ContentManager',
   DesignManager = 'DesignManager',
+  TeamLead = 'Team Lead',
 }
 
 export enum Status {

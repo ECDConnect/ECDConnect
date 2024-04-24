@@ -26,7 +26,10 @@ export const SendInvite: React.FC<SendInviteProps> = ({
   const { setNotification } = useNotifications();
 
   const isAdminUser = userData?.roles?.some(
-    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
+    (role: any) =>
+      role.name === 'Administrator' ||
+      role.name === 'Super Admin' ||
+      role.name === 'Team Lead'
   );
 
   const sendInvite = async () => {
@@ -69,7 +72,7 @@ export const SendInvite: React.FC<SendInviteProps> = ({
 
   return (
     <Button
-      className={'mt-3 w-4/12 rounded-2xl'}
+      className={'w-full rounded-2xl lg:w-52'}
       type="filled"
       // isLoading={isLoading}
       color="secondary"

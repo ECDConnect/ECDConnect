@@ -4,24 +4,20 @@ import {
   Divider,
   LoadingSpinner,
   Typography,
+  RoundIcon,
 } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
+import { replaceBraces } from '@ecdlink/core';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
-import {
-  Fragment,
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { replaceBraces } from '@ecdlink/core';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { visitThunkActions } from '@/store/visit';
 import { useSelector } from 'react-redux';
 import { getHealthPromotionSelector } from '@/store/visit/visit.selectors';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { LanguageCode } from '@/i18n/types';
 
 export const HealthPromotion = ({
   section,
@@ -29,14 +25,30 @@ export const HealthPromotion = ({
   subTitle,
   client,
   onClose,
+  sectionTitle,
 }: {
   title: string;
   subTitle?: string;
+  sectionTitle?: string;
   section: string;
   client?: string;
   onClose: () => void;
 }) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [healthPromotionList, setHealthPromotionList] = useState(
+    useSelector(getHealthPromotionSelector)
+  );
+
+  const healthPromotionItem = healthPromotionList?.find(
+    (item) => item?.section === section
+  );
+
+  const availableLanguages: LanguageCode[] =
+    healthPromotionItem?.availableLanguages
+      ? healthPromotionItem.availableLanguages?.map((item) => {
+          return item?.locale as LanguageCode;
+        })
+      : [language.locale as LanguageCode];
 
   const { isOnline } = useOnlineStatus();
 
@@ -47,79 +59,40 @@ export const HealthPromotion = ({
     VisitActions.GET_HEALTH_PROMOTION
   );
 
-  const healthPromotions = useSelector(getHealthPromotionSelector);
-
-  const formattedHealthPromotion = useMemo(() => {
-    const healthPromotion = healthPromotions?.find(
-      (item) => item?.section === section
+  const renderText = (text: string) => {
+    return (
+      <div className="flex gap-2">
+        <RoundIcon
+          size={{ h: '9', w: '9' }}
+          icon="ChatAlt2Icon"
+          backgroundColor="infoMain"
+          iconColor="white"
+        />
+        <Typography
+          type="markdown"
+          align="left"
+          weight="normal"
+          text={replaceBraces(text, client || '')}
+          className="text-infoDark"
+        />
+        <Divider dividerType="dashed" className="my-2" />
+      </div>
     );
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(
-      healthPromotion?.description || '',
-      'text/html'
-    );
-    const items = doc.querySelectorAll('li');
-    const headerItems = doc.querySelectorAll('p');
-
-    const itemStrings = Array.from(items).map((item) => item.outerHTML);
-    const headerStrings = Array.from(headerItems).map((item) => item.outerHTML);
-
-    const formattedHeader = headerStrings.reduce(
-      (accumulator: string[] | undefined, current) => {
-        if (!accumulator?.some((item) => item?.includes(current))) {
-          accumulator?.push(current);
-        }
-        return accumulator;
-      },
-      []
-    ) as string[];
-
-    const formattedDescription = itemStrings.reduce(
-      (accumulator: string[] | undefined, current) => {
-        if (!accumulator?.some((item) => item?.includes(current))) {
-          accumulator?.push(current);
-        }
-        return accumulator;
-      },
-      []
-    ) as string[];
-
-    return {
-      ...healthPromotion,
-      description: formattedDescription,
-      header: formattedHeader,
-    };
-  }, [healthPromotions, section]);
+  };
 
   const getContent = useCallback(async () => {
     if (!isOnline) return;
-    await appDispatch(
+    const newHealthPromtionList = await appDispatch(
       visitThunkActions.getHealthPromotion({
         section,
         locale: language.locale,
+        title: sectionTitle,
       })
     ).unwrap();
-  }, [appDispatch, isOnline, language.locale, section]);
-
-  const renderHeader = useMemo(() => {
-    if (!!formattedHealthPromotion?.header?.length) {
-      return formattedHealthPromotion?.header?.map((item) => (
-        <Fragment key={item}>
-          <div className="flex items-start gap-2">
-            <ul className="list-none">
-              <Typography
-                type="markdown"
-                className="text-infoDark font-medium"
-                color="infoDark"
-                text={replaceBraces(item, client || '')}
-              />
-            </ul>
-          </div>
-        </Fragment>
-      ));
+    if (newHealthPromtionList) {
+      setHealthPromotionList([newHealthPromtionList]);
     }
-  }, [client, formattedHealthPromotion?.header]);
+  }, [appDispatch, isOnline, language.locale, section, sectionTitle]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -132,37 +105,58 @@ export const HealthPromotion = ({
       );
     }
 
-    if (!!formattedHealthPromotion?.description?.length) {
-      return formattedHealthPromotion?.description?.map((item) => (
-        <Fragment key={item}>
-          <div className="flex items-start gap-2">
-            {!!formattedHealthPromotion?.descriptionListIcon && (
-              <img
-                alt="icon"
-                src={formattedHealthPromotion?.descriptionListIcon}
-                className="h-9 w-9"
-              />
-            )}
-            <ul className="list-none">
-              <Typography
-                type="markdown"
-                className="text-infoDark font-medium"
-                color="infoDark"
-                text={replaceBraces(item, client || '')}
-              />
-            </ul>
-          </div>
-        </Fragment>
-      ));
+    const healthPromotion = healthPromotionList?.find(
+      (item) => item.section === section
+    );
+
+    if (healthPromotion) {
+      return (
+        <>
+          {!!healthPromotion?.description && (
+            <>{renderText(healthPromotion?.description)}</>
+          )}
+          {/* ------- B ------- */}
+          {!!healthPromotion?.descriptionB && (
+            <>{renderText(healthPromotion?.descriptionB)}</>
+          )}
+          {/* ------- C ------- */}
+          {!!healthPromotion?.descriptionC && (
+            <>{renderText(healthPromotion?.descriptionC)}</>
+          )}
+          {/* ------- D ------- */}
+          {!!healthPromotion?.descriptionD && (
+            <>{renderText(healthPromotion?.descriptionD)}</>
+          )}
+          {/* ------- E ------- */}
+          {!!healthPromotion?.descriptionE && (
+            <>{renderText(healthPromotion?.descriptionE)}</>
+          )}
+          {/* ------- F ------- */}
+          {!!healthPromotion?.descriptionF && (
+            <>{renderText(healthPromotion?.descriptionF)}</>
+          )}
+          {/* ------- G ------- */}
+          {!!healthPromotion?.descriptionG && (
+            <>{renderText(healthPromotion?.descriptionG)}</>
+          )}
+          {/* ------- H ------- */}
+          {!!healthPromotion?.descriptionH && (
+            <>{renderText(healthPromotion?.descriptionH)}</>
+          )}
+          {/* ------- I ------- */}
+          {!!healthPromotion?.descriptionI && (
+            <>{renderText(healthPromotion?.descriptionI)}</>
+          )}
+          {/* ------- J ------- */}
+          {!!healthPromotion?.descriptionJ && (
+            <>{renderText(healthPromotion?.descriptionJ)}</>
+          )}
+        </>
+      );
     }
 
     return 'Unavailable translation';
-  }, [
-    client,
-    formattedHealthPromotion?.description,
-    formattedHealthPromotion?.descriptionListIcon,
-    isLoading,
-  ]);
+  }, [healthPromotionList, isLoading, section]);
 
   useLayoutEffect(() => {
     getContent();
@@ -183,10 +177,13 @@ export const HealthPromotion = ({
         subTitle={subTitle}
       />
       <div className="bg-uiBg border-primary border-t px-4">
-        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
+        <LanguageSelector
+          showOfflineAlert
+          selectLanguage={setLanguage}
+          availableLanguages={availableLanguages}
+        />
       </div>
       <div className="flex h-full flex-col p-4">
-        {renderHeader}
         {renderContent}
         <Divider dividerType="dashed" className="my-2" />
         <Button

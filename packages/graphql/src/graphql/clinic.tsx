@@ -177,14 +177,21 @@ export const GetClinicPointsData = gql`
       totalHCWs
       leagueRanking
       pointsTotal
+      maxPointsTotal
       momsTargetPerc
       momsTargetPercColor
-      momsTopLeagueTeamPerc
-      momsRankingPerc
+      momsClinicHigherThan50Perc
+      momsTeamsBottomPerc
+      momsTeamsTopPerc
+      momsClinicLowerThan50Perc
+      momsTopTeamPerc
       childrenTargetPerc
       childrenTargetPercColor
-      childrenTopLeagueTeamPerc
-      childrenRankingPerc
+      childrenClinicHigherThan50Perc
+      childrenTeamsBottomPerc
+      childrenTeamsTopPerc
+      childrenClinicLowerThan50Perc
+      childrenTopTeamPerc
     }
   }
 `;

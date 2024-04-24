@@ -5,16 +5,19 @@ import {
   usePanel,
   useTheme,
 } from '@ecdlink/core';
-import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
-import { Avatar, Button, Typography, UserAvatar } from '@ecdlink/ui';
+import {
+  GetAllNavigation,
+  GetAllNotifications,
+  GetTenantContext,
+} from '@ecdlink/graphql';
+import { Avatar, Button, IconBadge, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
-  ArrowLeftIcon,
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
 } from '@heroicons/react/outline';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
@@ -24,6 +27,9 @@ import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
+import { NavbarTypes, NotificationNavigationModel } from './shell.types';
+import { useUserRole } from '../../hooks/useUserRole';
+import ROUTES from '../../routes/app.routes-constants';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -32,6 +38,18 @@ function classNames(...classes: any[]) {
 type menuItemProps = {
   item: NavigationDto;
 };
+
+export const tlMeetings = {
+  description: 'Team meetings',
+  icon: 'PresentationChartBarIcon',
+  id: '96d4070a-e5a6-4148-961b-20d9c05dje41',
+  isActive: true,
+  name: 'Team meetings',
+  permissions: [],
+  route: '/team-meetings',
+  sequence: 8,
+};
+
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeMatch = useRouteMatch(item.route);
 
@@ -51,7 +69,7 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
           routeMatch ? 'text-white' : 'text-white group-hover:text-gray-500',
           'mr-3 h-6 w-6 flex-shrink-0'
         )}
-        color="transparent"
+        color="white"
       />
       {item.name}
     </Link>
@@ -63,6 +81,7 @@ export default function Shell() {
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
+  const { isTeamLead, isAdministrator, isSuperAdmin } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const history = useHistory();
   const location = useLocation();
@@ -73,6 +92,19 @@ export default function Shell() {
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: notificationsData } = useQuery(GetAllNotifications, {
+    variables: {
+      userId: user?.id,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const notifications = notificationsData?.allNotifications;
+  const notReadNotifications = useMemo(
+    () => notifications?.filter((item) => !item?.readDate),
+    [notifications]
+  );
 
   useEffect(() => {
     if (navigation && location && location.pathname) {
@@ -89,17 +121,30 @@ export default function Shell() {
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
-      const navigationList: NavigationDto[] = navigationData.GetAllNavigation;
-      const userRolePermissions = user.roles.map((x) => x.permissions).flat();
-      const userPermissionIds = userRolePermissions.map((x) => x.id);
-      if (
-        user?.roles?.some((x) => x.name === 'Administrator') ||
-        user?.roles?.some((x) => x.name === 'Super Admin')
-      ) {
+      const teamLeadNavigationItems = [
+        NavbarTypes.Users,
+        NavbarTypes.Clinics,
+        NavbarTypes.Referrals,
+        NavbarTypes.TeamMeetings,
+      ];
+      const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
+      const newnav = [...navigationData?.GetAllNavigation, tlMeetings];
+      const teamLeadNavigationList: NavigationDto[] = newnav?.filter((item) =>
+        teamLeadNavigationItems?.includes(item?.name)
+      );
+      const userRolePermissions = user?.roles
+        ?.map((x) => x?.permissions)
+        .flat();
+      const userPermissionIds = userRolePermissions?.map((x) => x.id);
+      if (isAdministrator || isSuperAdmin) {
         const sorted = navigationList
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
+      } else if (isTeamLead) {
+        setNavigation(
+          teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
+        );
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -107,7 +152,7 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData]);
+  }, [user, navigationData, isAdministrator, isSuperAdmin, isTeamLead]);
 
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
@@ -127,11 +172,16 @@ export default function Shell() {
 
   const signOutClick = () => {
     logout();
+
+    if (isTeamLead) {
+      history.push(ROUTES.ROOT_TEAM_LEAD);
+      return;
+    }
     history.push('/');
   };
 
   const gotToProfile = () => {
-    history.push('/profile');
+    history.push(ROUTES.PROFILE);
   };
 
   const displayInformationPanel = () => {
@@ -307,7 +357,27 @@ export default function Shell() {
                 {activeNavigation?.name}
               </span>
             </div>
-            <div className="ml-4 flex items-center md:ml-6">
+            <div className="ml-4 flex items-center gap-2 md:ml-6">
+              <div className="cursor-pointer">
+                <IconBadge
+                  onClick={() => {
+                    history.push(ROUTES.NOTIFICATIONS_VIEW);
+                    setActiveNavigation(
+                      NotificationNavigationModel?.name as any
+                    );
+                  }}
+                  badgeColor={'errorMain'}
+                  badgeTextColor={'white'}
+                  icon={'BellIcon'}
+                  iconColor={'darkBackground'}
+                  badgeText={
+                    !!notReadNotifications?.length
+                      ? `${notReadNotifications?.length}`
+                      : ''
+                  }
+                  className="mt-4"
+                />
+              </div>
               <Menu as="div" className="relative ml-3">
                 {({ open }) => (
                   <>
@@ -342,11 +412,9 @@ export default function Shell() {
           </div>
         </div>
 
-        <main className="focus:outline-none relative flex-1 overflow-y-auto bg-white">
-          <div className="h-full py-6">
-            <div className="mx-auto h-full bg-white px-4 sm:px-6 md:px-8">
-              <AuthRoutes />
-            </div>
+        <main className="focus:outline-none bg-adminPortalBg relative flex-1 overflow-y-auto">
+          <div className="bg-adminPortalBg h-full">
+            <AuthRoutes />
           </div>
         </main>
       </div>

@@ -252,7 +252,7 @@ export const getMoreInformation = createAsyncThunk<
         locale
       ];
 
-      if (currentInfo) {
+      if (currentInfo && currentInfo.data) {
         const daysSinceLateLoad = differenceInDays(
           new Date(),
           new Date(currentInfo?.dateLoaded)

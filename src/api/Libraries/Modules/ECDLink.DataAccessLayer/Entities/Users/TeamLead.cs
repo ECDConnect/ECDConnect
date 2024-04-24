@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -26,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public string JobTitle { get; set; }
         public bool IsRegistered { get; set; }
+        public string WelcomeMessage { get; set; }
     }
 
     public interface TeamLeadJoin<TKey>

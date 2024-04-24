@@ -1,11 +1,16 @@
-import { getWeeksDiff } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 
 export const getPregnancyWeeks = (deliveryDate: Date | string) => {
-  const diffDates = getWeeksDiff(new Date(), new Date(deliveryDate));
-  const actualGestationWeek = 40 - diffDates;
+  const priordate = new Date(deliveryDate);
+  priordate.setDate(new Date(deliveryDate).getDate() - 280);
 
-  return actualGestationWeek < 0 ? 0 : actualGestationWeek;
+  const dateDiff = new Date().valueOf() - priordate.valueOf();
+
+  const msInWeek = 1000 * 60 * 60 * 24 * 7;
+
+  const weeksPregnant = Math.round(dateDiff / msInWeek);
+
+  return weeksPregnant;
 };
 
 export const getPregnancyDay = (deliveryDate: Date | string) => {

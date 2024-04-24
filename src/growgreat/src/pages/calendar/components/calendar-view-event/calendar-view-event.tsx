@@ -34,6 +34,9 @@ import { HomeVisitPrompt } from './popups/home-visit-prompt';
 import { HomeVisitMultipleClientsPrompt } from './popups/home-visit-multiple-clients-prompt';
 import { AddBreastFeedingClubRouteState } from '@/pages/community/breastfeeding-clubs-tab/add-breastfeeding-club/types';
 import ROUTES from '@/routes/routes';
+import { communitySelectors } from '@/store/community';
+import Pregnant from '@/assets/pregnantBlack.svg';
+import Infant from '@/assets/infantBlack.svg';
 
 export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const { isOnline } = useOnlineStatus();
@@ -55,6 +58,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const canEdit = !!props.canEdit ? props.canEdit : eventOwner;
   const mothers = useSelector(motherSelectors.getMothers);
   const infants = useSelector(infantSelectors.getInfants);
+  const clinicDetails = useSelector(communitySelectors.getClinicSelector);
 
   const title = 'View event';
   const subTitle = ''; // format(startDate, 'EEEE, d LLLL yyyy');
@@ -73,7 +77,12 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
 
   useMemo(() => {
     const ids = event.participants.map((p) => p.participantUserId);
-    const p = mapIdsToCalendarEventParticipants(ids, infants, mothers);
+    const p = mapIdsToCalendarEventParticipants(
+      ids,
+      infants,
+      mothers,
+      clinicDetails
+    );
     setParticipants(p);
   }, [event, mothers, infants]);
 
@@ -129,7 +138,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
     }
   };
 
-  const startVisitHome = async (type: '2month' | 'other') => {
+  const startVisitHome = async (type: 'planned' | 'other') => {
     setShowHomeVisitPrompt(false);
     setShowHomeVisitMultipleClientsPrompt(false);
     props.onClose();
@@ -162,6 +171,23 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
       isFromPointsScreen: false,
     } as AddBreastFeedingClubRouteState);
     props.onClose();
+  };
+
+  const renderParticipantIcon = (p: CalendarEventParticipantModel) => {
+    if (
+      p.participantUser.type === 'mother' ||
+      p.participantUser.type === 'infant'
+    ) {
+      const imageUrl = p.participantUser.type === 'mother' ? Pregnant : Infant;
+      return (
+        <img
+          className={'text-textDark mt-1 mr-4 h-4 w-4'}
+          src={imageUrl}
+          title={p.participantUser.type}
+        />
+      );
+    }
+    return <>{renderIcon('UserIcon', 'mt-1 h-4 w-4 text-textDark mr-4')}</>;
   };
 
   return (
@@ -290,14 +316,12 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
               />
             </div>
           </div>
-          {event.participants.map((p, index) => (
+          {participants.map((p, index) => (
             <div
               key={`participant-${index}`}
               className="flex flex-row px-4 pb-2"
             >
-              <div className="w-10">
-                {renderIcon('UserIcon', 'mt-1 h-4 w-4 text-textDark mr-4')}
-              </div>
+              <div className="w-10">{renderParticipantIcon(p)}</div>
               <div>
                 <Typography
                   type="small"

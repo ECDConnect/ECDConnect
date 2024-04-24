@@ -118,7 +118,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
       const userId = response.data.addUser.id;
       if (userId) {
         await saveTeamLead(userId);
-        await saveRoles(userId);
       }
     });
   };
@@ -147,6 +146,8 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
         });
       });
     if (userId) {
+      await saveRoles(userId);
+
       await sendInviteToApplication({
         variables: {
           userId: userId,

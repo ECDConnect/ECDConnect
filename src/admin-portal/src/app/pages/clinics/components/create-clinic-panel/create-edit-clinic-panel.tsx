@@ -15,7 +15,7 @@ import {
   ClinicPanelCreateProps,
   clinicInitialValues,
   clinicSchema,
-} from '../../clinics.types';
+} from '../../main-view/admin-view/clinics.types';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
@@ -35,6 +35,7 @@ import { useMutation, useQuery } from '@apollo/client';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { useHistory } from 'react-router';
 import { findObjectWithString } from '../../../../utils/string-utils/string-utils';
+import ROUTES from '../../../../routes/app.routes-constants';
 
 export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
   const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
@@ -299,7 +300,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     props.closeDialog(true);
 
     history.push({
-      pathname: '/clinics/clinics',
+      pathname: ROUTES.CLINICS.ALL_CLINICS,
     });
   }, [
     addClinictMutation,
@@ -359,7 +360,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       siteAddressId: props?.clinic?.siteAddressId || siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
       teamLead2Id:
-        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
+        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : null,
     };
     const response = await editClinictMutation({
       variables: {
@@ -379,7 +380,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     props.closeDialog(true);
 
     history.push({
-      pathname: '/clinics/clinics',
+      pathname: ROUTES.CLINICS.ALL_CLINICS,
     });
   }, [
     createSiteAddress,
@@ -412,7 +413,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
     }
 
     history.push({
-      pathname: '/clinics/clinics',
+      pathname: ROUTES.CLINICS.ALL_CLINICS,
     });
   }, [deleteClinicMutation, history, props, setNotification]);
 

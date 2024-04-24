@@ -378,6 +378,7 @@ export default function ContentCompare({
                     defaultLanguageId={defaultLanguageId}
                     choosedSectionTitle={choosedSectionTitle}
                     contentView={contentView}
+                    languages={languages}
                   />
                 )}
               </div>
@@ -412,6 +413,7 @@ export default function ContentCompare({
                     defaultLanguageId={defaultLanguageId}
                     choosedSectionTitle={choosedSectionTitle}
                     contentView={contentView}
+                    languages={languages}
                   />
                 )}
               </div>

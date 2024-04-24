@@ -50,6 +50,7 @@ export const GetUserById = gql`
       contactPreference
       genderId
       phoneNumber
+      pendingPhoneNumber
       whatsAppNumber
       profileImageUrl
       isImported

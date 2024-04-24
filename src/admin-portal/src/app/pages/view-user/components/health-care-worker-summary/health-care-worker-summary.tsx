@@ -9,18 +9,12 @@ export const HealthCareWorkerSummary: React.FC<
   HealthCareWorkerSummaryProps
 > = ({ summaryData }) => {
   return (
-    <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+    <div className="border-l-secondary border-secondary my-6 rounded-2xl border-2  border-l-8 bg-white lg:min-w-0 lg:flex-1">
       <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
         {/* Start main area*/}
-        <Typography
-          type={'h2'}
-          hasMarkup
-          fontSize="24"
-          text={'Clients summary'}
-          color={'textMid'}
-        />
-        <Divider dividerType="dashed" className="my-2" />
-        <div className="flex flex-row justify-evenly pt-4 text-current">
+        <Typography type="h2" text={'Clients summary'} color={'textMid'} />
+        <Divider dividerType="dashed" className="my-4" />
+        <div className="flex flex-row flex-wrap justify-evenly text-current">
           <div className="flex items-center gap-4">
             <Typography
               type={'h1'}
@@ -33,7 +27,7 @@ export const HealthCareWorkerSummary: React.FC<
               color={'textMid'}
             />
             <Typography
-              type={'help'}
+              type={'body'}
               text={'pregnant moms'}
               color={'textMid'}
             />
@@ -49,7 +43,7 @@ export const HealthCareWorkerSummary: React.FC<
               }
               color={'textMid'}
             />
-            <Typography type={'help'} text={'children'} color={'textMid'} />
+            <Typography type={'body'} text={'children'} color={'textMid'} />
           </div>
           <div className="flex items-center gap-4">
             <Typography
@@ -63,7 +57,7 @@ export const HealthCareWorkerSummary: React.FC<
               color={'textMid'}
             />
             <Typography
-              type={'help'}
+              type={'body'}
               text={'clients visited'}
               color={'textMid'}
             />
@@ -80,7 +74,7 @@ export const HealthCareWorkerSummary: React.FC<
               color={'textMid'}
             />
             <Typography
-              type={'help'}
+              type={'body'}
               text={'folders opened'}
               color={'textMid'}
             />

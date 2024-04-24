@@ -1,6 +1,6 @@
-import { Button, Typography } from '@ecdlink/ui';
-import { useLocation } from 'react-router';
-import { ClinicsRouteState } from '../../clinics.types';
+import { Button, DatePicker, Typography } from '@ecdlink/ui';
+import { useHistory, useLocation } from 'react-router';
+import { ClinicsRouteState } from '../../main-view/admin-view/clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
 import { usePanel } from '@ecdlink/core';
 import { useLazyQuery, useQuery } from '@apollo/client';
@@ -13,47 +13,66 @@ import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
-import DatePicker from 'react-datepicker';
-import { useEffect, useState } from 'react';
-import { sub } from 'date-fns';
+import { useEffect, useMemo, useState } from 'react';
+import { format, lastDayOfMonth, startOfMonth, sub } from 'date-fns';
+import { ViewClinicReportProps } from './view-clinic-report.types';
+import ROUTES from '../../../../routes/app.routes-constants';
+import { ReferralsRouteState } from '../../../referrals/types';
+import { useUserRole } from '../../../../hooks/useUserRole';
 
 export interface PointsReportSummaryDto {
-  childrenRankingPerc: number;
-  childrenTargetPerc: number;
-  childrenTargetPercColor: string;
-  childrenTopLeagueTeamPerc: number;
   leagueRanking: number;
-  momsRankingPerc: number;
-  momsTargetPerc: number;
-  momsTargetPercColor: string;
-  momsTopLeagueTeamPerc: number;
   pointsTotal: number;
   totalHCWs: number;
+
+  momsTargetPerc: number;
+  momsTargetPercColor: string;
+  momsClinicHigherThan50Perc: string;
+  momsTeamsBottomPerc: number;
+  momsTeamsTopPerc: number;
+  momsClinicLowerThan50Perc: number;
+  momsTopTeamPerc: number;
+  childrenTargetPerc: number;
+  childrenTargetPercColor: string;
+  childrenClinicHigherThan50Perc: string;
+  childrenTeamsBottomPerc: number;
+  childrenTeamsTopPerc: number;
+  childrenClinicLowerThan50Perc: number;
+  childrenTopTeamPerc: number;
 }
 
-export const ViewClinicReport = () => {
+export const ViewClinicReport = ({
+  clinic: clinicFromProps,
+  isFromTeamMeetings,
+}: ViewClinicReportProps) => {
+  const { isTeamLead } = useUserRole();
   const location = useLocation<ClinicsRouteState>();
+  const history = useHistory();
   const panel = usePanel();
-  const clinic = location?.state?.clinic;
-  const today = new Date();
+  const clinic = clinicFromProps || location?.state?.clinic;
+  const today = useMemo(() => new Date(), []);
   const initialBefore30Days = sub(today, {
     days: 30,
   });
+  const lastYear = sub(today, {
+    years: 1,
+  });
+  const currentDateFormatted = format(today, 'MMMM y');
+  const lastMonthDay = useMemo(() => lastDayOfMonth(today), [today]);
+  const firstMonthDay = useMemo(() => startOfMonth(today), [today]);
 
   const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
   const [startDate, endDate] = dateRange;
 
-  const [fetchVisitInformation, { data: clinicReportData }] = useLazyQuery(
-    GetClinicVisitReportData,
-    {
+  const [fetchVisitInformation, { data: clinicReportData, loading }] =
+    useLazyQuery(GetClinicVisitReportData, {
       fetchPolicy: 'cache-and-network',
       variables: {
         clinicId: clinic?.id,
         startDate: startDate,
         endDate: endDate,
       },
-    }
-  );
+    });
 
   const { data: clinicPointsData } = useQuery(GetClinicPointsData, {
     fetchPolicy: 'cache-and-network',
@@ -64,8 +83,31 @@ export const ViewClinicReport = () => {
 
   const dataFromClinicPointsData = clinicPointsData?.clinicPointsData;
 
+  const clinicInformation = [
+    ...(isTeamLead ? [] : [{ name: 'Unique ID:', value: clinic?.id }]),
+    { name: 'Phone number:', value: clinic?.phoneNumber },
+    { name: 'Address:', value: clinic?.siteAddress?.addressLine1 },
+    { name: 'Sub-district:', value: clinic?.subDistrict?.name },
+    { name: 'District:', value: clinic?.subDistrict?.district?.name },
+    {
+      name: 'Province:',
+      value: clinic?.subDistrict?.district?.province?.description,
+    },
+  ];
+
   useEffect(() => {
-    if (startDate && endDate) {
+    if ((startDate && endDate) || isFromTeamMeetings) {
+      if (isFromTeamMeetings) {
+        fetchVisitInformation({
+          fetchPolicy: 'cache-and-network',
+          variables: {
+            clinicId: clinic?.id,
+            startDate: firstMonthDay,
+            endDate: lastMonthDay,
+          },
+        });
+        return;
+      }
       fetchVisitInformation({
         fetchPolicy: 'cache-and-network',
         variables: {
@@ -75,7 +117,15 @@ export const ViewClinicReport = () => {
         },
       });
     }
-  }, [clinic?.id, endDate, fetchVisitInformation, startDate]);
+  }, [
+    clinic?.id,
+    endDate,
+    fetchVisitInformation,
+    firstMonthDay,
+    isFromTeamMeetings,
+    lastMonthDay,
+    startDate,
+  ]);
 
   const displayEditPanel = () => {
     panel({
@@ -97,150 +147,78 @@ export const ViewClinicReport = () => {
 
   return (
     <div>
-      <div>
-        <Typography
-          className="mb-8 truncate"
-          type="h2"
-          weight="bold"
-          color="textMid"
-          text={clinic?.name}
-        />
-      </div>
+      <Typography
+        className="mb-8 truncate"
+        type="h1"
+        weight="bold"
+        color="textMid"
+        text={clinic?.name}
+      />
       <div className="w-full rounded-2xl bg-white p-8">
         <div className="mb-4 flex items-center gap-2">
           <Typography
             className="truncate"
-            type="h3"
+            type="h2"
             weight="bold"
             color="textMid"
             text={`Clinic information`}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Unique ID:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.id}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Phone number:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.phoneNumber}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Address:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.siteAddress?.addressLine1}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Sub-district:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.subDistrict?.name}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`District:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.subDistrict?.district?.name}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textMid"
-            text={`Province:`}
-          />
-          <Typography
-            className="truncate"
-            type="body"
-            color="textMid"
-            text={clinic?.subDistrict?.district?.province?.description}
-          />
-        </div>
-        <div className="mt-4 flex w-full justify-end gap-2">
-          <Button
-            className="rounded-xl px-2"
-            type="outlined"
-            color="errorMain"
-            textColor="tertiary"
-            text="Copy unique ID"
-            icon="DuplicateIcon"
-            iconPosition="start"
-            onClick={() => {
-              navigator.clipboard.writeText(clinic?.id);
-            }}
-          />
-          <Button
-            className="rounded-xl px-2"
-            type="filled"
-            color="secondary"
-            textColor="white"
-            text="Edit"
-            icon="PencilIcon"
-            iconPosition="start"
-            onClick={displayEditPanel}
-          />
-        </div>
+        {clinicInformation.map((info, index) => (
+          <div className="flex items-center gap-2" key={info.name + index}>
+            <Typography
+              className="truncate"
+              type="h4"
+              weight="bold"
+              color="textMid"
+              text={info.name}
+            />
+            <Typography
+              className="truncate"
+              type="body"
+              color="textMid"
+              text={info.value}
+            />
+          </div>
+        ))}
+        {!isTeamLead && (
+          <div className="mt-4 flex w-full justify-end gap-2">
+            <Button
+              className="rounded-xl px-2"
+              type="outlined"
+              color="errorMain"
+              textColor="tertiary"
+              text="Copy unique ID"
+              icon="DuplicateIcon"
+              iconPosition="start"
+              onClick={() => {
+                navigator.clipboard.writeText(clinic?.id);
+              }}
+            />
+            <Button
+              className="rounded-xl px-2"
+              type="filled"
+              color="secondary"
+              textColor="white"
+              text="Edit"
+              icon="PencilIcon"
+              iconPosition="start"
+              onClick={displayEditPanel}
+            />
+          </div>
+        )}
       </div>
       <div className="mt-8">
         <PointsReportSummary
           dataFromClinicPointsData={dataFromClinicPointsData}
+          clinic={clinic}
         />
       </div>
 
       <div className="bg-adminPortalBg mt-8 w-full">
         <div>
           <Typography
-            type="h4"
+            type="h1"
             color="textDark"
             text={`% targets met so far this year`}
             align="left"
@@ -248,7 +226,10 @@ export const ViewClinicReport = () => {
           <Typography
             type="help"
             color="textDark"
-            text={`October 2023 - September 2024`}
+            text={`October ${lastYear.getFullYear()} - ${format(
+              today,
+              'MMMM yyyy'
+            )}`}
             align="left"
           />
         </div>
@@ -259,9 +240,17 @@ export const ViewClinicReport = () => {
             targetPercColor={
               clinicPointsData?.clinicPointsData?.momsTargetPercColor
             }
-            topTeamPerc={
-              clinicPointsData?.clinicPointsData?.momsTopLeagueTeamPerc
+            clinicHigherThan50Perc={
+              clinicPointsData?.clinicPointsData?.momsClinicHigherThan50Perc
             }
+            clinicLowerThan50Perc={
+              clinicPointsData?.clinicPointsData?.momsClinicLowerThan50Perc
+            }
+            teamsBottomPerc={
+              clinicPointsData?.clinicPointsData?.momsTeamsBottomPerc
+            }
+            teamsTopPerc={clinicPointsData?.clinicPointsData?.momsTeamsTopPerc}
+            topTeamPerc={clinicPointsData?.clinicPointsData?.momsTopTeamPerc}
             targetRanking={clinicPointsData?.clinicPointsData?.momsRankingPerc}
             title={'Pregnant moms'}
             icon={Pregnant}
@@ -272,8 +261,20 @@ export const ViewClinicReport = () => {
             targetPercColor={
               clinicPointsData?.clinicPointsData?.childrenTargetPercColor
             }
+            clinicHigherThan50Perc={
+              clinicPointsData?.clinicPointsData?.childrenClinicHigherThan50Perc
+            }
+            clinicLowerThan50Perc={
+              clinicPointsData?.clinicPointsData?.childrenClinicLowerThan50Perc
+            }
+            teamsBottomPerc={
+              clinicPointsData?.clinicPointsData?.childrenTeamsBottomPerc
+            }
+            teamsTopPerc={
+              clinicPointsData?.clinicPointsData?.childrenTeamsTopPerc
+            }
             topTeamPerc={
-              clinicPointsData?.clinicPointsData?.childrenTopLeagueTeamPerc
+              clinicPointsData?.clinicPointsData?.childrenTopTeamPerc
             }
             targetRanking={
               clinicPointsData?.clinicPointsData?.childrenRankingPerc
@@ -283,86 +284,67 @@ export const ViewClinicReport = () => {
           />
         </div>
       </div>
-      <div className="mt-8">
-        <div className="flex w-full items-center justify-around">
-          <Typography
-            type="h3"
-            weight="bold"
-            color="textDark"
-            text={`Visit information`}
-            align="left"
-            className="w-full"
+      <div className="mt-8 flex w-full items-center justify-between">
+        <Typography
+          type="h1"
+          weight="bold"
+          color="textDark"
+          text={
+            isTeamLead && isFromTeamMeetings
+              ? `Visit information: ${currentDateFormatted}`
+              : `Visit information`
+          }
+          align="left"
+        />
+        {!isFromTeamMeetings && (
+          <DatePicker
+            isFullWidth={false}
+            showChevronIcon
+            hideCalendarIcon
+            className="w-64 rounded-xl"
+            selectsRange
+            startDate={startDate}
+            endDate={endDate}
+            maxDate={today}
+            colour="secondary"
+            textColour="white"
+            onChange={(update) => {
+              setDateRange(update);
+            }}
+            dateFormat={'d MMM yyyy'}
           />
-          <div className="w-56">
-            <DatePicker
-              selectsRange={true}
-              startDate={startDate}
-              endDate={endDate}
-              maxDate={today}
-              onChange={(update) => {
-                setDateRange(update);
-              }}
-              className="bg-secondary w-56 rounded-xl text-white"
-            />
-          </div>
-        </div>
-        <div>
-          <ClientRegistration
-            totalCaregiversAttended={
-              clinicReportData?.clinicVisitReportData?.breastFeedingClub
-                ?.totalCaregiversAttended
-            }
-            totalClubsHeld={
-              clinicReportData?.clinicVisitReportData?.breastFeedingClub
-                ?.totalClubsHeld
-            }
-            totalGrowthMonitored={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalGrowthMonitored
-            }
-            totalSupportGrant={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalSupportGrant
-            }
-            totalUpToDateDeworming={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalUpToDateDeworming
-            }
-            totalUpToDateImmunisations={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalUpToDateImmunisations
-            }
-            totalUpToDateVitaminA={
-              clinicReportData?.clinicVisitReportData?.childClients
-                ?.totalUpToDateVitaminA
-            }
-            totalChildFoldersOpened={
-              clinicReportData?.clinicVisitReportData?.clientRegistration
-                ?.totalChildFoldersOpened
-            }
-            totalMotherFoldersBefore20WeeksOpened={
-              clinicReportData?.clinicVisitReportData?.clientRegistration
-                ?.totalMotherFoldersBefore20WeeksOpened
-            }
-            totalMotherFoldersOpened={
-              clinicReportData?.clinicVisitReportData?.clientRegistration
-                ?.totalMotherFoldersOpened
-            }
-            totalAlcoholAbuse={
-              clinicReportData?.clinicVisitReportData?.pregnantMoms
-                ?.totalAlcoholAbuse
-            }
-            totalMaternalDistress={
-              clinicReportData?.clinicVisitReportData?.pregnantMoms
-                ?.totalMaternalDistress
-            }
-            totalMaternalMalnutrition={
-              clinicReportData?.clinicVisitReportData?.pregnantMoms
-                ?.totalMaternalMalnutrition
-            }
-          />
-        </div>
+        )}
       </div>
+      <ClientRegistration
+        isLoading={loading}
+        clinicReportData={clinicReportData?.clinicVisitReportData}
+      />
+      {isTeamLead && (
+        <div className="mt-9 flex gap-4">
+          <Button
+            className="rounded-xl px-2"
+            type="filled"
+            color="secondary"
+            textColor="white"
+            text="See referrals"
+            icon="ClipboardListIcon"
+            onClick={() =>
+              history.push(ROUTES.REFERRALS.ROOT, {
+                clinicIds: [clinic?.id],
+              } as ReferralsRouteState)
+            }
+          />
+          <Button
+            className="rounded-xl px-2"
+            type="outlined"
+            color="secondary"
+            textColor="secondary"
+            text="See CHWs"
+            icon="UserGroupIcon"
+            onClick={() => history.push(ROUTES.USERS.ROOT)}
+          />
+        </div>
+      )}
     </div>
   );
 };

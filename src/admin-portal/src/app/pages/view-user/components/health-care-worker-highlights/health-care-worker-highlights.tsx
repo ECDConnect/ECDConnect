@@ -1,21 +1,21 @@
 import { HealthCareWorkerSummaryForPeriodDto } from '@ecdlink/core';
-import { Typography } from '@ecdlink/ui';
+import { Divider, Typography } from '@ecdlink/ui';
 import { StarIcon } from '@heroicons/react/solid';
 
 interface HalthCareWorkerHighlightsProps {
   summaryData: HealthCareWorkerSummaryForPeriodDto;
 }
 
-export const HalthCareWorkerHighlights: React.FC<
+export const HealthCareWorkerHighlights: React.FC<
   HalthCareWorkerHighlightsProps
 > = ({ summaryData }) => {
   return (
-    <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+    <div className="border-l-successMain  border-successMain mb-6 rounded-2xl border-2 border-l-8  bg-white">
       <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
         {/* Start main area*/}
-        <div className="flex flex-row border-b-4 border-dashed pb-0">
+        <div className="flex flex-row items-center gap-2">
           <StarIcon
-            className="successMain h-12 w-12 pb-2"
+            className="successMain h-12 w-12"
             style={{
               color: '#83BB26',
             }}
@@ -28,6 +28,7 @@ export const HalthCareWorkerHighlights: React.FC<
             color={'textMid'}
           />
         </div>
+        <Divider dividerType="dashed" className="my-4" />
         <div className="flex flex-col justify-evenly pt-4 text-current">
           <div className="flex items-center gap-4 px-2">
             <Typography
@@ -38,7 +39,7 @@ export const HalthCareWorkerHighlights: React.FC<
               color={'successMain'}
             />
             <Typography
-              type={'help'}
+              type={'body'}
               text={'pregnant moms are doing well & have no issues'}
               color={'textMid'}
             />
@@ -52,7 +53,7 @@ export const HalthCareWorkerHighlights: React.FC<
               color={'successMain'}
             />
             <Typography
-              type={'help'}
+              type={'body'}
               text={'children are doing well & have no issues'}
               color={'textMid'}
             />

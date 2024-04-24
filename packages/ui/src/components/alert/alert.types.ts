@@ -5,6 +5,7 @@ import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 export type AlertVariant = 'flat' | 'outlined';
 
 export type AlertType =
+  | 'infoDark'
   | 'info'
   | 'success'
   | 'warning'

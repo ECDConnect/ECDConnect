@@ -83,7 +83,10 @@ module.exports = {
         quaternaryGG: '#D8C498',
         pointsCardBg: '#FEEED7',
         pointsCardBarBg: '#FCCF8C',
-        infographicBg: '#FFD525'
+        infographicBg: '#FFD525',
+        tertiaryAccent1: '#F4729D',
+        tertiaryAccent2: '#FBC7D8',
+        tertiaryAccent3: '#FFD3E6',
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',

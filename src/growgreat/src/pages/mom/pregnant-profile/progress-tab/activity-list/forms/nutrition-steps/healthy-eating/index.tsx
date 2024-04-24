@@ -263,7 +263,12 @@ export const HealthyEatingStep = ({
   }, [nutritionAnswers.length, name]);
 
   if (isTipPage) {
-    return <DownloadResource onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <DownloadResource
+        resource={'Healthy eating'}
+        onClose={() => setIsTip && setIsTip(false)}
+      />
+    );
   }
 
   return (

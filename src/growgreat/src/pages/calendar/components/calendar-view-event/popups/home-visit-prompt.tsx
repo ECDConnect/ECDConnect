@@ -1,60 +1,35 @@
-import { getClientPlannedCurrentVisit } from '@/pages/client/visits-tab/start-visit/start-visit.utils';
-import { useAppDispatch } from '@/store';
-import { getDateWithoutTimeZone } from '@ecdlink/core';
-import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
-import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
-import { useEffect, useState } from 'react';
+import { Dialog, DialogPosition } from '@ecdlink/ui';
+import { HomeVisitPromptInfant } from './home-visit-prompt-infant';
+import { HomeVisitPromptMom } from './home-visit-prompt-mom';
 
 interface HomeVisitPromptProps {
   client: { id?: string; type?: string };
   visible: boolean;
-  startVisit: (type: '2month' | 'other') => void;
+  startVisit: (type: 'planned' | 'other') => void;
 }
 
 export const HomeVisitPrompt = (props: HomeVisitPromptProps) => {
-  const appDispatch = useAppDispatch();
-  const [actionButtons, setActionButtons] = useState<ActionModalButton[]>([]);
-
-  useEffect(() => {
-    const buttonOther = {
-      text: 'Other',
-      textColour: 'primary',
-      colour: 'primary',
-      type: 'outlined',
-      onClick: async () => await props.startVisit('other'),
-      leadingIcon: 'ClipboardListIcon',
-    } as ActionModalButton;
-    if (
-      !props.client.id &&
-      props.client.type !== 'infant' &&
-      props.client.type !== 'mother'
-    ) {
-      setActionButtons([buttonOther]);
-      return;
-    }
-    (async () => {
-      const nextVisitDate = await getClientPlannedCurrentVisit(
-        {
-          id: props.client.id || '',
-          type: props.client.type as 'mother' | 'infant',
-        },
-        appDispatch
-      );
-      const buttons: ActionModalButton[] = [];
-      if (!!nextVisitDate) {
-        buttons.push({
-          text: '2 month',
-          textColour: 'primary',
-          colour: 'primary',
-          type: 'outlined',
-          onClick: async () => await props.startVisit('2month'),
-          leadingIcon: 'PresentationChartBarIcon',
-        });
+  const renderPrompt = () => {
+    if (!!props.client.id && props.visible) {
+      if (props.client.type === 'infant') {
+        return (
+          <HomeVisitPromptInfant
+            clientId={props.client.id}
+            startVisit={props.startVisit}
+          />
+        );
       }
-      buttons.push(buttonOther);
-      setActionButtons(buttons);
-    })();
-  }, [props.client.id]);
+      if (props.client.type === 'mother') {
+        return (
+          <HomeVisitPromptMom
+            clientId={props.client.id}
+            startVisit={props.startVisit}
+          />
+        );
+      }
+    }
+    return <></>;
+  };
 
   return (
     <Dialog
@@ -64,10 +39,7 @@ export const HomeVisitPrompt = (props: HomeVisitPromptProps) => {
       stretch={false}
       zIndex={2000}
     >
-      <ActionModal
-        importantText={`Which visit would you like to complete?`}
-        actionButtons={actionButtons}
-      />
+      {renderPrompt()}
     </Dialog>
   );
 };

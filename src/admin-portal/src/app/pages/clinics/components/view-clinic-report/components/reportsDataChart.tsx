@@ -1,13 +1,16 @@
-import { Divider, RoundIcon, Typography } from '@ecdlink/ui';
+import { Divider, Typography } from '@ecdlink/ui';
 import { Chart } from 'react-chartjs-2';
 import { ClinicDto } from '@ecdlink/core';
 import { FlagIcon } from '@heroicons/react/solid';
-import { useMemo } from 'react';
 
 interface ReportsDataCharProps {
   clinic: ClinicDto;
   targetPerc: number;
   targetPercColor: string;
+  clinicHigherThan50Perc: string;
+  clinicLowerThan50Perc: number;
+  teamsBottomPerc: number;
+  teamsTopPerc: number;
   topTeamPerc: number;
   title: string;
   icon: any;
@@ -18,6 +21,10 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
   clinic,
   targetPerc,
   targetPercColor,
+  clinicHigherThan50Perc,
+  clinicLowerThan50Perc,
+  teamsBottomPerc,
+  teamsTopPerc,
   topTeamPerc,
   icon,
   title,
@@ -26,23 +33,23 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
   const renderOpenedFolderText = (title) => {
     switch (title) {
       case 'Pregnant moms':
-        if (targetPerc < 50) {
-          return `This team is in the bottom ${targetRanking?.toFixed(
+        if (clinicHigherThan50Perc === 'No') {
+          return `This team is in the bottom ${clinicLowerThan50Perc?.toFixed(
             2
-          )}% of other GGC teams for pregnant mom folders opened!`;
+          )}% for number of pregnant mom folders opened!`;
         }
-        return `This team is doing better than ${targetRanking?.toFixed(
+        return `This team is doing better than ${teamsBottomPerc?.toFixed(
           2
         )}% of other GGC teams for pregnant mom folders opened!`;
       default:
-        if (targetPerc < 50) {
-          return `This team is in the bottom ${targetRanking?.toFixed(
+        if (clinicHigherThan50Perc === 'No') {
+          return `This team is in the bottom ${clinicLowerThan50Perc?.toFixed(
             2
-          )}%f other GGC teams for child folders opened compared to other GGC teams.`;
+          )}% for number of child folders opened compared to other GGC teams.`;
         }
-        return `This team is in the top ${targetRanking?.toFixed(
+        return `This team is doing better than ${teamsBottomPerc?.toFixed(
           2
-        )}% of other GGC teams for child folders opened compared to other GGC teams.`;
+        )}% of other GGC teams for child folders opened.`;
     }
   };
 
@@ -92,16 +99,16 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         label: `hide`,
         data: [targetPerc, 100 - targetPerc],
         borderColor: [
-          renderGraphColor(targetPercColor),
           renderGraphBackGgroundColor(targetPercColor),
+          renderGraphColor(targetPercColor),
         ],
         borderWidth: 4,
         showLine: false,
         pointRadius: 1,
         pointBackgroundColor: 'white',
         backgroundColor: [
-          renderGraphColor(targetPercColor),
           renderGraphBackGgroundColor(targetPercColor),
+          renderGraphColor(targetPercColor),
         ],
       },
     ],

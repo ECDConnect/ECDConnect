@@ -1,17 +1,12 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Core.Extensions;
-using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using HotChocolate;
-using NPOI.HSSF.Record;
 using System;
 using System.Collections.Generic;
 using System.Linq;

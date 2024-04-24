@@ -24,10 +24,12 @@ namespace ECDLink.Security.Api
     public class AuthenticationController : ControllerBase
     {
         private readonly SecurityManager _securityManager;
+        private readonly ApplicationUserManager _userManager;
 
-        public AuthenticationController(SecurityManager securityManager)
+        public AuthenticationController(SecurityManager securityManager, ApplicationUserManager userManager)
         {
             _securityManager = securityManager;
+            _userManager = userManager; 
         }
 
         // POST api/auth/login
@@ -222,5 +224,41 @@ namespace ECDLink.Security.Api
 
             return Ok(changeResult);
         }
+
+        [Route("verify-cellphone-number")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> VerifyCellphoneNumber([FromBody] VerifyCellphoneNumberModel verifyCellphoneNumberModel)
+        {
+            var user = await _securityManager.GetUserByNameAsync(verifyCellphoneNumberModel.Username);
+            var token = TokenHelper.DecodeToken(verifyCellphoneNumberModel.Token);
+            var currentPhoneNumber = user.PhoneNumber;
+
+            if (user == default(ApplicationUser))
+            {
+                return BadRequest();
+            } 
+            
+            user.PhoneNumber = user.PendingPhoneNumber;
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                var changeResult = await _securityManager.ChangeCellphoneNumberAsync(user, token);
+                if (changeResult)
+                {
+                    return new OkObjectResult(user.PendingPhoneNumber);
+                }
+                else
+                {
+                    // change number back to previous one if the token fails
+                    user.PhoneNumber = currentPhoneNumber;
+                    await _userManager.UpdateAsync(user);
+                }
+                return Ok(result);
+            }
+
+            return Ok(result);
+        }
+
     }
 }

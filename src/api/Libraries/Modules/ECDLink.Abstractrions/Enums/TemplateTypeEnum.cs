@@ -19,5 +19,6 @@ namespace ECDLink.Abstractrions.Enums
         StatementReminder = 14,
         ProgrammeInvitation = 15,
         TeamLeadInvitation = 16,
+        VerifyCellphoneNumber = 17,
     }
 }
