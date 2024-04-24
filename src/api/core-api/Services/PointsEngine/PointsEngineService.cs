@@ -1359,11 +1359,11 @@ namespace EcdLink.Api.CoreApi.Services
             var clinicList = new List<LeagueClinicPointsModel>();
             foreach (var clinic in clinicsWithUsers)
             {
-                var pointsTotalForYear = 
+                var pointsTotalForYear = clinic.UserIds.Count() == 0 ? 0 :
                     allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId)).Sum(x => x.PointsTotal)
                     + allClinicPoints.Where(x => x.ClinicId == clinic.ClinicId).Sum(x => x.PointsTotal);
 
-                var pointsTotalForQuarter = allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal)
+                var pointsTotalForQuarter = clinic.UserIds.Count() == 0 ? 0 : allUserPoints.Where(x => clinic.UserIds.Contains(x.UserId) && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal)
                     + allClinicPoints.Where(x => clinic.ClinicId == x.ClinicId && x.DateScored >= quarterStart.Value && x.DateScored <= quarterEnd.Value).Sum(x => x.PointsTotal);
 
                 clinicList.Add(new LeagueClinicPointsModel()
