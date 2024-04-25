@@ -13,6 +13,7 @@ using HotChocolate.Types.Descriptors.Definitions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -103,10 +104,22 @@ namespace ECDLink.EGraphQL.Registration.Modules
 
                 foreach (var field in item.Fields)
                 {
-                    var definition = new ObjectFieldDefinition(
+                    ObjectFieldDefinition definition = null;
+                    if (field.DataType == "link")
+                    {
+                        var fieldType = definitions.FirstOrDefault(x => "[" + x.ContentName + "]" == field.GraphDataTypeName);
+                        definition = new ObjectFieldDefinition(
+                            field.Name,
+                            type: TypeReference.Parse(field.GraphDataTypeName),
+                            pureResolver: ctx => fieldResolver.CreateFieldResolver((FieldTypeEnum)field.FieldTypeId).ResolveField(ctx, field, Convert.ToInt32(fieldType.Identifier)));
+                    }
+                    else
+                    {
+                        definition = new ObjectFieldDefinition(
                             field.Name,
                             type: TypeReference.Parse(field.GraphDataTypeName),
                             pureResolver: ctx => fieldResolver.CreateFieldResolver((FieldTypeEnum)field.FieldTypeId).ResolveField(ctx, field));
+                    }
 
                     typeDefinition.Fields.Add(definition);
                 }
