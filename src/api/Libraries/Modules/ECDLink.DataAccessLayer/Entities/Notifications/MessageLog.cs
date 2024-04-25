@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace ECDLink.DataAccessLayer.Entities.Notifications
 {
@@ -68,6 +69,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public int Ordering { get; set; }
         public string Action { get; set; }
         public Guid? GroupingId { get; set; }
+        public Guid? RelatedToUserId { get {  return RelatedEntities != null ? RelatedEntities.FirstOrDefault()?.RelatedToEntityId : null; } }
         public List<RelatedEntity> RelatedEntities { get; set; }
     }
 

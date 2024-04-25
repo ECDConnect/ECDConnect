@@ -81,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             ApplicationUserManager userManager,
-            HealthCareWorkerManager healthCareWorkerManager,
+            [Service] HealthCareWorkerManager healthCareWorkerManager,
             Guid hcwId)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
