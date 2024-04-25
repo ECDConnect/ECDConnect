@@ -239,10 +239,13 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
     }, [onChangePage]);
 
     useEffect(() => {
-      if (!!tableRef?.current?.state?.active_page_number) {
+      if (
+        !!tableRef?.current?.state?.active_page_number &&
+        currentPage <= totalPages
+      ) {
         tableRef.current.state.active_page_number = currentPage;
       }
-    }, [tableKey, tableKey]);
+    }, [tableKey, currentPage]);
 
     return (
       <>
