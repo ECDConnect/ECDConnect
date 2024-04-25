@@ -5527,6 +5527,8 @@ export type LeagueWithClinicsModel = {
 export type LeagueWithRankingsModel = {
   __typename?: 'LeagueWithRankingsModel';
   clinics?: Maybe<Array<Maybe<ClinicWithPointsModel>>>;
+  districtId?: Maybe<Scalars['UUID']>;
+  districtName?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   leagueTypeId: Scalars['UUID'];
@@ -5906,6 +5908,13 @@ export type ListFilterInputTypeOfLearnerFilterInput = {
   some?: InputMaybe<LearnerFilterInput>;
 };
 
+export type ListFilterInputTypeOfMessageLogRelatedToFilterInput = {
+  all?: InputMaybe<MessageLogRelatedToFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<MessageLogRelatedToFilterInput>;
+  some?: InputMaybe<MessageLogRelatedToFilterInput>;
+};
+
 export type ListFilterInputTypeOfMotherFilterInput = {
   all?: InputMaybe<MotherFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -6010,6 +6019,16 @@ export type LogRelatedTypeOperationFilterInput = {
   nin?: InputMaybe<Array<LogRelatedType>>;
 };
 
+export type MeetingTopic = {
+  __typename?: 'MeetingTopic';
+  infoGraphic?: Maybe<Scalars['String']>;
+  knowledgeContent?: Maybe<Scalars['String']>;
+  selfCareContent?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  topicContent?: Maybe<Scalars['String']>;
+  topicTitle?: Maybe<Scalars['String']>;
+};
+
 export type MeetingType = {
   __typename?: 'MeetingType';
   description?: Maybe<Scalars['String']>;
@@ -6062,17 +6081,18 @@ export type MessageLog = {
   cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
   fromUserId: Scalars['UUID'];
+  groupingId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   message?: Maybe<Scalars['String']>;
   messageDate?: Maybe<Scalars['DateTime']>;
   messageEndDate?: Maybe<Scalars['DateTime']>;
+  messageLogRelatedTos?: Maybe<Array<Maybe<MessageLogRelatedTo>>>;
   messageProtocol?: Maybe<Scalars['String']>;
   messageTemplate?: Maybe<MessageTemplate>;
   messageTemplateType?: Maybe<Scalars['String']>;
   readDate?: Maybe<Scalars['DateTime']>;
-  relatedToUserId?: Maybe<Scalars['String']>;
   sentByUserId: Scalars['UUID'];
   status?: Maybe<Scalars['String']>;
   subject?: Maybe<Scalars['String']>;
@@ -6089,18 +6109,19 @@ export type MessageLogFilterInput = {
   cTAText?: InputMaybe<StringOperationFilterInput>;
   from?: InputMaybe<StringOperationFilterInput>;
   fromUserId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  groupingId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   message?: InputMaybe<StringOperationFilterInput>;
   messageDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   messageEndDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  messageLogRelatedTos?: InputMaybe<ListFilterInputTypeOfMessageLogRelatedToFilterInput>;
   messageProtocol?: InputMaybe<StringOperationFilterInput>;
   messageTemplate?: InputMaybe<MessageTemplateFilterInput>;
   messageTemplateType?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<MessageLogFilterInput>>;
   readDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  relatedToUserId?: InputMaybe<StringOperationFilterInput>;
   sentByUserId?: InputMaybe<ComparableGuidOperationFilterInput>;
   status?: InputMaybe<StringOperationFilterInput>;
   subject?: InputMaybe<StringOperationFilterInput>;
@@ -6116,16 +6137,19 @@ export type MessageLogInput = {
   CTAText?: InputMaybe<Scalars['String']>;
   From?: InputMaybe<Scalars['String']>;
   FromUserId: Scalars['UUID'];
+  GroupingId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Message?: InputMaybe<Scalars['String']>;
   MessageDate?: InputMaybe<Scalars['DateTime']>;
   MessageEndDate?: InputMaybe<Scalars['DateTime']>;
+  MessageLogRelatedTos?: InputMaybe<
+    Array<InputMaybe<MessageLogRelatedToInput>>
+  >;
   MessageProtocol?: InputMaybe<Scalars['String']>;
   MessageTemplate?: InputMaybe<MessageTemplateInput>;
   MessageTemplateType?: InputMaybe<Scalars['String']>;
   ReadDate?: InputMaybe<Scalars['DateTime']>;
-  RelatedToUserId?: InputMaybe<Scalars['String']>;
   SentByUserId: Scalars['UUID'];
   Status?: InputMaybe<Scalars['String']>;
   Subject?: InputMaybe<Scalars['String']>;
@@ -6169,12 +6193,34 @@ export type MessageLogModelInput = {
   wardName?: InputMaybe<Scalars['String']>;
 };
 
+export type MessageLogRelatedTo = {
+  __typename?: 'MessageLogRelatedTo';
+  entityType?: Maybe<Scalars['String']>;
+  messageLogId: Scalars['UUID'];
+  relatedEntityId: Scalars['UUID'];
+};
+
+export type MessageLogRelatedToFilterInput = {
+  and?: InputMaybe<Array<MessageLogRelatedToFilterInput>>;
+  entityType?: InputMaybe<StringOperationFilterInput>;
+  messageLogId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  or?: InputMaybe<Array<MessageLogRelatedToFilterInput>>;
+  relatedEntityId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type MessageLogRelatedToInput = {
+  entityType?: InputMaybe<Scalars['String']>;
+  messageLogId: Scalars['UUID'];
+  relatedEntityId: Scalars['UUID'];
+};
+
 export type MessageLogSortInput = {
   action?: InputMaybe<SortEnumType>;
   cTA?: InputMaybe<SortEnumType>;
   cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;
   fromUserId?: InputMaybe<SortEnumType>;
+  groupingId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
@@ -6185,7 +6231,6 @@ export type MessageLogSortInput = {
   messageTemplate?: InputMaybe<MessageTemplateSortInput>;
   messageTemplateType?: InputMaybe<SortEnumType>;
   readDate?: InputMaybe<SortEnumType>;
-  relatedToUserId?: InputMaybe<SortEnumType>;
   sentByUserId?: InputMaybe<SortEnumType>;
   status?: InputMaybe<SortEnumType>;
   subject?: InputMaybe<SortEnumType>;
@@ -10808,6 +10853,7 @@ export type Notification = {
   cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
   fromUserId: Scalars['UUID'];
+  groupingId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   message?: Maybe<Scalars['String']>;
   messageDate?: Maybe<Scalars['DateTime']>;
@@ -10817,7 +10863,8 @@ export type Notification = {
   messageTemplateType?: Maybe<Scalars['String']>;
   ordering: Scalars['Int'];
   readDate?: Maybe<Scalars['DateTime']>;
-  relatedToUserId?: Maybe<Scalars['String']>;
+  relatedEntities?: Maybe<Array<Maybe<RelatedEntity>>>;
+  relatedToUserId?: Maybe<Scalars['UUID']>;
   sentByUserId: Scalars['UUID'];
   status?: Maybe<Scalars['String']>;
   subject?: Maybe<Scalars['String']>;
@@ -10843,6 +10890,7 @@ export type NotificationSortInput = {
   cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;
   fromUserId?: InputMaybe<SortEnumType>;
+  groupingId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   message?: InputMaybe<SortEnumType>;
   messageDate?: InputMaybe<SortEnumType>;
@@ -11502,6 +11550,7 @@ export type PortalClinicMeetingModel = {
   dateSubmitted: Scalars['DateTime'];
   id: Scalars['UUID'];
   meetingDate: Scalars['DateTime'];
+  meetingTopic?: Maybe<MeetingTopic>;
   meetingTypeId: Scalars['UUID'];
   participantsInField?: Maybe<Array<Maybe<Participant>>>;
   participantsOptedOut?: Maybe<Array<Maybe<Participant>>>;
@@ -11512,9 +11561,47 @@ export type PortalClinicMeetingModel = {
   totalSupportVisits: Scalars['Int'];
 };
 
+export type PortalHealthCareWorkerModel = {
+  __typename?: 'PortalHealthCareWorkerModel';
+  connectUsage?: Maybe<Scalars['String']>;
+  connectUsageColor?: Maybe<Scalars['String']>;
+  dateInvited?: Maybe<Scalars['DateTime']>;
+  healthCareWorkerId: Scalars['UUID'];
+  idNumber?: Maybe<Scalars['String']>;
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  userId: Scalars['UUID'];
+};
+
+export type PortalHealthCareWorkerModelFilterInput = {
+  and?: InputMaybe<Array<PortalHealthCareWorkerModelFilterInput>>;
+  connectUsage?: InputMaybe<StringOperationFilterInput>;
+  connectUsageColor?: InputMaybe<StringOperationFilterInput>;
+  dateInvited?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  healthCareWorkerId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  idNumber?: InputMaybe<StringOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<PortalHealthCareWorkerModelFilterInput>>;
+  userId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type PortalHealthCareWorkerModelSortInput = {
+  connectUsage?: InputMaybe<SortEnumType>;
+  connectUsageColor?: InputMaybe<SortEnumType>;
+  dateInvited?: InputMaybe<SortEnumType>;
+  healthCareWorkerId?: InputMaybe<SortEnumType>;
+  idNumber?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  name?: InputMaybe<SortEnumType>;
+  userId?: InputMaybe<SortEnumType>;
+};
+
 export type PortalLeagueModel = {
   __typename?: 'PortalLeagueModel';
   clinics?: Maybe<Array<Maybe<BaseClinicModel>>>;
+  districtId?: Maybe<Scalars['UUID']>;
+  districtName?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   leagueTypeId: Scalars['UUID'];
@@ -11525,6 +11612,8 @@ export type PortalLeagueModel = {
 export type PortalLeagueModelFilterInput = {
   and?: InputMaybe<Array<PortalLeagueModelFilterInput>>;
   clinics?: InputMaybe<ListFilterInputTypeOfBaseClinicModelFilterInput>;
+  districtId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  districtName?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   leagueTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -11534,6 +11623,8 @@ export type PortalLeagueModelFilterInput = {
 };
 
 export type PortalLeagueModelSortInput = {
+  districtId?: InputMaybe<SortEnumType>;
+  districtName?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   leagueTypeId?: InputMaybe<SortEnumType>;
@@ -13275,7 +13366,6 @@ export type Query = {
   backReferralsForInfant?: Maybe<Array<Maybe<VisitBackReferral>>>;
   backReferralsForMother?: Maybe<Array<Maybe<VisitBackReferral>>>;
   breastFeedingClubs?: Maybe<Array<Maybe<BreastFeedingClubModel>>>;
-  cMSTopicForMonth: Array<Maybe<Topic>>;
   caregiverClients?: Maybe<CaregiverClients>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   changesToSync: Scalars['Boolean'];
@@ -13459,6 +13549,9 @@ export type Query = {
   healthCareWorkerTemplateGenerator?: Maybe<FileModel>;
   healthCareWorkerVisitStatus?: Maybe<HealthCareWorkerVisitStatusModel>;
   healthCareWorkersForClinicId?: Maybe<Array<Maybe<HealthCareWorker>>>;
+  healthCareWorkersOptedOutOfMonthlyMeeting?: Maybe<
+    Array<Maybe<PortalHealthCareWorkerModel>>
+  >;
   healthPromotion: Array<Maybe<HealthPromotion>>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
@@ -15269,9 +15362,9 @@ export type QueryAllHealthCareWorkersArgs = {
   connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   order?: InputMaybe<Array<PortalUsersHcwModelSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
-  provinceSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  provinceSearch?: InputMaybe<Array<Scalars['UUID']>>;
   search?: InputMaybe<Scalars['String']>;
-  subDistrictSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  subDistrictSearch?: InputMaybe<Array<Scalars['UUID']>>;
   visitSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   where?: InputMaybe<PortalUsersHcwModelFilterInput>;
 };
@@ -15354,10 +15447,6 @@ export type QueryBackReferralsForMotherArgs = {
 
 export type QueryBreastFeedingClubsArgs = {
   clinicId: Scalars['UUID'];
-};
-
-export type QueryCMsTopicForMonthArgs = {
-  localeId: Scalars['UUID'];
 };
 
 export type QueryCaregiverClientsArgs = {
@@ -16199,9 +16288,17 @@ export type QueryHealthCareWorkersForClinicIdArgs = {
   clinicId: Scalars['UUID'];
 };
 
+export type QueryHealthCareWorkersOptedOutOfMonthlyMeetingArgs = {
+  month: Scalars['Int'];
+  order?: InputMaybe<Array<PortalHealthCareWorkerModelSortInput>>;
+  where?: InputMaybe<PortalHealthCareWorkerModelFilterInput>;
+  year: Scalars['Int'];
+};
+
 export type QueryHealthPromotionArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryHolidaysByMonthArgs = {
@@ -16260,9 +16357,11 @@ export type QueryLeagueForUserArgs = {
 
 export type QueryLeaguesArgs = {
   districtId?: InputMaybe<Scalars['UUID']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
   order?: InputMaybe<Array<PortalLeagueModelSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   searchString?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
   where?: InputMaybe<PortalLeagueModelFilterInput>;
 };
 
@@ -16768,6 +16867,12 @@ export type ReferralTypeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type RelatedEntity = {
+  __typename?: 'RelatedEntity';
+  entityType?: Maybe<Scalars['String']>;
+  relatedToEntityId: Scalars['UUID'];
+};
+
 export type Relation = {
   __typename?: 'Relation';
   description?: Maybe<Scalars['String']>;
@@ -16859,21 +16964,6 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
-export type Setting_IncomeStatementSubmitEnd = {
-  __typename?: 'Setting_IncomeStatementSubmitEnd';
-  IncomeStatementSubmitEnd: Scalars['String'];
-};
-
-export type Setting_IncomeStatementSubmitStart = {
-  __typename?: 'Setting_IncomeStatementSubmitStart';
-  IncomeStatementSubmitStart: Scalars['String'];
-};
-
-export type Setting_IntegrationDelay = {
-  __typename?: 'Setting_IntegrationDelay';
-  IntegrationDelay: Scalars['String'];
-};
-
 export type Setting_InvitationCutoffDelay = {
   __typename?: 'Setting_InvitationCutoffDelay';
   InvitationCutoffDelay: Scalars['String'];
@@ -16883,6 +16973,7 @@ export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
   Signup: Scalars['String'];
+  TeamLeadSignup: Scalars['String'];
 };
 
 export type Setting_Jwts = {
@@ -16918,17 +17009,6 @@ export type Setting_Security = {
   Login: Scalars['String'];
 };
 
-export type Setting_SmartLinkApi = {
-  __typename?: 'Setting_SmartLinkApi';
-  BaseUrl: Scalars['String'];
-  Key: Scalars['String'];
-  MaskDataEmail: Scalars['String'];
-  MaskDataIdNumber: Scalars['String'];
-  MaskDataMode: Scalars['String'];
-  MaskDataNumber: Scalars['String'];
-  Mode: Scalars['String'];
-};
-
 export type Setting_Sms = {
   __typename?: 'Setting_Sms';
   Provider: Scalars['String'];
@@ -16936,6 +17016,7 @@ export type Setting_Sms = {
 
 export type Setting_Smtp = {
   __typename?: 'Setting_Smtp';
+  DevOverrideEmailAddress: Scalars['String'];
   FromEmail: Scalars['String'];
   FromEmailDisplayName: Scalars['String'];
   Password: Scalars['String'];
@@ -16965,13 +17046,6 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
-export type Setting_ITouch = {
-  __typename?: 'Setting_iTouch';
-  BaseUrl: Scalars['String'];
-  Password: Scalars['String'];
-  Username: Scalars['String'];
-};
-
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -16979,9 +17053,6 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
-  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
-  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
-  IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
   Jwts: Setting_Jwts;
@@ -16989,13 +17060,11 @@ export type SettingsType = {
   Reporting: Setting_Reporting;
   SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
-  SmartLinkApi: Setting_SmartLinkApi;
   Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
-  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {

@@ -1,11 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GetAllHealthCareWorker = gql`
-  query GetAllHealthCareWorker(
+  query GetAllHealthCareWorkers(
     $search: String
     $clinicSearch: [String]
-    $provinceSearch: [String]
-    $subDistrictSearch: [String]
+    $provinceSearch: [UUID!]
+    $subDistrictSearch: [UUID!]
     $visitSearch: [String]
     $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
