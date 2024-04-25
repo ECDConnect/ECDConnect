@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
@@ -80,6 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             ApplicationUserManager userManager,
+            [Service] HealthCareWorkerManager healthCareWorkerManager,
             Guid hcwId)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
@@ -115,6 +117,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 hcw.UpdatedDate = DateTime.Now;
                 hcw.UpdatedBy = applicationUserId.ToString();
                 var updatedRecord = hcwRepo.Update(hcw);
+
+                // Check notifications
+                healthCareWorkerManager.OnRemoveCheckNotifications(hcwId);
 
                 return new PortalUserHCWModel(updatedRecord);
             }

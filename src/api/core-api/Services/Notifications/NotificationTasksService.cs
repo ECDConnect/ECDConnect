@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,11 +68,13 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
                         {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, 
+                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
                         }
                         else if (daysToCheck.Days >= 30)
                         {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null, hcw.UserId.ToString());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null,
+                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
                         }
                     }
                 }

@@ -144,7 +144,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     practitioner.ShareInfo = true;
                     practitionerRepo.Update(practitioner);
                     //deactivate notifications
-                    notificationService.ExpireNotificationsTypesForUser(practitionerId, TemplateTypeConstants.PrincipalFAAChanged, null, null, practitionerId);
+                    notificationService.ExpireNotificationsTypesForUser(practitionerId, TemplateTypeConstants.PrincipalFAAChanged, null, null, Guid.Parse(practitionerId));
 
                     return true;
                 }
@@ -364,9 +364,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 //principaluser to send
                 if (principalUser != null && userToSend != null)
                 {
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, principalUser, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = userToSend.FirstName } }, DateTime.Now.AddDays(7), false, true, null, practitionerUserId);
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, principalUser, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = userToSend.FirstName } }, DateTime.Now.AddDays(7), false, true, null,
+                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerUserId), "ApplicationUser") });
                 }
-                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false,true,null, practitionerUserId);
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false,true,null,
+                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerUserId), "ApplicationUser") });
             }
 
 

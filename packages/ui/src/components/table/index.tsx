@@ -1,7 +1,14 @@
 import ReactTailwindTable, { Icolumn, Irow } from 'react-tailwind-table';
 import { TableProps, TableRefMethods } from './types';
 import { getStyles } from './styles';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {
+  LegacyRef,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { Checkbox, FormInput } from '../form-fields';
 import Button from '../button/button';
 import { classNames, renderIcon } from '../../utils';
@@ -38,6 +45,8 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
     const [selectedRows, setSelectedRows] = useState<Irow[]>([]);
     const [openFilters, setOpenFilters] = useState<boolean>(false);
 
+    const tableRef = useRef<ReactTailwindTable>(null);
+
     useImperativeHandle(ref, () => ({
       resetSelectedRows() {
         setSelectedRows([]);
@@ -56,7 +65,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
 
     const rowsWithKey = rows?.map((row, index) => ({
       ...row,
-      key: index,
+      key: row?.key ?? index,
       checked: false,
     }));
 
@@ -229,6 +238,12 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
       };
     }, [onChangePage]);
 
+    useEffect(() => {
+      if (!!tableRef?.current?.state?.active_page_number) {
+        tableRef.current.state.active_page_number = currentPage;
+      }
+    }, [tableKey, tableKey]);
+
     return (
       <>
         <div className="flex  flex-col">
@@ -349,6 +364,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
           <LoadingSpinner {...loading} />
         ) : (
           <ReactTailwindTable
+            ref={tableRef}
             key={tableKey}
             striped={false}
             show_search={false}

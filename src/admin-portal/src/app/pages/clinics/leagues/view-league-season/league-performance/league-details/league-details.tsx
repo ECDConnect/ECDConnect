@@ -11,39 +11,53 @@ import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neut
 
 import ROUTES from '../../../../../../routes/app.routes-constants';
 import { PortalLeagueDto, getCommunityQuarterDescription } from '@ecdlink/core';
-import { endOfMonth, startOfMonth } from 'date-fns';
-import { useState } from 'react';
+import { endOfMonth, startOfMonth, sub } from 'date-fns';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GetLeague, QueryLeagueArgs } from '@ecdlink/graphql';
-import { useLocation, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { LeagueDetailsRouteParams, LeagueDetailsRouteState } from './types';
 
 export const LeagueDetails = () => {
   const today = new Date();
+  const currentYear = today.getFullYear();
+  const lastYear = currentYear - 1;
+
   const { quarter } = getCommunityQuarterDescription(today);
 
+  const startSeason = startOfMonth(new Date(lastYear, 9));
   const startQuarter = startOfMonth(
-    new Date(new Date().getFullYear(), quarter.startMonth - 1)
+    new Date(currentYear, quarter.startMonth - 1)
   );
-  const endQuarter = endOfMonth(
-    new Date(new Date().getFullYear(), quarter.endMonth - 1)
-  );
+  const endQuarter = endOfMonth(new Date(currentYear, quarter.endMonth - 1));
 
   const [startDate, setStartDate] = useState(startQuarter);
   const [endDate, setEndDate] = useState(endQuarter);
 
+  const history = useHistory();
+
   const { leagueId } = useParams<LeagueDetailsRouteParams>();
   const { state } = useLocation<LeagueDetailsRouteState>();
+
+  useEffect(() => {
+    if (!state) {
+      history.replace(ROUTES.CLINICS.LEAGUES.ROOT);
+    }
+  }, [history, state]);
 
   const { data, loading } = useQuery<{ league?: PortalLeagueDto }>(GetLeague, {
     fetchPolicy: 'cache-and-network',
     variables: {
       startDate,
-      endDate,
+      endDate: sub(endOfMonth(endDate), { days: 1 }),
       leagueId,
     } as QueryLeagueArgs,
     skip: !startDate || !endDate,
   });
+
+  const hideActivityCount =
+    data?.league?.clinics.length > 1 &&
+    data?.league?.clinics?.every((clinic) => clinic.leagueRanking === 1);
 
   const paths: BreadcrumbProps['paths'] = [
     {
@@ -99,18 +113,21 @@ export const LeagueDetails = () => {
           )}
         </div>
         <DatePicker
+          showMonthYearPicker
           selectsRange
           selected={startDate}
           startDate={startDate}
           endDate={endDate}
           onChange={onChange}
+          minDate={startSeason}
+          maxDate={endQuarter}
           colour="secondary"
           showChevronIcon
           hideCalendarIcon
           textColour="white"
-          className="w-60 rounded-xl"
+          className="z-10 w-60 rounded-xl"
           isFullWidth={false}
-          dateFormat={'d MMM yyyy'}
+          dateFormat={'MMM yyyy'}
         />
       </div>
 
@@ -124,9 +141,17 @@ export const LeagueDetails = () => {
         data?.league?.clinics?.map((clinic) => (
           <PointsDetailsCard
             key={clinic.id}
+            hideActivityCount={hideActivityCount}
             pointsEarned={clinic?.pointsTotal ?? 0}
-            activityCount={clinic.leagueRanking ?? 1}
+            activityCount={clinic.leagueRanking ?? 0}
             title={clinic.name}
+            description={`Team Lead(s): ${
+              clinic.teamLeads
+                ?.map(
+                  (lead) => `${lead?.firstName ?? ''} ${lead?.surname ?? ''}`
+                )
+                ?.join(', ') || 'None'
+            }`}
             size="medium"
             className="mb-1 rounded-2xl"
             textColour="textMid"

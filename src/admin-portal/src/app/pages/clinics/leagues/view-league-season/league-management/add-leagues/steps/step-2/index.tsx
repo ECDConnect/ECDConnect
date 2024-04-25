@@ -83,13 +83,14 @@ export const Step2 = ({
       availableClinics?.filter(
         (clinic) =>
           clinic.name.toLowerCase().includes(search.toLowerCase()) ||
-          clinic.id.toLowerCase().includes(search.toLowerCase())
+          clinic.id.toLowerCase().includes(search.toLowerCase()) ||
+          selectedRows.some((row) => row.id === clinic.id)
       ) ?? [],
-    [availableClinics, search]
+    [availableClinics, search, selectedRows]
   );
 
   const transformClinic = (clinic: SimpleClinicDto, index: number) => ({
-    key: index,
+    key: clinic.id,
     id: clinic.id,
     name: clinic.name,
     teamLead:
@@ -108,10 +109,20 @@ export const Step2 = ({
 
     return clinics
       .filter((clinic) =>
-        subDistrictFilter.some((filter) => clinic.subDistrictName === filter.id)
+        subDistrictFilter.some(
+          (filter) =>
+            clinic.subDistrictName === filter.id ||
+            selectedRows.some((row) => row.id === clinic.id)
+        )
       )
       .map(transformClinic);
-  }, [availableClinics, search, searchedClinics, subDistrictFilter]);
+  }, [
+    availableClinics,
+    search,
+    searchedClinics,
+    selectedRows,
+    subDistrictFilter,
+  ]);
 
   const league: LeagueInputModelInput = useMemo(
     () => ({

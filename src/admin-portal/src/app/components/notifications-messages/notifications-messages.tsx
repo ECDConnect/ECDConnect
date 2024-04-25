@@ -84,19 +84,19 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     switch (type) {
       case MessageStatusConstants.Amber:
         return (
-          <ExclamationIcon className="bg-alertMain h-12 h-12 rounded-full p-3 text-white" />
+          <ExclamationIcon className="bg-alertMain h-12 w-12 rounded-full p-3 text-white" />
         );
       case MessageStatusConstants.Blue:
         return (
-          <InformationCircleIcon className="bg-infoMain h-12 h-12 rounded-full p-3 text-white" />
+          <InformationCircleIcon className="bg-infoMain h-12 w-12 rounded-full p-3 text-white" />
         );
       case MessageStatusConstants.Red:
         return (
-          <InformationCircleIcon className="bg-alertMain h-12 h-12 rounded-full p-3 text-white" />
+          <InformationCircleIcon className="bg-alertMain h-12 w-12 rounded-full p-3 text-white" />
         );
       default:
         return (
-          <StarIcon className="bg-successMain h-12 h-12 rounded-full p-3 text-white" />
+          <StarIcon className="bg-successMain h-12 w-12 rounded-full p-3 text-white" />
         );
     }
   };
@@ -123,6 +123,10 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
               connectUsageColor: targetHcw?.user?.connectUsageColor,
             },
           });
+        case NotificationsCTAText.AddLeagues:
+          return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
+        case NotificationsCTAText.AssignToLeagues:
+          return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
         default:
           return null;
       }

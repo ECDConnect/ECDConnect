@@ -1,11 +1,11 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Clinics;
+using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 
 namespace ECDLink.Api.CoreApi.Services.Interfaces
 {

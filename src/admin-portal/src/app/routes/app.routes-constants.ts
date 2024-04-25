@@ -37,6 +37,8 @@ const ROUTES = {
         LEAGUE_DETAILS: '/league-details/:leagueId',
       }),
     }),
+    DISTRICTS: '/districts',
+    SUB_DISTRICTS: '/sub-districts',
   }),
   REFERRALS: addPrefix('/referrals', {
     VIEW_REFERRAL_DETAIL: addPrefix('/view-referral-detail/:referralType', {
