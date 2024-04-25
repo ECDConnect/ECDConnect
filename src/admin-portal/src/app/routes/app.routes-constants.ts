@@ -9,7 +9,11 @@ const ROUTES = {
   VERIFY_PHONE_NUMBER: '/verify-cellphone-number',
   TEAM_MEETINGS: '/team-meetings',
   TL_MEETINGS: addPrefix('/tl-meetings', {
-    SEE_REPORTS: '/see-reports',
+    MEETINGS: 'meetings',
+    REPORTS: addPrefix('/reports', {
+      SEE_REPORTS: '/see-reports',
+      VIEW_REPORT: '/view-report',
+    }),
     EDIT_TOPICS: '/edit-topics',
   }),
   NOTIFICATIONS_VIEW: '/notifications-view',

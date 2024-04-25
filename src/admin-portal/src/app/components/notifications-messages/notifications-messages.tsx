@@ -1,4 +1,4 @@
-import { Button, Card, Typography } from '@ecdlink/ui';
+import { Button, Card, LoadingSpinner, Typography } from '@ecdlink/ui';
 import {
   ExclamationIcon,
   InformationCircleIcon,
@@ -77,7 +77,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   const targetClinic = data?.allPortalClinics?.find(
     (item) => item?.id === relatedToUserId
   );
-  const targetHcw = data?.allHealthCareWorkers?.find(
+  const targetHcw = hcwData?.allHealthCareWorkers?.find(
     (item) => item?.id === relatedToUserId
   );
   const handleIcon = (type: string) => {
@@ -150,6 +150,18 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   }, [cTA, handleRedirectURL, id, markAsRead, readDate]);
 
+  if (loadingClinicsData || loadingClinicsData) {
+    return (
+      <div className="mt-16">
+        <LoadingSpinner
+          size="big"
+          className="my-12 p-4"
+          spinnerColor="white"
+          backgroundColor="secondary"
+        />
+      </div>
+    );
+  }
   return (
     <div className="w-full">
       <Card className="rounded-xl bg-white p-4">

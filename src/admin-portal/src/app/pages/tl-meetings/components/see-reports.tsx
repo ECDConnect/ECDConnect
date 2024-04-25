@@ -1,64 +1,72 @@
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { Icolumn, Irow } from 'react-tailwind-table';
-import { format, sub } from 'date-fns';
 import { useHistory, useLocation } from 'react-router';
-
-import { ReferralSummary, formatTextToSlug } from '@ecdlink/core';
+import { MeetingDto, formatDateToTable } from '@ecdlink/core';
 import { SearchDropDownOption, Table } from '@ecdlink/ui';
 import { useQuery } from '@apollo/client';
 import {
   Clinic,
+  GetAllClinicMeetings,
   GetAllPortalClinics,
-  GetReferralsSummary,
+  GetAllTeamLead,
 } from '@ecdlink/graphql';
 import { ReferralsRouteState } from '../../referrals/types';
-import { ViewReferralDetailsRouteState } from '../../referrals/view-referral-detail/types';
 import ROUTES from '../../../routes/app.routes-constants';
 
 export const SeeReports = () => {
-  const today = new Date();
-  const initialBefore30Days = sub(today, {
-    days: 30,
-  });
-  const minDate = sub(today, {
-    months: 6,
-  });
-
-  const [dateRange, setDateRange] = useState([initialBefore30Days, today]);
-  const [startDateRange, endDateRange] = dateRange;
-  const startDate = format(startDateRange, 'yyyy-MM-dd');
-  const endDate = format(endDateRange ?? startDateRange, 'yyyy-MM-dd');
-
   const [search, setSearch] = useState<string>('');
   const [selectedClinic, setSelectedClinic] =
     useState<SearchDropDownOption<string>[]>();
+  const [selectedTeamLead, setSelectedTeamLead] =
+    useState<SearchDropDownOption<string>[]>();
+  const filteredClinics = useMemo(
+    () => selectedClinic?.map((item) => item?.id),
+    [selectedClinic]
+  );
+  const filteredTeamLeads = useMemo(
+    () => selectedTeamLead?.map((item) => item?.id),
+    [selectedTeamLead]
+  );
 
   const history = useHistory();
 
   const { state } = useLocation<ReferralsRouteState>();
-
-  const selectedClinicIds = useMemo(
-    () => selectedClinic?.map((clinic) => clinic.value),
-    [selectedClinic]
-  );
-
-  const { data, loading } = useQuery<{ referralsSummary?: ReferralSummary[] }>(
-    GetReferralsSummary,
-    {
-      variables: {
-        startDate,
-        endDate,
-        clinicIds: selectedClinicIds ?? [],
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
 
   const { data: clinicsData, loading: loadingClinics } = useQuery<{
     allPortalClinics?: Clinic[];
   }>(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: reportsData, loading: loadingReports } = useQuery<{
+    allClinicMeetings?: MeetingDto[];
+  }>(GetAllClinicMeetings, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const { data: teamLeadtData, loading: loadingTeamLeads } = useQuery(
+    GetAllTeamLead,
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        search: '',
+        clinicSearch: [],
+        provinceSearch: [],
+        subDistrictSearch: [],
+        visitSearch: [],
+        connectUsageSearch: [],
+        pagingInput: {
+          pageNumber: 1,
+          pageSize: null,
+        },
+        order: [
+          {
+            insertedDate: 'DESC',
+          },
+        ],
+      },
+    }
+  );
 
   const clinicOptions = clinicsData?.allPortalClinics?.map(
     (clinic): SearchDropDownOption<string> => ({
@@ -68,40 +76,88 @@ export const SeeReports = () => {
     })
   );
 
+  const teamLeadOptions = teamLeadtData?.allTeamLeads?.map(
+    (teamLead): SearchDropDownOption<string> => ({
+      id: teamLead?.id ?? '',
+      label: teamLead?.user?.fullName ?? '',
+      value: teamLead?.id ?? '',
+    })
+  );
+
   const columns: Icolumn[] = [
     {
-      field: 'type',
-      use: 'Referral type',
+      field: 'clinicName',
+      use: 'Clinic',
     },
     {
-      field: 'referralsRaised',
-      use: '# referrals raised',
+      field: 'month',
+      use: 'Month',
     },
     {
-      field: 'referralsMade',
-      use: '# referrals made',
+      field: 'meetingTopicTitle',
+      use: 'Topic',
     },
     {
-      field: 'backReferralsMade',
-      use: '# back-referrals made',
+      field: 'dateSubmitted',
+      use: 'Date submitted',
     },
   ];
 
-  const sortedReferralsSummary = [...(data?.referralsSummary ?? [])]?.sort(
-    (a, b) => b?.referralsRaised - a?.referralsRaised
+  const sortedReports = [...(reportsData?.allClinicMeetings ?? [])]?.sort(
+    (a, b) => Number(b?.dateSubmitted) - Number(a?.dateSubmitted)
   );
+
+  const clinicsResult = sortedReports?.filter((report) =>
+    filteredClinics?.includes(report?.clinicId)
+  );
+  const teamLeadsResult = sortedReports?.filter((report) =>
+    filteredTeamLeads?.includes(report?.teamLeadId)
+  );
+
+  const filteredData = useMemo(() => {
+    if (filteredClinics?.length > 0 && filteredTeamLeads?.length > 0) {
+      const result = teamLeadsResult.filter((elem) => {
+        return clinicsResult.some((x) => elem.clinicId.includes(x?.clinicId));
+      });
+
+      return result;
+    }
+
+    if (filteredTeamLeads?.length > 0) {
+      return teamLeadsResult;
+    }
+
+    if (filteredClinics?.length > 0) {
+      return clinicsResult;
+    }
+
+    return sortedReports;
+  }, [
+    clinicsResult,
+    filteredClinics,
+    filteredTeamLeads,
+    sortedReports,
+    teamLeadsResult,
+  ]);
 
   const rows: Irow[] =
     (search
-      ? sortedReferralsSummary?.filter((item) =>
-          item?.type?.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+      ? filteredData?.filter((item) =>
+          item?.clinicName
+            ?.toLocaleLowerCase()
+            .includes(search.toLocaleLowerCase())
         )
-      : sortedReferralsSummary) ?? [];
+      : filteredData.map((item) => ({
+          ...item,
+          meetingTopicTitle: item?.meetingTopic?.topicTitle,
+          dateSubmitted: formatDateToTable(new Date(item?.dateSubmitted)),
+          month: item?.meetingTopic?.title,
+        }))) ?? [];
 
   const onClearFilters = () => {
     setSearch('');
     setSelectedClinic([]);
-    setDateRange([initialBefore30Days, today]);
+    setSelectedTeamLead([]);
   };
 
   useLayoutEffect(() => {
@@ -125,14 +181,14 @@ export const SeeReports = () => {
           rows={rows}
           columns={columns}
           loading={{
-            isLoading: loading || loadingClinics,
+            isLoading: loadingReports || loadingClinics || loadingTeamLeads,
             size: 'medium',
             spinnerColor: 'adminPortalBg',
             backgroundColor: 'secondary',
           }}
           search={{
             value: search,
-            placeholder: 'Search by referral type...',
+            placeholder: 'Search by clinic, topic or month...',
             onChange: (e) => setSearch(e.target.value),
           }}
           filters={[
@@ -144,36 +200,24 @@ export const SeeReports = () => {
               options: clinicOptions,
               selectedOptions: selectedClinic,
               onChange: setSelectedClinic,
+              multiple: true,
             },
             {
-              dateFormat: 'd MMM yyyy',
-              className: 'w-64 border-2 mt-1',
-              colour: 'secondary',
-              textColour: 'white',
-              showChevronIcon: true,
-              hideCalendarIcon: true,
-              isFullWidth: false,
-              type: 'date-picker',
-              selectsRange: true,
-              startDate: startDateRange,
-              endDate: endDateRange,
-              minDate,
-              maxDate: today,
-              onChange: (date) => setDateRange(date),
+              hideFilter: teamLeadtData?.allTeamLeads?.length <= 1,
+              menuItemClassName: 'ml-16',
+              type: 'search-dropdown',
+              placeholder: 'Team Lead',
+              options: teamLeadOptions,
+              selectedOptions: selectedTeamLead,
+              onChange: setSelectedTeamLead,
+              multiple: true,
             },
           ]}
           onClearFilters={onClearFilters}
           onClickRow={(row) =>
-            history.push(
-              ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT.replace(
-                ':referralType',
-                row.typeId
-              ),
-              {
-                clinicIds: selectedClinicIds,
-                type: row.type,
-              } as ViewReferralDetailsRouteState
-            )
+            history.push(ROUTES.TL_MEETINGS.REPORTS.VIEW_REPORT, {
+              report: row,
+            })
           }
         />
       </div>

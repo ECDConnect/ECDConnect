@@ -119,8 +119,6 @@ export default function Shell() {
     setAvatarColor(getAvatarColor());
   }, []);
 
-  console.log(navigationData?.GetAllNavigation);
-
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
       const teamLeadNavigationItems = [

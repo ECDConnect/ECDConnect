@@ -20,18 +20,21 @@ export function TLMeetings() {
     ) {
       return [
         {
-          name: 'Edit topics',
-          href: ROUTES.TL_MEETINGS.SEE_REPORTS,
+          name: 'See reports',
+          href: ROUTES.TL_MEETINGS.REPORTS.SEE_REPORTS,
         },
         {
-          name: 'See reports',
-          href: '/clinics/sub-districts',
+          name: 'Edit topics',
+          href: ROUTES.TL_MEETINGS.EDIT_TOPICS,
         },
       ];
     }
   };
 
   const navigation = getNavigationItems();
+  const url = window.location.pathname;
+
+  const isViewReportPath = url === ROUTES.TL_MEETINGS.REPORTS.VIEW_REPORT;
 
   const history = useHistory();
 
@@ -45,19 +48,18 @@ export function TLMeetings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  console.log({ navigation });
-
   return (
     <>
       <div className="flex justify-center bg-white">
-        {navigation?.map((item) => (
-          <div key={item?.href} className={'w-full'}>
-            <SubNavigationLink
-              key={`${item.name}-${new Date().getTime()}`}
-              item={item}
-            ></SubNavigationLink>
-          </div>
-        ))}
+        {!isViewReportPath &&
+          navigation?.map((item) => (
+            <div key={item?.href} className={'w-full'}>
+              <SubNavigationLink
+                key={`${item.name}-${new Date().getTime()}`}
+                item={item}
+              ></SubNavigationLink>
+            </div>
+          ))}
       </div>
       <div className="p-8">
         <TlMeetingsRoutes />

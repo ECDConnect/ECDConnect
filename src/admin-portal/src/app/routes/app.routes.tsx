@@ -67,6 +67,8 @@ import { NotificationsView } from '../notifications/notificationsView';
 import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
 import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
 import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
+import { EditTopics } from '../pages/tl-meetings/components/edit-topics';
+import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -125,13 +127,18 @@ const ReferralRoutes: React.FC = () => {
 const TlMeetingsRoutes: React.FC = () => {
   return (
     <Switch>
+      <Route path={ROUTES.TL_MEETINGS.MEETINGS} component={TLMeetings}></Route>
       <Route
-        path={ROUTES.TL_MEETINGS.SEE_REPORTS}
+        path={ROUTES.TL_MEETINGS.REPORTS.SEE_REPORTS}
         component={SeeReports}
       ></Route>
       <Route
-        path={ROUTES.CLINICS.ALL_CLINICS}
-        component={ClinicsSubPage}
+        path={ROUTES.TL_MEETINGS.REPORTS.VIEW_REPORT}
+        component={ViewReport}
+      ></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.EDIT_TOPICS}
+        component={EditTopics}
       ></Route>
     </Switch>
   );
