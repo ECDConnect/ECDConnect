@@ -49,8 +49,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly IPointsEngineService _pointsEngineService;
         private readonly INotificationService _notificationService;
-        IPointsEngineService _pointsEngineService;
-        ContentManagementRepository _contentRepo;
+        private readonly ContentManagementRepository _contentRepo;
 
         public ClinicService(
             IHttpContextAccessor contextAccessor,
