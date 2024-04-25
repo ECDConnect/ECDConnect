@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { Icolumn, Irow } from 'react-tailwind-table';
 import { useHistory, useLocation } from 'react-router';
-import { MeetingDto, formatDateToTable } from '@ecdlink/core';
+import { MeetingDto } from '@ecdlink/core';
 import { SearchDropDownOption, Table } from '@ecdlink/ui';
 import { useQuery } from '@apollo/client';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@ecdlink/graphql';
 import { ReferralsRouteState } from '../../referrals/types';
 import ROUTES from '../../../routes/app.routes-constants';
+import { format } from 'date-fns';
 
 export const SeeReports = () => {
   const [search, setSearch] = useState<string>('');
@@ -150,7 +151,7 @@ export const SeeReports = () => {
       : filteredData.map((item) => ({
           ...item,
           meetingTopicTitle: item?.meetingTopic?.topicTitle,
-          dateSubmitted: formatDateToTable(new Date(item?.dateSubmitted)),
+          dateSubmitted: format(new Date(item?.dateSubmitted), 'dd/MM/yyyy'),
           month: item?.meetingTopic?.title,
         }))) ?? [];
 
@@ -216,7 +217,12 @@ export const SeeReports = () => {
           onClearFilters={onClearFilters}
           onClickRow={(row) =>
             history.push(ROUTES.TL_MEETINGS.REPORTS.VIEW_REPORT, {
-              report: row,
+              report: {
+                ...row,
+                dateSubmitted: reportsData?.allClinicMeetings?.find(
+                  (item) => item?.id === row?.id
+                )?.dateSubmitted,
+              },
             })
           }
         />

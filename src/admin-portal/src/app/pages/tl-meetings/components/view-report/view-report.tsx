@@ -25,8 +25,7 @@ export const ViewReport = () => {
   ];
 
   const report = state?.report;
-  console.log({ report });
-  console.log(new Date(report?.meetingDate));
+
   return (
     <div className="p-4">
       <Breadcrumb paths={paths} />
@@ -61,7 +60,7 @@ export const ViewReport = () => {
               />
               <Typography
                 type={'help'}
-                text={`${format(new Date(report?.meetingDate), 'dd MMMM y')}`}
+                text={`${format(new Date(report?.dateSubmitted), 'dd MMMM y')}`}
                 color={'textDark'}
               />
             </div>
