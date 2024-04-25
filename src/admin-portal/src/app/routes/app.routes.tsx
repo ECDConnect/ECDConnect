@@ -65,6 +65,7 @@ import { NotificationsView } from '../notifications/notificationsView';
 import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
 import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
 import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
+import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -137,6 +138,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
+      <Route path={ROUTES.TEAM_LEAD_LEAGUES} component={TLLeagues}></Route>
       <Route
         path={ROUTES.NOTIFICATIONS_VIEW}
         component={NotificationsView}

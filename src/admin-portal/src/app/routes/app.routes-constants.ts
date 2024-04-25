@@ -16,6 +16,7 @@ const ROUTES = {
   VIEW_USERS: '/users/view-user',
   PROFILE: '/profile',
   RESET: '/reset',
+  TEAM_LEAD_LEAGUES: '/tl-leagues',
   CLINICS: addPrefix('/clinics', {
     ALL_CLINICS: '/clinics',
     VIEW_CLINICS: '/view-clinics',
