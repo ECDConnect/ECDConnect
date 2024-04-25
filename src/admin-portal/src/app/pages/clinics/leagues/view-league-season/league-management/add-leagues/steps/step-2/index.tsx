@@ -243,6 +243,7 @@ export const Step2 = ({
           {...(!!leagueName && { maxCharacters: 30 })}
         />
         <Table
+          watchMode
           key={leagueNumber}
           multiSelect
           columns={columns}
