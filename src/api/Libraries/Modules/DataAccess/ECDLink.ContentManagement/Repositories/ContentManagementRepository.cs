@@ -64,17 +64,17 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // Get the complete content for null tenant and current tenants.
                 var contentType = _context.ContentTypes
-                      .Include(ct => ct.Content)
-                          .ThenInclude(c => c.ContentValues)
-                            .ThenInclude(c => c.ContentTypeField)
-                      .Where(x => x.Id == contentTypeId
-                            && x.IsActive
-                            // Can't have duplicates in ContentType as they get added
-                            // to HotChocolate and it throws, so can just request both.
-                            && (x.TenantId == currentTenant || x.TenantId == null))
-                      .OrderByDescending(x => x.TenantId)
-                      .ThenBy(x => x.Id)
-                      .FirstOrDefault();
+                  .Include(ct => ct.Content)
+                      .ThenInclude(c => c.ContentValues)
+                        .ThenInclude(c => c.ContentTypeField)
+                  .Where(x => x.Id == contentTypeId
+                        && x.IsActive
+                        // Can't have duplicates in ContentType as they get added
+                        // to HotChocolate and it throws, so can just request both.
+                        && (x.TenantId == currentTenant || x.TenantId == null))
+                  .OrderByDescending(x => x.TenantId)
+                  .ThenBy(x => x.Id)
+                  .FirstOrDefault();
 
                 var contents = contentType?.Content
                         .Where(x => x.IsActive
@@ -114,7 +114,14 @@ namespace ECDLink.ContentManagement.Repositories
                     // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                     var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                     contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
-                    contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                    if (!contentFieldValuePairs.ContainsKey("updatedDate"))
+                    {
+                        contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                    }
+                    else
+                    {
+                        contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
+                    }
                     if (item.ContentValues.Any(x => x.ContentTypeField.FieldName == "availableLanguages"))
                     {
                         var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
@@ -217,12 +224,12 @@ namespace ECDLink.ContentManagement.Repositories
             if (!_memoryCache.TryGetValue<List<Guid>>(key, out results))
             {
                 var content = _context.Contents
-                                .Include(i => i.ContentValues)
-                                .Where(x => x.Id == contentId
-                                        && x.IsActive
-                                        && x.ContentTypeId == contentTypeId
-                                        && x.TenantId == currentTenant)
-                                .FirstOrDefault();
+                            .Include(i => i.ContentValues)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.ContentTypeId == contentTypeId
+                                    && x.TenantId == currentTenant)
+                            .FirstOrDefault();
                 results = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
@@ -232,6 +239,22 @@ namespace ECDLink.ContentManagement.Repositories
                 _memoryCache.Set(key, results, cacheEntryOptions);
             }
             return results;
+        }
+
+        public ContentType GetContentTypeForContentId(int contentId)
+        {
+            var currentTenant = TenantExecutionContext.Tenant.Id;
+            var content = _context.Contents
+                .Include(i => i.ContentType)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.TenantId == currentTenant)
+                            .FirstOrDefault();
+            if (content == null || content == default)
+            {
+                return null;
+            }
+            return content.ContentType;
         }
 
         public IEnumerable<object> GetByIds(int contentTypeId, Guid localeId, params int[] contentIds)
@@ -339,8 +362,6 @@ namespace ECDLink.ContentManagement.Repositories
 
             foreach (var item in content)
             {
-                // keep our tenant's content values and fill in the gaps with the global tenant's content values
-                // Get the ContentValues for the current tenant, or the global tenant.
                 var contentValues = item.ContentValues
                     .Where(x => x.LocaleId == localeId
                             && x.ContentTypeField.IsActive == true
@@ -348,11 +369,108 @@ namespace ECDLink.ContentManagement.Repositories
                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                     .ToList();
 
-
-                // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
-                contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                if (!contentFieldValuePairs.ContainsKey("updatedDate"))
+                {
+                    contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                }
+                else
+                {
+                    contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
+                }
+                var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
+                if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
+                {
+                    //add list if non existent
+                    contentFieldValuePairs.Add("availableLanguages", string.Join(",", langsList));
+                }
+                else
+                {
+                    //update with fulllist
+                    contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
+                }
+
+                if (contentFieldValuePairs?.Any() ?? false)
+                {
+                    allContentValuePairs.Add(contentFieldValuePairs.ToObject());
+                }
+            }
+
+            return allContentValuePairs;
+        }
+
+        public IEnumerable<object> GetContentByTitleAndSection(string contentType, string section, Guid localeId, string title)
+        {
+            var contentQuery = _context.Contents
+                    .Include(i => i.ContentType)
+                    .Include(i => i.ContentValues)
+                        .ThenInclude(ti => ti.ContentTypeField)
+                    .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id
+                            && x.ContentType.Name == contentType
+                            && x.IsActive
+                            && x.ContentValues.Any(y => y.LocaleId == localeId)
+                            && x.ContentValues.Any(y => y.ContentTypeField.FieldName == "title")
+                            && x.ContentValues.Any(y => y.Value == section));
+
+            if (title != null && title != "")
+            {
+                contentQuery = contentQuery.Where(x => x.ContentValues.Any(y => y.ContentTypeField.FieldName == "section")
+                                                    && x.ContentValues.Any(y => y.Value == title));
+            }
+
+
+            var content = contentQuery.ToList();
+
+            // Use global tenant as a fallback, mostly for static and dynamic links
+            contentQuery = content?.Any() ?? false ? contentQuery
+                    : _context.Contents
+                        .Include(i => i.ContentType)
+                        .Include(i => i.ContentValues)
+                            .ThenInclude(ti => ti.ContentTypeField)
+                        .Where(x => x.TenantId == null
+                                && x.ContentType.Name == contentType
+                                && x.IsActive
+                                && x.ContentValues.Any(y => y.LocaleId == localeId)
+                                && x.ContentValues.Any(y => y.ContentTypeField.FieldName == "title")
+                                && x.ContentValues.Any(y => y.Value == section));
+
+            if (title != null && title != "")
+            {
+                contentQuery = contentQuery.Where(x => x.ContentValues.Any(y => y.ContentTypeField.FieldName == "section")
+                                                    && x.ContentValues.Any(y => y.Value == title));
+            }
+
+            content = contentQuery.ToList();
+
+            // No Content Found
+            if (content == default || !content.Any())
+            {
+                var errorMessage = "Could not find 'ContentType' with Name, key or value: {contentType}, {key}, {value}.";
+                _logger.LogWarning(errorMessage, contentType.ToString(), "title", title);
+            }
+
+            var allContentValuePairs = new List<object>();
+
+            foreach (var item in content)
+            {
+                var contentValues = item.ContentValues
+                    .Where(x => x.LocaleId == localeId
+                            && x.ContentTypeField.IsActive == true
+                            && (x.TenantId == TenantExecutionContext.Tenant.Id || x.TenantId == null))
+                    .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                    .ToList();
+
+                var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+                contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
+                if (!contentFieldValuePairs.ContainsKey("updatedDate"))
+                {
+                    contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
+                }
+                else
+                {
+                    contentFieldValuePairs["updatedDate"] = item.UpdatedDate.ToString();
+                }
                 var langsList = this.GetAllLanguagesForContentId(item.Id, item.ContentTypeId);
                 if (!contentFieldValuePairs.ContainsKey("availableLanguages"))
                 {
@@ -400,7 +518,6 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 if (input.TryGetValue(field.FieldName, out var value))
                 {
-
                     // if we get the string base64 in the value we know it is a file upload 
                     // note: this is being done because the field type is not useful.
                     var fileIndex = value?.ToString()?.IndexOf("base64");
@@ -578,27 +695,25 @@ namespace ECDLink.ContentManagement.Repositories
                 }
                 else if (field.FieldName.ToString() == "availableLanguages") //update languages of the item if its a language field and the locale doesnt match or is null
                 {
-                    ContentValue currentLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id).FirstOrDefault();// && x.LocaleId == localeId
+                    ContentValue availableLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id).FirstOrDefault();
+                    var allLanguages = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
-                    if (currentLanguages.Value != null)
+                    if (availableLanguages == null)
                     {
-                        var languages = currentLanguages.Value.ToString().Split(',').ToList();
-                        if (!languages.Contains(localeId.ToString()))
+                        content.ContentValues.Add(new ContentValue
                         {
-                            languages.Add(localeId.ToString());
-                        }
-                        if (languages.Count > 1)
-                        {
-                            currentLanguages.Value = string.Join(",", languages);
-                        }
-                        else
-                        {
-                            currentLanguages.Value = localeId.ToString();
-                        }
+                            Value = string.Join(",", allLanguages),
+                            ContentId = contentId,
+                            ContentTypeFieldId = field.Id,
+                            LocaleId = localeId,
+                            TenantId = currentTenantId,
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
+                        });
                     }
                     else
                     {
-                        currentLanguages.Value = localeId.ToString();
+                        availableLanguages.Value = string.Join(",", allLanguages);
                     }
                 }
                 content.UpdatedDate = DateTime.UtcNow;
