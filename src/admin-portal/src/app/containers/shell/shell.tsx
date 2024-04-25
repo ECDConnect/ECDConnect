@@ -127,7 +127,10 @@ export default function Shell() {
         NavbarTypes.Referrals,
         NavbarTypes.TeamMeetings,
       ];
-      const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
+      const navigationList: NavigationDto[] = [
+        ...navigationData?.GetAllNavigation,
+      ];
+
       const newnav = [...navigationData?.GetAllNavigation, tlMeetings];
       const teamLeadNavigationList: NavigationDto[] = newnav?.filter((item) =>
         teamLeadNavigationItems?.includes(item?.name)

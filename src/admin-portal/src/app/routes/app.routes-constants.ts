@@ -8,6 +8,14 @@ const ROUTES = {
   TEAM_LEAD_RESET_PASSWORD: '/team-lead-forgot-password',
   VERIFY_PHONE_NUMBER: '/verify-cellphone-number',
   TEAM_MEETINGS: '/team-meetings',
+  TL_MEETINGS: addPrefix('/tl-meetings', {
+    MEETINGS: 'meetings',
+    REPORTS: addPrefix('/reports', {
+      SEE_REPORTS: '/see-reports',
+      VIEW_REPORT: '/view-report',
+    }),
+    EDIT_TOPICS: '/edit-topics',
+  }),
   NOTIFICATIONS_VIEW: '/notifications-view',
   LOGIN: '/login',
   LOGOUT: '/logout',
