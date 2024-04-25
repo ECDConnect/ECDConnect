@@ -12,10 +12,10 @@ import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neut
 import ROUTES from '../../../../../../routes/app.routes-constants';
 import { PortalLeagueDto, getCommunityQuarterDescription } from '@ecdlink/core';
 import { endOfMonth, startOfMonth, sub } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GetLeague, QueryLeagueArgs } from '@ecdlink/graphql';
-import { useLocation, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { LeagueDetailsRouteParams, LeagueDetailsRouteState } from './types';
 
 export const LeagueDetails = () => {
@@ -34,8 +34,16 @@ export const LeagueDetails = () => {
   const [startDate, setStartDate] = useState(startQuarter);
   const [endDate, setEndDate] = useState(endQuarter);
 
+  const history = useHistory();
+
   const { leagueId } = useParams<LeagueDetailsRouteParams>();
   const { state } = useLocation<LeagueDetailsRouteState>();
+
+  useEffect(() => {
+    if (!state) {
+      history.replace(ROUTES.CLINICS.LEAGUES.ROOT);
+    }
+  }, [history, state]);
 
   const { data, loading } = useQuery<{ league?: PortalLeagueDto }>(GetLeague, {
     fetchPolicy: 'cache-and-network',

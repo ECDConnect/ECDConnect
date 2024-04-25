@@ -1,5 +1,6 @@
 import { CheckCircleIcon, ExclamationIcon } from '@heroicons/react/solid';
 import { useHistory, useLocation } from 'react-router';
+import { useEffect } from 'react';
 
 import {
   Alert,
@@ -32,6 +33,12 @@ export const LeagueManagement = () => {
   const history = useHistory<AddLeaguesRouteState>();
 
   const { state } = useLocation<LeagueSeasonRouteState>();
+
+  useEffect(() => {
+    if (!state) {
+      history.replace(ROUTES.CLINICS.LEAGUES.ROOT);
+    }
+  }, [history, state]);
 
   const dialog = useDialog();
 

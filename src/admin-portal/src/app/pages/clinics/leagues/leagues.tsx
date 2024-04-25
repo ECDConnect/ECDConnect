@@ -21,20 +21,28 @@ export const Leagues = () => {
   // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
   const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
 
+  const isAfterSeptember = today.getMonth() >= 9;
+
   const leagues: MenuListDataItem[] = [
-    {
-      type: 'view-leagues',
-      startDate: `Oct ${lastYear}`,
-      endDate: `Sep ${currentYear}`,
-      description: 'See this year’s scoreboards.',
-    },
-    ...(isNextSeasonManagement
+    ...(!isAfterSeptember
       ? [
           {
-            type: 'league-management',
+            type: 'view-leagues',
+            startDate: `Oct ${lastYear}`,
+            endDate: `Sep ${currentYear}`,
+            description: 'See this year’s scoreboards.',
+          },
+        ]
+      : []),
+    ...(isNextSeasonManagement || isAfterSeptember
+      ? [
+          {
+            type: isAfterSeptember ? 'view-leagues' : 'league-management',
             startDate: `Oct ${currentYear}`,
             endDate: `Sep ${nextYear}`,
-            description: 'Start assigning clinics to leagues for next year.',
+            description: isAfterSeptember
+              ? 'See this year’s scoreboards.'
+              : 'Start assigning clinics to leagues for next year.',
           },
         ]
       : []),
