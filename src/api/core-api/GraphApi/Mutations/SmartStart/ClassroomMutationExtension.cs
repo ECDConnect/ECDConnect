@@ -114,7 +114,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
 
                 //update classrooms hierarchy and send through to next function
-                string previousUser = classRoomGroup.UserId.ToString();
+                var previousUser = classRoomGroup.UserId;
                 classRoomGroup.Hierarchy = hierarchy;
                 classRoomGroup.UserId = input.UserId;
                 classRoomGroup.ClassroomId = input.ClassroomId;
@@ -139,15 +139,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
                 });
                 //if this was a new assignment to a new practitioner trigger message to notify them
-                if (previousUser != input.UserId.ToString())
+                if (previousUser != input.UserId)
                 {
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, input.UserId.ToString());
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(input.UserId.Value, "ApplicationUser") });
                     //message the old user they were removed
-                    var oldUserToSend = userManager.FindByIdAsync(previousUser).Result;
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, previousUser);
+                    var oldUserToSend = userManager.FindByIdAsync(previousUser.ToString()).Result;
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(previousUser.Value, "ApplicationUser") });
                 } else
                 {
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, input.UserId.ToString());
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(input.UserId.Value, "ApplicationUser") });
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
@@ -242,7 +242,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                    var coachToSend = userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
                     if (coachToSend != null)
                     {
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, practitioner.UserId.ToString());
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null,
+                            new List<RelatedEntity> { new RelatedEntity(practitioner.UserId.Value, "ApplicationUser") });
                     }
                 }
             }

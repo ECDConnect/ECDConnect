@@ -45,9 +45,10 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<TeamLead, Guid> _teamLeadRepo;
         private readonly IGenericRepository<MessageLog, Guid> _messageRepo;
 
-
         private readonly Guid? _applicationUserId;
 
+        private readonly IPointsEngineService _pointsEngineService;
+        private readonly INotificationService _notificationService;
         IPointsEngineService _pointsEngineService;
         ContentManagementRepository _contentRepo;
 
@@ -55,6 +56,7 @@ namespace EcdLink.Api.CoreApi.Services
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             [Service] IPointsEngineService pointsEngineService,
+            [Service] INotificationService notificationService,
             [Service] ContentManagementRepository contentRepo,
             HierarchyEngine hierarchyEngine
             )
@@ -79,6 +81,7 @@ namespace EcdLink.Api.CoreApi.Services
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _applicationUserId);
 
             _pointsEngineService = pointsEngineService;
+            _notificationService = notificationService;
             _contentRepo = contentRepo;
 
         }
@@ -481,7 +484,12 @@ namespace EcdLink.Api.CoreApi.Services
             // TeamLead1 is compulsory
             ManageTeamLead(clinic.Id, input.TeamLead1Id, input.TeamLead2Id);
 
-            return _clinicRepo.Update(clinic);
+            var updatedClinic = _clinicRepo.Update(clinic);
+
+            // Expire notification
+            _notificationService.DeleteGroupNotifications(TemplateTypeConstants.ClinicMissingTeamLead, updatedClinic.Id);
+
+            return updatedClinic;
         }
 
         private bool ManageTeamLead(Guid clinicId, Guid teamLead1Id, Guid? teamLead2Id)

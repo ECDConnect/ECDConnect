@@ -1,6 +1,7 @@
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.DataAccessLayer.Entities.Base;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Notifications
@@ -29,10 +30,11 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public DateTime? ReadDate { get; set; }
         public string ToGroups { get; set; }
         public string Action { get; set; }
-        public string RelatedToUserId { get; set; }
+        public Guid? GroupingId { get; set; }
 
         [ForeignKey(nameof(Id))]
         public virtual MessageTemplate MessageTemplate { get; set; }
+        public virtual List<MessageLogRelatedTo> MessageLogRelatedTos { get; set; }
     }
 
     // Circular Reference?
@@ -65,13 +67,25 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string ToGroups { get; set; }
         public int Ordering { get; set; }
         public string Action { get; set; }
-        public string RelatedToUserId { get; set; }
+        public Guid? GroupingId { get; set; }
+        public List<RelatedEntity> RelatedEntities { get; set; }
     }
 
     public class TagsReplacements
     {
         public string FindValue { get; set; }
-        public string? ReplacementValue { get; set; }
+        public string ReplacementValue { get; set; }
+    }
 
+    public class RelatedEntity
+    {
+        public Guid RelatedToEntityId { get; set; }
+        public string EntityType { get; set; }
+
+        public RelatedEntity(Guid entityId, string entityType)
+        { 
+            RelatedToEntityId = entityId;
+            EntityType = entityType;
+        }
     }
 }

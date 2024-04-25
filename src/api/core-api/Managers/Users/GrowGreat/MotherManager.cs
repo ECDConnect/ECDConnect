@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ECDLink.Security;
+using NPOI.SS.UserModel;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -30,6 +32,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private InfantManager _infantManager;
         private VisitManager _visitManager;
         private VisitDataStatusManager _visitDataStatusManager;
+        private ApplicationUserManager _applicationUserManager;
         private IGrowGreatPointsCalculationsService _pointsCalculationService;
         private INotificationService _notificationService;
         private Guid? _applicationUserId;
@@ -45,6 +48,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             InfantManager infantManager,
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
+            ApplicationUserManager applicationUserManager,
             [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager
@@ -59,6 +63,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _pointsCalculationService = pointsCalculationService;
             _notificationService = notificationService;
             _userManager = userManager;
+            _applicationUserManager = applicationUserManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
@@ -174,7 +179,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return _motherRepo.Update(entityToUpdate);
         }
-
 
         public Boolean ArchiveMotherProfilesWithoutMaternalRecord(string hcwId)
         {
@@ -730,6 +734,87 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 mother.NextVisitDate = GetClientsNextVisitDate(mother.Id);
             }
             return mother;
+        }
+    
+        public void CheckForDuplicateNotification(Mother mother)
+        {
+            var duplicate = _motherRepo.GetAll()
+                .Where(x =>
+                    x.Id != mother.Id
+                    && x.IsActive
+                    && x.User.IsActive
+                    && x.User.FirstName == mother.User.FirstName
+                    && x.User.Surname == mother.User.Surname
+                    && x.User.IdNumber == mother.User.IdNumber)
+                .FirstOrDefault();
+
+            if (duplicate == null)
+            {
+                return;
+            }
+
+            var adminUsers = _applicationUserManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
+
+            var replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ClientFullName",
+                    ReplacementValue = $"{mother.User.FirstName} {mother.User.Surname}"
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "ClientPhoneNumber",
+                    ReplacementValue = mother.User.PhoneNumber
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWFullName",
+                    ReplacementValue = $"{mother.HealthCareWorker.User.FirstName} {mother.HealthCareWorker.User.Surname}"
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWClinicName",
+                    ReplacementValue = mother.HealthCareWorker.Clinic.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWSubDistrictName",
+                    ReplacementValue = mother.HealthCareWorker.Clinic.SubDistrict.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DuplicateCHWFullName",
+                    ReplacementValue = $"{duplicate.HealthCareWorker.User.FirstName} {duplicate.HealthCareWorker.User.Surname}"
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DuplicateCHWClinicName",
+                    ReplacementValue = duplicate.HealthCareWorker.Clinic.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DuplicateCHWSubDistrictName",
+                    ReplacementValue = duplicate.HealthCareWorker.Clinic.SubDistrict.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DateAdded",
+                    ReplacementValue = duplicate.InsertedDate.ToShortDateString()
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "HealthCareWorkerId",
+                    ReplacementValue = mother.HealthCareWorkerId.ToString()
+                },
+            };
+
+            foreach (var user in adminUsers)
+            {
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DuplicateMotherAdded, DateTime.Now.Date, user, "", MessageStatusConstants.Red, replacements, 
+                    groupingId: Guid.NewGuid(),
+                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(mother.Id, "Mother") });
+            }
         }
     }
 }

@@ -32,11 +32,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [UseSorting]        
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Notification> GetAllNotifications(
-    [Service] IHttpContextAccessor contextAccessor,
-    [Service] ApplicationUserManager userManager,
-    [Service] INotificationService notificationService,
-    IGenericRepositoryFactory repoFactory,
-    string userId, bool inApp = true, string protocol = "")
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] ApplicationUserManager userManager,
+            [Service] INotificationService notificationService,
+            IGenericRepositoryFactory repoFactory,
+            string userId, bool inApp = true, string protocol = "")
         {
             List<Notification> notifications = new List<Notification>();
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -131,7 +131,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     ReadDate = item.ReadDate, 
                     Ordering = template.Ordering, 
                     Action = item.Action,
-                    RelatedToUserId = item.RelatedToUserId
+                    GroupingId = item.GroupingId,
+                    RelatedEntities = item.MessageLogRelatedTos.Select(x => new RelatedEntity(x.RelatedEntityId, x.EntityType)).ToList(),
                 });
 
             }
