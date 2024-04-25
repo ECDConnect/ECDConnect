@@ -306,36 +306,3 @@ export const SendTeamLeadVerifyPhoneNumberSMS = gql`
     }
   }
 `;
-
-export const GetAllClinicMeetings = gql`
-  query GetAllClinicMeetings {
-    allClinicMeetings {
-      id
-      meetingDate
-      teamLeadId
-      teamLeadName
-      positiveStory
-      reportingIssue
-      totalSupportVisits
-      clinicId
-      clinicName
-      dateSubmitted
-      participantsOptedOut {
-        hCWId
-        hCWName
-      }
-      participantsInField {
-        hCWId
-        hCWName
-      }
-      meetingTopic {
-        title
-        topicTitle
-        topicContent
-        infoGraphic
-        knowledgeContent
-        selfCareContent
-      }
-    }
-  }
-`;
