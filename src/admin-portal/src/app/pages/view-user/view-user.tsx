@@ -422,6 +422,9 @@ export function ViewUser(props: any) {
         isNotLockedOut={isNotLockedOut}
         clinicIds={clinicIds}
         isAdministrator={isAdministrator}
+        userTypeToEdit={
+          userData?.userById?.roles.length && userData?.userById?.roles[0].name
+        }
       />
 
       {(isCHW ||
