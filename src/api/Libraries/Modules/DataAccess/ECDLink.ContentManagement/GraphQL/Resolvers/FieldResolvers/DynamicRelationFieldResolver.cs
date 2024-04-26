@@ -8,7 +8,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers.FieldResolvers
 {
     public class DynamicRelationFieldResolver : FieldResolverBase, IDynamicFieldResolver
     {
-        public object ResolveField(IPureResolverContext ctx, FieldDefinitionModel definition)
+        public object ResolveField(IPureResolverContext ctx, FieldDefinitionModel definition, int? contentTypeId = null)
         {
             var fieldValue = base.GetFieldValue(ctx, definition.Name);
 
@@ -19,7 +19,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers.FieldResolvers
 
             var repository = ctx.Service<ContentManagementRepository>();
 
-            return repository.GetByIds(base.GetContextLocale(ctx), base.ValueToList(fieldValue));
+            return repository.GetByIds(contentTypeId.Value, base.GetContextLocale(ctx), base.ValueToList(fieldValue));
         }
     }
 }
