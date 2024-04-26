@@ -2,10 +2,20 @@ import { NavigationDto } from '@ecdlink/core';
 import ROUTES from '../../routes/app.routes-constants';
 
 export enum NavbarTypes {
+  Dashboard = 'Dashboard',
   Users = 'Users',
   Clinics = 'Clinics',
+  RolesPermissions = 'Roles & Permissions',
   Referrals = 'Referrals',
+  TLMeetings = 'TL Meetings',
+  Documents = 'Documents',
+  CMS = 'Content Management',
+  Reporting = 'Reporting',
+  Messaging = 'Messaging',
+  League = 'League',
   TeamMeetings = 'Team meetings',
+  SiteData = 'Site data',
+  Settings = 'Settings',
 }
 
 export const NotificationNavigationModel = {

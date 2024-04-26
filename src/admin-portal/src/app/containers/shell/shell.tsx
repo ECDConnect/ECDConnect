@@ -124,9 +124,26 @@ export default function Shell() {
       const teamLeadNavigationItems = [
         NavbarTypes.Users,
         NavbarTypes.Clinics,
+        NavbarTypes.League,
         NavbarTypes.Referrals,
         NavbarTypes.TeamMeetings,
       ];
+
+      const adminNavigationItems = [
+        NavbarTypes.Dashboard,
+        NavbarTypes.Users,
+        NavbarTypes.Clinics,
+        NavbarTypes.RolesPermissions,
+        NavbarTypes.Referrals,
+        NavbarTypes.TLMeetings,
+        NavbarTypes.Documents,
+        NavbarTypes.CMS,
+        NavbarTypes.Reporting,
+        NavbarTypes.Messaging,
+        NavbarTypes.SiteData,
+        NavbarTypes.Settings,
+      ];
+
       const navigationList: INavigation[] = [
         ...navigationData?.GetAllNavigation,
         ...navigationFromFrontend,
@@ -137,15 +154,18 @@ export default function Shell() {
       const teamLeadNavigationList: INavigation[] = teamLeadNav?.filter(
         (item) => teamLeadNavigationItems?.includes(item?.name)
       );
+      const adminNavigationList: INavigation[] = teamLeadNav?.filter((item) =>
+        adminNavigationItems?.includes(item?.name)
+      );
+
       const userRolePermissions = user?.roles
         ?.map((x) => x?.permissions)
         .flat();
       const userPermissionIds = userRolePermissions?.map((x) => x.id);
       if (isAdministrator || isSuperAdmin) {
-        const sorted = navigationList
-          .slice()
-          .sort((a, b) => a.sequence - b.sequence);
-        setNavigation(sorted);
+        setNavigation(
+          adminNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
+        );
       } else if (isTeamLead) {
         setNavigation(
           teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
