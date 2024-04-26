@@ -61,10 +61,14 @@ import { Leagues } from '../pages/clinics/leagues/leagues';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
+import TLMeetings from '../pages/tl-meetings/tl-meetings';
+import { SeeReports } from '../pages/tl-meetings/components/see-reports';
 import { NotificationsView } from '../notifications/notificationsView';
 import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
 import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
 import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
+import { EditTopics } from '../pages/tl-meetings/components/edit-topics';
+import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
 import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
 
 const PublicRoutes: React.FC = () => {
@@ -121,6 +125,26 @@ const ReferralRoutes: React.FC = () => {
   );
 };
 
+const TlMeetingsRoutes: React.FC = () => {
+  return (
+    <Switch>
+      <Route path={ROUTES.TL_MEETINGS.MEETINGS} component={TLMeetings}></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.REPORTS.SEE_REPORTS}
+        component={SeeReports}
+      ></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.REPORTS.VIEW_REPORT}
+        component={ViewReport}
+      ></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.EDIT_TOPICS}
+        component={EditTopics}
+      ></Route>
+    </Switch>
+  );
+};
+
 const AuthRoutes: React.FC = () => {
   return (
     <Switch>
@@ -131,6 +155,11 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
+      <Route path={ROUTES.TL_MEETINGS.ROOT} component={TLMeetings}></Route>
+      <Route
+        path={ROUTES.TEAM_MEETINGS}
+        component={TeamMeetingsMainPage}
+      ></Route>
       <Route path={ROUTES.TEAM_MEETINGS} component={TeamMeetingsRoot}></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
@@ -270,4 +299,5 @@ export {
   UserRoutes,
   MessageRoutes,
   ClinicsRoutes,
+  TlMeetingsRoutes,
 };

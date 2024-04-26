@@ -145,6 +145,10 @@ export default function Shell() {
       ];
 
       const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
+      const navigationList: NavigationDto[] = [
+        ...navigationData?.GetAllNavigation,
+      ];
+
       const newnav = [...navigationData?.GetAllNavigation, tlMeetings];
       const teamLeadNavigationList: NavigationDto[] = newnav?.filter((item) =>
         teamLeadNavigationItems?.includes(item?.name)

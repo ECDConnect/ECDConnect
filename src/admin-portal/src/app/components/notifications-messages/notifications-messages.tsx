@@ -1,4 +1,4 @@
-import { Button, Card, Typography } from '@ecdlink/ui';
+import { Button, Card, LoadingSpinner, Typography } from '@ecdlink/ui';
 import {
   ExclamationIcon,
   InformationCircleIcon,
@@ -77,26 +77,26 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   const targetClinic = data?.allPortalClinics?.find(
     (item) => item?.id === relatedToUserId
   );
-  const targetHcw = data?.allHealthCareWorkers?.find(
+  const targetHcw = hcwData?.allHealthCareWorkers?.find(
     (item) => item?.id === relatedToUserId
   );
   const handleIcon = (type: string) => {
     switch (type) {
       case MessageStatusConstants.Amber:
         return (
-          <ExclamationIcon className="bg-alertMain h-12 h-12 rounded-full p-3 text-white" />
+          <ExclamationIcon className="bg-alertMain h-12 w-12 rounded-full p-3 text-white" />
         );
       case MessageStatusConstants.Blue:
         return (
-          <InformationCircleIcon className="bg-infoMain h-12 h-12 rounded-full p-3 text-white" />
+          <InformationCircleIcon className="bg-infoMain h-12 w-12 rounded-full p-3 text-white" />
         );
       case MessageStatusConstants.Red:
         return (
-          <InformationCircleIcon className="bg-alertMain h-12 h-12 rounded-full p-3 text-white" />
+          <InformationCircleIcon className="bg-alertMain h-12 w-12 rounded-full p-3 text-white" />
         );
       default:
         return (
-          <StarIcon className="bg-successMain h-12 h-12 rounded-full p-3 text-white" />
+          <StarIcon className="bg-successMain h-12 w-12 rounded-full p-3 text-white" />
         );
     }
   };
@@ -123,6 +123,10 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
               connectUsageColor: targetHcw?.user?.connectUsageColor,
             },
           });
+        case NotificationsCTAText.AddLeagues:
+          return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
+        case NotificationsCTAText.AssignToLeagues:
+          return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
         default:
           return null;
       }
@@ -150,6 +154,18 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   }, [cTA, handleRedirectURL, id, markAsRead, readDate]);
 
+  if (loadingClinicsData || loadingClinicsData) {
+    return (
+      <div className="mt-16">
+        <LoadingSpinner
+          size="big"
+          className="my-12 p-4"
+          spinnerColor="white"
+          backgroundColor="secondary"
+        />
+      </div>
+    );
+  }
   return (
     <div className="w-full">
       <Card className="rounded-xl bg-white p-4">

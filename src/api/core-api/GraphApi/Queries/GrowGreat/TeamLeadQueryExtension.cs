@@ -64,15 +64,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
             // Get ids and tokens
-            List<Guid> userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
-            List<ShortenUrlEntity> invitations = shortenUrlRepo
-                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.TeamLeadInvitation && x.IsActive && x.Clicked == 0)
-                    .ToList();
+            var userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
+            var invitations = shortenUrlRepo.GetAll()
+                .Where(x =>
+                    userIds.Contains(x.UserId.Value)
+                    && x.MessageType == TemplateTypeConstants.TeamLeadInvitation
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .Select(x => new { x.UserId, x.InsertedDate })
+                .OrderByDescending(x => x.InsertedDate)
+                .GroupBy(x => x.UserId)
+                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
 
             List<PortalUsersTLModel> records = teamLeads.Select(item => new PortalUsersTLModel
             {
                 Id = item.Id,
-                User = new PortalUserModel(item.User, invitations, item.IsRegistered),
+                User = new PortalUserModel(item.User, item.IsRegistered, invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null),
                 ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList(),
                 ClinicNames = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.Name).ToList(),
                 InsertedDate = item.InsertedDate,

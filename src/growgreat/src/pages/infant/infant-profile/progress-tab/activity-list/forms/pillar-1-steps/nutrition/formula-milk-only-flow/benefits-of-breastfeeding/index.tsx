@@ -32,7 +32,7 @@ export const BenefitsOfBreastfeedingStep = ({
     [infant?.caregiver?.firstName]
   );
   const sectionName = 'Formula milk only';
-  const videoSection = 'Benefits of Breastfeeding';
+  const videoSection = 'Benefits of breastfeeding';
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
 

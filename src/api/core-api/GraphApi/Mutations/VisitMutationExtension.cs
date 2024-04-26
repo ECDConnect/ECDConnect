@@ -365,7 +365,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             });
 
             var userToSend = userManager.FindByIdAsync(trainee.UserId).Result;
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), false,true,null, trainee.UserId.ToString());
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), false,true,null,
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(trainee.UserId.Value, "ApplicationUser") });
 
 
             return visit;

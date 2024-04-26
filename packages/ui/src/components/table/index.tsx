@@ -2,7 +2,6 @@ import ReactTailwindTable, { Icolumn, Irow } from 'react-tailwind-table';
 import { TableProps, TableRefMethods } from './types';
 import { getStyles } from './styles';
 import {
-  LegacyRef,
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -37,6 +36,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
       loading,
       noContentText = '-',
       onChangeSelectedRows,
+      watchMode,
     },
     ref
   ) => {
@@ -160,9 +160,9 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
           })
         : rowsWithKey;
 
-    const tableKey = mergedRows
-      .map((row) => `${row.key}_${row.checked}`)
-      .join('-');
+    const tableKey = watchMode
+      ? mergedRows.map((row) => `${row.key}_${row.checked}`).join('-')
+      : undefined;
 
     useEffect(() => {
       if (initialSelectedRows !== undefined) {
@@ -239,10 +239,13 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
     }, [onChangePage]);
 
     useEffect(() => {
-      if (!!tableRef?.current?.state?.active_page_number) {
+      if (
+        !!tableRef?.current?.state?.active_page_number &&
+        currentPage <= totalPages
+      ) {
         tableRef.current.state.active_page_number = currentPage;
       }
-    }, [tableKey, tableKey]);
+    }, [tableKey]);
 
     return (
       <>

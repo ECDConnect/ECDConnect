@@ -69,49 +69,53 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null)
         {
+            var relatedEntityIds = notification.RelatedEntities.Select(x => x.RelatedToEntityId).ToList();
+
+            var query = _messageRepo.GetAll()
+                .Where(x =>
+                    x.MessageProtocol == notification.MessageProtocol
+                    && x.MessageTemplateType == notification.MessageTemplateType
+                    && x.To == notification.To
+                    && x.IsActive
+                    && x.Action == notification.Action
+                    && (string.IsNullOrEmpty(searchCriteria) || x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria)));
+
             if (!excludeDates)
             {
-                return _messageRepo.GetAll().Where(x =>
-                    string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
-                    string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
-                    string.Equals(x.To, notification.To) &&
-                    string.Equals(x.IsActive, true) &&
-                    string.Equals(x.Action, notification.Action) &&
-                    string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
-                    string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
-                      (!string.IsNullOrEmpty(searchCriteria) ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
-                    x.MessageDate.Value.Date == notification.MessageDate.Value.Date
-                ).Any();
-            } else
-            {
-                return _messageRepo.GetAll().Where(x =>
-                    string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
-                    string.Equals(x.MessageTemplateType, notification.MessageTemplateType) &&
-                    string.Equals(x.To, notification.To) &&
-                    string.Equals(x.IsActive, true) &&
-                    string.Equals(x.Action, notification.Action) &&
-                    (!string.IsNullOrEmpty(searchCriteria) ? x.Subject.Contains(searchCriteria) || x.Message.Contains(searchCriteria) : string.Equals(x.IsActive, true)) &&
-                    string.Equals(x.RelatedToUserId, notification.RelatedToUserId) &&
-                    string.Equals(x.MessageProtocol, notification.MessageProtocol)
-
-                ).Any();
+                query = query.Where(x => x.MessageDate.Value.Date == notification.MessageDate.Value.Date);
             }
+
+            var matchingMessages = query.ToList();
+
+            if (!matchingMessages.Any())
+            {
+                return false;
+            }
+
+            // Check related entities
+            var anyWithMatchingEntities = matchingMessages.Any(x =>
+                    x.MessageLogRelatedTos.All(y => relatedEntityIds.Contains(y.RelatedEntityId))
+                    && relatedEntityIds.All(y => x.MessageLogRelatedTos.Any(z => z.RelatedEntityId == y)));
+
+            return anyWithMatchingEntities;
+
             //check if any exact templates for exact person for exact same date and protocol exists
         }
 
         public async Task<bool> SendNotificationAsync(
-        string userType, 
-        string templatetype, 
-        DateTime messageDate, 
-        ApplicationUser user = null, 
-        string message = "", 
-        string status = MessageStatusConstants.Blue, 
-        List<TagsReplacements> replacements = null, 
-        DateTime? messageEndDate = null, 
-        bool expireOldMessagesOfType = false, 
-        bool dontSendIfExists = false, 
-        string searchCriteria = null, 
-        string relatedToUserId = null)
+            string userType, 
+            string templatetype, 
+            DateTime messageDate, 
+            ApplicationUser user = null, 
+            string message = "", 
+            string status = MessageStatusConstants.Blue, 
+            List<TagsReplacements> replacements = null, 
+            DateTime? messageEndDate = null, 
+            bool expireOldMessagesOfType = false, 
+            bool dontSendIfExists = false, 
+            string searchCriteria = null, 
+            List<RelatedEntity> relatedEntities = null,
+            Guid? groupingId = null)
         {
             try
             {                
@@ -144,7 +148,8 @@ namespace EcdLink.Api.CoreApi.Services
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
                             Action = templateItem.Action,
-                            RelatedToUserId = relatedToUserId,
+                            RelatedEntities = relatedEntities,
+                            GroupingId = groupingId,
                         };
                         if (messageEndDate != null)
                         {
@@ -220,38 +225,38 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task<MessageLog> CommitNotification(Notification notification, MessageTemplate template)
         {
-           try
+            if (notification.To == null)
             {
-                if (notification.To != null)
+                return null;
+            }
+                
+            return _messageRepo.Insert(new MessageLog()
+            {
+                Id = Guid.NewGuid(),
+                From = notification.FromUserId.ToString(),
+                FromUserId = notification.FromUserId,
+                To = notification.To,
+                InsertedDate = DateTime.Now,
+                IsActive = true,
+                MessageProtocol = notification.MessageProtocol,
+                MessageTemplateType = notification.MessageTemplate.TemplateType,
+                Message = notification.Message,
+                Subject = notification.Subject,
+                MessageDate = notification.MessageDate.Value,
+                MessageEndDate = notification.MessageEndDate, //midnight the next day
+                Status = notification.Status,
+                SentByUserId = notification.FromUserId,
+                CTA = notification.CTA,
+                CTAText = notification.CTAText,
+                ToGroups = notification.ToGroups,
+                Action = notification.Action,
+                MessageLogRelatedTos = notification.RelatedEntities.Select(x => new MessageLogRelatedTo
                 {
-                    return _messageRepo.Insert(new MessageLog()
-                    {
-                        Id = Guid.NewGuid(),
-                        From = notification.FromUserId.ToString(),
-                        FromUserId = notification.FromUserId,
-                        To = notification.To,
-                        InsertedDate = DateTime.Now,
-                        IsActive = true,
-                        MessageProtocol = notification.MessageProtocol,
-                        MessageTemplateType = notification.MessageTemplate.TemplateType,
-                        Message = notification.Message,
-                        Subject = notification.Subject,
-                        MessageDate = notification.MessageDate.Value,
-                        MessageEndDate = notification.MessageEndDate, //midnight the next day
-                        Status = notification.Status,
-                        SentByUserId = notification.FromUserId,
-                        CTA = notification.CTA,
-                        CTAText = notification.CTAText,
-                        ToGroups = notification.ToGroups,
-                        Action = notification.Action,
-                        RelatedToUserId = notification.RelatedToUserId,
-                    });
-                } else return null;
-           } catch (Exception ex)
-           {
-               throw ex;                
-           }
-
+                    RelatedEntityId = x.RelatedToEntityId,
+                    EntityType = x.EntityType,
+                }).ToList(),
+                GroupingId = notification.GroupingId,
+            });
         }
 
         public async Task<bool> SendGenericMessage(string to, string toGroups, string message, string subject, DateTime sendDate, MessageTemplate template, DateTime? messageEndDate = null)
@@ -311,24 +316,51 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public async Task<bool> DeleteAllNotificationsRelatedToUser(string userId)
+        public async Task<bool> DeleteAllNotificationsRelatedToEntity(Guid entityId)
         {
-            if (userId != null)
+            var notifications = _messageRepo.GetAll().Where(x => x.MessageLogRelatedTos.Any(x => x.RelatedEntityId == entityId)).ToList();
+            foreach (var notification in notifications)
             {
-                var notifications = _messageRepo.GetAll().Where(x => x.RelatedToUserId == userId).ToList();
-                foreach (var notification in notifications)
-                {
-                    _messageRepo.Delete(notification.Id);
-                }
+                _messageRepo.Delete(notification.Id);
             }
             return true;
         }
 
-        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null, string relatedToUserId = null)
+        public void DeleteGroupNotifications(Guid groupingId)
+        {
+            var notifications = _messageRepo.GetAll().Where(x => x.GroupingId.HasValue && x.GroupingId.Value == groupingId).ToList();
+            foreach (var notification in notifications)
+            {
+                _messageRepo.Delete(notification.Id);
+            }
+        }
+
+        public void DeleteGroupNotifications(string templateType, Guid relatedToEntityId)
+        {
+            var notifications = _messageRepo.GetAll()
+                .Where(x => 
+                    x.MessageTemplateType == templateType 
+                    && x.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedToEntityId))
+                .ToList();
+
+            foreach (var notification in notifications)
+            {
+                _messageRepo.Delete(notification.Id);
+            }
+        }
+
+        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType, string searchCriteria = null, string protocol = null, Guid? relatedToUserId = null)
         {
             if (userId != null && templateType != null)
             {
-                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType && (searchCriteria != null ? n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) : n.IsActive == true) && (relatedToUserId != null ? n.RelatedToUserId.Contains(relatedToUserId) : n.IsActive == true)).ToList();
+                var notifications = _messageRepo.GetAll()
+                    .Where(n => 
+                        n.To == userId 
+                        && n.MessageTemplateType == templateType 
+                        && (string.IsNullOrWhiteSpace(searchCriteria) || n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria)) 
+                        && (!relatedToUserId.HasValue || n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedToUserId) ))
+                    .ToList();
+                
                 if (notifications.Any())
                 {
                     foreach (var notification in notifications)
@@ -476,5 +508,15 @@ namespace EcdLink.Api.CoreApi.Services
 
         }
 
+        public List<MessageLog> GetMessages(string templateType, Guid relatedEntityId)
+        {
+            var messages = _messageRepo.GetAll()
+                   .Where(n =>
+                       n.MessageTemplateType == templateType
+                       &&  n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedEntityId))
+                   .ToList();
+
+            return messages;
+        }
     }
 }

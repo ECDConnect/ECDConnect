@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ECDLink.Security;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -31,6 +32,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitDataStatusManager _visitDataStatusManager;
         private IGrowGreatPointsCalculationsService _pointsCalculationService;
         private INotificationService _notificationService;
+        private ApplicationUserManager _applicationUserManager;
 
         private Guid? _applicationUserId;
         private IGenericRepository<Infant, Guid> _infantRepo;
@@ -49,6 +51,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
             VisitDataManager visitDataManager,
+            ApplicationUserManager applicationUserManager,
             [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager)
@@ -62,6 +65,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _pointsCalculationService = pointsCalculationService;
             _notificationService = notificationService;
             _userManager = userManager;
+            _applicationUserManager = applicationUserManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -769,6 +773,93 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             return infants;
+        }
+
+        public void CheckForDuplicateNotification(Infant infant)
+        {
+            var duplicate = _infantRepo.GetAll()
+                .Where(x =>
+                    x.Id != infant.Id
+                    && x.IsActive
+                    && x.User.IsActive
+                    && x.User.FirstName == infant.User.FirstName
+                    && x.Caregiver.FirstName == infant.Caregiver.FirstName
+                    && x.Caregiver.Surname == infant.Caregiver.Surname
+                    && x.Caregiver.PhoneNumber == infant.Caregiver.PhoneNumber)
+            .FirstOrDefault();
+
+            if (duplicate == null)
+            {
+                return;
+            }
+            var adminUsers = _applicationUserManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
+
+
+            var replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ChildFirstName",
+                    ReplacementValue = $"{infant.User.FirstName}"
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CaregiverFullName",
+                    ReplacementValue = $"{infant.Caregiver.FirstName} {infant.Caregiver.Surname}"
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "ClientPhoneNumber",
+                    ReplacementValue = infant.Caregiver.PhoneNumber
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWFullName",
+                    ReplacementValue = $"{infant.Caregiver.HealthCareWorker.User.FirstName} {infant.Caregiver.HealthCareWorker.User.Surname}"
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWClinicName",
+                    ReplacementValue = infant.Caregiver.HealthCareWorker.Clinic.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "CHWSubDistrictName",
+                    ReplacementValue = infant.Caregiver.HealthCareWorker.Clinic.SubDistrict.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DuplicateCHWFullName",
+                    ReplacementValue = $"{duplicate.Caregiver.HealthCareWorker.User.FirstName} {duplicate.Caregiver.HealthCareWorker.User.Surname}"
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DuplicateCHWClinicName",
+                    ReplacementValue = duplicate.Caregiver.HealthCareWorker.Clinic.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DuplicateCHWSubDistrictName",
+                    ReplacementValue = duplicate.Caregiver.HealthCareWorker.Clinic.SubDistrict.Name
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "DateAdded",
+                    ReplacementValue = duplicate.InsertedDate.ToShortDateString()
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "HealthCareWorkerId",
+                    ReplacementValue = infant.Caregiver.HealthCareWorkerId.ToString()
+                },
+            };
+
+            foreach (var user in adminUsers)
+            {
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DuplicateChildAdded, DateTime.Now.Date, user, "", MessageStatusConstants.Red, replacements,
+                    groupingId: Guid.NewGuid(),
+                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(infant.Id, "Infant") });
+            }
         }
     }
 }
