@@ -17,6 +17,7 @@ export const ContentTypes = {
   ANTENATAL: 'Antenatal',
   NATALINFO: 'NatalInfo',
   DANGERSIGN: 'DangerSign',
+  TOPIC: 'Topic',
 };
 
 export const ContentForms = {

@@ -412,6 +412,7 @@ export default function ContentList({
       );
       setSelectedType(currentType);
       setNatalType(Number(item?.childContentTypeId));
+
       const model: ContentManagementView = {
         content: item,
         languageId: languageId,
