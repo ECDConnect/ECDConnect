@@ -93,7 +93,7 @@ export const HealthCareWorkerOptedOut: React.FC = () => {
   const viewSelectedRow = (selectedRow: Irow) => {
     getChwById({
       variables: {
-        userIdd: selectedRow?.userId,
+        userId: selectedRow?.userId,
       },
     })
       .then((response) => {
