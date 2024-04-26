@@ -1,8 +1,8 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.GraphQL.Attributes;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -10,10 +10,10 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
-using HotChocolate.Data;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
@@ -72,6 +72,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         {
             var league = pointsService.GetLeague(leagueId, startDate, endDate);
             return league;
+        }
+
+        [Permission(PermissionGroups.LEAGUE, GraphActionEnum.View)]
+        public List<PortalLeagueModel> GetLeaguesForTeamLead(
+            [Service] ILeagueService leagueService,
+            Guid teamLeadUserId)
+        {
+            return leagueService.GetLeaguesForTeamLead(teamLeadUserId);
         }
     }
 }
