@@ -67,8 +67,6 @@ export const EditTopics = () => {
       search: '',
       searchInContent: null,
       isVisiblePortal: true,
-      // contentTypeIdFilter: '',
-      // contentTypeNameFilter: ''
     },
     fetchPolicy: 'cache-and-network',
   });
@@ -125,16 +123,9 @@ export const EditTopics = () => {
         search: '',
         searchInContent: true,
         isVisiblePortal: true,
-        // contentTypeIdFilter: null,
-        // contentTypeNameFilter: ''
       },
     });
-    // TODO: Use actual pagination when table component supports it.
-    // const getUserCountQueryVariables = getCountVariables(searchValue);
-    // getCountUsers({
-    //   variables: getUserCountQueryVariables
-    // });
-  }, []);
+  }, [getContentTypes]);
 
   const monthTopics = topicData?.GetAllTopic;
 
