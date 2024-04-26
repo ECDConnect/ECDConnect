@@ -58,6 +58,7 @@ export const GetHealthCareWorkerByUserId = gql`
       id
       insertedDate
       clinicId
+      isRegistered
       user {
         id
         isActive
@@ -164,6 +165,31 @@ export const GetHealthCareWorkerSummaryForPeriod = gql`
       totalChildrenWithNoIssues
       totalVisitsOverdue
       __typename
+    }
+  }
+`;
+
+export const GetHealthCareWorkersOptedOutOfMonthlyMeeting = gql`
+  query GetHealthCareWorkersOptedOutOfMonthlyMeeting(
+    $month: Int!
+    $year: Int!
+    $where: PortalHealthCareWorkerModelFilterInput
+    $order: [PortalHealthCareWorkerModelSortInput!]
+  ) {
+    healthCareWorkersOptedOutOfMonthlyMeeting(
+      month: $month
+      year: $year
+      where: $where
+      order: $order
+    ) {
+      connectUsage
+      connectUsageColor
+      dateInvited
+      healthCareWorkerId
+      idNumber
+      isActive
+      name
+      userId
     }
   }
 `;

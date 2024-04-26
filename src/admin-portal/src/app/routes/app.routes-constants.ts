@@ -52,6 +52,9 @@ const ROUTES = {
   CLASSROOM: addPrefix('/classroom', {
     UPDATE_FEE: '/preschool-fee',
   }),
+  HEALTH_CARE_WORKER: addPrefix('/health-care-worker', {
+    OPTED_OUT: '/opted-out',
+  }),
 };
 
 export default ROUTES;

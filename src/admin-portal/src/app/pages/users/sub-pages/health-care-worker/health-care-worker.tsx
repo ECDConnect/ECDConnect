@@ -34,20 +34,16 @@ import React, {
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import {
-  CheckCircleIcon,
-  ClockIcon,
-  XCircleIcon,
-} from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 import { ConenctUsage } from '../team-leads/team-leads.types';
 import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
-import { AppVisitActivity, ConnectUsage } from './health-care-worker.types';
+import { AppVisitActivity } from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import { useUserRole } from '../../../../hooks/useUserRole';
+import { columnColor } from '../../../../utils/health-care-worker/components-utils';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -481,40 +477,6 @@ export default function HealthCareWorkers() {
 
   const handleResetSelectedRows = () => {
     tableRef?.current?.resetSelectedRows();
-  };
-
-  const ColumnStatusIndicator = ({ icon, iconColor, text }) => (
-    <div className="flex items-center gap-0.5">
-      <div>
-        {React.createElement(icon, { className: `${iconColor} h-5 w-5` })}
-      </div>
-      <span className={iconColor}>{text}</span>
-    </div>
-  );
-
-  const columnColor = (value?: string) => {
-    const iconMapping = {
-      [ConnectUsage?.InvitationActive]: {
-        icon: ClockIcon,
-        color: 'text-infoMain',
-      },
-      [ConnectUsage?.InvitationExpired]: {
-        icon: XCircleIcon,
-        color: 'text-alertMain',
-      },
-      'Removed:': { icon: XCircleIcon, color: 'text-alertMain' },
-      default: { icon: CheckCircleIcon, color: 'text-successMain' },
-    };
-
-    const firstWord = value?.split(' ')[0];
-    const key = Object.hasOwn(iconMapping, value)
-      ? value
-      : firstWord === 'Removed:'
-      ? 'Removed:'
-      : 'default';
-    const { icon, color } = iconMapping[key];
-
-    return <ColumnStatusIndicator icon={icon} iconColor={color} text={value} />;
   };
 
   const columns: Icolumn[] = [

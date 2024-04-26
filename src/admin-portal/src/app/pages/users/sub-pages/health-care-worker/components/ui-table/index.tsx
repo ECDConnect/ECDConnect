@@ -21,18 +21,12 @@ import {
   deleteMultipleUsers,
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
-import {
-  CheckCircleIcon,
-  ClockIcon,
-  PaperAirplaneIcon,
-  TrashIcon,
-  XCircleIcon,
-} from '@heroicons/react/solid';
+import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { UiTableProps } from './type';
 import { ContentTypes } from '../../../../../../constants/content-management';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import { ConnectUsage } from '../../health-care-worker.types';
+import { columnColor } from '../../../../../../utils/health-care-worker/components-utils';
 
 export default function UiTable({
   columns = [],
@@ -166,7 +160,6 @@ export default function UiTable({
       },
     })
       .then((res) => {
-        console.log({ res });
         if (res.data?.bulkDeleteUser?.success.length > 0) {
           setNotification({
             title: ` Successfully Deactivated ${res.data?.bulkDeleteUser?.success.length} Users!`,
@@ -454,41 +447,6 @@ export default function UiTable({
         </div>
       );
     } else if (column.field === 'connectUsage') {
-      const columnColor = (value?: string) => {
-        const firstWord = value?.split(' ')[0];
-        const isRemoved = firstWord === 'Removed:';
-
-        switch (value) {
-          case ConnectUsage?.InvitationActive:
-            return (
-              <div className="flex items-center gap-0.5">
-                <ClockIcon className="text-infoMain h-5 w-5" />
-                <span className="text-infoMain">{display_value}</span>
-              </div>
-            );
-          // case firstWord
-          case ConnectUsage?.InvitationExpired:
-            return (
-              <div className="flex items-center gap-0.5">
-                <XCircleIcon className="text-alertMain h-5 w-5" />
-                <span className="text-alertMain">{display_value}</span>
-              </div>
-            );
-          default:
-            return isRemoved ? (
-              <div className="flex items-center gap-0.5">
-                <XCircleIcon className="text-alertMain h-5 w-5" />
-                <span className="text-alertMain">{display_value}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-0.5">
-                <CheckCircleIcon className="text-successMain h-5 w-5" />
-                <span className="text-successMain">{display_value}</span>
-              </div>
-            );
-        }
-      };
-
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           <span>{columnColor(display_value)}</span>
