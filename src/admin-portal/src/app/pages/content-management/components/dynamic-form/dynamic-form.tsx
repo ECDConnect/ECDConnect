@@ -14,7 +14,10 @@ import {
 } from '../../content-management-models';
 import { Alert, Typography } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
-import { ContentForms } from '../../../../constants/content-management';
+import {
+  ContentForms,
+  ContentTypes,
+} from '../../../../constants/content-management';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
@@ -68,13 +71,17 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   useEffect(() => {
     if (
-      choosedSectionTitle === ActivitiesTitles.StoryActivities &&
-      initialValues?.hasOwnProperty('type') &&
-      !initialValues['type']
+      contentView?.content?.__typename === ContentTypes.TOPIC &&
+      !initialValues['title']
     ) {
-      setValue('type', 'Story time');
+      setValue('title', contentView?.content?.title);
     }
-  }, [choosedSectionTitle, initialValues, setValue]);
+  }, [
+    contentView?.content?.__typename,
+    contentView?.content?.title,
+    initialValues,
+    setValue,
+  ]);
 
   const watchFields = useWatch({ control });
 
@@ -147,6 +154,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
       switch (type) {
         case FieldType.Text:
+          if (
+            contentView?.content?.__typename === ContentTypes.TOPIC &&
+            propName === 'title'
+          ) {
+            return null;
+          }
           return (
             <div key={propName} className={contentWrapper}>
               {propName === 'pollyTipText' && (

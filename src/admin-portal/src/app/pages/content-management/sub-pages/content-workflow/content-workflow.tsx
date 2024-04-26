@@ -47,7 +47,7 @@ export default function ContentWorkflow({
   selectedTab,
 }: ContentWorkflowProps) {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
-    contentView.languageId
+    contentView?.languageId
   );
 
   const [viewKey, setViewKey] = useState<number>(Math.random());

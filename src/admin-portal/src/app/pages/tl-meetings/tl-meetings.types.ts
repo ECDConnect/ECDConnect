@@ -17,3 +17,18 @@ export const ReportMonths = [
   { label: `November ${yearDate}`, value: '11' },
   { label: `December ${yearDate}`, value: '12' },
 ];
+
+export const monthsNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];

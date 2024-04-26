@@ -31,7 +31,7 @@ export const ViewReport = () => {
       <Breadcrumb paths={paths} />
       <Typography
         type={'h1'}
-        text={`${report?.teamLeadName} - ${report.month}`}
+        text={`${report?.teamLeadName} - ${report?.month}`}
         color={'textDark'}
         className="py-6"
       />
