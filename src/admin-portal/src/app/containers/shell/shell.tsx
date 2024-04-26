@@ -144,7 +144,6 @@ export default function Shell() {
         NavbarTypes.Settings,
       ];
 
-      const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
       const navigationList: NavigationDto[] = [
         ...navigationData?.GetAllNavigation,
       ];
