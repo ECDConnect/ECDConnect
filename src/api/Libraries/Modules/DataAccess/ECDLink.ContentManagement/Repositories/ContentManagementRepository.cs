@@ -400,6 +400,54 @@ namespace ECDLink.ContentManagement.Repositories
             return allContentValuePairs;
         }
 
+        public IEnumerable<object> GetAllTranslations(string contentType, string key, string value, string toTranslate)
+        {
+            var content = _context.Contents
+                    .Include(i => i.ContentType)
+                    .Include(i => i.ContentValues)
+                        .ThenInclude(ti => ti.ContentTypeField)
+                    .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id
+                            && x.ContentType.Name == contentType
+                            && x.IsActive
+                            && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
+                            && x.ContentValues.Any(y => y.Value == value))
+                    .ToList();
+
+            // Use global tenant as a fallback, mostly for static and dynamic links
+            content = content?.Any() ?? false ? content
+                    : _context.Contents
+                        .Include(i => i.ContentType)
+                        .Include(i => i.ContentValues)
+                            .ThenInclude(ti => ti.ContentTypeField)
+                        .Where(x => x.TenantId == null
+                                && x.ContentType.Name == contentType
+                                && x.IsActive
+                                && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
+                                && x.ContentValues.Any(y => y.Value == value))
+                        .ToList();
+
+            var allContentValuePairs = new List<object>();
+
+            foreach (var item in content)
+            {
+                var contentValues = item.ContentValues
+                    .Where(x => x.ContentTypeField.IsActive == true
+                            && (x.TenantId == TenantExecutionContext.Tenant.Id || x.TenantId == null)
+                            && x.ContentTypeField.FieldName == toTranslate)
+                    .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                    .ToList();
+
+                var contentFieldValuePairs = contentValues.ToDictionary(k => k.LocaleId.ToString(), v => v.Value);
+                if (contentFieldValuePairs?.Any() ?? false)
+                {
+                    allContentValuePairs.Add(contentFieldValuePairs.ToObject());
+                }
+            }
+
+            return allContentValuePairs;
+        }
+
+
         public IEnumerable<object> GetContentByTitleAndSection(string contentType, string section, Guid localeId, string title)
         {
             var contentQuery = _context.Contents
