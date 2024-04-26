@@ -83,16 +83,19 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
   const chwSchema = yup.object().shape({
-    idNumber:
-      idType === idTypeEnum.idNumber
-        ? yup
-            .string()
-            .matches(SA_ID_REGEX, 'Id number is not valid')
-            .required('ID Number is Required')
-        : yup
-            .string()
-            .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
-            .required('Passport is Required'),
+    idNumber: yup
+      .string()
+      .matches(
+        SA_ID_REGEX,
+        idType === idTypeEnum.idNumber
+          ? 'Id number is not valid'
+          : 'Passport is not valid'
+      )
+      .required(
+        idType === idTypeEnum.idNumber
+          ? 'ID Number is Required'
+          : 'Passport is Required'
+      ),
     phoneNumber: yup
       .string()
       .matches(SA_CELL_REGEX, 'Phone number is not valid')
