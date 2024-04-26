@@ -1,3 +1,4 @@
+import { NavigationDto } from '@ecdlink/core';
 import ROUTES from '../../routes/app.routes-constants';
 
 export enum NavbarTypes {
@@ -17,3 +18,5 @@ export const NotificationNavigationModel = {
   route: ROUTES.NOTIFICATIONS_VIEW,
   sequence: 8,
 };
+
+export type INavigation = NavigationDto & { hide?: boolean };

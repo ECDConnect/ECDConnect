@@ -4,7 +4,7 @@ import {
   InformationCircleIcon,
   StarIcon,
 } from '@heroicons/react/solid';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useHistory } from 'react-router';
 import ROUTES from '../../routes/app.routes-constants';
 import {
@@ -17,6 +17,7 @@ import {
   GetAllPortalClinics,
   MarkAsReadNotification,
 } from '@ecdlink/graphql';
+import { classNames } from '../../pages/users/components/users';
 
 interface NotificationsMessagesProps {
   title: string;
@@ -29,6 +30,7 @@ interface NotificationsMessagesProps {
   readDate?: string;
   id: string;
   relatedToUserId?: string;
+  className?: string;
 }
 
 export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
@@ -42,6 +44,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   readDate,
   id,
   relatedToUserId,
+  className,
 }) => {
   const history = useHistory();
   const [markAsRead] = useMutation(MarkAsReadNotification);
@@ -127,6 +130,8 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
           return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
         case NotificationsCTAText.AssignToLeagues:
           return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
+        case NotificationsCTAText.CHWsOptedOut:
+          return history.push(ROUTES.HEALTH_CARE_WORKER.OPTED_OUT);
         default:
           return null;
       }
@@ -154,20 +159,20 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   }, [cTA, handleRedirectURL, id, markAsRead, readDate]);
 
-  if (loadingClinicsData || loadingClinicsData) {
+  if (loadingClinicsData || loadingHcwData) {
     return (
-      <div className="mt-16">
+      <div className={classNames(className, 'w-full rounded-xl bg-white p-4')}>
         <LoadingSpinner
-          size="big"
-          className="my-12 p-4"
-          spinnerColor="white"
+          size="medium"
+          spinnerColor="adminPortalBg"
           backgroundColor="secondary"
         />
       </div>
     );
   }
+
   return (
-    <div className="w-full">
+    <div className={classNames(className, 'w-full')}>
       <Card className="rounded-xl bg-white p-4">
         <div className="flex gap-3">
           {handleIcon(statusColor)}

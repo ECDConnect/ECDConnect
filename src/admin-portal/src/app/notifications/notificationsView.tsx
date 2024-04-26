@@ -31,6 +31,7 @@ export const NotificationsView = () => {
       {notifications?.length > 0 &&
         notifications?.map((item) => (
           <NotificationsMessages
+            className="mb-4"
             ctaText={item?.cTAText}
             date={format(new Date(item?.messageDate), 'd MMMM y')}
             statusColor={item?.status}

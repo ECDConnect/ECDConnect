@@ -69,13 +69,22 @@ export function Users() {
 
   const navigation = getNavigationItems();
 
+  const childrenRoutes = [ROUTES.VIEW_USERS];
+
   const history = useHistory();
   useEffect(() => {
     localStorage.removeItem('selectedUser');
 
     // GO TO DEFAULT ROUTE
     async function init() {
-      history.push(navigation?.[0]?.href);
+      const isValidRoute =
+        getNavigationItems()?.some(
+          (route) => route.href === location.pathname
+        ) || childrenRoutes.some((route) => location.pathname.includes(route));
+
+      if (!isValidRoute) {
+        history.push(navigation?.[0]?.href);
+      }
     }
 
     init().catch(console.error);

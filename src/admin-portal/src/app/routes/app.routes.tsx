@@ -69,6 +69,7 @@ import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/le
 import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
 import { EditTopics } from '../pages/tl-meetings/components/edit-topics';
 import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
+import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -170,6 +171,10 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.NOTIFICATIONS_VIEW}
         component={NotificationsView}
       ></Route>
+      <Route
+        path={ROUTES.HEALTH_CARE_WORKER.OPTED_OUT}
+        component={HealthCareWorkerOptedOut}
+      ></Route>
     </Switch>
   );
 };
@@ -245,7 +250,7 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={`/users/all-roles`} component={ApplicationUsers}></Route>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={`/users/view-user`} component={ViewUser}></Route>
+      <Route path={ROUTES.VIEW_USERS} component={ViewUser}></Route>
       <Route path={`/users/admins`} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
