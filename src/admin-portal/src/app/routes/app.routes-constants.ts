@@ -48,6 +48,9 @@ const ROUTES = {
   }),
   USERS: addPrefix('/users', {
     HEALTH_CARE_WORKERS: '/health-care-worker',
+    TEAM_LEADS: '/team-leads',
+    ADMINS: '/admins',
+    ALL_ROLES: '/all-roles',
   }),
   CLASSROOM: addPrefix('/classroom', {
     UPDATE_FEE: '/preschool-fee',

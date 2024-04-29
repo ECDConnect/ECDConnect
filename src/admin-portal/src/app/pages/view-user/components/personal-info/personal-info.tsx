@@ -50,6 +50,7 @@ export interface PersonalInfoProps {
   isNotLockedOut: (user: UserDto) => boolean;
   clinicIds?: string[];
   isAdministrator?: boolean;
+  userTypeToEdit: string;
 }
 
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({
@@ -65,6 +66,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   isNotLockedOut,
   clinicIds,
   isAdministrator,
+  userTypeToEdit,
 }) => {
   const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -90,7 +92,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
         : yup
             .string()
             .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
-            .required('ID Number is Required'),
+            .required('Passport is Required'),
     phoneNumber: yup
       .string()
       .matches(SA_CELL_REGEX, 'Phone number is not valid')
@@ -175,12 +177,19 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const passwordForm = passwordGetValues();
 
   useEffect(() => {
-    const currentPreferedId = localStorage?.getItem('preferedId');
-
-    if (currentPreferedId === idTypeEnum.passport) {
+    // const currentPreferedId = localStorage?.getItem('preferedId');
+    // if (currentPreferedId) {
+    //   if (currentPreferedId === idTypeEnum.passport) {
+    //     setIdType(idTypeEnum.passport);
+    //   }
+    // } else {
+    if (userData.idNumber.length === 13) {
+      setIdType(idTypeEnum.idNumber);
+    } else {
       setIdType(idTypeEnum.passport);
     }
-  }, []);
+    // }
+  }, [userData]);
 
   useEffect(() => {
     adminDetailSetValue('email', userData?.email || chwData?.user.email, {
@@ -288,7 +297,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                           <div className="my-4 sm:col-span-3">
                             <Typography
                               text={
-                                'Which kind of identification do you have for the CHW? *'
+                                'Which kind of identification do you have for the ' +
+                                userTypeToEdit +
+                                '? *'
                               }
                               type={'body'}
                               color={'textMid'}
@@ -418,7 +429,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   </div>
                 </div>
               </div>
-              {component === UsersRouteRedirectTypeEnum?.chw ? (
+              {component === UsersRouteRedirectTypeEnum?.chw ||
+              component === UsersRouteRedirectTypeEnum?.teamLeads ? (
                 <Button
                   className={' w-4/12 rounded-md '}
                   type="filled"

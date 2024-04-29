@@ -99,11 +99,6 @@ export function ViewUser(props: any) {
 
   let userId = localStorage.getItem('selectedUser');
 
-  const paths: BreadcrumbProps['paths'] = [
-    { name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS },
-    { name: 'View user', url: '' },
-  ];
-
   const { data, loading: loadingTenant } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
@@ -199,6 +194,25 @@ export function ViewUser(props: any) {
   let isCHW = userData?.userById?.roles?.some(
     (role: any) => role.name === GrowGreatRoles.HealthCareWorker
   );
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const paths: BreadcrumbProps['paths'] = [{ name: 'View user', url: '' }];
+
+  useMemo(() => {
+    if (props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) {
+      paths.unshift({ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS });
+    } else if (
+      props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads
+    ) {
+      paths.unshift({ name: 'Team Leads', url: ROUTES.USERS.TEAM_LEADS });
+    } else if (
+      props.location.state?.component === UsersRouteRedirectTypeEnum?.admins
+    ) {
+      paths.unshift({ name: 'Admins', url: ROUTES.USERS.ADMINS });
+    } else {
+      paths.unshift({ name: 'All roles', url: ROUTES.USERS.ALL_ROLES });
+    }
+  }, [paths, props.location.state?.component]);
 
   const getRoleStatusChip = (status: string) => {
     switch (status) {
@@ -408,6 +422,9 @@ export function ViewUser(props: any) {
         isNotLockedOut={isNotLockedOut}
         clinicIds={clinicIds}
         isAdministrator={isAdministrator}
+        userTypeToEdit={
+          userData?.userById?.roles.length && userData?.userById?.roles[0].name
+        }
       />
 
       {(isCHW ||
