@@ -56,6 +56,7 @@ export interface ContentViewProps {
   postNatalType?: ContentTypeDto;
   selectedTab?: number;
   languages: LanguageDto[];
+  setOpenTopic?: (item: boolean) => void;
 }
 
 export interface RequirementProps {
@@ -79,6 +80,7 @@ export default function ContentEdit({
   postNatalType,
   selectedTab,
   languages,
+  setOpenTopic,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -117,7 +119,7 @@ export default function ContentEdit({
   `;
 
   const createMutation = gql` 
-  mutation ${creationMutationName} ($input: ${contentType.name}Input!, $localeId: String!) {
+  mutation ${creationMutationName} ($input: ${contentType?.name}Input!, $localeId: String!) {
     ${creationMutationName} (input: $input, localeId: $localeId) 
     }
   `;
@@ -184,7 +186,8 @@ export default function ContentEdit({
           message={` If you leave now, you will lose all of your changes.`}
           onCancel={onCancel}
           onSubmit={() => {
-            setSearchValue('');
+            // setSearchValue('');
+            contentType.name === ContentTypes.TOPIC && setOpenTopic(false);
             cancelEdit();
             onCancel();
           }}
@@ -245,7 +248,6 @@ export default function ContentEdit({
         title: `${postNatalType?.name} Form`,
         fields: [],
       };
-
       const copy: ContentTypeFieldDto[] = Object.assign(
         [],
         postNatalType?.fields

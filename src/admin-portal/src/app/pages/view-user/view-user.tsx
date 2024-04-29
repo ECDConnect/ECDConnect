@@ -43,6 +43,7 @@ import { PersonalInfo } from './components/personal-info/personal-info';
 import { GrowGreatRoles, TenantContext } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
+import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -82,6 +83,8 @@ export function ViewUser(props: any) {
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const isAdministrator =
     props.location.state?.component === UsersRolesTypeEnum?.administrator;
+  const isCHW =
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.chw;
   const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
@@ -112,8 +115,11 @@ export function ViewUser(props: any) {
         ...(isTeamLead
           ? [{ name: 'Team Leads', url: ROUTES.USERS.TEAM_LEADS }]
           : []),
-        ...(!isTeamLead && !isAdministrator
+        ...(isCHW
           ? [{ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS }]
+          : []),
+        ...(!isAdministrator && !isTeamLead && !isCHW
+          ? [{ name: 'All roles', url: ROUTES.USERS.ALL_ROLES }]
           : []),
         { name: 'View user', url: '' },
       ];
@@ -210,7 +216,7 @@ export function ViewUser(props: any) {
     return !user?.lockoutEnd || user?.lockoutEnd < new Date();
   };
 
-  let isCHW = userData?.userById?.roles?.some(
+  let isCHWRole = userData?.userById?.roles?.some(
     (role: any) => role.name === GrowGreatRoles.HealthCareWorker
   );
 
@@ -374,7 +380,7 @@ export function ViewUser(props: any) {
           />
           <div className="flex gap-2">
             {getRoleStatusChip(props.location.state?.component)}
-            {(isTeamLead || isCHW) && getConnectUsageChip(connectUsage)}
+            {(isTeamLead || isCHWRole) && getConnectUsageChip(connectUsage)}
           </div>
         </div>
       </div>
@@ -420,11 +426,13 @@ export function ViewUser(props: any) {
         refetchUserData={refetchUserData}
         refetchCHW={refetchCHW}
         isNotLockedOut={isNotLockedOut}
-        clinicIds={clinicIds}
         isAdministrator={isAdministrator}
+        userTypeToEdit={
+          userData?.userById?.roles.length && userData?.userById?.roles[0].name
+        }
       />
 
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered &&
         data &&
@@ -448,21 +456,21 @@ export function ViewUser(props: any) {
           />
         )}
 
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered && (
           <HealthCareWorkerSummary
             summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
           />
         )}
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered && (
           <HealthCareWorkerIssues
             summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
           />
         )}
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered && (
           <HealthCareWorkerHighlights
@@ -472,11 +480,25 @@ export function ViewUser(props: any) {
 
       {(isTeamLead ||
         props.location.state?.component ===
+          UsersRouteRedirectTypeEnum?.teamLeads) && (
+        <>
+          <TeamLeadClinics clinicIds={clinicIds} />
+        </>
+      )}
+
+      {(isTeamLead ||
+        props.location.state?.component ===
           UsersRouteRedirectTypeEnum?.teamLeads) &&
         isRegistered && (
           <>
-            <TeamLeadSummary teamLeadReportData={teamLeadReportData} />
-            <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
+            <TeamLeadSummary
+              teamLeadReportData={teamLeadReportData}
+              clinicIds={clinicIds}
+            />
+            <TeamLeadMeetingReport
+              teamLeadReportData={teamLeadReportData}
+              clinicIds={clinicIds}
+            />
           </>
         )}
 

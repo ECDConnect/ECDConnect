@@ -3778,6 +3778,12 @@ export type DangerSignInput = {
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 
+export type DangerSignTranslation = {
+  __typename?: 'DangerSignTranslation';
+  language?: Maybe<Scalars['String']>;
+  translation?: Maybe<Scalars['String']>;
+};
+
 export type DetailClubModel = {
   __typename?: 'DetailClubModel';
   clubActivities?: Maybe<Array<Maybe<ClubActivity>>>;
@@ -13527,7 +13533,7 @@ export type Query = {
   countWorkflowStatus?: Maybe<Scalars['Int']>;
   countWorkflowStatusType?: Maybe<Scalars['Int']>;
   dailyAttendance?: Maybe<Array<Maybe<Attendance>>>;
-  dangerSigns: Array<Maybe<DangerSign>>;
+  dangerSignTranslations?: Maybe<Array<Maybe<DangerSignTranslation>>>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   districtsAndStats?: Maybe<Array<Maybe<DistrictStatsModel>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
@@ -13568,6 +13574,7 @@ export type Query = {
   leagueSetupDetails?: Maybe<LeagueSetupModel>;
   leagues?: Maybe<Array<Maybe<PortalLeagueModel>>>;
   leaguesForCoach?: Maybe<Array<Maybe<LeagueClubsModel>>>;
+  leaguesForTeamLead?: Maybe<Array<Maybe<PortalLeagueModel>>>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
@@ -16213,9 +16220,9 @@ export type QueryDailyAttendanceArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryDangerSignsArgs = {
-  locale?: InputMaybe<Scalars['String']>;
+export type QueryDangerSignTranslationsArgs = {
   section?: InputMaybe<Scalars['String']>;
+  toTranslate?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryDisplayMetricsArgs = {
@@ -16367,6 +16374,10 @@ export type QueryLeaguesArgs = {
 
 export type QueryLeaguesForCoachArgs = {
   coachUserId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryLeaguesForTeamLeadArgs = {
+  teamLeadUserId: Scalars['UUID'];
 };
 
 export type QueryMapPractitionerToPrincipalArgs = {
@@ -16964,6 +16975,21 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
+export type Setting_IncomeStatementSubmitEnd = {
+  __typename?: 'Setting_IncomeStatementSubmitEnd';
+  IncomeStatementSubmitEnd: Scalars['String'];
+};
+
+export type Setting_IncomeStatementSubmitStart = {
+  __typename?: 'Setting_IncomeStatementSubmitStart';
+  IncomeStatementSubmitStart: Scalars['String'];
+};
+
+export type Setting_IntegrationDelay = {
+  __typename?: 'Setting_IntegrationDelay';
+  IntegrationDelay: Scalars['String'];
+};
+
 export type Setting_InvitationCutoffDelay = {
   __typename?: 'Setting_InvitationCutoffDelay';
   InvitationCutoffDelay: Scalars['String'];
@@ -16973,7 +16999,6 @@ export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
   Signup: Scalars['String'];
-  TeamLeadSignup: Scalars['String'];
 };
 
 export type Setting_Jwts = {
@@ -17009,6 +17034,17 @@ export type Setting_Security = {
   Login: Scalars['String'];
 };
 
+export type Setting_SmartLinkApi = {
+  __typename?: 'Setting_SmartLinkApi';
+  BaseUrl: Scalars['String'];
+  Key: Scalars['String'];
+  MaskDataEmail: Scalars['String'];
+  MaskDataIdNumber: Scalars['String'];
+  MaskDataMode: Scalars['String'];
+  MaskDataNumber: Scalars['String'];
+  Mode: Scalars['String'];
+};
+
 export type Setting_Sms = {
   __typename?: 'Setting_Sms';
   Provider: Scalars['String'];
@@ -17016,7 +17052,6 @@ export type Setting_Sms = {
 
 export type Setting_Smtp = {
   __typename?: 'Setting_Smtp';
-  DevOverrideEmailAddress: Scalars['String'];
   FromEmail: Scalars['String'];
   FromEmailDisplayName: Scalars['String'];
   Password: Scalars['String'];
@@ -17046,6 +17081,13 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
+export type Setting_ITouch = {
+  __typename?: 'Setting_iTouch';
+  BaseUrl: Scalars['String'];
+  Password: Scalars['String'];
+  Username: Scalars['String'];
+};
+
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -17053,6 +17095,9 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
+  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
+  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
+  IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
   Jwts: Setting_Jwts;
@@ -17060,11 +17105,13 @@ export type SettingsType = {
   Reporting: Setting_Reporting;
   SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
+  SmartLinkApi: Setting_SmartLinkApi;
   Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
+  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {

@@ -48,8 +48,8 @@ export interface PersonalInfoProps {
   refetchUserData: () => void;
   refetchCHW: () => void;
   isNotLockedOut: (user: UserDto) => boolean;
-  clinicIds?: string[];
   isAdministrator?: boolean;
+  userTypeToEdit: string;
 }
 
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({
@@ -63,8 +63,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   refetchUserData,
   refetchCHW,
   isNotLockedOut,
-  clinicIds,
   isAdministrator,
+  userTypeToEdit,
 }) => {
   const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -76,21 +76,26 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const [clinics, setClinics] = useState([]);
   const [hasClinicChange, setHasClinicChange] = useState(false);
   const [handleClinicChange, setHandleClinicChange] = useState(false);
-  const [idType, setIdType] = useState<string>('idNumber');
+  const [idType, setIdType] = useState<string>('');
 
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
-  const chwSchema = yup.object().shape({
-    idNumber:
-      idType === idTypeEnum.idNumber
-        ? yup
-            .string()
-            .matches(SA_ID_REGEX, 'Id number is not valid')
-            .required('ID Number is Required')
-        : yup
-            .string()
-            .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
-            .required('ID Number is Required'),
+  const chwSchemaIdNr = yup.object().shape({
+    idNumber: yup
+      .string()
+      .matches(SA_ID_REGEX, 'Id number is not valid')
+      .required('ID Number is Required'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+  });
+
+  const chwSchemaPassport = yup.object().shape({
+    idNumber: yup
+      .string()
+      .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
+      .required('Passport is Required'),
     phoneNumber: yup
       .string()
       .matches(SA_CELL_REGEX, 'Phone number is not valid')
@@ -122,10 +127,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     (item) => item?.id === clinicId
   );
 
-  const tlClinics = clinicsData?.allPortalClinics?.filter((item) =>
-    clinicIds?.some((x) => x === item?.id?.toString())
-  );
-
   const updateHealthCareWorkerClinic = useCallback(async () => {
     const response = await updateHCWClinic({
       variables: {
@@ -146,7 +147,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     getValues: chwDetailGetValues,
     handleSubmit: handleSubmitChwDetails,
   } = useForm({
-    resolver: yupResolver(chwSchema),
+    resolver: yupResolver(
+      idType === idTypeEnum.idNumber ? chwSchemaIdNr : chwSchemaPassport
+    ),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -175,12 +178,19 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const passwordForm = passwordGetValues();
 
   useEffect(() => {
-    const currentPreferedId = localStorage?.getItem('preferedId');
-
-    if (currentPreferedId === idTypeEnum.passport) {
+    // const currentPreferedId = localStorage?.getItem('preferedId');
+    // if (currentPreferedId) {
+    //   if (currentPreferedId === idTypeEnum.passport) {
+    //     setIdType(idTypeEnum.passport);
+    //   }
+    // } else {
+    if (userData?.idNumber?.length === 13) {
+      setIdType(idTypeEnum.idNumber);
+    } else {
       setIdType(idTypeEnum.passport);
     }
-  }, []);
+    // }
+  }, [userData]);
 
   useEffect(() => {
     adminDetailSetValue('email', userData?.email || chwData?.user.email, {
@@ -262,7 +272,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       setHandleClinicChange(false);
     }
     let passwordChange = false;
-    if (passwordForm.password.length > 0) {
+    if (passwordForm?.password?.length > 0) {
       passwordChange = true;
     }
     await saveUser(passwordChange);
@@ -288,7 +298,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                           <div className="my-4 sm:col-span-3">
                             <Typography
                               text={
-                                'Which kind of identification do you have for the CHW? *'
+                                'Which kind of identification do you have for the ' +
+                                userTypeToEdit +
+                                '? *'
                               }
                               type={'body'}
                               color={'textMid'}
@@ -418,7 +430,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   </div>
                 </div>
               </div>
-              {component === UsersRouteRedirectTypeEnum?.chw ? (
+              {component === UsersRouteRedirectTypeEnum?.chw ||
+              component === UsersRouteRedirectTypeEnum?.teamLeads ? (
                 <Button
                   className={' w-4/12 rounded-md '}
                   type="filled"
@@ -514,69 +527,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                         hcwClinic?.subDistrict?.district?.province?.description
                       }
                     />
-                  </div>
-                </div>
-              )}
-              {tlClinics?.length > 0 && (
-                <div className="flex w-10/12 items-center justify-between">
-                  <div className="flex w-4/12 items-center">
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'Clinic(s):'}
-                    />
-                    {tlClinics?.map((item) => {
-                      return (
-                        <Typography
-                          type="h2"
-                          hasMarkup
-                          fontSize="18"
-                          color="textMid"
-                          text={item?.name}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="flex w-full items-center gap-1">
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'Location:'}
-                      className="pl-4"
-                    />
-                    {tlClinics?.map((item) => {
-                      return (
-                        <div className="flex w-10/12 items-center gap-1">
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={`${item?.subDistrict?.name}, `}
-                          />
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={`${item?.subDistrict?.district?.name}, `}
-                          />
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={
-                              item?.subDistrict?.district?.province?.description
-                            }
-                          />
-                        </div>
-                      );
-                    })}
                   </div>
                 </div>
               )}

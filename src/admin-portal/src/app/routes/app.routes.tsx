@@ -67,7 +67,7 @@ import { NotificationsView } from '../notifications/notificationsView';
 import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
 import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
 import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
-import { EditTopics } from '../pages/tl-meetings/components/edit-topics';
+import { EditTopics } from '../pages/tl-meetings/components/edit-topics/edit-topics';
 import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
 import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
 import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
@@ -157,10 +157,6 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
       <Route path={ROUTES.TL_MEETINGS.ROOT} component={TLMeetings}></Route>
-      <Route
-        path={ROUTES.TEAM_MEETINGS}
-        component={TeamMeetingsMainPage}
-      ></Route>
       <Route path={ROUTES.TEAM_MEETINGS} component={TeamMeetingsRoot}></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
