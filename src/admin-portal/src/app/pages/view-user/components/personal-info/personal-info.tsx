@@ -78,21 +78,26 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const [clinics, setClinics] = useState([]);
   const [hasClinicChange, setHasClinicChange] = useState(false);
   const [handleClinicChange, setHandleClinicChange] = useState(false);
-  const [idType, setIdType] = useState<string>('idNumber');
+  const [idType, setIdType] = useState<string>('');
 
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
-  const chwSchema = yup.object().shape({
-    idNumber:
-      idType === idTypeEnum.idNumber
-        ? yup
-            .string()
-            .matches(SA_ID_REGEX, 'Id number is not valid')
-            .required('ID Number is Required')
-        : yup
-            .string()
-            .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
-            .required('Passport is Required'),
+  const chwSchemaIdNr = yup.object().shape({
+    idNumber: yup
+      .string()
+      .matches(SA_ID_REGEX, 'Id number is not valid')
+      .required('ID Number is Required'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+  });
+
+  const chwSchemaPassport = yup.object().shape({
+    idNumber: yup
+      .string()
+      .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
+      .required('Passport is Required'),
     phoneNumber: yup
       .string()
       .matches(SA_CELL_REGEX, 'Phone number is not valid')
@@ -148,7 +153,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     getValues: chwDetailGetValues,
     handleSubmit: handleSubmitChwDetails,
   } = useForm({
-    resolver: yupResolver(chwSchema),
+    resolver: yupResolver(
+      idType === idTypeEnum.idNumber ? chwSchemaIdNr : chwSchemaPassport
+    ),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
