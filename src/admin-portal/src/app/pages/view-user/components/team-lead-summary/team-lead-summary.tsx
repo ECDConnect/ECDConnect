@@ -52,6 +52,21 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
               <Typography
                 type={'h1'}
                 fontSize="48"
+                text={`${teamLeadReportData?.totalHealthCareWorkers}`}
+                color={'textMid'}
+                className="my-4"
+              />
+              <Typography
+                type={'body'}
+                text={'CHWs'}
+                color={'textMid'}
+                className="my-4"
+              />
+            </div>
+            <div className="flex items-center gap-4">
+              <Typography
+                type={'h1'}
+                fontSize="48"
                 text={`${teamLeadReportData?.totalPregnantMoms}`}
                 color={'textMid'}
                 className="my-4"
@@ -78,7 +93,7 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
                 className="my-4 flex w-full flex-nowrap"
               />
             </div>
-            <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-4">
               <Typography
                 type={'h1'}
                 fontSize="48"
@@ -92,7 +107,7 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
                 color={'textMid'}
                 className="my-4 flex w-full flex-nowrap"
               />
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="flex w-full justify-end p-4">
