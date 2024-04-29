@@ -250,15 +250,15 @@ const UserRoutes: React.FC = () => {
   return (
     <Switch>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={`/users/all-roles`} component={ApplicationUsers}></Route>
+      <Route path={ROUTES.USERS.ALL_ROLES} component={ApplicationUsers}></Route>
       <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={ROUTES.VIEW_USERS} component={ViewUser}></Route>
-      <Route path={`/users/admins`} component={ApplicationAdmins}></Route>
+      <Route path={ROUTES.USERS.ADMINS} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
       <Route path={`/users/clinics`} component={Clinics}></Route>
-      <Route path={`/users/team-leads`} component={TeamLeads}></Route>
+      <Route path={ROUTES.USERS.TEAM_LEADS} component={TeamLeads}></Route>
       <Route
         path={ROUTES.USERS.HEALTH_CARE_WORKERS}
         component={HealthCareWorkers}

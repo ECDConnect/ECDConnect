@@ -1,4 +1,10 @@
-import { Button, DatePicker, Typography } from '@ecdlink/ui';
+import {
+  Breadcrumb,
+  BreadcrumbProps,
+  Button,
+  DatePicker,
+  Typography,
+} from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { ClinicsRouteState } from '../../main-view/admin-view/clinics.types';
 import { CreateClinicPanel } from '../create-clinic-panel/create-edit-clinic-panel';
@@ -13,7 +19,7 @@ import Pregnant from '../../../../../assets/gg-icons/pregnant.svg';
 import Infant from '../../../../../assets/gg-icons/infant.svg';
 import { ClientRegistration } from './components/client-registration';
 import { PointsReportSummary } from './components/points-report-summary';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { format, lastDayOfMonth, startOfMonth, sub } from 'date-fns';
 import { ViewClinicReportProps } from './view-clinic-report.types';
 import ROUTES from '../../../../routes/app.routes-constants';
@@ -95,6 +101,17 @@ export const ViewClinicReport = ({
     },
   ];
 
+  const paths: BreadcrumbProps['paths'] = [
+    {
+      url: ROUTES.CLINICS.ALL_CLINICS,
+      name: 'Clinics',
+    },
+    {
+      url: ROUTES.CLINICS.VIEW_CLINICS,
+      name: 'View clinic',
+    },
+  ];
+
   useEffect(() => {
     if ((startDate && endDate) || isFromTeamMeetings) {
       if (isFromTeamMeetings) {
@@ -127,7 +144,7 @@ export const ViewClinicReport = ({
     startDate,
   ]);
 
-  const displayEditPanel = () => {
+  const displayEditPanel = useCallback(() => {
     panel({
       noPadding: true,
       catchOnCancel: false,
@@ -143,12 +160,29 @@ export const ViewClinicReport = ({
         />
       ),
     });
-  };
+  }, [clinic, panel]);
+
+  useEffect(() => {
+    if (location?.state?.openEditPanel) {
+      displayEditPanel();
+      history.replace({
+        pathname: location.pathname,
+        state: { ...location?.state, openEditPanel: false },
+      });
+    }
+  }, [
+    displayEditPanel,
+    history,
+    location.pathname,
+    location?.state,
+    location?.state?.openEditPanel,
+  ]);
 
   return (
     <div>
+      <Breadcrumb paths={paths} />
       <Typography
-        className="mb-8 truncate"
+        className="mb-8 mt-12 truncate"
         type="h1"
         weight="bold"
         color="textMid"

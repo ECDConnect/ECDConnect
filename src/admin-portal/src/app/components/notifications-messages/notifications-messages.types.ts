@@ -11,6 +11,10 @@ export const enum NotificationsCTAText {
   ContactCHW = '[[ContactCHW]]',
   AddLeagues = '[[Add leagues]]',
   AssignToLeagues = '[[Assign to leagues]]',
-  // TODO: add the right CTA
-  CHWsOptedOut = '[[NumberOptedOut]]',
+  CHWsOptedOut = '[[See CHWs]]',
+  DuplicateClientPregnantMom = '[[Contact [[CHWFullName]]]]',
+  DuplicateClientChild = '[[Contact [[CHWFullName]]]]',
+  AdminNextMonthTLMeetingTopic = '[[Add a topic]]',
+  ClinicMissingTL = '[[Assign team lead]]',
+  NoMeetingReportClinic = '[[Contact [[TeamLeadName]]]]',
 }

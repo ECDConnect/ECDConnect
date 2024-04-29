@@ -47,6 +47,9 @@ const ROUTES = {
     }),
   }),
   USERS: addPrefix('/users', {
+    ADMINS: '/admins',
+    ALL_ROLES: '/all-roles',
+    TEAM_LEADS: '/team-leads',
     HEALTH_CARE_WORKERS: '/health-care-worker',
   }),
   CLASSROOM: addPrefix('/classroom', {

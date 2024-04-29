@@ -142,20 +142,24 @@ export default function Shell() {
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
         NavbarTypes.Settings,
+        NavbarTypes.Notifications,
+        NavbarTypes.CHWsOptedOut,
       ];
 
-      const navigationList: INavigation[] = [
+      const navigationList = [
         ...navigationData?.GetAllNavigation,
+        tlMeetings,
         ...navigationFromFrontend,
       ];
 
-      const teamLeadNav = [...navigationData?.GetAllNavigation, tlMeetings];
-
-      const teamLeadNavigationList: INavigation[] = teamLeadNav?.filter(
+      const teamLeadNavigationList: INavigation[] = navigationList?.filter(
         (item) => teamLeadNavigationItems?.includes(item?.name)
       );
-      const adminNavigationList: INavigation[] = teamLeadNav?.filter((item) =>
-        adminNavigationItems?.includes(item?.name)
+      const adminNavigationList: INavigation[] = navigationList?.filter(
+        (item) =>
+          adminNavigationItems?.some((adminItem) =>
+            item?.name?.includes(adminItem)
+          )
       );
 
       const userRolePermissions = user?.roles

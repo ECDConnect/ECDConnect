@@ -99,10 +99,24 @@ export function ViewUser(props: any) {
 
   let userId = localStorage.getItem('selectedUser');
 
-  const paths: BreadcrumbProps['paths'] = [
-    { name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS },
-    { name: 'View user', url: '' },
-  ];
+  const paths: BreadcrumbProps['paths'] = isTeamLeadRole
+    ? [
+        { name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS },
+        { name: 'View user', url: '' },
+      ]
+    : [
+        { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
+        ...(isAdministrator
+          ? [{ name: 'Administrators', url: ROUTES.USERS.ADMINS }]
+          : []),
+        ...(isTeamLead
+          ? [{ name: 'Team Leads', url: ROUTES.USERS.TEAM_LEADS }]
+          : []),
+        ...(!isTeamLead && !isAdministrator
+          ? [{ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS }]
+          : []),
+        { name: 'View user', url: '' },
+      ];
 
   const { data, loading: loadingTenant } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',

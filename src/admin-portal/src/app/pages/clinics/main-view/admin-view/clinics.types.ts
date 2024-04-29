@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 export interface ClinicsRouteState {
   clinic?: ClinicDto;
   isFromTeamMeetings?: boolean;
+  openEditPanel?: boolean;
 }
 
 export interface ClinicPanelCreateProps {
