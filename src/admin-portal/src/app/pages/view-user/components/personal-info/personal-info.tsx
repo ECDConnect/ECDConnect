@@ -48,7 +48,6 @@ export interface PersonalInfoProps {
   refetchUserData: () => void;
   refetchCHW: () => void;
   isNotLockedOut: (user: UserDto) => boolean;
-  clinicIds?: string[];
   isAdministrator?: boolean;
   userTypeToEdit: string;
 }
@@ -64,7 +63,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   refetchUserData,
   refetchCHW,
   isNotLockedOut,
-  clinicIds,
   isAdministrator,
   userTypeToEdit,
 }) => {
@@ -127,10 +125,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
   const hcwClinic = clinicsData?.allPortalClinics?.find(
     (item) => item?.id === clinicId
-  );
-
-  const tlClinics = clinicsData?.allPortalClinics?.filter((item) =>
-    clinicIds?.some((x) => x === item?.id?.toString())
   );
 
   const updateHealthCareWorkerClinic = useCallback(async () => {
@@ -533,69 +527,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                         hcwClinic?.subDistrict?.district?.province?.description
                       }
                     />
-                  </div>
-                </div>
-              )}
-              {tlClinics?.length > 0 && (
-                <div className="flex w-10/12 items-center justify-between">
-                  <div className="flex w-4/12 items-center">
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'Clinic(s):'}
-                    />
-                    {tlClinics?.map((item) => {
-                      return (
-                        <Typography
-                          type="h2"
-                          hasMarkup
-                          fontSize="18"
-                          color="textMid"
-                          text={item?.name}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="flex w-full items-center gap-1">
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'Location:'}
-                      className="pl-4"
-                    />
-                    {tlClinics?.map((item) => {
-                      return (
-                        <div className="flex w-10/12 items-center gap-1">
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={`${item?.subDistrict?.name}, `}
-                          />
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={`${item?.subDistrict?.district?.name}, `}
-                          />
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={
-                              item?.subDistrict?.district?.province?.description
-                            }
-                          />
-                        </div>
-                      );
-                    })}
                   </div>
                 </div>
               )}

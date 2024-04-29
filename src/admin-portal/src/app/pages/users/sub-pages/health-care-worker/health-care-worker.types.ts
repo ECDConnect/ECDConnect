@@ -3,3 +3,7 @@ export enum AppVisitActivity {
   Medium = 'Medium activity (at least 10 visits in past month)',
   Low = 'Low activity (no home visits in the past month)',
 }
+
+export type HcwRouteState = {
+  clinicIds?: string[];
+};
