@@ -490,7 +490,10 @@ export function ViewUser(props: any) {
               teamLeadReportData={teamLeadReportData}
               clinicIds={clinicIds}
             />
-            <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
+            <TeamLeadMeetingReport
+              teamLeadReportData={teamLeadReportData}
+              clinicIds={clinicIds}
+            />
           </>
         )}
 

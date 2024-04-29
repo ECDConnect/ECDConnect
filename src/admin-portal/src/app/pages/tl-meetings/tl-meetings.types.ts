@@ -32,3 +32,7 @@ export const monthsNames = [
   'November',
   'December',
 ];
+
+export type ReportRouteState = {
+  clinicIds?: string[];
+};

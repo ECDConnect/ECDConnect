@@ -1,14 +1,25 @@
 import { TeamLeadSummaryDto } from '@ecdlink/core';
 import { Button, Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
+import { useHistory } from 'react-router';
+import ROUTES from '../../../../routes/app.routes-constants';
 
 interface TeamLeadMeetingReportProps {
   teamLeadReportData: TeamLeadSummaryDto;
+  clinicIds?: string[];
 }
 
 export const TeamLeadMeetingReport: React.FC<TeamLeadMeetingReportProps> = ({
   teamLeadReportData,
+  clinicIds,
 }) => {
+  const history = useHistory();
+  const goToTLReports = () => {
+    history.push(ROUTES.TL_MEETINGS.REPORTS.SEE_REPORTS, {
+      clinicIds: clinicIds,
+    });
+  };
+
   return (
     <div>
       <div className="border-l-secondary  border-secondary m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
@@ -65,7 +76,9 @@ export const TeamLeadMeetingReport: React.FC<TeamLeadMeetingReportProps> = ({
             color="secondary"
             text="See reports"
             textColor="white"
-            onClick={() => {}}
+            onClick={() => {
+              goToTLReports();
+            }}
             className="rounded-xl p-2"
           />
         </div>

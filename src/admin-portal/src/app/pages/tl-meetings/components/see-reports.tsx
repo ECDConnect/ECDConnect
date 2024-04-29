@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Icolumn, Irow } from 'react-tailwind-table';
 import { useHistory, useLocation } from 'react-router';
 import { MeetingDto } from '@ecdlink/core';
@@ -10,9 +10,9 @@ import {
   GetAllPortalClinics,
   GetAllTeamLead,
 } from '@ecdlink/graphql';
-import { ReferralsRouteState } from '../../referrals/types';
 import ROUTES from '../../../routes/app.routes-constants';
 import { format } from 'date-fns';
+import { ReportRouteState } from '../tl-meetings.types';
 
 export const SeeReports = () => {
   const [search, setSearch] = useState<string>('');
@@ -30,8 +30,7 @@ export const SeeReports = () => {
   );
 
   const history = useHistory();
-
-  const { state } = useLocation<ReferralsRouteState>();
+  const { state } = useLocation<ReportRouteState>(); // used by referrals and team leads
 
   const { data: clinicsData, loading: loadingClinics } = useQuery<{
     allPortalClinics?: Clinic[];
