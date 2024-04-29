@@ -93,21 +93,6 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
                 className="my-4 flex w-full flex-nowrap"
               />
             </div>
-            {/* <div className="flex items-center gap-4">
-              <Typography
-                type={'h1'}
-                fontSize="48"
-                text={`${teamLeadReportData?.totalInFieldVisitsCompleted}`}
-                color={'textMid'}
-                className="my-4"
-              />
-              <Typography
-                type={'body'}
-                text={'in-field support visits completed in 2023'}
-                color={'textMid'}
-                className="my-4 flex w-full flex-nowrap"
-              />
-            </div> */}
           </div>
         </div>
         <div className="flex w-full justify-end p-4">
