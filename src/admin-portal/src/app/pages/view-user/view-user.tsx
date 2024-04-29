@@ -43,6 +43,7 @@ import { PersonalInfo } from './components/personal-info/personal-info';
 import { GrowGreatRoles, TenantContext } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
+import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -420,7 +421,6 @@ export function ViewUser(props: any) {
         refetchUserData={refetchUserData}
         refetchCHW={refetchCHW}
         isNotLockedOut={isNotLockedOut}
-        clinicIds={clinicIds}
         isAdministrator={isAdministrator}
         userTypeToEdit={
           userData?.userById?.roles.length && userData?.userById?.roles[0].name
@@ -472,6 +472,14 @@ export function ViewUser(props: any) {
             summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
           />
         )}
+
+      {(isTeamLead ||
+        props.location.state?.component ===
+          UsersRouteRedirectTypeEnum?.teamLeads) && (
+        <>
+          <TeamLeadClinics clinicIds={clinicIds} />
+        </>
+      )}
 
       {(isTeamLead ||
         props.location.state?.component ===
