@@ -34,11 +34,11 @@ import React, {
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { ConenctUsage } from '../team-leads/team-leads.types';
 import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
-import { AppVisitActivity } from './health-care-worker.types';
+import { AppVisitActivity, HcwRouteState } from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
@@ -91,7 +91,7 @@ export default function HealthCareWorkers() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [handleAddUser, setHandleAddUser] = useState(false);
-
+  const location = useLocation<HcwRouteState>();
   const [selectedCHWs, setSelectedCHWs] = useState<Irow[]>([]);
 
   const isAllInactive = selectedCHWs.every((obj) => obj?.isActive === false);
@@ -163,6 +163,17 @@ export default function HealthCareWorkers() {
     () => clinicsFiltered?.map((item) => item?.label),
     [clinicsFiltered]
   );
+
+  // these clinic ids are populated from the view of the team lead - modify filter to view users within clinics
+  const stateClinicIds = location?.state?.clinicIds;
+  useEffect(() => {
+    if (stateClinicIds && stateClinicIds.length > 0) {
+      var tlCinics = clinics.filter(function (item) {
+        return stateClinicIds.indexOf(item.id) !== -1;
+      });
+      setClinicsFiltered(tlCinics);
+    }
+  }, [clinics, stateClinicIds]);
 
   const [subDistricts, setSubDistricts] =
     useState<SearchDropDownOption<string>[]>();

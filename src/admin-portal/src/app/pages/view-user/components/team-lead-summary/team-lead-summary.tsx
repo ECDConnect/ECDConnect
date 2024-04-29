@@ -1,13 +1,24 @@
 import { TeamLeadSummaryDto } from '@ecdlink/core';
 import { Button, Typography } from '@ecdlink/ui';
+import { useHistory } from 'react-router';
+import ROUTES from '../../../../routes/app.routes-constants';
 
 interface TeamLeadSummaryReportProps {
   teamLeadReportData: TeamLeadSummaryDto;
+  clinicIds?: string[];
 }
 
 export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
   teamLeadReportData,
+  clinicIds,
 }) => {
+  const history = useHistory();
+  const goToCHWs = () => {
+    history.push(ROUTES.USERS.HEALTH_CARE_WORKERS, {
+      clinicIds: clinicIds,
+    });
+  };
+
   return (
     <div>
       <div className="border-l-secondary  border-secondary m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
@@ -91,7 +102,9 @@ export const TeamLeadSummary: React.FC<TeamLeadSummaryReportProps> = ({
             color="secondary"
             text="See CHW's"
             textColor="white"
-            onClick={() => {}}
+            onClick={() => {
+              goToCHWs();
+            }}
             className="rounded-xl p-2"
           />
         </div>

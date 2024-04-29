@@ -486,7 +486,10 @@ export function ViewUser(props: any) {
           UsersRouteRedirectTypeEnum?.teamLeads) &&
         isRegistered && (
           <>
-            <TeamLeadSummary teamLeadReportData={teamLeadReportData} />
+            <TeamLeadSummary
+              teamLeadReportData={teamLeadReportData}
+              clinicIds={clinicIds}
+            />
             <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
           </>
         )}
