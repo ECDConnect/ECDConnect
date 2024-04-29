@@ -1,19 +1,21 @@
-import { Button, Card, Typography } from '@ecdlink/ui';
+import { Alert, Button, Card, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import { add, format, getDate } from 'date-fns';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetAllLanguage,
   GetAllPortalClinics,
+  GetAllTopic,
   GetClinicMeetingForMonth,
+  MeetingTopic,
 } from '@ecdlink/graphql';
 import { ClinicsTeamLeadView } from '../clinics/main-view/team-lead-view/clinics';
-import TempIfographic from '../../../assets/infographics/Breastfeeding-infographic.png';
 import LanguageSelector from '../../components/language-selector/language-selector';
 import { useEffect, useMemo, useState } from 'react';
 import { AddTeamMeetingReport } from './components/add-meeting-report/add-meeting-report';
 import { ClinicMeetingReportDto, usePanel } from '@ecdlink/core';
 import { useUser } from '../../hooks/useUser';
+import { LanguageId } from '../../constants/language';
 
 interface TeamMeetingsMainPageProps {
   clinicId?: string;
@@ -48,6 +50,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
     isUntilDaySevenOfTheMonth ? currentMonthName : nextMonthName
   }`;
   const [selectedTabId, setSelectedTabId] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('');
 
   const { data } = useQuery(GetAllPortalClinics, {
     fetchPolicy: 'cache-and-network',
@@ -70,6 +73,21 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
     },
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: topicData, loading: loadingTopicData } = useQuery(GetAllTopic, {
+    fetchPolicy: 'network-only',
+    variables: {
+      localeId: selectedLanguage || LanguageId.enZa,
+    },
+  });
+
+  const currentTopic: MeetingTopic = useMemo(
+    () =>
+      topicData?.GetAllTopic?.find(
+        (item) => item?.title === titleDateFormatted
+      ),
+    [titleDateFormatted, topicData?.GetAllTopic]
+  );
 
   useEffect(() => {
     if (selectedTabId) {
@@ -116,7 +134,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
   };
 
   const onDownloadInfographic = () => {
-    const doc = TempIfographic;
+    const doc = currentTopic?.infoGraphic;
     const link = document.createElement('a');
     link.href = doc;
     link.setAttribute('download', 'infographic.png');
@@ -271,54 +289,68 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
               text={'3. Knowledge sharing - 30 min'}
               color={'textDark'}
             />
-            <Typography
-              type={'body'}
-              text={'///////// Get values from CMS /////////'}
-              color={'textMid'}
-            />
-            <div>
-              <img src={TempIfographic} alt="infographic" />
-              <div className="my-2 flex w-full justify-end">
-                <Button
-                  className={`rounded-2xl p-4`}
-                  type={'filled'}
-                  color={'secondary'}
-                  onClick={onDownloadInfographic}
-                  text="Download infographic"
-                  textColor="white"
-                  icon="DownloadIcon"
+            {currentTopic && !loadingTopicData && (
+              <div>
+                <Typography
+                  type={'h4'}
+                  text={`Topic: ${currentTopic?.topicTitle}`}
+                  color={'textDark'}
                 />
+                <div
+                  className="text-textDark my-2"
+                  dangerouslySetInnerHTML={{
+                    __html: `${currentTopic?.topicContent}`,
+                  }}
+                />
+                <Typography
+                  type={'h4'}
+                  text={`Share the infographic(s):`}
+                  color={'textDark'}
+                  className="my-8"
+                />
+                <div>
+                  <img src={currentTopic?.infoGraphic} alt="infographic" />
+                  <div className="my-2 flex w-full justify-end">
+                    <Button
+                      className={`rounded-2xl p-4`}
+                      type={'filled'}
+                      color={'secondary'}
+                      onClick={onDownloadInfographic}
+                      text="Download infographic"
+                      textColor="white"
+                      icon="DownloadIcon"
+                    />
+                  </div>
+                </div>
+                <div className="my-4">
+                  <Typography
+                    type={'h4'}
+                    text={'Check knowledge:'}
+                    color={'textDark'}
+                  />
+                  <div
+                    className="text-textDark"
+                    dangerouslySetInnerHTML={{
+                      __html: `${currentTopic?.knowledgeContent}`,
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="mb-4">
-              <Typography
-                type={'h4'}
-                text={'Check knowledge:'}
-                color={'textDark'}
+            )}
+            {!currentTopic && !loadingTopicData && (
+              <Alert
+                className="mt-5 mb-3"
+                message={`Knowledge sharing have not been added yet.`}
+                type="warning"
               />
-              <Typography
-                type={'body'}
-                text={'1. Lorem ipsum'}
-                color={'textMid'}
-                className="my-2 ml-2"
+            )}
+            {loadingTopicData && (
+              <LoadingSpinner
+                backgroundColor="secondary"
+                spinnerColor="adminPortalBg"
+                size="small"
               />
-              <Typography
-                type={'body'}
-                text={
-                  '2. Check knowledge:Lorem ipsum dolor sit amet, consectetur adipiscing elit,'
-                }
-                color={'textMid'}
-                className="my-2 ml-2"
-              />
-              <Typography
-                type={'body'}
-                text={
-                  '3. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-                }
-                color={'textMid'}
-                className="my-2 ml-2"
-              />
-            </div>
+            )}
           </Card>
         </div>
         <div className="mb-4">
@@ -408,24 +440,39 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
             <div className="flex items-center justify-between">
               <Typography
                 type={'h3'}
-                text={'7. Performance review - 40-60 min'}
+                text={'7. Self care - 10 min'}
                 color={'textDark'}
               />
               <LanguageSelector
                 disabled={false}
                 languages={languages?.filter((item) => item?.isActive === true)}
                 currentLanguageId={'en-za'}
-                // selectLanguage={setSelectedFirstLanguageId}
+                selectLanguage={setSelectedLanguage}
               />
             </div>
-            <Typography
-              type={'body'}
-              text={
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. '
-              }
-              color={'textMid'}
-              className="my-2"
-            />
+            {loadingTopicData && (
+              <LoadingSpinner
+                backgroundColor="secondary"
+                spinnerColor="adminPortalBg"
+                size="small"
+              />
+            )}
+            {currentTopic && !loadingTopicData && (
+              <div
+                className="text-textDark"
+                dangerouslySetInnerHTML={{
+                  __html: `${currentTopic?.selfCareContent}`,
+                }}
+              />
+            )}
+
+            {!currentTopic && !loadingTopicData && (
+              <Alert
+                className="mt-5 mb-3"
+                message={`Self care tips have not been added yet.`}
+                type="warning"
+              />
+            )}
           </Card>
         </div>
         {!monthMeetingSubmitted && availableDateToAddReport && (
