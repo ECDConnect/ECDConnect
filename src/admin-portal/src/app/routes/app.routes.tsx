@@ -157,10 +157,6 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
       <Route path={ROUTES.TL_MEETINGS.ROOT} component={TLMeetings}></Route>
-      <Route
-        path={ROUTES.TEAM_MEETINGS}
-        component={TeamMeetingsMainPage}
-      ></Route>
       <Route path={ROUTES.TEAM_MEETINGS} component={TeamMeetingsRoot}></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>

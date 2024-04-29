@@ -36,7 +36,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
   });
   const todaysDateNumber = getDate(today);
   const availableDateToAddReport =
-    todaysDateNumber >= 24 && todaysDateNumber <= 7;
+    todaysDateNumber >= 24 || todaysDateNumber <= 7;
   const isUntilDaySevenOfTheMonth = todaysDateNumber < 7;
   const previousMonthName = format(previousMonth, 'MMMM');
   const currentMonthName = format(today, 'MMMM');
