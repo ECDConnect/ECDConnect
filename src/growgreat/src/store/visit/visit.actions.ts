@@ -11,6 +11,7 @@ import {
   Progress_VisitDataStatus,
   VisitData,
   VisitVideos,
+  DangerSignTranslation,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
@@ -28,6 +29,7 @@ export const VisitActions = {
   GET_VISIT_VIDEOS: 'getVisitVideos',
   GET_INFO_GRAPHICS: 'getInfographics',
   GET_DANGER_SIGNS: 'getDangerSigns',
+  GET_DANGER_TRANSLATION: 'getDangerSignsTranslation',
   GET_MORE_INFORMATION: 'getMoreInformation',
   GET_COMPLETED_VISITS_FOR_VISIT_ID: 'getCompletedVisitsForVisitId',
   GET_MOM_COMPLETED_VISITS_FOR_VISIT_ID: 'getMomCompletedVisitsForVisitId',
@@ -225,6 +227,33 @@ export const getDangerSigns = createAsyncThunk<
         const [content] = await new Visit(
           userAuth?.auth_token ?? ''
         ).getDangerSigns(section, locale);
+
+        return content;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getDangerSignsTranslation = createAsyncThunk<
+  DangerSignTranslation[],
+  { section: string; toTranslate: string },
+  ThunkApiType<RootState>
+>(
+  VisitActions.GET_DANGER_TRANSLATION,
+  async ({ toTranslate, section }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const content = await new Visit(
+          userAuth?.auth_token ?? ''
+        ).GetDangerSignTranslations(section, toTranslate);
 
         return content;
       } else {
