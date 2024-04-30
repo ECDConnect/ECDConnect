@@ -64,16 +64,23 @@ namespace EcdLink.Api.CoreApi.Services
                 foreach (var hcw in offlineHcws)
                 {
                     TimeSpan daysToCheck = DateTime.Now - hcw.User.LastSeen;
-                    if (daysToCheck.Days > 0)
+                    if (daysToCheck.Days >= 21)
                     {
-                        if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
+                        List<TagsReplacements> replacements = new List<TagsReplacements>();
+                        replacements.Add(new TagsReplacements()
                         {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, 
+                            FindValue = "FirstName",
+                            ReplacementValue = hcw.User.FirstName,
+                        });
+
+                        if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
+                        {                   
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, null, false, true, null,
                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
                         }
                         else if (daysToCheck.Days >= 30)
                         {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, null, null, false, true, null,
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, null, false, true, null,
                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
                         }
                     }
