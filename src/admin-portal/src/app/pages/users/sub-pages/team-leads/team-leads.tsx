@@ -1,35 +1,32 @@
-import { useQuery } from '@apollo/client';
-import { PermissionEnum, usePanel } from '@ecdlink/core';
+import { useMutation, useQuery } from '@apollo/client';
+import {
+  NOTIFICATION,
+  PermissionEnum,
+  useDialog,
+  useNotifications,
+  usePanel,
+} from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
 import {
   GetAllPortalClinics,
   GetAllProvince,
   GetAllTeamLead,
   GetSubDistrictsAndStats,
+  deleteMultipleUsers,
+  sentInviteToMultipleUsers,
 } from '@ecdlink/graphql';
-import ReactDatePicker from 'react-datepicker';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import { useUser } from '../../../../hooks/useUser';
-
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PlusIcon,
-  SearchIcon,
-} from '@heroicons/react/solid';
 import {
   ActionModal,
   Dialog,
   DialogPosition,
-  Dropdown,
-  SearchDropDown,
   SearchDropDownOption,
-  Typography,
+  Table,
 } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { useHistory } from 'react-router';
-import UiTable from './components/ui-table';
 import { ConenctUsage } from './team-leads.types';
 import { format } from 'date-fns';
 import { Status } from '../application-admins/applications-admins.types';
@@ -37,6 +34,9 @@ import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-panel-create';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
+import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
+import { columnColor } from '../../../../utils/health-care-worker/components-utils';
+import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -62,10 +62,12 @@ export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
 export default function TeamLeads() {
   const [tableData, setTableData] = useState<any[]>([]);
   const { hasPermission } = useUser();
-  const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const [handleAdduser, setHandleAdduser] = useState(false);
   const panel = usePanel();
+  const [selectedTeamLeads, setSelectedTeamLeads] = useState<Irow[]>([]);
+  const [handleAddUser, setHandleAddUser] = useState(false);
+  const dialog = useDialog();
+  const { setNotification } = useNotifications();
 
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
@@ -168,17 +170,26 @@ export default function TeamLeads() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const { data: clinicData } = useQuery(GetAllPortalClinics, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: clinicData, loading: loadingClinics } = useQuery(
+    GetAllPortalClinics,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
-  const { data: provinceData } = useQuery(GetAllProvince, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: provinceData, loading: loadingProvince } = useQuery(
+    GetAllProvince,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
-  const { data: subDistrictData } = useQuery(GetSubDistrictsAndStats, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: subDistrictData, loading: loadingDistricts } = useQuery(
+    GetSubDistrictsAndStats,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const clearFilters = () => {
     setProvincesFiltered([]);
@@ -310,14 +321,6 @@ export default function TeamLeads() {
     }
   }, [data, endDate, startDate, statusFilter]);
 
-  const dateDropdownValue = useMemo(
-    () =>
-      startDate && endDate
-        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
-        : '',
-    [endDate, startDate]
-  );
-
   const handleSetDateFilter = useCallback(() => {
     setFilterDateAdded(!filterDateAdded);
   }, [filterDateAdded]);
@@ -347,279 +350,381 @@ export default function TeamLeads() {
     });
   };
 
-  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
-  const numberOfFilters = useMemo(
-    () =>
-      statusFilter?.length +
-      connectUsageFilter?.length +
-      provincesFiltered?.length +
-      clinicsFiltered?.length +
-      subDistrictsFiltered?.length +
-      hasDateFilter,
-    [
-      statusFilter?.length,
-      connectUsageFilter?.length,
-      provincesFiltered?.length,
-      clinicsFiltered?.length,
-      subDistrictsFiltered?.length,
-      hasDateFilter,
-    ]
+  const tableRef = useRef<TableRefMethods>(null);
+
+  const rows: Irow[] =
+    (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
+      (item) => ({
+        ...item,
+        key: item?.id,
+        displayColumnIdPassportEmail:
+          item?.user?.userName ?? item?.idNumber ?? item?.user?.email ?? '-',
+        fullName: `${item?.user?.firstName} ${item?.user?.surname}`,
+        connectUsageComponent: item?.user?.connectUsage
+          ? columnColor(item.user.connectUsage)
+          : '-',
+        insertedDateFormatted: item?.insertedDate
+          ? format(new Date(item?.insertedDate), 'dd/MM/yyyy')
+          : '-',
+        isActiveComponent: (
+          <p
+            className={
+              item?.user?.isActive ? 'text-successMain' : 'text-errorMain'
+            }
+          >
+            {item?.user?.isActive ? 'Active' : 'Inactive'}
+          </p>
+        ),
+      })
+    ) ?? [];
+
+  const columns: Icolumn[] = [
+    {
+      field: 'displayColumnIdPassportEmail',
+      use: 'id / Passport',
+    },
+    {
+      field: 'fullName',
+      use: 'name',
+    },
+    {
+      field: 'connectUsageComponent',
+      use: 'CHW Connect usage',
+    },
+    {
+      field: 'insertedDateFormatted',
+      use: 'Date invited',
+    },
+    {
+      field: 'isActiveComponent',
+      use: 'Active',
+    },
+  ];
+
+  const isFilterActive =
+    !!connectUsageFilter?.length ||
+    !!startDate ||
+    !!endDate ||
+    !!clinicsFiltered?.length ||
+    !!subDistrictsFiltered?.length ||
+    !!provincesFiltered?.length ||
+    !!statusFilter?.length;
+
+  const noContentText = useMemo(() => {
+    if (isFilterActive) {
+      return 'No results found. Try changing the filters selected';
+    }
+    return 'No entries found';
+  }, [isFilterActive]);
+
+  const isLoading =
+    loading || loadingClinics || loadingProvince || loadingDistricts;
+
+  const [sendInvitations, { loading: invitationsLoading }] = useMutation(
+    sentInviteToMultipleUsers,
+    {
+      variables: {
+        userIds: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+  const [deactivateUsers, { loading: deactivating }] = useMutation(
+    deleteMultipleUsers,
+    {
+      variables: {
+        ids: [],
+      },
+      fetchPolicy: 'network-only',
+    }
   );
 
-  const renderFilterButtonText = useMemo(() => {
-    if (numberOfFilters) {
-      if (numberOfFilters === 1) {
-        return `${numberOfFilters} Filter`;
-      }
-      return `${numberOfFilters} Filters`;
-    }
+  const inactiveUsers = selectedTeamLeads?.filter(
+    (item) => item?.isActive === false
+  );
+  const disableInviteBulkAction =
+    selectedTeamLeads?.length <= inactiveUsers?.length;
+  const isAllInactive = selectedTeamLeads.every(
+    (obj) => obj?.isActive === false
+  );
 
-    return 'Filter';
-  }, [numberOfFilters]);
+  const handleResetSelectedRows = () => {
+    tableRef?.current?.resetSelectedRows();
+  };
+
+  const chwIdsToSendInvitation = selectedTeamLeads
+    ?.filter((item) => !item?.isRegistered && item?.user?.phoneNumber)
+    ?.map((item) => item?.id);
+
+  const inviteUsers = useCallback(() => {
+    sendInvitations({
+      variables: {
+        userIds: chwIdsToSendInvitation,
+      },
+    })
+      .then((res) => {
+        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          setSelectedTeamLeads([]);
+          handleResetSelectedRows();
+        }
+        if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedTeamLeads([]);
+          handleResetSelectedRows();
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to send invitations',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  }, [chwIdsToSendInvitation, sendInvitations, setNotification]);
+
+  const handleBulkInvitation = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title={`Resend invitation to ${
+            selectedTeamLeads?.length - inactiveUsers?.length
+          } Team Leads?`}
+          message={`Are you sure you want to send the invitation to the ${
+            selectedTeamLeads?.length - inactiveUsers?.length
+          } Team Leads selected?`}
+          btnText={['Yes, resend', 'No, Cancel']}
+          hasAlert={isAllInactive || inactiveUsers?.length > 0}
+          alertMessage={`Note: ${inactiveUsers?.length} selected Team Leads are already registered or have been deactivated so you cannot resend these invitations.`}
+          alertType="error"
+          onCancel={() => {
+            onClose();
+            setSelectedTeamLeads([]);
+            handleResetSelectedRows();
+          }}
+          onSubmit={() => {
+            inviteUsers();
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [
+    dialog,
+    selectedTeamLeads?.length,
+    isAllInactive,
+    inactiveUsers?.length,
+    inviteUsers,
+  ]);
+
+  const deactivateUser = useCallback(() => {
+    deactivateUsers({
+      variables: {
+        ids: selectedTeamLeads?.map((item) => item?.id),
+      },
+    })
+      .then((res) => {
+        if (res.data?.bulkDeleteUser?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Deactivated ${res.data?.bulkDeleteUser?.success.length} Users!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          refetch();
+          setSelectedTeamLeads([]);
+          handleResetSelectedRows();
+        }
+        if (res.data?.bulkDeleteUser?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Deactivate ${res.data?.bulkDeleteUser?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedTeamLeads([]);
+          handleResetSelectedRows();
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to deactivate',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  }, [deactivateUsers, selectedTeamLeads, setNotification, refetch]);
+
+  const handleBulkDelete = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title={`Deactivate ${
+            selectedTeamLeads?.length - inactiveUsers?.length
+          } Team Leads?`}
+          message={`Are you sure you want to deactivate these Team Leads? Team Leads will lose their access to CHW Connect immediately. Make sure you have communicated this to Team Leads before deactivating them.`}
+          btnText={['Yes, deactivate Team Leads', 'No, Cancel']}
+          hasAlert={isAllInactive || inactiveUsers?.length > 0}
+          alertMessage={`Note: ${inactiveUsers?.length} Team Leads selected have already been deactivated.`}
+          alertType="error"
+          onCancel={() => {
+            onClose();
+            setSelectedTeamLeads([]);
+            handleResetSelectedRows();
+          }}
+          onSubmit={() => {
+            deactivateUser();
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [
+    deactivateUser,
+    dialog,
+    isAllInactive,
+    inactiveUsers?.length,
+    selectedTeamLeads?.length,
+  ]);
 
   if (tableData) {
     return (
-      <div>
-        <div className="flex flex-col">
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <div className="text-body w-8/12 sm:flex  ">
-              <div className="text-body w-full flex-col sm:flex sm:justify-around">
-                <div className="relative w-full">
-                  <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                    {searchValue === '' && (
-                      <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                    )}
-                  </span>
-                  <input
-                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="      Search by id number or name..."
-                    onChange={search}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-0 flex w-8/12 flex-row sm:mt-0 sm:ml-4">
-              <div className="mx-4 ">
-                <span className=" text-lg font-medium leading-6 text-gray-900">
-                  <button
-                    onClick={() => setShowFilter(!showFilter)}
-                    id="dropdownHoverButton"
-                    className={`${
-                      numberOfFilters
-                        ? ' bg-secondary'
-                        : 'border-secondary border-2 bg-white'
-                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
-                      numberOfFilters ? 'text-white' : 'text-textMid'
-                    } hover:bg-gray-300 focus:ring-2`}
-                    type="button"
-                  >
-                    <div className="flex items-center gap-1">
-                      <Typography
-                        className="truncate"
-                        type="help"
-                        color={numberOfFilters ? 'white' : 'textLight'}
-                        text={renderFilterButtonText}
-                      />
-                      {!showFilter ? (
-                        <span>
-                          <ChevronDownIcon
-                            className={`h-6 w-6 ${
-                              numberOfFilters ? 'text-white' : 'text-textLight'
-                            }`}
-                          />
-                        </span>
-                      ) : (
-                        <span>
-                          <ChevronUpIcon
-                            className={`h-6 w-6 ${
-                              numberOfFilters ? 'text-white' : 'text-textLight'
-                            }`}
-                          />
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                </span>
-              </div>
-            </div>
-            <div className="ml-4 w-6/12">
-              <div className="flex  flex-row">
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={() => setHandleAdduser(true)}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                  >
-                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                    Add Team Leads
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          {showFilter && (
-            <div className="mb-4 flex w-full flex-row items-center">
-              <div className="flex items-center gap-2">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-0.5'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={sortByConnectUsage}
-                  selectedOptions={connectUsageFilter}
-                  onChange={setConnectUsageFilter}
-                  placeholder={'CHW Connect usage'}
-                  multiple={true}
-                  color={'secondary'}
-                  info={{
-                    name: `CHW Connect usage:`,
-                  }}
-                />
-              </div>
-              {!filterDateAdded && (
-                <div
-                  className="mr-1 flex items-center"
-                  onClick={() => setFilterDateAdded(!filterDateAdded)}
-                >
-                  <Dropdown
-                    fillType="filled"
-                    textColor={'textLight'}
-                    fillColor={endDate ? 'secondary' : 'white'}
-                    placeholder={dateDropdownValue || 'Date invited'}
-                    labelColor={endDate ? 'white' : 'textLight'}
-                    list={[]}
-                    onChange={(item) => {}}
-                    className="w-56 text-sm text-white"
-                  />
-                </div>
-              )}
-
-              {filterDateAdded && (
-                <ReactDatePicker
-                  selected={startDate}
-                  onChange={onChange}
-                  startDate={startDate}
-                  endDate={endDate}
-                  selectsRange={true}
-                  inline
-                  shouldCloseOnSelect={true}
-                />
-              )}
-              <div className="w-6/12">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={provinces}
-                  selectedOptions={provincesFiltered}
-                  onChange={setProvincesFiltered}
-                  placeholder={'Province'}
-                  multiple={true}
-                  color={'secondary'}
-                />
-              </div>
-              <div className="w-6/12">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={clinics}
-                  selectedOptions={clinicsFiltered}
-                  onChange={setClinicsFiltered}
-                  placeholder={'Clinic'}
-                  multiple={true}
-                  color={'secondary'}
-                />
-              </div>
-              <div className="w-6/12">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={subDistricts}
-                  selectedOptions={subDistrictsFiltered}
-                  onChange={setSubDistrictsFiltered}
-                  placeholder={'Sub-district'}
-                  multiple={true}
-                  color={'secondary'}
-                />
-              </div>
-              <div className="mr-2 flex items-center gap-2">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={sortByClientStatusOptions}
-                  selectedOptions={statusFilter}
-                  onChange={setStatusFilter}
-                  placeholder={'Status'}
-                  multiple={true}
-                  color={'secondary'}
-                  info={{
-                    name: `Status:`,
-                  }}
-                />
-              </div>
-              <div className="flex w-full justify-end">
-                <div className="">
-                  <button
-                    onClick={clearFilters}
-                    type="button"
-                    className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col">
-            <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                  <UiTable
-                    columns={[
-                      { field: 'idNumber', use: 'id / Passport' },
-                      { field: 'fullName', use: 'name' },
-                      { field: 'connectUsage', use: 'CHW Connect uage' },
-                      { field: 'insertedDate', use: 'Date Invited' },
-                      { field: 'isActive', use: 'Active' },
-                    ]}
-                    rows={
-                      searchValue !== 'Search by title or content...'
-                        ? filterByValue(tableData, searchValue)
-                        : tableData
-                    }
-                    component="team-leads"
-                    viewRow={viewSelectedRow}
-                    isLoading={loading}
-                    refetchData={refetch}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
+        <div className="rounded-xl bg-white p-12">
+          <Table
+            ref={tableRef}
+            rows={rows}
+            columns={columns}
+            onClearFilters={clearFilters}
+            onChangeSelectedRows={setSelectedTeamLeads}
+            onClickRow={viewSelectedRow}
+            noContentText={noContentText}
+            loading={{
+              isLoading: tableData === undefined || isLoading,
+              size: 'medium',
+              spinnerColor: 'adminPortalBg',
+              backgroundColor: 'secondary',
+            }}
+            actionButton={
+              hasPermission(PermissionEnum.create_user) && {
+                text: 'Add Team Leads',
+                onClick: () => setHandleAddUser(true),
+                icon: 'PlusIcon',
+              }
+            }
+            search={{
+              placeholder: 'Search by id number or name...',
+              onChange: search,
+            }}
+            bulkActions={[
+              {
+                type: 'filled',
+                color: 'secondary',
+                textColor: 'white',
+                text: 'Resend Invitations',
+                icon: 'PaperAirplaneIcon',
+                isLoading: invitationsLoading,
+                disabled:
+                  invitationsLoading ||
+                  disableInviteBulkAction ||
+                  isAllInactive,
+                onClick: handleBulkInvitation,
+              },
+              {
+                type: 'outlined',
+                color: 'tertiary',
+                textColor:
+                  deactivating || isAllInactive ? 'uiLight' : 'tertiary',
+                icon: 'TrashIcon',
+                text: 'Deactivate User',
+                isLoading: deactivating,
+                disabled: deactivating || isAllInactive,
+                onClick: handleBulkDelete,
+              },
+            ]}
+            filters={[
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                options: sortByConnectUsage,
+                selectedOptions: connectUsageFilter,
+                onChange: setConnectUsageFilter,
+                placeholder: 'CHW Connect usage',
+                multiple: true,
+                info: { name: 'CHW Connect usage:' },
+              },
+              {
+                dateFormat: 'd MMM yyyy',
+                hideFilter: false,
+                className: 'w-64 h-11 mt-1 border-2 border-transparent',
+                isFullWidth: false,
+                colour: !!startDate ? 'secondary' : 'adminPortalBg',
+                textColour: !!startDate ? 'white' : 'textMid',
+                placeholderText: 'Date invited',
+                type: 'date-picker',
+                showChevronIcon: true,
+                chevronIconColour: !!startDate ? 'white' : 'primary',
+                hideCalendarIcon: true,
+                selected: startDate,
+                onChange,
+                startDate,
+                endDate,
+                selectsRange: true,
+                shouldCloseOnSelect: true,
+              },
+              {
+                type: 'search-dropdown',
+                hideFilter: clinicData?.allPortalClinics?.length <= 1,
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                options: clinics,
+                selectedOptions: clinicsFiltered,
+                onChange: setClinicsFiltered,
+                placeholder: 'Clinic',
+                multiple: true,
+                info: { name: 'Clinic:' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: false,
+                options: subDistricts,
+                selectedOptions: subDistrictsFiltered,
+                onChange: setSubDistrictsFiltered,
+                placeholder: 'Sub-district',
+                multiple: true,
+                info: { name: 'Sub-district:' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: false,
+                options: provinces,
+                selectedOptions: provincesFiltered,
+                onChange: setProvincesFiltered,
+                placeholder: 'Province',
+                multiple: true,
+                info: { name: 'Province:' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                hideFilter: false,
+                options: sortByClientStatusOptions,
+                selectedOptions: statusFilter,
+                onChange: setStatusFilter,
+                placeholder: 'Status',
+                multiple: true,
+                info: { name: 'Status:' },
+              },
+            ]}
+          />
         </div>
         <Dialog
           className="absolute left-56 bottom-96 mb-44 w-6/12"
           stretch
-          visible={handleAdduser}
+          visible={handleAddUser}
           position={DialogPosition.Middle}
         >
           <ActionModal
@@ -650,7 +755,7 @@ export default function TeamLeads() {
                 type: 'outlined',
                 onClick: () => {
                   displayPanel();
-                  setHandleAdduser(false);
+                  setHandleAddUser(false);
                 },
                 leadingIcon: 'UserIcon',
               },
