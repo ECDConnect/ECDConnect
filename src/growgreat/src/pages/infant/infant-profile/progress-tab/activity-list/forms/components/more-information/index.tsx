@@ -18,6 +18,7 @@ import { VisitActions } from '@/store/visit/visit.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { replaceBraces } from '@ecdlink/core';
 import { LanguageCode } from '@/i18n/types';
+import momImage from '@/assets/momImage.png';
 
 export const MoreInformation = ({
   section,
@@ -114,13 +115,7 @@ export const MoreInformation = ({
           {/* --- Info Box ---- */}
           {!!moreInformation.infoBoxTitle && (
             <div className="bg-uiBg rounded-10 mb-4 flex gap-3 p-4">
-              {!!moreInformation?.infoBoxIcon && (
-                <img
-                  alt="icon"
-                  src={moreInformation.infoBoxIcon}
-                  className="h-16 w-16"
-                />
-              )}
+              <img src={momImage} alt="cebisa" className="h-16 w-16" />
               <div>
                 <Typography
                   type="h4"
