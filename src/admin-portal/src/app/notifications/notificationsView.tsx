@@ -38,7 +38,7 @@ export const NotificationsView = () => {
           <Typography
             type={'h4'}
             color={'textDark'}
-            text={'There are not notifications'}
+            text={'You don’t have any notifications yet!'}
             className="p-12"
           />
         </div>
