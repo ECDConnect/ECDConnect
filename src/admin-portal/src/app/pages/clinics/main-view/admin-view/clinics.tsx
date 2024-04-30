@@ -48,6 +48,7 @@ export function ClinicsAdminView() {
   const routesToHideSubNavigation = [
     ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
     ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
+    ROUTES.CLINICS.VIEW_CLINICS,
   ];
 
   const isToHideSubNavigation = routesToHideSubNavigation.some((route) =>
@@ -57,9 +58,10 @@ export function ClinicsAdminView() {
   useEffect(() => {
     // GO TO DEFAULT ROUTE
     async function init() {
-      const isValidRoute = getNavigationItems()?.some(
-        (route) => route.href === location.pathname
-      );
+      const isValidRoute =
+        getNavigationItems()?.some(
+          (route) => route.href === location.pathname
+        ) || location.pathname === ROUTES.CLINICS.VIEW_CLINICS;
 
       if (!isValidRoute) {
         history.push(navigation?.[0]?.href);

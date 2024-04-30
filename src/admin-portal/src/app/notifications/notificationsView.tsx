@@ -1,13 +1,17 @@
-import { Typography } from '@ecdlink/ui';
+import { LoadingSpinner, Typography } from '@ecdlink/ui';
 import { useUser } from '../hooks/useUser';
 import { useQuery } from '@apollo/client';
-import { GetAllNotifications } from '@ecdlink/graphql';
+import { GetAllNotifications, Notification } from '@ecdlink/graphql';
 import { NotificationsMessages } from '../components/notifications-messages/notifications-messages';
 import { format } from 'date-fns';
 
 export const NotificationsView = () => {
   const { user } = useUser();
-  const { data: notificationsData } = useQuery(GetAllNotifications, {
+  const {
+    data: notificationsData,
+    refetch: refetchNotification,
+    loading,
+  } = useQuery<{ allNotifications: Notification[] }>(GetAllNotifications, {
     variables: {
       userId: user?.id,
     },
@@ -15,6 +19,17 @@ export const NotificationsView = () => {
   });
 
   const notifications = notificationsData?.allNotifications;
+
+  if (loading) {
+    return (
+      <LoadingSpinner
+        className="p-8"
+        size="medium"
+        spinnerColor="adminPortalBg"
+        backgroundColor="secondary"
+      />
+    );
+  }
 
   return (
     <div className="p-4">
@@ -32,6 +47,7 @@ export const NotificationsView = () => {
         notifications?.map((item) => (
           <NotificationsMessages
             className="mb-4"
+            refetchNotification={refetchNotification}
             ctaText={item?.cTAText}
             date={format(new Date(item?.messageDate), 'd MMMM y')}
             statusColor={item?.status}

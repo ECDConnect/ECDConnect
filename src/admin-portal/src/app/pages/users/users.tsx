@@ -113,16 +113,7 @@ export function Users() {
 
       <div className=" bg-adminPortalBg rounded-xl rounded-t-none lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-          <div
-            className={` relative h-full  ${
-              location?.pathname?.includes(ROUTES.USERS.HEALTH_CARE_WORKERS)
-                ? ''
-                : 'p-12'
-            }  `}
-            style={{ minHeight: '36rem' }}
-          >
-            <UserRoutes />
-          </div>
+          <UserRoutes />
         </div>
       </div>
     </div>

@@ -83,6 +83,8 @@ export function ViewUser(props: any) {
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const isAdministrator =
     props.location.state?.component === UsersRolesTypeEnum?.administrator;
+  const isCHW =
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.chw;
   const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
@@ -99,6 +101,28 @@ export function ViewUser(props: any) {
   };
 
   let userId = localStorage.getItem('selectedUser');
+
+  const paths: BreadcrumbProps['paths'] = isTeamLeadRole
+    ? [
+        { name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS },
+        { name: 'View user', url: '' },
+      ]
+    : [
+        { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
+        ...(isAdministrator
+          ? [{ name: 'Administrators', url: ROUTES.USERS.ADMINS }]
+          : []),
+        ...(isTeamLead
+          ? [{ name: 'Team Leads', url: ROUTES.USERS.TEAM_LEADS }]
+          : []),
+        ...(isCHW
+          ? [{ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS }]
+          : []),
+        ...(!isAdministrator && !isTeamLead && !isCHW
+          ? [{ name: 'All roles', url: ROUTES.USERS.ALL_ROLES }]
+          : []),
+        { name: 'View user', url: '' },
+      ];
 
   const { data, loading: loadingTenant } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
@@ -192,28 +216,9 @@ export function ViewUser(props: any) {
     return !user?.lockoutEnd || user?.lockoutEnd < new Date();
   };
 
-  let isCHW = userData?.userById?.roles?.some(
+  let isCHWRole = userData?.userById?.roles?.some(
     (role: any) => role.name === GrowGreatRoles.HealthCareWorker
   );
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const paths: BreadcrumbProps['paths'] = [{ name: 'View user', url: '' }];
-
-  useMemo(() => {
-    if (props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) {
-      paths.unshift({ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS });
-    } else if (
-      props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads
-    ) {
-      paths.unshift({ name: 'Team Leads', url: ROUTES.USERS.TEAM_LEADS });
-    } else if (
-      props.location.state?.component === UsersRouteRedirectTypeEnum?.admins
-    ) {
-      paths.unshift({ name: 'Admins', url: ROUTES.USERS.ADMINS });
-    } else {
-      paths.unshift({ name: 'All roles', url: ROUTES.USERS.ALL_ROLES });
-    }
-  }, [paths, props.location.state?.component]);
 
   const getRoleStatusChip = (status: string) => {
     switch (status) {
@@ -375,7 +380,7 @@ export function ViewUser(props: any) {
           />
           <div className="flex gap-2">
             {getRoleStatusChip(props.location.state?.component)}
-            {(isTeamLead || isCHW) && getConnectUsageChip(connectUsage)}
+            {(isTeamLead || isCHWRole) && getConnectUsageChip(connectUsage)}
           </div>
         </div>
       </div>
@@ -427,7 +432,7 @@ export function ViewUser(props: any) {
         }
       />
 
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered &&
         data &&
@@ -451,21 +456,21 @@ export function ViewUser(props: any) {
           />
         )}
 
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered && (
           <HealthCareWorkerSummary
             summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
           />
         )}
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered && (
           <HealthCareWorkerIssues
             summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
           />
         )}
-      {(isCHW ||
+      {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered && (
           <HealthCareWorkerHighlights

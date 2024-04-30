@@ -1,12 +1,12 @@
 import { format } from 'date-fns';
 import ROUTES from '../../routes/app.routes-constants';
-import { INavigation } from './shell.types';
+import { INavigation, NavbarTypes } from './shell.types';
 
 export const navigationFromFrontend: INavigation[] = [
   {
     icon: 'UserGroupIcon',
     hide: true,
-    name: `Notifications`,
+    name: NavbarTypes.Notifications,
     permissions: [],
     route: ROUTES.NOTIFICATIONS_VIEW,
     sequence: 0,
@@ -15,7 +15,7 @@ export const navigationFromFrontend: INavigation[] = [
   {
     icon: 'UserGroupIcon',
     hide: true,
-    name: `CHWs who have opted out - ${format(new Date(), 'MMMM yyyy')}`,
+    name: NavbarTypes.CHWsOptedOut + ' - ' + format(new Date(), 'MMMM yyyy'),
     permissions: [],
     route: ROUTES.HEALTH_CARE_WORKER.OPTED_OUT,
     sequence: 0,

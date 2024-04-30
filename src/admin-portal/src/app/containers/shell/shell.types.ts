@@ -16,6 +16,8 @@ export enum NavbarTypes {
   TeamMeetings = 'Team meetings',
   SiteData = 'Site data',
   Settings = 'Settings',
+  Notifications = 'Notifications',
+  CHWsOptedOut = 'CHWs who have opted out',
 }
 
 export const NotificationNavigationModel = {

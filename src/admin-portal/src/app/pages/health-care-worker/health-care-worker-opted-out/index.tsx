@@ -7,34 +7,45 @@ import {
   QueryHealthCareWorkersOptedOutOfMonthlyMeetingArgs,
 } from '@ecdlink/graphql';
 import { Alert, Table } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { format, sub } from 'date-fns';
 import { Icolumn } from 'react-tailwind-table';
 import { columnColor } from '../../../utils/health-care-worker/components-utils';
 import ROUTES from '../../../routes/app.routes-constants';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { HealthCareWorkerOptedOutRouteState } from './types';
+import { useEffect, useState } from 'react';
 
 export const HealthCareWorkerOptedOut: React.FC = () => {
+  const [date, setDate] = useState<Date>();
   const history = useHistory();
+
+  const { state } = useLocation<HealthCareWorkerOptedOutRouteState>();
 
   const { setNotification } = useNotifications();
 
-  // TODO: replace month & year, according to the notification.
-  const today = new Date();
+  useEffect(() => {
+    if (state?.month && state?.year) {
+      return setDate(new Date(Number(state.year), Number(state.month)));
+    }
+
+    return history.push(ROUTES.NOTIFICATIONS_VIEW);
+  }, [history, state?.month, state?.year]);
 
   const { data, loading } = useQuery<{
     healthCareWorkersOptedOutOfMonthlyMeeting: PortalHealthCareWorkerModel[];
   }>(GetHealthCareWorkersOptedOutOfMonthlyMeeting, {
     fetchPolicy: 'cache-and-network',
     variables: {
-      month: today.getMonth() + 1,
-      year: today.getFullYear(),
+      month: date?.getMonth(),
+      year: date?.getFullYear(),
       order: [
         {
           dateInvited: 'DESC',
         },
       ] as PortalHealthCareWorkerModelSortInput,
     } as QueryHealthCareWorkersOptedOutOfMonthlyMeetingArgs,
+    skip: !date,
   });
 
   const [getChwById, { loading: loadingChw }] = useLazyQuery(
@@ -67,28 +78,29 @@ export const HealthCareWorkerOptedOut: React.FC = () => {
     },
   ];
 
-  const rows = data?.healthCareWorkersOptedOutOfMonthlyMeeting?.map((hcw) => ({
-    userId: hcw?.userId,
-    key: hcw?.idNumber ?? '-',
-    id: hcw?.idNumber ?? '-',
-    name: hcw?.name ?? '-',
-    connectUsageColor: hcw?.connectUsageColor,
-    connectUsage: hcw?.connectUsage,
-    connectUsageComponent: hcw?.connectUsage
-      ? columnColor(hcw.connectUsage)
-      : '-',
-    dateInvited: hcw?.dateInvited
-      ? format(new Date(hcw.dateInvited), 'dd/MM/yyyy')
-      : '-',
-    status:
-      hcw?.isActive !== undefined ? (
-        <p className={hcw?.isActive ? 'text-successMain' : 'text-errorMain'}>
-          {hcw?.isActive ? 'Active' : 'Inactive'}
-        </p>
-      ) : (
-        '-'
-      ),
-  }));
+  const rows =
+    data?.healthCareWorkersOptedOutOfMonthlyMeeting?.map((hcw) => ({
+      userId: hcw?.userId,
+      key: hcw?.idNumber ?? '-',
+      id: hcw?.idNumber ?? '-',
+      name: hcw?.name ?? '-',
+      connectUsageColor: hcw?.connectUsageColor,
+      connectUsage: hcw?.connectUsage,
+      connectUsageComponent: hcw?.connectUsage
+        ? columnColor(hcw.connectUsage)
+        : '-',
+      dateInvited: hcw?.dateInvited
+        ? format(new Date(hcw.dateInvited), 'dd/MM/yyyy')
+        : '-',
+      status:
+        hcw?.isActive !== undefined ? (
+          <p className={hcw?.isActive ? 'text-successMain' : 'text-errorMain'}>
+            {hcw?.isActive ? 'Active' : 'Inactive'}
+          </p>
+        ) : (
+          '-'
+        ),
+    })) ?? [];
 
   const viewSelectedRow = (selectedRow: Irow) => {
     getChwById({
@@ -126,10 +138,9 @@ export const HealthCareWorkerOptedOut: React.FC = () => {
       {!loading && !loadingChw && (
         <Alert
           type="info"
-          title={`These CHWs have opted out of GGC in ${format(
-            new Date(),
-            'MMMM yyyy'
-          )}.`}
+          title={`These CHWs have opted out of GGC in ${
+            date && format(sub(date, { months: 1 }), 'MMMM yyyy')
+          }.`}
           className="mb-4 rounded-lg"
         />
       )}

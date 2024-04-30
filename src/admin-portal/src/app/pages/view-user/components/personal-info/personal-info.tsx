@@ -184,7 +184,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     //     setIdType(idTypeEnum.passport);
     //   }
     // } else {
-    if (userData.idNumber.length === 13) {
+    if (userData?.idNumber?.length === 13) {
       setIdType(idTypeEnum.idNumber);
     } else {
       setIdType(idTypeEnum.passport);
@@ -272,7 +272,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       setHandleClinicChange(false);
     }
     let passwordChange = false;
-    if (passwordForm.password.length > 0) {
+    if (passwordForm?.password?.length > 0) {
       passwordChange = true;
     }
     await saveUser(passwordChange);

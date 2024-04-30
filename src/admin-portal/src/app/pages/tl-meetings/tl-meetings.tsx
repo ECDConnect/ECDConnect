@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
 import { TenantContext } from '../../utils/constants';
@@ -8,6 +8,8 @@ import SubNavigationLink from '../../components/sub-navigation-link/sub-navigati
 import { TlMeetingsRoutes } from '../../routes/app.routes';
 
 export function TLMeetings() {
+  const location = useLocation();
+
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
@@ -41,7 +43,13 @@ export function TLMeetings() {
   useEffect(() => {
     // GO TO DEFAULT ROUTE
     async function init() {
-      history.push(navigation?.[0]?.href);
+      const isValidRoute = getNavigationItems()?.some(
+        (route) => route.href === location.pathname
+      );
+
+      if (!isValidRoute) {
+        history.push(navigation?.[0]?.href);
+      }
     }
 
     init()?.catch(console.error);
