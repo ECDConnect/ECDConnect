@@ -319,7 +319,7 @@ export const ViewClinicReport = ({
         isLoading={loading}
         clinicReportData={clinicReportData?.clinicVisitReportData}
       />
-      {isTeamLead && (
+      {isTeamLead && !isFromTeamMeetings && (
         <div className="mt-9 flex gap-4">
           <Button
             className="rounded-xl px-2"
