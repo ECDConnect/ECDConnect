@@ -1,0 +1,1 @@
+update public."MessageTemplate" set "Message" = 'You haven''t added the [[PreviousMonthName]] report yet! Make sure you submit the report before 8 [[PreviousMonthName]].' where "TemplateType" ='gg-portal-tl-missing-monthly-report';
