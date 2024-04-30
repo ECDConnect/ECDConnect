@@ -699,7 +699,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Remove notifications when the report has been submitted for the TLs clinic(s) for the month
             var notification = _messageRepo.GetAll().Where(x =>
-                    x.MessageProtocol == "push" &&
+                    x.MessageProtocol == "portal" &&
                     x.MessageTemplateType == TemplateTypeConstants.GGPortalTLMissingMonthlyReport &&
                     x.To == clinicMeeting.TeamLeadId.ToString() &&
                     x.IsActive == true &&

@@ -1,6 +1,5 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -41,7 +40,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var clinics = _clinicRepo.GetAll().Where(x => x.IsActive).ToList();
             var prevMonth = DateTime.Now.AddMonths(-1);
-            var expireDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 8);
+            var expireDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 7);
 
             foreach (var clinic in clinics)
             {
