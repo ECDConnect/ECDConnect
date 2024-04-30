@@ -13594,6 +13594,7 @@ export type Query = {
   pointsForHealthCareWorker?: Maybe<Array<Maybe<PointsActivityModel>>>;
   pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
+  portalHealthCareWorkersById?: Maybe<PortalUsersHcwModel>;
   practitionerById?: Maybe<PractitionerModel>;
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
@@ -13629,6 +13630,7 @@ export type Query = {
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
   subDistrictsAndStats?: Maybe<Array<Maybe<SubDistrictStatsModel>>>;
+  teamLeadById?: Maybe<PortalUsersTlModel>;
   teamLeadSummary?: Maybe<PortalTeamLeadModel>;
   teamLeadTemplateGenerator?: Maybe<FileModel>;
   tenantContext?: Maybe<TenantModel>;
@@ -16453,6 +16455,10 @@ export type QueryPointsSummaryForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryPortalHealthCareWorkersByIdArgs = {
+  healthCareWorkerId: Scalars['UUID'];
+};
+
 export type QueryPractitionerByIdArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -16572,6 +16578,10 @@ export type QueryRoleForUserArgs = {
 
 export type QueryStatementsIncomeExpensesPdfDataArgs = {
   statementId: Scalars['UUID'];
+};
+
+export type QueryTeamLeadByIdArgs = {
+  teamLeadId: Scalars['UUID'];
 };
 
 export type QueryTeamLeadSummaryArgs = {

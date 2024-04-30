@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
@@ -7,7 +8,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -451,5 +451,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             return null;
         }
 
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PortalUsersTLModel GetTeamLeadById(
+            [Service] ITeamLeadService teamLeadService,
+            Guid teamLeadId)
+        {
+            var teamLead = teamLeadService.GetTeamLeadById(teamLeadId);
+
+            return teamLead;
+        }
     }
 }

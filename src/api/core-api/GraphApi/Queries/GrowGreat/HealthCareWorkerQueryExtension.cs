@@ -351,5 +351,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             return healthCareWorkers;
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PortalUsersHCWModel GetPortalHealthCareWorkersById(
+            [Service] HealthCareWorkerManager healthCareWorkerManager,
+            Guid healthCareWorkerId)
+        {
+            var healthCareWorker = healthCareWorkerManager.GetPortalHealthCareWorkerById(healthCareWorkerId);
+
+            return healthCareWorker;
+        }
     }
 }

@@ -69,7 +69,9 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null)
         {
-            var relatedEntityIds = notification.RelatedEntities.Select(x => x.RelatedToEntityId).ToList();
+            var relatedEntityIds = notification.RelatedEntities != null 
+                ? notification.RelatedEntities.Select(x => x.RelatedToEntityId).ToList()
+                : new List<Guid>();
 
             var query = _messageRepo.GetAll()
                 .Where(x =>
@@ -148,7 +150,7 @@ namespace EcdLink.Api.CoreApi.Services
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
                             Action = templateItem.Action,
-                            RelatedEntities = relatedEntities,
+                            RelatedEntities = relatedEntities ?? new List<RelatedEntity>(),
                             GroupingId = groupingId,
                         };
                         if (messageEndDate != null)

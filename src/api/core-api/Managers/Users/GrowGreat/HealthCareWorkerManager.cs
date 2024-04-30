@@ -105,10 +105,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
 
             // If only a team lead, filter to only CHWs at relavant clinics
-            var healthCareWorkersQuery = _healthCareWorkerRepo.GetAll();
-                //.Where(x =>
-                //    isUserAdmin
-                //    || x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == _applicationUserId));
+            var healthCareWorkersQuery = _healthCareWorkerRepo.GetAll()
+                .Where(x =>
+                    isUserAdmin
+                    || x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == _applicationUserId));
 
             var hasFilters = false;
 
@@ -282,6 +282,36 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     ).ToList();
 
             return healthCareWorkerModels;
+        }
+
+
+
+        public PortalUsersHCWModel GetPortalHealthCareWorkerById(Guid healthCareWorkerId)
+        {
+            // If only a team lead, filter to only CHWs at relavant clinics
+            var healthCareWorker = _healthCareWorkerRepo.GetById(healthCareWorkerId);
+
+            // Fetch invitations for connect usage and convert to model
+            var invitation = _shortenUrlEntityRepo.GetAll()
+                .Where(x =>
+                   x.UserId.Value == healthCareWorker.UserId
+                    && x.MessageType == TemplateTypeConstants.Invitation
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            return new PortalUsersHCWModel
+            {
+                Id = healthCareWorker.Id,
+                User = new PortalUserModel(healthCareWorker.User, healthCareWorker.IsRegistered, invitation != null ? invitation.InsertedDate : null),
+                ClinicId = healthCareWorker.ClinicId,
+                ClinicName = healthCareWorker.Clinic != null ? healthCareWorker.Clinic.Name : null,
+                InsertedDate = healthCareWorker.InsertedDate,
+                IsRegistered = healthCareWorker.IsRegistered,
+                ProvinceId = healthCareWorker.Clinic != null && healthCareWorker.Clinic.SubDistrict != null ? healthCareWorker.Clinic.SubDistrict.District.ProvinceId : null,
+                SubDistrictId = healthCareWorker.Clinic != null ? healthCareWorker.Clinic.SubDistrictId : null,
+            };
         }
     }
 }

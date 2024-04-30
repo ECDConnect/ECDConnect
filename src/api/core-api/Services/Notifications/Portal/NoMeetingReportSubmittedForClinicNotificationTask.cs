@@ -1,20 +1,14 @@
-﻿using EcdLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Abstractrions.Constants;
+﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
-using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clinics;
-using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using HotChocolate;
-using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,6 +57,12 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
             var adminUsers = _applicationUserManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
             foreach (var clinic in clinics)
             {
+                // If no team leads skip the notification, notification to add team leaad needs to be actioned first
+                if (!clinic.TeamLeads.Any())
+                {
+                    continue;
+                }
+
                 var hasMeeting = _clinicMeetingRepo.GetAll()
                     .Any(x => x.ClinicId == clinic.Id && x.MeetingDate >= lastMonthStart && x.MeetingDate <= lastMonthEnd);
 
@@ -71,8 +71,15 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                     continue;
                 }
 
+                var teamLead = clinic.TeamLeads.First();
+
                 var replacements = new List<TagsReplacements>
                 {
+                    new TagsReplacements()
+                    {
+                        FindValue = "TeamLeadId",
+                        ReplacementValue = teamLead.TeamLeadId.ToString()
+                    },
                     new TagsReplacements()
                     {
                         FindValue = "ClinicId",
@@ -86,12 +93,17 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                     new TagsReplacements()
                     {
                         FindValue = "MonthAndYear",
-                        ReplacementValue = $"{lastMonthStart.Month} {lastMonthStart.Year}"
+                        ReplacementValue = lastMonthStart.ToString("MMMM yyyy")
                     },
                     new TagsReplacements()
                     {
                         FindValue = "TeamLeadName",
-                        ReplacementValue = string.Join(",", clinic.TeamLeads.Select(x => $"{x.TeamLead.User.FirstName} {x.TeamLead.User.Surname}"))
+                        ReplacementValue = $"{teamLead.TeamLead.User.FirstName} {teamLead.TeamLead.User.Surname}"
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "TeamLeadNames",
+                        ReplacementValue = string.Join(", ", clinic.TeamLeads.Select(x => $"{x.TeamLead.User.FirstName} {x.TeamLead.User.Surname}"))
                     },
                     new TagsReplacements()
                     {
@@ -100,12 +112,18 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                     },
                 };
 
+                var relatedEntities = new List<RelatedEntity>
+                {
+                    new RelatedEntity(clinic.Id, "Clinic"),
+                    new RelatedEntity(teamLead.TeamLeadId, "TeamLead")
+                };
+
                 var groupingId = Guid.NewGuid();
                 foreach (var user in adminUsers)
                 {
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NoMeetingReportSubmittedForClinic, DateTime.Now.Date, user, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddMonths(1),
                         groupingId: groupingId,
-                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(clinic.Id, typeof(Clinic).ToString()) });
+                        relatedEntities: relatedEntities);
                 }
             }
         }

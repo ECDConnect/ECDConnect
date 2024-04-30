@@ -1,12 +1,8 @@
-﻿using EcdLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Abstractrions.Constants;
+﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
-using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clinics;
-using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -73,7 +69,17 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                 new TagsReplacements()
                 {
                     FindValue = "MonthAndYear",
-                    ReplacementValue = $"{DateTime.Now.Month} {DateTime.Now.Year}"
+                    ReplacementValue = lastMonthStart.ToString("MMMM yyyy")
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "Month",
+                    ReplacementValue = DateTime.Now.Month.ToString()
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "Year",
+                    ReplacementValue = DateTime.Now.Year.ToString()
                 },
             };
 
