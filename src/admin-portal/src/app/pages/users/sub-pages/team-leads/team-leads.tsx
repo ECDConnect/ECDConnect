@@ -439,11 +439,11 @@ export default function TeamLeads() {
     }
   );
 
-  const registeredOrInactiveUsers = selectedTeamLeads?.filter(
-    (item) => item?.isRegistered === true || item?.isActive === false
+  const inactiveUsers = selectedTeamLeads?.filter(
+    (item) => item?.isActive === false
   );
   const disableInviteBulkAction =
-    selectedTeamLeads?.length <= registeredOrInactiveUsers?.length;
+    selectedTeamLeads?.length <= inactiveUsers?.length;
   const isAllInactive = selectedTeamLeads.every(
     (obj) => obj?.isActive === false
   );
@@ -494,14 +494,14 @@ export default function TeamLeads() {
       render: (onClose) => (
         <AlertModal
           title={`Resend invitation to ${
-            selectedTeamLeads?.length - registeredOrInactiveUsers?.length
+            selectedTeamLeads?.length - inactiveUsers?.length
           } Team Leads?`}
           message={`Are you sure you want to send the invitation to the ${
-            selectedTeamLeads?.length - registeredOrInactiveUsers?.length
+            selectedTeamLeads?.length - inactiveUsers?.length
           } Team Leads selected?`}
           btnText={['Yes, resend', 'No, Cancel']}
-          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
-          alertMessage={`Note: ${registeredOrInactiveUsers?.length} selected Team Leads are already registered or have been deactivated so you cannot resend these invitations.`}
+          hasAlert={isAllInactive || inactiveUsers?.length > 0}
+          alertMessage={`Note: ${inactiveUsers?.length} selected Team Leads are already registered or have been deactivated so you cannot resend these invitations.`}
           alertType="error"
           onCancel={() => {
             onClose();
@@ -519,7 +519,7 @@ export default function TeamLeads() {
     dialog,
     selectedTeamLeads?.length,
     isAllInactive,
-    registeredOrInactiveUsers?.length,
+    inactiveUsers?.length,
     inviteUsers,
   ]);
 
@@ -562,12 +562,12 @@ export default function TeamLeads() {
       render: (onClose) => (
         <AlertModal
           title={`Deactivate ${
-            selectedTeamLeads?.length - registeredOrInactiveUsers?.length
+            selectedTeamLeads?.length - inactiveUsers?.length
           } Team Leads?`}
           message={`Are you sure you want to deactivate these Team Leads? Team Leads will lose their access to CHW Connect immediately. Make sure you have communicated this to Team Leads before deactivating them.`}
           btnText={['Yes, deactivate Team Leads', 'No, Cancel']}
-          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
-          alertMessage={`Note: ${registeredOrInactiveUsers?.length} Team Leads selected have already been deactivated.`}
+          hasAlert={isAllInactive || inactiveUsers?.length > 0}
+          alertMessage={`Note: ${inactiveUsers?.length} Team Leads selected have already been deactivated.`}
           alertType="error"
           onCancel={() => {
             onClose();
@@ -585,7 +585,7 @@ export default function TeamLeads() {
     deactivateUser,
     dialog,
     isAllInactive,
-    registeredOrInactiveUsers?.length,
+    inactiveUsers?.length,
     selectedTeamLeads?.length,
   ]);
 
