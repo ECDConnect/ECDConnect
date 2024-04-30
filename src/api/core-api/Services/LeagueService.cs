@@ -397,16 +397,19 @@ namespace EcdLink.Api.CoreApi.Services
             var leagueEndDate = LeagueHelpers.GetCurrentSeasonEndDate();
 
             var clinics = _clinicRepo.GetAll().Where(x => x.IsActive && x.TeamLeads.Any(y => y.TeamLead.UserId == teamLeadUserId)).ToList();
-            return clinics.SelectMany(x => x.Leagues).Where(x => x.IsActive && x.League.StartDate >= leagueStartDate
-                            && x.League.EndDate <= leagueEndDate).Distinct().Select(x => new PortalLeagueModel
+            var leagues = clinics
+                          .SelectMany(x => x.Leagues)
+                          .Where(x => x.IsActive && x.League.StartDate >= leagueStartDate && x.League.EndDate <= leagueEndDate)
+                          .Select(x => x.League).Distinct().ToList();
+            return leagues.Select(x => new PortalLeagueModel
                             {
-                                Id = x.LeagueId,
-                                Name = x.League.Name,
-                                InsertedDate = x.League.InsertedDate,
-                                LeagueTypeId = x.League.LeagueTypeId,
-                                LeagueTypeName = x.League.LeagueType.Name,
-                                Clinics = x.League.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name }).ToList()
-                            }).ToList();
+                                Id = x.Id,
+                                Name = x.Name,
+                                InsertedDate = x.InsertedDate,
+                                LeagueTypeId = x.LeagueTypeId,
+                                LeagueTypeName = x.LeagueType.Name,
+                                Clinics = x.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name }).ToList()
+                            }).Distinct().ToList();
         }
     }
 }
