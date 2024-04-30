@@ -1,9 +1,7 @@
 import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useCallback, useEffect, useLayoutEffect } from 'react';
-import { useAppDispatch } from '@/store';
-import { visitThunkActions } from '@/store/visit';
+import { useEffect } from 'react';
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { DynamicFormProps } from '../../../../dynamic-form';
@@ -16,23 +14,8 @@ export const InfantCareStep = ({
   setIsTip,
   isTipPage,
 }: DynamicFormProps) => {
-  const appDispatch = useAppDispatch();
-
   const visitSection = 'Infant care';
   const name = mother?.user?.firstName;
-
-  const getVideo = useCallback(async () => {
-    await appDispatch(
-      visitThunkActions.getVisitVideos({
-        section: visitSection,
-        locale: 'en-za',
-      })
-    );
-  }, [appDispatch]);
-
-  useLayoutEffect(() => {
-    getVideo();
-  }, [getVideo]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -79,7 +62,7 @@ export const InfantCareStep = ({
             </div>
           }
         />
-        <Video section={visitSection} />
+        <Video section={'Benefits of Breastfeeding 2'} />
       </div>
     </>
   );

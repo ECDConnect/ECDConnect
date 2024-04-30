@@ -117,6 +117,7 @@ export const BenefitsOfBreastfeedingStep = ({
           sectionTitle="Pillar 1: Nutrition (every visit)"
           section={sectionName}
           onClose={() => setIsTip && setIsTip(false)}
+          client={caregiverName}
         />
       </Dialog>
     );

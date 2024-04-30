@@ -62,7 +62,7 @@ export const MaternalDistressVideoStep = ({
               </div>
             }
           />
-          <Video section={sectionName} />
+          <Video section={'Maternal distress video'} />
         </>
       </div>
     </>

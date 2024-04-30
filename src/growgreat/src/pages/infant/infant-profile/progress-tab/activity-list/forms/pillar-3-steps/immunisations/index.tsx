@@ -20,12 +20,12 @@ export const ImmunisationsStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
-  const videoSection = 'Immunisations';
+  const videoSection = 'Pillar 3: Protection - Immunisations';
 
   const getVideo = useCallback(async () => {
     await appDispatch(
       visitThunkActions.getVisitVideos({
-        section: 'Immunisations',
+        section: videoSection,
         locale: 'en-za',
       })
     );
