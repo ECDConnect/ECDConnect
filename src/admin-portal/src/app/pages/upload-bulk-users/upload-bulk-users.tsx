@@ -185,105 +185,107 @@ export default function UploadBulkUser(props: any) {
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="justify-self col-end-3 ">
-        <button
-          onClick={() => history.goBack()}
-          type="button"
-          className="cursor text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
-        >
-          <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
-            {' '}
-          </ArrowLeftIcon>
-          Back
-          {/* <span className="text-black pl-2"> / View User</span> */}
-        </button>
-      </div>
-      <div className="flex flex-col pt-10">
-        <h1 className="text-xl">
-          Step 1: Download the{' '}
-          {props.location.state?.component === 'team-leads'
-            ? 'Team Leads'
-            : 'CHWs'}{' '}
-          template
-        </h1>
-
-        <p className="text-normal">
-          Download the Excel template below and make sure all required fields
-          are included. It includes instructions for each field. To avoid upload
-          errors, do not modify the headers.
-        </p>
-        <div className="w-4/12 pt-4">
+    <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
+      <div className="flex flex-col">
+        <div className="justify-self col-end-3 ">
           <button
-            onClick={() => {
-              downloadContentTypeTemplate();
-            }}
-            type="submit"
-            className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+            onClick={() => history.goBack()}
+            type="button"
+            className="cursor text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
           >
-            <DownloadIcon className="mr-4 h-5 w-5"> </DownloadIcon>
-            Download the template
+            <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
+              {' '}
+            </ArrowLeftIcon>
+            Back
+            {/* <span className="text-black pl-2"> / View User</span> */}
           </button>
         </div>
-      </div>
+        <div className="flex flex-col pt-10">
+          <h1 className="text-xl">
+            Step 1: Download the{' '}
+            {props.location.state?.component === 'team-leads'
+              ? 'Team Leads'
+              : 'CHWs'}{' '}
+            template
+          </h1>
 
-      <div className="my-12">
-        <h1 className="text-xl">Step 2: Upload excel file</h1>
-      </div>
-
-      <div className="flex flex-row">
-        <div className="w-6/12 rounded-md bg-white p-16">
-          <form onSubmit={handleSubmit(onSubmit)} className=" ">
-            <div className="pt-4 pb-8">
-              <div className="sm:col-span-12">
-                <FormFileInput
-                  acceptedFormats={acceptedFormats}
-                  label={'Template Upload'}
-                  nameProp={'templateFile'}
-                  returnFullUrl={false}
-                  setValue={setValue}
-                  isImage={false}
-                  allowedFileSize={allowedFileSize}
-                />
-              </div>
-            </div>
-            <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-              <div className="ml-4 mt-2 flex-shrink-0">
-                <Button
-                  type="filled"
-                  color="secondary"
-                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                  isLoading={isLoading}
-                  disabled={isLoading}
-                  onClick={handleSubmit(onSubmit)}
-                >
-                  <PaperAirplaneIcon className=" mr-1 h-4 w-4">
-                    {' '}
-                  </PaperAirplaneIcon>
-                  Add & invite users
-                </Button>
-              </div>
-            </div>
-          </form>
-
-          {docErrors.length > 0 ? (
-            <Alert
-              className="mt-5 mb-3 rounded-md"
-              message={`Error`}
-              type="error"
-              list={docErrors.map(
-                (error) =>
-                  'Row ' +
-                  error?.row +
-                  ':' +
-                  '</br>' +
-                  (error.errors?.length ? error.errors.join('</br>') : '')
-              )}
-              listColor="errorMain"
-            />
-          ) : null}
+          <p className="text-normal">
+            Download the Excel template below and make sure all required fields
+            are included. It includes instructions for each field. To avoid
+            upload errors, do not modify the headers.
+          </p>
+          <div className="w-4/12 pt-4">
+            <button
+              onClick={() => {
+                downloadContentTypeTemplate();
+              }}
+              type="submit"
+              className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+            >
+              <DownloadIcon className="mr-4 h-5 w-5"> </DownloadIcon>
+              Download the template
+            </button>
+          </div>
         </div>
-        <div></div>
+
+        <div className="my-12">
+          <h1 className="text-xl">Step 2: Upload excel file</h1>
+        </div>
+
+        <div className="flex flex-row">
+          <div className="w-6/12 rounded-md bg-white p-16">
+            <form onSubmit={handleSubmit(onSubmit)} className=" ">
+              <div className="pt-4 pb-8">
+                <div className="sm:col-span-12">
+                  <FormFileInput
+                    acceptedFormats={acceptedFormats}
+                    label={'Template Upload'}
+                    nameProp={'templateFile'}
+                    returnFullUrl={false}
+                    setValue={setValue}
+                    isImage={false}
+                    allowedFileSize={allowedFileSize}
+                  />
+                </div>
+              </div>
+              <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+                <div className="ml-4 mt-2 flex-shrink-0">
+                  <Button
+                    type="filled"
+                    color="secondary"
+                    className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                    isLoading={isLoading}
+                    disabled={isLoading}
+                    onClick={handleSubmit(onSubmit)}
+                  >
+                    <PaperAirplaneIcon className=" mr-1 h-4 w-4">
+                      {' '}
+                    </PaperAirplaneIcon>
+                    Add & invite users
+                  </Button>
+                </div>
+              </div>
+            </form>
+
+            {docErrors.length > 0 ? (
+              <Alert
+                className="mt-5 mb-3 rounded-md"
+                message={`Error`}
+                type="error"
+                list={docErrors.map(
+                  (error) =>
+                    'Row ' +
+                    error?.row +
+                    ':' +
+                    '</br>' +
+                    (error.errors?.length ? error.errors.join('</br>') : '')
+                )}
+                listColor="errorMain"
+              />
+            ) : null}
+          </div>
+          <div></div>
+        </div>
       </div>
     </div>
   );
