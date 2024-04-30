@@ -306,3 +306,33 @@ export const SendTeamLeadVerifyPhoneNumberSMS = gql`
     }
   }
 `;
+
+export const TeamLeadById = gql`
+  query teamLeadById($teamLeadId: UUID!) {
+    teamLeadById(teamLeadId: $teamLeadId) {
+      id
+      insertedDate
+      isRegistered
+      clinicIds
+      user {
+        id
+        connectUsage
+        connectUsageColor
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
+        firstName
+        surname
+        fullName
+        contactPreference
+        genderId
+        phoneNumber
+        lockoutEnd
+      }
+    }
+  }
+`;
