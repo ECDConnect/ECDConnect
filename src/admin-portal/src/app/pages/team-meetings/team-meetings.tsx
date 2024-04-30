@@ -114,6 +114,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
       noPadding: true,
       catchOnCancel: false,
       title: `${currentMonthName} meeting report`,
+      overlay: true,
       render: (onSubmit: any) => (
         <AddTeamMeetingReport
           key={`clinicPanelCreate`}

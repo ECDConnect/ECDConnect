@@ -1,4 +1,9 @@
-import { SearchDropDownOption } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Dialog,
+  DialogPosition,
+  SearchDropDownOption,
+} from '@ecdlink/ui';
 import { Step1 } from './components/step1';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -17,6 +22,7 @@ import {
 } from '@ecdlink/graphql';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { formatISO } from 'date-fns';
+import { XIcon } from '@heroicons/react/solid';
 
 export interface ClinicPanelCreateProps {
   closeDialog: (value: boolean) => void;
@@ -28,6 +34,8 @@ export interface ClinicPanelCreateProps {
 }
 
 export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
+  const [formIsDirty, setFormIsDirty] = useState(false);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const { setNotification } = useNotifications();
   const [step, setStep] = useState(0);
   const [healthCareWorkers, setHealthCareWorkers] = useState<
@@ -57,7 +65,7 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
   ] = useLazyQuery(GetHealthCareWorkersForClinicId, {
     fetchPolicy: 'cache-and-network',
     variables: {
-      clinicId: props?.selectedTabId,
+      clinicId: clinic,
     },
   });
 
@@ -120,9 +128,15 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
     }
   }, [step]);
 
+  useEffect(() => {
+    if (clinic) {
+      setFormIsDirty(true);
+    }
+  }, [clinic]);
+
   const handleSaveMeetingReport = useCallback(async () => {
     const inputModel: AddClinicMeetingInputModelInput = {
-      clinicId: props?.selectedTabId,
+      clinicId: clinic,
       meetingDate: todaysDateFormatted,
       teamLeadUserId: props?.user?.id,
       positiveStory: positiveStory,
@@ -148,6 +162,7 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
     props.closeDialog(true);
   }, [
     addRepotMeetingMutation,
+    clinic,
     inFieldSupportVisits,
     optOutIds,
     participantsInFieldIds,
@@ -216,5 +231,55 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
     loadingHCWs,
   ]);
 
-  return <div>{renderContent}</div>;
+  return (
+    <div>
+      {formIsDirty && (
+        <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+          <button
+            className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+            onClick={() => setDisplayFormIsDirty(true)}
+          >
+            <span className="sr-only">Close panel</span>
+            <XIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+      )}
+      {renderContent}
+      <Dialog
+        className="right-50 absolute w-6/12"
+        stretch
+        visible={displayFormIsDirty}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Discard unsaved changes?`}
+          detailText={'If you leave now, you will lose all of your changes.'}
+          buttonClass="rounded-2xl"
+          actionButtons={[
+            {
+              text: 'Keep editing',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => setDisplayFormIsDirty(false),
+              leadingIcon: 'XIcon',
+            },
+            {
+              text: 'Discard changes',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => {
+                props.closeDialog(true);
+              },
+              leadingIcon: 'TrashIcon',
+            },
+          ]}
+        />
+      </Dialog>
+    </div>
+  );
 };

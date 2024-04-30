@@ -1,5 +1,6 @@
-import { ClinicDto, HealthCareWorkerDto, UserDto } from '@ecdlink/core';
+import { UserDto } from '@ecdlink/core';
 import {
+  Alert,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
@@ -10,7 +11,7 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { yesOrNoOptions } from '../../../team-meetings-types';
 
 interface Step1Props {
@@ -27,7 +28,6 @@ interface Step1Props {
 
 export const Step1: React.FC<Step1Props> = ({
   healthCareWorkers,
-  user,
   setOptOutHcws,
   optOutHcws,
   clinics,
@@ -36,8 +36,13 @@ export const Step1: React.FC<Step1Props> = ({
   clinic,
   loadingHCWs,
 }) => {
-  const [optOutValue, setOptOutValue] = useState<boolean | boolean[]>(false);
-  const disableButton = !clinic || (optOutValue && optOutHcws?.length <= 0);
+  const [optOutValue, setOptOutValue] = useState<boolean | boolean[]>(
+    undefined
+  );
+  const disableButton =
+    !clinic ||
+    (optOutValue && optOutHcws?.length <= 0) ||
+    optOutValue === undefined;
 
   return (
     <div className="mt-4s">
@@ -85,7 +90,7 @@ export const Step1: React.FC<Step1Props> = ({
           className="my-8"
         />
       )}
-      {optOutValue && !loadingHCWs && (
+      {optOutValue && !loadingHCWs && healthCareWorkers?.length > 0 && (
         <div className="my-8 mr-2 flex w-full items-center gap-2">
           <SearchDropDown<string>
             displayMenuOverlay={true}
@@ -105,8 +110,16 @@ export const Step1: React.FC<Step1Props> = ({
               name: `CHWs:`,
             }}
             label="Select all CHWs who have opted out this month. *"
+            preventCloseOnClick={true}
           />
         </div>
+      )}
+      {healthCareWorkers?.length === 0 && optOutValue && !loadingHCWs && (
+        <Alert
+          className="my-4 rounded-lg"
+          type="warning"
+          title={`There are no HCW's for this clinic`}
+        />
       )}
       <div>
         <Button
