@@ -17,7 +17,7 @@ import {
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
@@ -117,11 +117,15 @@ export default function HealthCareWorkerPanelCreate(
   });
   const identification = watch('idNumber');
 
-  const chwMap = new Map(
-    allHealthCareWorkers?.map((teamLead) => [
-      teamLead?.user?.idNumber,
-      teamLead,
-    ])
+  const chwMap = useMemo(
+    () =>
+      new Map(
+        allHealthCareWorkers?.map((teamLead) => [
+          teamLead?.user?.idNumber,
+          teamLead,
+        ])
+      ),
+    [allHealthCareWorkers]
   );
 
   const [identificationInUse, setIdentificationInUse] = useState<string>();

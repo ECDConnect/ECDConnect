@@ -17,7 +17,7 @@ import {
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import { UserPanelCreateProps } from '../../../../components/users';
@@ -107,8 +107,12 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
 
   const identification = watch('idNumber');
 
-  const teamLeadMap = new Map(
-    allTeamLeads?.map((teamLead) => [teamLead?.user?.idNumber, teamLead])
+  const teamLeadMap = useMemo(
+    () =>
+      new Map(
+        allTeamLeads?.map((teamLead) => [teamLead?.user?.idNumber, teamLead])
+      ),
+    [allTeamLeads]
   );
 
   const [identificationInUse, setIdentificationInUse] = useState<string>();

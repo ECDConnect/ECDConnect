@@ -28,7 +28,7 @@ import {
 import { newGuid } from '../../../../utils/uuid.utils';
 import FormField from '../../../../components/form-field/form-field';
 import { SaveIcon, XIcon } from '@heroicons/react/solid';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import { ApplicationAdminRouteState } from '../../sub-pages/application-admins/applications-admins.types';
 
@@ -76,7 +76,10 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
   const isEmailInUse = !!emailInUse && emailInUse === email;
 
-  const userMap = new Map(users?.map((user) => [user?.email, user]));
+  const userMap = useMemo(
+    () => new Map(users?.map((user) => [user?.email, user])),
+    [users]
+  );
 
   const emailExists = () => {
     const user = userMap.get(email);
