@@ -14,11 +14,12 @@ import {
 import { useMutation, useQuery } from '@apollo/client';
 import {
   DisableNotification,
-  GetAllHealthCareWorker,
   GetClinicById,
+  GetPortalHealthCareWorkerById,
   MarkAsReadNotification,
   PortalUsersHcwModel,
   PortalUsersTlModel,
+  TeamLeadById,
 } from '@ecdlink/graphql';
 import { classNames } from '../../pages/users/components/users';
 import { useUserRole } from '../../hooks/useUserRole';
@@ -52,6 +53,10 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
   cTA,
   readDate,
   id,
+  /*
+   * Note from Matthew regarding the relatedToUserId prop:
+   * Don't use the relatedToUserId field anymore, we need to replace it with the relatedEntities list
+   */
   relatedToUserId,
   className,
   refetchNotification,
@@ -80,38 +85,28 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     fetchPolicy: 'cache-and-network',
     skip: (!relatedToUserId && !clinicId) || !!healthCareWorkerId,
   });
-
-  // TODO: Add a query to get the HCW by ID (with PortalUsersHcwModel type)
-  const { data: hcwData, loading: loadingHcwData } = useQuery<{
-    allHealthCareWorkers: PortalUsersHcwModel[];
-  }>(GetAllHealthCareWorker, {
+  const { data: teamLeadData, loading: loadingTeamLeadData } = useQuery<{
+    teamLeadById: PortalUsersTlModel;
+  }>(TeamLeadById, {
     variables: {
-      search: '',
-      clinicSearch: [],
-      provinceSearch: [],
-      subDistrictSearch: [],
-      visitSearch: [],
-      connectUsageSearch: [],
-      pagingInput: {
-        pageNumber: 1,
-        pageSize: null,
-      },
-      order: [
-        {
-          insertedDate: 'DESC',
-        },
-      ],
+      teamLeadId,
+    },
+    fetchPolicy: 'cache-and-network',
+    skip: !teamLeadId,
+  });
+  const { data: hcwData, loading: loadingHcwData } = useQuery<{
+    portalHealthCareWorkersById: PortalUsersHcwModel;
+  }>(GetPortalHealthCareWorkerById, {
+    variables: {
+      healthCareWorkerId: healthCareWorkerId || relatedToUserId,
     },
     fetchPolicy: 'network-only',
     skip: (!relatedToUserId && !healthCareWorkerId) || !!clinicId,
   });
 
   const targetClinic = clinicData?.GetClinicById;
-  const targetHcw = hcwData?.allHealthCareWorkers?.find(
-    (item) => item?.id === healthCareWorkerId || item?.id === relatedToUserId
-  );
-  // TODO: get the team lead by ID
-  const targetTeamLead = {} as PortalUsersTlModel;
+  const targetHcw = hcwData?.portalHealthCareWorkersById;
+  const targetTeamLead = teamLeadData?.teamLeadById;
 
   const isToShowDismissButton =
     !isTeamLead &&
@@ -157,15 +152,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
         connectUsageColor: targetHcw?.user?.connectUsageColor,
       },
     });
-  }, [
-    history,
-    targetHcw?.clinicId,
-    targetHcw?.id,
-    targetHcw?.isRegistered,
-    targetHcw?.user?.connectUsage,
-    targetHcw?.user?.connectUsageColor,
-    targetHcw?.user?.id,
-  ]);
+  }, [history, targetHcw]);
 
   const goToTargetTeamLead = useCallback(() => {
     history.push({
@@ -174,7 +161,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
         component: UsersRouteRedirectTypeEnum.teamLeads,
         userId: targetTeamLead?.user?.id,
         teamLeadId: targetTeamLead?.id,
-        connectUsage: targetTeamLead?.connectUsage,
+        connectUsage: targetTeamLead?.user?.connectUsage,
         isRegistered: targetTeamLead?.isRegistered,
         clinicIds: targetTeamLead?.clinicIds,
         connectUsageColor: targetTeamLead?.user?.connectUsageColor,
@@ -250,7 +237,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     });
   };
 
-  if (loadingClinicsData || loadingHcwData) {
+  if (loadingClinicsData || loadingHcwData || loadingTeamLeadData) {
     return (
       <div className={classNames(className, 'w-full rounded-xl bg-white p-4')}>
         <LoadingSpinner

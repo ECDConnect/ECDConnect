@@ -193,3 +193,37 @@ export const GetHealthCareWorkersOptedOutOfMonthlyMeeting = gql`
     }
   }
 `;
+
+export const GetPortalHealthCareWorkerById = gql`
+  query GetPortalHealthCareWorkerById($healthCareWorkerId: UUID!) {
+    portalHealthCareWorkersById(healthCareWorkerId: $healthCareWorkerId) {
+      id
+      insertedDate
+      clinicId
+      isRegistered
+      user {
+        id
+        connectUsage
+        connectUsageColor
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
+        firstName
+        surname
+        fullName
+        contactPreference
+        genderId
+        phoneNumber
+        whatsAppNumber
+        insertedDate
+        lockoutEnd
+        __typename
+      }
+      __typename
+    }
+  }
+`;
