@@ -109,9 +109,9 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
     () => languagesData?.GetAllLanguage,
     [languagesData?.GetAllLanguage]
   );
-  console.log({ isUntilDaySevenOfTheMonth });
+
   const clinics = data?.allPortalClinics;
-  console.log({ previousMonthName });
+
   const displayEditPanel = () => {
     panel({
       noPadding: true,
