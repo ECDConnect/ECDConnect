@@ -5,11 +5,11 @@ import FormColorField from '../../../../components/form-color-field/form-color-f
 import FormField from '../../../../components/form-field/form-field';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
 import {
-  ActivitiesTitles,
   ContentManagementView,
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
+  MediaTypes,
   TemplateTypenames,
 } from '../../content-management-models';
 import { Alert, Typography } from '@ecdlink/ui';
@@ -39,6 +39,7 @@ export interface DynamicFormProps {
   useWatch?: any;
   contentView?: ContentManagementView;
   setSmallLargeGroupsSkills?: (item: {}[]) => void;
+  id?: string;
 }
 
 const contentWrapper = '';
@@ -57,6 +58,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   useWatch,
   contentView,
   setSmallLargeGroupsSkills,
+  id,
 }) => {
   const { register, control, errors } = handleform;
 
@@ -66,6 +68,24 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     setValue(name, state);
   };
   const initialValues = getValues();
+
+  // Update original content value, with the second language one, to fix the trigger wrong input but
+  useEffect(() => {
+    if (initialValues?.infoGraphicsecondLanguageContent !== undefined) {
+      setValue(
+        MediaTypes.Infographic,
+        initialValues?.infoGraphicsecondLanguageContent
+      );
+    }
+
+    if (initialValues?.imagesecondLanguageContent !== undefined) {
+      setValue(MediaTypes.Image, initialValues?.imagesecondLanguageContent);
+    }
+  }, [
+    initialValues?.imagesecondLanguageContent,
+    initialValues?.infoGraphicsecondLanguageContent,
+    setValue,
+  ]);
 
   const [fields, setFields] = useState<any>();
 
@@ -292,6 +312,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               </div>
             );
           }
+          if (
+            (propName === MediaTypes.Image ||
+              propName === MediaTypes.Infographic) &&
+            id
+          ) {
+            return null;
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -309,6 +336,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   returnFullUrl={true}
                   setValue={setValue}
                   allowedFileSize={allowedFileSize}
+                  key={id ? id : ''}
                 />
                 {isRequired &&
                   initialValues?.hasOwnProperty(propName) &&

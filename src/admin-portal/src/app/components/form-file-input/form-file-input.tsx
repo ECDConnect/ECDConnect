@@ -108,6 +108,10 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     if (contentUrl && contentUrl !== '') {
       setFileName(contentUrl);
     }
+
+    if (!contentUrl) {
+      setFileName('');
+    }
   }, [acceptedFormats, contentUrl, uploadTypes]);
 
   const handleChange = async (event: any) => {
@@ -121,6 +125,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
       setLoading(true);
       handleFile(iconFile);
+
       setFileName(iconFile?.name);
 
       return;
@@ -132,6 +137,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
       setLoading(true);
       handleFile(firstFile);
+
       setFileName(firstFile?.name);
     } else {
       setFileName(undefined);
@@ -149,6 +155,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
       setLoading(true);
 
       handleFile(firstFile);
+
       setFileName(firstFile?.name);
     } else {
       setFileName(undefined);
