@@ -20,6 +20,7 @@ import {
   ContentManagementView,
   DynamicFormTemplate,
   FormTemplateField,
+  MediaTypes,
   TemplateTypenames,
 } from '../../../../content-management-models';
 import { Alert, DialogPosition, Typography } from '@ecdlink/ui';
@@ -57,6 +58,7 @@ export interface ContentViewProps {
   selectedTab?: number;
   languages: LanguageDto[];
   setOpenTopic?: (item: boolean) => void;
+  id?: string;
 }
 
 export interface RequirementProps {
@@ -81,6 +83,7 @@ export default function ContentEdit({
   selectedTab,
   languages,
   setOpenTopic,
+  id,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -290,6 +293,17 @@ export default function ContentEdit({
           const renderedField = getRenderField(item);
 
           if (renderedField) t.fields.push(renderedField);
+          // Check for second language on compare mode
+          if (
+            (renderedField?.propName === 'infoGraphic' ||
+              renderedField?.propName === 'image') &&
+            id
+          ) {
+            t.fields.push({
+              ...renderedField,
+              propName: `${renderedField?.propName}${id}`,
+            });
+          }
         }
       });
 
@@ -373,6 +387,14 @@ export default function ContentEdit({
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
+
+    if (model?.hasOwnProperty(MediaTypes.ImageSecondLanguage)) {
+      delete model?.imagesecondLanguageContent;
+    }
+
+    if (model?.hasOwnProperty(MediaTypes.InfographicSecondLanguage)) {
+      delete model?.infoGraphicsecondLanguageContent;
+    }
 
     // make sure that we work with a date, we send a string to ensure correct dates
     Object.keys(model).forEach((key) => {
@@ -605,6 +627,7 @@ export default function ContentEdit({
                 useWatch={useWatch}
                 contentView={contentView}
                 setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
+                id={id}
               />
             )}
           </div>

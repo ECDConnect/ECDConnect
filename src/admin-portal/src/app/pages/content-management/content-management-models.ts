@@ -44,6 +44,13 @@ export enum NatalTypes {
   Infographic = 'Infographic',
 }
 
+export enum MediaTypes {
+  Infographic = 'infoGraphic',
+  Image = 'image',
+  InfographicSecondLanguage = 'infoGraphicsecondLanguageContent',
+  ImageSecondLanguage = 'imagesecondLanguageContent',
+}
+
 export enum TemplateTypenames {
   DangerSigns = 'DangerSign Form',
   NatalGraphic = 'NatalGraphic Form',
