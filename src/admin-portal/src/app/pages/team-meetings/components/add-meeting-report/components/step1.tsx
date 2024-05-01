@@ -118,7 +118,7 @@ export const Step1: React.FC<Step1Props> = ({
         <Alert
           className="my-4 rounded-lg"
           type="warning"
-          title={`There are no HCW's for this clinic`}
+          title={`There are no CHWs for this clinic`}
         />
       )}
       <div>
