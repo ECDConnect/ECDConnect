@@ -138,7 +138,7 @@ export const AssignClinicsToALeague = ({
           className="mt-4"
           label={`Add ${clinic.name} (${
             clinic?.subDistrict?.name ?? ''
-          }) to a league *`}
+          }) to a league`}
           selectedValue={assignedClinics?.[clinic.id]}
           onChange={(leagueId) => onChange(clinic.id, leagueId)}
           list={getDistrictOptions(clinic?.subDistrict?.district?.id ?? '')}

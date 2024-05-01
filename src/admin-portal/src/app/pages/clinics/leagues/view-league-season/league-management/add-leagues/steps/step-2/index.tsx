@@ -184,6 +184,8 @@ export const Step2 = ({
         ) || []
       );
       onUpdate({ [leagueKey]: league });
+      setSearch('');
+      setSubDistrictFilter([]);
     }
   }, [
     previousLeagueNumber,
