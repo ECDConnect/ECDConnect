@@ -1,6 +1,6 @@
 import { Alert, Button, Card, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/solid';
-import { add, format, getDate } from 'date-fns';
+import { add, format, getDate, sub } from 'date-fns';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetAllLanguage,
@@ -28,20 +28,23 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
   const panel = usePanel();
   const today = new Date();
   const titleDateFormatted = format(today, 'MMMM y');
-  const title = `${titleDateFormatted} Meeting topic`;
   const nextMonth = add(today, {
     months: 1,
   });
   const nextMonthName = format(nextMonth, 'MMMM');
-  const previousMonth = add(today, {
+  const previousMonth = sub(today, {
     months: 1,
   });
+  const untilDay7TitleFormatted = format(previousMonth, 'MMMM y');
   const todaysDateNumber = getDate(today);
   const availableDateToAddReport =
     todaysDateNumber >= 24 || todaysDateNumber <= 7;
   const isUntilDaySevenOfTheMonth = todaysDateNumber < 7;
   const previousMonthName = format(previousMonth, 'MMMM');
   const currentMonthName = format(today, 'MMMM');
+  const title = isUntilDaySevenOfTheMonth
+    ? `${untilDay7TitleFormatted} Meeting topic`
+    : `${titleDateFormatted} Meeting topic`;
   const blueAlertMonthName = isUntilDaySevenOfTheMonth
     ? previousMonthName
     : currentMonthName;
@@ -106,14 +109,16 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
     () => languagesData?.GetAllLanguage,
     [languagesData?.GetAllLanguage]
   );
-
+  console.log({ isUntilDaySevenOfTheMonth });
   const clinics = data?.allPortalClinics;
-
+  console.log({ previousMonthName });
   const displayEditPanel = () => {
     panel({
       noPadding: true,
       catchOnCancel: false,
-      title: `${currentMonthName} meeting report`,
+      title: isUntilDaySevenOfTheMonth
+        ? `${previousMonthName} meeting report`
+        : `${currentMonthName} meeting report`,
       overlay: true,
       render: (onSubmit: any) => (
         <AddTeamMeetingReport

@@ -180,7 +180,7 @@ export const ViewClinicReport = ({
 
   return (
     <div>
-      <Breadcrumb paths={paths} />
+      {!isFromTeamMeetings && <Breadcrumb paths={paths} />}
       <Typography
         className="mb-8 mt-12 truncate"
         type="h1"
