@@ -18,7 +18,7 @@ import {
   SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ReactDatePicker from 'react-datepicker';
 import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
@@ -47,6 +47,9 @@ export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
 }));
 
 export default function ApplicationAdmins() {
+  const history = useHistory();
+  const location = useLocation();
+
   const { hasPermission, user } = useUser();
   const isSuperAdmin = user?.roles?.some(
     (role: any) => role.name === AdminTypes.SuperAdmin
@@ -61,6 +64,7 @@ export default function ApplicationAdmins() {
   >([sortByClientStatusOptions[0]]);
   const [showFilter, setShowFilter] = useState(false);
 
+  // TODO: add pagination
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
   const [types, setTypes] = useState<SearchDropDownOption<string>[]>([]);
@@ -99,8 +103,8 @@ export default function ApplicationAdmins() {
     setStatusFilter([]);
   };
 
-  const { data, refetch } = useQuery(UserList, {
-    variables: {
+  const queryVariables = useMemo(
+    () => ({
       search: '',
       order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
       pagingInput: {
@@ -114,9 +118,21 @@ export default function ApplicationAdmins() {
           },
         ],
       },
-    },
+    }),
+    [selectedPage, selectedPageSize]
+  );
+
+  const { data, refetch } = useQuery(UserList, {
+    variables: queryVariables,
     fetchPolicy: 'network-only',
   });
+
+  useEffect(() => {
+    history.replace({
+      pathname: location.pathname,
+      state: { queryVariables },
+    });
+  }, [history, location.pathname, queryVariables]);
 
   useEffect(() => {
     if (data?.users) {
@@ -217,7 +233,6 @@ export default function ApplicationAdmins() {
       ),
     });
   };
-  const history = useHistory();
 
   const viewSelectedRow = (selectedRow: any) => {
     const role = selectedRow?.roles?.filter(

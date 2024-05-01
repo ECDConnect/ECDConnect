@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import {
   initialUserDetailsValues,
   NOTIFICATION,
@@ -10,6 +10,8 @@ import {
   AddUsersToRole,
   CreateTeamLead,
   CreateUser,
+  GetAllTeamLead,
+  PortalUsersTlModel,
   RoleList,
   SendInviteToApplication,
   UserModelInput,
@@ -35,9 +37,14 @@ import FormField from '../../../../../../components/form-field/form-field';
 import * as yup from 'yup';
 import { GrowGreatRoles } from '../../../../../../utils/constants';
 import { idTypeEnum } from '../../../../../view-user/view-user.types';
+import { useLocation } from 'react-router';
+import { TeamLeadsRouteState } from '../../team-leads.types';
 
 export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
+
+  const { state } = useLocation<TeamLeadsRouteState>();
+
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
@@ -51,6 +58,14 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleData]);
+
+  const apolloClient = useApolloClient();
+
+  const { allTeamLeads } =
+    apolloClient.readQuery<{ allTeamLeads?: PortalUsersTlModel[] }>({
+      query: GetAllTeamLead,
+      variables: state?.queryVariables,
+    }) || {};
 
   const [createUser] = useMutation(CreateUser);
   const [createTeamLead, { loading }] = useMutation(CreateTeamLead);
@@ -82,16 +97,37 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
 
   // FORMS
   // USER FORM DETAILS
-  const { register, formState, getValues, handleSubmit } = useForm({
+  const { register, formState, getValues, watch, handleSubmit } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
 
   const { errors, isValid, isDirty } = formState;
+
+  const identification = watch('idNumber');
+
+  const teamLeadMap = new Map(
+    allTeamLeads?.map((teamLead) => [teamLead?.user?.idNumber, teamLead])
+  );
+
+  const [identificationInUse, setIdentificationInUse] = useState<string>();
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
 
+  const isIdentificationInUse =
+    !!identificationInUse && identificationInUse === identification;
+
+  const identificationExists = () => {
+    const teamLead = teamLeadMap.get(identification);
+    if (teamLead) {
+      setIdentificationInUse(teamLead?.user?.idNumber);
+      return teamLead?.user?.idNumber;
+    }
+  };
+
   const onSave = async () => {
+    if (identificationExists()) return;
+
     await saveUser();
     emitCloseDialog(true);
   };
@@ -291,7 +327,13 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
                     label={idType === 'idNumber' ? 'Id number *' : 'Passport *'}
                     nameProp={'idNumber'}
                     register={register}
-                    error={errors.idNumber?.message}
+                    error={
+                      isIdentificationInUse
+                        ? `A user already exists with this ${
+                            idType === idTypeEnum.idNumber ? 'ID' : 'passport'
+                          } number.`
+                        : errors.idNumber?.message
+                    }
                     placeholder={
                       idType === 'idNumber'
                         ? 'e.g 6201014800088'
@@ -356,7 +398,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
         className="mt-3 mr-6 w-full rounded"
         type="filled"
         color="secondary"
-        disabled={!isValid}
+        disabled={!isValid || isIdentificationInUse}
         isLoading={loading}
         onClick={handleSubmit(onSave)}
       >

@@ -1,3 +1,5 @@
+import { QueryAllHealthCareWorkersArgs } from '@ecdlink/graphql';
+
 export enum AppVisitActivity {
   High = 'High activity (at least 20 visits in past month)',
   Medium = 'Medium activity (at least 10 visits in past month)',
@@ -7,3 +9,7 @@ export enum AppVisitActivity {
 export type HcwRouteState = {
   clinicIds?: string[];
 };
+
+export interface HealthCareWorkerRouteState {
+  queryVariables: QueryAllHealthCareWorkersArgs;
+}

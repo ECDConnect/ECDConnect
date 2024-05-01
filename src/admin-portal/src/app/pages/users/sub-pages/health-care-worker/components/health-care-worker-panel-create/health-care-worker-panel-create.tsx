@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import {
   initialUserDetailsValues,
   NOTIFICATION,
@@ -10,6 +10,8 @@ import {
   AddUsersToRole,
   CreateHealthCareWorker,
   CreateUser,
+  GetAllHealthCareWorker,
+  PortalUsersHcwModel,
   RoleList,
   SendInviteToApplication,
   UserModelInput,
@@ -35,6 +37,8 @@ import { SaveIcon, XIcon } from '@heroicons/react/solid';
 import FormField from '../../../../../../components/form-field/form-field';
 import * as yup from 'yup';
 import { idTypeEnum } from '../../../../../view-user/view-user.types';
+import { useLocation } from 'react-router';
+import { HealthCareWorkerRouteState } from '../../health-care-worker.types';
 
 export const hcwSchema = yup.object().shape({
   userId: yup.string(),
@@ -49,6 +53,8 @@ const hcwInitialvalues: AddHealthCareWorkerInputModelInput = {
 export default function HealthCareWorkerPanelCreate(
   props: UserPanelCreateProps
 ) {
+  const { state } = useLocation<HealthCareWorkerRouteState>();
+
   const { setNotification } = useNotifications();
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
@@ -63,6 +69,14 @@ export default function HealthCareWorkerPanelCreate(
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleData]);
+
+  const apolloClient = useApolloClient();
+
+  const { allHealthCareWorkers } =
+    apolloClient.readQuery<{ allHealthCareWorkers?: PortalUsersHcwModel[] }>({
+      query: GetAllHealthCareWorker,
+      variables: state?.queryVariables,
+    }) || {};
 
   const [createUser] = useMutation(CreateUser);
   const [createHealthCareWorker, { loading }] = useMutation(
@@ -96,15 +110,35 @@ export default function HealthCareWorkerPanelCreate(
 
   // FORMS
   // USER FORM DETAILS
-  const { register, formState, getValues, handleSubmit } = useForm({
+  const { register, formState, getValues, watch, handleSubmit } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
+  const identification = watch('idNumber');
 
+  const chwMap = new Map(
+    allHealthCareWorkers?.map((teamLead) => [
+      teamLead?.user?.idNumber,
+      teamLead,
+    ])
+  );
+
+  const [identificationInUse, setIdentificationInUse] = useState<string>();
   const { errors, isValid, isDirty } = formState;
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+
+  const isIdentificationInUse =
+    !!identificationInUse && identificationInUse === identification;
+
+  const identificationExists = () => {
+    const chw = chwMap.get(identification);
+    if (chw) {
+      setIdentificationInUse(chw?.user?.idNumber);
+      return chw?.user?.idNumber;
+    }
+  };
 
   useEffect(() => {
     if (isDirty) {
@@ -135,6 +169,8 @@ export default function HealthCareWorkerPanelCreate(
   });
 
   const onSave = async () => {
+    if (identificationExists()) return;
+
     await saveUser();
     emitCloseDialog(true);
   };
@@ -332,7 +368,13 @@ export default function HealthCareWorkerPanelCreate(
                     label={idType === 'idNumber' ? 'ID number *' : 'Passport *'}
                     nameProp={'idNumber'}
                     register={register}
-                    error={errors.idNumber?.message}
+                    error={
+                      isIdentificationInUse
+                        ? `A user already exists with this ${
+                            idType === idTypeEnum.idNumber ? 'ID' : 'passport'
+                          } number.`
+                        : errors.idNumber?.message
+                    }
                     placeholder={
                       idType === 'idNumber'
                         ? 'e.g 6201014800088'
@@ -397,7 +439,7 @@ export default function HealthCareWorkerPanelCreate(
         className="mt-3 mr-6 w-full rounded"
         type="filled"
         color="secondary"
-        disabled={!isValid || !clinicId}
+        disabled={!isValid || !clinicId || isIdentificationInUse}
         isLoading={loading}
         onClick={handleSubmit(onSave)}
       >

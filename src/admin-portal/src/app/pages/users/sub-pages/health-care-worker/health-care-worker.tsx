@@ -38,7 +38,11 @@ import { useHistory, useLocation } from 'react-router';
 import { ConenctUsage } from '../team-leads/team-leads.types';
 import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
-import { AppVisitActivity, HcwRouteState } from './health-care-worker.types';
+import {
+  AppVisitActivity,
+  HcwRouteState,
+  HealthCareWorkerRouteState,
+} from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
@@ -228,8 +232,8 @@ export default function HealthCareWorkers() {
     });
   };
 
-  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
-    variables: {
+  const queryVariables = useMemo(
+    () => ({
       search: '',
       clinicSearch: filteredClinics,
       provinceSearch: filteredProvinces,
@@ -245,9 +249,27 @@ export default function HealthCareWorkers() {
           insertedDate: 'DESC',
         },
       ],
-    },
+    }),
+    [
+      filteredAppActivity,
+      filteredClinics,
+      filteredConnectUsage,
+      filteredProvinces,
+      filteredSubDistricts,
+    ]
+  );
+
+  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
+    variables: queryVariables,
     fetchPolicy: 'network-only',
   });
+
+  useEffect(() => {
+    history.replace({
+      pathname: location.pathname,
+      state: { queryVariables: queryVariables } as HealthCareWorkerRouteState,
+    });
+  }, [history, location.pathname, queryVariables]);
 
   const { data: clinicData, loading: loadingClinics } = useQuery(
     GetAllPortalClinics,
