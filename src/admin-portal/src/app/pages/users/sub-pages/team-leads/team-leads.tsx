@@ -26,8 +26,8 @@ import {
   Table,
 } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
-import { useHistory } from 'react-router';
-import { ConenctUsage } from './team-leads.types';
+import { useHistory, useLocation } from 'react-router';
+import { ConenctUsage, TeamLeadsRouteState } from './team-leads.types';
 import { format } from 'date-fns';
 import { Status } from '../application-admins/applications-admins.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
@@ -107,6 +107,8 @@ export default function TeamLeads() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  const location = useLocation();
+
   const onChange = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
@@ -145,8 +147,8 @@ export default function TeamLeads() {
     });
   };
 
-  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
-    variables: {
+  const queryVariables = useMemo(
+    () => ({
       search: '',
       clinicSearch: filteredClinics,
       provinceSearch: filteredProvinces,
@@ -162,9 +164,26 @@ export default function TeamLeads() {
           insertedDate: 'DESC',
         },
       ],
-    },
+    }),
+    [
+      filteredClinics,
+      filteredConnectUsage,
+      filteredProvinces,
+      filteredSubDistricts,
+    ]
+  );
+
+  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
+    variables: queryVariables,
     fetchPolicy: 'network-only',
   });
+
+  useEffect(() => {
+    history.replace({
+      pathname: location.pathname,
+      state: { queryVariables: queryVariables } as TeamLeadsRouteState,
+    });
+  }, [history, location.pathname, queryVariables]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');

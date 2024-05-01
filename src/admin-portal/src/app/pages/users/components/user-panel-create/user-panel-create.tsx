@@ -1,4 +1,4 @@
-import { useMutation } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
 
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,26 +19,43 @@ import {
 } from '@ecdlink/core';
 import {
   AddUsersToRole,
+  ApplicationUser,
   CreateUser,
   SendInviteToApplication,
+  UserList,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { newGuid } from '../../../../utils/uuid.utils';
 import FormField from '../../../../components/form-field/form-field';
 import { SaveIcon, XIcon } from '@heroicons/react/solid';
-import { useCallback, useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useLocation } from 'react-router';
+import { ApplicationAdminRouteState } from '../../sub-pages/application-admins/applications-admins.types';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
-  email: yup.string().email('Invalid email'),
+  email: yup.string().required('Email is Required').email('Invalid email'),
 });
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
+  const [emailInUse, setEmailInUse] = useState<string>();
+
   const { setNotification } = useNotifications();
+
+  const { state } = useLocation<ApplicationAdminRouteState>();
+
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
+
+  const apolloClient = useApolloClient();
+
+  const { users } =
+    apolloClient.readQuery<{ users?: ApplicationUser[] }>({
+      query: UserList,
+      variables: state?.queryVariables,
+    }) || {};
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [createUser, { loading }] = useMutation(CreateUser);
@@ -46,7 +63,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
   // FORMS
   // USER FORM DETAILS
-  const { register, formState, getValues, handleSubmit, setValue } = useForm({
+  const { register, formState, handleSubmit, watch } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
@@ -55,7 +72,27 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
   const { errors, isValid, isDirty } = formState;
 
+  const email = watch('email');
+
+  const isEmailInUse = !!emailInUse && emailInUse === email;
+
+  const userMap = useMemo(
+    () => new Map(users?.map((user) => [user?.email, user])),
+    [users]
+  );
+
+  const emailExists = () => {
+    const user = userMap.get(email);
+
+    if (user) {
+      setEmailInUse(user?.email);
+      return user?.email;
+    }
+  };
+
   const onSave = async (formData: any) => {
+    if (emailExists()) return;
+
     await saveUser(formData);
     emitCloseDialog(true);
   };
@@ -180,7 +217,11 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
                     label={'Work email address *'}
                     nameProp={'email'}
                     register={register}
-                    error={errors.email?.message}
+                    error={
+                      isEmailInUse
+                        ? 'A user already exists with this email.'
+                        : errors.email?.message
+                    }
                     placeholder="e.g name@email.com"
                   />
                 </div>
@@ -242,7 +283,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         className="mt-3 mr-6 w-full rounded"
         type="filled"
         color="secondary"
-        disabled={!isValid}
+        disabled={!isValid || isEmailInUse}
         onClick={handleSubmit(onSave)}
         isLoading={loading}
       >
