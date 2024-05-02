@@ -122,7 +122,7 @@ export default function ApplicationAdmins() {
     [selectedPage, selectedPageSize]
   );
 
-  const { data, refetch } = useQuery(UserList, {
+  const { data, refetch, loading } = useQuery(UserList, {
     variables: queryVariables,
     fetchPolicy: 'network-only',
   });
@@ -466,6 +466,8 @@ export default function ApplicationAdmins() {
                     rows: tableData?.length,
                   }}
                   component={'administrators'}
+                  isLoading={loading}
+                  refetchData={refetch}
                 />
               </div>
             </div>
