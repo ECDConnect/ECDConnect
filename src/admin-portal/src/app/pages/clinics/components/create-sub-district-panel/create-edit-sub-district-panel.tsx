@@ -77,13 +77,23 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const disableButton = !watchFields?.subDistrictName || !watchFields?.district;
   const [handleDeleteModal, setHandleDeleteModal] = useState(false);
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
-
-  const duplicatedName =
+  console.log({ subDistrictData });
+  console.log(
     findObjectWithString(
       subDistrictData?.subDistrictsAndStats,
       'name',
       watchFields?.subDistrictName
-    ) && watchFields?.subDistrictName !== props?.subDistrict?.name;
+    )
+  );
+  const duplicatedNameInTheSameDistrict = findObjectWithString(
+    subDistrictData?.subDistrictsAndStats,
+    'name',
+    watchFields?.subDistrictName
+  );
+  const duplicatedName =
+    duplicatedNameInTheSameDistrict &&
+    watchFields?.subDistrictName !== props?.subDistrict?.name &&
+    watchFields?.district === duplicatedNameInTheSameDistrict?.district?.id;
 
   useEffect(() => {
     if (duplicatedName) {

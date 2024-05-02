@@ -501,6 +501,7 @@ export default function ContentEdit({
                   content?.__typename !== 'DangerSign' &&
                   camelCaseToSentanceCase(
                     content?.name ??
+                      content?.visit ??
                       content?.type ??
                       content?.title ??
                       content?.section
