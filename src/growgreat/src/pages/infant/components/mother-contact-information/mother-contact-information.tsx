@@ -22,10 +22,8 @@ export const MotherContactInformation: React.FC<
   MotherContactInformationProps
 > = ({ onSubmit, details }) => {
   const {
-    trigger,
     getValues: getMotherContactInformationFormValues,
     setValue: setMotherContactInformationFormValue,
-    formState: motherContactInformationFormState,
     register: motherFormRegister,
     control: momContactInformationControl,
   } = useForm<MothertContactInformationModel>({
@@ -34,9 +32,10 @@ export const MotherContactInformation: React.FC<
     reValidateMode: 'onChange',
   });
 
-  const { isValid } = motherContactInformationFormState;
+  const { errors, isValid } = useFormState({
+    control: momContactInformationControl,
+  });
 
-  const { errors } = useFormState({ control: momContactInformationControl });
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 
   return (
@@ -80,10 +79,7 @@ export const MotherContactInformation: React.FC<
               options={yesNoOptions}
               onOptionSelected={(value: boolean | boolean[]) => {
                 setHasWhatsapp(value);
-                if (value === true) {
-                  setMotherContactInformationFormValue('whatsapp', undefined);
-                  trigger();
-                }
+                setMotherContactInformationFormValue('whatsapp', '');
               }}
               color="secondary"
               type={ButtonGroupTypes.Button}
@@ -117,7 +113,7 @@ export const MotherContactInformation: React.FC<
           onClick={() => {
             onSubmit(getMotherContactInformationFormValues());
           }}
-          disabled={!isValid || hasWhatsapp === null}
+          disabled={!isValid}
         />
       </div>
     </>

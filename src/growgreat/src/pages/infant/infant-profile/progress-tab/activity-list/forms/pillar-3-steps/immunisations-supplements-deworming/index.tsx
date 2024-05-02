@@ -2,7 +2,6 @@ import {
   Alert,
   ButtonGroup,
   ButtonGroupTypes,
-  Divider,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
@@ -202,12 +201,8 @@ export const ImmunisationsSupplementsDewormingStep = ({
       <div className="flex flex-col gap-4 p-4">
         <Typography
           type="h3"
-          text="Check page 27 of the Road to Health Book."
+          text="Check the child's Road to Health Book."
           color="textDark"
-        />
-        <Alert
-          type="info"
-          title={`If ${caregiverName} has the old Road to Health Booklet, check page 5.`}
         />
         {questions.map((item, index) => {
           if (index === 0 && !isImmunisationQuestion) return <></>;
@@ -216,20 +211,6 @@ export const ImmunisationsSupplementsDewormingStep = ({
 
           return (
             <Fragment key={item.question}>
-              {index === 1 && (
-                <>
-                  <Divider dividerType="dashed" />
-                  <Typography
-                    type="h3"
-                    text="Check page 28 of the Road to Health Booklet."
-                    color="textDark"
-                  />
-                  <Alert
-                    type="info"
-                    title="Or page 9 of the old Road to Health Booklet."
-                  />
-                </>
-              )}
               {index === 0 && (
                 <>
                   <Typography

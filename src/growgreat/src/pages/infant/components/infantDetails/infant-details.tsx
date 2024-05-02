@@ -15,12 +15,12 @@ import {
   InfantDetailsModel,
   infantDetailsModelSchema,
 } from '@/schemas/infant/infant-details';
-import { intervalToDuration, addYears } from 'date-fns';
+import { intervalToDuration, setMonth, setYear, sub } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
-import { getPreviousAndNextMonths, getNextDateByDay } from '@ecdlink/core';
+import { getPreviousAndNextMonths } from '@ecdlink/core';
 
 export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   onSubmit,
@@ -43,12 +43,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   const genders = useSelector(staticDataSelectors.getGenders);
 
   const currentDate = useMemo(() => new Date(), []);
-  const tomorrow = useMemo(() => getNextDateByDay(1), []);
-
-  const { sixYearsAgo } = useMemo(() => {
-    const sixYearsAgo = addYears(tomorrow, -6);
-    return { sixYearsAgo };
-  }, [tomorrow]);
+  const twoYearsAgo = sub(currentDate, { years: 2 });
 
   const { expectedDateOfDelivery, twoMonthsAgo, twoMonthsLater } =
     useMemo(() => {
@@ -116,6 +111,12 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
     return <span>{date.getDate()}</span>;
   };
 
+  const onChangeMonth = (date: Date) => {
+    setMyDay((prevDate) => setMonth(prevDate, date.getMonth()));
+    setMyYear((prevDate) => setMonth(prevDate, date.getMonth()));
+    return setMyMonth(date);
+  };
+
   const onChangeYear = (date: Date) => {
     if (expectedDateOfDelivery) {
       if (date.getFullYear() < expectedDateOfDelivery.getFullYear()) {
@@ -135,13 +136,22 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         setMyMonth(currentDate);
         return setMyYear(currentDate);
       }
-    } else {
-      if (date.getFullYear() === sixYearsAgo.getFullYear()) {
-        setMyDay(sixYearsAgo);
-        setMyMonth(sixYearsAgo);
-        return setMyYear(sixYearsAgo);
-      }
     }
+
+    if (date.getFullYear() === currentDate.getFullYear()) {
+      setMyDay(currentDate);
+      setMyMonth(currentDate);
+      return setMyYear(date);
+    }
+
+    if (date.getFullYear() === twoYearsAgo.getFullYear()) {
+      setMyDay(twoYearsAgo);
+      setMyMonth(twoYearsAgo);
+      return setMyYear(twoYearsAgo);
+    }
+
+    setMyDay((prevDate) => setYear(prevDate, date.getFullYear()));
+    setMyMonth((prevDate) => setYear(prevDate, date.getFullYear()));
     return setMyYear(date);
   };
 
@@ -204,16 +214,15 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
               minDate: twoMonthsAgo,
               maxDate: twoMonthsLater,
             })}
-            {...(!expectedDateOfDelivery &&
-              myMonth.getFullYear() === sixYearsAgo.getFullYear() && {
-                minDate: sixYearsAgo,
-              })}
+            {...(!expectedDateOfDelivery && {
+              minDate: twoYearsAgo,
+            })}
           />
           <DatePicker
             placeholderText={'Please select a date'}
             className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
-            onChange={(date: Date) => setMyMonth(date || currentDate)}
+            onChange={(date: Date) => onChangeMonth(date || currentDate)}
             renderCustomHeader={() => <></>}
             dateFormat="MMMM"
             showMonthYearPicker
@@ -229,10 +238,9 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
               myYear.getFullYear() === currentDate.getFullYear() && {
                 maxDate: currentDate,
               })}
-            {...(!expectedDateOfDelivery &&
-              myYear.getFullYear() === sixYearsAgo.getFullYear() && {
-                minDate: sixYearsAgo,
-              })}
+            {...(!expectedDateOfDelivery && {
+              minDate: twoYearsAgo,
+            })}
           />
           <DatePicker
             placeholderText={'Please select a date'}
@@ -250,7 +258,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
                   maxDate: twoMonthsLater,
                 }
               : {
-                  minDate: sixYearsAgo,
+                  minDate: twoYearsAgo,
                   maxDate: currentDate,
                 })}
           />

@@ -76,8 +76,6 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
   const onToggleMapView = () => setIsMapView((prevState) => !prevState);
 
   const saveAddress = () => {
-    // TODO: add integration
-    console.log('saveAddress', formattedAddress);
     setInfantAddressFormValue('address', formattedAddress);
     onToggleMapView();
   };

@@ -16,8 +16,10 @@ export const pregnantContactInformationModelSchema = Yup.object().shape({
   cellphone: Yup.string()
     .required('Cellphone number is required')
     .matches(SA_CELL_REGEX, 'Please enter a valid cell number'),
-  whatsapp: Yup.string().matches(
-    SA_CELL_REGEX,
-    'Please enter a valid cell number'
-  ),
+  whatsapp: Yup.string()
+    .nullable(true)
+    .matches(SA_CELL_REGEX, {
+      message: 'Please enter a valid cell number',
+      excludeEmptyString: true,
+    }),
 });
