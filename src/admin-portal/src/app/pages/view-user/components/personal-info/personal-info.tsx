@@ -89,6 +89,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       .string()
       .matches(SA_CELL_REGEX, 'Phone number is not valid')
       .required('Cellphone number is required'),
+    firstName: yup.string().required('First name is required'),
+    surname: yup.string().required('Surname is required'),
   });
 
   const chwSchemaPassport = yup.object().shape({
@@ -212,6 +214,16 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
         shouldValidate: true,
       }
     );
+    chwDetailSetValue(
+      'firstName',
+      userData?.firstName || chwData?.user.firstName,
+      {
+        shouldValidate: true,
+      }
+    );
+    chwDetailSetValue('surname', userData?.surname || chwData?.user.surname, {
+      shouldValidate: true,
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData, chwData]);
@@ -226,6 +238,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       phoneNumber: chwDataForm?.phoneNumber,
       email: adminDataForm?.email,
       userName: chwDataForm?.idNumber,
+      firstName: chwDataForm?.firstName,
+      surname: chwDataForm?.surname,
     };
 
     await updateUser({
@@ -376,16 +390,24 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                               }
                             />
                           </div>
-                          {/* <div className="my-4 w-6/12 sm:col-span-3">
-                          <FormField
-                            label={'ID number *'}
-                            nameProp={'idNumber'}
-                            register={registerCHW}
-                            error={chwDetailFormErrors.idNumber?.message}
-                          />
-                        </div> */}
                         </>
                       )}
+                      <div className="my-4 w-6/12 sm:col-span-3">
+                        <FormField
+                          label={'First name'}
+                          nameProp={'firstName'}
+                          register={registerCHW}
+                          error={chwDetailFormErrors.firstName?.message}
+                        />
+                      </div>
+                      <div className="my-4 w-6/12 sm:col-span-3">
+                        <FormField
+                          label={'Surname *'}
+                          nameProp={'surname'}
+                          register={registerCHW}
+                          error={chwDetailFormErrors?.surname?.message}
+                        />
+                      </div>
                       <div className="my-4 w-6/12 sm:col-span-3">
                         <FormField
                           label={'Cellphone number *'}
