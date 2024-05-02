@@ -28,6 +28,7 @@ import ROUTES from '../../../../../routes/app.routes-constants';
 import { LeagueSeasonRouteState } from '../types';
 import { AddLeaguesRouteState } from './add-leagues/types';
 import { LeagueActionModal } from './components/league-action-modal';
+import { checkIfIsNextSeasonManagement } from '../../utils';
 
 export const LeagueManagement = () => {
   const history = useHistory<AddLeaguesRouteState>();
@@ -48,8 +49,7 @@ export const LeagueManagement = () => {
     fetchPolicy: 'cache-and-network',
   });
 
-  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
-  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
+  const isNextSeasonManagement = checkIfIsNextSeasonManagement();
 
   const currentYear = new Date().getFullYear();
 

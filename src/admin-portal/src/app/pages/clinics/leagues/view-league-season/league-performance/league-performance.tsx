@@ -20,6 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LeagueDetailsRouteState } from './league-details/types';
 import { LeagueSeasonRouteState } from '../types';
 import { AssignClinicsToALeague } from './components/assign-clinics-to-a-league';
+import { checkIfIsNextSeasonManagement } from '../../utils';
 // import { checkIfIsNextSeasonManagement } from '../../utils';
 
 export const LeaguePerformance = () => {
@@ -62,8 +63,7 @@ export const LeaguePerformance = () => {
     .toISOString()
     .replace('Z', '');
 
-  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
-  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ false;
+  const isNextSeasonManagement = checkIfIsNextSeasonManagement();
 
   const clinics = apolloClient.readQuery<{ allPortalClinics?: Clinic[] }>({
     query: GetAllPortalClinics,
@@ -184,8 +184,6 @@ export const LeaguePerformance = () => {
         league?.clinics?.some((leagueClinic) => leagueClinic.id === clinic.id)
       ) && !!clinic.isActive
   );
-  // TODO: remove this slice after the tests
-  // ?.slice(0, 2);
 
   const districtsFilterOptions = useMemo(() => {
     const seenDistrictIds = new Set();
