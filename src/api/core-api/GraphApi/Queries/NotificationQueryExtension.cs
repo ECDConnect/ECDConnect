@@ -1,8 +1,10 @@
+using DotLiquid;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -19,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -294,6 +297,79 @@ IGenericRepositoryFactory repoFactory, string templateId)
                 });
             }
             return messages;
+        }
+
+        public List<Notification> GetAllMessageLogsForTeamLead(
+            [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid userId)
+        {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var clinicTLRepo = repoFactory.CreateGenericRepository<ClinicTeamLead>(userContext: uId);
+            var messageRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
+            AuthenticationDbContext context = dbContextFactory.CreateDbContext();
+
+            List<Notification> messageRecords = new List<Notification>();
+            var linkedClinicIds = clinicTLRepo.GetAll().Where(x => x.TeamLead.UserId == userId && x.IsActive).Select(x => x.ClinicId).ToList();
+
+            // Get all health care workers linked to same clinics as team lead
+            messageRecords.AddRange(
+                (from message in context.MessageLogs.Where(x => x.MessageProtocol == "portal" && x.IsActive == true && x.ReadDate == null)
+                    join chw in context.HealthCareWorkers.Where(x => x.IsActive == true && x.ClinicId.HasValue && linkedClinicIds.Contains((Guid)x.ClinicId)) on message.To equals chw.UserId.ToString()
+                    select new Notification() { 
+                        Id = message.Id,
+                        From = message.From,
+                        FromUserId = message.FromUserId,
+                        Message = message.Message,
+                        MessageProtocol = message.MessageProtocol,
+                        To = message.To,
+                        SentByUserId = message.SentByUserId,
+                        Subject = message.Subject,
+                        MessageTemplateType = message.MessageTemplateType,
+                        CTA = message.CTA,
+                        CTAText = message.CTAText,
+                        MessageDate = message.MessageDate,
+                        MessageEndDate = message.MessageEndDate,
+                        Status = message.Status,
+                        ToGroups = message.ToGroups,
+                        ReadDate = message.ReadDate,
+                        Action = message.Action,
+                        GroupingId = message.GroupingId,
+                        RelatedEntities = message.MessageLogRelatedTos.Select(x => new RelatedEntity(x.RelatedEntityId, x.EntityType)).ToList()
+                    })
+                    .OrderByDescending(x => x.MessageDate).ToList()
+                );
+
+            // Retrieve messages linked to team lead
+            messageRecords.AddRange(
+                messageRepo.GetAll().Where(x => x.To == userId.ToString() && x.MessageProtocol == "portal" && x.ReadDate == null && x.IsActive == true)
+                .Select(message => new Notification()
+                 {
+                     Id = message.Id,
+                     From = message.From,
+                     FromUserId = message.FromUserId,
+                     Message = message.Message,
+                     MessageProtocol = message.MessageProtocol,
+                     To = message.To,
+                     SentByUserId = message.SentByUserId,
+                     Subject = message.Subject,
+                     MessageTemplateType = message.MessageTemplateType,
+                     CTA = message.CTA,
+                     CTAText = message.CTAText,
+                     MessageDate = message.MessageDate,
+                     MessageEndDate = message.MessageEndDate,
+                     Status = message.Status,
+                     ToGroups = message.ToGroups,
+                     ReadDate = message.ReadDate,
+                     Action = message.Action,
+                     GroupingId = message.GroupingId,
+                     RelatedEntities = message.MessageLogRelatedTos.Select(x => new RelatedEntity(x.RelatedEntityId, x.EntityType)).ToList()
+                 })
+                 .OrderByDescending(x => x.MessageDate).ToList()
+                );
+            return messageRecords;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
