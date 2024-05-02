@@ -336,3 +336,32 @@ export const TeamLeadById = gql`
     }
   }
 `;
+
+export const GetAllMessageLogsForTeamLead = gql`
+  query GetAllMessageLogsForTeamLead($userId: UUID!) {
+    allMessageLogsForTeamLead(userId: $userId) {
+      id
+      fromUserId
+      messageProtocol
+      message
+      messageTemplateType
+      subject
+      sentByUserId
+      from
+      id
+      relatedToUserId
+      messageDate
+      messageEndDate
+      readDate
+      status
+      cTA
+      cTAText
+      ordering
+      action
+      relatedEntities {
+        relatedToEntityId
+        entityType
+      }
+    }
+  }
+`;
