@@ -69,35 +69,35 @@ export const BreastMilkOnlyStep = ({
     if (isBenefitsOfBreastfeeding) {
       return {
         promptMessage: `Watch the Benefits of Breastfeeding video with ${caregiverName} and answer any questions.`,
-        videoSection: 'Benefits of Breastfeeding',
+        videoSection: 'Benefits of breastfeeding',
       };
     }
 
     if (isHowBreastfeedingWorks) {
       return {
         promptMessage: `Watch the How Breastfeeding Works video with ${caregiverName} and answer any questions.`,
-        videoSection: 'How Breastfeeding Works',
+        videoSection: 'How breastfeeding works',
       };
     }
 
     if (isBreastfeedingChallenges) {
       return {
         promptMessage: `Watch the Breastfeeding Challenges video with ${caregiverName} and answer any questions.`,
-        videoSection: 'Breastfeeding Challenges',
+        videoSection: 'Breastfeeding challenges',
       };
     }
 
     if (isUnsafeFeedingPractices) {
       return {
         promptMessage: `Watch the Unsafe Feeding Practices video with ${caregiverName} and answer any questions.`,
-        videoSection: 'Unsafe Feeding Practices',
+        videoSection: 'Unsafe feeding practices',
       };
     }
 
     if (isBreastfeedingInTheWorkplace) {
       return {
         promptMessage: `Watch the Breastfeeding in the Workplace video with ${caregiverName} and answer any questions.`,
-        videoSection: 'Breastfeeding in the Workplace',
+        videoSection: 'Breastfeeding in the workplace',
       };
     }
 
