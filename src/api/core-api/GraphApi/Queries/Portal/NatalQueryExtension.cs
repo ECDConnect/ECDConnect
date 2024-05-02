@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         {
             List<PortalNatalModel> results = new List<PortalNatalModel>();
             var allNatal = contentRepo.GetAll(contentTypeId, localeId);
-            var natalTypeId = natalType.ToLower() == "postnatal" ? GetPostnatalId(contentRepo, localeId) : GetAntenatalId(contentRepo, localeId);
+            var natalTypeId = natalType.ToLower() == "postnatal" ? GetPostnatalId(contentRepo) : GetAntenatalId(contentRepo);
 
             foreach (var natalItem in allNatal)
             {
@@ -71,13 +71,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                          childType = "Health promotion";
                          childId = health;
                     }
-                    
+
                     var contentType = contentRepo.GetContentTypeForContentId(int.Parse(childId));
                     if (contentType != null)
                     {
                         var childContentTypeName = contentType.Name;
                         var childContentTypeId = contentType.Id.ToString();
-                        var availableLanguages = languages.Split(",").ToList();
+                        var childLanguages = contentRepo.GetAllLanguagesForContentId(int.Parse(childId), contentType.Id);
+                        var availableLanguages = childLanguages.Select(x => x.ToString()).ToList();
 
                         results.Add(new PortalNatalModel(title, section, availableLanguages, childType, childId, updatedDate, childContentTypeName, childContentTypeId));
                     }
@@ -86,15 +87,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             return results;
         }
 
-        private string GetPostnatalId([Service] ContentManagementRepository contentRepo, Guid localeId)
+        private string GetPostnatalId([Service] ContentManagementRepository contentRepo)
         {
+            var localeId = Guid.Parse("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var postnatal = (IDictionary<string, object>)contentRepo.GetByValueKey("NatalType", "name", "Postnatal", localeId).FirstOrDefault();
             postnatal.TryGetValue("id", out var value);
             return Convert.ToString(value);
         }
 
-        private string GetAntenatalId([Service] ContentManagementRepository contentRepo, Guid localeId)
+        private string GetAntenatalId([Service] ContentManagementRepository contentRepo)
         {
+            var localeId = Guid.Parse("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var antenatal = (IDictionary<string, object>)contentRepo.GetByValueKey("NatalType", "name", "Antenatal", localeId).FirstOrDefault();
             antenatal.TryGetValue("id", out var value);
             return Convert.ToString(value);
