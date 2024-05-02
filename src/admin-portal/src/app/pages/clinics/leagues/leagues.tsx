@@ -8,7 +8,7 @@ import Trophy from '../../../../assets/trophy.svg';
 import { useHistory } from 'react-router';
 import ROUTES from '../../../routes/app.routes-constants';
 import { LeagueSeasonRouteState } from './view-league-season/types';
-// import { checkIfIsNextSeasonManagement } from './utils';
+import { checkIfIsNextSeasonManagement } from './utils';
 
 export const Leagues = () => {
   const history = useHistory();
@@ -18,8 +18,7 @@ export const Leagues = () => {
   const lastYear = currentYear - 1;
   const nextYear = currentYear + 1;
 
-  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
-  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
+  const isNextSeasonManagement = checkIfIsNextSeasonManagement();
 
   const isAfterSeptember = today.getMonth() >= 9;
 
