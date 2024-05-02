@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         [Service] ApplicationUserManager userManager,
         [Service] INotificationService notificationService, string userId)
         {
-            var userToSend = await userManager.FindByIdAsync(userId);
+            var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>(), null, false, true, null, null);
         }
 
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 FindValue = "infantId",
                 ReplacementValue = infantUserId
             });
-            var userToSend = await userManager.FindByIdAsync(userId);
+            var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
         }
@@ -98,7 +98,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 FindValue = "DangerSignsList",
                 ReplacementValue = dangerSignsList
             });
-            var userToSend = await userManager.FindByIdAsync(userId);
+            var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
         }
@@ -123,7 +123,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 FindValue = "DangerSignsList",
                 ReplacementValue = dangerSignsList
             });
-            var userToSend = await userManager.FindByIdAsync(userId);
+            var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(motherUserId), "ApplicationUser") });
         }
@@ -183,7 +183,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 FindValue = "infantId",
                 ReplacementValue = infantUserId
             });
-            var userToSend = await userManager.FindByIdAsync(userId);
+            var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, true, null,
                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
         }
