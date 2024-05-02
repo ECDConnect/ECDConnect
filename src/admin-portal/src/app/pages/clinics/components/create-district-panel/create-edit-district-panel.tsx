@@ -65,12 +65,16 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
+  const duplicatedNameInTheSameProvince = findObjectWithString(
+    districtData?.districtsAndStats,
+    'name',
+    watchFields?.districtName
+  );
+
   const duplicatedName =
-    findObjectWithString(
-      districtData?.districtsAndStats,
-      'name',
-      watchFields?.districtName
-    ) && watchFields?.districtName !== props?.district?.name;
+    duplicatedNameInTheSameProvince &&
+    watchFields?.districtName !== props?.district?.name &&
+    watchFields?.province === duplicatedNameInTheSameProvince?.province?.id;
 
   useEffect(() => {
     if (duplicatedName) {
