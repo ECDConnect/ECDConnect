@@ -476,7 +476,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-            var executorIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            bool? executorIsSuperAdmin = null;
 
             if (ids is null || ids.Count == 0)
             {
@@ -500,7 +500,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
                 if (isAdmin)
                 {
-                    if (!executorIsAdmin)
+                    if (executorIsSuperAdmin == null)
+                    {
+                        executorIsSuperAdmin = await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
+                    }
+                    if (!executorIsSuperAdmin.GetValueOrDefault(false))
                     {
                         failed.Add(user.Id.ToString());
                         continue;
