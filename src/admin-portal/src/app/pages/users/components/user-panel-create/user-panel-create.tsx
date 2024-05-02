@@ -70,6 +70,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       isSouthAfricanCitizen: true,
       verifiedByHomeAffairs: true,
       isAdmin: true,
+      contactPreference: 'email',
     };
 
     try {
