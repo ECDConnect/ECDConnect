@@ -49,6 +49,7 @@ import {
 } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationTagConfig } from '@/constants/notifications';
+import { Notification } from '@/store/notifications/notifications.types';
 
 const HEADER_HEIGHT = 64;
 
@@ -110,6 +111,15 @@ export const ReferralsTab: React.FC = () => {
     (item) =>
       item?.message?.cta?.includes(
         notificationTagConfig?.RedAlertReferralMother.cta ?? ''
+      ) && item?.message?.action?.includes(motherId)
+  );
+
+  const maternalDistressNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.MaternalDistressReferral.cta ?? ''
       ) && item?.message?.action?.includes(motherId)
   );
 
@@ -278,6 +288,20 @@ export const ReferralsTab: React.FC = () => {
     }
   }, [groupedData]);
 
+  const removeNotifications = useCallback(
+    (notifications: Notification[]) => {
+      notifications.forEach((x) => {
+        appDispatch(notificationActions.removeNotification(x!));
+        appDispatch(
+          disableBackendNotification({
+            notificationId: x?.message?.reference ?? '',
+          })
+        );
+      });
+    },
+    [appDispatch]
+  );
+
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
       setReferralsInput((prevState) => {
@@ -320,14 +344,22 @@ export const ReferralsTab: React.FC = () => {
           );
 
           if (redAlertNotifications && removeRedAlertNotification) {
-            redAlertNotifications.forEach((x) => {
-              appDispatch(notificationActions.removeNotification(x!));
-              appDispatch(
-                disableBackendNotification({
-                  notificationId: x?.message?.reference ?? '',
-                })
-              );
-            });
+            removeNotifications(redAlertNotifications);
+          }
+
+          const removeMaternalDistressNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes(
+                'You are struggling and need some support'
+              )
+          );
+
+          if (
+            maternalDistressNotifications &&
+            removeMaternalDistressNotification
+          ) {
+            removeNotifications(maternalDistressNotifications);
           }
 
           const removeDangerSignNotification = newState.find(
@@ -337,14 +369,7 @@ export const ReferralsTab: React.FC = () => {
           );
 
           if (dangerSignsNotifications && removeDangerSignNotification) {
-            dangerSignsNotifications.forEach((x) => {
-              appDispatch(notificationActions.removeNotification(x!));
-              appDispatch(
-                disableBackendNotification({
-                  notificationId: x?.message?.reference ?? '',
-                })
-              );
-            });
+            removeNotifications(dangerSignsNotifications);
           }
         }
         return newState;
@@ -353,8 +378,10 @@ export const ReferralsTab: React.FC = () => {
     [
       appDispatch,
       dangerSignsNotifications,
+      maternalDistressNotifications,
       redAlertNotifications,
       referralsForMother?.length,
+      removeNotifications,
     ]
   );
 

@@ -225,54 +225,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildOlderThanFive, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
 
-        public async Task<bool> SendGGReferDOHANotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string childFirstName, string caregiverFirstName)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>(){
-                new TagsReplacements()
-            {
-                FindValue = "ChildFirstName",
-                ReplacementValue = childFirstName
-            },new TagsReplacements()
-            {
-                FindValue = "CaregiverFirstName",
-                ReplacementValue = caregiverFirstName
-            } };
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferDOHA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
-        public async Task<bool> SendGGReferSASSANotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string childFirstName, string caregiverFirstName)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>(){
-                new TagsReplacements()
-            {
-                FindValue = "ChildFirstName",
-                ReplacementValue = childFirstName
-            },new TagsReplacements()
-            {
-                FindValue = "CaregiverFirstName",
-                ReplacementValue = caregiverFirstName
-            } };
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferSASSA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
-
-        public async Task<bool> SendGGMaternalDistressNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string caregiverFirstName)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "CaregiverFirstName",
-                ReplacementValue = caregiverFirstName
-            });
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
-        }
+      
 
         public async Task<bool> SendGGClinicVisitsNotUpToDateNotification(
 [Service] ApplicationUserManager userManager,

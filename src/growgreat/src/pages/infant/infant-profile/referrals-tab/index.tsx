@@ -120,6 +120,20 @@ export const ReferralsTab: React.FC = () => {
       ) && item?.message?.action?.includes(infantId)
   );
 
+  const sassaNotifications = notifications?.filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.SassaReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
+  const homeAffairsNotifications = notifications?.filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.HomeAffairsReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
   const dangerSignsNotifications = notifications?.filter(
     (item) =>
       item?.message?.cta?.includes(
@@ -329,6 +343,28 @@ export const ReferralsTab: React.FC = () => {
           ) {
             removeNotifications(severeChildMuacNotifications);
           }
+
+          const removeSassaNotifications = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes(
+                'Has not applied for a child support grant'
+              )
+          );
+
+          if (sassaNotifications && removeSassaNotifications) {
+            removeNotifications(sassaNotifications);
+          }
+
+          const removeHomeAffairsNotifications = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('does not have a birth certificate')
+          );
+
+          if (homeAffairsNotifications && removeHomeAffairsNotifications) {
+            removeNotifications(homeAffairsNotifications);
+          }
         }
 
         return newState;
@@ -338,10 +374,12 @@ export const ReferralsTab: React.FC = () => {
       appDispatch,
       dangerSignsNotifications,
       growthIssuesNotifications,
+      homeAffairsNotifications,
       moderateChildMuacNotifications,
       redAlertNotifications,
       referralsForInfant?.length,
       removeNotifications,
+      sassaNotifications,
       severeChildMuacNotifications,
     ]
   );
