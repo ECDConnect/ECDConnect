@@ -1,6 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { getAvatarColor, usePanel, useTheme } from '@ecdlink/core';
 import {
+  GetAllMessageLogsForTeamLead,
   GetAllNavigation,
   GetAllNotifications,
   GetTenantContext,
@@ -100,10 +101,23 @@ export default function Shell() {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: tlNotificationsData } = useQuery(GetAllMessageLogsForTeamLead, {
+    variables: {
+      userId: user?.id,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
   const notifications = notificationsData?.allNotifications;
   const notReadNotifications = useMemo(
     () => notifications?.filter((item) => !item?.readDate),
     [notifications]
+  );
+
+  const tlNotifications = tlNotificationsData?.allMessageLogsForTeamLead;
+  const tlNotReadNotifications = useMemo(
+    () => tlNotifications?.filter((item) => !item?.readDate),
+    [tlNotifications]
   );
 
   useEffect(() => {
@@ -222,6 +236,22 @@ export default function Shell() {
       ),
     });
   };
+
+  const renderBadgeValue = useMemo(() => {
+    if (isTeamLead) {
+      return !!tlNotReadNotifications?.length
+        ? `${tlNotReadNotifications?.length}`
+        : ``;
+    } else {
+      return !!notReadNotifications?.length
+        ? `${notReadNotifications?.length}`
+        : '';
+    }
+  }, [
+    isTeamLead,
+    notReadNotifications?.length,
+    tlNotReadNotifications?.length,
+  ]);
 
   return (
     <div className="flex h-full overflow-hidden bg-gray-100">
@@ -400,11 +430,7 @@ export default function Shell() {
                   badgeTextColor={'white'}
                   icon={'BellIcon'}
                   iconColor={'darkBackground'}
-                  badgeText={
-                    !!notReadNotifications?.length
-                      ? `${notReadNotifications?.length}`
-                      : ''
-                  }
+                  badgeText={renderBadgeValue}
                   className="mt-4"
                 />
               </div>
