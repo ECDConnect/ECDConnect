@@ -182,7 +182,7 @@ export default function UiTable({
       })
       .catch((err) => {
         setNotification({
-          title: 'Failed to send invitations',
+          title: 'Failed to deactivate',
           variant: NOTIFICATION.ERROR,
         });
       });

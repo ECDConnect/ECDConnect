@@ -394,7 +394,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 return nextVisit.PlannedVisitDate.Date;
             }
-            return null;
+            return default(DateTime);
         }
 
         public DateTime? GetClientsNextDueVisitDate(Guid Id, string type)
@@ -419,7 +419,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 return nextVisit.DueDate != null ? nextVisit.DueDate.Value.Date : nextVisit.PlannedVisitDate.Date;
             }
-            return null;
+            return default(DateTime);
         }
 
         public List<Visit> GetVisitsForClient(string id, string type)

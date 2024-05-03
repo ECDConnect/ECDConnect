@@ -871,7 +871,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
                     _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infant.UserId.ToString());
                     _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), infant);
-                } else if (clientType == GGSettings.client_child)
+                } else if (clientType == GGSettings.client_mother)
                 {
                     Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
                     _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString());
