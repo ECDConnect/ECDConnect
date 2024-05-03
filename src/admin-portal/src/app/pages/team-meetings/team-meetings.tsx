@@ -86,10 +86,19 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
 
   const currentTopic: MeetingTopic = useMemo(
     () =>
-      topicData?.GetAllTopic?.find(
-        (item) => item?.title === titleDateFormatted
-      ),
-    [titleDateFormatted, topicData?.GetAllTopic]
+      isUntilDaySevenOfTheMonth
+        ? topicData?.GetAllTopic?.find(
+            (item) => item?.title === untilDay7TitleFormatted
+          )
+        : topicData?.GetAllTopic?.find(
+            (item) => item?.title === titleDateFormatted
+          ),
+    [
+      isUntilDaySevenOfTheMonth,
+      titleDateFormatted,
+      topicData?.GetAllTopic,
+      untilDay7TitleFormatted,
+    ]
   );
 
   useEffect(() => {
