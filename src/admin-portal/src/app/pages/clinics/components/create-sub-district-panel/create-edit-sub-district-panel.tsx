@@ -78,12 +78,15 @@ export const CreateEditSubDistrictPanel = (props: ClinicPanelCreateProps) => {
   const [handleDeleteModal, setHandleDeleteModal] = useState(false);
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
+  const duplicatedNameInTheSameDistrict = findObjectWithString(
+    subDistrictData?.subDistrictsAndStats,
+    'name',
+    watchFields?.subDistrictName
+  );
   const duplicatedName =
-    findObjectWithString(
-      subDistrictData?.subDistrictsAndStats,
-      'name',
-      watchFields?.subDistrictName
-    ) && watchFields?.subDistrictName !== props?.subDistrict?.name;
+    duplicatedNameInTheSameDistrict &&
+    watchFields?.subDistrictName !== props?.subDistrict?.name &&
+    watchFields?.district === duplicatedNameInTheSameDistrict?.district?.id;
 
   useEffect(() => {
     if (duplicatedName) {

@@ -323,11 +323,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <FormFileInput
-                  acceptedFormats={
-                    template?.title === TemplateTypenames.NatalGraphic
-                      ? accpedFormatsWithPdf
-                      : acceptedFileFormats || acceptedFormats
-                  }
+                  acceptedFormats={acceptedFileFormats || acceptedFormats}
                   label={isRequired ? title + ' *' : title}
                   nameProp={propName}
                   contentUrl={
