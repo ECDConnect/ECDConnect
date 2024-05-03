@@ -5,14 +5,14 @@ import {
   GetAllNotifications,
   GetTenantContext,
 } from '@ecdlink/graphql';
-import { Avatar, Button, IconBadge, Typography, UserAvatar } from '@ecdlink/ui';
+import { Avatar, Button, IconBadge, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
 } from '@heroicons/react/outline';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
@@ -100,6 +100,13 @@ export default function Shell() {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const isGrowGreatTenant =
+    data?.tenantContext.applicationName === TenantContext.GrowGreat;
+
   const notifications = notificationsData?.allNotifications;
   const notReadNotifications = useMemo(
     () => notifications?.filter((item) => !item?.readDate),
@@ -138,7 +145,7 @@ export default function Shell() {
         NavbarTypes.TLMeetings,
         NavbarTypes.Documents,
         NavbarTypes.CMS,
-        NavbarTypes.Reporting,
+        ...(isGrowGreatTenant ? [] : [NavbarTypes.Reporting]),
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
         NavbarTypes.Settings,
@@ -181,33 +188,33 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData, isAdministrator, isSuperAdmin, isTeamLead]);
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  }, [
+    user,
+    navigationData,
+    isAdministrator,
+    isSuperAdmin,
+    isTeamLead,
+    isGrowGreatTenant,
+  ]);
 
   const getLogoUrl = () => {
-    if (
-      theme &&
-      theme.images &&
-      data?.tenantContext.applicationName !== TenantContext.GrowGreat
-    ) {
+    if (theme && theme.images && !isGrowGreatTenant) {
       return theme.images.logoUrl;
     } else {
       return ggLogo;
     }
   };
 
-  const signOutClick = () => {
+  const signOutClick = useCallback(() => {
     logout();
 
     if (isTeamLead) {
       history.push(ROUTES.ROOT_TEAM_LEAD);
       return;
     }
+
     history.push('/');
-  };
+  }, [logout, history, isTeamLead]);
 
   const gotToProfile = () => {
     history.push(ROUTES.PROFILE);
@@ -222,6 +229,36 @@ export default function Shell() {
       ),
     });
   };
+
+  const renderFooter = useMemo(() => {
+    return (
+      <div className="mb-2 flex flex-col px-4 md:py-4">
+        <Button
+          className={
+            'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
+          }
+          type="filled"
+          color="uiMid"
+          icon="InformationCircleIcon"
+          textColor="white"
+          text="Help"
+          // TODO: Implement help
+          onClick={() => {}}
+        />
+        <Button
+          className={
+            'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
+          }
+          type="filled"
+          color="uiMid"
+          onClick={signOutClick}
+          icon="ArrowLeftIcon"
+          textColor="white"
+          text="Logout"
+        />
+      </div>
+    );
+  }, [signOutClick]);
 
   return (
     <div className="flex h-full overflow-hidden bg-gray-100">
@@ -283,7 +320,7 @@ export default function Shell() {
                   alt="Workflow"
                 />
               </div>
-              <div className="mt-5 h-0 flex-1 overflow-y-auto">
+              <div className="mt-5 flex-1 flex-grow overflow-y-auto">
                 <nav className="space-y-1 px-2">
                   {navigation?.map((item) => (
                     <MenuItem
@@ -293,6 +330,7 @@ export default function Shell() {
                   ))}
                 </nav>
               </div>
+              {renderFooter}
             </div>
           </Transition.Child>
           <div className="w-14 flex-shrink-0" aria-hidden="true"></div>
@@ -323,42 +361,7 @@ export default function Shell() {
                     </div>
                   ))}
               </nav>
-              <div className="mb-2 flex flex-col px-4 md:py-4">
-                <Button
-                  className={
-                    'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
-                  }
-                  type="filled"
-                  // isLoading={isLoading}
-                  color="uiMid"
-                  // disabled={!isValid}
-                  // onClick={signIn}
-                  icon="InformationCircleIcon"
-                >
-                  <Typography
-                    type="body"
-                    color="white"
-                    text={'Help'}
-                    fontSize={'24'}
-                  ></Typography>
-                </Button>
-                <Button
-                  className={
-                    'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
-                  }
-                  type="filled"
-                  color="uiMid"
-                  onClick={signOutClick}
-                  icon="ArrowLeftIcon"
-                >
-                  <Typography
-                    type="body"
-                    color="white"
-                    text={'Logout'}
-                    fontSize={'24'}
-                  ></Typography>
-                </Button>
-              </div>
+              {renderFooter}
             </div>
           </div>
         </div>
