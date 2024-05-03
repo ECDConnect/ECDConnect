@@ -53,7 +53,14 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   });
 
   const [hasMaternalCaseRecord, setHasMaternalCaseRecord] = useState<any>(null);
-  const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
+  const acceptedFormats = ['jpg', 'pdf', 'jpeg', 'png', 'heic', 'heif'];
+  const acceptedMimeFormats = [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/heic',
+    'image/heif',
+  ];
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
   const [photoActionBarVisible, setPhotoActionBarVisible] =
@@ -276,6 +283,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         stretch
       >
         <PhotoPrompt
+          acceptedMimeFormats={acceptedMimeFormats}
           title="Road to Health Book, page ii"
           hideEmojiOption
           onClose={() => setPhotoActionBarVisible(false)}
