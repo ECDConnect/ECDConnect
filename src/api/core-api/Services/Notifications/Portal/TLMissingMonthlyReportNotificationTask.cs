@@ -64,6 +64,11 @@ namespace EcdLink.Api.CoreApi.Services
                             {
                                 FindValue = "ClinicName",
                                 ReplacementValue = clinic.Name
+                            },
+                            new TagsReplacements()
+                            {
+                                FindValue = "ClinicId",
+                                ReplacementValue = clinic.Id.ToString()
                             }
                         };
                         // When the deadline has passed(ie on 00:01 of the 8th of the month)

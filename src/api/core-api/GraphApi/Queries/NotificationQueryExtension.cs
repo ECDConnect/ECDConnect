@@ -308,6 +308,9 @@ IGenericRepositoryFactory repoFactory, string templateId)
             var clinicTLRepo = repoFactory.CreateGenericRepository<ClinicTeamLead>(userContext: uId);
             var messageRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
             AuthenticationDbContext context = dbContextFactory.CreateDbContext();
+            
+
+            List<MessageLog> logs = new List<MessageLog>();
 
             List<Notification> messageRecords = new List<Notification>();
             var linkedClinicIds = clinicTLRepo.GetAll().Where(x => x.TeamLead.UserId == userId && x.IsActive).Select(x => x.ClinicId).ToList();
@@ -315,7 +318,8 @@ IGenericRepositoryFactory repoFactory, string templateId)
             // Get all health care workers linked to same clinics as team lead
             messageRecords.AddRange(
                 (from message in context.MessageLogs.Where(x => x.MessageProtocol == "portal" && x.IsActive == true && x.ReadDate == null)
-                    join chw in context.HealthCareWorkers.Where(x => x.IsActive == true && x.ClinicId.HasValue && linkedClinicIds.Contains((Guid)x.ClinicId)) on message.To equals chw.UserId.ToString()
+                 join messageTemplate in context.MessageTemplates.Where(x => x.IsActive) on message.MessageTemplateType equals messageTemplate.TemplateType
+                 join chw in context.HealthCareWorkers.Where(x => x.IsActive == true && x.ClinicId.HasValue && linkedClinicIds.Contains((Guid)x.ClinicId)) on message.To equals chw.UserId.ToString()
                     select new Notification() { 
                         Id = message.Id,
                         From = message.From,
@@ -326,6 +330,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
                         SentByUserId = message.SentByUserId,
                         Subject = message.Subject,
                         MessageTemplateType = message.MessageTemplateType,
+                        MessageTemplate = messageTemplate,
                         CTA = message.CTA,
                         CTAText = message.CTAText,
                         MessageDate = message.MessageDate,
@@ -354,6 +359,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
                      SentByUserId = message.SentByUserId,
                      Subject = message.Subject,
                      MessageTemplateType = message.MessageTemplateType,
+                     MessageTemplate = message.MessageTemplate,
                      CTA = message.CTA,
                      CTAText = message.CTAText,
                      MessageDate = message.MessageDate,
@@ -367,6 +373,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
                  })
                  .OrderByDescending(x => x.MessageDate).ToList()
                 );
+
             return messageRecords;
         }
 

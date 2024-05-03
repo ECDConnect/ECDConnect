@@ -88,6 +88,11 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "ClinicId",
+                                    ReplacementValue = clinic.ClinicId.ToString()
                                 }
                             };
 
@@ -113,6 +118,11 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "ClinicId",
+                                    ReplacementValue = clinic.ClinicId.ToString()
                                 }
                             };
 
@@ -136,6 +146,11 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "ClinicId",
+                                    ReplacementValue = clinic.ClinicId.ToString()
                                 }
                             };
 
