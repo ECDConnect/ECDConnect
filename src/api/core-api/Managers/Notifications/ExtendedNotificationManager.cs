@@ -3,12 +3,12 @@ using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using HotChocolate;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
 {
@@ -210,6 +210,11 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 {
                     FindValue = "PregnantMomFullName",
                     ReplacementValue = mother.User.FullName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "HealthCareWorkerId",
+                    ReplacementValue = mother.HealthCareWorkerId.ToString()
                 }
             };
 
@@ -241,6 +246,11 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 {
                     FindValue = "CaregiverFullName",
                     ReplacementValue = infant.Caregiver.FullName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "HealthCareWorkerId",
+                    ReplacementValue = infant.Caregiver.HealthCareWorkerId.ToString()
                 }
             };
             

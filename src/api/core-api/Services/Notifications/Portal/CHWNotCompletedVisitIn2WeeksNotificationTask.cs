@@ -91,9 +91,17 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                             {
                                 FindValue = "CHWFirstName",
                                 ReplacementValue = hcw.User.FirstName
+                            },
+                            new TagsReplacements()
+                            {
+                                FindValue = "HealthCareWorkerId",
+                                ReplacementValue = hcw.Id.ToString()
                             }
                         };
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWNotCompletedVisitIn2Weeks, DateTime.Now.Date, hcw.User, "", MessageStatusConstants.Amber, replacements, null);
+
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWNotCompletedVisitIn2Weeks, DateTime.Now.Date, hcw.User, "", MessageStatusConstants.Amber, replacements, null,
+                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.Id, "HealthCareWorker") });
+
                     }
                 }
             }

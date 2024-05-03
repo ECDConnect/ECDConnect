@@ -96,9 +96,15 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                                 FindValue = "CHWFullName",
                                 ReplacementValue = user.FullName
                             },
+                            new TagsReplacements()
+                            {
+                                FindValue = "UserId",
+                                ReplacementValue = user.UserId.ToString()
+                            }
                         };
                         // Valid for 7 days after the notification was triggered.
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWMissingMonthlyPoints, DateTime.Now.Date, teamUsers[user.UserId], "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalCHWMissingMonthlyPoints, DateTime.Now.Date, teamUsers[user.UserId], "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, false, null,
+                            new List<RelatedEntity> { new RelatedEntity(user.UserId, "ApplicationUser") });
                     }
                 }
             }
