@@ -453,6 +453,11 @@ export function ContentManagement() {
     }
   }, [handleSubTabs, previousTab, selectedTab]);
 
+  const goBackToList = () => {
+    setSelectedContent(undefined);
+    setSearchValue('');
+  };
+
   return (
     <div className="">
       {dataTypes && !isLoadingSelectedRow ? (
@@ -505,7 +510,7 @@ export function ContentManagement() {
               contentView={selectedContent}
               contentType={selectedType}
               languages={languages.GetAllLanguage}
-              goBack={() => setSelectedContent(undefined)}
+              goBack={() => goBackToList()}
               savedContent={() => refreshParent()}
               choosedSectionTitle={choosedSectionTitle}
               setSearchValue={setSearchValue}
