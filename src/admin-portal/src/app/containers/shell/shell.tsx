@@ -1,10 +1,5 @@
 import { useQuery } from '@apollo/client';
-import {
-  getAvatarColor,
-  NavigationDto,
-  usePanel,
-  useTheme,
-} from '@ecdlink/core';
+import { getAvatarColor, usePanel, useTheme } from '@ecdlink/core';
 import {
   GetAllNavigation,
   GetAllNotifications,
@@ -27,16 +22,21 @@ import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { TenantContext } from '../../utils/constants';
-import { NavbarTypes, NotificationNavigationModel } from './shell.types';
+import {
+  INavigation,
+  NavbarTypes,
+  NotificationNavigationModel,
+} from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
 import ROUTES from '../../routes/app.routes-constants';
+import { navigationFromFrontend } from './shell.constants';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
 
 type menuItemProps = {
-  item: NavigationDto;
+  item: INavigation;
 };
 
 export const tlMeetings = {
@@ -86,8 +86,8 @@ export default function Shell() {
   const history = useHistory();
   const location = useLocation();
   const [avatarColor, setAvatarColor] = useState<string>();
-  const [navigation, setNavigation] = useState<NavigationDto[]>();
-  const [activeNavigation, setActiveNavigation] = useState<NavigationDto>();
+  const [navigation, setNavigation] = useState<INavigation[]>();
+  const [activeNavigation, setActiveNavigation] = useState<INavigation>();
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
@@ -124,23 +124,52 @@ export default function Shell() {
       const teamLeadNavigationItems = [
         NavbarTypes.Users,
         NavbarTypes.Clinics,
+        NavbarTypes.League,
         NavbarTypes.Referrals,
         NavbarTypes.TeamMeetings,
       ];
-      const navigationList: NavigationDto[] = navigationData?.GetAllNavigation;
-      const newnav = [...navigationData?.GetAllNavigation, tlMeetings];
-      const teamLeadNavigationList: NavigationDto[] = newnav?.filter((item) =>
-        teamLeadNavigationItems?.includes(item?.name)
+
+      const adminNavigationItems = [
+        NavbarTypes.Dashboard,
+        NavbarTypes.Users,
+        NavbarTypes.Clinics,
+        NavbarTypes.RolesPermissions,
+        NavbarTypes.Referrals,
+        NavbarTypes.TLMeetings,
+        NavbarTypes.Documents,
+        NavbarTypes.CMS,
+        NavbarTypes.Reporting,
+        NavbarTypes.Messaging,
+        NavbarTypes.SiteData,
+        NavbarTypes.Settings,
+        NavbarTypes.Notifications,
+        NavbarTypes.CHWsOptedOut,
+      ];
+
+      const navigationList = [
+        ...navigationData?.GetAllNavigation,
+        tlMeetings,
+        ...navigationFromFrontend,
+      ];
+
+      const teamLeadNavigationList: INavigation[] = navigationList?.filter(
+        (item) => teamLeadNavigationItems?.includes(item?.name)
       );
+      const adminNavigationList: INavigation[] = navigationList?.filter(
+        (item) =>
+          adminNavigationItems?.some((adminItem) =>
+            item?.name?.includes(adminItem)
+          )
+      );
+
       const userRolePermissions = user?.roles
         ?.map((x) => x?.permissions)
         .flat();
       const userPermissionIds = userRolePermissions?.map((x) => x.id);
       if (isAdministrator || isSuperAdmin) {
-        const sorted = navigationList
-          .slice()
-          .sort((a, b) => a.sequence - b.sequence);
-        setNavigation(sorted);
+        setNavigation(
+          adminNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
+        );
       } else if (isTeamLead) {
         setNavigation(
           teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
@@ -281,16 +310,18 @@ export default function Shell() {
             </div>
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
-                {navigation?.map((item) => (
-                  <div key={`${item} + ${Math.random()}`}>
-                    <MenuItem
-                      key={`${item.name}-${new Date().getTime()}`}
-                      item={item}
-                    ></MenuItem>
+                {navigation
+                  ?.filter((item) => !item.hide)
+                  ?.map((item) => (
+                    <div key={`${item} + ${Math.random()}`}>
+                      <MenuItem
+                        key={`${item.name}-${new Date().getTime()}`}
+                        item={item}
+                      ></MenuItem>
 
-                    <hr className=" border-b-uiLight mx-2 border-dashed" />
-                  </div>
-                ))}
+                      <hr className=" border-b-uiLight mx-2 border-dashed" />
+                    </div>
+                  ))}
               </nav>
               <div className="mb-2 flex flex-col px-4 md:py-4">
                 <Button
@@ -352,7 +383,6 @@ export default function Shell() {
                   width="25"
                 />
               )}
-
               <span className="pl-2 font-semibold text-black">
                 {activeNavigation?.name}
               </span>

@@ -210,6 +210,47 @@ export const GetClinicMeetingForMonth = gql`
         hCWId
         hCWName
       }
+      meetingTopic {
+        title
+        topicTitle
+        topicContent
+        infoGraphic
+        knowledgeContent
+        selfCareContent
+      }
+    }
+  }
+`;
+
+export const GetAllClinicMeetings = gql`
+  query GetAllClinicMeetings {
+    allClinicMeetings {
+      id
+      meetingDate
+      teamLeadId
+      teamLeadName
+      positiveStory
+      reportingIssue
+      totalSupportVisits
+      clinicId
+      clinicName
+      dateSubmitted
+      participantsOptedOut {
+        hCWId
+        hCWName
+      }
+      participantsInField {
+        hCWId
+        hCWName
+      }
+      meetingTopic {
+        title
+        topicTitle
+        topicContent
+        infoGraphic
+        knowledgeContent
+        selfCareContent
+      }
     }
   }
 `;
@@ -262,6 +303,65 @@ export const SendTeamLeadVerifyPhoneNumberSMS = gql`
       id
       pendingPhoneNumber
       phoneNumber
+    }
+  }
+`;
+
+export const TeamLeadById = gql`
+  query teamLeadById($teamLeadId: UUID!) {
+    teamLeadById(teamLeadId: $teamLeadId) {
+      id
+      insertedDate
+      isRegistered
+      clinicIds
+      user {
+        id
+        connectUsage
+        connectUsageColor
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
+        firstName
+        surname
+        fullName
+        contactPreference
+        genderId
+        phoneNumber
+        lockoutEnd
+      }
+    }
+  }
+`;
+
+export const GetAllMessageLogsForTeamLead = gql`
+  query GetAllMessageLogsForTeamLead($userId: UUID!) {
+    allMessageLogsForTeamLead(userId: $userId) {
+      id
+      fromUserId
+      messageProtocol
+      message
+      messageTemplateType
+      subject
+      sentByUserId
+      from
+      id
+      relatedToUserId
+      messageDate
+      messageEndDate
+      readDate
+      status
+      cTA
+      cTAText
+      ordering
+      action
+      relatedEntities {
+        relatedToEntityId
+        entityType
+      }
     }
   }
 `;

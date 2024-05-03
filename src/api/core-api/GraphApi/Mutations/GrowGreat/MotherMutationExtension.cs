@@ -17,7 +17,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Mother AddMother([Service] MotherManager motherManager, MotherModel input)
         {
-            return motherManager.AddMother(input);
+            var mother = motherManager.AddMother(input);
+            motherManager.CheckForDuplicateNotification(mother);
+            return mother;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]

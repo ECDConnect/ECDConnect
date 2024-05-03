@@ -270,6 +270,10 @@ namespace ECDLink.DataAccessLayer.Context
                 .WithOne(e => e.VisitDataStatus)
                 .HasForeignKey<VisitBackReferral>(e => e.VisitDataStatusId)
                 .IsRequired();
+            builder.Entity<MessageLogRelatedTo>(x =>
+            {
+                x.HasKey(e => new { e.MessageLogId, e.RelatedEntityId });
+            });
         }
     }
 }

@@ -1,11 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GetAllHealthCareWorker = gql`
-  query GetAllHealthCareWorker(
+  query GetAllHealthCareWorkers(
     $search: String
     $clinicSearch: [String]
-    $provinceSearch: [String]
-    $subDistrictSearch: [String]
+    $provinceSearch: [UUID!]
+    $subDistrictSearch: [UUID!]
     $visitSearch: [String]
     $connectUsageSearch: [String]
     $pagingInput: PagedQueryInput
@@ -58,6 +58,7 @@ export const GetHealthCareWorkerByUserId = gql`
       id
       insertedDate
       clinicId
+      isRegistered
       user {
         id
         isActive
@@ -163,6 +164,65 @@ export const GetHealthCareWorkerSummaryForPeriod = gql`
       totalPregnantMomsWithNoIssues
       totalChildrenWithNoIssues
       totalVisitsOverdue
+      __typename
+    }
+  }
+`;
+
+export const GetHealthCareWorkersOptedOutOfMonthlyMeeting = gql`
+  query GetHealthCareWorkersOptedOutOfMonthlyMeeting(
+    $month: Int!
+    $year: Int!
+    $where: PortalHealthCareWorkerModelFilterInput
+    $order: [PortalHealthCareWorkerModelSortInput!]
+  ) {
+    healthCareWorkersOptedOutOfMonthlyMeeting(
+      month: $month
+      year: $year
+      where: $where
+      order: $order
+    ) {
+      connectUsage
+      connectUsageColor
+      dateInvited
+      healthCareWorkerId
+      idNumber
+      isActive
+      name
+      userId
+    }
+  }
+`;
+
+export const GetPortalHealthCareWorkerById = gql`
+  query GetPortalHealthCareWorkerById($healthCareWorkerId: UUID!) {
+    portalHealthCareWorkersById(healthCareWorkerId: $healthCareWorkerId) {
+      id
+      insertedDate
+      clinicId
+      isRegistered
+      user {
+        id
+        connectUsage
+        connectUsageColor
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
+        firstName
+        surname
+        fullName
+        contactPreference
+        genderId
+        phoneNumber
+        whatsAppNumber
+        insertedDate
+        lockoutEnd
+        __typename
+      }
       __typename
     }
   }

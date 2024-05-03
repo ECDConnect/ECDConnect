@@ -427,7 +427,7 @@ namespace ECDLink.SmartStart.Services
         private List<SubCategory> GetSubCategories(Category category, Guid languageId)
         {
             var subCategories = new List<SubCategory>();
-            var subCats = _contentRepo.GetByIds(languageId, category.SubCategoryIds).ToList<dynamic>();
+            var subCats = _contentRepo.GetByIds(5, languageId, category.SubCategoryIds).ToList<dynamic>();
             foreach(var subCat in subCats)
             {
                 var subCategory = new SubCategory()
@@ -445,7 +445,7 @@ namespace ECDLink.SmartStart.Services
 
         private List<Skill> GetSkills(Category category, SubCategory subCategory, Guid languageId) 
         {
-            var data = _contentRepo.GetByIds(languageId, subCategory.SkillIds).ToList<dynamic>();
+            var data = _contentRepo.GetByIds(7, languageId, subCategory.SkillIds).ToList<dynamic>();
             var list = data.Select(x => new Skill
             {
                 Id = int.Parse(x.id),

@@ -42,6 +42,13 @@ import { VisitModelInput } from '@ecdlink/graphql';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { visitSteps as walkthroughSteps } from './walkthrough/steps';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import {
+  canStartVisit,
+  getVisitStatus,
+  getVisitSubTitle,
+  isVisitInProgress,
+  isVisitMissed,
+} from '@/helpers/visit-helpers';
 
 const HEADER_HEIGHT = 64;
 
@@ -108,10 +115,6 @@ export const VisitsTab: React.FC = () => {
     }),
     [infant?.caregiver?.firstName, infant?.user?.firstName]
   );
-  //const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  // const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
-  // Remove next7Days check according to ticket EC-331 - confirmed with Kim
-  // const isWeekDeadline = dateToCheck && dateToCheck >= currentDate; // && dateToCheck <= next7Days;
 
   // EC-685 - only show start visit button if today falls between planned and due date for current visit
   const todayEndOfTheDay = new Date();
@@ -120,17 +123,6 @@ export const VisitsTab: React.FC = () => {
     todayEndOfTheDay.toISOString()
   );
 
-  const plannedVisitDate =
-    currentVisit && new Date(currentVisit?.plannedVisitDate);
-  plannedVisitDate?.setHours(0, 0, 0, 0);
-  const dueDate = currentVisit && new Date(currentVisit?.dueDate);
-  dueDate?.setHours(0, 0, 0, 0);
-  const isWeekDeadline =
-    plannedVisitDate &&
-    dueDate &&
-    todayEndOfTheDay >= plannedVisitDate &&
-    todayDateWithoutTimeZone! <= dueDate;
-
   const infantAgeDays = infant?.user?.dateOfBirth
     ? differenceInDays(todayEndOfTheDay, new Date(infant?.user?.dateOfBirth))
     : 0;
@@ -138,32 +130,6 @@ export const VisitsTab: React.FC = () => {
   const infantInsertedDate = useMemo(
     () => new Date(infant?.insertedDate || ''),
     [infant?.insertedDate]
-  );
-
-  const getType = useCallback(
-    (item: VisitDto): StepItem['type'] => {
-      const isAdditionalVisit =
-        item.visitType?.normalizedName === 'Additional visits';
-
-      if (item.attended) {
-        return 'completed';
-      }
-
-      // if (item.visitType?.normalizedName === 'Day 7') {
-      //   if (infantAgeDays < 7 || infantAgeDays > 13) {
-      //     return 'todo';
-      //   }
-      // }
-      if (
-        (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
-        (isAdditionalVisit && previousVisit?.attended)
-      ) {
-        return 'inProgress';
-      }
-
-      return 'todo';
-    },
-    [currentVisit, isWeekDeadline, previousVisit?.attended]
   );
 
   const getSortedVisits = useCallback((visitsToSort: VisitDto[]) => {
@@ -191,37 +157,46 @@ export const VisitsTab: React.FC = () => {
     });
   }, []);
 
-  const getSubTitle = useCallback(
-    (item: VisitDto, isAdditionalVisit: boolean, date: Date): string => {
-      if (isAdditionalVisit && item.comment) {
-        return item.comment;
-      }
+  const restartVisit = useCallback((existingVisitId: string) => {
+    appDispatch(infantThunkActions.restartVisitForInfant({ existingVisitId }))
+      .unwrap()
+      .then((newVisit) =>
+        history.push(`${location.pathname}/activities-form/${newVisit.id}`, {
+          editView: true,
+        })
+      );
+  }, []);
 
-      return `By ${date.getDate()} ${date.toLocaleString('default', {
-        month: 'long',
-      })} ${date.getFullYear()}`;
-    },
-    []
-  );
+  const anyVisitInProgress = useMemo(() => {
+    return visits.some((visit) => isVisitInProgress(visit));
+  }, [visits]);
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => {
+    const activeAndFutureVisits = visits.filter((item) => {
       const dueDate = getDateWithoutTimeZone(item.dueDate);
-      const orderDate = getDateWithoutTimeZone(item.orderDate);
-      const isAttend = item.attended;
-      if (dueDate) {
-        return !isAttend && dueDate >= todayDateWithoutTimeZone!;
+      const plannedDate = getDateWithoutTimeZone(item.plannedVisitDate);
+
+      if (item.attended || item.isCancelled) {
+        return false;
       }
 
-      if (orderDate) {
-        return !isAttend && orderDate >= todayDateWithoutTimeZone!;
+      if (!!dueDate && dueDate >= todayDateWithoutTimeZone!) {
+        return true;
       }
 
-      return !isAttend;
+      if (
+        !dueDate &&
+        !!plannedDate &&
+        plannedDate >= todayDateWithoutTimeZone!
+      ) {
+        return true;
+      }
+
+      return false;
     });
 
-    const sortedVisits = getSortedVisits(filteredVisits);
-    const isToShowPastVisits = visits.length > filteredVisits.length;
+    const sortedVisits = getSortedVisits(activeAndFutureVisits);
+    const isToShowPastVisits = visits.length > activeAndFutureVisits.length;
 
     const array: StepItem[] = sortedVisits.map((item, index) => {
       const previousItem = index > 0 ? sortedVisits[index - 1] : undefined;
@@ -236,21 +211,25 @@ export const VisitsTab: React.FC = () => {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName + ' visit' || 'Visit',
-        subTitle: getSubTitle(item, isAdditionalVisit, date),
-        ...(isAdditionalVisit && {
-          subTitleColor: 'alertDark',
-        }),
+        subTitle: getVisitSubTitle(item),
+        isAdditionalVisit: isAdditionalVisit,
+        subTitleColor: 'alertDark',
         inProgressStepIcon: 'CalendarIcon',
-        type: getType(item),
+        type: getVisitStatus(item),
         showActionButton:
-          (!previousItem || previousItem?.attended) &&
-          getType(item) === 'inProgress',
+          (!previousItem ||
+            previousItem.attended ||
+            previousItem.isCancelled ||
+            isVisitMissed(previousItem)) &&
+          canStartVisit(item),
         actionButtonIcon: 'ArrowCircleRightIcon',
-        actionButtonText: 'Start visit',
+        actionButtonText: !isVisitMissed(item) ? 'Start visit' : 'Redo visit',
         actionButtonOnClick: () =>
-          history.push(`${location.pathname}/activities-form/${item.id}`, {
-            editView: true,
-          }),
+          !isVisitMissed(item)
+            ? history.push(`${location.pathname}/activities-form/${item.id}`, {
+                editView: true,
+              })
+            : restartVisit(item.id),
       };
     });
 
@@ -276,8 +255,6 @@ export const VisitsTab: React.FC = () => {
     return array;
   }, [
     getSortedVisits,
-    getSubTitle,
-    getType,
     history,
     infantInsertedDate,
     location.pathname,
@@ -506,38 +483,40 @@ export const VisitsTab: React.FC = () => {
         </div>
         <div className="px-4 pb-4 pt-7">{renderContent}</div>
       </div>
-      <div className="px-4">
-        <Divider dividerType="dashed" />
-        <div className="my-4 flex items-center gap-3">
-          <div className="flex flex-col">
-            <Typography
-              type="h4"
-              align="left"
-              weight="bold"
-              text="Other visit"
-              color="textDark"
-            />
-            <Typography
-              type="body"
-              align="left"
-              weight="skinny"
-              text="Use this if the client needs additional support from you"
-              color="textMid"
-              className="text-sm"
-            />
+      {!anyVisitInProgress && (
+        <div className="px-4">
+          <Divider dividerType="dashed" />
+          <div className="my-4 flex items-center gap-3">
+            <div className="flex flex-col">
+              <Typography
+                type="h4"
+                align="left"
+                weight="bold"
+                text="Other visit"
+                color="textDark"
+              />
+              <Typography
+                type="body"
+                align="left"
+                weight="skinny"
+                text="Use this if the client needs additional support from you"
+                color="textMid"
+                className="text-sm"
+              />
+            </div>
+            <Button
+              type="outlined"
+              color="primary"
+              icon="PlusIcon"
+              className="h-10 w-48"
+              onClick={onAddVisit}
+            >
+              Add Visit
+            </Button>
           </div>
-          <Button
-            type="outlined"
-            color="primary"
-            icon="PlusIcon"
-            className="h-10 w-48"
-            onClick={onAddVisit}
-          >
-            Add Visit
-          </Button>
+          <Divider dividerType="dashed" />
         </div>
-        <Divider dividerType="dashed" />
-      </div>
+      )}
       <div className="mx-4 mt-7 mb-4 flex h-full items-end">
         <Button
           id={getStringFromClassNameOrId(walkthroughSteps[2].target)}

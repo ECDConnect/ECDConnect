@@ -10,6 +10,7 @@ import {
   VisitVideos,
   Infographics,
   DangerSign,
+  DangerSignTranslation,
 } from '@ecdlink/graphql';
 import { HealthPromotion } from '@ecdlink/graphql';
 
@@ -275,8 +276,19 @@ class Visit {
           dangerSigns(section: $section, locale: $locale){
             id
             section
-            type
-            imageA
+            type {
+              id
+              name
+            }
+            dangerSignA
+            dangerSignB
+            dangerSignC
+            dangerSignD
+            dangerSignE
+            dangerSignF
+            dangerSignG
+            dangerSignH
+            dangerSignI
             availableLanguages {
               id
               description
@@ -296,6 +308,38 @@ class Visit {
     }
 
     return response.data.data.dangerSigns;
+  }
+
+  async GetDangerSignTranslations(
+    section: string,
+    toTranslate: string
+  ): Promise<DangerSignTranslation[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { dangerSignTranslations: DangerSignTranslation[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetDangerSignTranslations($section: String, $toTranslate: String) {
+          dangerSignTranslations(section: $section, toTranslate: $toTranslate){
+            language
+            translation
+          }
+        }
+      `,
+      variables: {
+        section,
+        toTranslate,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get DangerSignTranslations Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.dangerSignTranslations;
   }
 
   async getCompletedVisitsForVisitId(visitId: string): Promise<string[]> {

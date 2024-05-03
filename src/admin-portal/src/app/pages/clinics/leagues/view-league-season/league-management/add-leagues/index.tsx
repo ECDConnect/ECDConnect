@@ -33,7 +33,15 @@ export const AddLeagues = () => {
   >([]);
   const [quantityLeagues, setQuantityLeagues] = useState<number>();
 
+  const history = useHistory();
+
   const { state } = useLocation<AddLeaguesRouteState>();
+
+  useEffect(() => {
+    if (!state) {
+      history.replace(ROUTES.CLINICS.LEAGUES.ROOT);
+    }
+  }, [history, state]);
 
   const previousState = usePrevious(state) as AddLeaguesRouteState;
 
@@ -42,8 +50,6 @@ export const AddLeagues = () => {
   const initialStep = allowMultipleLeagues === false ? 1 : 0;
 
   const [currentStep, setCurrentStep] = useState(initialStep);
-
-  const history = useHistory();
 
   const { setNotification } = useNotifications();
 

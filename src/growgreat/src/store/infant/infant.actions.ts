@@ -34,6 +34,7 @@ export const InfantActions = {
   GET_COMPLETED_REFERRALS_FOR_INFANT: 'getCompletedReferralsForInfant',
   UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
   ADD_ADDITIONAL_VISIT_FOR_INFANT: 'addAdditionalVisitForInfant',
+  RESTART_VISIT_FOR_INFANT: 'restartVisitForInfant',
 };
 
 export interface UpdateInfantCaregiver {
@@ -434,6 +435,35 @@ export const updateVisitDataStatus = createAsyncThunk<
       } else {
         return rejectWithValue('no access token, profile check required');
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const restartVisitForInfant = createAsyncThunk<
+  VisitDto,
+  { existingVisitId: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.RESTART_VISIT_FOR_INFANT,
+  async ({ existingVisitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let visit: VisitDto;
+
+      if (userAuth?.auth_token) {
+        visit = await new InfantService(
+          userAuth?.auth_token
+        ).restartVisitForInfant(existingVisitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return visit;
     } catch (err) {
       return rejectWithValue(err);
     }

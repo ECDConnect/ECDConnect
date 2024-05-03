@@ -584,6 +584,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // Add G4 secondary alert text: ""Refer to home affairs""
                         comment = GGSettings.home_affairs_referrals;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_dashboard, vData.VisitSection, false);
+
+                        _ = _notificationManager.SendGGReferDOHANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId);
                     }
                 }
                 else if (vData.Question == GGSettings.QuestionReceivingCSG)
@@ -610,6 +612,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                         comment = GGSettings.has_csg3;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_progress, vData.VisitSection, false);
+
+                        _ = _notificationManager.SendGGReferSASSANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId);
                     }
                 }
             }
@@ -871,7 +875,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
                     _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infant.UserId.ToString());
                     _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), infant);
-                } else if (clientType == GGSettings.client_child)
+                } else if (clientType == GGSettings.client_mother)
                 {
                     Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
                     _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString());
@@ -891,6 +895,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // add amber item to G9 client summary: ""You are struggling and need some support""
                     var comment = new StringBuilder($"{GGSettings.need_support}");
                     AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
+
+                    if (clientType == GGSettings.client_mother)
+                    {
+                        Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
+                        _ = _notificationManager.SendGGMaternalDistressNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString());
+                    }    
                 }
 
                 if (q3.QuestionAnswer == GGSettings.AnswerNo && q1.QuestionAnswer == GGSettings.AnswerNo && q2.QuestionAnswer == GGSettings.AnswerNo)

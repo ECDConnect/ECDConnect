@@ -5,6 +5,6 @@ namespace ECDLink.EGraphQL.Resolvers
 {
     public interface IDynamicFieldResolver
     {
-        object ResolveField(IPureResolverContext ctx, FieldDefinitionModel definition);
+        object ResolveField(IPureResolverContext ctx, FieldDefinitionModel definition, int? contentTypeId = null);
     }
 }

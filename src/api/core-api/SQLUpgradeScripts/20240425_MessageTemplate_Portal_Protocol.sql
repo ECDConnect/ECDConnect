@@ -1,0 +1,1 @@
+update public."MessageTemplate" set "Protocol" = 'portal' where "TemplateType" like 'gg-portal-%';

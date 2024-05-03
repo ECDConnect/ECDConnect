@@ -1,7 +1,13 @@
 import ReactTailwindTable, { Icolumn, Irow } from 'react-tailwind-table';
 import { TableProps, TableRefMethods } from './types';
 import { getStyles } from './styles';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { Checkbox, FormInput } from '../form-fields';
 import Button from '../button/button';
 import { classNames, renderIcon } from '../../utils';
@@ -30,6 +36,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
       loading,
       noContentText = '-',
       onChangeSelectedRows,
+      watchMode,
     },
     ref
   ) => {
@@ -37,6 +44,8 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
 
     const [selectedRows, setSelectedRows] = useState<Irow[]>([]);
     const [openFilters, setOpenFilters] = useState<boolean>(false);
+
+    const tableRef = useRef<ReactTailwindTable>(null);
 
     useImperativeHandle(ref, () => ({
       resetSelectedRows() {
@@ -151,9 +160,9 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
           })
         : rowsWithKey;
 
-    const tableKey = mergedRows
-      .map((row) => `${row.key}_${row.checked}`)
-      .join('-');
+    const tableKey = watchMode
+      ? mergedRows.map((row) => `${row.key}_${row.checked}`).join('-')
+      : undefined;
 
     useEffect(() => {
       if (initialSelectedRows !== undefined) {
@@ -228,6 +237,15 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
         document.removeEventListener('click', handleDocumentClick);
       };
     }, [onChangePage]);
+
+    useEffect(() => {
+      if (
+        !!tableRef?.current?.state?.active_page_number &&
+        currentPage <= totalPages
+      ) {
+        tableRef.current.state.active_page_number = currentPage;
+      }
+    }, [tableKey]);
 
     return (
       <>
@@ -349,6 +367,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
           <LoadingSpinner {...loading} />
         ) : (
           <ReactTailwindTable
+            ref={tableRef}
             key={tableKey}
             striped={false}
             show_search={false}

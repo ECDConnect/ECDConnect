@@ -186,7 +186,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var userToSend = userManager.FindByIdAsync(principalId).Result;
             if (userToSend != null && practitioner != null && practitioner.User != null)
             {
-                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7), false, true, null, practitioner.UserId.ToString());
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7), false, true, null,
+                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.UserId.Value, "ApplicationUser") });
             }
 
             return practitioner;
@@ -333,7 +334,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     status.AcceptedDate = DateTime.Now;
                     status.Leaving = false;
 
-                    notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId.ToString());
+                    notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
                 }
                 //update practitioner with column changes
                 practitionerRepo.Update(practitioner);

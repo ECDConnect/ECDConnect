@@ -17,7 +17,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Infant AddInfant([Service] InfantManager infantManager, InfantModel input)
         {
-            return infantManager.AddInfant(input);
+            var infant = infantManager.AddInfant(input);
+            infantManager.CheckForDuplicateNotification(infant);
+            return infant;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]

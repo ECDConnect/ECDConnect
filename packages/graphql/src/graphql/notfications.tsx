@@ -40,3 +40,9 @@ export const MarkAsReadNotification = gql`
     markAsReadNotification(notificationId: $notificationId)
   }
 `;
+
+export const DisableNotification = gql`
+  mutation disableNotification($notificationId: String!) {
+    disableNotification(notificationId: $notificationId)
+  }
+`;

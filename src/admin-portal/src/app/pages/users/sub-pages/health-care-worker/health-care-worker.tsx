@@ -34,20 +34,20 @@ import React, {
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import {
-  CheckCircleIcon,
-  ClockIcon,
-  XCircleIcon,
-} from '@heroicons/react/solid';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { ConenctUsage } from '../team-leads/team-leads.types';
 import { Status } from '../application-admins/applications-admins.types';
 import { format } from 'date-fns';
-import { AppVisitActivity, ConnectUsage } from './health-care-worker.types';
+import {
+  AppVisitActivity,
+  HcwRouteState,
+  HealthCareWorkerRouteState,
+} from './health-care-worker.types';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import { useUserRole } from '../../../../hooks/useUserRole';
+import { columnColor } from '../../../../utils/health-care-worker/components-utils';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -95,7 +95,7 @@ export default function HealthCareWorkers() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [handleAddUser, setHandleAddUser] = useState(false);
-
+  const location = useLocation<HcwRouteState>();
   const [selectedCHWs, setSelectedCHWs] = useState<Irow[]>([]);
 
   const isAllInactive = selectedCHWs.every((obj) => obj?.isActive === false);
@@ -168,6 +168,17 @@ export default function HealthCareWorkers() {
     [clinicsFiltered]
   );
 
+  // these clinic ids are populated from the view of the team lead - modify filter to view users within clinics
+  const stateClinicIds = location?.state?.clinicIds;
+  useEffect(() => {
+    if (stateClinicIds && stateClinicIds.length > 0) {
+      var tlCinics = clinics.filter(function (item) {
+        return stateClinicIds.indexOf(item.id) !== -1;
+      });
+      setClinicsFiltered(tlCinics);
+    }
+  }, [clinics, stateClinicIds]);
+
   const [subDistricts, setSubDistricts] =
     useState<SearchDropDownOption<string>[]>();
   const [subDistrictsFiltered, setSubDistrictsFiltered] = useState<
@@ -221,8 +232,8 @@ export default function HealthCareWorkers() {
     });
   };
 
-  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
-    variables: {
+  const queryVariables = useMemo(
+    () => ({
       search: '',
       clinicSearch: filteredClinics,
       provinceSearch: filteredProvinces,
@@ -238,9 +249,27 @@ export default function HealthCareWorkers() {
           insertedDate: 'DESC',
         },
       ],
-    },
+    }),
+    [
+      filteredAppActivity,
+      filteredClinics,
+      filteredConnectUsage,
+      filteredProvinces,
+      filteredSubDistricts,
+    ]
+  );
+
+  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
+    variables: queryVariables,
     fetchPolicy: 'network-only',
   });
+
+  useEffect(() => {
+    history.replace({
+      pathname: location.pathname,
+      state: { queryVariables: queryVariables } as HealthCareWorkerRouteState,
+    });
+  }, [history, location.pathname, queryVariables]);
 
   const { data: clinicData, loading: loadingClinics } = useQuery(
     GetAllPortalClinics,
@@ -483,40 +512,6 @@ export default function HealthCareWorkers() {
     tableRef?.current?.resetSelectedRows();
   };
 
-  const ColumnStatusIndicator = ({ icon, iconColor, text }) => (
-    <div className="flex items-center gap-0.5">
-      <div>
-        {React.createElement(icon, { className: `${iconColor} h-5 w-5` })}
-      </div>
-      <span className={iconColor}>{text}</span>
-    </div>
-  );
-
-  const columnColor = (value?: string) => {
-    const iconMapping = {
-      [ConnectUsage?.InvitationActive]: {
-        icon: ClockIcon,
-        color: 'text-infoMain',
-      },
-      [ConnectUsage?.InvitationExpired]: {
-        icon: XCircleIcon,
-        color: 'text-alertMain',
-      },
-      'Removed:': { icon: XCircleIcon, color: 'text-alertMain' },
-      default: { icon: CheckCircleIcon, color: 'text-successMain' },
-    };
-
-    const firstWord = value?.split(' ')[0];
-    const key = Object.hasOwn(iconMapping, value)
-      ? value
-      : firstWord === 'Removed:'
-      ? 'Removed:'
-      : 'default';
-    const { icon, color } = iconMapping[key];
-
-    return <ColumnStatusIndicator icon={icon} iconColor={color} text={value} />;
-  };
-
   const columns: Icolumn[] = [
     {
       field: 'displayColumnIdPassportEmail',
@@ -544,6 +539,7 @@ export default function HealthCareWorkers() {
     (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
       (item) => ({
         ...item,
+        key: item?.id,
         displayColumnIdPassportEmail:
           item?.user?.userName ?? item?.idNumber ?? item?.user?.email ?? '-',
         fullName: `${item?.user?.firstName} ${item?.user?.surname}`,

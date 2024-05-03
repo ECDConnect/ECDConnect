@@ -1,24 +1,23 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using HotChocolate;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System;
-using ECDLink.Security.Extensions;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using System.Linq;
-using ECDLink.DataAccessLayer.Entities.Leagues;
-using ECDLink.DataAccessLayer.Entities;
-using EcdLink.Api.CoreApi.Services.Interfaces;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
-using ECDLink.Abstractrions.Constants;
-using ECDLink.Security;
+using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Managers;
-using NPOI.SS.Formula.Functions;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security;
+using ECDLink.Security.Extensions;
+using HotChocolate;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -390,6 +389,27 @@ namespace EcdLink.Api.CoreApi.Services
                 return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
             }
 
+        }
+
+        public List<PortalLeagueModel> GetLeaguesForTeamLead(Guid teamLeadUserId)
+        {
+            var leagueStartDate = LeagueHelpers.GetCurrentSeasonStartDate();
+            var leagueEndDate = LeagueHelpers.GetCurrentSeasonEndDate();
+
+            var clinics = _clinicRepo.GetAll().Where(x => x.IsActive && x.TeamLeads.Any(y => y.TeamLead.UserId == teamLeadUserId)).ToList();
+            var leagues = clinics
+                          .SelectMany(x => x.Leagues)
+                          .Where(x => x.IsActive && x.League.StartDate >= leagueStartDate && x.League.EndDate <= leagueEndDate)
+                          .Select(x => x.League).Distinct().ToList();
+            return leagues.Select(x => new PortalLeagueModel
+                            {
+                                Id = x.Id,
+                                Name = x.Name,
+                                InsertedDate = x.InsertedDate,
+                                LeagueTypeId = x.LeagueTypeId,
+                                LeagueTypeName = x.LeagueType.Name,
+                                Clinics = x.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name }).ToList()
+                            }).Distinct().ToList();
         }
     }
 }
