@@ -23,13 +23,9 @@ export const ContactInformation: React.FC<
 > = ({ onSubmit, details }) => {
   const {
     getValues: getMomContactInformationFormValues,
-    // formState: momContactInformationFormState,
-    // setValue: setMomContactInformationFormValue,
+    setValue: setMomContactInformationFormValue,
     register: consentFormRegister,
-    // reset: resetMomContactInformationFormValue,
     control: momContactInformationControl,
-    watch,
-    clearErrors,
   } = useForm<PregnantContactInformationModel>({
     resolver: yupResolver(pregnantContactInformationModelSchema),
     mode: 'onBlur',
@@ -37,8 +33,9 @@ export const ContactInformation: React.FC<
     reValidateMode: 'onChange',
   });
 
-  const { errors } = useFormState({ control: momContactInformationControl });
-  const { whatsapp, cellphone } = watch();
+  const { errors, isValid } = useFormState({
+    control: momContactInformationControl,
+  });
 
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 
@@ -80,7 +77,7 @@ export const ContactInformation: React.FC<
             <ButtonGroup<boolean>
               options={yesNoOptions}
               onOptionSelected={(value: boolean | boolean[]) => {
-                clearErrors();
+                setMomContactInformationFormValue('whatsapp', '');
                 setHasWhatsapp(value);
               }}
               color="secondary"
@@ -115,10 +112,7 @@ export const ContactInformation: React.FC<
           onClick={() => {
             onSubmit(getMomContactInformationFormValues());
           }}
-          disabled={
-            !!Object.keys(errors).length ||
-            (!!hasWhatsapp ? !cellphone : !whatsapp || !cellphone)
-          }
+          disabled={!isValid}
         />
       </div>
     </>
