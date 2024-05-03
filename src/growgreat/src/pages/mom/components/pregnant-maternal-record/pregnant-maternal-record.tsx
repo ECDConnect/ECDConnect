@@ -55,7 +55,14 @@ export const PregnantMaternalCaseRecord: React.FC<
   });
 
   const [hasMaternalCaseRecord, setHasMaternalCaseRecord] = useState<boolean>();
-  const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
+  const acceptedFormats = ['jpg', 'pdf', 'jpeg', 'png', 'heic', 'heif'];
+  const acceptedMimeFormats = [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/heic',
+    'image/heif',
+  ];
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
   const [photoActionBarVisible, setPhotoActionBarVisible] =
@@ -349,6 +356,7 @@ export const PregnantMaternalCaseRecord: React.FC<
         stretch
       >
         <PhotoPrompt
+          acceptedMimeFormats={acceptedMimeFormats}
           hideEmojiOption
           title="Maternal case record form"
           onClose={() => setPhotoActionBarVisible(false)}

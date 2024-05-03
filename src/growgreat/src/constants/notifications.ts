@@ -16,6 +16,9 @@ interface NotificationTagConfigParams {
   SeeScoreBoard: Partial<Message>;
   SeePoints: Partial<Message>;
   RoadToHealthBook: Partial<Message>;
+  SassaReferral: Partial<Message>;
+  HomeAffairsReferral: Partial<Message>;
+  MaternalDistressReferral: Partial<Message>;
 }
 
 export const notificationTagConfig: NotificationTagConfigParams = {
@@ -34,6 +37,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   RedAlertReferralMother: {
     cta: 'SeeReferralsRedAlertMother',
   },
+  MaternalDistressReferral: {
+    cta: 'SeeReferralsMaternalDistress',
+  },
   RedAlertReferralInfant: {
     cta: 'SeeReferralsRedAlertInfant',
   },
@@ -48,6 +54,12 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   ModerateChildMuacReferral: {
     cta: 'SeeReferralsChildMuacM',
+  },
+  SassaReferral: {
+    cta: 'SeeReferralsSassa',
+  },
+  HomeAffairsReferral: {
+    cta: 'SeeReferralsHomeAffairs',
   },
   RoadToHealthBook: {
     cta: 'RoadToHealth',

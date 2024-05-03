@@ -28,6 +28,13 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
     deleteDocument,
   } = useDocuments();
 
+  const acceptedMimeFormats = [
+    'image/jpeg',
+    'image/png',
+    'image/heic',
+    'image/heif',
+  ];
+
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const displayProfilePicturePrompt = () => {
@@ -134,6 +141,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
       >
         <div className={'p-4'}>
           <PhotoPrompt
+            acceptedMimeFormats={acceptedMimeFormats}
             title="Profile Photo"
             onClose={displayProfilePicturePrompt}
             onAction={picturePromtOnAction}
