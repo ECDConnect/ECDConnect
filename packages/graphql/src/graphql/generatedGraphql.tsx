@@ -735,6 +735,31 @@ export type BaseTeamLeadModel = {
   surname?: Maybe<Scalars['String']>;
 };
 
+export type BasicVisitModel = {
+  __typename?: 'BasicVisitModel';
+  actualVisitDate?: Maybe<Scalars['DateTime']>;
+  attended: Scalars['Boolean'];
+  comment?: Maybe<Scalars['String']>;
+  dueDate?: Maybe<Scalars['DateTime']>;
+  eventId?: Maybe<Scalars['UUID']>;
+  id: Scalars['UUID'];
+  isCancelled: Scalars['Boolean'];
+  orderDate?: Maybe<Scalars['DateTime']>;
+  plannedVisitDate: Scalars['DateTime'];
+  risk?: Maybe<Scalars['String']>;
+  startedDate?: Maybe<Scalars['DateTime']>;
+  visitType?: Maybe<BasicVisitTypeModel>;
+};
+
+export type BasicVisitTypeModel = {
+  __typename?: 'BasicVisitTypeModel';
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  name?: Maybe<Scalars['String']>;
+  normalizedName?: Maybe<Scalars['String']>;
+  order: Scalars['Int'];
+};
+
 export type BeCreativeUploadInput = {
   clubId: Scalars['UUID'];
   dateUploaded: Scalars['DateTime'];
@@ -6937,6 +6962,7 @@ export type Mutation = {
   removePractitioner: Scalars['Boolean'];
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
+  restartVisit?: Maybe<BasicVisitModel>;
   saveBulkMessagesForAdmin: Scalars['Boolean'];
   saveWelcomeMessage: Scalars['Boolean'];
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
@@ -9038,6 +9064,10 @@ export type MutationRemoveUserFromRolesArgs = {
 export type MutationResetUserPasswordArgs = {
   id?: InputMaybe<Scalars['String']>;
   newPassword?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationRestartVisitArgs = {
+  existingVisitId: Scalars['UUID'];
 };
 
 export type MutationSaveBulkMessagesForAdminArgs = {
@@ -13565,7 +13595,7 @@ export type Query = {
   infantCountForHealthCareWorkerForMonth: Scalars['Int'];
   infantSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
   infantSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
-  infantVisits?: Maybe<Array<Maybe<Visit>>>;
+  infantVisits?: Maybe<Array<Maybe<BasicVisitModel>>>;
   infographics: Array<Maybe<Infographics>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
   league?: Maybe<LeagueWithRankingsModel>;
@@ -13583,7 +13613,7 @@ export type Query = {
   motherCountForHealthCareWorkerForMonth: Scalars['Int'];
   motherSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
   motherSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
-  motherVisits?: Maybe<Array<Maybe<Visit>>>;
+  motherVisits?: Maybe<Array<Maybe<BasicVisitModel>>>;
   natalRecordsForType?: Maybe<Array<Maybe<PortalNatalModel>>>;
   onBoardTraineeTimeline?: Maybe<TraineeOnBoardTimeline>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
@@ -18878,6 +18908,7 @@ export type Visit = {
   insertedDate: Scalars['DateTime'];
   integrationSubmitDate?: Maybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
+  isCancelled: Scalars['Boolean'];
   linkedVisitId?: Maybe<Scalars['UUID']>;
   mother?: Maybe<Mother>;
   motherId?: Maybe<Scalars['UUID']>;
@@ -19203,6 +19234,7 @@ export type VisitFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   integrationSubmitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isCancelled?: InputMaybe<BooleanOperationFilterInput>;
   linkedVisitId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   mother?: InputMaybe<MotherFilterInput>;
   motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -19363,6 +19395,7 @@ export type VisitInput = {
   InfantId?: InputMaybe<Scalars['UUID']>;
   IntegrationSubmitDate?: InputMaybe<Scalars['DateTime']>;
   IsActive: Scalars['Boolean'];
+  IsCancelled: Scalars['Boolean'];
   LinkedVisitId?: InputMaybe<Scalars['UUID']>;
   Mother?: InputMaybe<MotherInput>;
   MotherId?: InputMaybe<Scalars['UUID']>;
@@ -19421,6 +19454,7 @@ export type VisitSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   integrationSubmitDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isCancelled?: InputMaybe<SortEnumType>;
   linkedVisitId?: InputMaybe<SortEnumType>;
   mother?: InputMaybe<MotherSortInput>;
   motherId?: InputMaybe<SortEnumType>;

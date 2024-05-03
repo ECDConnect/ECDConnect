@@ -26,6 +26,7 @@ import {
   getMotherById,
   getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
 
 export const yesNoOptions = [
   { text: 'Yes', value: true },
@@ -64,9 +65,9 @@ export const MotherBackReferralUpdate: React.FC<
   );
 
   const isToGetPreviousVisitStatusData =
-    !currentVisit?.attended &&
-    !currentVisit?.visitInProgress &&
-    previousVisit?.id;
+    (!currentVisit ||
+      (!currentVisit?.attended && isVisitInProgress(currentVisit))) &&
+    !!previousVisit;
 
   const selectedReferral = useMemo(() => {
     if (completedReferralsForMother) {

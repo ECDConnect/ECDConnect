@@ -3,22 +3,17 @@ export interface VisitDto {
   dueDate: string;
   actualVisitDate: string;
   attended: boolean;
-  visitInProgress: boolean;
+  isCancelled: boolean;
+  startedDate: string;
   plannedVisitDate: string;
-  insertedDate?: string;
   comment?: string;
   orderDate: string;
   visitType?: {
     description?: string;
     id?: string;
-    isActive: boolean;
     name?: string;
     normalizedName?: string;
     order: number;
-    type?: string;
-    updatedBy?: string;
-    insertedDate?: string;
-    updatedDate?: string;
   };
   eventId?: string;
 }

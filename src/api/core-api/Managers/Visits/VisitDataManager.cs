@@ -111,18 +111,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (input.VisitData.Sections == null)
             {
-                var _section = new CMSVisitSection();
-                _section.VisitSection = "";
+                var section = new CMSVisitSection();
+                section.VisitSection = "";
                 if (input.VisitData.VisitName == Constants.GGSettings.pillar3_db)
                 {
-                    _section.VisitSection = Constants.GGSettings.pillar3_section;
+                    section.VisitSection = Constants.GGSettings.pillar3_section;
                 }
-                _section.Questions = new List<CMSQuestion>();
-                var _question = new CMSQuestion();
-               _question.Question = "";
-               _question.Answer = "";
-               _section.Questions.Add(_question);
-               input.VisitData.Sections = new CMSVisitSection[] { _section };
+                section.Questions = new List<CMSQuestion>();
+                var question = new CMSQuestion();
+               question.Question = "";
+               question.Answer = "";
+               section.Questions.Add(question);
+               input.VisitData.Sections = new CMSVisitSection[] { section };
             }
 
             // Add visit data

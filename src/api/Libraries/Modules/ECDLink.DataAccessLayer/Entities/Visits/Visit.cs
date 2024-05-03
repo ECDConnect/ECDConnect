@@ -18,6 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public DateTime PlannedVisitDate { get; set; }
         public DateTime? ActualVisitDate { get; set; }
         public bool Attended { get; set; }
+        public bool IsCancelled { get; set; }
         public TKey VisitTypeId { get; set; }
         [ForeignKey(nameof(VisitTypeId))]
         public virtual VisitType VisitType { get; set; }

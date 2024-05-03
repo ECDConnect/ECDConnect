@@ -16,6 +16,7 @@ import {
 } from '@/store/infant/infant.selectors';
 import { useLocation } from 'react-router';
 import { RootState } from '@/store/types';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
 
 interface IntroScreenProps {
   infant?: InfantDto;
@@ -47,10 +48,11 @@ export const IntroScreen = ({
     getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
-  const date =
-    !currentVisit?.attended && !currentVisit?.visitInProgress
+  const lastVisitDate =
+    !currentVisit ||
+    (!currentVisit?.attended && isVisitInProgress(currentVisit))
       ? previousVisit?.actualVisitDate
-      : currentVisit.actualVisitDate || currentVisit?.insertedDate || '';
+      : currentVisit?.actualVisitDate || ''; // TODO - should find most recent completed visit
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
   return (
@@ -61,8 +63,8 @@ export const IntroScreen = ({
         title={headerText ?? `Summary of your last visit with ${name}`}
         subTitle={getAge(infant?.user?.dateOfBirth as string)}
         description={`Your last home visit: ${
-          !!date
-            ? new Date(String(date)).toLocaleDateString('en-ZA', {
+          !!lastVisitDate
+            ? new Date(String(lastVisitDate)).toLocaleDateString('en-ZA', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

@@ -49,6 +49,7 @@ import {
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationTagConfig } from '@/constants/notifications';
 import { Notification } from '@/store/notifications/notifications.types';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
 
 const HEADER_HEIGHT = 64;
 interface GroupedData {
@@ -167,9 +168,9 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const isToGetPreviousVisitStatusData =
-    !currentVisit?.attended &&
-    !currentVisit?.visitInProgress &&
-    previousVisit?.id;
+    (!currentVisit ||
+      (!currentVisit?.attended && isVisitInProgress(currentVisit))) &&
+    !!previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;

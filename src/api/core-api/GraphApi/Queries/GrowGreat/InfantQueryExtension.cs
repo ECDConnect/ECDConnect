@@ -13,7 +13,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,9 +120,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Visit> GetInfantVisits([Service] VisitManager visitManager, string id)
+        public List<BasicVisitModel> GetInfantVisits([Service] VisitManager visitManager, string id)
         {
-            return visitManager.GetVisitsForClient(id, Constants.GGSettings.client_child);
+            var visits =  visitManager.GetVisitsForClient(id, Constants.GGSettings.client_child);
+
+            var visitModels = visits.Select(x => new BasicVisitModel
+            {
+                Id = x.Id,
+                Attended = x.Attended,
+                IsCancelled = x.IsCancelled,
+                ActualVisitDate = x.ActualVisitDate,
+                PlannedVisitDate = x.PlannedVisitDate,
+                Comment = x.Comment,
+                DueDate = x.DueDate,
+                EventId = x.EventId,
+                OrderDate = x.OrderDate,
+                Risk = x.Risk,
+                StartedDate = x.VisitData == null || !x.VisitData.Any()
+                    ? null 
+                    : x.VisitData.OrderBy(x => x.InsertedDate).First().InsertedDate,
+                VisitType = new BasicVisitTypeModel
+                {
+                    Id = x.VisitType.Id,
+                    Description = x.VisitType.Description,
+                    Name = x.VisitType.Name,
+                    NormalizedName = x.VisitType.NormalizedName,
+                    Order = x.VisitType.Order,
+                }
+            });
+
+            return visitModels.ToList();
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

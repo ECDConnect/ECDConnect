@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using Castle.Core.Logging;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -424,34 +425,50 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public List<Visit> GetVisitsForClient(string id, string type)
         {
-
             List<Visit> allVisits = new List<Visit>();
             if (type == Constants.GGSettings.client_mother)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id && x.VisitType.Type == Constants.GGSettings.client_mother).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll()
+                    .Where(x => 
+                        x.Mother.UserId.ToString() == id 
+                        && x.IsActive
+                        && x.VisitType.Type == Constants.GGSettings.client_mother)
+                    .ToList();
             }
             else if (type == Constants.GGSettings.client_child)
             {
                 // returning visits only applicable after infant was registered
-                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
-                                                      x.VisitType.Type == Constants.GGSettings.client_child &&
-                                                      x.VisitType.Name != Constants.GGSettings.VisitTypeAdditionalVisit &&
-                                                     (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
-                                                     OrderBy(y => y.PlannedVisitDate).ToList();
-                var other_visits_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
-                                                                 x.VisitType.Type == Constants.GGSettings.client_child &&
-                                                                 x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit &&
-                                                                (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
-                                                                OrderBy(y => y.PlannedVisitDate).ToList();
-                var other_visits_no_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
-                                                                 x.VisitType.Type == Constants.GGSettings.client_child &&
-                                                                 x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit && x.DueDate.HasValue == false &&
-                                                                (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date)).
-                                                                OrderBy(y => y.PlannedVisitDate).ToList();
+                var childVisits = _visitRepo.GetAll()
+                    .Where(x => 
+                        x.Infant.UserId.ToString() == id 
+                        && x.IsActive
+                        && x.VisitType.Type == Constants.GGSettings.client_child 
+                        && x.VisitType.Name != Constants.GGSettings.VisitTypeAdditionalVisit 
+                        && (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date))
+                    .ToList();
 
-                allVisits.AddRange(child_visits);
-                allVisits.AddRange(other_visits_due_date);
-                allVisits.AddRange(other_visits_no_due_date);
+                var otherVisitsDueDate = _visitRepo.GetAll()
+                    .Where(x => 
+                        x.Infant.UserId.ToString() == id
+                        && x.IsActive
+                        && x.VisitType.Type == Constants.GGSettings.client_child 
+                        && x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit 
+                        && (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date))
+                    .ToList();
+
+                var otherVisitsNoDueDate = _visitRepo.GetAll()
+                    .Where(x => 
+                        x.Infant.UserId.ToString() == id
+                        && x.IsActive
+                        && x.VisitType.Type == Constants.GGSettings.client_child 
+                        && x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit 
+                        && !x.DueDate.HasValue
+                        && (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date))
+                    .ToList();
+
+                allVisits.AddRange(childVisits);
+                allVisits.AddRange(otherVisitsDueDate);
+                allVisits.AddRange(otherVisitsNoDueDate);
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
@@ -466,16 +483,22 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 allVisits = _visitRepo.GetAll().Where(x => x.Coach.UserId.ToString() == id && x.VisitType.Type == Constants.SSSettings.client_coach).OrderBy(y => y.PlannedVisitDate).ToList();
             }
 
-            foreach (var _visit in allVisits)
+            foreach (var visit in allVisits)
             {
                 // Adding this 1 day to match the next visit's planned date.
-                _visit.DueDate = _visit.DueDate != null ? _visit.DueDate.Value.Date.AddDays(1) : _visit.PlannedVisitDate;
+                visit.DueDate = visit.DueDate != null ? visit.DueDate.Value.Date.AddDays(1) : visit.PlannedVisitDate;
 
-                if (_visit.Attended == false)
+                if (visit.Attended == false)
                 {
-                    _visit.VisitInProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
+                    visit.VisitInProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == visit.Id).Count() > 0;
                 }
-                _visit.OrderDate = _visit.DueDate != null ? _visit.DueDate.Value.Date : _visit.PlannedVisitDate;
+
+                // Order by started date if any visit data added, otherwise due date or planned date
+                visit.OrderDate = visit.VisitData != null && visit.VisitData.Any()
+                    ? visit.VisitData.OrderBy(x => x.InsertedDate).First().InsertedDate
+                    : visit.DueDate != null 
+                        ? visit.DueDate.Value.Date 
+                        : visit.PlannedVisitDate;
             }
 
             var additional_visits = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit).ToList();
@@ -1585,6 +1608,41 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
             return true;
+        }
+
+        public Visit RestartVisit(Guid existingVisitId)
+        {
+            var exisitngVisit = _visitRepo.GetById(existingVisitId);
+
+            if (exisitngVisit == null || exisitngVisit.Attended || (exisitngVisit.DueDate.HasValue && exisitngVisit.DueDate.Value < DateTime.Now))
+            {
+                throw new ArgumentException("Invalid visit to restart");
+            }
+
+            var newVisit = new Visit()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                Attended = false,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                PlannedVisitDate = exisitngVisit.PlannedVisitDate,
+                DueDate = exisitngVisit.DueDate,
+                VisitTypeId = exisitngVisit.VisitType.Id,
+                MotherId = exisitngVisit.MotherId,
+                InfantId = exisitngVisit.InfantId,
+                Risk = exisitngVisit.Risk,
+                Comment = exisitngVisit.Comment,
+                UpdatedBy = _applicationUserId.ToString(),
+                LinkedVisitId = existingVisitId
+            };
+
+            var insertedVisit = _visitRepo.Insert(newVisit);
+
+            exisitngVisit.IsCancelled = true;
+            _visitRepo.Update(exisitngVisit);
+
+            return insertedVisit;
         }
         
         public Visit UpdateVisitPlannedVisitDate(UpdateVisitPlannedVisitDateModel input)
