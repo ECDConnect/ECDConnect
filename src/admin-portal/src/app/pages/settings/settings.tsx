@@ -2,21 +2,9 @@ import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { SettingsRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
-
-const navigation = [
-  {
-    name: 'Theme',
-    href: '/settings/theme',
-  },
-  {
-    name: 'General',
-    href: '/settings/general',
-  },
-  {
-    name: 'Portal Navigation Setup',
-    href: '/settings/navigation',
-  },
-];
+import { useApolloClient } from '@apollo/client';
+import { GetTenantContext, TenantModel } from '@ecdlink/graphql';
+import { TenantContext } from '../../utils/constants';
 
 export interface SettingsRouteState {
   overrideDefaultUrl?: string;
@@ -27,6 +15,36 @@ export function Settings() {
   const overrideDefaultUrl = location?.state?.overrideDefaultUrl;
 
   const history = useHistory();
+
+  const apolloClient = useApolloClient();
+
+  const data =
+    apolloClient.readQuery<{ tenantContext?: TenantModel }>({
+      query: GetTenantContext,
+    }) || {};
+
+  const isGrowGreatTenant =
+    data?.tenantContext.applicationName === TenantContext.GrowGreat;
+
+  const navigation = [
+    {
+      name: 'Theme',
+      href: '/settings/theme',
+    },
+    ...(isGrowGreatTenant
+      ? []
+      : [
+          {
+            name: 'General',
+            href: '/settings/general',
+          },
+          {
+            name: 'Portal Navigation Setup',
+            href: '/settings/navigation',
+          },
+        ]),
+  ];
+
   useEffect(() => {
     async function init() {
       if (!overrideDefaultUrl) history.push(navigation?.[0]?.href);
