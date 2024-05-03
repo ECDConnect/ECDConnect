@@ -1,3 +1,4 @@
+using DotLiquid.Util;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.ContentManagement.Entities;
 using ECDLink.Core.Caching.Configuration;
@@ -163,7 +164,7 @@ namespace ECDLink.ContentManagement.Repositories
 
             object result;
 
-            var key = string.Format("Content.{0}.{1}..Id.{3}", currentTenant, localeId, contentId);
+            var key = string.Format("Content.{0}.{1}..Id.{2}", currentTenant, localeId, contentId);
             if (!_memoryCache.TryGetValue<object>(key, out result))
             {
                 // Try get tenant data
@@ -195,6 +196,12 @@ namespace ECDLink.ContentManagement.Repositories
                     _logger.LogWarning(errorMessage, contentId);
                 }
 
+                var contentValuesList = content.ContentValues
+                                .Where(x => x.LocaleId == localeId
+                                    && x.TenantId == currentTenant)
+                                .OrderBy(x => x.ContentTypeField?.FieldOrder)
+                                .ToList();
+
                 var contentValues = content.ContentValues
                                 .Where(x => x.LocaleId == localeId
                                     && x.TenantId == currentTenant)
@@ -202,6 +209,8 @@ namespace ECDLink.ContentManagement.Repositories
                                 .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
 
                 contentValues.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
+                contentValues.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
+                
 
                 result = contentValues.ToObject();
 
