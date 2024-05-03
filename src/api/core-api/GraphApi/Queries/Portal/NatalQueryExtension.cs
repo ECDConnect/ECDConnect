@@ -77,7 +77,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         var childContentTypeId = contentType.Id.ToString();
 
                         var childData = contentRepo.GetById(int.Parse(childId), engId);
-                        
                         var child = (IDictionary<string, object>)childData;
                         child.TryGetValue("availableLanguages", out var availableLanguagesValue);
                         child.TryGetValue("updatedDate", out var updatedDateValue);
