@@ -26,23 +26,25 @@ export const DangerSignsStep = ({
   setIsTip,
 }: DynamicFormProps) => {
   const [currentOption, setCurrentOption] = useState<string>();
+  const [currentId, setCurrentId] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
   const dialog = useDialog();
   const noneOption = 'None of the above';
 
   const options = [
-    { name: 'Not feeling physically well' },
-    { name: 'Abdominal pain' },
-    { name: 'Heavy bleeding' },
+    { name: 'Not feeling physically well', id: 'dangerSignA' },
+    { name: 'Abdominal pain', id: 'dangerSignB' },
+    { name: 'Heavy bleeding', id: 'dangerSignC' },
     {
       name: 'Feeling too hot or too cold',
       description: 'A temperature above 37.5 degrees suggests an infection.',
+      id: 'dangerSignD',
     },
-    { name: 'Offensive or bad-smelling vaginal fluid' },
-    { name: 'Unable to manage the baby' },
-    { name: 'High stress' },
-    { name: 'Problems with breastfeeding' },
-    { name: noneOption },
+    { name: 'Offensive or bad-smelling vaginal fluid', id: 'dangerSignE' },
+    { name: 'Unable to manage the baby', id: 'dangerSignF' },
+    { name: 'High stress', id: 'dangerSignG' },
+    { name: 'Problems with breastfeeding', id: 'dangerSignH' },
+    { name: noneOption, id: 'dangerSignI' },
   ];
 
   const [optionList, setOptionList] = useState<
@@ -177,7 +179,8 @@ export const DangerSignsStep = ({
         <Translations
           toTranslate={currentOption}
           onClose={() => setIsTip && setIsTip(false)}
-          section={dangerSignsVisitSection}
+          section={'Care for mom - postnatal'}
+          id={currentId || ''}
         />
       </Dialog>
     );
@@ -224,6 +227,7 @@ export const DangerSignsStep = ({
                   className="ml-auto"
                   onClick={() => {
                     setCurrentOption(item.name);
+                    setCurrentId(item.id);
                     setIsTip?.(true);
                   }}
                 >

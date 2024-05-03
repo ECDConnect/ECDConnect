@@ -141,3 +141,19 @@ export const AddClinicToLeague = gql`
     addClinicToLeague(leagueId: $leagueId, clinicId: $clinicId)
   }
 `;
+
+export const GetLeaguesForTeamLead = gql`
+  query GetLeaguesForTeamLead($teamLeadUserId: UUID!) {
+    leaguesForTeamLead(teamLeadUserId: $teamLeadUserId) {
+      id
+      name
+      leagueTypeId
+      leagueTypeName
+      insertedDate
+      clinics {
+        id
+        name
+      }
+    }
+  }
+`;

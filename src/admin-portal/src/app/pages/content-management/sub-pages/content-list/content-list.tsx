@@ -390,7 +390,7 @@ export default function ContentList({
     (item?: any) => {
       if (selectedTab === 2 || selectedTab === 3) {
         const selecteditem = natalData?.natalRecordsForType?.find((record) => {
-          return record?.title === item?.title;
+          return record?.childId === item?.childId;
         });
         const currentType = dataTypes.contentTypes.find(
           (x: ContentTypeDto) =>
@@ -402,7 +402,6 @@ export default function ContentList({
           content: selecteditem,
           languageId: languageId,
         };
-
         viewContent(model);
 
         return;
@@ -412,6 +411,7 @@ export default function ContentList({
       );
       setSelectedType(currentType);
       setNatalType(Number(item?.childContentTypeId));
+
       const model: ContentManagementView = {
         content: item,
         languageId: languageId,
@@ -562,6 +562,7 @@ export default function ContentList({
     natalData?.natalRecordsForType &&
     natalDataFiltered &&
     filteredData?.map((item) => ({
+      childId: item?.childId,
       title: item?.title,
       section: item?.section,
       availableLanguages: (
@@ -572,7 +573,7 @@ export default function ContentList({
             );
             return (
               <div
-                key={`language_` + item?.id}
+                key={`language_` + item}
                 className={' text-textMid m-1 rounded-full py-1 text-xs'}
               >
                 {index === item?.availableLanguages?.length - 1

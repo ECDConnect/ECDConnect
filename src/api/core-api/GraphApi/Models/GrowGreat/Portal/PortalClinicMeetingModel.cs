@@ -10,7 +10,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         {
         }
 
-        public PortalClinicMeetingModel(ClinicMeeting clinicMeeting)
+        public PortalClinicMeetingModel(ClinicMeeting clinicMeeting, MeetingTopic meetingTopic)
         {
             SetMeetingParticipantsOptedOut(clinicMeeting.ParticipantsOptedOut);
             SetMeetingParticipantsInField(clinicMeeting.ParticipantsInField);
@@ -26,6 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             ClinicId = clinicMeeting.ClinicId;
             ClinicName = clinicMeeting.Clinic.Name;
             DateSubmitted = clinicMeeting.InsertedDate;
+            MeetingTopic = meetingTopic;
         }
 
         private void SetMeetingParticipantsOptedOut(ICollection<ClinicMeetingParticipantOptedOut> participantsOptedOut)
@@ -69,6 +70,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public Guid ClinicId { get; set; }
         public string ClinicName { get; set; }
         public DateTime DateSubmitted { get; set; }
+        public MeetingTopic MeetingTopic { get; set; }
     }
 
     public class Participant
@@ -76,5 +78,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public Guid HCWId { get; set; }
         public string HCWName { get; set; }
 
+    }
+
+    public class MeetingTopic 
+    {
+        public string Title { get; set; }
+        public string TopicTitle { get; set; }
+        public string TopicContent { get; set; }
+        public string InfoGraphic { get; set; }
+        public string KnowledgeContent { get; set; }
+        public string SelfCareContent { get; set; }
     }
 }

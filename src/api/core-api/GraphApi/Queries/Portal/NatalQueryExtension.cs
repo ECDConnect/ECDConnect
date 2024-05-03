@@ -18,8 +18,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            Guid localeId)
         {
             List<PortalNatalModel> results = new List<PortalNatalModel>();
-            var allNatal = contentRepo.GetAll(contentTypeId, localeId);
-            var natalTypeId = natalType.ToLower() == "postnatal" ? GetPostnatalId(contentRepo, localeId) : GetAntenatalId(contentRepo, localeId);
+            var engId = Guid.Parse("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            var allNatal = contentRepo.GetAll(contentTypeId, engId);
+            var natalTypeId = natalType.ToLower() == "postnatal" ? GetPostnatalId(contentRepo, engId) : GetAntenatalId(contentRepo, engId);
 
             foreach (var natalItem in allNatal)
             {
@@ -30,8 +31,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 {
                     natal.TryGetValue("title", out var titleValue);
                     natal.TryGetValue("section", out var sectionValue);
-                    natal.TryGetValue("availableLanguages", out var languagesValue);
-                    natal.TryGetValue("updatedDate", out var updatedDateValue);
 
                     natal.TryGetValue("info", out var infoValue);
                     natal.TryGetValue("video", out var videoValue);
@@ -40,8 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                     var title = Convert.ToString(titleValue);
                     var section = Convert.ToString(sectionValue);
-                    var languages = Convert.ToString(languagesValue);
-                    var updatedDate = Convert.ToDateTime(updatedDateValue);
+                    
                     var childType = "";
                     var childId = "";
 
@@ -71,14 +69,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                          childType = "Health promotion";
                          childId = health;
                     }
-                    
+
                     var contentType = contentRepo.GetContentTypeForContentId(int.Parse(childId));
                     if (contentType != null)
                     {
                         var childContentTypeName = contentType.Name;
                         var childContentTypeId = contentType.Id.ToString();
-                        var availableLanguages = languages.Split(",").ToList();
 
+                        var childData = contentRepo.GetById(int.Parse(childId), engId);
+                        var child = (IDictionary<string, object>)childData;
+                        child.TryGetValue("availableLanguages", out var availableLanguagesValue);
+                        child.TryGetValue("updatedDate", out var updatedDateValue);
+
+                        var availableLanguages = Convert.ToString(availableLanguagesValue).Split(",").ToList();
+                        var updatedDate = Convert.ToDateTime(updatedDateValue);
+                        
                         results.Add(new PortalNatalModel(title, section, availableLanguages, childType, childId, updatedDate, childContentTypeName, childContentTypeId));
                     }
                 }

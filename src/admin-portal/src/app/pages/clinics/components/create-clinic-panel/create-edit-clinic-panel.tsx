@@ -271,7 +271,7 @@ export const CreateClinicPanel = (props: ClinicPanelCreateProps) => {
       siteAddressId: watchFields?.siteAddressId || siteAddressId,
       teamLead1Id: watchFields?.teamLeadOne,
       teamLead2Id:
-        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : '',
+        watchFields?.teamLeadTwo !== '1' ? watchFields?.teamLeadTwo : null,
     };
 
     const clinicInputModel = {

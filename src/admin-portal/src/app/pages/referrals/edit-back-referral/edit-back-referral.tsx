@@ -25,11 +25,13 @@ import { useMutation } from '@apollo/client';
 import { AddVisitBackReferralAdminComment } from '@ecdlink/graphql';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
+import { useUserRole } from '../../../hooks/useUserRole';
 
 export const EditBackReferral = () => {
   const { visitDataStatusId, referralType } = useParams<
     EditBackReferralRouteParams & ViewReferralDetailRouteParams
   >();
+  const { isTeamLead, isAdministrator, isSuperAdmin } = useUserRole();
 
   const { state } = useLocation<EditBackReferralRouteState>();
 
@@ -192,22 +194,24 @@ export const EditBackReferral = () => {
           text={`${referral?.client ?? ''} - referral`}
           color="textDark"
         />
-        <Button
-          type="filled"
-          color="errorBg"
-          textColor="tertiary"
-          text="Cancel"
-          icon="XIcon"
-          className="rounded-xl p-2 shadow-none hover:opacity-80"
-          isLoading={addingComment}
-          disabled={addingComment}
-          onClick={onCancel}
-        />
+        {isTeamLead && (
+          <Button
+            type="filled"
+            color="errorBg"
+            textColor="tertiary"
+            text="Cancel"
+            icon="XIcon"
+            className="rounded-xl p-2 shadow-none hover:opacity-80"
+            isLoading={addingComment}
+            disabled={addingComment}
+            onClick={onCancel}
+          />
+        )}
       </div>
       <div className="gap-2 rounded-xl bg-white p-12">
         <Typography
           type="h2"
-          text="Details"
+          text="Team Lead back-referral note:"
           color="textDark"
           className="mb-4"
         />
@@ -225,34 +229,62 @@ export const EditBackReferral = () => {
           </div>
         ))}
         <Divider className="my-8" dividerType="dashed" />
-        <Typography
-          type="h2"
-          text="Add a note to this back-referral"
-          color="textDark"
-        />
-        <FormInput
-          textInputType="textarea"
-          className="mt-4"
-          label="Add note *"
-          hint="Add more information about the referral."
-          value={comment}
-          onChange={(e) => {
-            setIsCommentSaved(false);
-            setComment(e.target.value);
-          }}
-        />
+        {(isAdministrator || isSuperAdmin) && (
+          <div className="flex items-center gap-2">
+            <Typography
+              type="h4"
+              text="Team Lead back-referral note:"
+              color="textDark"
+            />
+            <Typography type="body" text={comment} color="textDark" />
+          </div>
+        )}
+        {isTeamLead && (
+          <>
+            <Typography
+              type="h2"
+              text="Add a note to this back-referral"
+              color="textDark"
+            />
+            <FormInput
+              textInputType="textarea"
+              className="mt-4"
+              label="Add note *"
+              hint="Add more information about the referral."
+              value={comment}
+              onChange={(e) => {
+                setIsCommentSaved(false);
+                setComment(e.target.value);
+              }}
+            />
+          </>
+        )}
       </div>
-      <Button
-        type="filled"
-        color="secondary"
-        textColor="white"
-        text="Save"
-        icon="SaveIcon"
-        className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
-        isLoading={addingComment}
-        disabled={addingComment || !comment || isCommentSaved}
-        onClick={onSave}
-      />
+      {(isAdministrator || isSuperAdmin) && (
+        <Button
+          type="filled"
+          color="secondary"
+          textColor="white"
+          text="Back to referrals"
+          icon="ArrowCircleLeftIcon"
+          className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
+          isLoading={addingComment}
+          onClick={onBack}
+        />
+      )}
+      {isTeamLead && (
+        <Button
+          type="filled"
+          color="secondary"
+          textColor="white"
+          text="Save"
+          icon="SaveIcon"
+          className="my-8 w-full rounded-xl p-2 shadow-none hover:opacity-80 md:w-72"
+          isLoading={addingComment}
+          disabled={addingComment || !comment || isCommentSaved}
+          onClick={onSave}
+        />
+      )}
     </div>
   );
 };

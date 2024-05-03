@@ -1,6 +1,5 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -41,7 +40,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var clinics = _clinicRepo.GetAll().Where(x => x.IsActive).ToList();
             var prevMonth = DateTime.Now.AddMonths(-1);
-            var expireDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 8);
+            var expireDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 7);
 
             foreach (var clinic in clinics)
             {
@@ -65,10 +64,16 @@ namespace EcdLink.Api.CoreApi.Services
                             {
                                 FindValue = "ClinicName",
                                 ReplacementValue = clinic.Name
+                            },
+                            new TagsReplacements()
+                            {
+                                FindValue = "ClinicId",
+                                ReplacementValue = clinic.Id.ToString()
                             }
                         };
                         // When the deadline has passed(ie on 00:01 of the 8th of the month)
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalTLMissingMonthlyReport, DateTime.Now.Date, teamLead.TeamLead.User, "", MessageStatusConstants.Amber, replacements, expireDate, false, false, null, clinic.Id.ToString());
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalTLMissingMonthlyReport, DateTime.Now.Date, teamLead.TeamLead.User, "", MessageStatusConstants.Amber, replacements, expireDate, false, false, null, 
+                            new List<RelatedEntity> { new RelatedEntity(clinic.Id, "Clinic") });
                     }
 
                 }

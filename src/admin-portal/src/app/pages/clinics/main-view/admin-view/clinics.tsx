@@ -31,11 +31,11 @@ export function ClinicsAdminView() {
         },
         {
           name: 'Districts',
-          href: '/clinics/districts',
+          href: ROUTES.CLINICS.DISTRICTS,
         },
         {
           name: 'Sub-districts',
-          href: '/clinics/sub-districts',
+          href: ROUTES.CLINICS.SUB_DISTRICTS,
         },
       ];
     }
@@ -48,6 +48,7 @@ export function ClinicsAdminView() {
   const routesToHideSubNavigation = [
     ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT,
     ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT,
+    ROUTES.CLINICS.VIEW_CLINICS,
   ];
 
   const isToHideSubNavigation = routesToHideSubNavigation.some((route) =>
@@ -57,7 +58,14 @@ export function ClinicsAdminView() {
   useEffect(() => {
     // GO TO DEFAULT ROUTE
     async function init() {
-      history.push(navigation?.[0]?.href);
+      const isValidRoute =
+        getNavigationItems()?.some(
+          (route) => route.href === location.pathname
+        ) || location.pathname === ROUTES.CLINICS.VIEW_CLINICS;
+
+      if (!isValidRoute) {
+        history.push(navigation?.[0]?.href);
+      }
     }
 
     init()?.catch(console.error);

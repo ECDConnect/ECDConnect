@@ -1,5 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using ECDLink.Abstractrions.Constants;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -17,14 +19,18 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
         private IGenericRepositoryFactory _repoFactory;
         private InfantManager _infantManger;
 
+        private readonly INotificationService _notificationService;
+
         public EventRecordManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            InfantManager infantManager)
+            InfantManager infantManager,
+            [Service] INotificationService notificationService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _infantManger = infantManager;
+            _notificationService = notificationService;
         }
 
         //
@@ -179,6 +185,8 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             Mother mother = repository.GetById(Guid.Parse(motherId));
             mother.IsActive = false;
             repository.Update(mother);
+
+            _notificationService.DeleteGroupNotifications(TemplateTypeConstants.DuplicateMotherAdded, mother.Id);
         }
 
         private void ArchiveInfant(string infantId)
@@ -188,8 +196,9 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             Infant infant = repository.GetById(Guid.Parse(infantId));
             infant.IsActive = false;
             repository.Update(infant);
-        }
 
+            _notificationService.DeleteGroupNotifications(TemplateTypeConstants.DuplicateChildAdded, infant.Id);
+        }
     }
 }
 

@@ -16,10 +16,11 @@ import { useApolloClient, useQuery } from '@apollo/client';
 import { PortalLeagueDto, useDialog, usePanel } from '@ecdlink/core';
 import { Clinic, GetAllPortalClinics, GetLeagues } from '@ecdlink/graphql';
 import { format } from 'date-fns';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LeagueDetailsRouteState } from './league-details/types';
 import { LeagueSeasonRouteState } from '../types';
 import { AssignClinicsToALeague } from './components/assign-clinics-to-a-league';
+import { checkIfIsNextSeasonManagement } from '../../utils';
 // import { checkIfIsNextSeasonManagement } from '../../utils';
 
 export const LeaguePerformance = () => {
@@ -32,6 +33,12 @@ export const LeaguePerformance = () => {
   const history = useHistory();
 
   const { state } = useLocation<LeagueSeasonRouteState>();
+
+  useEffect(() => {
+    if (!state) {
+      history.replace(ROUTES.CLINICS.LEAGUES.ROOT);
+    }
+  }, [history, state]);
 
   const panel = usePanel();
 
@@ -56,8 +63,7 @@ export const LeaguePerformance = () => {
     .toISOString()
     .replace('Z', '');
 
-  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
-  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ false;
+  const isNextSeasonManagement = checkIfIsNextSeasonManagement();
 
   const clinics = apolloClient.readQuery<{ allPortalClinics?: Clinic[] }>({
     query: GetAllPortalClinics,
@@ -178,8 +184,6 @@ export const LeaguePerformance = () => {
         league?.clinics?.some((leagueClinic) => leagueClinic.id === clinic.id)
       ) && !!clinic.isActive
   );
-  // TODO: remove this slice after the tests
-  // ?.slice(0, 2);
 
   const districtsFilterOptions = useMemo(() => {
     const seenDistrictIds = new Set();

@@ -1,6 +1,7 @@
 export enum UsersRouteRedirectTypeEnum {
   chw = 'chw',
   teamLeads = 'team-leads',
+  admins = 'Administrator',
 }
 
 export enum UsersRolesTypeEnum {

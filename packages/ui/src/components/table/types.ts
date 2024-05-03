@@ -38,6 +38,10 @@ interface Loading extends LoadingSpinnerProps {
 }
 
 export interface TableProps {
+  /**
+   * Indicates whether the component should watch modifications on list elements for efficient updating.
+   */
+  watchMode?: boolean;
   selectedRows?: Irow[];
   multiSelect?: boolean;
   columns: Icolumn[];

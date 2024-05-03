@@ -18,6 +18,7 @@ import {
   getReferralsForInfant,
   getCompletedReferralsForInfant,
   updateVisitDataStatus,
+  restartVisitForInfant,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -125,6 +126,15 @@ const infantSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addAdditionalVisitForInfant.fulfilled, (state, action) => {
+      if (state.visits) {
+        state.visits = [...state.visits, action.payload];
+      } else {
+        state.visits = [action.payload];
+      }
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(restartVisitForInfant.fulfilled, (state, action) => {
       if (state.visits) {
         state.visits = [...state.visits, action.payload];
       } else {

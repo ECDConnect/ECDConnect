@@ -14,6 +14,7 @@ export interface SharedPanelOptions {
     | 'overFullScreen';
   render?: (onSubmit: () => void, onCancel: () => void) => React.ReactNode;
   noPadding?: boolean;
+  overlay?: boolean;
 }
 
 interface SharedPanelProps extends SharedPanelOptions {
@@ -31,6 +32,7 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
   onClose,
   onCancelCallback,
   noPadding,
+  overlay,
 }) => {
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -43,6 +45,14 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
           !!onCancelCallback ? onCancelCallback(onClose) : onClose()
         }
       >
+        {overlay && (
+          <div
+            className={`${
+              overlay ? 'bg-textLight opacity-70' : ''
+            } absolute inset-0 overflow-hidden`}
+            aria-hidden="true"
+          />
+        )}
         <div className="absolute inset-0 overflow-hidden">
           <Dialog.Overlay className="absolute inset-0" />
 

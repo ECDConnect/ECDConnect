@@ -83,9 +83,10 @@ export const Step2 = ({
       availableClinics?.filter(
         (clinic) =>
           clinic.name.toLowerCase().includes(search.toLowerCase()) ||
-          clinic.id.toLowerCase().includes(search.toLowerCase())
+          clinic.id.toLowerCase().includes(search.toLowerCase()) ||
+          selectedRows.some((row) => row.id === clinic.id)
       ) ?? [],
-    [availableClinics, search]
+    [availableClinics, search, selectedRows]
   );
 
   const transformClinic = (clinic: SimpleClinicDto, index: number) => ({
@@ -183,6 +184,8 @@ export const Step2 = ({
         ) || []
       );
       onUpdate({ [leagueKey]: league });
+      setSearch('');
+      setSubDistrictFilter([]);
     }
   }, [
     previousLeagueNumber,
@@ -242,6 +245,7 @@ export const Step2 = ({
           {...(!!leagueName && { maxCharacters: 30 })}
         />
         <Table
+          watchMode
           key={leagueNumber}
           multiSelect
           columns={columns}

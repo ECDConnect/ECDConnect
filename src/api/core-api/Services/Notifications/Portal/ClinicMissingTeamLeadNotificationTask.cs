@@ -1,10 +1,6 @@
-﻿using EcdLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Abstractrions.Constants;
-using ECDLink.Core.Extensions;
-using ECDLink.Core.Helpers;
+﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clinics;
-using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -18,16 +14,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.Services
+namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
 {
-    public class LeagueSetupUnassignedClinicsNotificationTask : INotificationTask
+    public class ClinicMissingTeamLeadNotificationTask : INotificationTask
     {
         private readonly INotificationService _notificationService;
         private readonly ApplicationUserManager _applicationUserManager;
 
         private IGenericRepository<Clinic, Guid> _clinicRepo;
 
-        public LeagueSetupUnassignedClinicsNotificationTask(
+        public ClinicMissingTeamLeadNotificationTask(
             IGenericRepositoryFactory repositoryFactory,
             ApplicationUserManager applicationUserManager,
             [Service] INotificationService notificationService,
@@ -35,7 +31,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             _notificationService = notificationService;
             _applicationUserManager = applicationUserManager;
-            
+
             var applicationUserId = hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _clinicRepo = repositoryFactory.CreateGenericRepository<Clinic>(userContext: applicationUserId);
@@ -43,39 +39,46 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool ShouldRunToday()
         {
-            return DateTime.Now.Month == 11;
+            return true;
         }
 
         public async Task SendNotifications()
         {
-            // TODO - Reset this so it is working for the next season (should be this year, to next year)
-            var startDate = new DateTime(DateTime.Now.Year - 1, 10, 1);
-            var endDate = new DateTime(DateTime.Now.Year, 9, 30);
+            var clinicsMissingTeamLeads = _clinicRepo.GetAll()
+                .Where(x => !x.TeamLeads.Any(y => y.IsActive))
+                .Select(x => new { x.Name, x.Id })
+                .ToList();
 
-            // Unassigned clinics
-            var anyUnassignedClinics = _clinicRepo.GetAll()
-                .Where(x => !x.Leagues.Any(x => x.IsActive && x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
-                .Any();
-
-            if (!anyUnassignedClinics)
+            if (!clinicsMissingTeamLeads.Any())
             {
                 return;
             }
 
             var adminUsers = _applicationUserManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
-
-            var replacements = new List<TagsReplacements>
+            foreach (var clinic in clinicsMissingTeamLeads)
             {
-                new TagsReplacements()
+
+                var replacements = new List<TagsReplacements>
                 {
-                    FindValue = "year",
-                    ReplacementValue = DateTime.Now.Year.ToString()
-                },
-            };
+                    new TagsReplacements()
+                    {
+                        FindValue = "ClinicId",
+                        ReplacementValue = clinic.Id.ToString()
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "ClinicName",
+                        ReplacementValue = clinic.Name
+                    },
+                };
 
-            foreach (var user in adminUsers)
-            {
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.LeagueSetupUnassignedClinics, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements, new DateTime(DateTime.Now.Year, DateTime.Now.Month + 1, 1));
+                var groupingId = Guid.NewGuid();
+                foreach (var user in adminUsers)
+                {
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClinicMissingTeamLead, DateTime.Now.Date, user, "", MessageStatusConstants.Red, replacements,
+                        groupingId: groupingId,
+                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(clinic.Id, "Clinic") });
+                }
             }
         }
     }

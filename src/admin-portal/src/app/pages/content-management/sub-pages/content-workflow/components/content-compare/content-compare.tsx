@@ -414,6 +414,7 @@ export default function ContentCompare({
                     choosedSectionTitle={choosedSectionTitle}
                     contentView={contentView}
                     languages={languages}
+                    id={'secondLanguageContent'}
                   />
                 )}
               </div>

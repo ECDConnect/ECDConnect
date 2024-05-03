@@ -146,5 +146,12 @@ namespace ECDLink.Abstractrions.Constants
         // GG portal notifications
         public const string LeagueSetupUnassignedClinics = "league-setup-unassigned-clinics";
         public const string UnassignedClinics = "unassigned-clinics";
+
+        public const string DuplicateMotherAdded = "duplicate-mother-added";
+        public const string DuplicateChildAdded = "duplicate-child-added";
+        public const string NextMonthMeetingTopicNotAdded = "next-month-meeting-topic-not-added";
+        public const string HealthCareWorkersOptedOut = "health-care-worker-opted-out";
+        public const string ClinicMissingTeamLead = "clinic-missing-team-lead";
+        public const string NoMeetingReportSubmittedForClinic = "no-meeting-report-submitted-for-clinic";
     }
 }

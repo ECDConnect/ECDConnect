@@ -88,10 +88,16 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "ClinicId",
+                                    ReplacementValue = clinic.ClinicId.ToString()
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicGoldTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate, false, false, null, clinic.ClinicId.ToString());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicGoldTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate, false, false, null, 
+                                new List<RelatedEntity> { new RelatedEntity(clinic.ClinicId, "Clinic") });
                         }
                     }
                     // Silver Tier
@@ -112,10 +118,16 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "ClinicId",
+                                    ReplacementValue = clinic.ClinicId.ToString()
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicSilverTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate, false, false, null, clinic.ClinicId.ToString());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicSilverTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, expireDate, false, false, null,
+                                new List<RelatedEntity> { new RelatedEntity(clinic.ClinicId, "Clinic") });
                         }
                     }
                     else
@@ -134,10 +146,16 @@ namespace EcdLink.Api.CoreApi.Services
                                 {
                                     FindValue = "QuarterNr",
                                     ReplacementValue = currentQuarterText
+                                },
+                                new TagsReplacements()
+                                {
+                                    FindValue = "ClinicId",
+                                    ReplacementValue = clinic.ClinicId.ToString()
                                 }
                             };
 
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicBronzeTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, expireDate, false, false, null, clinic.ClinicId.ToString());
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPortalClinicBronzeTierPointsTeam, DateTime.Now.Date, user, "", MessageStatusConstants.Blue, replacements, expireDate, false, false, null,
+                                new List<RelatedEntity> { new RelatedEntity(clinic.ClinicId, "Clinic") });
                         }
                     }
                 }

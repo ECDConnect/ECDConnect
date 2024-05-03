@@ -63,23 +63,26 @@ export const PastVisits: React.FC = () => {
   }, []);
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => {
+    const pastVisits = visits.filter((item) => {
       const dueDate = getDateWithoutTimeZone(item.dueDate);
-      const orderDate = getDateWithoutTimeZone(item.orderDate);
-      const isAttend = item.attended;
+      const plannedDate = getDateWithoutTimeZone(item.plannedVisitDate);
 
-      if (dueDate) {
-        return isAttend || (!isAttend && dueDate < todayDate!);
+      if (item.isCancelled || item.attended) {
+        return true;
       }
 
-      if (orderDate) {
-        return isAttend || (!isAttend && orderDate < todayDate!);
+      if (dueDate && dueDate < todayDate!) {
+        return true;
       }
 
-      return isAttend;
+      if (!dueDate && !!plannedDate && plannedDate < todayDate!) {
+        return true;
+      }
+
+      return false;
     });
 
-    const sortedVisits = getSortedVisits(filteredVisits);
+    const sortedVisits = getSortedVisits(pastVisits);
 
     const array: StepItem[] = sortedVisits.map((item, index) => {
       const getType = (): StepItem['type'] => {

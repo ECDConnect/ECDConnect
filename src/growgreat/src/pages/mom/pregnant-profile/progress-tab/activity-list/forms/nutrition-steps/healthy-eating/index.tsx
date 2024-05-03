@@ -52,7 +52,7 @@ export const HealthyEatingStep = ({
               </div>
             }
           />
-          <Video section={videoSection} />
+          <Video section={'Nutrition During Pregnancy'} />
         </>
       );
     } else {

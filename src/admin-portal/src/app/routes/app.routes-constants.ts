@@ -8,6 +8,14 @@ const ROUTES = {
   TEAM_LEAD_RESET_PASSWORD: '/team-lead-forgot-password',
   VERIFY_PHONE_NUMBER: '/verify-cellphone-number',
   TEAM_MEETINGS: '/team-meetings',
+  TL_MEETINGS: addPrefix('/tl-meetings', {
+    MEETINGS: 'meetings',
+    REPORTS: addPrefix('/reports', {
+      SEE_REPORTS: '/see-reports',
+      VIEW_REPORT: '/view-report',
+    }),
+    EDIT_TOPICS: '/edit-topics',
+  }),
   NOTIFICATIONS_VIEW: '/notifications-view',
   LOGIN: '/login',
   LOGOUT: '/logout',
@@ -16,6 +24,7 @@ const ROUTES = {
   VIEW_USERS: '/users/view-user',
   PROFILE: '/profile',
   RESET: '/reset',
+  TEAM_LEAD_LEAGUES: '/tl-leagues',
   CLINICS: addPrefix('/clinics', {
     ALL_CLINICS: '/clinics',
     VIEW_CLINICS: '/view-clinics',
@@ -29,6 +38,8 @@ const ROUTES = {
         LEAGUE_DETAILS: '/league-details/:leagueId',
       }),
     }),
+    DISTRICTS: '/districts',
+    SUB_DISTRICTS: '/sub-districts',
   }),
   REFERRALS: addPrefix('/referrals', {
     VIEW_REFERRAL_DETAIL: addPrefix('/view-referral-detail/:referralType', {
@@ -36,10 +47,16 @@ const ROUTES = {
     }),
   }),
   USERS: addPrefix('/users', {
+    ADMINS: '/admins',
+    ALL_ROLES: '/all-roles',
+    TEAM_LEADS: '/team-leads',
     HEALTH_CARE_WORKERS: '/health-care-worker',
   }),
   CLASSROOM: addPrefix('/classroom', {
     UPDATE_FEE: '/preschool-fee',
+  }),
+  HEALTH_CARE_WORKER: addPrefix('/health-care-worker', {
+    OPTED_OUT: '/opted-out',
   }),
 };
 

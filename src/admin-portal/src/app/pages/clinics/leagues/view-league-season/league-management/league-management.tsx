@@ -1,5 +1,6 @@
 import { CheckCircleIcon, ExclamationIcon } from '@heroicons/react/solid';
 import { useHistory, useLocation } from 'react-router';
+import { useEffect } from 'react';
 
 import {
   Alert,
@@ -27,11 +28,18 @@ import ROUTES from '../../../../../routes/app.routes-constants';
 import { LeagueSeasonRouteState } from '../types';
 import { AddLeaguesRouteState } from './add-leagues/types';
 import { LeagueActionModal } from './components/league-action-modal';
+import { checkIfIsNextSeasonManagement } from '../../utils';
 
 export const LeagueManagement = () => {
   const history = useHistory<AddLeaguesRouteState>();
 
   const { state } = useLocation<LeagueSeasonRouteState>();
+
+  useEffect(() => {
+    if (!state) {
+      history.replace(ROUTES.CLINICS.LEAGUES.ROOT);
+    }
+  }, [history, state]);
 
   const dialog = useDialog();
 
@@ -41,8 +49,7 @@ export const LeagueManagement = () => {
     fetchPolicy: 'cache-and-network',
   });
 
-  // TODO: remove the hardcoded value and uncomment the line below when the feature is ready
-  const isNextSeasonManagement = /* checkIfIsNextSeasonManagement() */ true;
+  const isNextSeasonManagement = checkIfIsNextSeasonManagement();
 
   const currentYear = new Date().getFullYear();
 

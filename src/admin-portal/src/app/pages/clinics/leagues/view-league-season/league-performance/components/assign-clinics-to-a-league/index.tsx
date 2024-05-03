@@ -55,10 +55,6 @@ export const AssignClinicsToALeague = ({
     const updatedObject = { ...assignedClinics, [clinicId]: leagueId };
     setAssignedClinics(updatedObject);
     onClinicAssigned?.(updatedObject);
-    // setAssignedClinics((prevState) => ({
-    //   ...prevState,
-    //   [clinicId]: leagueId,
-    // }));
   };
 
   const onSave = async () => {
@@ -142,7 +138,7 @@ export const AssignClinicsToALeague = ({
           className="mt-4"
           label={`Add ${clinic.name} (${
             clinic?.subDistrict?.name ?? ''
-          }) to a league *`}
+          }) to a league`}
           selectedValue={assignedClinics?.[clinic.id]}
           onChange={(leagueId) => onChange(clinic.id, leagueId)}
           list={getDistrictOptions(clinic?.subDistrict?.district?.id ?? '')}
@@ -156,10 +152,7 @@ export const AssignClinicsToALeague = ({
         textColor="white"
         text="Save"
         isLoading={addingClinic}
-        disabled={
-          addingClinic ||
-          Object.keys(assignedClinics).length !== unassignedClinics.length
-        }
+        disabled={addingClinic}
         onClick={onSave}
       />
     </>

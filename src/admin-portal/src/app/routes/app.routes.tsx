@@ -61,10 +61,16 @@ import { Leagues } from '../pages/clinics/leagues/leagues';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
 import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
+import TLMeetings from '../pages/tl-meetings/tl-meetings';
+import { SeeReports } from '../pages/tl-meetings/components/see-reports';
 import { NotificationsView } from '../notifications/notificationsView';
 import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
 import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
 import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
+import { EditTopics } from '../pages/tl-meetings/components/edit-topics/edit-topics';
+import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
+import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
+import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -120,6 +126,26 @@ const ReferralRoutes: React.FC = () => {
   );
 };
 
+const TlMeetingsRoutes: React.FC = () => {
+  return (
+    <Switch>
+      <Route path={ROUTES.TL_MEETINGS.MEETINGS} component={TLMeetings}></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.REPORTS.SEE_REPORTS}
+        component={SeeReports}
+      ></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.REPORTS.VIEW_REPORT}
+        component={ViewReport}
+      ></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.EDIT_TOPICS}
+        component={EditTopics}
+      ></Route>
+    </Switch>
+  );
+};
+
 const AuthRoutes: React.FC = () => {
   return (
     <Switch>
@@ -130,6 +156,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
+      <Route path={ROUTES.TL_MEETINGS.ROOT} component={TLMeetings}></Route>
       <Route path={ROUTES.TEAM_MEETINGS} component={TeamMeetingsRoot}></Route>
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
@@ -137,9 +164,14 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
+      <Route path={ROUTES.TEAM_LEAD_LEAGUES} component={TLLeagues}></Route>
       <Route
         path={ROUTES.NOTIFICATIONS_VIEW}
         component={NotificationsView}
+      ></Route>
+      <Route
+        path={ROUTES.HEALTH_CARE_WORKER.OPTED_OUT}
+        component={HealthCareWorkerOptedOut}
       ></Route>
     </Switch>
   );
@@ -214,15 +246,15 @@ const UserRoutes: React.FC = () => {
   return (
     <Switch>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={`/users/all-roles`} component={ApplicationUsers}></Route>
+      <Route path={ROUTES.USERS.ALL_ROLES} component={ApplicationUsers}></Route>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={`/users/view-user`} component={ViewUser}></Route>
-      <Route path={`/users/admins`} component={ApplicationAdmins}></Route>
+      <Route path={ROUTES.VIEW_USERS} component={ViewUser}></Route>
+      <Route path={ROUTES.USERS.ADMINS} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
       <Route path={`/users/clinics`} component={Clinics}></Route>
-      <Route path={`/users/team-leads`} component={TeamLeads}></Route>
+      <Route path={ROUTES.USERS.TEAM_LEADS} component={TeamLeads}></Route>
       <Route
         path={ROUTES.USERS.HEALTH_CARE_WORKERS}
         component={HealthCareWorkers}
@@ -268,4 +300,5 @@ export {
   UserRoutes,
   MessageRoutes,
   ClinicsRoutes,
+  TlMeetingsRoutes,
 };
