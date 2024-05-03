@@ -97,7 +97,7 @@ export const DownloadResource = ({
             textColor="white"
             text="Share resource"
             icon="DownloadIcon"
-            onClick={() => onDownloadImage}
+            onClick={() => onDownloadImage()}
           />
           <Button
             className="mt-auto"
