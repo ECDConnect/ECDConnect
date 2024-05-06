@@ -472,7 +472,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public Clinic EditClinic(PortalClinicInputModel input)
         {
-            var clinic = _clinicRepo.GetById((Guid)input.Id);
+            var clinic = _clinicRepo.GetAll().Where(x => x.Id == (Guid)input.Id).FirstOrDefault();
             clinic.UpdatedDate = DateTime.Now;
             clinic.UpdatedBy = _applicationUserId.ToStringOrNull();
             clinic.Name = input.Name;
