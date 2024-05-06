@@ -2,6 +2,7 @@ import { Divider, Typography } from '@ecdlink/ui';
 import { Chart } from 'react-chartjs-2';
 import { ClinicDto } from '@ecdlink/core';
 import { FlagIcon } from '@heroicons/react/solid';
+import { useEffect, useState } from 'react';
 
 interface ReportsDataCharProps {
   clinic: ClinicDto;
@@ -30,6 +31,14 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
   title,
   targetRanking,
 }) => {
+  const [charDataPerc, setChartDataPerc] = useState(0);
+
+  useEffect(() => {
+    if (targetPerc) {
+      setChartDataPerc(targetPerc);
+    }
+  }, [targetPerc]);
+
   const renderOpenedFolderText = (title) => {
     switch (title) {
       case 'Pregnant moms':
@@ -97,7 +106,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
     datasets: [
       {
         label: `hide`,
-        data: [targetPerc, 100 - targetPerc],
+        data: [charDataPerc, 100 - charDataPerc],
         borderColor: [
           renderGraphBackGgroundColor(targetPercColor),
           renderGraphColor(targetPercColor),
@@ -127,7 +136,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         ctx.marginTop = '4pxß';
 
         // Draw "Total" on the first line
-        var text1 = `${targetPerc || 0}%`;
+        var text1 = `${charDataPerc || 10}%`;
         var textX1 = Math.round((width - ctx.measureText(text1).width) / 2);
         var textY1 = height / 2.8;
         ctx.fillText(text1, textX1, textY1);
@@ -159,13 +168,15 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         <Typography type="h4" color={'textDark'} text={title} />
       </div>
       <div className="flex justify-center">
-        <Chart
-          type="doughnut"
-          data={reportsDataSet}
-          options={options}
-          className="h-64 w-64 overflow-hidden rounded-lg"
-          plugins={plugins}
-        />
+        {charDataPerc && (
+          <Chart
+            type="doughnut"
+            data={reportsDataSet}
+            options={options}
+            className="h-64 w-64 overflow-hidden rounded-lg"
+            plugins={plugins}
+          />
+        )}
       </div>
       <Typography
         type="body"
