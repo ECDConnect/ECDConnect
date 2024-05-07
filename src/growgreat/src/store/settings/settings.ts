@@ -9,7 +9,7 @@ const initialState: SettingsState = {
   childProgressReportMonths: [6, 12],
   childInitialObservationPeriod: 30,
   lastDataSync: format(new Date(), 'MM/dd/yyyy hh:mm aa'),
-  notificationPollInterval: 3600000 * 24,
+  notificationPollInterval: 3600000,
   applicationVersion: undefined,
   settings: undefined,
 };

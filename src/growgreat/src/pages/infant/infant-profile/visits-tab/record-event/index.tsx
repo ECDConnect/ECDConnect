@@ -43,6 +43,11 @@ import { InfantRouteState } from '@/pages/infant/infant.types';
 import { ChangeCaregiver } from './change-caregiver';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { ActionModalButton } from '@/../../../packages/ui/lib/components/action-modal/models/ActionModalButton';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { notificationTagConfig } from '@/constants/notifications';
 
 const eventNames = {
   close: 'close_folder',
@@ -100,6 +105,15 @@ export const RecordEvent: React.FC = () => {
     EventRecordActions.ADD_EVENT_RECORD
   );
 
+  const childFiveYearsNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.ChildFiveYears.cta ?? ''
+      ) && item?.message?.routeConfig?.route.includes(infantId)
+  );
+
   const wasLoading = usePrevious(isLoading);
 
   const eventTypes = useSelector(getAllInfantEventRecordTypesSelector);
@@ -145,6 +159,11 @@ export const RecordEvent: React.FC = () => {
         input: recordEventInput,
       })
     );
+    if (childFiveYearsNotification) {
+      appDispatch(
+        notificationActions.removeNotification(childFiveYearsNotification!)
+      );
+    }
   }, [appDispatch, recordEventInput]);
 
   const displayConfirmDialog = useCallback(
