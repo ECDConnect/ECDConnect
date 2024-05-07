@@ -101,13 +101,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Check if team lead or admin
             var currentUser = _applicationUserManager.FindByIdAsync(_applicationUserId).Result;
             var isUserAdmin = _applicationUserManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR).Result;
+            var isSuperAdmin = _applicationUserManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR).Result;
 
             var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
 
             // If only a team lead, filter to only CHWs at relavant clinics
             var healthCareWorkersQuery = _healthCareWorkerRepo.GetAll()
                 .Where(x =>
-                    isUserAdmin
+                    isUserAdmin || isSuperAdmin
                     || x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == _applicationUserId));
 
             var hasFilters = false;
