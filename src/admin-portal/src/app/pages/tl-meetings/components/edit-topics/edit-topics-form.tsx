@@ -65,6 +65,8 @@ export default function EditTopicsForm({
     }
   }, [languages]);
 
+  console.log({ contentView });
+
   useEffect(() => {
     if (
       contentType &&
@@ -72,6 +74,7 @@ export default function EditTopicsForm({
       contentView &&
       contentView.content
     ) {
+      console.log('hihihihihi');
       const c = contentType.content.find(
         (x) =>
           x.id === contentView.content.id ||
@@ -86,6 +89,8 @@ export default function EditTopicsForm({
         setCurrentContent(c);
         setViewKey(Math.random());
       }
+
+      setCurrentContent({} as ContentDto);
     }
   }, [contentType, contentView, postNatalType]);
 
