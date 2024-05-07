@@ -726,7 +726,8 @@ namespace EcdLink.Api.CoreApi.Services
 
             var clinicMeeting =  _clinicMeetingRepo.GetAll()
                 .Where(x => x.IsActive && 
-                            x.MeetingDate.Date >= startDate && x.MeetingDate.Date <= endDate.Date &&
+                            x.MeetingDate.Month == startDate.Month &&
+                            x.MeetingDate.Date >= startDate.Date && x.MeetingDate.Date <= endDate.Date &&
                             x.ClinicId == clinicId)
                 .OrderByDescending(x => x.InsertedDate)
                 .FirstOrDefault();
