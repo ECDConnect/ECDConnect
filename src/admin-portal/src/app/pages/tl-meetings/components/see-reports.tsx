@@ -142,17 +142,33 @@ export const SeeReports = () => {
 
   const rows: Irow[] =
     (search
-      ? filteredData?.filter((item) =>
-          item?.clinicName
-            ?.toLocaleLowerCase()
-            .includes(search.toLocaleLowerCase())
-        )
-      : filteredData.map((item) => ({
-          ...item,
-          meetingTopicTitle: item?.meetingTopic?.topicTitle,
-          dateSubmitted: format(new Date(item?.dateSubmitted), 'dd/MM/yyyy'),
-          month: item?.meetingTopic?.title,
-        }))) ?? [];
+      ? filteredData
+          ?.sort((a, b) =>
+            a.dateSubmitted > b.dateSubmitted
+              ? -1
+              : a.dateSubmitted < b.dateSubmitted
+              ? 1
+              : 0
+          )
+          ?.filter((item) =>
+            item?.clinicName
+              ?.toLocaleLowerCase()
+              .includes(search.toLocaleLowerCase())
+          )
+      : filteredData
+          ?.sort((a, b) =>
+            a.dateSubmitted > b.dateSubmitted
+              ? -1
+              : a.dateSubmitted < b.dateSubmitted
+              ? 1
+              : 0
+          )
+          ?.map((item) => ({
+            ...item,
+            meetingTopicTitle: item?.meetingTopic?.topicTitle,
+            dateSubmitted: format(new Date(item?.dateSubmitted), 'dd/MM/yyyy'),
+            month: item?.meetingTopic?.title,
+          }))) ?? [];
 
   const onClearFilters = () => {
     setSearch('');
