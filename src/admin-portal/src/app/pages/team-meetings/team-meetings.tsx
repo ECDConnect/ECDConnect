@@ -39,7 +39,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
   const todaysDateNumber = getDate(today);
   const availableDateToAddReport =
     todaysDateNumber >= 24 || todaysDateNumber <= 7;
-  const isUntilDaySevenOfTheMonth = todaysDateNumber < 7;
+  const isUntilDaySevenOfTheMonth = todaysDateNumber <= 7;
   const previousMonthName = format(previousMonth, 'MMMM');
   const currentMonthName = format(today, 'MMMM');
   const title = isUntilDaySevenOfTheMonth
@@ -143,6 +143,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
           isEdit={false}
           user={user}
           selectedTabId={selectedTabId}
+          isUntilDaySevenOfTheMonth={isUntilDaySevenOfTheMonth}
         />
       ),
     });
@@ -299,11 +300,19 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
         </div>
         <div>
           <Card className="my-8 rounded-xl bg-white p-6">
-            <Typography
-              type={'h3'}
-              text={'3. Knowledge sharing - 30 min'}
-              color={'textDark'}
-            />
+            <div className="flex items-center justify-between">
+              <Typography
+                type={'h3'}
+                text={'3. Knowledge sharing - 30 min'}
+                color={'textDark'}
+              />
+              <LanguageSelector
+                disabled={false}
+                languages={languages?.filter((item) => item?.isActive === true)}
+                currentLanguageId={'en-za'}
+                selectLanguage={setSelectedLanguage}
+              />
+            </div>
             {currentTopic && !loadingTopicData && (
               <div>
                 <Typography
