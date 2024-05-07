@@ -109,9 +109,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var healthCareWorkersQuery = _healthCareWorkerRepo.GetAll()
                 .Where(x =>
                     isUserAdmin || isSuperAdmin
-                    || x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == _applicationUserId));
-
-            var hasFilters = false;
+                    || x.Clinic.TeamLeads.Where(y => y.IsActive).Any(y => y.TeamLead.UserId == _applicationUserId));
 
             // General search term
             if (!string.IsNullOrWhiteSpace(search))
