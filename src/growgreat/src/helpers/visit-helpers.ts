@@ -7,12 +7,16 @@ export const getVisitStatus = (visit: VisitDto): StepItem['type'] => {
 
   if (
     visit.attended ||
-    (!!visit.startedDate && new Date(visit.startedDate) < twoDaysAgo)
+    (!!visit.startedDate &&
+      new Date(visit.startedDate).getTime() < twoDaysAgo.getTime())
   ) {
     return 'completed';
   }
 
-  if (visit.startedDate && new Date(visit.startedDate) > twoDaysAgo) {
+  if (
+    visit.startedDate &&
+    new Date(visit.startedDate).getTime() > twoDaysAgo.getTime()
+  ) {
     return 'inProgress';
   }
 
@@ -37,12 +41,15 @@ export const canStartVisit = (visit: VisitDto): boolean => {
   // Check date range
   if (
     !!visit.plannedVisitDate &&
-    new Date(visit.plannedVisitDate) >= todayEnd
+    new Date(visit.plannedVisitDate).getTime() >= todayEnd.getTime()
   ) {
     return false;
   }
 
-  if (!!visit.dueDate && new Date(visit.dueDate) <= todayStart) {
+  if (
+    !!visit.dueDate &&
+    new Date(visit.dueDate).getTime() < todayStart.getTime()
+  ) {
     return false;
   }
 
@@ -63,7 +70,7 @@ export const getVisitSubTitle = (visit: VisitDto): string => {
   if (
     !visit.attended &&
     !!visit.startedDate &&
-    new Date(visit.startedDate) < twoDaysAgo
+    new Date(visit.startedDate).getTime() < twoDaysAgo.getTime()
   ) {
     return `Missed visit deadline`;
   }
@@ -87,7 +94,7 @@ export const isVisitInProgress = (visit: VisitDto): boolean => {
   if (
     !visit.attended &&
     !!visit.startedDate &&
-    new Date(visit.startedDate) > twoDaysAgo
+    new Date(visit.startedDate).getTime() > twoDaysAgo.getTime()
   ) {
     return true;
   }
@@ -102,7 +109,7 @@ export const isVisitMissed = (visit: VisitDto): boolean => {
   if (
     !visit.attended &&
     !!visit.startedDate &&
-    new Date(visit.startedDate) < twoDaysAgo
+    new Date(visit.startedDate).getTime() < twoDaysAgo.getTime()
   ) {
     return true;
   }

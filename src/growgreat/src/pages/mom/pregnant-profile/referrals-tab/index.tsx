@@ -142,9 +142,7 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const isToGetPreviousVisitStatusData =
-    (!currentVisit ||
-      (!currentVisit?.attended && isVisitInProgress(currentVisit))) &&
-    !!previousVisit;
+    (!currentVisit || !isVisitInProgress(currentVisit)) && !!previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
