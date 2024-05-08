@@ -43,6 +43,11 @@ namespace ECDLink.Moodle.Managers
                 cohorts.Add(cohort);
             }
 
+            if (cohorts.Count == 0)
+            {
+                return false;
+            }
+
             await using var conn = new NpgsqlConnection(GetConnectionString(config));
             await conn.OpenAsync();
 
@@ -125,25 +130,6 @@ namespace ECDLink.Moodle.Managers
             return sessionId;
         }
 
-        private static string HashPassword(string password)
-        {
-            byte[] salt;
-            byte[] buffer2;
-            if (password == null)
-            {
-                throw new ArgumentNullException();
-            }
-            using (Rfc2898DeriveBytes bytes = new Rfc2898DeriveBytes(password, 0x10, 0x3e8))
-            {
-                salt = bytes.Salt;
-                buffer2 = bytes.GetBytes(0x20);
-            }
-            byte[] dst = new byte[0x31];
-            Buffer.BlockCopy(salt, 0, dst, 1, 0x10);
-            Buffer.BlockCopy(buffer2, 0, dst, 0x11, 0x20);
-            return Convert.ToBase64String(dst);
-        }
-
         private async Task<long> GetMoodleUserId(NpgsqlConnection conn, string name)
         {
             await using var cmd = new NpgsqlCommand("SELECT id FROM public.mdl_user where userName = (@userName)", conn)
@@ -176,7 +162,7 @@ namespace ECDLink.Moodle.Managers
                         new NpgsqlParameter("Confirmed", user.Confirmed),
                         new NpgsqlParameter("Mnethostid", user.Mnethostid),
                         new NpgsqlParameter("UserName", user.UserName),
-                        new NpgsqlParameter("Password", "$2y$10$NC4irSPAfnZHUN8HjWXD8e9.MotF0pGqZq6KDPtbfbUquHOQplQbq"), //HashPassword(user.Password)),
+                        new NpgsqlParameter("Password", "$2y$10$NC4irSPAfnZHUN8HjWXD8e9.MotF0pGqZq6KDPtbfbUquHOQplQbq"),
                         new NpgsqlParameter("IdNumber", user.IdNumber),
                         new NpgsqlParameter("Firstname", user.Firstname),
                         new NpgsqlParameter("Lastname", user.Lastname),
