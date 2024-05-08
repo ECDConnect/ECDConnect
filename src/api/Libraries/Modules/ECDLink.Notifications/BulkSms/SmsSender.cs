@@ -35,9 +35,16 @@ namespace ECDLink.Notifications.BulkSms
                 {
                     _smsClient = new HttpClient();
                     _smsClient.BaseAddress = new Uri(_smsOptions.Value.BaseUrl);
-
                     _smsClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                    _smsClient.DefaultRequestHeaders.Add("Authorization", $"Basic {_smsOptions.Value.BasicAuthToken}");
+                    var basicAuthToken = _smsOptions.Value.BasicAuthToken;
+                    if (basicAuthToken.StartsWith("Basic "))
+                    {
+                      _smsClient.DefaultRequestHeaders.Add("Authorization", basicAuthToken);
+                    }
+                    else
+                    {
+                      _smsClient.DefaultRequestHeaders.Add("Authorization", $"Basic {basicAuthToken}");
+                    }
                 }
 
                 return _smsClient;
