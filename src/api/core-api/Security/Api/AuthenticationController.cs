@@ -46,12 +46,14 @@ namespace ECDLink.Security.Api
             }
             Console.WriteLine("Login: Username={0}, Referrer={1}, Origin={2}, TenantId={3}", login.Username, HttpContext.Request.Headers.Referer, HttpContext.Request.Headers.Origin, TenantExecutionContext.Tenant.Id);
 
+            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+
             //exclude funny script attempts
             if ((login?.Password?.StartsWith('<') ?? true)
                 || (login?.PhoneNumber?.StartsWith('<') ?? false)
                 || (login?.Username?.StartsWith('<') ?? true))
             {
-                return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
+                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
             }
 
             ApplicationUser user;
@@ -65,9 +67,9 @@ namespace ECDLink.Security.Api
                 user = await _securityManager.LogInWithPhoneNumberAsync(normalizePhoneNumber, login.Password);
             }
 
-            if (user == null)
+            if (user == null || (user.LockoutEnabled == true && user.LockoutEnd > DateTime.Now))
             {
-                return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
+                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
             }
 
 
@@ -84,7 +86,7 @@ namespace ECDLink.Security.Api
                 var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
                 if (!hasAccess)
                 {
-                    var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+                   
                     // TODO: Callcenter number should be in the tenant config?
                     return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
                 }
@@ -92,7 +94,7 @@ namespace ECDLink.Security.Api
             {
                 if (!userRoles.Any())
                 {
-                    return Unauthorized(new { Error = "You do not have access. Please contact the SmartStart call centre to find out more: 0800 014 817" });
+                    return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
                 }
             }
 
