@@ -110,10 +110,7 @@ namespace ECDLink.Security.Api
 
         private bool checkHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
         {
-#if DEBUG
-            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress);
-#endif
-            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress);
+            return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
         }
 
         // This API should always return an OK result as to not give away emails
