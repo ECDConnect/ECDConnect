@@ -92,6 +92,9 @@ export const VisitsTab: React.FC = () => {
   const previousVisit = useSelector((state: RootState) =>
     getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
+  const isFirstVisit = visits
+    .filter((item) => item.visitType?.name !== 'additional_visits')
+    .every((item) => !item.attended);
 
   const { isLoading } = useThunkFetchCall(
     'infants',
@@ -207,25 +210,32 @@ export const VisitsTab: React.FC = () => {
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
 
+      const isPreviousVisitMissed = previousItem && isVisitMissed(previousItem);
+      const isCurrentVisitMissed = isVisitMissed(item);
+      const checkPreviousVisit =
+        !previousItem ||
+        previousItem.attended ||
+        previousItem.isCancelled ||
+        isPreviousVisitMissed;
+
       return {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: getVisitSubTitle(item),
+        ...((isVisitMissed(item) || isAdditionalVisit) && {
+          subTitleColor: 'alertDark',
+        }),
         isAdditionalVisit: isAdditionalVisit,
-        subTitleColor: 'alertDark',
         inProgressStepIcon: 'CalendarIcon',
         type: getVisitStatus(item),
         showActionButton:
-          (!previousItem ||
-            previousItem.attended ||
-            previousItem.isCancelled ||
-            isVisitMissed(previousItem)) &&
-          canStartVisit(item),
+          (checkPreviousVisit && (canStartVisit(item) || isFirstVisit)) ||
+          (isAdditionalVisit && previousVisit?.attended),
         actionButtonIcon: 'ArrowCircleRightIcon',
-        actionButtonText: !isVisitMissed(item) ? 'Start visit' : 'Redo visit',
+        actionButtonText: !isCurrentVisitMissed ? 'Start visit' : 'Redo visit',
         actionButtonOnClick: () =>
-          !isVisitMissed(item)
+          !isCurrentVisitMissed
             ? history.push(`${location.pathname}/activities-form/${item.id}`, {
                 editView: true,
               })

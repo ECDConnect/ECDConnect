@@ -154,6 +154,12 @@ export const Visits: React.FC = () => {
     ? new Date(currentVisit?.dueDate)
     : todayEndOfTheDay;
   dueDate?.setHours(0, 0, 0, 0);
+  const isFirstVisit = visits
+    .filter((item) => item.visitType?.name !== 'additional_visits')
+    .every((item) => !item.attended);
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
 
   const weeksPregnant = useMemo(
     () =>
@@ -209,27 +215,33 @@ export const Visits: React.FC = () => {
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
 
+      const isPreviousVisitMissed = previousItem && isVisitMissed(previousItem);
+      const isCurrentVisitMissed = isVisitMissed(item);
+
+      const checkPreviousVisit =
+        !previousItem ||
+        previousItem.attended ||
+        previousItem.isCancelled ||
+        isPreviousVisitMissed;
+
       return {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName || 'Visit',
         subTitle: getVisitSubTitle(item),
-        subTitleColor: 'alertDark',
+        ...((isVisitMissed(item) || isAdditionalVisit) && {
+          subTitleColor: 'alertDark',
+        }),
         inProgressStepIcon: 'CalendarIcon',
         type: getVisitStatus(item),
         // Need to check when the button is shown
         showActionButton:
-          (!previousItem ||
-            previousItem.attended ||
-            previousItem.isCancelled ||
-            isVisitMissed(previousItem)) &&
-          canStartVisit(item),
+          (checkPreviousVisit && (canStartVisit(item) || isFirstVisit)) ||
+          (isAdditionalVisit && previousVisit?.attended),
         actionButtonIcon: 'ArrowCircleRightIcon',
-        actionButtonText: !isVisitMissed(currentVisit!)
-          ? 'Start visit'
-          : 'Redo visit',
+        actionButtonText: !isCurrentVisitMissed ? 'Start visit' : 'Redo visit',
         actionButtonOnClick: () =>
-          !isVisitMissed(currentVisit!)
+          !isCurrentVisitMissed
             ? history.push(`${location.pathname}/activities-form/${item?.id}`, {
                 editView: true,
               })
@@ -255,10 +267,12 @@ export const Visits: React.FC = () => {
 
     return array;
   }, [
+    currentVisit,
     getSortedVisits,
     history,
     insertedDate,
-    location,
+    location.pathname,
+    restartVisit,
     todayDateWithoutTimeZone,
     visits,
   ]);
