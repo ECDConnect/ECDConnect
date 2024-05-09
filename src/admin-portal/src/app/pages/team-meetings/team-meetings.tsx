@@ -1,6 +1,6 @@
 import { Alert, Button, Card, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/solid';
-import { add, format, getDate, isSameMonth, sub } from 'date-fns';
+import { add, format, getDate, sub } from 'date-fns';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetAllLanguage,
