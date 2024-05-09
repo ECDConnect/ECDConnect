@@ -24,7 +24,7 @@ export function Settings() {
     }) || {};
 
   const isGrowGreatTenant =
-    data?.tenantContext.applicationName === TenantContext.GrowGreat;
+    data?.tenantContext?.applicationName === TenantContext.GrowGreat;
 
   const navigation = [
     {
@@ -69,7 +69,7 @@ export function Settings() {
       <div className="bg-uiMidDark lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div className="relative h-full" style={{ minHeight: '36rem' }}>
-            <SettingsRoutes />
+            {!isGrowGreatTenant && <SettingsRoutes />}
           </div>
         </div>
       </div>

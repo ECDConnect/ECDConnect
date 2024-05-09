@@ -70,6 +70,9 @@ import { EditTopics } from '../pages/tl-meetings/components/edit-topics/edit-top
 import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
 import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
 import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
+import { useApolloClient } from '@apollo/client';
+import { GetTenantContext, TenantModel } from '@ecdlink/graphql';
+import { TenantContext } from '../utils/constants';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -146,10 +149,22 @@ const TlMeetingsRoutes: React.FC = () => {
 };
 
 const AuthRoutes: React.FC = () => {
+  const apolloClient = useApolloClient();
+
+  const data =
+    apolloClient.readQuery<{ tenantContext?: TenantModel }>({
+      query: GetTenantContext,
+    }) || {};
+
+  const isGrowGreatTenant =
+    data?.tenantContext?.applicationName === TenantContext.GrowGreat;
+
   return (
     <Switch>
       <Route path={`/dashboard`} component={Dashboard}></Route>
-      <Route path={`/settings`} component={Settings}></Route>
+      {!isGrowGreatTenant && (
+        <Route path={`/settings`} component={Settings}></Route>
+      )}
       <Route path={`/data`} component={StaticData}></Route>
       <Route path={ROUTES.PROFILE} component={Profile}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
@@ -160,7 +175,9 @@ const AuthRoutes: React.FC = () => {
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
-      <Route path={`/Reports`} component={Reports}></Route>
+      {!isGrowGreatTenant && (
+        <Route path={`/Reports`} component={Reports}></Route>
+      )}
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
       <Route path={ROUTES.TEAM_LEAD_LEAGUES} component={TLLeagues}></Route>
