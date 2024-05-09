@@ -501,27 +501,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         : visit.PlannedVisitDate;
             }
 
-            var additional_visits = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit).ToList();
-            foreach (var item in additional_visits)
+            var additionalVisits = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.VisitTypeAdditionalVisit).ToList();
+            foreach (var item in additionalVisits)
             {
                 if (item.DueDate == null)
                 {
                     var linkedVisit = allVisits.Where(x => x.Id == item.LinkedVisitId).FirstOrDefault();
                     if (linkedVisit != null)
                     {
-                        item.OrderDate = linkedVisit.DueDate?.Date;
+                        item.OrderDate = linkedVisit.OrderDate.HasValue
+                            ? linkedVisit.OrderDate.Value.AddMinutes(1) // Ensure that the additional visit appears after the visit it was created from
+                            : linkedVisit.DueDate ?? linkedVisit.PlannedVisitDate;
 
-                    }
-                    else
-                    {
-                        if (item.PlannedVisitDate == default(DateTime))
-                        {
-                            item.OrderDate = item.InsertedDate.Date;
-                        }
-                        else
-                        {
-                            item.OrderDate = item.PlannedVisitDate.Date;
-                        }
                     }
                 }
             }
