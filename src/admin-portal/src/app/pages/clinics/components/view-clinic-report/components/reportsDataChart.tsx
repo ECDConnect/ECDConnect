@@ -31,14 +31,6 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
   title,
   targetRanking,
 }) => {
-  const [charDataPerc, setChartDataPerc] = useState(0);
-
-  useEffect(() => {
-    if (targetPerc) {
-      setChartDataPerc(targetPerc);
-    }
-  }, [targetPerc]);
-
   const renderOpenedFolderText = (title) => {
     switch (title) {
       case 'Pregnant moms':
@@ -106,7 +98,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
     datasets: [
       {
         label: `hide`,
-        data: [charDataPerc, 100 - charDataPerc],
+        data: [targetPerc, 100 - targetPerc],
         borderColor: [
           renderGraphBackGgroundColor(targetPercColor),
           renderGraphColor(targetPercColor),
@@ -136,7 +128,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         ctx.marginTop = '4pxß';
 
         // Draw "Total" on the first line
-        var text1 = `${charDataPerc || 10}%`;
+        var text1 = `${targetPerc !== undefined ? targetPerc : 0}%`;
         var textX1 = Math.round((width - ctx.measureText(text1).width) / 2);
         var textY1 = height / 2.8;
         ctx.fillText(text1, textX1, textY1);
@@ -168,7 +160,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         <Typography type="h4" color={'textDark'} text={title} />
       </div>
       <div className="flex justify-center">
-        {charDataPerc && (
+        {targetPerc !== undefined && (
           <Chart
             type="doughnut"
             data={reportsDataSet}
