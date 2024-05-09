@@ -123,10 +123,6 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
         'surname',
         motherInfo?.user?.surname || motherInfo?.surname
       );
-      setMotherDetailsFormValue(
-        'relationshipId',
-        caregiverType?.id || motherType?.id
-      );
       setMotherDetailsFormValue('isMother', !!motherInfo?.user?.id);
     }
   }, [
@@ -220,8 +216,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 <Dropdown
                   placeholder={'Select relationship:'}
                   fillType="clear"
-                  disabled={isCaregiver}
-                  selectedValue={isCaregiver ? motherType?.id : value}
+                  selectedValue={value}
                   list={
                     (relations &&
                       relations
