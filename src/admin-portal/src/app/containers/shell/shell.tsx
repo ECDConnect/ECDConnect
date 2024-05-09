@@ -162,7 +162,7 @@ export default function Shell() {
         ...(isGrowGreatTenant ? [] : [NavbarTypes.Reporting]),
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
-        NavbarTypes.Settings,
+        ...(isGrowGreatTenant ? [] : [NavbarTypes.Settings]),
         NavbarTypes.Notifications,
         NavbarTypes.CHWsOptedOut,
       ];
