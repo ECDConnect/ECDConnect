@@ -83,7 +83,7 @@ namespace ECDLink.Security.Api
 
             if (isAdminPortal)
             {   
-                var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
+                var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.SUPER_ADMINISTRATOR) || userRoles.Contains(RolesGG.TEAM_LEAD);
                 if (!hasAccess)
                 {
                    
@@ -110,7 +110,9 @@ namespace ECDLink.Security.Api
 
         private bool checkHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
         {
+#if DEBUG
             return hostAddress.Contains(adminSiteAddress) || hostAddress.Contains(testAdminSiteAddress);
+#endif
         }
 
         // This API should always return an OK result as to not give away emails
