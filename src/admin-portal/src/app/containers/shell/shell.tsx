@@ -113,7 +113,7 @@ export default function Shell() {
   });
 
   const isGrowGreatTenant =
-    data?.tenantContext.applicationName === TenantContext.GrowGreat;
+    data?.tenantContext?.applicationName === TenantContext.GrowGreat;
 
   const notifications = notificationsData?.allNotifications;
   const notReadNotifications = useMemo(
