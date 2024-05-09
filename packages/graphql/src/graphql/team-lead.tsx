@@ -198,6 +198,7 @@ export const GetClinicMeetingForMonth = gql`
     clinicMeetingForMonth(clinicId: $clinicId) {
       id
       meetingDate
+      dateSubmitted
       teamLeadName
       positiveStory
       reportingIssue
