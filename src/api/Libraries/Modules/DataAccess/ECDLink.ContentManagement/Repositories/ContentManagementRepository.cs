@@ -199,7 +199,8 @@ namespace ECDLink.ContentManagement.Repositories
                 var contentValuesList = content.ContentValues
                                 .Where(x => x.LocaleId == localeId
                                     && x.TenantId == currentTenant)
-                                .OrderBy(x => x.ContentTypeField?.FieldOrder)
+                                .OrderByDescending(x => x.UpdatedDate)
+                                .ThenBy(x => x.ContentTypeField?.FieldOrder)
                                 .ToList();
 
                 var contentValues = content.ContentValues
@@ -747,6 +748,7 @@ namespace ECDLink.ContentManagement.Repositories
                     }
                     else // Update
                     {
+                        currentRecord.UpdatedDate = DateTime.UtcNow;
                         currentRecord.Value = (fileUrl != "" ? fileUrl : fieldAnswer);
                     }
                 }
