@@ -48,7 +48,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
             var healthCareWorkers = _healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.ClinicId.HasValue).ToList();
             var hcwIds = healthCareWorkers.Select(x => x.Id.ToString()).ToList();
             var notifications = _messageRepo.GetAll().Where(x =>
-                                                            x.MessageProtocol == "push" &&
+                                                            x.MessageProtocol == "portal" &&
                                                             x.MessageTemplateType == TemplateTypeConstants.GGPortalCHWNotCompletedVisitIn2Weeks &&
                                                             hcwIds.Contains(x.To) &&
                                                             x.IsActive == true
