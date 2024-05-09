@@ -111,8 +111,8 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
     clinicMeetingData?.clinicMeetingForMonth;
   const monthMeetingSubmitted = clinicMeetingReport?.id;
   const submittedDateFormatted =
-    clinicMeetingReport?.meetingDate &&
-    format(new Date(clinicMeetingReport?.meetingDate), 'd MMMM');
+    clinicMeetingReport?.dateSubmitted &&
+    format(new Date(clinicMeetingReport?.dateSubmitted), 'd MMMM');
 
   const languages = useMemo(
     () => languagesData?.GetAllLanguage,
@@ -184,26 +184,56 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
           </div>
         )}
 
-        {monthMeetingSubmitted && !loadingClinicMeetingData && (
+        {!monthMeetingSubmitted &&
+          !loadingClinicMeetingData &&
+          availableDateToAddReport && (
+            <div>
+              <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
+                <InformationCircleIcon className="h-5 w-5 text-white" />
+                <Typography type={'h4'} text={dateInfoText} color={'white'} />
+              </Card>
+            </div>
+          )}
+
+        {!loadingClinicMeetingData && !availableDateToAddReport && (
           <div>
-            <Card className="bg-successMain my-8 rounded-xl p-4">
+            <Card className="bg-infoMain my-8 items-center gap-4 rounded-xl p-4">
               <div className="flex items-center gap-4">
-                <CheckCircleIcon className="h-5 w-5 text-white" />
-                <Typography
-                  type={'h4'}
-                  text={reportSubmittedText}
-                  color={'white'}
-                />
+                <InformationCircleIcon className="h-5 w-5 text-white" />
+                <Typography type={'h4'} text={dateInfoText} color={'white'} />
               </div>
               <Typography
                 type={'body'}
-                text={`• You submitted the ${currentMonthName} report on ${submittedDateFormatted}.`}
+                text={`• From 24 ${currentMonthName}, you will see the “Add meeting report” button on this screen.`}
                 color={'white'}
                 className="my-2 ml-8"
               />
             </Card>
           </div>
         )}
+
+        {monthMeetingSubmitted &&
+          !loadingClinicMeetingData &&
+          availableDateToAddReport && (
+            <div>
+              <Card className="bg-successMain my-8 rounded-xl p-4">
+                <div className="flex items-center gap-4">
+                  <CheckCircleIcon className="h-5 w-5 text-white" />
+                  <Typography
+                    type={'h4'}
+                    text={reportSubmittedText}
+                    color={'white'}
+                  />
+                </div>
+                <Typography
+                  type={'body'}
+                  text={`• You submitted the ${previousMonthName} report on ${submittedDateFormatted}.`}
+                  color={'white'}
+                  className="my-2 ml-8"
+                />
+              </Card>
+            </div>
+          )}
 
         <div>
           <Card className="my-8 rounded-xl bg-white p-6">
