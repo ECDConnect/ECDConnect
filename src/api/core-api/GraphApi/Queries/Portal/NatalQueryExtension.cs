@@ -86,6 +86,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         
                         results.Add(new PortalNatalModel(title, section, availableLanguages, childType, childId, updatedDate, childContentTypeName, childContentTypeId));
                     }
+
+                    // Sort all results according to last updated
+                    results.OrderByDescending(x => x.UpdatedDate);
                 }
             }
             return results;

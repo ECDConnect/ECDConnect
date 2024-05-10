@@ -113,7 +113,7 @@ export default function Shell() {
   });
 
   const isGrowGreatTenant =
-    data?.tenantContext.applicationName === TenantContext.GrowGreat;
+    data?.tenantContext?.applicationName === TenantContext.GrowGreat;
 
   const notifications = notificationsData?.allNotifications;
   const notReadNotifications = useMemo(
@@ -162,7 +162,7 @@ export default function Shell() {
         ...(isGrowGreatTenant ? [] : [NavbarTypes.Reporting]),
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
-        NavbarTypes.Settings,
+        ...(isGrowGreatTenant ? [] : [NavbarTypes.Settings]),
         NavbarTypes.Notifications,
         NavbarTypes.CHWsOptedOut,
       ];

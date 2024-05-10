@@ -94,4 +94,5 @@ export interface ClinicMeetingReportDto {
   reportingIssue?: string;
   teamLeadName?: string;
   totalSupportVisits: number;
+  dateSubmitted?: string;
 }

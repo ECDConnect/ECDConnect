@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace ECDLink.EGraphQL
 {
@@ -61,9 +62,22 @@ namespace ECDLink.EGraphQL
 
         public static void AddGraphConfiguration(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var envEnableGraphQLPlayground = System.Environment.GetEnvironmentVariable("ENABLE_GRAPHQL_PLAYGROUND");
+            bool enableGraphQLPlayground = env.IsDevelopment();
+            if (!string.IsNullOrEmpty(envEnableGraphQLPlayground))
+            {
+                if (envEnableGraphQLPlayground == "1")
+                    enableGraphQLPlayground = true;
+                else if (envEnableGraphQLPlayground == "0")
+                    enableGraphQLPlayground = false;
+            }
+
             app.UseEndpoints(endpoints =>
              {
-                 endpoints.MapGraphQL();
+                 endpoints.MapGraphQL().WithOptions(new HotChocolate.AspNetCore.GraphQLServerOptions()
+                 {
+                     Tool = { Enable = enableGraphQLPlayground }
+                 });
              });
         }
     }
