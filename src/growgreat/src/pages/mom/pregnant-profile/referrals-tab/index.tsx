@@ -337,9 +337,12 @@ export const ReferralsTab: React.FC = () => {
           const removeRedAlertNotification = newState.find(
             (item) =>
               item.isCompleted &&
-              String(item.comment).includes(
+              (String(item.comment).includes(
                 'was experiencing maternal distress'
-              )
+              ) ||
+                String(item.comment).includes(
+                  'was experiencing the following:'
+                ))
           );
 
           if (redAlertNotifications && removeRedAlertNotification) {

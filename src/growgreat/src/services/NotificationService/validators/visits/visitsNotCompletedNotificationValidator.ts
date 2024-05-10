@@ -44,7 +44,7 @@ export class VisitsNotCompletedNotificationValidator
             message:
               'Other CHWs visit clients every week - join them and visit your clients often!',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.higher,
+            priority: 4,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',
@@ -66,7 +66,7 @@ export class VisitsNotCompletedNotificationValidator
           title: 'Visits overdue for mothers',
           message: 'Schedule a visit as soon as possible.',
           dateCreated: new Date().toISOString(),
-          priority: NotificationPriority.higher,
+          priority: 21,
           viewOnDashboard: false,
           area: 'practitioner',
           icon: 'SwitchVerticalIcon',
