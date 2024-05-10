@@ -39,6 +39,8 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
   const todaysDateNumber = getDate(today);
   const availableDateToAddReport =
     todaysDateNumber >= 24 || todaysDateNumber <= 7;
+  const availableDateToSecondBlueInfoBox =
+    todaysDateNumber < 24 || todaysDateNumber > 7;
   const isUntilDaySevenOfTheMonth = todaysDateNumber <= 7;
   const previousMonthName = format(previousMonth, 'MMMM');
   const currentMonthName = format(today, 'MMMM');
@@ -175,14 +177,6 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
             />
           </div>
         )}
-        {!monthMeetingSubmitted && !loadingClinicMeetingData && (
-          <div>
-            <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
-              <InformationCircleIcon className="h-5 w-5 text-white" />
-              <Typography type={'h4'} text={dateInfoText} color={'white'} />
-            </Card>
-          </div>
-        )}
 
         {!monthMeetingSubmitted &&
           !loadingClinicMeetingData &&
@@ -195,22 +189,24 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
             </div>
           )}
 
-        {!loadingClinicMeetingData && !availableDateToAddReport && (
-          <div>
-            <Card className="bg-infoMain my-8 items-center gap-4 rounded-xl p-4">
-              <div className="flex items-center gap-4">
-                <InformationCircleIcon className="h-5 w-5 text-white" />
-                <Typography type={'h4'} text={dateInfoText} color={'white'} />
-              </div>
-              <Typography
-                type={'body'}
-                text={`• From 24 ${currentMonthName}, you will see the “Add meeting report” button on this screen.`}
-                color={'white'}
-                className="my-2 ml-8"
-              />
-            </Card>
-          </div>
-        )}
+        {!loadingClinicMeetingData &&
+          !availableDateToAddReport &&
+          availableDateToSecondBlueInfoBox && (
+            <div>
+              <Card className="bg-infoMain my-8 items-center gap-4 rounded-xl p-4">
+                <div className="flex items-center gap-4">
+                  <InformationCircleIcon className="h-5 w-5 text-white" />
+                  <Typography type={'h4'} text={dateInfoText} color={'white'} />
+                </div>
+                <Typography
+                  type={'body'}
+                  text={`• From 24 ${currentMonthName}, you will see the “Add meeting report” button on this screen.`}
+                  color={'white'}
+                  className="my-2 ml-8"
+                />
+              </Card>
+            </div>
+          )}
 
         {monthMeetingSubmitted &&
           !loadingClinicMeetingData &&
