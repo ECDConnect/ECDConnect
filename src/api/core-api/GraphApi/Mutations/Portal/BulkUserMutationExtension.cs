@@ -645,8 +645,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             foreach (var row in result)
             {
-                var sameValue = (from p in row
-                                 select p.Key + "").ToArray();
+                var sameValue = (from item in row select item.Key + "").ToArray();
 
                 if (sameValue.Length > 0)
                 {
