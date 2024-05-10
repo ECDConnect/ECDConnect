@@ -1,3 +1,4 @@
+using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -75,6 +76,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
 
+            var idPassportDuplications = ValidateIdPassportDuplications(sheet);
+
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
@@ -103,13 +106,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 var rowErrors = GetCHWValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, clinicId, clinicIds);
 
+                if (idPassportDuplications.Any())
+                {
+                    // If there is duplicate id or passport numbers add them to the row error list
+                    var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
+                    if (duplicateError != null)
+                    {
+                        rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
+                    }
+                }
+
                 // Collect all row errors.
                 // Could be on a row with no errors, but previous rows had errors.
                 if (rowErrors.Any() || validationErrors.Any())
                 {
                     // Dont add null rows
                     if (rowErrors.Any())
+                    {
                         validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
+                    }
 
                     // Do not continue processing if errors.
                     continue;
@@ -145,7 +160,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         Id = user.Id,
                         User = user,
-                        IsRegistered = false, //TODO: Registered by default?
+                        IsRegistered = false,
                         ConsentForPhoto = false,
                         InsertedDate = insertedDate,
                         ClinicId = new Guid(clinicId),
@@ -263,7 +278,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             // Local function
-            static IEnumerable<string> GetCHWValidationErrors(
+            static List<string> GetCHWValidationErrors(
                 string idOrPassport,
                 string id,
                 string passport,
@@ -350,6 +365,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
 
+            var idPassportDuplications = ValidateIdPassportDuplications(sheet);
+
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
@@ -378,13 +395,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     var rowErrors = GetTeamLeadValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email);
 
+                    if (idPassportDuplications.Any())
+                    {
+                        // If there is duplicate id or passport numbers add them to the row error list
+                        var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
+                        if (duplicateError != null)
+                        {
+                            rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
+                        }
+                    }
+
                     // Collect all row errors.
                     // Could be on a row with no errors, but previous rows had errors.
                     if (rowErrors.Any() || validationErrors.Any())
                     {
                         // Dont add null rows
                         if (rowErrors.Any())
+                        {
                             validationErrors.Add(new InputValidationError(row, rowErrors));
+                        }
 
                         // Do not continue processing if errors.
                         continue;
@@ -540,7 +569,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             // Local function
-            static IEnumerable<string> GetTeamLeadValidationErrors(
+            static List<string> GetTeamLeadValidationErrors(
                 string idOrPassport, 
                 string id, 
                 string passport, 
@@ -583,7 +612,59 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return errors;
             }
         }
+    
+        
+        private List<InputValidationError> ValidateIdPassportDuplications(ISheet sheet)
+        {
+            var validationErrors = new List<InputValidationError>();
+            var listItems = new Dictionary<int, String>();
+            for (var row = 1; row <= sheet.LastRowNum; row++)
+            {
+                var currentRow = sheet.GetRow(row);
+
+                if (currentRow is null)
+                {
+                    break;
+                }
+
+                var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
+                var id = UserHelper.CoerceValidSAID(ExcelHelper.GetCellValue(currentRow.GetCell(1)));
+                var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
+
+                if (idOrPassport is null
+                    && id is null
+                    && passport is null)
+                    continue;
+
+                if (id != null)
+                {
+                    listItems.Add(row, id);
+                }
+                if (passport != null)
+                {
+                    listItems.Add(row, passport);
+                }
+            }
+
+            var result = from item in listItems
+                         group item by item.Value into groupedItems
+                         where groupedItems.Count() > 1
+                         select groupedItems;
+
+            foreach (var row in result)
+            {
+                var sameValue = (from item in row select item.Key + "").ToArray();
+
+                if (sameValue.Length > 0)
+                {
+                    for (int i = 0; i < sameValue.Length; i++)
+                    {
+                        validationErrors.Add(new InputValidationError(int.Parse(sameValue[i]), new List<string> { $"Duplicate ID or Passport number for {row.Key}" }, $"Errors on row {sameValue[i]}."));
+                    }
+                }
+            }
+
+            return validationErrors;
+        }
     }
-
-
 }
