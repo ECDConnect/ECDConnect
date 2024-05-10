@@ -586,6 +586,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_dashboard, vData.VisitSection, false);
 
                         _ = _notificationManager.SendGGReferDOHANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId, referralGuid);
+                    } else {
+                        _ = _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGReferDOHA, searchCriteria: infantUserId);
                     }
                 }
                 else if (vData.Question == GGSettings.QuestionReceivingCSG)

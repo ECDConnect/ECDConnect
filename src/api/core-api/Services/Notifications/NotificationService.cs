@@ -362,7 +362,7 @@ namespace EcdLink.Api.CoreApi.Services
                     .Where(n => 
                         n.To == userId 
                         && n.MessageTemplateType == templateType 
-                        && (string.IsNullOrWhiteSpace(searchCriteria) || n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria)) 
+                        && (string.IsNullOrWhiteSpace(searchCriteria) || n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) || n.Action.Contains(searchCriteria)) 
                         && (!relatedToUserId.HasValue || n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedToUserId) ))
                     .ToList();
                 
