@@ -3,7 +3,6 @@ import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
   NotificationIntervals,
-  NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
@@ -46,7 +45,7 @@ export class InfantDocumentsNotificationValidator
             message: `Add a picture of page ii of ${infant.user?.firstName}'s Road to Health Book. Refer ${infant.caregiver?.firstName} to the clinic if they do not have
           ${infant.user?.firstName}'s document.`,
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.higher,
+            priority: 9,
             viewOnDashboard: true,
             area: 'child-registration',
             icon: 'IdentificationIcon',

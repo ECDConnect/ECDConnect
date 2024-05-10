@@ -77,6 +77,7 @@ export class UserLastLoginNotificationValidator
           message: `You haven't been online for more than 21 days.  We suggest connecting to a wifi network to complete this process or data in the next ${Math.abs(
             differenceInCalendarDays(deadline, lastSyncDate)
           )} days you might lose some of your information!`,
+          priority: 1,
         },
       ];
 
