@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useWindowSize } from '@reach/window-size';
 
 import {
@@ -80,6 +80,8 @@ export const VisitsTab: React.FC = () => {
   const calendarAddEvent = useCalendarAddEvent();
 
   const { id: infantId } = useParams<InfantProfileParams>();
+
+  const previousInfantId = usePrevious(infantId);
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -463,9 +465,15 @@ export const VisitsTab: React.FC = () => {
     wasLoading,
   ]);
 
-  useLayoutEffect(() => {
-    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
-  }, [appDispatch, infantId]);
+  useEffect(() => {
+    if (!previousInfantId && !!infantId) {
+      appDispatch(infantThunkActions.getInfantVisits({ infantId }));
+      /////////////////////////////////////////////////////////////////////////////
+      // TODO: integrate EC-1110 (new child event) and EC-1593 (new pregnant event)
+      // appDispatch(infantThunkActions.getEventRecordByClientId({clientId: infantId}))
+      /////////////////////////////////////////////////////////////////////////////
+    }
+  }, [appDispatch, infantId, previousInfantId]);
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>

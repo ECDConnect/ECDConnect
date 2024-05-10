@@ -7,6 +7,7 @@ import {
 } from '@/../../../packages/core/lib';
 import {
   CaregiverModelInput,
+  EventRecord,
   EventRecordType,
   InfantModelInput,
   SiteAddressInput,
@@ -35,6 +36,7 @@ export const InfantActions = {
   UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
   ADD_ADDITIONAL_VISIT_FOR_INFANT: 'addAdditionalVisitForInfant',
   RESTART_VISIT_FOR_INFANT: 'restartVisitForInfant',
+  GET_EVENT_RECORD_BY_ID: 'getEventRecordById',
 };
 
 export interface UpdateInfantCaregiver {
@@ -464,6 +466,31 @@ export const restartVisitForInfant = createAsyncThunk<
       }
 
       return visit;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getEventRecordByClientId = createAsyncThunk<
+  EventRecord,
+  { clientId: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_EVENT_RECORD_BY_ID,
+  async ({ clientId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new EventRecordService(
+          userAuth?.auth_token
+        ).getEventRecordByClientId(clientId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

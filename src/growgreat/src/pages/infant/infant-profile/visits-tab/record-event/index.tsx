@@ -318,7 +318,7 @@ export const RecordEvent: React.FC = () => {
     if (wasLoading && isFulfilled) {
       successDialog();
 
-      return history.push(ROUTES.CLIENTS.ROOT);
+      return goBack();
     }
   }, [
     goBack,
