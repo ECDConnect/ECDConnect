@@ -106,19 +106,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 var rowErrors = GetCHWValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, clinicId, clinicIds);
 
+                if (idPassportDuplications.Any())
+                {
+                    // If there is duplicate id or passport numbers add them to the row error list
+                    var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
+                    if (duplicateError != null)
+                    {
+                        rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
+                    }
+                }
+
                 // Collect all row errors.
                 // Could be on a row with no errors, but previous rows had errors.
-                if (rowErrors.Any() || validationErrors.Any() || idPassportDuplications.Any())
+                if (rowErrors.Any() || validationErrors.Any())
                 {
                     // Dont add null rows
                     if (rowErrors.Any())
                     {
-                        // If there is duplicate id or passport numbers add them to the row error list
-                        var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
-                        if (duplicateError != null)
-                        {
-                            rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
-                        }
                         validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
                     }
 
@@ -391,19 +395,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     var rowErrors = GetTeamLeadValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email);
 
+                    if (idPassportDuplications.Any())
+                    {
+                        // If there is duplicate id or passport numbers add them to the row error list
+                        var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
+                        if (duplicateError != null)
+                        {
+                            rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
+                        }
+                    }
+
                     // Collect all row errors.
                     // Could be on a row with no errors, but previous rows had errors.
-                    if (rowErrors.Any() || validationErrors.Any() || idPassportDuplications.Any())
+                    if (rowErrors.Any() || validationErrors.Any())
                     {
                         // Dont add null rows
                         if (rowErrors.Any())
                         {
-                            // If there is duplicate id or passport numbers add them to the row error list
-                            var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
-                            if (duplicateError != null)
-                            {
-                                rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
-                            }
                             validationErrors.Add(new InputValidationError(row, rowErrors));
                         }
 
