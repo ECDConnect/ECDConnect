@@ -158,7 +158,7 @@ namespace ECDLink.AutomatedJobs.Cron
             if (this._tenants == null)
             {
                 tenants.AddRange(tenancyRepo.GetAllTenants()
-                    .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
+                    .Where(x => x.TenantType != Tenancy.Enums.TenantType.Host && x.TenantType != Tenancy.Enums.TenantType.WhiteLabelTemplate)
                     .OrderBy(x => x.Id).ThenBy(x => x.ApplicationName)
                     .DistinctBy(x => x.Id)
                     .ToList());
@@ -177,7 +177,7 @@ namespace ECDLink.AutomatedJobs.Cron
                     }
                 });
                 tenants.AddRange(tenancyRepo.GetAllTenants()
-                    .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant && (tenantNames.Contains(x.ApplicationName) || tenantIds.Contains(x.Id)))
+                    .Where(x => x.TenantType != Tenancy.Enums.TenantType.Host && x.TenantType != Tenancy.Enums.TenantType.WhiteLabelTemplate && (tenantNames.Contains(x.ApplicationName) || tenantIds.Contains(x.Id)))
                     .OrderBy(x => x.Id).ThenBy(x => x.ApplicationName)
                     .DistinctBy(x => x.Id)
                     .ToList());

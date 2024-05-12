@@ -15,13 +15,13 @@ namespace ECDLink.Tenancy.Model
 
         public string OrganisationName { get; set; }
 
-        public TenantType TenantType { get; set; } = TenantType.Tenant;
-        public string ThemePathVar { get; set; }
-        public string Var1 { get; set; }
-        public string Var2 { get; set; }
+        public TenantType TenantType { get; set; } = TenantType.WhiteLabel;
+        public string ThemePath { get; set; }
         public string TestSiteAddress { get; set; }
         public string AdminTestSiteAddress { get; set; }
-        public string MoodleUrlVar { get; set; }
-        public string MoodleConfigVar { get; set; }
+        public string MoodleUrl { get; set; }
+        public string MoodleConfig { get; set; }
+        public string Path { get; set; }
+        public string Host { get; set; }
     }
 }

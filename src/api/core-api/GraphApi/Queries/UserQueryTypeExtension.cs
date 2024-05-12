@@ -332,7 +332,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             string userId)
         {
-            string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;
+            string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfig;
             if (string.IsNullOrEmpty(moodleConfigVar))
             {
                 return "false";

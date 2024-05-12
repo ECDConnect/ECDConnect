@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../utils/constants';
+import { TenantType } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { TlMeetingsRoutes } from '../../routes/app.routes';
@@ -18,7 +18,7 @@ export function TLMeetings() {
     if (
       data &&
       data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
+      data.tenantContext.tenantType === TenantType.ChwConnect
     ) {
       return [
         {

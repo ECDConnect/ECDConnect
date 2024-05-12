@@ -40,7 +40,7 @@ import { HealthCareWorkerSummary } from './components/health-care-worker-summary
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HealthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
-import { GrowGreatRoles, TenantContext } from '../../utils/constants';
+import { GrowGreatRoles, TenantType } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
@@ -437,7 +437,7 @@ export function ViewUser(props: any) {
         isRegistered &&
         data &&
         data.tenantContext &&
-        data.tenantContext.applicationName === TenantContext.GrowGreat && (
+        data.tenantContext.tenantType === TenantType.ChwConnect && (
           <DatePicker
             selectsRange
             selected={startDate}

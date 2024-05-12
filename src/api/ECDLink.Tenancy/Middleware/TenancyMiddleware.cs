@@ -86,8 +86,8 @@ namespace ECDLink.Tenancy.Middleware
                     }
                 }
             }
-            tenant.Var1 = path;
-            tenant.Var2 = context.Request.Host.Value;
+            tenant.Path = path;
+            tenant.Host = context.Request.Host.Value;
 
             return (tenant != null ? tenant : new TenantModel());
         }

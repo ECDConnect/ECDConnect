@@ -7,7 +7,7 @@ import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
 import MotherDashboard from './components/dashboard-mother/dashboard-mother';
 import HealthWorkerDashboard from './components/dashboard-health-worker/dashboard-health-worker';
-import { TenantContext } from '../../utils/constants';
+import { TenantType } from '../../utils/constants';
 
 // TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
@@ -19,7 +19,7 @@ export default function Dashboard() {
     if (
       data &&
       data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
+      data.tenantContext.tenantType === TenantType.ChwConnect
     ) {
       return [
         {

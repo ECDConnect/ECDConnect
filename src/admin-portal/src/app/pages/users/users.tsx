@@ -4,7 +4,7 @@ import { UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../utils/constants';
+import { TenantType } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 
@@ -20,7 +20,7 @@ export function Users() {
     if (
       data &&
       data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
+      data.tenantContext.tenantType === TenantType.ChwConnect
     ) {
       if (isTeamLead && !isAdministrator) {
         return [
@@ -98,7 +98,7 @@ export function Users() {
           navigation.map((item) => (
             <div
               className={
-                data?.tenantContext.applicationName === TenantContext.GrowGreat
+                data?.tenantContext.tenantType === TenantType.ChwConnect
                   ? 'w-3/12 '
                   : 'w-full'
               }

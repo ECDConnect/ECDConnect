@@ -9,10 +9,8 @@ export const GetTenantContext = gql`
       applicationName
       organisationName
       tenantType
-      themePathVar
-      var1
-      var2
-      moodleUrlVar
+      themePath
+      moodleUrl
     }
   }
 `;

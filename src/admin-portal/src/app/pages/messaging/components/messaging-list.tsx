@@ -11,7 +11,7 @@ import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';
 import { MessageRoleDto, ggRoles, ssRoles } from './message';
-import { TenantContext } from '../../../utils/constants';
+import { TenantType } from '../../../utils/constants';
 
 export default function MessageList() {
   const history = useHistory();
@@ -81,7 +81,7 @@ export default function MessageList() {
       if (
         tenantData &&
         tenantData.tenantContext &&
-        tenantData.tenantContext.applicationName === TenantContext.GrowGreat
+        tenantData.tenantContext.tenantType === TenantType.ChwConnect
       ) {
         setRoleData(ggRoles);
       } else {

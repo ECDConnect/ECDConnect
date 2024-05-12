@@ -3,6 +3,9 @@
     public enum TenantType
     {
         Host,
-        Tenant
+        OpenAccess,
+        WhiteLabelTemplate,
+        CHWConnect,
+        WhiteLabel
     }
 }

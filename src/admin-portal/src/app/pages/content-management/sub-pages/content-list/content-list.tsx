@@ -31,7 +31,7 @@ import {
 import { BulkActionStatus } from '../../../../components/ui-table/type';
 import { LanguageId } from '../../../../constants/language';
 import { GetNatalRecordsForType, GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../../../utils/constants';
+import { TenantType } from '../../../../utils/constants';
 import {
   Dropdown,
   SearchDropDown,
@@ -557,7 +557,7 @@ export default function ContentList({
   const rows =
     tenantData &&
     tenantData.tenantContext &&
-    tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+    tenantData.tenantContext.tenantType === TenantType.ChwConnect &&
     natalData &&
     natalData?.natalRecordsForType &&
     natalDataFiltered &&
@@ -592,7 +592,7 @@ export default function ContentList({
     if (
       tenantData &&
       tenantData.tenantContext &&
-      tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+      tenantData.tenantContext.tenantType === TenantType.ChwConnect &&
       natalData &&
       natalData?.natalRecordsForType &&
       (selectedTab === 2 || selectedTab === 3)

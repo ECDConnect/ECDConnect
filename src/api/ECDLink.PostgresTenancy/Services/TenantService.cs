@@ -63,15 +63,11 @@ namespace ECDLink.PostgresTenancy.Services
                 OrganisationName = tenant.OrganisationName,
                 SiteAddress = tenant.SiteAddress,
                 AdminSiteAddress = tenant.AdminSiteAddress,
-                //DatabaseName = connection["Database"]?.ToString() ?? string.Empty,
-                //Server = connection["Server"]?.ToString() ?? string.Empty,
-                //ConnectionString = tenant.ConnectionString,
-                DbProvider = "postgressql",
-                TenantType = tenant.TenantType,
+                TenantTypeId = tenant.TenantType,
                 TestSiteAddress = tenant.TestSiteAddress,
                 AdminTestSiteAddress = tenant.AdminTestSiteAddress,
-                MoodleUrlVar = tenant.MoodleUrlVar,
-                MoodleConfigVar = tenant.MoodleConfigVar
+                MoodleUrl = tenant.MoodleUrl,
+                MoodleConfig = tenant.MoodleConfig
             });
 
             return Cast(entity);
@@ -86,14 +82,12 @@ namespace ECDLink.PostgresTenancy.Services
                 ApplicationName = tenantEntity.ApplicationName,
                 SiteAddress = tenantEntity.SiteAddress,
                 AdminSiteAddress = tenantEntity.AdminSiteAddress,
-                TenantType = tenantEntity.TenantType,
-                ThemePathVar = tenantEntity.ThemePathVar,
-                Var1 = tenantEntity.Var1,
-                Var2 = tenantEntity.Var2,
+                TenantType = tenantEntity.TenantTypeId,
+                ThemePath = tenantEntity.ThemePath,
                 TestSiteAddress = tenantEntity.TestSiteAddress,
                 AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress,
-                MoodleUrlVar = tenantEntity.MoodleUrlVar,
-                MoodleConfigVar = tenantEntity.MoodleConfigVar
+                MoodleUrl = tenantEntity.MoodleUrl,
+                MoodleConfig = tenantEntity.MoodleConfig
 
             };
         }
