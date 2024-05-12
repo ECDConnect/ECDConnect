@@ -22,7 +22,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
-import { TenantContext } from '../../utils/constants';
+import { TenantType } from '../../utils/constants';
 import {
   INavigation,
   NavbarTypes,
@@ -113,7 +113,7 @@ export default function Shell() {
   });
 
   const isGrowGreatTenant =
-    data?.tenantContext?.applicationName === TenantContext.GrowGreat;
+    data?.tenantContext?.tenantType === TenantType.ChwConnect;
 
   const notifications = notificationsData?.allNotifications;
   const notReadNotifications = useMemo(

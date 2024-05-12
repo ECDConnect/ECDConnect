@@ -6995,15 +6995,12 @@ export type Mutation = {
   sendGGGGAddedABreastfeedingClubNotification: Scalars['Boolean'];
   sendGGGoldTierPointsTeamNotification: Scalars['Boolean'];
   sendGGLowBirthWeightNotification: Scalars['Boolean'];
-  sendGGMaternalDistressNotification: Scalars['Boolean'];
   sendGGMultipleReferralsNotification: Scalars['Boolean'];
   sendGGPointsTeamPlacementNotBottom75PercNotification: Scalars['Boolean'];
   sendGGPointsTeamPlacementNotTop3Notification: Scalars['Boolean'];
   sendGGPointsTeamPlacementNotification: Scalars['Boolean'];
   sendGGPointsYearlySummaryNotification: Scalars['Boolean'];
   sendGGPregnantMomLowMUACNotification: Scalars['Boolean'];
-  sendGGReferDOHANotification: Scalars['Boolean'];
-  sendGGReferSASSANotification: Scalars['Boolean'];
   sendGGReferralDangerSignsNotification: Scalars['Boolean'];
   sendGGSilverTierPointsTeamNotification: Scalars['Boolean'];
   sendGGSubstanceAbuseNotification: Scalars['Boolean'];
@@ -9240,11 +9237,6 @@ export type MutationSendGgLowBirthWeightNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendGgMaternalDistressNotificationArgs = {
-  caregiverFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendGgMultipleReferralsNotificationArgs = {
   clientFirstName?: InputMaybe<Scalars['String']>;
   noOfReferrals?: InputMaybe<Scalars['String']>;
@@ -9277,18 +9269,6 @@ export type MutationSendGgPointsYearlySummaryNotificationArgs = {
 
 export type MutationSendGgPregnantMomLowMuacNotificationArgs = {
   caregiverFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgReferDohaNotificationArgs = {
-  caregiverFirstName?: InputMaybe<Scalars['String']>;
-  childFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgReferSassaNotificationArgs = {
-  caregiverFirstName?: InputMaybe<Scalars['String']>;
-  childFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -13382,6 +13362,7 @@ export type Query = {
   allInfants?: Maybe<Array<Maybe<Infant>>>;
   allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
   allMessageLogsForAdmin?: Maybe<Array<Maybe<MessageLogModel>>>;
+  allMessageLogsForTeamLead?: Maybe<Array<Maybe<Notification>>>;
   allMothers?: Maybe<Array<Maybe<Mother>>>;
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
@@ -13569,6 +13550,7 @@ export type Query = {
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
   downloadGGStatsFile?: Maybe<FileModel>;
   entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
+  eventRecordForClient?: Maybe<EventRecord>;
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
   generateChildProgressReport?: Maybe<Scalars['String']>;
@@ -15421,6 +15403,10 @@ export type QueryAllMessageLogsForAdminArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllMessageLogsForTeamLeadArgs = {
+  userId: Scalars['UUID'];
+};
+
 export type QueryAllMothersForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
   visitType?: InputMaybe<Scalars['String']>;
@@ -16267,6 +16253,10 @@ export type QueryDocumentsForHcwArgs = {
 
 export type QueryEntityChangesToSyncArgs = {
   lastUpdated: Scalars['DateTime'];
+};
+
+export type QueryEventRecordForClientArgs = {
+  clientId: Scalars['UUID'];
 };
 
 export type QueryFranchisorByUserIdArgs = {
@@ -18315,21 +18305,24 @@ export type TenantModel = {
   adminSiteAddress?: Maybe<Scalars['String']>;
   adminTestSiteAddress?: Maybe<Scalars['String']>;
   applicationName?: Maybe<Scalars['String']>;
+  host?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
-  moodleConfigVar?: Maybe<Scalars['String']>;
-  moodleUrlVar?: Maybe<Scalars['String']>;
+  moodleConfig?: Maybe<Scalars['String']>;
+  moodleUrl?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
+  path?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
   tenantType: TenantType;
   testSiteAddress?: Maybe<Scalars['String']>;
-  themePathVar?: Maybe<Scalars['String']>;
-  var1?: Maybe<Scalars['String']>;
-  var2?: Maybe<Scalars['String']>;
+  themePath?: Maybe<Scalars['String']>;
 };
 
 export enum TenantType {
+  ChwConnect = 'CHW_CONNECT',
   Host = 'HOST',
-  Tenant = 'TENANT',
+  OpenAccess = 'OPEN_ACCESS',
+  WhiteLabel = 'WHITE_LABEL',
+  WhiteLabelTemplate = 'WHITE_LABEL_TEMPLATE',
 }
 
 export type Theme = {

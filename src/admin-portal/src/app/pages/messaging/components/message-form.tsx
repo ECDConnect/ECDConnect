@@ -7,7 +7,7 @@ import { DatePicker, FormInput, Typography } from '@ecdlink/ui';
 import FormField from '../../../components/form-field/form-field';
 import FormSelectorField from '../../../components/form-selector-field/form-selector-field';
 import { MessageRoleDto, ggRoles, ssRoles } from './message';
-import { TenantContext } from '../../../utils/constants';
+import { TenantType } from '../../../utils/constants';
 
 export interface MessageFormProps {
   formKey: string;
@@ -73,7 +73,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
       if (
         tenantData &&
         tenantData.tenantContext &&
-        tenantData.tenantContext.applicationName === TenantContext.GrowGreat
+        tenantData.tenantContext.tenantType === TenantType.ChwConnect
       ) {
         setRoleData(ggRoles);
       } else {

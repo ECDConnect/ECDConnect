@@ -71,8 +71,7 @@ import { ViewReport } from '../pages/tl-meetings/components/view-report/view-rep
 import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
 import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
 import { useApolloClient } from '@apollo/client';
-import { GetTenantContext, TenantModel } from '@ecdlink/graphql';
-import { TenantContext } from '../utils/constants';
+import { GetTenantContext, TenantModel, TenantType } from '@ecdlink/graphql';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -157,7 +156,7 @@ const AuthRoutes: React.FC = () => {
     }) || {};
 
   const isGrowGreatTenant =
-    data?.tenantContext?.applicationName === TenantContext.GrowGreat;
+    data?.tenantContext?.tenantType === TenantType.ChwConnect;
 
   return (
     <Switch>

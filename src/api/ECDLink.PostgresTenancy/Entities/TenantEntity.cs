@@ -13,23 +13,13 @@ namespace ECDLink.PostgresTenancy.Entities
 
         public string OrganisationName { get; set; }
 
-        public string Server { get; set; }
-
-        public string DbProvider { get; set; }
-
-        public string DatabaseName { get; set; }
-
-        public string ConnectionString { get; set; }
-
-        public TenantType TenantType { get; set; }
+        public TenantType TenantTypeId { get; set; }
         public string AdminSiteAddress { get; set; }
-        public string ThemePathVar { get; set; }
-        public string Var1 { get; set; }
-        public string Var2 { get; set; }
+        public string ThemePath { get; set; }
         public string TestSiteAddress { get; set; }
         public string AdminTestSiteAddress { get; set; }
-        public string MoodleUrlVar { get; set; }
-        public string MoodleConfigVar { get; set; }
+        public string MoodleUrl { get; set; }
+        public string MoodleConfig { get; set; }
 
     }
 }

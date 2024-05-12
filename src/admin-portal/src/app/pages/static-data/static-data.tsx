@@ -20,7 +20,7 @@ import { SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client';
 import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../utils/constants';
+import { TenantType } from '../../utils/constants';
 
 export declare enum SiteDataSections {
   Sex = 'Sex',
@@ -175,7 +175,7 @@ export function StaticData() {
               rows={
                 data &&
                 data.tenantContext &&
-                data.tenantContext.applicationName === TenantContext.GrowGreat
+                data.tenantContext.tenantType === TenantType.ChwConnect
                   ? growgreatNavigation
                   : navigation
               }
