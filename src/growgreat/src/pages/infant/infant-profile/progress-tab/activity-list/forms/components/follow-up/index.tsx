@@ -242,7 +242,7 @@ export const FollowUp = ({
           secondaryColour: 'successBg',
           message: `${!!caregiverName ? caregiverName + ' &' : ''} ${name} ${
             !!caregiverName ? 'are' : 'is'
-          } going well`,
+          } doing well`,
           value: 100,
         };
       case 'Error':
