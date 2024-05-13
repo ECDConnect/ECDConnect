@@ -1,16 +1,16 @@
 export enum RoleSystemNameEnum {
   // OA/WL
-  Coach = 'COACH',
-  Franchisor = 'FRANCHISOR',
-  Practitioner = 'PRACTITIONER',
-  Principal = 'PRINCIPAL',
-  Child = 'CHILD',
+  Coach = 'Coach',
+  Franchisor = 'Franchisor',
+  Practitioner = 'Practitioner',
+  Principal = 'Principal',
+  Child = 'Child',
   // GG
-  CHW = 'COMMUNITY HEALTH WORKER',
-  TeamLead = 'TEAM LEAD',
+  CHW = 'Community Health Worker',
+  TeamLead = 'Team Lead',
   // ALL
-  SuperAdmin = 'SUPER ADMIN',
-  Administrator = 'ADMINISTRATOR',
+  SuperAdmin = 'Super Admin',
+  Administrator = 'Administrator',
 }
 
 export enum RoleDefaultNameEnum {

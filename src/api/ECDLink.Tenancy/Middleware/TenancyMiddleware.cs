@@ -44,50 +44,52 @@ namespace ECDLink.Tenancy.Middleware
         private TenantModel GetTenant(HttpContext context, ITenantService tenancyService)
         {
             string path = "";
-            TenantModel tenant = new TenantModel();
+            TenantModel tenant = null;
 
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
                                 .FirstOrDefault();
+            // Check url making request
+            var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (context.Request.Host.HasValue ? context.Request.Host.Value : String.Empty);
 
-            // If there is a jwt, automatically just use it
-            if (!string.IsNullOrEmpty(claim?.Value) && claim?.Value != "00000000-0000-0000-0000-000000000000")
+            if (!string.IsNullOrWhiteSpace(refererUrl))
             {
-                var idTenant = tenancyService.GetTenantById(claim.Value);
-                if (idTenant != null && idTenant != default(TenantModel))
-                    tenant = idTenant;
-
-                path = "JWT:" + claim?.Value;
-
+                var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+                if (urlTenant != null && urlTenant != default(TenantModel))
+                {
+                    tenant = urlTenant;
+                    path = "URL:" + refererUrl;
+                }
             }
             else
             {
-
-                // Check url making request
-                var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (context.Request.Host.HasValue ? context.Request.Host.Value : String.Empty);
-
-                if (!string.IsNullOrWhiteSpace(refererUrl))
+                // If no url making the request, check the server the request was made to            
+                var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
+                if (host != default(TenantModel))
                 {
-                    var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
-                    if (urlTenant != null && urlTenant != default(TenantModel))
-                    {
-                        tenant = urlTenant;
-                        path = "URL:" + refererUrl;
-                    }
+                    tenant = host;
+                    path = "Host:" + context.Request.Host.Value;
+                }
+            }
+
+            // If there is a jwt, check it matches with the url resolved.
+            if (!string.IsNullOrEmpty(claim?.Value) && claim?.Value != "00000000-0000-0000-0000-000000000000" && tenant != null)
+            {
+                if (tenant.Id.ToString() == claim.Value)
+                {
+                    path = "JWT:" + claim?.Value;
                 }
                 else
                 {
-                    // If no url making the request, check the server the request was made to            
-                    var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
-                    if (host != default(TenantModel))
-                    {
-                        tenant = host;
-                        path = "Host:" + context.Request.Host.Value;
-                    }
+                    tenant = null;
                 }
             }
-            tenant.Path = path;
-            tenant.Host = context.Request.Host.Value;
+
+            if (tenant != null)
+            {
+                tenant.Path = path;
+                tenant.Host = context.Request.Host.Value;
+            }
 
             return (tenant != null ? tenant : new TenantModel());
         }
