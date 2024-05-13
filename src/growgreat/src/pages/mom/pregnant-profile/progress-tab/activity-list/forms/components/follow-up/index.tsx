@@ -172,7 +172,7 @@ export const FollowUp = ({
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
-          message: `${name} are doing well`,
+          message: `${name} is doing well`,
           value: 100,
         };
       case 'Error':
