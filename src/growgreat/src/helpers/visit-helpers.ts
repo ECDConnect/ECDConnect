@@ -67,10 +67,11 @@ export const getVisitSubTitle = (visit: VisitDto): string => {
     return 'Visit incomplete';
   }
 
+  // Visit incomplete and expired
   if (
     !visit.attended &&
     !!visit.startedDate &&
-    new Date(visit.startedDate).getTime() < twoDaysAgo.getTime()
+    new Date(visit.dueDate) < new Date()
   ) {
     return `Missed visit deadline`;
   }

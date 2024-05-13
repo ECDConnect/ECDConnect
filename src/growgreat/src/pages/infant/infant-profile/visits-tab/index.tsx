@@ -235,7 +235,7 @@ export const VisitsTab: React.FC = () => {
           (checkPreviousVisit && (canStartVisit(item) || isFirstVisit)) ||
           (isAdditionalVisit && previousVisit?.attended),
         actionButtonIcon: 'ArrowCircleRightIcon',
-        actionButtonText: !isCurrentVisitMissed ? 'Start visit' : 'Redo visit',
+        actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
           !isCurrentVisitMissed
             ? history.push(`${location.pathname}/activities-form/${item.id}`, {
