@@ -1,4 +1,4 @@
-import { useDialog } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import {
   Button,
   ComponentBaseProps,
@@ -27,7 +27,6 @@ import { CaregiverMultipleChildrenModal } from '../../components/caregiver-multi
 import ROUTES from '@/routes/routes';
 import { useSelector } from 'react-redux';
 import { getUser } from '@/store/user/user.selectors';
-import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
   TabsItemForPrincipal,
@@ -62,11 +61,12 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const isPrincipal = practitioner?.isPrincipal;
   const isCoachView = user?.roles?.some(
-    (role) => role.name === UserTypeEnum.Coach
+    (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const isPractitionerView =
-    user?.roles?.some((role) => role.name === UserTypeEnum.Practitioner) ||
-    isPrincipal;
+    user?.roles?.some(
+      (role) => role.systemName === RoleSystemNameEnum.Practitioner
+    ) || isPrincipal;
   const hasAttendanceRoute =
     (isPrincipal && practitioners?.length! > 0) ||
     (practitioner && !practitioner?.isTrainee);

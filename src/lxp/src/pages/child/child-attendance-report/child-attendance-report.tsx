@@ -1,6 +1,7 @@
 import {
   ChildAttendanceReportModel,
   ChildGroupingAttendanceReportModel,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -83,7 +84,9 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   const authUser = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   const getAttendanceText = (score: number): string => {
     if (score >= goodScoreThreshold) {

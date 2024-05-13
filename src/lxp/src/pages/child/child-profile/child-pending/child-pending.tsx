@@ -1,4 +1,4 @@
-import { useDialog } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -41,7 +41,9 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   const practitioners = useSelector(
     practitionerSelectors.getPractitioners

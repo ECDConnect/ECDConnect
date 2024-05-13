@@ -41,6 +41,8 @@ CREATE TABLE public."TenantHasModule" (
 	CONSTRAINT "PK_TenantHasModule" PRIMARY KEY ("TenantId", "ModuleId")
 );
 
+select * from "AspNetRoles" anr ;
+
 ALTER TABLE public."TenantHasModule" ADD CONSTRAINT "FK_TenantHasModule_Module_ModuleId" FOREIGN KEY ("ModuleId") REFERENCES public."Module"("Id") ON DELETE CASCADE;
 
 select * from "Tenant" t ;

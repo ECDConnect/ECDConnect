@@ -6,6 +6,7 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompleteCoachInformationNotificationValidator
   implements NotificationValidator
@@ -33,7 +34,7 @@ export class IncompleteCoachInformationNotificationValidator
      * 4. The user doesn't have a phoneNumber
      */
     const isCoach = userState?.user?.roles?.some(
-      (role) => role.name === 'Coach'
+      (role) => role.systemName === RoleSystemNameEnum.Coach
     );
 
     const showNotification =

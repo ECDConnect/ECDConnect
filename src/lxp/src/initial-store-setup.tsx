@@ -64,6 +64,7 @@ import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsThunkActions } from '@store/statements';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -87,7 +88,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
 

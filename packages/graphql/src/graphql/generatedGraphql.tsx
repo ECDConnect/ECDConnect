@@ -389,6 +389,7 @@ export type ApplicationIdentityRole = {
   name?: Maybe<Scalars['String']>;
   normalizedName?: Maybe<Scalars['String']>;
   permissions?: Maybe<Array<Maybe<Permission>>>;
+  systemName?: Maybe<Scalars['String']>;
   tenantId?: Maybe<Scalars['UUID']>;
 };
 
@@ -13550,7 +13551,7 @@ export type Query = {
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
   downloadGGStatsFile?: Maybe<FileModel>;
   entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
-  eventRecordForClient?: Maybe<EventRecord>;
+  eventRecordForClient?: Maybe<Array<Maybe<EventRecord>>>;
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
   generateChildProgressReport?: Maybe<Scalars['String']>;

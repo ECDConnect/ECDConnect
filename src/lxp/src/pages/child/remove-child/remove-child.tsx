@@ -1,4 +1,4 @@
-import { ReasonForLeavingDto } from '@ecdlink/core';
+import { ReasonForLeavingDto, RoleSystemNameEnum } from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -51,7 +51,9 @@ export const RemoveChild: React.FC = () => {
   );
   const history = useHistory();
 
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   useEffect(() => {
     if (!isOnline) {

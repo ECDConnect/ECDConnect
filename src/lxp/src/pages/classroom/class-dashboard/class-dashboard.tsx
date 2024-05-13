@@ -1,4 +1,4 @@
-import { LocalStorageKeys, useDialog } from '@ecdlink/core';
+import { LocalStorageKeys, RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
@@ -66,7 +66,9 @@ export const ClassDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isTrainee = practitioner?.isTrainee;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);

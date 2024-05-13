@@ -26,6 +26,7 @@ export const UserList = gql`
       roles {
         id
         name
+        systemName
         __typename
       }
       __typename
@@ -66,6 +67,7 @@ export const GetUserById = gql`
           id
           name
         }
+        systemName
       }
     }
   }

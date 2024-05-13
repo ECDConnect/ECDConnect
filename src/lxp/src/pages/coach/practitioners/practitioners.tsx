@@ -8,7 +8,7 @@ import {
   LoadingSpinner,
   SearchDropDownOption,
 } from '@ecdlink/ui';
-import { getAvatarColor } from '@ecdlink/core';
+import { RoleSystemNameEnum, getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '../../../components/search-header/search-header';
 import { format } from 'date-fns';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -69,7 +69,9 @@ export const Practitioners: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const location = useLocation<PractitionersRouteState>();
   const stateFilter = location.state?.filter;
   const practitionersForCoach = useSelector(

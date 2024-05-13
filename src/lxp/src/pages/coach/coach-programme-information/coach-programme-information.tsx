@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useTheme, useDialog } from '@ecdlink/core';
+import { useTheme, useDialog, RoleSystemNameEnum } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -35,7 +35,9 @@ export const CoachProgrammeInformation: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const userData = useSelector(userSelectors.getUser);
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);

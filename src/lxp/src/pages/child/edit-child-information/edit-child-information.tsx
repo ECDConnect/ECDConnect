@@ -8,6 +8,7 @@ import {
   Document,
   useDialog,
   ClassroomGroupDto,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -87,7 +88,9 @@ export const EditChildInformation: React.FC = () => {
   const practitionerIsOnLeave = location.state.practitionerIsOnLeave;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);

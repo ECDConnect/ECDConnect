@@ -6,6 +6,7 @@ import {
   Document,
   ContentConsentTypeEnum,
   LocalStorageKeys,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import {
   FileTypeEnum,
@@ -137,7 +138,9 @@ export const ChildProfile: React.FC = () => {
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const playGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );

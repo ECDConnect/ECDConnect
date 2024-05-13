@@ -1,6 +1,11 @@
 import { useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
-import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
+import {
+  PermissionEnum,
+  RoleSystemNameEnum,
+  usePanel,
+  UserDto,
+} from '@ecdlink/core';
 import { UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -24,7 +29,6 @@ import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
 import UiTable from './components/ui-table';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
-import { GrowGreatRoles } from '../../../../utils/constants';
 
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   AdminTypes?.ContentManager,
@@ -52,7 +56,7 @@ export default function ApplicationAdmins() {
 
   const { hasPermission, user } = useUser();
   const isSuperAdmin = user?.roles?.some(
-    (role: any) => role.name === AdminTypes.SuperAdmin
+    (role: any) => role.systemName === AdminTypes.SuperAdmin
   );
 
   const [searchValue, setSearchValue] = useState('');
@@ -236,7 +240,7 @@ export default function ApplicationAdmins() {
 
   const viewSelectedRow = (selectedRow: any) => {
     const role = selectedRow?.roles?.filter(
-      (item) => item?.name !== GrowGreatRoles.HealthCareWorker
+      (item) => item?.name !== RoleSystemNameEnum.CHW
     );
     localStorage.setItem(
       'selectedUser',

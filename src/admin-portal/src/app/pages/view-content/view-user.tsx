@@ -35,6 +35,7 @@ import {
   NOTIFICATION,
   passwordSchema,
   PermissionEnum,
+  RoleSystemNameEnum,
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
@@ -235,7 +236,9 @@ export function ViewUser(props: any) {
   };
 
   let isAdminUser = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
+    (role: any) =>
+      role.systemName === RoleSystemNameEnum.Administrator ||
+      role.systemName === RoleSystemNameEnum.SuperAdmin
   );
 
   const sendInvite = async () => {
@@ -282,7 +285,7 @@ export function ViewUser(props: any) {
   const [editActive, setEditActive] = useState<boolean>(false);
 
   let isCHW = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Community Health Worker'
+    (role: any) => role.systemName === RoleSystemNameEnum.CHW
   );
 
   const {
