@@ -8,6 +8,7 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompleteTrackAttendanceNotificationValidator
   implements NotificationValidator
@@ -33,7 +34,8 @@ export class IncompleteTrackAttendanceNotificationValidator
     } = this.store.getState();
 
     const isCoach = userState?.user?.roles?.some(
-      (role: { name: string }) => role.name === 'Coach'
+      (role: { systemName: string }) =>
+        role.systemName === RoleSystemNameEnum.Coach
     );
 
     if (isCoach) return [];

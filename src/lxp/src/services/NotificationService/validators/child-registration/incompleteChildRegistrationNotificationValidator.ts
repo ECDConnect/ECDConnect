@@ -7,6 +7,7 @@ import {
   NotificationValidator,
   NotificationIntervals,
 } from '../../NotificationService.types';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompleteChildRegistrationNotificationValidator
   implements NotificationValidator
@@ -30,7 +31,7 @@ export class IncompleteChildRegistrationNotificationValidator
     } = this.store.getState();
 
     const isCoach = userState?.user?.roles?.some(
-      (role) => role.name === 'Coach'
+      (role) => role.systemName === RoleSystemNameEnum.Coach
     );
 
     if (isCoach) return [];

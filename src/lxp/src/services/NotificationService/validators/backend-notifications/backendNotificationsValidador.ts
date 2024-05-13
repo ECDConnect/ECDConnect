@@ -3,7 +3,7 @@ import {
   NotificationIntervals,
   NotificationValidator,
 } from '../../NotificationService.types';
-import { Config, UserDto } from '@ecdlink/core';
+import { Config, RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import { Notification, QueryAllNotificationsArgs } from '@ecdlink/graphql';
 import { api } from '@/services/axios.helper';
 import {
@@ -101,7 +101,9 @@ export class BackendNotificationsValidator implements NotificationValidator {
   };
 
   getDefaultArea = (user: UserDto) => {
-    const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+    const isCoach = user?.roles?.some(
+      (role) => role.systemName === RoleSystemNameEnum.Coach
+    );
 
     if (isCoach) return 'coach';
 

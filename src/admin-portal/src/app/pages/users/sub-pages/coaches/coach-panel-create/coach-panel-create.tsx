@@ -22,6 +22,7 @@ import {
   userSchema,
   siteAddressSchema,
   initialSiteAddressValues,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -258,7 +259,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   };
 
   const addUserRole = () => {
-    const role = roleData.roles.find((role: RoleDto) => role.name === 'Coach');
+    const role = roleData.roles.find(
+      (role: RoleDto) => role.systemName === RoleSystemNameEnum.Coach
+    );
 
     const copy = [...selectedUserRoles];
     if (!copy.some((x) => x.id === role.id)) {

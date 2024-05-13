@@ -3,6 +3,7 @@ import {
   initialUserDetailsValues,
   NOTIFICATION,
   RoleDto,
+  RoleSystemNameEnum,
   useNotifications,
 } from '@ecdlink/core';
 import {
@@ -263,7 +264,7 @@ export default function HealthCareWorkerPanelCreate(
   const addUserRole = () => {
     const role = roleData.roles.find(
       //TODO: Keeping this patern but the name should not be hard coded
-      (role: RoleDto) => role.name === 'Community Health Worker'
+      (role: RoleDto) => role.systemName === RoleSystemNameEnum.CHW
     );
 
     const copy = [...selectedUserRoles];

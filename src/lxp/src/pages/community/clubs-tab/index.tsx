@@ -20,7 +20,7 @@ import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { clubSelectors } from '@/store/club';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useDialog, useSnackbar } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useSnackbar } from '@ecdlink/core';
 import SearchHeader from '@/components/search-header/search-header';
 import {
   filterClubsByLeagueType,
@@ -44,7 +44,9 @@ export const ClubsTab = () => {
   const appDispatch = useAppDispatch();
 
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
 
   const { isOnline } = useOnlineStatus();

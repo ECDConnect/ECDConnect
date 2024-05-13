@@ -7,6 +7,7 @@ import {
   LanguageDto,
   ContentTypeEnum,
   useDialog,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import {
   Alert,
@@ -389,7 +390,11 @@ export const ChildProgressObservationPage: React.FC = () => {
       <BannerWrapper
         size={'small'}
         onBack={() => {
-          if (practitionerUser?.roles?.some((role) => role.name === 'Coach')) {
+          if (
+            practitionerUser?.roles?.some(
+              (role) => role.systemName === RoleSystemNameEnum.Coach
+            )
+          ) {
             history.push(ROUTES.COACH.CHILD_PROFILE, {
               childId: routeState.childId,
             });

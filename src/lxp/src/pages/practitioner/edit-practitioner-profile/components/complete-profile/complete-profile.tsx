@@ -7,7 +7,7 @@ import { userSelectors } from '@store/user';
 import { traineeSelectors } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useDialog } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
@@ -35,7 +35,7 @@ export const CompleteProfile: React.FC = () => {
   ).filter((item) => item?.type === 'completed');
 
   const hasPractitionerRole = userData?.roles?.some(
-    (role) => role.name === 'Practitioner'
+    (role) => role.systemName === RoleSystemNameEnum.Practitioner
   );
 
   const notRegistered = !Boolean(practitioner?.isRegistered);

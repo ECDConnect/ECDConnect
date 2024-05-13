@@ -10,6 +10,7 @@ import {
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { format } from 'date-fns';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -46,11 +47,11 @@ export class IncompletePractitionerInformationNotificationValidator
 
     if (practitionerState.practitioner) {
       const hasPractitionerRole = userState?.user?.roles?.some(
-        (role) => role.name === 'Practitioner'
+        (role) => role.systemName === RoleSystemNameEnum.Practitioner
       );
 
       const hasPrincipalRole = userState?.user?.roles?.some(
-        (role) => role.name === 'Principal'
+        (role) => role.systemName === RoleSystemNameEnum.Principal
       );
 
       const notRegistered = !Boolean(

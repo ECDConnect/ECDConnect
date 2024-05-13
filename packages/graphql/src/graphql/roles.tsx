@@ -10,6 +10,7 @@ export const RoleList = gql`
         id
         name
       }
+      systemName
     }
   }
 `;
@@ -19,6 +20,7 @@ export const FilterRoleList = gql`
     roles {
       id
       name
+      systemName
     }
   }
 `;

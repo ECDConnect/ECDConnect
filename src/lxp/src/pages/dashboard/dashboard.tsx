@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useDialog, useTheme } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
   Avatar,
@@ -103,7 +103,9 @@ export const Dashboard: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
   const dialog = useDialog();
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
@@ -407,8 +409,8 @@ export const Dashboard: React.FC = () => {
       if (
         userData.roles?.some(
           (role) =>
-            role.name === UserTypeEnum.Practitioner ||
-            role.name === UserTypeEnum.Principal
+            role.systemName === RoleSystemNameEnum.Practitioner ||
+            role.systemName === RoleSystemNameEnum.Principal
         )
       ) {
         const currentDate = new Date();
@@ -848,7 +850,9 @@ export const Dashboard: React.FC = () => {
   }, [shouldUserSync]);
 
   const goToProfile = () => {
-    const profileRoute = userData?.roles?.some((role) => role.name === 'Coach')
+    const profileRoute = userData?.roles?.some(
+      (role) => role.systemName === RoleSystemNameEnum.Coach
+    )
       ? ROUTES.COACH.PROFILE.ROOT
       : ROUTES.PRACTITIONER.PROFILE.ROOT;
 

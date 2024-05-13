@@ -40,10 +40,11 @@ import { HealthCareWorkerSummary } from './components/health-care-worker-summary
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HealthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
-import { GrowGreatRoles, TenantType } from '../../utils/constants';
+import { TenantType } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -217,7 +218,7 @@ export function ViewUser(props: any) {
   };
 
   let isCHWRole = userData?.userById?.roles?.some(
-    (role: any) => role.name === GrowGreatRoles.HealthCareWorker
+    (role: any) => role.systemName === RoleSystemNameEnum.CHW
   );
 
   const getRoleStatusChip = (status: string) => {
@@ -391,7 +392,7 @@ export function ViewUser(props: any) {
               <div
                 key={i.id}
                 className={classNames(
-                  i.name === GrowGreatRoles.HealthCareWorker
+                  i.name === RoleSystemNameEnum.CHW
                     ? 'bg-primary'
                     : 'bg-tertiary',
                   ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
@@ -399,7 +400,7 @@ export function ViewUser(props: any) {
               >
                 <p className="text-16">
                   {' '}
-                  {i.name === GrowGreatRoles.HealthCareWorker ? 'CHW' : i.name}
+                  {i.name === RoleSystemNameEnum.CHW ? 'CHW' : i.name}
                 </p>
               </div>
             );

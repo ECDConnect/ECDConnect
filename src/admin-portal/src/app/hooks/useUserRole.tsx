@@ -6,7 +6,7 @@ export const useUserRole = () => {
   const { user } = useUser();
 
   const roles = useMemo(() => {
-    const rolesSet = new Set(user?.roles?.map((role) => role.name));
+    const rolesSet = new Set(user?.roles?.map((role) => role.systemName));
 
     return {
       isTeamLead: rolesSet.has(UserRoles.TeamLead),

@@ -8,12 +8,15 @@
     "portal-gg": "cd ./src/admin-portal && SET PORT=3001 && yarn start",
     "portal-wl": "cd ./src/admin-portal && SET PORT=3005 && yarn start",
     "app": "cd ./src/lxp && yarn start",
+    "app-wl": "cd ./src/lxp && SET PORT=3005 && yarn start",
+    "app-gg": "cd ./src/growgreat && yarn start",
     "fe-gg": "cd ./src/growgreat && yarn start",
     "app:mocks": "cd ./src/lxp && yarn start:mocks",
     "app:withSW": "cd ./src/lxp && npx serve -s build -l 4000",
     "fe-gg:withSW": "cd ./src/growgreat && npx serve -s build -l 4000",
     "build:portal": "yarn bootstrap && (cd ./src/admin-portal && yarn build)",
     "build:app": "yarn bootstrap && (cd ./src/lxp && yarn build)",
+    "build:app-gg": "yarn bootstrap && (cd ./src/growgreat && yarn build)",
     "build:fe-gg": "yarn bootstrap && (cd ./src/growgreat && yarn build)",
     "lint:app": "eslint ./src/lxp/src --ext .js,jsx,.ts,.tsx",
     "lint:portal": "eslint ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
@@ -30,6 +33,7 @@
     "watch_packages": "npm-watch build:ui",
     "purge:portal": "cd ./src/admin-portal && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
     "purge:app": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
+    "purge:app-wl": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
     "purge:fe-gg": "cd ./src/growgreat && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}"
   },
   "watch": {

@@ -8,6 +8,7 @@ import {
   passwordSchema,
   practitionerSchema,
   RoleDto,
+  RoleSystemNameEnum,
   siteAddressSchema,
   useNotifications,
   userSchema,
@@ -285,7 +286,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
   const addUserRole = () => {
     const role = roleData.roles.find(
-      (role: RoleDto) => role.name === 'Practitioner'
+      (role: RoleDto) => role.systemName === RoleSystemNameEnum.Practitioner
     );
 
     const copy = [...selectedUserRoles];

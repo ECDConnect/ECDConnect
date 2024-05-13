@@ -46,21 +46,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (user != null)
             {
                 var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
-                if (roles.Any(x => x.Name.Contains(Roles.ADMINISTRATOR)))
+                if (roles.Any(x => x.SystemName.Contains(Roles.ADMINISTRATOR.ToUpper())))
                 {
                     return Roles.ADMINISTRATOR;
                 }
-                if (roles.Any(x => x.Name.Contains(Roles.FRANCHISOR)))
+                if (roles.Any(x => x.SystemName.Contains(Roles.FRANCHISOR.ToUpper())))
                 {
                     return Roles.FRANCHISOR;
                 }
                 //Coach
-                if (roles.Any(x => x.Name.Contains(Roles.COACH)))
+                if (roles.Any(x => x.SystemName.Contains(Roles.COACH.ToUpper())))
                 {
                     return Roles.COACH;
                 }
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
-                if (roles.Any(x => x.Name.Contains(Roles.PRINCIPAL) || x.Name.Contains(Roles.PRACTITIONER)))
+                if (roles.Any(x => x.SystemName.Contains(Roles.PRINCIPAL.ToUpper()) || x.SystemName.Contains(Roles.PRACTITIONER.ToUpper())))
                 {
                     var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, personnelService, userId);
                     if (userData != null)
@@ -76,7 +76,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
                 //Child
-                if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
+                if (roles.Any(x => x.SystemName.Contains(Roles.CHILD.ToUpper())))
                 {
                     return Roles.CHILD;
                 }
