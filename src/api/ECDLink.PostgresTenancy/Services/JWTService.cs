@@ -65,7 +65,15 @@ namespace ECDLink.PostgresTenancy.Services
 
         public bool InvalidateExistingTokens(Guid id)
         {
-            return _repository.DeleteAllTokensById(id);
+            try
+            {
+                return _repository.DeleteAllTokensById(id);
+            }
+            catch (Exception e)
+            {
+
+            }
+            return true;
         }
     }
 }
