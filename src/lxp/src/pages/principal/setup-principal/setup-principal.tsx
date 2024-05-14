@@ -53,7 +53,6 @@ export const SetupPrincipal: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const user = useSelector(userSelectors.getUser);
-  const programmeType = useSelector(classroomsSelectors.getProgrammeType());
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -131,19 +130,19 @@ export const SetupPrincipal: React.FC = () => {
       (x) => x.enumId === ProgrammeTypeEnum.Playgroup
     );
 
-    if (programmeType?.id === playGroupProgrammeType?.id && classroom?.id) {
-      const unsureClassProgrammeInputModel: ClassroomGroupDto = {
-        id: newGuid(),
-        classroomId: classroom?.id,
-        isActive: true,
-        programmeTypeId: programmeType?.id,
-        name: NoPlaygroupClassroomType.name,
-        userId: user?.id, // Unsure classroom will belong to the principal
-      };
-      appDispatch(
-        classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
-      );
-    }
+    // if (programmeType?.id === playGroupProgrammeType?.id && classroom?.id) {
+    //   const unsureClassProgrammeInputModel: ClassroomGroupDto = {
+    //     id: newGuid(),
+    //     classroomId: classroom?.id,
+    //     isActive: true,
+    //     programmeTypeId: programmeType?.id,
+    //     name: NoPlaygroupClassroomType.name,
+    //     userId: user?.id, // Unsure classroom will belong to the principal
+    //   };
+    //   appDispatch(
+    //     classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
+    //   );
+    // }
 
     // Update classroom number of practitioners
     appDispatch(
@@ -192,7 +191,6 @@ export const SetupPrincipal: React.FC = () => {
             idNumber: principalPractitioner.idNumber,
             firstName: principalPractitioner.firstName,
             lastName: principalPractitioner.surname,
-            programmeTypeId: programmeType?.id,
           };
           await new PractitionerService(
             userAuth?.auth_token

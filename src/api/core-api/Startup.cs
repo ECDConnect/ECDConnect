@@ -178,6 +178,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReferralService, ReferralService>();
             services.AddTransient<ILeagueService, LeagueService>();
             services.AddTransient<ITeamLeadService, TeamLeadService>();
+            services.AddTransient<IClassroomService, ClassroomService>();
 
             // Notification tasks (All will be run daily)
             foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()

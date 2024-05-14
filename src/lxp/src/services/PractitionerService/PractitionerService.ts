@@ -619,42 +619,6 @@ class PractitionerService {
     return response.data.data.reportDetailsForPractitioner;
   }
 
-  async getClassroomDetailsForPractitioner(
-    userId: string
-  ): Promise<{ principalName: string; name: string }> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query classroomDetailsForPractitioner($userId: String) {
-          classroomDetailsForPractitioner(userId: $userId) {
-            principalName
-            name
-            classroomGroupName
-            classroomGroupId
-            insertedDate
-            classSiteAddress
-            id
-            preschoolFeeAmount
-            preschoolFeeAmountLastUpdateDate
-            programmeTypeId
-            classSiteAddressId
-          }
-        }
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.classroomDetailsForPractitioner;
-  }
-
   async getClassroomGroupClassroomsForPractitioner(
     userId: string
   ): Promise<ClassroomGroupDto[]> {

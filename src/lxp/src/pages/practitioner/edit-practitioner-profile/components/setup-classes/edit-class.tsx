@@ -100,9 +100,8 @@ export const EditClass = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meetEveryday, setValue, trigger]);
 
-  const programmeType = useSelector(classroomsSelectors.getProgrammeType());
   const classProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammesByClassGroupId(classToEdit.id)
+    classroomsSelectors.getClassProgrammesByClassroomGroupId(classToEdit.id)
   );
 
   const isFormValid = () => {
@@ -116,19 +115,18 @@ export const EditClass = ({
         id: classToEdit.id,
         name: name || '',
         classroomId: editClassroomId,
-        programmeTypeId: programmeType?.id,
-        isActive: true,
-        practitionerId: practitionerId,
+        userId: practitionerId!,
+        learners: [], // TODO need to check on this!
       })
     );
 
+    // TODO - this probably needs to be updated
     appDispatch(
       classroomsThunkActions.updateClassroomGroup({
         id: classToEdit.id,
         classroomGroup: {
           name: name || '',
           classroomId: editClassroomId,
-          programmeTypeId: programmeType?.id,
           isActive: true,
           practitionerId: practitionerId,
         },
@@ -252,7 +250,7 @@ export const EditClass = ({
             )}
           />
         </div>
-        {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
+        {/* {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
           <div>
             <span>
               Do children attend this class for half the day or the full day?
@@ -275,7 +273,7 @@ export const EditClass = ({
               />
             </div>
           </div>
-        )}
+        )} */}
 
         <div>
           <span>{`Does ${classToEdit.name} class meet everyday?`}</span>

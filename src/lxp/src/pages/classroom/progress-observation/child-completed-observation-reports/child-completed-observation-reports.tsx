@@ -71,7 +71,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
     classroomsSelectors.getLearnerClassGroupId(currentChild?.userId)
   );
   const classroomGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classroomGroupId)
+    classroomsSelectors.getClassroomGroupById(classroomGroupId!)
   );
   const childPractioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(classroomGroup?.userId || '')

@@ -96,7 +96,7 @@ export const Dashboard: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
@@ -495,7 +495,7 @@ export const Dashboard: React.FC = () => {
   const onNavigation = (navItem: any) => {
     if (
       (((classroom && classroom.id) ||
-        (classroomGroup && classroomGroup.length > 0)) &&
+        (classroomGroups && classroomGroups.length > 0)) &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
@@ -513,12 +513,19 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (isOnline) {
-      if (practitioner?.userId && !classroom) {
+      if (!!practitioner?.userId && !classroom) {
         (async () =>
           await appDispatch(
-            classroomsThunkActions.getClassroomDetailsForPractitioner({
-              id: practitioner?.userId!,
-            })
+            classroomsThunkActions.getClassroom({})
+          ).unwrap())();
+      }
+      if (
+        !!practitioner?.userId &&
+        (!classroomGroups || !classroomGroups.length)
+      ) {
+        (async () =>
+          await appDispatch(
+            classroomsThunkActions.getClassroomGroups({})
           ).unwrap())();
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }
@@ -821,7 +828,7 @@ export const Dashboard: React.FC = () => {
   const goToClassroom = () => {
     if (
       (((classroom && classroom.id) ||
-        (classroomGroup && classroomGroup.length > 0)) &&
+        (classroomGroups && classroomGroups.length > 0)) &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&

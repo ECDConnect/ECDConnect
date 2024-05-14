@@ -293,36 +293,6 @@ class PractitionerService {
     return response.data.data.promotePractitionerToPrincipal;
   }
 
-  async getClassroomDetailsForPractitioner(
-    userId: string
-  ): Promise<{ principalName: string; name: string }> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query classroomDetailsForPractitioner($userId: String) {
-          classroomDetailsForPractitioner(userId: $userId) {
-            principalName
-            name
-            classroomGroupName
-            id
-            insertedDate
-          }
-        }
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.classroomDetailsForPractitioner;
-  }
-
   async UpdatePractitionerShareInfo(
     practitionerId: string,
     principalId: string

@@ -60,7 +60,6 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
@@ -386,6 +385,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
         onBack={() => setSearchTextActive(false)}
         onSearchButtonClick={() => setSearchTextActive(true)}
       >
+        {/* 
+        No more programme types so no playgroup
         {isPlaygroup && (
           <SearchDropDown<string>
             displayMenuOverlay={true}
@@ -403,7 +404,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
               hint: filterInfo?.filterHint || '',
             }}
           />
-        )}
+        )} */}
 
         <SearchDropDown<string>
           displayMenuOverlay={true}

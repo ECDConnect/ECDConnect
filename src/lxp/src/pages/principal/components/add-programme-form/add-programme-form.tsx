@@ -1,4 +1,4 @@
-import { ClassroomDto, ProgrammeTypeDto } from '@ecdlink/core';
+import { ProgrammeTypeDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
@@ -23,6 +23,7 @@ import {
 import { useEffect } from 'react';
 import { practitionerSelectors } from '@/store/practitioner';
 import { traineeSelectors } from '@/store/trainee';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const AddProgrammeForm: React.FC<{
   onNext: OnNext;
@@ -41,9 +42,7 @@ export const AddProgrammeForm: React.FC<{
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const appDispatch = useAppDispatch();
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroups = useSelector(
-    classroomsSelectors?.getAllClassroomGroups
-  );
+  const classroomGroups = useSelector(classroomsSelectors?.getClassroomGroups);
 
   const traineeTimeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
@@ -83,19 +82,19 @@ export const AddProgrammeForm: React.FC<{
 
   useEffect(() => {
     if (isSmartLinkImported) {
-      if (classroom?.isPrinciple) {
-        setProgrammeFormValue('isPrincipalOrLeader', true);
-      }
+      // if (classroom?.isPrinciple) {
+      //   setProgrammeFormValue('isPrincipalOrLeader', true);
+      // }
       if (classroom?.name) {
         setProgrammeFormValue('name', classroom?.name);
       }
-      if (classroomGroups?.[0]?.programmeType?.id) {
-        setProgrammeFormValue('type', classroomGroups?.[0]?.programmeType?.id);
-      }
-      if (typeof classroom?.numberPractitioners === 'number') {
+      // if (classroomGroups?.[0]?.programmeType?.id) {
+      //   setProgrammeFormValue('type', classroomGroups?.[0]?.programmeType?.id);
+      // }
+      if (typeof classroom?.numberOfPractitioners === 'number') {
         setProgrammeFormValue(
           'smartStartPractitioners',
-          classroom?.numberPractitioners
+          classroom?.numberOfPractitioners
         );
       }
       if (typeof classroom?.numberOfOtherAssistants === 'number') {
@@ -106,10 +105,9 @@ export const AddProgrammeForm: React.FC<{
       }
     }
   }, [
-    classroom?.isPrinciple,
     classroom?.name,
     classroom?.numberOfOtherAssistants,
-    classroom?.numberPractitioners,
+    classroom?.numberOfPractitioners,
     classroomGroups,
     isSmartLinkImported,
     setProgrammeFormValue,
@@ -152,25 +150,40 @@ export const AddProgrammeForm: React.FC<{
     classroomId: string
   ) => {
     const classroomInputModel: ClassroomDto = {
-      userId: user?.id ?? '',
       id: classroomId,
       name: programme?.name ?? '',
-      isPrinciple: programme?.isPrincipalOrLeader ?? false,
-      numberPractitioners: programme?.smartStartPractitioners
+      numberOfPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,
       numberOfOtherAssistants: programme?.nonSmartStartPractitioners
         ? +programme?.nonSmartStartPractitioners
         : 0,
-      insertedDate: new Date().toISOString(),
-      isActive: true,
+      imageUrl: '',
+      principal: {
+        email: user?.email!,
+        firstName: user?.firstName!,
+        phoneNumber: user?.phoneNumber!,
+        profileImageUrl: user?.profileImageUrl!,
+        surname: user?.surname!,
+        userId: user?.id!,
+      },
+      siteAddress: {
+        addressLine1: '',
+        addressLine2: '',
+        addressLine3: '',
+        id: '',
+        name: '',
+        postalCode: '',
+        ward: '',
+      },
     };
     const programmeInput = programData?.find((x) => x.id === programme.type);
 
+    // TODO
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    if (programmeInput) {
-      appDispatch(classroomsActions.setProgrammeType(programmeInput));
-    }
+    // if (programmeInput) {
+    //   appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    // }
   };
 
   const updateClassroom = (
@@ -178,30 +191,34 @@ export const AddProgrammeForm: React.FC<{
     classroomId: string
   ) => {
     const classroomInputModel: ClassroomDto = {
-      userId: user?.id ?? '',
       id: classroomId,
       name: programme?.name ?? '',
-      isPrinciple: programme?.isPrincipalOrLeader ?? false,
-      numberPractitioners: programme?.smartStartPractitioners
+      numberOfPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,
       numberOfOtherAssistants: programme?.nonSmartStartPractitioners
         ? +programme?.nonSmartStartPractitioners
         : 0,
-      insertedDate: new Date().toISOString(),
-      isActive: true,
-      siteAddress: classroom?.siteAddress,
-      siteAddressId: classroom?.siteAddressId,
+      imageUrl: '',
+      siteAddress: classroom?.siteAddress!,
       preschoolFeeAmount: classroom?.preschoolFeeAmount,
       preschoolFeeAmountLastUpdateDate:
         classroom?.preschoolFeeAmountLastUpdateDate,
+      principal: {
+        email: user?.email!,
+        firstName: user?.firstName!,
+        phoneNumber: user?.phoneNumber!,
+        profileImageUrl: user?.profileImageUrl!,
+        surname: user?.surname!,
+        userId: user?.id!,
+      },
     };
 
     const programmeInput = programData?.find((x) => x.id === programme.type);
     appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    if (programmeInput) {
-      appDispatch(classroomsActions.setProgrammeType(programmeInput));
-    }
+    // if (programmeInput) {
+    //   appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    // }
   };
 
   const onSubmit = (e: EditProgrammeModel) => {

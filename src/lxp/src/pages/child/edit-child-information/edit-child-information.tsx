@@ -7,7 +7,6 @@ import {
   LearnerDto,
   Document,
   useDialog,
-  ClassroomGroupDto,
   RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -76,6 +75,7 @@ import ROUTES from '../../../../src/routes/routes';
 import { UNSURE_CLASS } from '@/constants/classroom';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationsSelectors } from '@/store/notifications';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();

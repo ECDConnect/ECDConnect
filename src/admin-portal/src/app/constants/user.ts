@@ -1,5 +1,5 @@
 export const enum UserRoles {
-  Administrator = 'ADMINISTRATOR',
-  SuperAdmin = 'SUPER ADMIN',
-  TeamLead = 'TEAM LEAD',
+  Administrator = 'Administrator',
+  SuperAdmin = 'Super Admin',
+  TeamLead = 'Team Lead',
 }

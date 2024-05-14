@@ -3,7 +3,7 @@ import {
   editClassroomSchema,
 } from '@/schemas/practitioner/edit-class';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
+import { ClassProgrammeDto } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import {
@@ -24,10 +24,10 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { isFullDayOptions } from '../../edit-practitioner-profile.types';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const programmeType = useSelector(classroomsSelectors.getProgrammeType());
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -56,10 +56,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       classroomId: '',
       name: '',
       practitionerId: '',
-      isFullDay:
-        programmeType?.enumId === ProgrammeTypeEnum.Playgroup
-          ? undefined
-          : true,
+      isFullDay: true,
     },
     reValidateMode: 'onBlur',
   });
@@ -120,9 +117,8 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
         name: data?.name ?? '',
-        programmeTypeId: programmeType?.id ?? '',
-        isActive: true,
-        practitionerId: data?.practitionerId,
+        userId: data?.practitionerId!,
+        learners: [],
       };
 
       appDispatch(classroomsActions.createClassroomGroup(classroomGroupModel));
@@ -151,10 +147,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     resetClassForm({
       name: '',
       practitionerId: '',
-      isFullDay:
-        programmeType?.enumId === ProgrammeTypeEnum.Playgroup
-          ? undefined
-          : true,
+      isFullDay: true,
     });
   };
 
@@ -197,7 +190,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             )}
           />
         </div>
-        {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
+        {/* {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
           <div>
             <span>
               Do children attend this class for half the day or the full day?
@@ -220,7 +213,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
               />
             </div>
           </div>
-        )}
+        )} */}
 
         <div>
           <span>{`Does ${

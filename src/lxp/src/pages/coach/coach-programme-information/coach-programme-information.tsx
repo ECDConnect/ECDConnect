@@ -48,8 +48,9 @@ export const CoachProgrammeInformation: React.FC = () => {
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
   );
+  // THIS PROBABLY NEEDS TO BE UPDATED
   const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.userId === practitionerId
+    (item) => item.principal.userId === practitionerId
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerClassroomGroups = practitionerClassroom

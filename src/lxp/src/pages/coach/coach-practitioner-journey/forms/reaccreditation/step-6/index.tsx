@@ -118,17 +118,11 @@ export const Step6ReAccreditation = ({
       longSide: Number(questions[1].answer),
       shortSide: Number(questions[0].answer),
       numberOfAssistants: Number(numberOfAssistants),
-      programType: toCamelCase(
-        currentClassroomGroups[0]?.programmeType?.description ?? ''
-      ) as CalculateCapacityProps['programType'],
+      programType: 'preschool',
     });
 
     if (result > 0) {
       return `${result} children`;
-    }
-
-    if (!currentClassroomGroups[0]?.programmeType?.description) {
-      return 'Programme type could not be found';
     }
 
     return 'It was not possible to calculate the capacity';
@@ -150,25 +144,23 @@ export const Step6ReAccreditation = ({
   ]);
 
   const renderAlertList = useMemo(() => {
-    const programmeType = toCamelCase(
-      currentClassroomGroups[0]?.programmeType?.description ?? ''
-    );
+    // const programmeType = 'N/A';
 
-    if (programmeType === 'playgroup') {
-      return [
-        'Playgroups can have a maximum of 12 children at a time.',
-        'Every child must have at least 1 square metre of free space each to play in.',
-        'There should be 10 children to every 1 adult in the programme.',
-      ];
-    }
+    // if (programmeType === 'playgroup') {
+    //   return [
+    //     'Playgroups can have a maximum of 12 children at a time.',
+    //     'Every child must have at least 1 square metre of free space each to play in.',
+    //     'There should be 10 children to every 1 adult in the programme.',
+    //   ];
+    // }
 
-    if (programmeType === 'dayMother') {
-      return [
-        'Day mothers can have a maximum of 6 children at a time.',
-        'Every child must have at least 1 square metre of free space each to play in.',
-        'There should be 10 children to every 1 adult in the programme.',
-      ];
-    }
+    // if (programmeType === 'dayMother') {
+    //   return [
+    //     'Day mothers can have a maximum of 6 children at a time.',
+    //     'Every child must have at least 1 square metre of free space each to play in.',
+    //     'There should be 10 children to every 1 adult in the programme.',
+    //   ];
+    // }
 
     return [
       'Preschools can have a maximum of 20 children at a time.',

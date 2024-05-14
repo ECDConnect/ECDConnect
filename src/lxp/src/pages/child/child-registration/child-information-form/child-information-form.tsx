@@ -1,8 +1,4 @@
-import {
-  ClassroomGroupDto,
-  getArrayRange,
-  ProgrammeAttendanceReasonDto,
-} from '@ecdlink/core';
+import { getArrayRange, ProgrammeAttendanceReasonDto } from '@ecdlink/core';
 import {
   Alert,
   AlertProps,
@@ -49,6 +45,7 @@ import { PractitionerChildRegisterState } from '../../practitioner-child-registr
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import { filterUniqueClassrooms } from '@/utils/classroom/classroom';
 import { UNSURE_CLASS } from '@/constants/classroom';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   childInformation,
@@ -78,7 +75,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   const [provideReason, setProvideReason] = useState(false);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const allClassroomGroups = useSelector(
-    classroomsSelectors.getAllClassroomGroups
+    classroomsSelectors.getClassroomGroups
   );
   const reasons = useSelector(
     staticDataSelectors.getProgrammeAttendanceReasons
@@ -224,6 +221,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
           ? classroomsForPrincipal
           : classroomsForPractitioner;
 
+      // WHY IS THIS LIST NO UNIQUE TO START WITH???
       filterUniqueClassrooms(
         currentClassroomGroups.filter(
           (item) =>

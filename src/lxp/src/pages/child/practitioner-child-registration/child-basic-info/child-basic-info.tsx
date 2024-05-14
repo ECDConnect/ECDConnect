@@ -1,8 +1,4 @@
-import {
-  ClassroomGroupDto,
-  FormComponentProps,
-  getAvatarColor,
-} from '@ecdlink/core';
+import { FormComponentProps, getAvatarColor } from '@ecdlink/core';
 import {
   Divider,
   Dropdown,
@@ -33,6 +29,7 @@ import { PractitionerChildRegisterState } from '../types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import { filterUniqueClassrooms } from '@/utils/classroom/classroom';
 import { UNSURE_CLASS } from '@/constants/classroom';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -40,7 +37,7 @@ export const ChildBasicInfo: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const allClassroomGroups = useSelector(
-    classroomsSelectors?.getAllClassroomGroups
+    classroomsSelectors?.getClassroomGroups
   );
   const location = useLocation<PractitionerChildRegisterState>();
 

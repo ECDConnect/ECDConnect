@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Managers;
@@ -46,6 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 return classRoom;
             }
 
+            // TODO - Why is this returning blank??? It should probably error if it does not find the group to update
             return new ClassroomGroup();
         }
         public ClassroomGroup UpdateClassroomGroup(

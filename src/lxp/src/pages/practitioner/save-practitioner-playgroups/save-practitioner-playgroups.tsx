@@ -49,9 +49,6 @@ export const EditPlaygroups: React.FC = () => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal === true;
-  const programmeType = useSelector(
-    classroomsSelectors.getClassroomProgrammeType()
-  );
 
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     EditPlaygroupModel[]
@@ -123,9 +120,10 @@ export const EditPlaygroups: React.FC = () => {
       userId: playgroup?.userId,
     };
 
-    appDispatch(
-      classroomsActions.createClassroomGroup(classroomGroupInputModel)
-    );
+    // TODO
+    // appDispatch(
+    //   classroomsActions.createClassroomGroup(classroomGroupInputModel)
+    // );
 
     for (const meetingDay of playgroup.meetingDays) {
       const classProgrammeInputModel: ClassProgrammeDto = {
@@ -151,9 +149,10 @@ export const EditPlaygroups: React.FC = () => {
       (group) => !playgroups.some((pg) => pg.classroomGroupId === group.id)
     );
 
-    for (const playG of removedClassroomGroups) {
-      appDispatch(classroomsActions.deleteClassroomGroup(playG));
-    }
+    // TODO
+    // for (const playG of removedClassroomGroups) {
+    //   appDispatch(classroomsActions.deleteClassroomGroup(playG));
+    // }
 
     await saveEditedPlayGroups(playgroups);
 
@@ -180,9 +179,8 @@ export const EditPlaygroups: React.FC = () => {
             appDispatch(
               classroomsActions.updateClassroomGroup({
                 ...currentPlayGroup,
-                programmeTypeId: programmeType?.id,
                 name: playGroup.name,
-                userId: playGroup.userId,
+                userId: playGroup.userId!,
               })
             );
 
@@ -193,10 +191,10 @@ export const EditPlaygroups: React.FC = () => {
                   ...currentPlayGroup,
                   classroomId: playGroup?.classroomId!,
                   id: playGroup?.id,
-                  programmeTypeId: programmeType?.id,
                   name: playGroup.name,
                   userId: playGroup.userId,
                   isActive: true,
+                  learners: [],
                 },
               })
             );

@@ -2,6 +2,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -17,6 +18,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Types;
@@ -139,20 +141,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practiManager.GetAllChildrenForPractitioner(userId);
         }
 
-        public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-           [Service] PersonnelService practiManager,
-            string userId)
-        {
-            return practiManager.GetAllClassroomsForPractitioner(userId);
-        }
-
-        public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] PersonnelService practiManager,
-            string userId)
-        {
-            return practiManager.GetAllClassroomGroupsForPractitioner(userId);
-        }
-
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
           [Service] IFileGenerationService fileService,
           IGenericRepositoryFactory repoFactory)
@@ -189,79 +177,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return await fileService.FieldsToExcelTemplate(fieldList, fieldDefinitionList, languageList, reportName);
         }
 
-        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] PersonnelService practiManager,
-            string userId)
-        {
-            return practiManager.GetClassroomDetailsForPractitioner(userId);
-        }
-
-        public List<ClassroomGroup> GetClassroomGroupClassroomsForPractitioner([Service] PersonnelService practiManager,
-            string userId)
-        {
-            return practiManager.GetAllClassroomGroupsForPractitioner(userId);
-        }
-
-        public PractitionerReportDetails GetReportDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor, [Service] PersonnelService practiManager, IGenericRepositoryFactory repoFactory,
+        public PractitionerReportDetails GetReportDetailsForPractitioner(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IClassroomService classroomService,
+            IGenericRepositoryFactory repoFactory,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Practitioner practi = practiRepo.GetByUserId(userId);
-            PrincipalClassroom classDetails = practiManager.GetClassroomDetailsForPractitioner(userId);
-            PractitionerReportDetails details = new PractitionerReportDetails() { 
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var practitioner = practitionerRepo.GetByUserId(userId);
+            var classDetails = classroomService.GetClassroomDetailsForPractitioner(userId);
+
+            var details = new PractitionerReportDetails() { 
                 ClassroomGroupId = classDetails.ClassroomGroupId, 
                 ClassroomGroupName = classDetails.ClassroomGroupName, 
                 Id = classDetails.Id, 
-                IdNumber = practi.User.IdNumber, 
+                IdNumber = practitioner.User.IdNumber, 
                 InsertedDate = classDetails.InsertedDate, 
-                Name = practi.User.FullName, 
-                Phone = practi.User.PhoneNumber, 
+                Name = practitioner.User.FullName, 
+                Phone = practitioner.User.PhoneNumber, 
                 PrincipalName = classDetails.PrincipalName, 
                 ProgrammeDays = "Monday to Friday", 
                 ProgrammeTypeName = classDetails.ProgrammeTypeName,
                 ClassSiteAddress = classDetails.ClassSiteAddress
             };
+
             return details;
-        }
-
-        public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            [Service] PersonnelService practiManager,
-            string userId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            List<PractitionerClassroomName> classrooms = new List<PractitionerClassroomName>();
-            List<ClassroomGroup> classroomGroup = practiManager.GetAllClassroomGroupsForPractitioner(userId);
-            if (classroomGroup.Count > 0)
-            {
-                foreach (var group in classroomGroup)
-                {
-                    string coachName = null;
-                    var practitioner = practiRepo.GetByUserId(userId);
-                    if (practitioner != null)
-                    {
-                        if (practitioner.CoachHierarchy != null)
-                        {
-                            var coach = coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
-                            if (coach != null)
-                            {
-                                coachName = coach.User.FullName;
-                            }
-                        }
-                    }
-                    Classroom classroom = classroomRepo.GetById(group.ClassroomId);
-                    if (classroom != null)
-                    {
-                        var pcn = new PractitionerClassroomName() { ClassroomGroupId = group.Id, ClassRoomId = classroom.Id, ClassroomName = classroom.Name, CoachName = coachName };
-                        classrooms.Add(pcn);
-                    }
-                }
-            }
-
-            return classrooms;
         }
 
         public async Task<List<Child>> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,

@@ -1,10 +1,8 @@
-import {
-  ClassroomDto,
-  ClassroomGroupDto,
-  ProgrammeTypeDto,
-} from '@ecdlink/core';
+import { ProgrammeTypeDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const getClassroomForCoach = (
   state: RootState
@@ -21,7 +19,7 @@ export const getProgrammeType = () =>
   );
 
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+  state.classroomData.classroomGroups || [];
 
 export const getClassroomGroupById = (id?: string) =>
   createSelector(

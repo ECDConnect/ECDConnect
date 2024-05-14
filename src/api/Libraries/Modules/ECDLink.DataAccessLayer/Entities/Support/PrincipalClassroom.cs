@@ -4,7 +4,7 @@ using System;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
-    [EntityPermission(PermissionGroups.CLASSROOM)]
+    // TODO: This should be removed, once current dependencies are refactored
     public class PrincipalClassroom
     {
         public string PrincipalName { get; set; }

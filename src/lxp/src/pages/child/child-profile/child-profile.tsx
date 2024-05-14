@@ -134,6 +134,7 @@ export const ChildProfile: React.FC = () => {
     return x.user?.id !== practitioner?.user?.id;
   });
 
+  // Need to update this, it can be fetched from the list of learners on each class
   const classGroupId = useSelector(
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
@@ -142,7 +143,7 @@ export const ChildProfile: React.FC = () => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const playGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classGroupId)
+    classroomsSelectors.getClassroomGroupById(classGroupId || '')
   );
 
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);

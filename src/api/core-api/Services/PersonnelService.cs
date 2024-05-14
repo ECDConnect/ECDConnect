@@ -4,6 +4,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
@@ -76,6 +77,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private ILogger<UserMutationExtension> _logger;
         private IReassignmentService __reassignmentService;
         private IServiceProvider _services;
+        private IClassroomService _classroomService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -86,6 +88,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             UserLicenseManager userLicenseManager,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
+            [Service] IClassroomService classroomService,
             ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine,
             [Service] ILogger<UserMutationExtension> logger,
@@ -124,6 +127,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _clubService = clubService;
             _logger = logger;
             _services = services;
+            _classroomService = classroomService;
         }
 
         private IReassignmentService _reassignmentService
@@ -287,66 +291,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 return _practiGenericRepo.GetByUserId(parentUserId.Value);          
             }
             else return null;
-        }
-
-        public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner(string practitionerId)
-        {            
-            return _classGroupRepo.GetListByUserId(practitionerId.ToString());
-        }
-
-        public List<Classroom> GetAllClassroomsForPractitioner(string userIdOfPractitioner)
-        {
-            return _classRepo.GetListByUserId(userIdOfPractitioner);
-        }
-
-        public PrincipalClassroom GetClassroomDetailsForPractitioner(string userId)
-        {                       
-            PrincipalClassroom principalClassroom = new PrincipalClassroom();
-            var practitioner = _practiGenericRepo.GetByUserId(userId);
-            if (practitioner != null)
-            {
-                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin || practitioner.PrincipalHierarchy == null
-                    ? practitioner 
-                    : _practiGenericRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
-
-                if (principal != null)
-                {
-                    principalClassroom.PrincipalName = string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName;
-                    ClassroomGroup classroomGroup = _classGroupRepo.GetByUserId(userId);
-                    Classroom classroom = null;
-
-                    if (classroomGroup != null)
-                    {
-                        classroom = _classRepo.GetById(classroomGroup.ClassroomId);
-                        principalClassroom.ClassroomGroupName = classroomGroup.Name;
-                        principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
-                        ProgrammeType ptype = _programmeRepo.GetAll().Where(p => p.Id == classroomGroup.ProgrammeTypeId).FirstOrDefault();
-                        principalClassroom.ProgrammeTypeName = ptype!=null ? ptype.Description : "";
-                        principalClassroom.ProgrammeTypeId = classroomGroup.ProgrammeTypeId.ToString();
-                    }
-                    else
-                    {
-                        //if no classroomgroup is available to look at, use the classroom for principal
-                        classroom = _classRepo.GetByUserId(principal.UserId.ToString());
-                    }
-                    if (classroom != null)
-                    {
-                        principalClassroom.Name = classroom.Name;
-                        principalClassroom.Id = classroom.Id.ToString();
-                        principalClassroom.InsertedDate = classroom.InsertedDate;
-                        principalClassroom.PreschoolFeeAmount = classroom.PreschoolFeeAmount;
-                        principalClassroom.PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate;
-
-                        if (classroom.SiteAddressId != null)
-                        {
-                            SiteAddress classAddress = _addressRepo.GetById((Guid)classroom.SiteAddressId);
-                            principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
-                            principalClassroom.ClassSiteAddressId = classAddress.Id.ToString();
-                        }
-                    }
-                }
-            }
-            return principalClassroom;
         }
 
         public List<Practitioner> GetAllPractitionersForPrincipal(string userId)
@@ -559,7 +503,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = "Principal"
                 });
 
-                var classroom = GetClassroomDetailsForPractitioner(practitionerToDemote.UserId.ToString());
+                var classroom = _classroomService.GetClassroomDetailsForPractitioner(practitionerToDemote.UserId.ToString());
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",

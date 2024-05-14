@@ -38,22 +38,21 @@ export const SetupClasses = ({
   const [classroomGroups, setClassroomGroups] = useState<ClassroomGroupDto[]>();
 
   useEffect(() => {
-    if (classroomGroupsFromStore.length) {
-      setCurrentTitle('Confirm Class');
-      const _classroomGroups: ClassroomGroupDto[] = [];
-
-      for (const classroomGroup of classroomGroupsFromStore) {
-        const _hold = {
-          ...classroomGroup,
-        };
-        _hold.classProgrammes = classroomGroupProgrammes.filter(
-          (a) => a.classroomGroupId === classroomGroup.id
-        );
-        _classroomGroups.push(_hold);
-      }
-
-      setClassroomGroups(_classroomGroups);
-    }
+    // todo
+    // if (classroomGroupsFromStore.length) {
+    //   setCurrentTitle('Confirm Class');
+    //   const _classroomGroups: ClassroomGroupDto[] = [];
+    //   for (const classroomGroup of classroomGroupsFromStore) {
+    //     const _hold = {
+    //       ...classroomGroup,
+    //     };
+    //     _hold.classProgrammes = classroomGroupProgrammes.filter(
+    //       (a) => a.classroomGroupId === classroomGroup.id
+    //     );
+    //     _classroomGroups.push(_hold);
+    //   }
+    //   setClassroomGroups(_classroomGroups);
+    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomGroupProgrammes, classroomGroupsFromStore.length]);
 

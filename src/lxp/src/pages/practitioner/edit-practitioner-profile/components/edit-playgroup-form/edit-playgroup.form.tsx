@@ -55,9 +55,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const [classroomGroup, setClassroomGroup] =
     useState<RecursivePartial<ClassroomGroupDto>>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const programmeType = useSelector(
-    classroomsSelectors.getClassroomProgrammeType()
-  );
+
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
   );
@@ -89,16 +87,8 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     errors: { name: playgroupName },
   } = playgroupsFormState;
 
-  const isPlaygroup = useMemo(
-    () => programmeType?.id === playgroupId,
-    [programmeType?.id]
-  );
-
   const isFormValid = () => {
-    const isValidFields = isPlaygroup
-      ? typeof isFullDay === 'boolean' && isValid
-      : isValid;
-    return isValidFields && meetingDays && meetingDays?.length > 1;
+    return isValid && meetingDays && meetingDays?.length > 1;
   };
 
   const [practitionersList, setPractitionersList] = useState<
@@ -314,7 +304,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           />
         </div>
       </div>
-      {isPlaygroup && (
+      {/* {isPlaygroup && (
         <div className="mt-1">
           <span className={styles.label}>
             Do children attend this playgroup for half the day or the full day?
@@ -333,7 +323,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
             />
           </div>
         </div>
-      )}
+      )} */}
       <Divider className="mt-4 mb-2" />
       <>
         <Button
@@ -342,9 +332,10 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           className={'mt-10 w-full'}
           onClick={() => {
             onSubmit(
-              isPlaygroup
-                ? getPlaygroupFormValues()
-                : { ...getPlaygroupFormValues(), isFullDay: undefined }
+              // isPlaygroup
+              //   ? getPlaygroupFormValues()
+              //   :
+              { ...getPlaygroupFormValues(), isFullDay: undefined }
             );
           }}
           disabled={!isFormValid()}

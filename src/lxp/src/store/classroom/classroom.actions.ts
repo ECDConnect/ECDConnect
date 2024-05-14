@@ -19,103 +19,59 @@ import { ClassroomGroupProgrammesService } from '@services/ClassroomGroupProgram
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
-import { PractitionerService } from '@/services/PractitionerService';
+import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+
+export const ClassroomActions = {
+  GET_CLASSROOM: 'getClassroom',
+  GET_CLASSROOM_GROUPS: 'getClassroomGroups',
+};
 
 export const getClassroom = createAsyncThunk<
-  ClassroomDto,
+  SimpleClassroomDto,
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'getClassrooms',
+  ClassroomActions.GET_CLASSROOM,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroom: classroomsCache },
-      user: { user: userCache },
+      classroomData: { classroom: classroomCache },
     } = getState();
 
-    if (!classroomsCache) {
+    if (!classroomCache) {
       try {
-        let classrooms: ClassroomDto[] | undefined;
-
+        let classroom: SimpleClassroomDto | undefined;
         if (userAuth?.auth_token) {
-          classrooms = await new ClassroomService(
+          classroom = await new ClassroomService(
             userAuth?.auth_token
-          ).getClassrooms();
+          ).getClassroomForUser(userAuth?.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
 
-        if (!classrooms) {
+        if (!classroom) {
           return rejectWithValue('Error getting Classrooms');
         }
-
-        if (userCache?.principalObjectData?.isPrincipal) {
-          const classRoom = classrooms?.find((classroom: ClassroomDto) => {
-            return classroom?.userId === userCache?.id;
-          });
-
-          if (classRoom) {
-            return classRoom;
-          }
-        }
-        return classrooms[0];
+        return classroom;
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      return classroomsCache;
-    }
-  }
-);
-
-export const getClassroomDetailsForPractitioner = createAsyncThunk<
-  ClassroomDto,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  { id: string },
-  ThunkApiType<RootState>
->(
-  'getClassroomDetailsForPractitioner',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ id }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroom: classroomsCache },
-    } = getState();
-
-    if (!classroomsCache) {
-      try {
-        let classrooms: any | undefined;
-        if (userAuth?.auth_token) {
-          classrooms = await new PractitionerService(
-            userAuth?.auth_token
-          ).getClassroomDetailsForPractitioner(id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!classrooms) {
-          return rejectWithValue('Error getting Classrooms');
-        }
-        return classrooms;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return classroomsCache;
+      return classroomCache;
     }
   }
 );
 
 export const getClassroomGroups = createAsyncThunk<
-  ClassroomGroupDto[],
+  SimpleClassroomGroupDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'getClassroomGroups',
+  ClassroomActions.GET_CLASSROOM_GROUPS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -125,12 +81,12 @@ export const getClassroomGroups = createAsyncThunk<
 
     if (!cache) {
       try {
-        let groups: ClassroomGroupDto[] | undefined;
+        let groups: SimpleClassroomGroupDto[] | undefined;
 
         if (userAuth?.auth_token) {
           groups = await new ClassroomGroupService(
             userAuth?.auth_token
-          ).getClassroomGroups();
+          ).getClassroomGroupsForUser(userAuth?.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -193,46 +149,6 @@ export const getClassroomProgrammes = createAsyncThunk<
   }
 );
 
-export const getClassroomGroupClassroomsForPractitioner = createAsyncThunk<
-  ClassroomDto,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  { userId: string },
-  ThunkApiType<RootState>
->(
-  'getClassroomGroupClassroomsForPractitioner',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ userId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classrooGroupsForPractitioner: classroomsCache },
-    } = getState();
-
-    if (!classroomsCache) {
-      try {
-        let classroomsforPractitioner: any[] | undefined;
-
-        if (userAuth?.auth_token) {
-          classroomsforPractitioner = await new ClassroomService(
-            userAuth?.auth_token
-          ).getClassroomGroupClassroomsForPractitioner(userId);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!classroomsforPractitioner) {
-          return rejectWithValue('Error getting Classrooms');
-        }
-
-        return classroomsforPractitioner[0];
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return classroomsCache;
-    }
-  }
-);
-
 export const getClassroomGroupLearners = createAsyncThunk<
   LearnerDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -273,6 +189,7 @@ export const getClassroomGroupLearners = createAsyncThunk<
   }
 );
 
+// This currently calls a generic GQL endpoint, may need to update
 export const upsertClassroom = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -290,20 +207,20 @@ export const upsertClassroom = createAsyncThunk<
       if (userAuth?.auth_token && classroom) {
         const input: ClassroomInput = {
           Id: classroom.id,
-          UserId: classroom.userId,
-          SiteAddressId: classroom.siteAddressId,
+          UserId: classroom.principal.userId,
+          //SiteAddressId: classroom.siteAddressId, This might be needed, but I need to test
           Name: classroom.name,
-          ClassroomImageUrl: classroom.classroomImageUrl,
-          IsPrinciple: classroom.isPrinciple,
-          NumberPractitioners: classroom.numberPractitioners,
+          ClassroomImageUrl: classroom.imageUrl,
+          NumberPractitioners: classroom.numberOfPractitioners,
+          NumberOfAssistants: classroom.numberOfPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
-          IsActive: classroom.isActive === false ? false : true,
+          IsActive: true, // All classrooms/groups on FE will be active
           SiteAddress: classroom?.siteAddress
-            ? mapSiteAddress(classroom?.siteAddress!)
+            ? mapSiteAddress(classroom.siteAddress)
             : null,
-          PreschoolFeeAmount: classroom?.preschoolFeeAmount || 0,
+          PreschoolFeeAmount: classroom.preschoolFeeAmount || 0,
           PreschoolFeeAmountLastUpdateDate:
-            classroom?.preschoolFeeAmountLastUpdateDate,
+            classroom.preschoolFeeAmountLastUpdateDate,
         };
 
         const result = await new ClassroomService(
@@ -336,8 +253,8 @@ export const upsertClassroomSiteAddress = createAsyncThunk<
       if (userAuth?.auth_token && classroom) {
         const input: ClassroomInput = {
           Id: classroom.id,
-          SiteAddressId: classroom.siteAddressId,
-          IsActive: classroom.isActive === false ? false : true,
+          SiteAddressId: classroom.siteAddress.id,
+          IsActive: true,
           SiteAddress: classroom?.siteAddress
             ? mapSiteAddress(classroom?.siteAddress!)
             : null,
@@ -385,6 +302,7 @@ export const updateClassroomGroup = createAsyncThunk<
   }
 );
 
+// TODO - need to test this, may need updates
 export const upsertClassroomGroups = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -406,9 +324,8 @@ export const upsertClassroomGroups = createAsyncThunk<
           const input: ClassroomGroupInput = {
             Id: x.id,
             ClassroomId: x.classroomId,
-            ProgrammeTypeId: x.programmeTypeId,
             Name: x.name,
-            IsActive: x.isActive === false ? false : true,
+            IsActive: true,
             UserId: x.userId,
           };
 

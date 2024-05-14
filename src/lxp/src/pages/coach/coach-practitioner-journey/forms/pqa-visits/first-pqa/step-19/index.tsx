@@ -15,7 +15,6 @@ import { useSelector } from 'react-redux';
 import { classroomsSelectors } from '@/store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import {
-  ClassroomGroupDto,
   parseBool,
   replaceBraces,
   usePrevious,
@@ -35,6 +34,7 @@ import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profil
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const step19Question2Pqa =
   'Does {client} need to register any children on Funda App?';
