@@ -99,7 +99,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const getAllClassroomGroups = useSelector(
-    classroomsSelectors?.getAllClassroomGroups
+    classroomsSelectors.getClassroomGroups
   );
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes

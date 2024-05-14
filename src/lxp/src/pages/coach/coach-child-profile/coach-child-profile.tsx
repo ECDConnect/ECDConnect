@@ -71,7 +71,7 @@ export const CoachChildProfile: React.FC = () => {
   );
   const user = useSelector(userSelectors.getUser);
   const playGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classGroupId)
+    classroomsSelectors.getClassroomGroupById(classGroupId!)
   );
 
   const childUser = useSelector(

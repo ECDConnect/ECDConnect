@@ -99,6 +99,7 @@ export const Step17ReAccreditation = ({
     classroomsSelectors.getClassroomGroupLearners
   );
 
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
@@ -312,7 +313,7 @@ export const Step17ReAccreditation = ({
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups?.[0]?.programmeType?.description}`
+              ? `classes at ${classroom?.name}`
               : `classes assigned to ${name}`
           }
         />

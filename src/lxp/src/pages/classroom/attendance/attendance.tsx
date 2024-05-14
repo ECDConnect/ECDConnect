@@ -1,9 +1,4 @@
-import {
-  AttendanceDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  useDialog,
-} from '@ecdlink/core';
+import { AttendanceDto, LearnerDto, useDialog } from '@ecdlink/core';
 import {
   ComponentBaseProps,
   Button,
@@ -52,6 +47,7 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();

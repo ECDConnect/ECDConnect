@@ -1,4 +1,4 @@
-import { ClassroomDto, useTheme } from '@ecdlink/core';
+import { useTheme } from '@ecdlink/core';
 import {
   FileTypeEnum,
   PractitionerColleagues,
@@ -44,6 +44,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { EditAddress } from './edit-address/edit-address';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -56,9 +57,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const programmeType = useSelector(
-    classroomsSelectors.getClassroomProgrammeType()
-  );
+
   const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
   const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
     []
@@ -125,7 +124,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       setProgrammeNameValue('name', classroom?.name || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, classroomGroups, programmeType, otherColleaguesFiltered]);
+  }, [classroom, classroomGroups, otherColleaguesFiltered]);
 
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -160,7 +159,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const setClassImageBaseString = (imageBaseString?: string) => {
     const copy = Object.assign({}, classroom);
     if (copy) {
-      copy.classroomImageUrl = imageBaseString;
+      copy.imageUrl = imageBaseString || '';
     }
     setUpdatedClassroom(copy);
   };
@@ -246,8 +245,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       stackedActionList.push(
         {
           title: 'Location',
-          subTitle:
-            classroom?.siteAddress?.addressLine1 || classroom?.classSiteAddress,
+          subTitle: classroom?.siteAddress?.addressLine1,
           switchTextStyles: true,
           actionName: isPrincipal ? 'Add/Edit' : '',
           actionIcon: 'PlusIcon',
@@ -255,7 +253,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         },
         {
           title: 'Type of ECD service',
-          subTitle: programmeType?.description,
+          subTitle: 'TODO',
           switchTextStyles: true,
         }
       );

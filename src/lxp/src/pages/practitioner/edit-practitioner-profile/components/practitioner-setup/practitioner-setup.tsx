@@ -23,7 +23,7 @@ import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { classroomsActions } from '@/store/classroom';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 
 export const PractitionerSetup = ({
@@ -36,8 +36,6 @@ export const PractitionerSetup = ({
 }) => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const [principalName, setPrincipalName] = useState<string>('Principal');
-  const [programName, setProgramName] = useState<string>('Programme');
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
   const { control, register, watch } = useForm({
@@ -48,24 +46,11 @@ export const PractitionerSetup = ({
     },
   });
 
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
-
-  useEffect(() => {
-    const getClassroomDetails = async () => {
-      const res = await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).getClassroomDetailsForPractitioner(user?.id || '');
-      return res;
-    };
-
-    getClassroomDetails().then((data) => {
-      setProgramName(data?.name || '');
-      setPrincipalName(data?.principalName || '');
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const getPractitionerResponse = async () => {
     const principalHierarchy = practitioner?.principalHierarchy!;
@@ -100,20 +85,20 @@ export const PractitionerSetup = ({
             <div className="py-4">
               <Typography
                 type="body"
-                text={`${principalName} has added you to`}
+                text={`${classroom?.principal.firstName} has added you to`}
               />
               <Typography
                 type="body"
                 weight="bold"
                 color="primary"
-                text={programName}
+                text={classroom?.name}
               />
             </div>
             <Divider dividerType="dashed" className="-my-1" />
           </div>
           <div className={'w-full'}>
             <label className={''}>
-              {`Are you a practitioner at ${programName}?`}
+              {`Are you a practitioner at ${classroom?.name}?`}
             </label>
             <div className="mt-1">
               <Controller
@@ -140,7 +125,7 @@ export const PractitionerSetup = ({
               title={
                 practitionerToProgramme
                   ? 'You need to accept the agreement below to continue'
-                  : `${principalName} will be notified and you will be removed from ${programName}.`
+                  : `${classroom?.principal.firstName} will be notified and you will be removed from ${classroom?.name}.`
               }
             />
           )}

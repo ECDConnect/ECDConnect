@@ -1,5 +1,4 @@
 import {
-  ClassroomGroupDto,
   ReasonForLeavingDto,
   ReasonsForPractitionerLeavingProgramme,
   useSnackbar,
@@ -46,6 +45,7 @@ import {
 import { notificationsSelectors } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { PractitionerNotRegistered } from '../../practitioner-not-registered/practitioner-not-registered';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps

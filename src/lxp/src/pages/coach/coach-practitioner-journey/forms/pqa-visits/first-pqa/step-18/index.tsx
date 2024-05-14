@@ -97,6 +97,7 @@ export const Step18 = ({
     classroomsSelectors.getClassroomGroupLearners
   );
 
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
@@ -311,7 +312,7 @@ export const Step18 = ({
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups?.[0]?.classroom?.name}`
+              ? `classes at ${classroom?.name}`
               : `classes assigned to ${name}`
           }
         />

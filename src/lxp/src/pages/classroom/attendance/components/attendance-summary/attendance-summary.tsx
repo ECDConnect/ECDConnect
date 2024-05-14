@@ -1,6 +1,5 @@
 import {
   AttendanceDto,
-  ClassroomGroupDto,
   LocalStorageKeys,
   sortDateFunction,
 } from '@ecdlink/core';
@@ -48,6 +47,7 @@ import { userSelectors } from '@store/user';
 import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { AttendanceSummaryState } from './attendance-summary.types';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,

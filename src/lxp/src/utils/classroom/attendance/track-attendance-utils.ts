@@ -43,6 +43,7 @@ import {
 } from '@store/attendance/attendance.types';
 import { isWorkingDay } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const isValidAttendableDate = (
   date: Date,
@@ -116,7 +117,7 @@ export const nextAttendableDateAfterStartDate = (
 };
 
 export const getMissedClassAttendance = (
-  classRoomGroups: ClassroomGroupDto[],
+  classRoomGroups: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
   date: Date,
@@ -196,7 +197,7 @@ export const removeDuplicates = (arr: MissedAttendanceGroups[]) => {
 };
 
 export const isPractitionerAttendanceMissingForLearner = (
-  classRoomGroup: ClassroomGroupDto[],
+  classRoomGroup: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   learner: LearnerDto,
   attendance: AttendanceDto[],
@@ -206,7 +207,6 @@ export const isPractitionerAttendanceMissingForLearner = (
     (x) => x.id === learner.classroomGroupId
   );
   const missedAttendanceClassProgramme = getMissedClassAttendanceForLearner(
-    learnerGroups,
     classProgrammes,
     attendance,
     date,
@@ -234,7 +234,6 @@ export const mapTrackAttendance = (
 };
 
 export const getMissedClassAttendanceForLearner = (
-  classRoomGroups: ClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
   date: Date,
@@ -340,7 +339,7 @@ export const getAllMissedAttendanceGroupsByClassroomGroupId = (
 };
 
 export const getMissedAttendanceSummaryGroups = (
-  classroomGroups: ClassroomGroupDto[],
+  classroomGroups: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
   holidays: HolidayDto[],

@@ -729,6 +729,33 @@ export type BaseClinicModelFilterInput = {
   or?: InputMaybe<Array<BaseClinicModelFilterInput>>;
 };
 
+export type BaseLearnerModel = {
+  __typename?: 'BaseLearnerModel';
+  childUserId: Scalars['UUID'];
+  learnerId: Scalars['UUID'];
+};
+
+export type BasePractitionerModel = {
+  __typename?: 'BasePractitionerModel';
+  email?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId: Scalars['UUID'];
+};
+
+export type BaseSiteAddressModel = {
+  __typename?: 'BaseSiteAddressModel';
+  addressLine1?: Maybe<Scalars['String']>;
+  addressLine2?: Maybe<Scalars['String']>;
+  addressLine3?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  name?: Maybe<Scalars['String']>;
+  postalCode?: Maybe<Scalars['String']>;
+  ward?: Maybe<Scalars['String']>;
+};
+
 export type BaseTeamLeadModel = {
   __typename?: 'BaseTeamLeadModel';
   firstName?: Maybe<Scalars['String']>;
@@ -1931,6 +1958,15 @@ export type ClassroomGroupInput = {
   UserId?: InputMaybe<Scalars['UUID']>;
 };
 
+export type ClassroomGroupModel = {
+  __typename?: 'ClassroomGroupModel';
+  classroomId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  learners?: Maybe<Array<Maybe<BaseLearnerModel>>>;
+  name?: Maybe<Scalars['String']>;
+  userId: Scalars['UUID'];
+};
+
 export type ClassroomGroupReassignmentsInput = {
   classroomGroupId?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['String']>;
@@ -1982,6 +2018,20 @@ export type ClassroomMetricReport = {
   practitionerId?: Maybe<Scalars['String']>;
   weekOfYear: Scalars['Int'];
   year: Scalars['Int'];
+};
+
+export type ClassroomModel = {
+  __typename?: 'ClassroomModel';
+  id: Scalars['UUID'];
+  imageUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  numberOfAssistants?: Maybe<Scalars['Int']>;
+  numberOfOtherAssistants?: Maybe<Scalars['Int']>;
+  numberOfPractitioners?: Maybe<Scalars['Int']>;
+  preschoolFeeAmount?: Maybe<Scalars['Float']>;
+  preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
+  principal?: Maybe<BasePractitionerModel>;
+  siteAddress?: Maybe<BaseSiteAddressModel>;
 };
 
 export type ClassroomSortInput = {
@@ -12037,15 +12087,6 @@ export type PractitionerClassProgressReportSummaryModel = {
   practitionerUserId: Scalars['UUID'];
 };
 
-export type PractitionerClassroomName = {
-  __typename?: 'PractitionerClassroomName';
-  classRoomId: Scalars['UUID'];
-  classroomGroupId: Scalars['UUID'];
-  classroomName?: Maybe<Scalars['String']>;
-  coachName?: Maybe<Scalars['String']>;
-  principalName?: Maybe<Scalars['String']>;
-};
-
 export type PractitionerColleagues = {
   __typename?: 'PractitionerColleagues';
   classroomNames?: Maybe<Scalars['String']>;
@@ -12465,22 +12506,6 @@ export type Principal = {
 
 export type PrincipalFilterDocumentsByTypeArgs = {
   type: FileTypeEnum;
-};
-
-export type PrincipalClassroom = {
-  __typename?: 'PrincipalClassroom';
-  classSiteAddress?: Maybe<Scalars['String']>;
-  classSiteAddressId?: Maybe<Scalars['String']>;
-  classroomGroupId?: Maybe<Scalars['String']>;
-  classroomGroupName?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  insertedDate: Scalars['DateTime'];
-  name?: Maybe<Scalars['String']>;
-  preschoolFeeAmount?: Maybe<Scalars['Float']>;
-  preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
-  principalName?: Maybe<Scalars['String']>;
-  programmeTypeId?: Maybe<Scalars['String']>;
-  programmeTypeName?: Maybe<Scalars['String']>;
 };
 
 export type PrincipalFilterInput = {
@@ -13346,9 +13371,7 @@ export type Query = {
   allChildrenUnderPrincipalByClassrooms?: Maybe<Array<Maybe<Child>>>;
   allClassroomGroupsByPrincipal?: Maybe<Array<Maybe<ClassroomGroup>>>;
   allClassroomGroupsForCoach?: Maybe<Array<Maybe<ClassroomGroup>>>;
-  allClassroomGroupsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   allClassroomsForCoach?: Maybe<Array<Maybe<Classroom>>>;
-  allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClientRecords?: Maybe<Array<Maybe<Document>>>;
   allClinicMeetings?: Maybe<Array<Maybe<PortalClinicMeetingModel>>>;
@@ -13406,11 +13429,8 @@ export type Query = {
   classroomAttendanceReport?: Maybe<
     Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
   >;
-  classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
-  classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
-  classroomNamesForPractitioner?: Maybe<
-    Array<Maybe<PractitionerClassroomName>>
-  >;
+  classroomForUser?: Maybe<ClassroomModel>;
+  classroomGroupsForUser?: Maybe<Array<Maybe<ClassroomGroupModel>>>;
   clinicById?: Maybe<ClinicModel>;
   clinicMeetingForMonth?: Maybe<PortalClinicMeetingModel>;
   clinicPointsData?: Maybe<ClinicReportModel>;
@@ -15325,15 +15345,7 @@ export type QueryAllClassroomGroupsForCoachArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryAllClassroomGroupsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryAllClassroomsForCoachArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryAllClassroomsForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -15558,16 +15570,12 @@ export type QueryClassroomAttendanceReportArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryClassroomDetailsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
+export type QueryClassroomForUserArgs = {
+  userId: Scalars['UUID'];
 };
 
-export type QueryClassroomGroupClassroomsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryClassroomNamesForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
+export type QueryClassroomGroupsForUserArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryClinicByIdArgs = {

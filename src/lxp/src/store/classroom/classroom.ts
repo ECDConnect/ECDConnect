@@ -9,16 +9,16 @@ import {
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
-  getClassroom,
-  getClassroomGroupClassroomsForPractitioner,
-  getClassroomGroupLearners,
   getClassroomGroups,
   getClassroomProgrammes,
-  getClassroomDetailsForPractitioner,
+  getClassroom,
   updatePreschoolFee,
   createLearner,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
+import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { SiteAddressDto } from '@/models/classroom/site-address.dto';
 
 const initialState: ClassroomState = {
   classroom: undefined,
@@ -34,15 +34,6 @@ const classroomsSlice = createSlice({
   name: 'classrooms',
   initialState,
   reducers: {
-    setProgrammeType: (state, action: PayloadAction<ProgrammeTypeDto>) => {
-      state.programmeType = action.payload?.id;
-      if (state.classroomGroups) {
-        for (let i = 0; i < state.classroomGroups.length; i++) {
-          state.classroomGroups[i].programmeTypeId = action.payload?.id;
-          state.classroomGroups[i].programmeType = action.payload;
-        }
-      }
-    },
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
       state.classroomGroups = initialState.classroomGroups;
@@ -52,24 +43,33 @@ const classroomsSlice = createSlice({
       state.classrooGroupsForPractitioner =
         initialState.classrooGroupsForPractitioner;
     },
-    updateClassroom: (state, action: PayloadAction<ClassroomDto>) => {
+    updateClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
       state.classroom = action.payload;
     },
     updateClassroomSiteAddress: (
       state,
-      action: PayloadAction<ClassroomDto>
+      action: PayloadAction<SiteAddressDto>
     ) => {
-      state.classroom = action.payload;
+      if (!!state.classroom) {
+        state.classroom = {
+          ...state.classroom,
+          siteAddress: action.payload,
+        };
+      }
     },
+    // TODO - do we need this? It should just pass in the number, not the whole classroom...
     updateClassroomNumberPractitioners: (
       state,
       action: PayloadAction<Pick<ClassroomDto, 'numberPractitioners'>>
     ) => {
       if (state.classroom)
-        state.classroom.numberPractitioners =
-          action.payload.numberPractitioners;
+        state.classroom.numberOfPractitioners =
+          action.payload.numberPractitioners!;
     },
-    updateClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
+    updateClassroomGroup: (
+      state,
+      action: PayloadAction<SimpleClassroomGroupDto>
+    ) => {
       if (state.classroomGroups) {
         const isOnline = navigator.onLine;
         const payloadUpdated = { ...action.payload, isOnline };
@@ -107,10 +107,13 @@ const classroomsSlice = createSlice({
         }
       }
     },
-    createClassroom: (state, action: PayloadAction<ClassroomDto>) => {
+    createClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
       state.classroom = action.payload;
     },
-    createClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
+    createClassroomGroup: (
+      state,
+      action: PayloadAction<SimpleClassroomGroupDto>
+    ) => {
       if (!state.classroomGroups) state.classroomGroups = [];
       const isOnline = navigator.onLine;
       const payloadUpdated = { ...action.payload, isOnline };
@@ -145,15 +148,9 @@ const classroomsSlice = createSlice({
         );
       }
     },
+    // TODO - need to check on this
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (action.payload.id) {
-        if (state.classroomGroups) {
-          for (let i = 0; i < state.classroomGroups.length; i++) {
-            if (state.classroomGroups[i].id === action.payload.id)
-              state.classroomGroups[i].isActive = false;
-          }
-        }
-      } else {
+      if (!!action.payload.id && !!state.classroomGroups) {
         const index = state.classroomGroups?.findIndex(
           (c) => c.id === action.payload.id
         );
@@ -178,6 +175,7 @@ const classroomsSlice = createSlice({
         if (index && index > -1) state.classroomProgrammes?.splice(index, 1);
       }
     },
+    // TODO - needs to be updated, to remove learner from the actual classroom group
     deleteClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
       const index = state.classroomGroupLearners?.findIndex(
         (c) =>
@@ -186,6 +184,7 @@ const classroomsSlice = createSlice({
       );
       if (index && index > -1) state.classroomGroupLearners?.splice(index, 1);
     },
+    // TODO - needs to be updated, to remove learner from the actual classroom group
     deactivateClassroomGroupLearner: (
       state,
       action: PayloadAction<ChildDto>
@@ -214,51 +213,24 @@ const classroomsSlice = createSlice({
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroups = action.payload.filter(
-          (x: ClassroomGroupDto) => {
-            return x.isActive === true;
-          }
-        );
+        state.classroomGroups = action.payload;
       }
     });
+    // TODO - might need to update this
     builder.addCase(getClassroomProgrammes.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroomProgrammes = action.payload;
       }
     });
-    builder.addCase(getClassroomGroupLearners.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.classroomGroupLearners = action.payload.filter(
-          (x: LearnerDto) => {
-            return x.isActive === true;
-          }
-        );
-      }
+    builder.addCase(createLearner.fulfilled, (state, action) => {
+      // TODO - should this add the learner to the class group in the state?
     });
-    builder.addCase(
-      getClassroomGroupClassroomsForPractitioner.fulfilled,
-      (state, action) => {
-        if (action.payload) {
-          state.classroom = action.payload;
-        }
-      }
-    );
-    builder.addCase(
-      getClassroomDetailsForPractitioner.fulfilled,
-      (state, action) => {
-        if (action.payload) {
-          const classroomProgramme = action?.payload;
-          state.classroom = classroomProgramme;
-        }
-      }
-    );
-    builder.addCase(createLearner.fulfilled, (state, action) => {});
     builder.addCase(updatePreschoolFee.fulfilled, (state, action) => {
       if (action.payload && !!state.classroom) {
         state.classroom = {
           ...state.classroom,
           preschoolFeeAmount: action.meta.arg.amount,
-          preschoolFeeAmountLastUpdateDate: new Date(),
+          preschoolFeeAmountLastUpdateDate: new Date() as unknown as string,
         };
       }
     });

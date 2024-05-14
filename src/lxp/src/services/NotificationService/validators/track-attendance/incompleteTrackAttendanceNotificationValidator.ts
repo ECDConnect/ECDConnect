@@ -49,9 +49,7 @@ export class IncompleteTrackAttendanceNotificationValidator
 
     const classroomGroups =
       classroomState?.classroomGroups?.filter(
-        (classroomGroup) =>
-          classroomGroup.isActive &&
-          classroomGroup.userId === userState?.user?.id
+        (classroomGroup) => classroomGroup.userId === userState?.user?.id
       ) || [];
 
     if (!classroomGroups) return [];

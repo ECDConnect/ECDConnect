@@ -4,7 +4,6 @@ import {
   ChildDto,
   ChildProgressReportSummaryModel,
   ClassProgrammeDto,
-  ClassroomGroupDto,
   Document,
   LearnerDto,
   UserDto,
@@ -17,6 +16,7 @@ import {
   isMatchingReportingPeriods,
 } from './child-profile-utils';
 import { differenceInDays } from 'date-fns';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const getChildAlertModel = (
   learner?: LearnerDto,

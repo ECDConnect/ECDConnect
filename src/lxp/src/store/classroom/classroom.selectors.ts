@@ -1,46 +1,17 @@
-import {
-  ChildDto,
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  PrincipalDto,
-  ProgrammeTypeDto,
-} from '@ecdlink/core';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
+import { ChildDto, ClassProgrammeDto, LearnerDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
+import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
 
-export const getClassroom = (state: RootState): ClassroomDto | undefined =>
-  state.classroomData.classroom;
+export const getClassroom = (
+  state: RootState
+): SimpleClassroomDto | undefined => state.classroomData.classroom;
 
-export const getProgrammeType = () =>
-  createSelector(
-    (state: RootState) => state,
-    (rootState: RootState): ProgrammeTypeDto | undefined => {
-      if (!!rootState.classroomData.programmeType) {
-        return rootState.staticData.programmeTypes?.find(
-          (x) => x.id === rootState.classroomData.programmeType
-        );
-      } else {
-        const groups =
-          rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
-          [];
-
-        if (groups?.length > 0) {
-          return groups[0].programmeType;
-        }
-
-        return;
-      }
-    }
-  );
-
-export const getAllClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups || [];
-
-export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+export const getClassroomGroups = (
+  state: RootState
+): SimpleClassroomGroupDto[] => state.classroomData.classroomGroups || [];
 
 export const getClassroomGroupsForUser = (userId: string) =>
   createSelector(
@@ -48,29 +19,30 @@ export const getClassroomGroupsForUser = (userId: string) =>
     (classroomGroups) => {
       return (
         classroomGroups?.filter(
-          (classroomGroup) =>
-            classroomGroup.isActive && classroomGroup.userId === userId
+          (classroomGroup) => classroomGroup.userId === userId
         ) || []
       );
     }
   );
 
-export const getPrincipal = (state: RootState): PrincipalDto =>
-  state.classroomData.principal || ({} as PrincipalDto);
+export const getPrincipal = (state: RootState): BasePractitionerDto =>
+  state.classroomData.classroom?.principal || ({} as BasePractitionerDto);
 
-export const getClassroomGroupById = (id?: string) =>
+export const getClassroomGroupById = (id: string) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroups,
-    (classroomGroups: ClassroomGroupDto[] | undefined) => {
-      if (!classroomGroups || !id) return;
+    (classroomGroups: SimpleClassroomGroupDto[] | undefined) => {
+      if (!classroomGroups) return;
 
       return classroomGroups.find((group) => group.id === id);
     }
   );
 
+// TODO - THIS PROBABLY NEEDS AN UPDATE
 export const getClassroomGroupLearners = (state: RootState): LearnerDto[] =>
   state.classroomData.classroomGroupLearners?.filter((x) => x.isActive) || [];
 
+// TODO - THIS PROBABLY NEEDS AN UPDATE
 export const getChildLearner = (child?: ChildDto) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners || [],
@@ -78,6 +50,7 @@ export const getChildLearner = (child?: ChildDto) =>
       learners.find((learner) => learner.userId === child?.userId)
   );
 
+// TODO - THIS PROBABLY NEEDS AN UPDATE
 export const getChildLearnerByClassroom = (
   classroomGroupId: string,
   childUserId?: string
@@ -95,7 +68,7 @@ export const getChildLearnerByClassroom = (
 export const getClassProgrammes = (state: RootState): ClassProgrammeDto[] =>
   state.classroomData.classroomProgrammes?.filter((x) => x.isActive) || [];
 
-export const getClassProgrammesByClassGroupId = (classGroupId?: string) =>
+export const getClassProgrammesByClassroomGroupId = (classGroupId?: string) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomProgrammes,
     (classroomProgrammes: ClassProgrammeDto[] | undefined) => {
@@ -107,6 +80,7 @@ export const getClassProgrammesByClassGroupId = (classGroupId?: string) =>
     }
   );
 
+// TODO - THIS PROBABLY NEEDS AN UPDATE
 export const getLearnerClassGroupId = (userId?: string) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners,
@@ -118,44 +92,5 @@ export const getLearnerClassGroupId = (userId?: string) =>
           learner.userId === userId && learner.stoppedAttendance == null
       );
       return currentLearner?.classroomGroupId;
-    }
-  );
-
-export const getClassroomProgrammeType = () =>
-  createSelector(
-    (state: RootState) => state,
-    (rootState: RootState) => {
-      if (!rootState) return;
-      const groups =
-        rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
-        [];
-
-      if (groups?.length > 0) {
-        return groups[0].programmeType;
-      }
-
-      return;
-    }
-  );
-
-export const isPlaygroup = () =>
-  createSelector(
-    (state: RootState) => state,
-    (rootState: RootState) => {
-      if (!rootState) return;
-      const groups =
-        rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
-        [];
-
-      if (groups.length > 0) {
-        const programmeType = rootState.staticData.programmeTypes?.find(
-          (x) => x.id === groups[0].programmeTypeId
-        );
-        return (
-          programmeType && programmeType.enumId === ProgrammeTypeEnum.Playgroup
-        );
-      }
-
-      return;
     }
   );

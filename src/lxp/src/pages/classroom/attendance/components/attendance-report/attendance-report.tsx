@@ -1,8 +1,4 @@
-import {
-  ClassroomGroupDto,
-  LocalStorageKeys,
-  MonthlyAttendanceRecord,
-} from '@ecdlink/core';
+import { LocalStorageKeys, MonthlyAttendanceRecord } from '@ecdlink/core';
 import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -20,6 +16,7 @@ import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 import { attendanceThunkActions } from '@/store/attendance';
 import { addDays, startOfYear } from 'date-fns';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,

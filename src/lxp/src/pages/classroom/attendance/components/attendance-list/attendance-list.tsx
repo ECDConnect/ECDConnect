@@ -1,4 +1,4 @@
-import { ClassroomGroupDto, useDialog } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -33,6 +33,7 @@ import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const filterInfo: FilterInfo = {
   filterName: 'Class',

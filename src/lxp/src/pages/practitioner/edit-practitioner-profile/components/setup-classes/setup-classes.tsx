@@ -48,10 +48,11 @@ export const SetupClasses = ({
         const _hold = {
           ...classroomGroup,
         };
-        _hold.classProgrammes = classroomGroupProgrammes.filter(
-          (a) => a.classroomGroupId === classroomGroup.id
-        );
-        _classroomGroups.push(_hold);
+        // TODO
+        // _hold.classProgrammes = classroomGroupProgrammes.filter(
+        //   (a) => a.classroomGroupId === classroomGroup.id
+        // );
+        // _classroomGroups.push(_hold);
       }
 
       setClassroomGroups(_classroomGroups);

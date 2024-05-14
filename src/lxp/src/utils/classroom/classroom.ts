@@ -1,4 +1,4 @@
-import { ClassroomGroupDto } from '@ecdlink/core';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export function filterUniqueClassrooms(inputArray: ClassroomGroupDto[]) {
   return inputArray.reduce((uniqueItems: ClassroomGroupDto[], currentItem) => {

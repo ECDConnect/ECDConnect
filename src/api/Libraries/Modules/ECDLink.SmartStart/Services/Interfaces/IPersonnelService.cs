@@ -12,9 +12,7 @@ namespace ECDLink.SmartStart.Services.Interfaces
         #region Practitioners
         public List<Practitioner> GetPractitionerPeers(string practitionerId);
         public List<Child> GetAllChildrenForPractitioner(string practitionerId);
-        public Practitioner GetPractitionerForChild(string childUserId);
-        public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner(string practitionerId);
-        public List<Classroom> GetAllClassroomsForPractitioner(string userIdOfPractitioner);
+        public Practitioner GetPractitionerForChild(string childUserId);        
         public List<Practitioner> GetAllPractitionersForPrincipal(string userId);
         public string GetSiteNameForPractitioner(string userId);
         public Practitioner SwitchPrincipal(string oldPrincipalUserId, string newPrincipalUserId);

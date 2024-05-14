@@ -1,4 +1,4 @@
-import { ClassroomGroupDto } from '@ecdlink/core';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { AttendanceListDataItem, ComponentBaseProps } from '@ecdlink/ui';
 
 export interface ClassProgrammeAttendanceListProps extends ComponentBaseProps {
