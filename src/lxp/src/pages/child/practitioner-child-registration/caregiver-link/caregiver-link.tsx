@@ -31,7 +31,6 @@ import { practitionerSelectors } from '@/store/practitioner';
 import {
   TabsItemForPrincipal,
   TabsItems,
-  TabsItemsWithAttendance,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 
@@ -56,7 +55,6 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(getUser);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
   const isPrincipal = practitioner?.isPrincipal;
@@ -67,10 +65,6 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     user?.roles?.some(
       (role) => role.systemName === RoleSystemNameEnum.Practitioner
     ) || isPrincipal;
-  const hasAttendanceRoute =
-    (isPrincipal && practitioners?.length! > 0) ||
-    (practitioner && !practitioner?.isTrainee);
-
   const practitionerId = location?.state?.practitionerId;
 
   const getChildToken = async () => {
@@ -117,13 +111,11 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     if (isPractitionerView) {
       if (isPrincipal) {
         history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: TabsItemForPrincipal.CHILDREN,
+          activeTabIndex: TabsItemForPrincipal.CLASSES,
         } as ClassDashboardRouteState);
       } else {
         history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: hasAttendanceRoute
-            ? TabsItemsWithAttendance.CHILDREN
-            : TabsItems.CHILDREN,
+          activeTabIndex: TabsItems.CLASSES,
         } as ClassDashboardRouteState);
       }
     } else {

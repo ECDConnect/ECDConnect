@@ -65,7 +65,10 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';
-import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '../classroom/class-dashboard/class-dashboard.types';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -73,7 +76,7 @@ export enum NavigationTypes {
   ClientFolders = 'Classroom',
   Attendance = 'Attendance',
   Practitioner = 'Practitioner',
-  Children = 'Children',
+  Classes = 'Classes',
   Programme = 'Programme',
   Profile = 'Profile',
   Messages = 'Messages',
@@ -522,21 +525,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [practitioner?.userId]);
 
-  const traineeNavigation = [
-    {
-      name: NavigationTypes.Children,
-      href: ROUTES.CLASSROOM.ROOT,
-      params: { activeTabIndex: 1 },
-      current: false,
-    },
-    {
-      name: NavigationTypes.Programme,
-      href: ROUTES.CLASSROOM.ROOT,
-      params: { activeTabIndex: 2 },
-      current: false,
-    },
-  ];
-
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -545,63 +533,14 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationTypes.ClientFolders,
-      icon: 'UsersIcon',
+      name: NavigationTypes.Messages,
+      href: ROUTES.MESSAGES,
+      icon: 'BellIcon',
       current: false,
-      nestedChildren:
-        practitioners && isPrincipal && practitioners?.length > 0
-          ? [
-              {
-                name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 0 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Practitioners,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 1 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 2 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 3 },
-                current: false,
-              },
-            ]
-          : isTrainee
-          ? traineeNavigation
-          : [
-              {
-                name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: 0 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: 1 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: 2 },
-                current: false,
-              },
-            ],
+      showDivider: true,
+      getNotificationCount: () => {
+        return newNotificationCount;
+      },
     },
     {
       name: NavigationTypes.Profile,
@@ -613,16 +552,75 @@ export const Dashboard: React.FC = () => {
       showDivider: true,
     },
     {
-      name: NavigationTypes.Logout,
-      href: ROUTES.LOGOUT,
-      icon: 'ExternalLinkIcon',
+      name: NavigationTypes.ClientFolders,
+      icon: 'UsersIcon',
       current: false,
       showDivider: true,
+      nestedChildren:
+        isPrincipal && !!practitioners?.length
+          ? [
+              {
+                name: NavigationTypes.Attendance,
+                href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Practitioners,
+                href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: TabsItemForPrincipal.PRACTITIONERS },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Classes,
+                href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: TabsItemForPrincipal.CLASSES },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Programme,
+                href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: TabsItemForPrincipal.PROGRAMME },
+                current: false,
+              },
+            ]
+          : [
+              {
+                name: NavigationTypes.Attendance,
+                href: ROUTES.CLASSROOM.ROOT,
+                params: { activeTabIndex: TabsItems.ATTENDANCE },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Classes,
+                href: ROUTES.CLASSROOM.ROOT,
+                params: { activeTabIndex: TabsItems.CLASSES },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Programme,
+                href: ROUTES.CLASSROOM.ROOT,
+                params: { activeTabIndex: TabsItems.PROGRAMME },
+                current: false,
+              },
+            ],
     },
-  ];
-
-  if (!isTrainee) {
-    navigation.splice(3, 0, {
+    ...(isPrincipal || isFundaAppAdmin
+      ? [
+          {
+            name: NavigationTypes.Business,
+            href: ROUTES.BUSINESS,
+            icon: 'BriefcaseIcon',
+            current: false,
+            showDivider: true,
+          },
+        ]
+      : []),
+    {
       name: NavigationTypes.Community,
       href: isFirstTimeCommunitySection
         ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
@@ -631,49 +629,22 @@ export const Dashboard: React.FC = () => {
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
-    });
-
-    navigation.splice(3, 0, {
-      name: NavigationTypes.Messages,
-      href: ROUTES.MESSAGES,
-      icon: 'BellIcon',
-      current: false,
-      showDivider: true,
-      getNotificationCount: () => {
-        return newNotificationCount;
-      },
-    });
-
-    navigation?.splice(3, 0, {
+    },
+    {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
       icon: 'PresentationChartBarIcon',
       current: false,
       showDivider: true,
-    });
-  }
-
-  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
-    navigation?.splice(3, 0, {
-      name: NavigationTypes.Business,
-      href: ROUTES.BUSINESS,
-      icon: 'BriefcaseIcon',
+    },
+    {
+      name: NavigationTypes.Logout,
+      href: ROUTES.LOGOUT,
+      icon: 'ExternalLinkIcon',
       current: false,
       showDivider: true,
-    });
-  }
-
-  if (isTrainee) {
-    navigation?.splice(3, 0, {
-      name: NavigationTypes.Business,
-      href: practitioner?.setupTraineeInitiated
-        ? ROUTES.TRAINEE.TRAINEE_ONBOARDING
-        : ROUTES.TRAINEE.SETUP_TRAINEE,
-      icon: 'BriefcaseIcon',
-      current: false,
-      showDivider: true,
-    });
-  }
+    },
+  ];
 
   const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
     {
@@ -798,18 +769,6 @@ export const Dashboard: React.FC = () => {
   }
 
   if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
-    dashboardItems.splice(1, 0, {
-      title: 'Business',
-      titleIcon: 'BriefcaseIcon',
-      titleIconClassName: styles.businessIcon,
-      onActionClick: () => {
-        goToBusiness();
-      },
-      classNames: 'bg-uiBg',
-    });
-  }
-
-  if (isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',

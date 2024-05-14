@@ -11,6 +11,7 @@ import {
   SearchSortOptions,
   UserAlertListDataItem,
   ActionModal,
+  BannerWrapper,
 } from '@ecdlink/ui';
 import {
   addDays,
@@ -42,6 +43,11 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { coachSelectors } from '@/store/coach';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
+import {
+  ClassDashboardRouteState,
+  TabsItemForPrincipal,
+  TabsItems,
+} from '../class-dashboard/class-dashboard.types';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -145,6 +151,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       return f.userId === el.userId; // filter only principal learners
     });
   });
+
+  const today = new Date();
 
   const call = useCallback(() => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
@@ -502,12 +510,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             importantText={`You are on leave and cannot use this section`}
             paragraphs={[
               `You are on leave from ${format(
-                new Date((currentAbsentee?.absentDate as Date) || new Date()),
+                new Date((currentAbsentee?.absentDate as Date) || today),
                 'd MMM yyyy'
               )} to ${format(
                 new Date(
                   handleComebackDay(
-                    (currentAbsentee?.absentDateEnd as Date) || new Date()
+                    (currentAbsentee?.absentDateEnd as Date) || today
                   )
                 ),
                 'd MMM yyyy'
@@ -557,7 +565,18 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   return (
-    <>
+    <BannerWrapper
+      title="Children"
+      subTitle={format(today, 'EEEE, dd MMMM')}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: isPrincipal
+            ? TabsItemForPrincipal.CLASSES
+            : TabsItems.CLASSES,
+        } as ClassDashboardRouteState)
+      }
+      size="small"
+    >
       {children && children.length > 0 && (
         <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
@@ -624,13 +643,13 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           iconDirection={'left'}
           textToggle={addChildButtonExpanded}
           type={'filled'}
-          color={'primary'}
+          color={'quatenary'}
           shape={'round'}
           className={styles.fadButton}
           click={registerNewChild}
         />
       </div>
-    </>
+    </BannerWrapper>
   );
 };
 
