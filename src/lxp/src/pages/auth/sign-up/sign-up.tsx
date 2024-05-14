@@ -77,7 +77,7 @@ export const SignUp: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
-  console.log({ userDetails });
+
   if (userDetails) {
     // coach
     if (userDetails.roleName === 'Coach') {
@@ -195,8 +195,6 @@ export const SignUp: React.FC = () => {
     setPresentArticle(true);
     setArticleTitle(title);
   };
-
-  console.log({ errors });
 
   return (
     <div className={styles.wrapper}>
