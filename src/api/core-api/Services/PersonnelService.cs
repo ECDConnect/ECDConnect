@@ -272,17 +272,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return peers;
         }
 
-        public List<Child> GetAllChildrenForPractitioner(string practitionerId)
-        {
-            Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
-            if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
-            {
-                var children = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
-                return children;
-            }
-            else return new List<Child>();
-        }
-
         public Practitioner GetPractitionerForChild(string childUserId)
         {
             if (childUserId != null)
@@ -999,7 +988,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 trainee.Practitioner = _practiRepo.GetByUserId(userId);
                 // ThreeChildrenRegistered
                 if (trainee.Practitioner != null) { 
-                    var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
+                    var allChildren = _childRepo.GetAll().ToList();
                     if (allChildren.Count >= 3)
                     {
                         timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;

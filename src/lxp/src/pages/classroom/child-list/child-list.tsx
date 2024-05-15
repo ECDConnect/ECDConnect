@@ -40,7 +40,6 @@ import { IconInformationIndicator } from '../programme-planning/components/icon-
 import ROUTES from '@/routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
-import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { coachSelectors } from '@/store/coach';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import {
@@ -99,9 +98,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
-  const childrenForPrincipal = useSelector(
-    childrenForPractitionerSelectors?.getChildrenForPractitioner
-  );
+  const childrenForPrincipal = useSelector(childrenSelectors.getChildren);
 
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const getAllClassroomGroups = useSelector(
@@ -110,7 +107,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
   );
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
   const documents = useSelector(documentSelectors.getDocuments);
   const childReportSummaries = useSelector(
     contentReportSelectors.getChildLatestCompletedReports()
@@ -325,8 +321,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       );
       const sorted = [...(filteredChildren || [])].sort(
         (a: ChildDto, b: ChildDto) => {
-          const childUserOne = childUsers?.find((x) => x.id === a.userId);
-          const childUserTwo = childUsers?.find((x) => x.id === b.userId);
+          const childUserOne = children?.find((x) => x.userId === a.userId);
+          const childUserTwo = children?.find((x) => x.userId === b.userId);
           const childLearnerOne = classroomGroupLearners?.find(
             (x) => x.userId === a.userId
           );
@@ -376,21 +372,21 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             }
             case 'surname':
               return (childUserOne !== undefined &&
-                childUserOne?.surname?.toUpperCase()!) >
+                childUserOne.user?.surname?.toUpperCase()!) >
                 (childUserTwo !== undefined &&
-                  childUserTwo.surname?.toUpperCase()!)
+                  childUserTwo.user?.surname?.toUpperCase()!)
                 ? 1
                 : -1;
             case 'age':
               if (
                 childUserOne !== undefined &&
-                childUserOne?.dateOfBirth !== undefined &&
+                childUserOne.user?.dateOfBirth !== undefined &&
                 childUserTwo !== undefined &&
-                childUserTwo?.dateOfBirth !== undefined
+                childUserTwo.user?.dateOfBirth !== undefined
               ) {
                 return isBefore(
-                  new Date(childUserOne.dateOfBirth),
-                  new Date(childUserTwo.dateOfBirth)
+                  new Date(childUserOne.user?.dateOfBirth),
+                  new Date(childUserTwo.user?.dateOfBirth)
                 )
                   ? 1
                   : -1;
@@ -398,9 +394,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             case 'firstName':
             default:
               return (childUserOne !== undefined &&
-                childUserOne.firstName?.toUpperCase()!) >
+                childUserOne.user?.firstName?.toUpperCase()!) >
                 (childUserTwo !== undefined &&
-                  childUserTwo.firstName?.toUpperCase()!)
+                  childUserTwo.user?.firstName?.toUpperCase()!)
                 ? 1
                 : -1;
           }
@@ -423,7 +419,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     childRecord: ChildDto,
     childLearner?: LearnerDto
   ): UserAlertListDataItem => {
-    const childUser = childUsers?.find((x) => x.id === childRecord.userId);
+    const child = children?.find((x) => x.userId === childRecord.userId);
     const childDocuments = documents?.filter(
       (x) => x.userId === childRecord.userId
     );
@@ -434,7 +430,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     const childAlert = getChildAlertModel(
       childLearner,
       pendingStatusId,
-      childUser,
+      child?.user,
       childRecord,
       childDocuments,
       attendanceData,
@@ -446,12 +442,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
     return {
       id: childRecord.id,
-      profileDataUrl: childUser?.profileImageUrl,
-      title: `${childUser?.firstName} ${childUser?.surname}`,
+      profileDataUrl: child?.user?.profileImageUrl,
+      title: `${child?.user?.firstName} ${child?.user?.surname}`,
       subTitle: childAlert?.message ?? '',
       profileText: `${
-        childUser?.firstName && childUser?.firstName[0]?.toUpperCase()
-      }${childUser?.surname && childUser?.surname[0]?.toUpperCase()}`,
+        child?.user?.firstName && child?.user?.firstName[0]?.toUpperCase()
+      }${child?.user?.surname && child?.user?.surname[0]?.toUpperCase()}`,
       alertSeverity: childAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
       onActionClick: () => {

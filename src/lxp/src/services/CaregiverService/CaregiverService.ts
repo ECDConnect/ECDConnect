@@ -8,6 +8,7 @@ class CaregiverService {
     this._accessToken = accessToken;
   }
 
+  // Can remove, fetching it with the child
   async getCaregivers(): Promise<CaregiverDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

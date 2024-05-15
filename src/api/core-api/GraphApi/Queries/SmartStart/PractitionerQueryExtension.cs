@@ -134,13 +134,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return default;
         }
 
-        public List<Child> GetAllChildrenForPractitioner(
-           [Service] PersonnelService practiManager,
-            string userId)
-        {
-            return practiManager.GetAllChildrenForPractitioner(userId);
-        }
-
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
           [Service] IFileGenerationService fileService,
           IGenericRepositoryFactory repoFactory)
@@ -203,38 +196,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             };
 
             return details;
-        }
-
-        public async Task<List<Child>> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
-            [Service] ApplicationUserManager userManager,
-            [Service] ApplicationRoleManager roleManager,
-            IGenericRepositoryFactory repoFactory,
-            [Service] PersonnelService practiManager,
-            string userId)
-        {
-            string role = await (new RoleQueryTypeExtension()).GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, practiManager, userId);
-            List<Child> children = new List<Child>();
-            if (role != null)
-            {
-                switch (role)
-                {
-                    case "Franchisor":
-                        children = new FranchisorQueryExtension().GetAllChildrenForFranchisor(contextAccessor, repoFactory, userId);
-                        break;
-                    case "Coach":
-                        children = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, repoFactory, userId);
-                        break;
-                    case "Principal":
-                        children = new PrincipalQueryExtension().GetAllChildrenUnderPrincipal(contextAccessor, repoFactory, userId);
-                        break;
-                    case "Practitioner":
-                        children = practiManager.GetAllChildrenForPractitioner(userId);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return children;
         }
 
         public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,

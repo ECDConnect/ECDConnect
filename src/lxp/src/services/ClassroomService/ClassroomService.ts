@@ -51,7 +51,7 @@ class ClassroomService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('GetClassroomForUser Failed - Server connection error');
     }
 

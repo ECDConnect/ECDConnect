@@ -47,9 +47,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId || childUserId)
-  );
+
   const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
   const learner = useSelector(
     classroomsSelectors.getChildLearnerByClassroom(
@@ -90,11 +88,11 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   const getAttendanceText = (score: number): string => {
     if (score >= goodScoreThreshold) {
-      return `${childUser?.firstName}'s attendance is good!`;
+      return `${child?.user?.firstName}'s attendance is good!`;
     }
 
     if (score <= badScoreThreshold) {
-      return `${childUser?.firstName}'s attendance has not been good!`;
+      return `${child?.user?.firstName}'s attendance has not been good!`;
     }
 
     return '';
@@ -154,7 +152,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
         }
       }}
       size={'small'}
-      title={`${childUser?.firstName}'s attendance`}
+      title={`${child?.user?.firstName}'s attendance`}
       displayOffline={!isOnline}
     >
       {isOnline ? (

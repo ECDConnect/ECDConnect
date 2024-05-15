@@ -52,10 +52,6 @@ import {
 import { analyticsActions } from './store/analytics';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
-import {
-  childrenForPractitionerActions,
-  childrenForPractitionerThunkActions,
-} from './store/childrenForPractitioner';
 import { classroomsForCoachThunkActions } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
@@ -148,9 +144,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
     appDispatch(childrenActions.resetChildrenState());
-    appDispatch(
-      childrenForPractitionerActions.resetChildrenForPractitionerState()
-    );
     appDispatch(caregiverActions.resetCaregiverState());
     appDispatch(documentActions.resetDocumentsState());
     appDispatch(attendanceActions.resetAttendanceState());
@@ -341,12 +334,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     if (userData) {
       if (isPrincipal) {
-        (async () =>
-          await appDispatch(
-            childrenForPractitionerThunkActions?.getChildrenForPractitioner({
-              id: userData?.id!,
-            })
-          ).unwrap())();
         const startDate = new Date();
         startDate.setFullYear(startDate.getFullYear() - 1);
         (async () =>
