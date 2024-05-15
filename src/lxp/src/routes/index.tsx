@@ -132,6 +132,7 @@ import { MissingMeetingRegisters } from '@/pages/community/clubs-tab/club/club-p
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePrevious } from '@ecdlink/core';
 import { Location } from 'history';
+import ChildList from '@/pages/classroom/child-list/child-list';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -509,6 +510,7 @@ const AuthRoutes: React.FC = () => {
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />
       <Route exact path={ROUTES.CLASSROOM.ROOT} component={ClassDashboard} />
+      <Route exact path={ROUTES.CLASSROOM.CHILDREN} component={ChildList} />
       <Route
         exact
         path={ROUTES.CLASSROOM.UPDATE_FEE}

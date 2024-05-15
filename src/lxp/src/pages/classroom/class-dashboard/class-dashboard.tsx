@@ -21,7 +21,6 @@ import {
 } from '@utils/common/local-storage.utils';
 import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
-import ChildList from '../child-list/child-list';
 import ProgrammeDashboard from '../programme-planning/programme-dashboard/programme-dashboard';
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
@@ -31,7 +30,7 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
-import walktroughImage from '../../../assets/walktroughImage.png';
+import walkthroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
 import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
 import { userSelectors } from '@/store/user';
@@ -40,8 +39,8 @@ import {
   programmeThemeSelectors,
   programmeThemeThunkActions,
 } from '@/store/content/programme-theme';
-import { isPast, isToday } from 'date-fns';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
+import { Classes } from '../classes/classes';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -70,7 +69,6 @@ export const ClassDashboard: React.FC = () => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const isTrainee = practitioner?.isTrainee;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
@@ -149,9 +147,14 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: 'Children',
+      title: 'Attendance',
       initActive: false,
-      child: <ChildList />,
+      child: <AttendanceComponent />,
+    },
+    {
+      title: 'Classes',
+      initActive: false,
+      child: <Classes />,
     },
     {
       title: 'Programme',
@@ -169,14 +172,6 @@ export const ClassDashboard: React.FC = () => {
     },
   ];
 
-  if (!isTrainee) {
-    tabItems?.splice(0, 0, {
-      title: 'Attendance',
-      initActive: false,
-      child: <AttendanceComponent />,
-    });
-  }
-
   const tabItemsForPrincipal: TabItem[] = [
     {
       title: 'Attendance',
@@ -189,9 +184,9 @@ export const ClassDashboard: React.FC = () => {
       child: <PractitionersList />,
     },
     {
-      title: 'Children',
+      title: 'Classes',
       initActive: false,
-      child: <ChildList />,
+      child: <Classes />,
     },
     {
       title: 'Programme',
@@ -262,14 +257,14 @@ export const ClassDashboard: React.FC = () => {
     updatePractitionerProgress();
   };
 
-  const handleDeclineAttendanceTutorial = () => {
+  const handleDeclineAttendanceTutorial = useCallback(() => {
     dialog({
       position: DialogPosition.Bottom,
       render: (submit, cancel) => (
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={walktroughImage} alt="profile" className="mb-2" />
+              <img src={walkthroughImage} alt="profile" className="mb-2" />
               <Typography
                 text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
                 type={'body'}
@@ -300,9 +295,9 @@ export const ClassDashboard: React.FC = () => {
         />
       ),
     });
-  };
+  }, [dialog]);
 
-  const handleAttendanceTutorial = () => {
+  const handleAttendanceTutorial = useCallback(() => {
     if (practitionerIsOnLeave) return;
 
     dialog({
@@ -310,7 +305,7 @@ export const ClassDashboard: React.FC = () => {
       render: (submit, cancel) => (
         <ActionModal
           customIcon={
-            <img src={walktroughImage} alt="profile" className="mb-2" />
+            <img src={walkthroughImage} alt="profile" className="mb-2" />
           }
           iconColor="alertMain"
           iconBorderColor="alertBg"
@@ -342,27 +337,31 @@ export const ClassDashboard: React.FC = () => {
         />
       ),
     });
-  };
+  }, [dialog, handleDeclineAttendanceTutorial, practitionerIsOnLeave]);
 
   useEffect(() => {
-    if (showAttendanceTutorial && !attendanceTutorialComplete && !isTrainee) {
+    if (showAttendanceTutorial && !attendanceTutorialComplete) {
       handleAttendanceTutorial();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceTutorialComplete, showAttendanceTutorial]);
+  }, [
+    attendanceTutorialComplete,
+    handleAttendanceTutorial,
+    showAttendanceTutorial,
+  ]);
 
-  const updatePractitionerUsePhotoReportPermission = async (
-    usePhotoInReport: string
-  ) => {
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerUsePhotoInReport({
-        practitionerId: practitioner?.userId,
-        usePhotoInReport: usePhotoInReport,
-      })
-    );
-  };
+  const updatePractitionerUsePhotoReportPermission = useCallback(
+    async (usePhotoInReport: string) => {
+      await appDispatch(
+        practitionerThunkActions.updatePractitionerUsePhotoInReport({
+          practitionerId: practitioner?.userId,
+          usePhotoInReport: usePhotoInReport,
+        })
+      );
+    },
+    [appDispatch, practitioner?.userId]
+  );
 
-  const handlePromptPhotoReportPermission = () => {
+  const handlePromptPhotoReportPermission = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
       render: (submit, cancel) => (
@@ -372,7 +371,7 @@ export const ClassDashboard: React.FC = () => {
             <div className="flex">
               <img
                 src={user?.profileImageUrl}
-                alt="profile image"
+                alt="profile avatar"
                 className="mb-5 h-20 w-20"
               />
             </div>
@@ -412,20 +411,40 @@ export const ClassDashboard: React.FC = () => {
         />
       ),
     });
-  };
+  }, [
+    dialog,
+    reportingPeriod?.monthName,
+    reportingPeriod?.year,
+    updatePractitionerUsePhotoReportPermission,
+    user?.profileImageUrl,
+  ]);
 
   useEffect(() => {
     if (promptPhotoReportPermission) {
       handlePromptPhotoReportPermission();
       setPromptPhotoReportPermission(false);
     }
-  }, [promptPhotoReportPermission]);
+  }, [handlePromptPhotoReportPermission, promptPhotoReportPermission]);
 
   useEffect(() => {
     if (isCoach) {
       history.push(ROUTES.COACH.ROOT);
     }
   }, [history, isCoach]);
+
+  useEffect(() => {
+    if (
+      state?.activeTabIndex !== undefined &&
+      state?.activeTabIndex !== selectedTabIndex
+    ) {
+      setSelectedTabIndex(state?.activeTabIndex || 0);
+      history.replace({
+        state: {
+          activeTabIndex: undefined,
+        },
+      });
+    }
+  }, [history, selectedTabIndex, state?.activeTabIndex]);
 
   return (
     <>

@@ -67,10 +67,7 @@ import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { pointsSelectors } from '@/store/points';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
-import {
-  TabsItems,
-  TabsItemsWithAttendance,
-} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PointsService } from '@/services/PointsService';
 
 export const ChildRegistration: React.FC = () => {
@@ -86,7 +83,6 @@ export const ChildRegistration: React.FC = () => {
   const practitionerId = location?.state?.practitionerId;
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
   const authUser = useSelector(authSelectors.getAuthUser);
@@ -96,7 +92,6 @@ export const ChildRegistration: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const isFromPqa = !!practitionerId;
   const isPractitioner = !!practitioner;
-  const hasAttendanceRoute = isPrincipal && practitioners?.length! > 0;
   const dialog = useDialog();
 
   const pointsLibraryRegisterChild = useSelector(
@@ -466,9 +461,7 @@ export const ChildRegistration: React.FC = () => {
               onCancel={() => {
                 isPractitioner
                   ? history.push(ROUTES.CLASSROOM.ROOT, {
-                      activeTabIndex: hasAttendanceRoute
-                        ? TabsItemsWithAttendance.CHILDREN
-                        : TabsItems.CHILDREN,
+                      activeTabIndex: TabsItems.CLASSES,
                     } as ClassDashboardRouteState)
                   : history.push(ROUTES.COACH.PRACTITIONERS);
                 onClose();
