@@ -28,7 +28,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     ? 'e.g 0123456789'
     : 'e.g name@email.com';
   const contactLabel = isPhoneSelected ? 'Cellphone number' : 'Email address';
-  console.log({ helpType });
+
   return (
     <div>
       <BannerWrapper
