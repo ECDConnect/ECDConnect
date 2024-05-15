@@ -183,5 +183,32 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
         }
+
+        public async Task SendHelpFormSubmissionToAdministratorAsync(Guid adminUserId, UserHelp userHelp)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            var helpLoginStatus = userHelp.IsLoggedIn  ? "Yes" : "No";
+            var helpContactDetail = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber;
+            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
+            var affectedUserFullName = "anonymous";
+            if (userHelp.UserId != null)
+            {
+                var user = _userManager.FindByIdAsync(userHelp.UserId).Result;
+                affectedUserFullName = user.FullName;
+            }
+
+            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.AdminUserHelpForm)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.AffectedUserFullName, affectedUserFullName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpContactDetail, helpContactDetail)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpCategory, userHelp.Subject)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpDescription, userHelp.Description)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpLoginStatus, helpLoginStatus)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
     }
 }

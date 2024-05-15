@@ -16,5 +16,10 @@
         public const string AffectedUserFullName = "AffectedUserFullName";
         public const string LoginLinkShort = "LoginLink:shorturl";
 
+        // Help form
+        public const string HelpContactDetail = "HelpContactDetail";
+        public const string HelpCategory = "HelpCategory";
+        public const string HelpDescription = "HelpDescription";
+        public const string HelpLoginStatus = "HelpStatus";
     }
 }
