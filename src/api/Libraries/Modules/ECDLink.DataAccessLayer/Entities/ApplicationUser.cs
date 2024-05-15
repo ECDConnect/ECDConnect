@@ -59,6 +59,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public bool? ResetData { get; set; }
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
+        public string RegisterType { get; set; }
 
         [NotMapped]
         public virtual Franchisor franchisorObjectData { get; set; }

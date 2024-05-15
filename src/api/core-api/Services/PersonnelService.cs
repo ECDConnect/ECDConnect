@@ -1,9 +1,9 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
@@ -78,6 +78,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IReassignmentService __reassignmentService;
         private IServiceProvider _services;
         private IClassroomService _classroomService;
+        private SecurityNotificationManager _notificationManager;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -92,7 +93,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine,
             [Service] ILogger<UserMutationExtension> logger,
-            IServiceProvider services
+            IServiceProvider services,
+            SecurityNotificationManager notificationManager
             )
         {
             _contextAccessor = contextAccessor;
@@ -128,6 +130,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _logger = logger;
             _services = services;
             _classroomService = classroomService;
+            _notificationManager = notificationManager;
         }
 
         private IReassignmentService _reassignmentService
@@ -1182,6 +1185,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             teamLead.UpdatedDate = DateTime.Now;
             teamLead.UpdatedBy = _applicationUserId.ToString();
             return _teamLeadRepo.Update(teamLead);
+        }
+
+        public Practitioner AddOAPractitioner(Guid userId)
+        {
+            return _practiRepo.Insert(
+                new Practitioner
+                {
+                    Id = userId,
+                    UserId = userId,
+                    IsActive = true,
+                    InsertedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    UpdatedBy = _applicationUserId.ToString(),
+                });
         }
     }
 }
