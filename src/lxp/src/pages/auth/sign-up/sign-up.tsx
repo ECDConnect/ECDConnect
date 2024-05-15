@@ -38,6 +38,7 @@ import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 import { UserService } from '@/services/UserService';
+import { HelpForm } from '@/components/help-form/help-form';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -75,6 +76,7 @@ export const SignUp: React.FC = () => {
   const authToken = queryParams.getValue('token');
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
+  const [openHelp, setOpenHelp] = useState(false);
 
   if (userDetails) {
     // coach
@@ -284,7 +286,7 @@ export const SignUp: React.FC = () => {
               }
             ></Checkbox>
             <Typography
-              text={'I accept the'}
+              text={'I accept the terms and conditions'}
               type="help"
               color={
                 errors.termsAndConditionsAccepted?.message
@@ -293,26 +295,20 @@ export const SignUp: React.FC = () => {
               }
             />
             &nbsp;
-            <div
+            <Button
+              color={'secondaryAccent2'}
+              type={'filled'}
+              text="Read"
+              textColor="secondary"
+              className={'rounded-xl'}
+              size={'small'}
               onClick={() => {
                 displayArticle(
                   ContentConsentTypeEnum.TermsAndConditions,
                   'Consent & Commitment Agreement'
                 );
               }}
-            >
-              <Typography
-                className={'cursor-pointer'}
-                text={'terms and conditions'}
-                type="help"
-                underline={true}
-                color={
-                  errors.termsAndConditionsAccepted?.message
-                    ? 'errorDark'
-                    : 'secondary'
-                }
-              />
-            </div>
+            />
           </div>
           <div className={styles.checkboxWrapper}>
             <Checkbox<SignUpModel>
@@ -325,7 +321,7 @@ export const SignUp: React.FC = () => {
               }
             ></Checkbox>
             <Typography
-              text={'I accept the'}
+              text={'I accept the data permissions agreement'}
               type="help"
               color={
                 errors.dataPermissionAgreementAccepted?.message
@@ -334,22 +330,19 @@ export const SignUp: React.FC = () => {
               }
             />
             &nbsp;
-            <Typography
+            <Button
+              color={'secondaryAccent2'}
+              type={'filled'}
+              text="Read"
+              textColor="secondary"
+              className={'rounded-xl'}
+              size={'small'}
               onClick={() => {
                 displayArticle(
                   ContentConsentTypeEnum.DataPermissionsAgreement,
                   'Data Permissions Agreement'
                 );
               }}
-              className={'cursor-pointer'}
-              text={'data permissions agreement'}
-              underline={true}
-              type="help"
-              color={
-                errors.dataPermissionAgreementAccepted?.message
-                  ? 'errorDark'
-                  : 'secondary'
-              }
             />
           </div>
           {errorStrings.length > 0 && (
@@ -366,6 +359,16 @@ export const SignUp: React.FC = () => {
               type={'error'}
               list={requestError ? [requestError] : []}
               className={styles.marginTop}
+              button={
+                <Button
+                  text="Get help"
+                  icon="ClipboardListIcon"
+                  type={'filled'}
+                  color={'quatenary'}
+                  textColor={'white'}
+                  onClick={() => setOpenHelp(true)}
+                />
+              }
             />
           )}
 
@@ -411,7 +414,6 @@ export const SignUp: React.FC = () => {
           isOpen={true}
         />
       )}
-
       <Dialog
         visible={presentCellNumberMismatch}
         position={DialogPosition.Middle}
@@ -448,6 +450,13 @@ export const SignUp: React.FC = () => {
             },
           ]}
         />
+      </Dialog>
+      <Dialog
+        visible={openHelp}
+        position={DialogPosition.Full}
+        className="w-full"
+      >
+        <HelpForm closeAction={setOpenHelp} />
       </Dialog>
       {!isOnline && (
         <Alert
