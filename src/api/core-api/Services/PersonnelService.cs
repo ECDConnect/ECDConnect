@@ -91,7 +91,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine,
             [Service] ILogger<UserMutationExtension> logger,
-            IServiceProvider services,
+            IServiceProvider services
             )
         {
             _contextAccessor = contextAccessor;

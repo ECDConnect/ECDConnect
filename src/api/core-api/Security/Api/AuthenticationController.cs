@@ -171,7 +171,7 @@ namespace ECDLink.Security.Api
         {
             var user = await _securityManager.GetUserByNameAsync(resetModel.Username);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
             }
@@ -221,7 +221,7 @@ namespace ECDLink.Security.Api
             var user = await _securityManager.GetUserByNameAsync(verifyEmailModel.Username);
             var token = TokenHelper.DecodeToken(verifyEmailModel.Token);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
             }
@@ -243,7 +243,7 @@ namespace ECDLink.Security.Api
             var token = TokenHelper.DecodeToken(verifyCellphoneNumberModel.Token);
             var currentPhoneNumber = user.PhoneNumber;
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
             }
@@ -272,13 +272,13 @@ namespace ECDLink.Security.Api
         // Open-access
         #region OpenAccess
 
-        [Route("verify-oa-username-phone-number")]
+        [Route("check-username-phone-number")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> VerifyOAUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
+        public async Task<IActionResult> CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
         {
             var userByUsername = await _securityManager.GetUserByNameAsync(verifyModel.Username);
-            if (userByUsername != default(ApplicationUser))
+            if (userByUsername != null)
             {
                 return BadRequest(new FailedVerificationModel
                 {
@@ -290,7 +290,7 @@ namespace ECDLink.Security.Api
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
             var userByPhoneNumber =  _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
                                 && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-            if (userByPhoneNumber != default(ApplicationUser))
+            if (userByPhoneNumber != null)
             {
                 return BadRequest(new FailedVerificationModel
                 {
@@ -328,7 +328,19 @@ namespace ECDLink.Security.Api
                     RegisterType = registerOAPractitionerModel.RegisterType
                 };
 
-            } else if (RegisterTypeConstants.FACEBOOK == registerOAPractitionerModel.RegisterType) {  // faceBook signs up with phone number
+                // Validate password for user
+                if (!await _passwordManager.IsPasswordSecureAsync(newUser, registerOAPractitionerModel.Password))
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 1,
+                        Error = "Add password failure"
+                    });
+                }
+
+            } 
+            else if (RegisterTypeConstants.FACEBOOK == registerOAPractitionerModel.RegisterType) 
+            {  // faceBook signs up with phone number
 
                 newUser = new ApplicationUser()
                 {
@@ -348,7 +360,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 1,
+                    ErrorCode = 2,
                     Error = "Add new user failure"
                 });
             }
@@ -356,18 +368,9 @@ namespace ECDLink.Security.Api
             // Get newly created user
             var user = await _securityManager.GetUserByNameAsync(registerOAPractitionerModel.Username);
 
+            // Step 2 - create password
             if (RegisterTypeConstants.USERNAME == registerOAPractitionerModel.RegisterType)
             {
-                // Step 2 - create password
-                if (!await _passwordManager.IsPasswordSecureAsync(user, registerOAPractitionerModel.Password))
-                {
-                    return BadRequest(new FailedVerificationModel
-                    {
-                        ErrorCode = 2,
-                        Error = "Add password failure"
-                    });
-                }
-
                 await _passwordManager.AddPasswordAsync(user, registerOAPractitionerModel.Password);
             }
 
