@@ -13,6 +13,7 @@ import Loader from './components/loader/loader';
 import { WalkthroughProvider } from './walkthrougContext';
 import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import { persistor, store } from './store';
+import { TenantContextProvider } from './hooks/useTenant';
 
 const ConfigWrapper: React.FC = () => {
   const { loading } = useConfig();
@@ -34,18 +35,20 @@ const ConfigWrapper: React.FC = () => {
     return (
       <OnlineStatusProvider pollUrl={pollUrl} interval={3000} timeout={2000}>
         <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <ThemeProvider
-              themeEndPoint={Config.themeUrl}
-              overRideCache={false}
-            >
-              <DialogServiceProvider>
-                <WalkthroughProvider>
-                  <App />
-                </WalkthroughProvider>
-              </DialogServiceProvider>
-            </ThemeProvider>
-          </PersistGate>
+          <TenantContextProvider>
+            <PersistGate loading={null} persistor={persistor}>
+              <ThemeProvider
+                themeEndPoint={Config.themeUrl}
+                overRideCache={false}
+              >
+                <DialogServiceProvider>
+                  <WalkthroughProvider>
+                    <App />
+                  </WalkthroughProvider>
+                </DialogServiceProvider>
+              </ThemeProvider>
+            </PersistGate>
+          </TenantContextProvider>
         </Provider>
       </OnlineStatusProvider>
     );

@@ -16,12 +16,12 @@ namespace ECDLink.PostgresTenancy.Services
             _repository = repository;
         }
 
-        public IEnumerable<TenantModel> GetAllTenants()
+        public IEnumerable<TenantInternalModel> GetAllTenants()
         {
             return _repository.GetAll().ToList().Select(t => Cast(t));
         }
 
-        public TenantModel GetTenantById(string id)
+        public TenantInternalModel GetTenantById(string id)
         {
             var tenant = _repository.GetById(id);
 
@@ -33,7 +33,7 @@ namespace ECDLink.PostgresTenancy.Services
             return Cast(tenant);
         }
 
-        public TenantModel GetTenantByUrl(string url)
+        public TenantInternalModel GetTenantByUrl(string url)
         {
             var tenant = _repository.GetAll()
                             .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
@@ -48,7 +48,7 @@ namespace ECDLink.PostgresTenancy.Services
             return Cast(tenant);
         }
 
-        public TenantModel AddTenant(TenantModel tenant)
+        public TenantInternalModel AddTenant(TenantInternalModel tenant)
         {
             if (tenant == null)
             {
@@ -73,9 +73,9 @@ namespace ECDLink.PostgresTenancy.Services
             return Cast(entity);
         }
 
-        private static TenantModel Cast(TenantEntity tenantEntity)
+        private static TenantInternalModel Cast(TenantEntity tenantEntity)
         {
-            return new TenantModel
+            return new TenantInternalModel
             {
                 Id = tenantEntity.Id,
                 OrganisationName = tenantEntity.OrganisationName,
@@ -88,7 +88,6 @@ namespace ECDLink.PostgresTenancy.Services
                 AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress,
                 MoodleUrl = tenantEntity.MoodleUrl,
                 MoodleConfig = tenantEntity.MoodleConfig
-
             };
         }
     }

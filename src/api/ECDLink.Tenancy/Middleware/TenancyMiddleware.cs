@@ -23,7 +23,7 @@ namespace ECDLink.Tenancy.Middleware
             string path = context.Request.Path;
             if (!path.Contains("/authentication/online-check"))
             {
-                TenantModel tenantModel = GetTenant(context, tenancyService);
+                var tenantModel = GetTenant(context, tenancyService);
 
                 if (tenantModel == null)
                 {
@@ -41,10 +41,10 @@ namespace ECDLink.Tenancy.Middleware
             await _next(context);
         }
 
-        private TenantModel GetTenant(HttpContext context, ITenantService tenancyService)
+        private TenantInternalModel GetTenant(HttpContext context, ITenantService tenancyService)
         {
             string path = "";
-            TenantModel tenant = null;
+            TenantInternalModel tenant = null;
 
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
@@ -55,7 +55,7 @@ namespace ECDLink.Tenancy.Middleware
             if (!string.IsNullOrWhiteSpace(refererUrl))
             {
                 var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
-                if (urlTenant != null && urlTenant != default(TenantModel))
+                if (urlTenant != null && urlTenant != default(TenantInternalModel))
                 {
                     tenant = urlTenant;
                     path = "URL:" + refererUrl;
@@ -65,7 +65,7 @@ namespace ECDLink.Tenancy.Middleware
             {
                 // If no url making the request, check the server the request was made to            
                 var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
-                if (host != default(TenantModel))
+                if (host != default(TenantInternalModel))
                 {
                     tenant = host;
                     path = "Host:" + context.Request.Host.Value;
@@ -91,7 +91,7 @@ namespace ECDLink.Tenancy.Middleware
                 tenant.Host = context.Request.Host.Value;
             }
 
-            return (tenant != null ? tenant : new TenantModel());
+            return (tenant != null ? tenant : new TenantInternalModel());
         }
     }
 }

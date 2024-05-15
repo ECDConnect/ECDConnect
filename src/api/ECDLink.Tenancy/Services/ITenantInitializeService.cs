@@ -5,9 +5,9 @@ namespace ECDLink.Tenancy.Services
 {
     public interface ITenantInitializeService
     {
-        public bool CreateTenantInstance(TenantModel tenant);
+        public bool CreateTenantInstance(TenantInternalModel tenant);
 
-        public bool MigrateTenantInstance(TenantModel tenant);
+        public bool MigrateTenantInstance(TenantInternalModel tenant);
         public Task<bool> SeedTenantWithTestData();
     }
 }

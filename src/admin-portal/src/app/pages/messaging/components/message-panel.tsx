@@ -14,7 +14,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import {
   GetAllWards,
-  GetTenantContext,
   GetUserCountForMessageCriteria,
   SaveBulkMessagesForAdmin,
 } from '@ecdlink/graphql';
@@ -32,7 +31,7 @@ import { XIcon } from '@heroicons/react/solid';
 import MessageForm from './message-form';
 import { useHistory } from 'react-router';
 import { MessageRoleDto, ggRoles, ssRoles } from './message';
-import { TenantType } from '../../../utils/constants';
+import { useTenant } from '../../../hooks/useTenant';
 
 export default function MessagePanel() {
   const messageSchema = Yup.object().shape({
@@ -104,12 +103,9 @@ export default function MessagePanel() {
   const [wardName, setWardName] = useState('');
   const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
   const { setNotification } = useNotifications();
+  const tenant = useTenant();
 
   const { data: wards } = useQuery(GetAllWards, {
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const { data: tenantData } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -120,18 +116,12 @@ export default function MessagePanel() {
   }, [user]);
 
   useEffect(() => {
-    if (tenantData) {
-      if (
-        tenantData &&
-        tenantData.tenantContext &&
-        tenantData.tenantContext.tenantType === TenantType.ChwConnect
-      ) {
-        setRoleData(ggRoles);
-      } else {
-        setRoleData(ssRoles);
-      }
+    if (tenant.isCHWConnect) {
+      setRoleData(ggRoles);
+    } else {
+      setRoleData(ssRoles);
     }
-  }, [tenantData]);
+  }, [tenant]);
 
   useEffect(() => {
     if (wards) {

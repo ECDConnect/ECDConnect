@@ -9,14 +9,14 @@ namespace ECDLink.Tenancy.Context
         /// <summary>
         /// Holds the Tenant in an <see cref="AsyncLocal{T}"/>, so it flows top-down.
         /// </summary>
-        private static AsyncLocal<TenantModel> tenant = new AsyncLocal<TenantModel>();
+        private static AsyncLocal<TenantInternalModel> tenant = new AsyncLocal<TenantInternalModel>();
 
         /// <summary>
         /// Gets the current Tenant 
         /// </summary>
-        public static TenantModel? Tenant => tenant.Value;
+        public static TenantInternalModel? Tenant => tenant.Value;
 
-        public static void SetTenant(TenantModel value, bool acceptNullValue = false)
+        public static void SetTenant(TenantInternalModel value, bool acceptNullValue = false)
         {
             if (value == null)
             {

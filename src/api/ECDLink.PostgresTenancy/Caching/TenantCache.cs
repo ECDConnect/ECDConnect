@@ -15,16 +15,16 @@ namespace ECDLink.PostgresTenancy.Caching
         private readonly TenantService _tenantService;
         private static readonly object assignCacheLock = new object();
 
-        private List<TenantModel> Tenants
+        private List<TenantInternalModel> Tenants
         {
             get
             {
                 if (!_cacheService.Exists(CacheKeyConstants.TenantCache))
                 {
-                    _cacheService.SetCacheItem(CacheKeyConstants.TenantCache, new List<TenantModel>());
+                    _cacheService.SetCacheItem(CacheKeyConstants.TenantCache, new List<TenantInternalModel>());
                 }
 
-                return _cacheService.GetCacheItem<List<TenantModel>>(CacheKeyConstants.TenantCache);
+                return _cacheService.GetCacheItem<List<TenantInternalModel>>(CacheKeyConstants.TenantCache);
             }
         }
 
@@ -50,7 +50,7 @@ namespace ECDLink.PostgresTenancy.Caching
             }
         }
 
-        public TenantModel AddTenant(TenantModel model)
+        public TenantInternalModel AddTenant(TenantInternalModel model)
         {
             var tenant = _tenantService.AddTenant(model);
 
@@ -61,13 +61,13 @@ namespace ECDLink.PostgresTenancy.Caching
             return tenant;
         }
 
-        public TenantModel GetTenantById(string id)
+        public TenantInternalModel GetTenantById(string id)
         {
             var tenant = Tenants.Where(x => x.Id == Guid.Parse(id));
             return tenant.FirstOrDefault();
         }
 
-        public TenantModel GetTenantByUrl(string url)
+        public TenantInternalModel GetTenantByUrl(string url)
         {
             var tenants = Tenants.AsQueryable();
             var uri = new Uri((url.StartsWith("http:") || url.StartsWith("https:")) ? url : "http://" + url);
@@ -87,7 +87,7 @@ namespace ECDLink.PostgresTenancy.Caching
                     .FirstOrDefault();
         }
 
-        public IEnumerable<TenantModel> GetAllTenants()
+        public IEnumerable<TenantInternalModel> GetAllTenants()
         {
             return Tenants;
         }

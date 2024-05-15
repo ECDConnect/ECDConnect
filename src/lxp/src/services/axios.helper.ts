@@ -42,6 +42,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
     APIs.forgotPassword,
     APIs.sendAuthCode,
     APIs.verifyInvitation,
+    APIs.tenantCurrent,
   ];
   const headers: any = {
     'Content-Type': 'application/json',

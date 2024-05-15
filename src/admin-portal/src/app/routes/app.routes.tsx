@@ -71,7 +71,7 @@ import { ViewReport } from '../pages/tl-meetings/components/view-report/view-rep
 import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
 import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
 import { useApolloClient } from '@apollo/client';
-import { GetTenantContext, TenantModel, TenantType } from '@ecdlink/graphql';
+import { useTenant } from '../hooks/useTenant';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -149,14 +149,9 @@ const TlMeetingsRoutes: React.FC = () => {
 
 const AuthRoutes: React.FC = () => {
   const apolloClient = useApolloClient();
+  const tenant = useTenant();
 
-  const data =
-    apolloClient.readQuery<{ tenantContext?: TenantModel }>({
-      query: GetTenantContext,
-    }) || {};
-
-  const isGrowGreatTenant =
-    data?.tenantContext?.tenantType === TenantType.ChwConnect;
+  const isGrowGreatTenant = tenant.isCHWConnect;
 
   return (
     <Switch>

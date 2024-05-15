@@ -11,6 +11,7 @@ export const APIs = {
   onlineCheck: `api/authentication/online-check`,
   verifyCellPhoneNumber: 'api/authentication/verify-cellphone-number',
   submitUserHelpForm: 'api/authentication/submit-user-help-form',
+  tenantCurrent: 'api/tenancy/current',
   // open access
   checkUsernamePhoneNumber: 'api/authentication/check-username-phone-number',
   registerOAPractitioner: 'api/authentication/register-oa-practitioner',

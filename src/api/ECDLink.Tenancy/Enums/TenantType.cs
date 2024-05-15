@@ -6,6 +6,7 @@
         OpenAccess,
         WhiteLabelTemplate,
         CHWConnect,
-        WhiteLabel
+        WhiteLabel,
+        FundaApp
     }
 }

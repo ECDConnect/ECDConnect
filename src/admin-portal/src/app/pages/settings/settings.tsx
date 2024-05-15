@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { SettingsRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { useApolloClient } from '@apollo/client';
-import { GetTenantContext, TenantModel, TenantType } from '@ecdlink/graphql';
+import { useTenant } from '../../hooks/useTenant';
 
 export interface SettingsRouteState {
   overrideDefaultUrl?: string;
@@ -14,16 +14,11 @@ export function Settings() {
   const overrideDefaultUrl = location?.state?.overrideDefaultUrl;
 
   const history = useHistory();
+  const tenant = useTenant();
 
   const apolloClient = useApolloClient();
 
-  const data =
-    apolloClient.readQuery<{ tenantContext?: TenantModel }>({
-      query: GetTenantContext,
-    }) || {};
-
-  const isGrowGreatTenant =
-    data?.tenantContext?.tenantType === TenantType.ChwConnect;
+  const isGrowGreatTenant = tenant.isCHWConnect;
 
   const navigation = [
     {

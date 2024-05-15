@@ -4,7 +4,6 @@ import {
   GetAllMessageLogsForTeamLead,
   GetAllNavigation,
   GetAllNotifications,
-  GetTenantContext,
 } from '@ecdlink/graphql';
 import { Avatar, Button, IconBadge, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
@@ -22,7 +21,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
-import { TenantType } from '../../utils/constants';
 import {
   INavigation,
   NavbarTypes,
@@ -31,6 +29,7 @@ import {
 import { useUserRole } from '../../hooks/useUserRole';
 import ROUTES from '../../routes/app.routes-constants';
 import { navigationFromFrontend } from './shell.constants';
+import { useTenant } from '../../hooks/useTenant';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -89,6 +88,7 @@ export default function Shell() {
   const [avatarColor, setAvatarColor] = useState<string>();
   const [navigation, setNavigation] = useState<INavigation[]>();
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
+  const tenant = useTenant();
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
@@ -101,10 +101,6 @@ export default function Shell() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
-
   const { data: tlNotificationsData } = useQuery(GetAllMessageLogsForTeamLead, {
     variables: {
       userId: user?.id,
@@ -112,8 +108,7 @@ export default function Shell() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const isGrowGreatTenant =
-    data?.tenantContext?.tenantType === TenantType.ChwConnect;
+  const isGrowGreatTenant = tenant.isCHWConnect;
 
   const notifications = notificationsData?.allNotifications;
   const notReadNotifications = useMemo(

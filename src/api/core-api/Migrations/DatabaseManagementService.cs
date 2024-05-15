@@ -41,7 +41,7 @@ namespace EcdLink.Api.CoreApi.Migrations
             _logger = logger;
         }
 
-        public bool MigrateTenantInstance(TenantModel tenant)
+        public bool MigrateTenantInstance(TenantInternalModel tenant)
         {
             try
             {
@@ -56,8 +56,9 @@ namespace EcdLink.Api.CoreApi.Migrations
             return true;
         }
 
-        public bool CreateTenantInstance(TenantModel tenant)
+        public bool CreateTenantInstance(TenantInternalModel tenant)
         {
+            /*
             BuildDbStructure();
             try
             {
@@ -76,12 +77,14 @@ namespace EcdLink.Api.CoreApi.Migrations
                 // Handle cannot create database
                 return false;
             }
-
             return true;
+            */
+            throw new NotSupportedException();
         }
 
         public async Task<bool> SeedTenantWithTestData()
         {
+            /*
             try
             {
                 var hasUsers = _authDbContext.Users.AnyAsync().Result;
@@ -103,23 +106,26 @@ namespace EcdLink.Api.CoreApi.Migrations
                 return await Task.Run<bool>(() => false);
             }
             return await Task.Run<bool>(() => true);
+            */
+                throw new NotSupportedException();
         }
 
         private void BuildDbStructure()
         {
-            var franchisor = _config.GetSection<FranchisorConfiguration>(TenancyConstants.Configuration.TenantSettings);
-            var authDbContextOptions = GetOptions<AuthenticationDbContext>(franchisor.ConnectionString, "ECDLink.DataAccessLayer");
-            var authDbContext = new AuthenticationDbContext(authDbContextOptions.Options);
-            authDbContext.Database.Migrate();
+            //var franchisor = _config.GetSection<FranchisorConfiguration>(TenancyConstants.Configuration.TenantSettings);
+            //var authDbContextOptions = GetOptions<AuthenticationDbContext>(franchisor.ConnectionString, "ECDLink.DataAccessLayer");
+            //var authDbContext = new AuthenticationDbContext(authDbContextOptions.Options);
+            //authDbContext.Database.Migrate();
 
-            var contentManagementDbContextOptions = GetOptions<ContentManagementDbContext>(franchisor.ConnectionString, "ECDLink.ContentManagement");
-            var contentManagementDbContext = new ContentManagementDbContext(contentManagementDbContextOptions.Options);
-            contentManagementDbContext.Database.Migrate();
+            //var contentManagementDbContextOptions = GetOptions<ContentManagementDbContext>(franchisor.ConnectionString, "ECDLink.ContentManagement");
+            //var contentManagementDbContext = new ContentManagementDbContext(contentManagementDbContextOptions.Options);
+            //contentManagementDbContext.Database.Migrate();
         }
 
         private DbContextOptionsBuilder<T> GetOptions<T>(string connection, string Migration)
             where T : DbContext
         {
+            /*
             var opts = new DbContextOptionsBuilder<T>();
 
             opts.UseNpgsql(connection, s =>
@@ -132,6 +138,8 @@ namespace EcdLink.Api.CoreApi.Migrations
                 opts.EnableSensitiveDataLogging();
 
             return opts;
+            */
+            throw new NotSupportedException();
         }
     }
 }
