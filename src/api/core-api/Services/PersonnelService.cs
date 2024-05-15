@@ -1,6 +1,5 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -1171,6 +1170,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             teamLead.UpdatedDate = DateTime.Now;
             teamLead.UpdatedBy = _applicationUserId.ToString();
             return _teamLeadRepo.Update(teamLead);
+        }
+
+        public Practitioner AddOAPractitioner(Guid userId)
+        {
+            return _practiRepo.Insert(
+                new Practitioner
+                {
+                    Id = userId,
+                    UserId = userId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId.ToString(),
+                });
         }
     }
 }
