@@ -20,9 +20,7 @@ export default function NestedSubMenu({ item, onNavigation }) {
     <div className="group w-full items-center">
       <Fragment key={item.name}>
         <div className={`group w-full items-center`}>
-          {item.showDivider && (
-            <Divider className="bg-primaryAccent1" dividerType="dashed" />
-          )}
+          {item.showDivider && <Divider dividerType="dashed" />}
           <div
             onClick={handleOpenSubMenu}
             className={classNames(
