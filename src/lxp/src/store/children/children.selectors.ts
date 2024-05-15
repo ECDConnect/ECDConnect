@@ -1,7 +1,6 @@
 import { ChildDto, RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
-import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
   state.children.children?.filter(
@@ -19,7 +18,7 @@ export const getChildById = (id?: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.systemName.includes(RoleSystemNameEnum.Coach)
+        role.systemName?.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {

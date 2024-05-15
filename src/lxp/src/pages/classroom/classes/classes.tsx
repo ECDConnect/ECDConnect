@@ -9,6 +9,9 @@ import {
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ClassMenu } from './components/class-menu';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const Classes = () => {
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
@@ -16,9 +19,36 @@ export const Classes = () => {
 
   const dialog = useDialog();
 
-  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const history = useHistory();
 
-  const isPrincipal = !!practitioner?.isPrincipal;
+  const practitionerLoggedIn = useSelector(
+    practitionerSelectors?.getPractitioner
+  );
+  const classes = useSelector(classroomsSelectors.getClassroomGroups);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+
+  const classesWithPractitionerData = classes.map((cls) => {
+    let linkedPractitioner = undefined;
+
+    if (cls.userId === practitionerLoggedIn?.userId) {
+      linkedPractitioner = practitionerLoggedIn;
+    }
+
+    if (!linkedPractitioner && practitioners) {
+      linkedPractitioner = practitioners.find(
+        (practitioner) => practitioner.userId === cls.userId
+      );
+    }
+
+    return {
+      ...cls,
+      practitioner: linkedPractitioner
+        ? { name: linkedPractitioner.user?.firstName }
+        : null,
+    };
+  });
+
+  const isPrincipal = !!practitionerLoggedIn?.isPrincipal;
 
   const onScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -28,35 +58,45 @@ export const Classes = () => {
     }
   };
 
-  const onClassClick = (id: string) => {
+  const onClassClick = (id: string, name: string): void => {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
       color: 'bg-white',
       render: (onClose) => (
-        <ClassMenu isPrincipal={isPrincipal} classId={id} onClose={onClose} />
+        <ClassMenu
+          isPrincipal={isPrincipal}
+          classId={id}
+          className={name}
+          onClose={onClose}
+        />
       ),
     });
   };
 
-  const classes: UserAlertListDataItem[] = [
-    {
-      title: 'Class 1',
-      profileText: 'C1',
-      subTitle: '{practitionerName}, {count} children',
+  const classList: UserAlertListDataItem[] = classesWithPractitionerData?.map(
+    (currentClass) => ({
+      title: currentClass.name,
+      profileText: currentClass.name.slice(0, 2).toUpperCase(),
+      subTitle: `${
+        currentClass.practitioner?.name
+          ? currentClass.practitioner.name + ' , '
+          : ''
+      }${currentClass.learners?.length} children`,
       alertSeverity: 'none',
       avatarColor: getAvatarColor(),
       iconColor: 'secondary',
       hideAlertSeverity: true,
-      onActionClick: () => onClassClick('{id}'),
-    },
-  ];
+      onActionClick: () => onClassClick(currentClass.id, currentClass.name),
+    })
+  );
 
   return (
     <div className="p-4 pt-6">
       <StackedList
+        className="mb-20 flex flex-col gap-2"
         type="UserAlertList"
-        listItems={classes}
+        listItems={classList}
         onScroll={onScroll}
       />
       {isPrincipal && (
@@ -69,8 +109,8 @@ export const Classes = () => {
           color="quatenary"
           shape={'round'}
           className="absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5"
-          // TODO: Implement onClick
-          click={() => {}}
+          // TODO: when W3 (EC-2534) is done, please review this redirect
+          click={() => history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS)}
         />
       )}
     </div>
