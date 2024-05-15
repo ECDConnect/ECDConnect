@@ -65,6 +65,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';
+import { childrenThunkActions } from '@/store/children';
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -529,6 +530,8 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }
+      (async () =>
+        await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
     }
   }, [practitioner?.userId]);
 

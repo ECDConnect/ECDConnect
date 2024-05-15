@@ -585,6 +585,7 @@ class PractitionerService {
 
     return response.data.data.promotePractitionerToPrincipal;
   }
+
   async getReportDetailsForPractitioner(
     userId: string
   ): Promise<ReportDetailsForPractitionerData> {
@@ -619,6 +620,8 @@ class PractitionerService {
     return response.data.data.reportDetailsForPractitioner;
   }
 
+  // Used only by coach stuff, we should refactor and remove this when we work on coach functionality
+  // Already removed on the BE
   async getClassroomGroupClassroomsForPractitioner(
     userId: string
   ): Promise<ClassroomGroupDto[]> {
@@ -1033,6 +1036,7 @@ class PractitionerService {
     return response.data.data.displayMetrics;
   }
 
+  // Can we remove this now?
   async classroomActionItems(
     practitionerId: string
   ): Promise<PractitionerDto[]> {
@@ -1391,6 +1395,7 @@ class PractitionerService {
 
     return response.data.data.removalDetailsForPractitioners;
   }
+
   async updateRemovePractitionerFromProgramme(
     removalId: string,
     reasonForPractitionerLeavingProgrammeId: string | undefined = undefined,

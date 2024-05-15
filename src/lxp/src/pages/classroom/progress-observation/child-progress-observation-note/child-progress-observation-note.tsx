@@ -26,9 +26,6 @@ export const ChildProgressObservationNote: React.FC = () => {
   const currentChild = useSelector(
     childrenSelectors.getChildById(routeState.childId)
   );
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
   const { currentReport, setObservationNote } = useChildProgressObservation(
     routeState.childId
   );
@@ -61,7 +58,7 @@ export const ChildProgressObservationNote: React.FC = () => {
     <BannerWrapper
       size={'small'}
       onBack={() => history.goBack()}
-      title={`Add a note about ${currentChildUser?.firstName}`}
+      title={`Add a note about ${currentChild?.user?.firstName}`}
       data-testId={'child-progress-observation-banner-wrapper'}
       renderOverflow
     >
@@ -69,19 +66,19 @@ export const ChildProgressObservationNote: React.FC = () => {
         <Typography type={'h1'} text={`Your notes`} color={'primary'} />
         <Typography
           type={'body'}
-          text={`Fill in any observations or notes about ${currentChildUser?.firstName}.`}
+          text={`Fill in any observations or notes about ${currentChild?.user?.firstName}.`}
           color={'textMid'}
         />
         <Typography
           type={'help'}
           className={'mt-1'}
-          text={`These notes will not be shared with ${currentChildUser?.firstName}’s caregiver.`}
+          text={`These notes will not be shared with ${currentChild?.user?.firstName}’s caregiver.`}
           color={'textLight'}
         />
         <FormInput<ChildProgressObservationNoteModel>
           textInputType="textarea"
           value={currentReport?.observationNote}
-          placeholder={`E.g. ${currentChildUser?.firstName}’s mother shared some information about their health.`}
+          placeholder={`E.g. ${currentChild?.user?.firstName}’s mother shared some information about their health.`}
           register={register}
           nameProp={'note'}
         />

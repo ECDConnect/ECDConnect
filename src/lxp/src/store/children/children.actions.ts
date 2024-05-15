@@ -30,27 +30,27 @@ export const getChildren = createAsyncThunk<
       children: { children: childrenCache },
     } = getState();
 
-    if (!childrenCache) {
-      try {
-        let children: ChildDto[] | undefined;
+    //if (!childrenCache) {
+    try {
+      let children: ChildDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          children = await new ChildService(userAuth?.auth_token).getChildren();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!children) {
-          return rejectWithValue('Error getting Children');
-        }
-
-        return children;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        children = await new ChildService(userAuth?.auth_token).getChildren();
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return childrenCache;
+
+      if (!children) {
+        return rejectWithValue('Error getting Children');
+      }
+
+      return children;
+    } catch (err) {
+      return rejectWithValue(err);
     }
+    // } else {
+    //   return childrenCache;
+    // }
   }
 );
 
@@ -160,62 +160,63 @@ export const updateChildUser = createAsyncThunk<
   }
 );
 
-export const upsertChildUsers = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'upsertChildUsers',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      children: { childUser, children },
-      staticData: { WorkflowStatuses },
-    } = getState();
+// Removing this for now, its part of resitration, but we should also sync the child and user in one go. Neither makes sense without the other
+// export const upsertChildUsers = createAsyncThunk<
+//   boolean[],
+//   // eslint-disable-next-line @typescript-eslint/ban-types
+//   {},
+//   ThunkApiType<RootState>
+// >(
+//   'upsertChildUsers',
+//   // eslint-disable-next-line no-empty-pattern
+//   async ({}, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       children: { childUser, children },
+//       staticData: { WorkflowStatuses },
+//     } = getState();
 
-    try {
-      let promises: Promise<boolean>[] = [];
-      const workflowStatus = WorkflowStatuses?.find(
-        (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
-      );
-      if (userAuth?.auth_token && childUser) {
-        promises = childUser
-          .filter((childUser) => {
-            const child = children?.find((x) => x.userId === childUser.id);
-            return child && child.workflowStatusId !== workflowStatus?.id
-              ? true
-              : false;
-          })
-          .map(async (x) => {
-            const input: UserModelInput = {
-              isSouthAfricanCitizen: x.isSouthAfricanCitizen ?? false,
-              idNumber: x.idNumber && x.idNumber.length > 0 ? x.idNumber : null,
-              verifiedByHomeAffairs: x.verifiedByHomeAffairs!,
-              dateOfBirth: x.dateOfBirth,
-              genderId: x.genderId && x.genderId.length > 0 ? x.genderId : null,
-              raceId: x.raceId && x.raceId.length > 0 ? x.raceId : null,
-              firstName: x.firstName,
-              surname: x.surname,
-              contactPreference: x.contactPreference,
-              phoneNumber: x.phoneNumber,
-              email: x.email,
-              profileImageUrl: x.profileImageUrl,
-            };
+//     try {
+//       let promises: Promise<boolean>[] = [];
+//       const workflowStatus = WorkflowStatuses?.find(
+//         (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
+//       );
+//       if (userAuth?.auth_token && childUser) {
+//         promises = childUser
+//           .filter((childUser) => {
+//             const child = children?.find((x) => x.userId === childUser.id);
+//             return child && child.workflowStatusId !== workflowStatus?.id
+//               ? true
+//               : false;
+//           })
+//           .map(async (x) => {
+//             const input: UserModelInput = {
+//               isSouthAfricanCitizen: x.isSouthAfricanCitizen ?? false,
+//               idNumber: x.idNumber && x.idNumber.length > 0 ? x.idNumber : null,
+//               verifiedByHomeAffairs: x.verifiedByHomeAffairs!,
+//               dateOfBirth: x.dateOfBirth,
+//               genderId: x.genderId && x.genderId.length > 0 ? x.genderId : null,
+//               raceId: x.raceId && x.raceId.length > 0 ? x.raceId : null,
+//               firstName: x.firstName,
+//               surname: x.surname,
+//               contactPreference: x.contactPreference,
+//               phoneNumber: x.phoneNumber,
+//               email: x.email,
+//               profileImageUrl: x.profileImageUrl,
+//             };
 
-            return await new UserService(userAuth?.auth_token).updateUser(
-              x.id ?? '',
-              input
-            );
-          });
-      }
-      return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
+//             return await new UserService(userAuth?.auth_token).updateUser(
+//               x.id ?? '',
+//               input
+//             );
+//           });
+//       }
+//       return Promise.all(promises);
+//     } catch (err) {
+//       return rejectWithValue(err);
+//     }
+//   }
+// );
 
 export const upsertChildren = createAsyncThunk<
   boolean[],

@@ -60,12 +60,6 @@ export class IncompleteChildRegistrationNotificationValidator
     if (!applicableChildren) return [];
 
     for (const child of applicableChildren) {
-      const childUser = childrenState.childUser?.find(
-        (childUser) => childUser.id === child.userId
-      );
-
-      if (!childUser) continue;
-
       // if (!isCoach) {
       //   notifications.push({
       //     reference: `${child.id || childUser?.firstName}-reg`,

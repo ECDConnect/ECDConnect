@@ -24,9 +24,7 @@ export const ChildUndevelopedSkillForm: React.FC<
     skills.notYet &&
     skills.notYet.length > 0;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
+
   const [skillsRadioGroupOptions, setSkillsRadioGroupOptions] = useState<
     RadioGroupOption[]
   >([]);
@@ -84,8 +82,8 @@ export const ChildUndevelopedSkillForm: React.FC<
         color={'textDark'}
         text={
           allSkillsYes
-            ? `${childUser?.firstName} can do all of the things in this area`
-            : `Choose one skill to work on with ${childUser?.firstName}`
+            ? `${child?.user?.firstName} can do all of the things in this area`
+            : `Choose one skill to work on with ${child?.user?.firstName}`
         }
       />
       <div className={'mt-4'}>
@@ -98,7 +96,7 @@ export const ChildUndevelopedSkillForm: React.FC<
               <Typography
                 type="body"
                 color={'textDark'}
-                text={`${childUser?.firstName} is developing well.`}
+                text={`${child?.user?.firstName} is developing well.`}
                 fontSize="18"
                 className="pt-2"
               />
@@ -107,7 +105,7 @@ export const ChildUndevelopedSkillForm: React.FC<
               <Typography
                 type="body"
                 color={'textMid'}
-                text={`Keep observing ${childUser?.firstName}.`}
+                text={`Keep observing ${child?.user?.firstName}.`}
                 fontSize="14"
               />
             </div>
@@ -121,7 +119,7 @@ export const ChildUndevelopedSkillForm: React.FC<
                   type={'info'}
                   title='You did not choose "trying to do" for any of the skills.'
                   messageColor="textDark"
-                  message={`Choose a skill that ${childUser?.firstName} is not doing yet.`}
+                  message={`Choose a skill that ${child?.user?.firstName} is not doing yet.`}
                 />
               </div>
             )}

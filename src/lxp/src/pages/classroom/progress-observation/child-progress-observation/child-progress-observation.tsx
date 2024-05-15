@@ -94,9 +94,7 @@ export const ChildProgressObservationPage: React.FC = () => {
     : new Date();
   const reportingPeriod = getReportingPeriod(reportingDate, firstObservation);
   const child = useSelector(childrenSelectors.getChildById(routeState.childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
+
   const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
@@ -220,8 +218,8 @@ export const ChildProgressObservationPage: React.FC = () => {
         dateCreated: new Date().toISOString(),
         id: newGuid(),
         reportingPeriod: reportingPeriod.monthName,
-        childFirstname: childUser?.firstName || '',
-        childSurname: childUser?.surname || '',
+        childFirstname: child?.user?.firstName || '',
+        childSurname: child?.user?.surname || '',
         classroomName: classroom?.name || '',
         practitionerFirstname: practitionerUser?.firstName || '',
         practitionerSurname: practitionerUser?.surname || '',
@@ -407,7 +405,7 @@ export const ChildProgressObservationPage: React.FC = () => {
             ? 'First observations'
             : `${reportingPeriod.monthName} progress observations`
         }
-        subTitle={`${childUser?.firstName} ${childUser?.surname}`}
+        subTitle={`${child?.user?.firstName} ${child?.user?.surname}`}
         data-testId={'child-progress-observation-banner-wrapper'}
         renderOverflow
         displayOffline={!isOnline}
@@ -432,7 +430,7 @@ export const ChildProgressObservationPage: React.FC = () => {
               text={
                 requiresInitialReport
                   ? `Observe ${
-                      childUser?.firstName
+                      child?.user?.firstName
                     } and track progress by ${addDays(
                       childInsertedDate,
                       childRegistrationConstants.firstProgressReportPeriod
@@ -483,7 +481,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                     className={'w-full'}
                     type={'body'}
                     color={'white'}
-                    text={`You have completed ${childUser?.firstName}'s first progress observations!`}
+                    text={`You have completed ${child?.user?.firstName}'s first progress observations!`}
                   />
                 </div>
               </div>
@@ -504,9 +502,9 @@ export const ChildProgressObservationPage: React.FC = () => {
               <div className={'mt-4 px-2'}>
                 <Alert
                   type={'info'}
-                  title={`You have completed ${childUser?.firstName}'s ${reportingPeriod.monthName} progress observations! You can create the caregiver report from 1 ${reportingPeriod.monthName}.`}
+                  title={`You have completed ${child?.user?.firstName}'s ${reportingPeriod.monthName} progress observations! You can create the caregiver report from 1 ${reportingPeriod.monthName}.`}
                   messageColor="textDark"
-                  message={`Keep observing ${childUser?.firstName} & tap "See completed sections" to edit your observations.`}
+                  message={`Keep observing ${child?.user?.firstName} & tap "See completed sections" to edit your observations.`}
                 />
               </div>
             )}
@@ -527,7 +525,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                       className={'w-full'}
                       type={'body'}
                       color={'white'}
-                      text={`You have completed ${childUser?.firstName}'s ${reportingPeriod.monthName} progress observations!`}
+                      text={`You have completed ${child?.user?.firstName}'s ${reportingPeriod.monthName} progress observations!`}
                     />
                   </div>
                 </div>
@@ -748,7 +746,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                             ) && !categoryFromReport?.supportingTask
                           }
                           levelId={categoryFromReport?.achievedLevelId || 0}
-                          childName={`${childUser?.firstName} ${childUser?.surname}`}
+                          childName={`${child?.user?.firstName} ${child?.user?.surname}`}
                           helpingSkillId={
                             categoryFromReport?.supportingTask?.taskId || 0
                           }
@@ -786,7 +784,7 @@ export const ChildProgressObservationPage: React.FC = () => {
       >
         <div className={styles.dialogContent}>
           <CompleteFirstObservationsPrompt
-            firstName={childUser?.firstName || ''}
+            firstName={child?.user?.firstName || ''}
             onSaveAndComplete={() => saveAndCompleteFirstObservations()}
             onCancel={() => cancelFirstObservations()}
           />

@@ -29,7 +29,6 @@ import NoProgressEmoticon from '../../../../assets/no-progress-emoticon.png';
 import ROUTES from '@/routes/routes';
 import { getReportingPeriod } from '@/utils/child/child-profile-utils';
 import { practitionerSelectors } from '@/store/practitioner';
-import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { classroomsSelectors } from '@/store/classroom';
 
 export const ChildCompletedObservationReports: React.FC = () => {
@@ -44,18 +43,13 @@ export const ChildCompletedObservationReports: React.FC = () => {
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
-  const childrenForPrincipal = useSelector(
-    childrenForPractitionerSelectors?.getChildrenForPractitioner
-  );
+  const childrenForPrincipal = useSelector(childrenSelectors.getChildren);
   const isPrincipalChild = childrenForPrincipal?.find(
     (item) => item?.userId === currentChild?.userId
   );
 
   const allowTracking = (!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
 
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
   const [latestCompletedSummary] = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(routeState?.childId)
   );
@@ -216,7 +210,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
   return (
     <BannerWrapper
       size={'small'}
-      title={`${currentChildUser?.firstName}'s progress`}
+      title={`${currentChild?.user?.firstName}'s progress`}
       onBack={() =>
         history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
       }
@@ -226,13 +220,13 @@ export const ChildCompletedObservationReports: React.FC = () => {
           className={'mt-4'}
           type="h2"
           color={'textDark'}
-          text={`How has ${currentChildUser?.firstName} grown?`}
+          text={`How has ${currentChild?.user?.firstName} grown?`}
         />
         {childReportSummaries.length > 1 && (
           <Alert
             className={'mt-4'}
             type={'info'}
-            title={`Don't worry if ${currentChildUser?.firstName} hasn't changed a lot in 6 months - child development takes time!`}
+            title={`Don't worry if ${currentChild?.user?.firstName} hasn't changed a lot in 6 months - child development takes time!`}
           />
         )}
         {(!childProgressReports || childProgressReports.length === 0) &&
@@ -251,7 +245,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
                     <Typography
                       type="h3"
                       color="textDark"
-                      text={`${currentChildUser?.firstName} doesn't have any progress reports yet!`}
+                      text={`${currentChild?.user?.firstName} doesn't have any progress reports yet!`}
                       className={'text-center'}
                     />
                   </div>
@@ -265,7 +259,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
                         text={`Encourage ${
                           childPractioner?.user?.firstName || 'the practioner'
                         } to start observing ${
-                          currentChildUser?.firstName
+                          currentChild?.user?.firstName
                         } & track progress on Funda App.`}
                         className={'text-center'}
                       />

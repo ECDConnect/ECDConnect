@@ -1,6 +1,5 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -270,17 +269,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 peers.Add(practitioner);
             }
             return peers;
-        }
-
-        public List<Child> GetAllChildrenForPractitioner(string practitionerId)
-        {
-            Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
-            if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
-            {
-                var children = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
-                return children;
-            }
-            else return new List<Child>();
         }
 
         public Practitioner GetPractitionerForChild(string childUserId)
@@ -999,7 +987,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 trainee.Practitioner = _practiRepo.GetByUserId(userId);
                 // ThreeChildrenRegistered
                 if (trainee.Practitioner != null) { 
-                    var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
+                    var allChildren = _childRepo.GetAll().ToList();
                     if (allChildren.Count >= 3)
                     {
                         timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
@@ -1182,6 +1170,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             teamLead.UpdatedDate = DateTime.Now;
             teamLead.UpdatedBy = _applicationUserId.ToString();
             return _teamLeadRepo.Update(teamLead);
+        }
+
+        public Practitioner AddOAPractitioner(Guid userId)
+        {
+            return _practiRepo.Insert(
+                new Practitioner
+                {
+                    Id = userId,
+                    UserId = userId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId.ToString(),
+                });
         }
     }
 }

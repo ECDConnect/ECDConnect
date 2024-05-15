@@ -32,9 +32,6 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
-  const existingChildUser = useSelector(
-    childrenSelectors.getChildUserById(existingChild?.userId)
-  );
 
   const [formState, setFormState] = useState<ChildRegistrationFormState>({});
 
@@ -64,7 +61,7 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
     const typeId = getDocumentTypeIdByEnum(fileType);
 
     const documentInputModel = childRegisterUtils.mapDocumentDto(
-      existingChildUser?.id || '',
+      existingChild?.userId || '',
       fileName,
       documentStatusId || '',
       typeId || '',
@@ -90,7 +87,7 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
 
   useEffect(() => {
     let updatedFormState = { ...formState };
-    if (existingChild && existingChildUser) {
+    if (!!existingChild) {
       updatedFormState = {
         ...updatedFormState,
       };

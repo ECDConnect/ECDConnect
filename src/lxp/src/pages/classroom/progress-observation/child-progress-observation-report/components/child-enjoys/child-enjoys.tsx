@@ -17,9 +17,6 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
 }) => {
   const { currentReport } = useChildProgressObservation(childId);
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
 
   const {
     getValues: getFormValue,
@@ -59,7 +56,7 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
         textInputType={'textarea'}
         register={formRegister}
         nameProp={'childEnjoys'}
-        label={`${childUser?.firstName} enjoys:`}
+        label={`${child?.user?.firstName} enjoys:`}
         placeholder={`E.g. Playing with balls. Soccer is his favourite. He is active. He likes playing with other children.`}
       />
       <Button

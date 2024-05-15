@@ -71,7 +71,6 @@ import { ChildProgressReportAlert } from './components/progress-report-alert/pro
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { practitionerSelectors } from '@/store/practitioner';
 import ChildWrapper from './components/child-wrapper/ChildWrapper';
 import { useAppContext } from '@/walkthrougContext';
@@ -118,9 +117,7 @@ export const ChildProfile: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const progressTrainingDone = practitioner?.attendedChildProgress || false;
   const isPrincipal = practitioner?.isPrincipal;
-  const childrenForPrincipal = useSelector(
-    childrenForPractitionerSelectors?.getChildrenForPractitioner
-  );
+  const childrenForPrincipal = useSelector(childrenSelectors.getChildren);
 
   const child = useSelector(childrenSelectors.getChildById(childId));
 
@@ -147,9 +144,7 @@ export const ChildProfile: React.FC = () => {
   );
 
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
+
   const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const authUser = useSelector(authSelectors.getAuthUser);
@@ -179,7 +174,7 @@ export const ChildProfile: React.FC = () => {
 
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
   const profilePicture = useSelector(
-    documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
+    documentSelectors.getDocumentByTypeId(child?.user?.id, typeId)
   );
 
   const caregiverHasBeenContacted = useSelector(
@@ -458,8 +453,8 @@ export const ChildProfile: React.FC = () => {
   useEffect(() => {
     if (!attendanceData || !child) return;
 
-    const childBirthDate = childUser?.dateOfBirth
-      ? new Date(childUser?.dateOfBirth)
+    const childBirthDate = child?.user?.dateOfBirth
+      ? new Date(child?.user?.dateOfBirth)
       : currentDate;
 
     const ageOfChild = getAge(childBirthDate);
@@ -631,8 +626,9 @@ export const ChildProfile: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    const copy = Object.assign({}, childUser);
+    const copy = Object.assign({}, child?.user);
     if (copy) {
+      // TODO - this should just call update child?
       copy.profileImageUrl = imageBaseString;
       appDispatch(childrenActions.updateChildUser(copy));
       await appDispatch(
@@ -651,7 +647,7 @@ export const ChildProfile: React.FC = () => {
         })
       );
     } else {
-      const fileName = `ProfilePicture_${childUser?.id}.png`;
+      const fileName = `ProfilePicture_${child?.user?.id}.png`;
 
       const statusId = await getWorkflowStatusIdByEnum(
         WorkflowStatusEnum.DocumentVerified
@@ -659,7 +655,7 @@ export const ChildProfile: React.FC = () => {
 
       const documentInputModel: Document = {
         id: newGuid(),
-        userId: childUser?.id,
+        userId: child?.user?.id,
         createdUserId: user?.id ?? '',
         workflowStatusId: statusId ?? '',
         documentTypeId: typeId ?? '',
@@ -707,7 +703,7 @@ export const ChildProfile: React.FC = () => {
     (child?.workflowStatusId === childPendingWorkflowStatusId ||
       child?.workflowStatusId === childExternalWorkflowStatusId)
   ) {
-    return <ChildPending child={child} childUser={childUser} />;
+    return <ChildPending child={child} childUser={child?.user} />;
   }
 
   // const displayWalkthrough = () => {
@@ -718,7 +714,7 @@ export const ChildProfile: React.FC = () => {
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
-        title={`${childUser?.firstName} ${childUser?.surname}’s Profile`}
+        title={`${child?.user?.firstName} ${child?.user?.surname}’s Profile`}
         color={'primary'}
         size="medium"
         renderBorder={true}
@@ -742,7 +738,7 @@ export const ChildProfile: React.FC = () => {
           <ProfileAvatar
             hasConsent={childPhotoConsent ? true : false}
             canChangeImage={childPhotoConsent ? true : false}
-            dataUrl={profilePicture?.file || childUser?.profileImageUrl || ''}
+            dataUrl={profilePicture?.file || child?.user?.profileImageUrl || ''}
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => setEditProfilePictureVisible(true)}
@@ -770,10 +766,10 @@ export const ChildProfile: React.FC = () => {
           <Alert
             className="m-4"
             title={`${
-              childUser?.firstName || 'This child'
+              child?.user?.firstName || 'This child'
             } does not have a class`}
             list={[
-              `Add ${childUser?.firstName || 'this child'} to a class now`,
+              `Add ${child?.user?.firstName || 'this child'} to a class now`,
             ]}
             type="error"
             button={
@@ -799,7 +795,7 @@ export const ChildProfile: React.FC = () => {
             className="m-4"
             title={'No birth certificate or clinic card'}
             list={[
-              `Please upload a birth certificate or clinic card for ${childUser?.firstName}`,
+              `Please upload a birth certificate or clinic card for ${child?.user?.firstName}`,
             ]}
             type="error"
             button={
@@ -869,7 +865,7 @@ export const ChildProfile: React.FC = () => {
                 {renderIcon('TrashIcon', styles.buttonIcon)}
                 <Typography
                   type="button"
-                  text={`Remove ${childUser?.firstName}`}
+                  text={`Remove ${child?.user?.firstName}`}
                   color="errorMain"
                   onClick={() => setRemoveChildConfirmationVisible(true)}
                 />
@@ -887,7 +883,7 @@ export const ChildProfile: React.FC = () => {
           <CreateNote
             userId={child?.userId || ''}
             noteType={NoteTypeEnum.Child}
-            titleText={`Add a note to ${childUser?.firstName} profile`}
+            titleText={`Add a note to ${child?.user?.firstName} profile`}
             onBack={() => onCreateChildNoteBack()}
             onCreated={() => onNoteCreated()}
           />
@@ -901,7 +897,7 @@ export const ChildProfile: React.FC = () => {
       >
         <RemoveChildPrompt
           child={child}
-          childUser={childUser}
+          childUser={child?.user}
           onProceed={goToRemoveChild}
           onClose={() => setRemoveChildConfirmationVisible(false)}
         />

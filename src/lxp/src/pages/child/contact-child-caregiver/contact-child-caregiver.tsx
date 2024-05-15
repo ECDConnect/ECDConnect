@@ -32,9 +32,7 @@ export const ContactChildCaregiver: React.FC = () => {
 
   const { actualDaysAttended, expectedDaysAttended, childId } = locationState;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
+
   const appDispatch = useAppDispatch();
   const caregiver = useSelector(
     caregiverSelectors.getCaregiverById(child?.caregiverId)
@@ -81,7 +79,7 @@ export const ContactChildCaregiver: React.FC = () => {
         onBack={history.goBack}
         color="primary"
         className={'h-full'}
-        title={`Contact ${childUser?.firstName}'s caregiver`}
+        title={`Contact ${child?.user?.firstName}'s caregiver`}
         displayOffline={!isOnline}
       >
         <div className={'flex h-full flex-col overflow-y-scroll pb-20'}>
@@ -105,7 +103,7 @@ export const ContactChildCaregiver: React.FC = () => {
               className={'mt-2'}
               type="body"
               color={'textMid'}
-              text={`Contact ${caregiver?.firstName}, ${childUser?.firstName}’s caregiver to find out why ${childUser?.firstName} has been absent.`}
+              text={`Contact ${caregiver?.firstName}, ${child?.user?.firstName}’s caregiver to find out why ${child?.user?.firstName} has been absent.`}
             />
 
             <ContactPerson
@@ -129,7 +127,7 @@ export const ContactChildCaregiver: React.FC = () => {
               type="body"
               color={'black'}
               weight={'bold'}
-              text={`If ${childUser?.firstName} is no longer attending your programme, please remove them.`}
+              text={`If ${child?.user?.firstName} is no longer attending your programme, please remove them.`}
             />
             <Button
               type={'outlined'}
@@ -140,7 +138,7 @@ export const ContactChildCaregiver: React.FC = () => {
               <Typography
                 type="help"
                 color={'errorMain'}
-                text={`Remove ${childUser?.firstName}`}
+                text={`Remove ${child?.user?.firstName}`}
                 onClick={() => setRemoveChildConfirmationVisible(true)}
               />
             </Button>

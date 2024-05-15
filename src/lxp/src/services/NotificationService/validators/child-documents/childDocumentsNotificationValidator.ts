@@ -45,13 +45,10 @@ export class ChildDocumentsNotificationValidator
           (doc) => doc.workflowStatusId === workflowStatus?.id
         )
       ) {
-        const childUser = childrenState.childUser?.find(
-          (x) => x.id === child.userId
-        );
         notifications.push({
-          reference: `${child.id || childUser?.idNumber}-docs`,
-          title: `Problem with ${childUser?.firstName}'s document`,
-          message: `There was a problem with ${childUser?.firstName}'s birth certificate or clinic card. Add a new one.`,
+          reference: `${child.id || child.user?.idNumber}-docs`,
+          title: `Problem with ${child.user?.firstName}'s document`,
+          message: `There was a problem with ${child.user?.firstName}'s birth certificate or clinic card. Add a new one.`,
           dateCreated: new Date().toISOString(),
           priority: NotificationPriority.higher,
           viewOnDashboard: true,

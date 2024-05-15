@@ -30,9 +30,7 @@ export const ChildNotes: React.FC = () => {
 
   const childId = location.state.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
+
   const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
   const { isOnline } = useOnlineStatus();
 
@@ -58,7 +56,7 @@ export const ChildNotes: React.FC = () => {
       <BannerWrapper
         size={'small'}
         renderBorder={true}
-        title={`Notes for ${childUser?.firstName}`}
+        title={`Notes for ${child?.user?.firstName}`}
         color={'primary'}
         onBack={history.goBack}
         displayOffline={!isOnline}
@@ -95,7 +93,7 @@ export const ChildNotes: React.FC = () => {
           <CreateNote
             userId={child?.userId || ''}
             noteType={NoteTypeEnum.Child}
-            titleText={`Add a note to ${childUser?.firstName} profile`}
+            titleText={`Add a note to ${child?.user?.firstName} profile`}
             onBack={() => onCreateChildNoteBack()}
             onCreated={() => onNoteCreated()}
           />
