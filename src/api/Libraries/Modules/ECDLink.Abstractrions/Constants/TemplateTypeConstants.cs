@@ -19,6 +19,9 @@ namespace ECDLink.Abstractrions.Constants
         public const string ForgotPasswordPortal = "forgot-password-portal";
         public const string VerifyCellphoneNumber = "verify-cellphone-number";
 
+        // help
+        public const string AdminUserHelpForm = "admin-user-help-form";
+
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";
         public const string ProgrammeInvitation = "ProgrammeInvitation";

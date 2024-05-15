@@ -1,15 +1,19 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -25,11 +29,30 @@ namespace ECDLink.Security.Api
     {
         private readonly SecurityManager _securityManager;
         private readonly ApplicationUserManager _userManager;
+        private readonly SecurityNotificationManager _notificationManager;
 
-        public AuthenticationController(SecurityManager securityManager, ApplicationUserManager userManager)
+        private IHttpContextAccessor _contextAccessor;
+        private IGenericRepositoryFactory _repoFactory;
+        private Guid? _applicationUserId;
+        private IGenericRepository<UserHelp, Guid> _userHelpRepo;
+
+        public AuthenticationController(
+            IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            SecurityManager securityManager, 
+            ApplicationUserManager userManager,
+            SecurityNotificationManager notificationManager,
+            HierarchyEngine hierarchyEngine)
         {
+            _contextAccessor = contextAccessor;
+            _repoFactory = repoFactory;
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+
+            _userHelpRepo = _repoFactory.CreateGenericRepository<UserHelp>(userContext: _applicationUserId);
+
             _securityManager = securityManager;
-            _userManager = userManager; 
+            _userManager = userManager;
+            _notificationManager = notificationManager;
         }
 
         // POST api/auth/login
@@ -257,6 +280,42 @@ namespace ECDLink.Security.Api
             }
 
             return Ok(result);
+        }
+
+        [Route("submit-user-help-form")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> SubmitUserHelpForm([FromBody] AddUserHelpInputModel input)
+        {
+            var newRecord = _userHelpRepo.Insert(new UserHelp()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _applicationUserId.ToString(),
+                Subject = input.Subject,
+                Description = input.Description,
+                UserId = input.UserId,
+                ContactPreference = input.ContactPreference,
+                CellNumber = input.CellNumber,
+                Email = input.Email,
+                IsLoggedIn = input.IsLoggedIn,
+            });
+
+            if (newRecord != null)
+            {
+                await _notificationManager.SendHelpFormSubmissionToAdministratorAsync((Guid)_applicationUserId, newRecord);
+            } else
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Submit of help form failure"
+                });
+            }
+
+            return Ok();
         }
 
     }

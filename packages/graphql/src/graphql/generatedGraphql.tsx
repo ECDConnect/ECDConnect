@@ -369,6 +369,16 @@ export type AddTeamLeadInputModelInput = {
   userId: Scalars['UUID'];
 };
 
+export type AddUserHelpInputModelInput = {
+  cellNumber?: InputMaybe<Scalars['String']>;
+  contactPreference?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  email?: InputMaybe<Scalars['String']>;
+  isLoggedIn: Scalars['Boolean'];
+  subject?: InputMaybe<Scalars['String']>;
+  userId: Scalars['UUID'];
+};
+
 export type AgeSpreadDisplay = {
   __typename?: 'AgeSpreadDisplay';
   color?: Maybe<Scalars['String']>;
@@ -6648,6 +6658,7 @@ export type Mutation = {
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<PortalUserTlModel>;
   addUser?: Maybe<ApplicationUser>;
+  addUserHelp?: Maybe<UserHelp>;
   addUsersToRole: Scalars['Boolean'];
   addVisitBackReferral?: Maybe<VisitBackReferral>;
   addVisitBackReferralAdminComment: Scalars['Boolean'];
@@ -6801,6 +6812,7 @@ export type Mutation = {
   createTopic?: Maybe<Scalars['String']>;
   createTrainee?: Maybe<Trainee>;
   createUserConsent?: Maybe<UserConsent>;
+  createUserHelp?: Maybe<UserHelp>;
   createUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   createVisit?: Maybe<Visit>;
   createVisitBackReferral?: Maybe<VisitBackReferral>;
@@ -6952,6 +6964,7 @@ export type Mutation = {
   deleteTrainee?: Maybe<Scalars['Boolean']>;
   deleteUser: Scalars['Boolean'];
   deleteUserConsent?: Maybe<Scalars['Boolean']>;
+  deleteUserHelp?: Maybe<Scalars['Boolean']>;
   deleteUserHierarchyEntity?: Maybe<Scalars['Boolean']>;
   deleteVisit?: Maybe<Scalars['Boolean']>;
   deleteVisitBackReferral?: Maybe<Scalars['Boolean']>;
@@ -7278,6 +7291,7 @@ export type Mutation = {
   updateUser?: Maybe<ApplicationUser>;
   updateUserConsent?: Maybe<UserConsent>;
   updateUserContactStatusForStatement?: Maybe<StatementsIncomeStatement>;
+  updateUserHelp?: Maybe<UserHelp>;
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   updateVisit?: Maybe<Visit>;
   updateVisitBackReferral?: Maybe<VisitBackReferral>;
@@ -7548,6 +7562,10 @@ export type MutationAddTeamLeadArgs = {
 
 export type MutationAddUserArgs = {
   input?: InputMaybe<UserModelInput>;
+};
+
+export type MutationAddUserHelpArgs = {
+  input?: InputMaybe<AddUserHelpInputModelInput>;
 };
 
 export type MutationAddUsersToRoleArgs = {
@@ -8215,6 +8233,10 @@ export type MutationCreateTraineeArgs = {
 
 export type MutationCreateUserConsentArgs = {
   input?: InputMaybe<UserConsentInput>;
+};
+
+export type MutationCreateUserHelpArgs = {
+  input?: InputMaybe<UserHelpInput>;
 };
 
 export type MutationCreateUserHierarchyEntityArgs = {
@@ -8889,6 +8911,10 @@ export type MutationDeleteUserArgs = {
 };
 
 export type MutationDeleteUserConsentArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteUserHelpArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -10504,6 +10530,11 @@ export type MutationUpdateUserConsentArgs = {
 
 export type MutationUpdateUserContactStatusForStatementArgs = {
   statementId: Scalars['UUID'];
+};
+
+export type MutationUpdateUserHelpArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<UserHelpInput>;
 };
 
 export type MutationUpdateUserHierarchyEntityArgs = {
@@ -13191,6 +13222,7 @@ export type Query = {
   GetAllTopic: Array<Maybe<Topic>>;
   GetAllTrainee?: Maybe<Array<Maybe<Trainee>>>;
   GetAllUserConsent?: Maybe<Array<Maybe<UserConsent>>>;
+  GetAllUserHelp?: Maybe<Array<Maybe<UserHelp>>>;
   GetAllUserHierarchyEntity?: Maybe<Array<Maybe<UserHierarchyEntity>>>;
   GetAllVisit?: Maybe<Array<Maybe<Visit>>>;
   GetAllVisitBackReferral?: Maybe<Array<Maybe<VisitBackReferral>>>;
@@ -13332,6 +13364,7 @@ export type Query = {
   GetTopicById: Array<Maybe<Topic>>;
   GetTraineeById?: Maybe<Trainee>;
   GetUserConsentById?: Maybe<UserConsent>;
+  GetUserHelpById?: Maybe<UserHelp>;
   GetUserHierarchyEntityById?: Maybe<UserHierarchyEntity>;
   GetVisitBackReferralById?: Maybe<VisitBackReferral>;
   GetVisitById?: Maybe<Visit>;
@@ -13552,6 +13585,7 @@ export type Query = {
   countTeamLeads: Scalars['Int'];
   countTrainee?: Maybe<Scalars['Int']>;
   countUserConsent?: Maybe<Scalars['Int']>;
+  countUserHelp?: Maybe<Scalars['Int']>;
   countUserHierarchyEntity?: Maybe<Scalars['Int']>;
   countUsers: Scalars['Int'];
   countVisit?: Maybe<Scalars['Int']>;
@@ -14447,6 +14481,12 @@ export type QueryGetAllUserConsentArgs = {
   where?: InputMaybe<UserConsentFilterInput>;
 };
 
+export type QueryGetAllUserHelpArgs = {
+  order?: InputMaybe<Array<UserHelpSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<UserHelpFilterInput>;
+};
+
 export type QueryGetAllUserHierarchyEntityArgs = {
   order?: InputMaybe<Array<UserHierarchyEntitySortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -15180,6 +15220,11 @@ export type QueryGetTraineeByIdArgs = {
 export type QueryGetUserConsentByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<UserConsentFilterInput>;
+};
+
+export type QueryGetUserHelpByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<UserHelpFilterInput>;
 };
 
 export type QueryGetUserHierarchyEntityByIdArgs = {
@@ -16178,6 +16223,11 @@ export type QueryCountTraineeArgs = {
 };
 
 export type QueryCountUserConsentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountUserHelpArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -18764,6 +18814,71 @@ export type UserGrantInput = {
   grantId: Scalars['UUID'];
   tenantId: Scalars['UUID'];
   userId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type UserHelp = {
+  __typename?: 'UserHelp';
+  cellNumber?: Maybe<Scalars['String']>;
+  contactPreference?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  isLoggedIn: Scalars['Boolean'];
+  subject?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId: Scalars['UUID'];
+};
+
+export type UserHelpFilterInput = {
+  and?: InputMaybe<Array<UserHelpFilterInput>>;
+  cellNumber?: InputMaybe<StringOperationFilterInput>;
+  contactPreference?: InputMaybe<StringOperationFilterInput>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  email?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isLoggedIn?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<UserHelpFilterInput>>;
+  subject?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type UserHelpInput = {
+  CellNumber?: InputMaybe<Scalars['String']>;
+  ContactPreference?: InputMaybe<Scalars['String']>;
+  Description?: InputMaybe<Scalars['String']>;
+  Email?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  IsLoggedIn: Scalars['Boolean'];
+  Subject?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId: Scalars['UUID'];
+};
+
+export type UserHelpSortInput = {
+  cellNumber?: InputMaybe<SortEnumType>;
+  contactPreference?: InputMaybe<SortEnumType>;
+  description?: InputMaybe<SortEnumType>;
+  email?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  isLoggedIn?: InputMaybe<SortEnumType>;
+  subject?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
 };
 
 export type UserHierarchyEntity = {
