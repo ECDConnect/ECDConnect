@@ -1191,8 +1191,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     Id = userId,
                     UserId = userId,
                     IsActive = true,
-                    InsertedDate = DateTime.UtcNow,
-                    UpdatedDate = DateTime.UtcNow,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId.ToString(),
                 });
         }
