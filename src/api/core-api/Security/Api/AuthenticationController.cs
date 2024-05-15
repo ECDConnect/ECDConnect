@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Models;
@@ -5,12 +6,17 @@ using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Api.Constants;
+using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
+using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -28,14 +34,31 @@ namespace ECDLink.Security.Api
     {
         private readonly SecurityManager _securityManager;
         private readonly ApplicationUserManager _userManager;
+        private readonly SecurityNotificationManager _notificationManager;
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly PersonnelService _personnelService;
-        
-        public AuthenticationController(SecurityManager securityManager, 
-                                        ApplicationUserManager userManager, 
-                                        IPasswordManager<ApplicationUser> passwordManager,
-                                        PersonnelService personnelService)
+
+        private IHttpContextAccessor _contextAccessor;
+        private IGenericRepositoryFactory _repoFactory;
+        private Guid? _applicationUserId;
+        private IGenericRepository<UserHelp, Guid> _userHelpRepo;
+
+        public AuthenticationController(
+            IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            SecurityManager securityManager, 
+            ApplicationUserManager userManager,
+            IPasswordManager<ApplicationUser> passwordManager,
+            SecurityNotificationManager notificationManager,
+            PersonnelService personnelService,
+            HierarchyEngine hierarchyEngine)
         {
+            _contextAccessor = contextAccessor;
+            _repoFactory = repoFactory;
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+
+            _userHelpRepo = _repoFactory.CreateGenericRepository<UserHelp>(userContext: _applicationUserId);
+
             _securityManager = securityManager;
             _userManager = userManager;
             _passwordManager = passwordManager;
@@ -310,7 +333,7 @@ namespace ECDLink.Security.Api
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userId = Guid.NewGuid();
             var newUser = new ApplicationUser();
-            
+
             // Step 1 - create User
             if (RegisterTypeConstants.USERNAME == registerOAPractitionerModel.RegisterType)
             {
@@ -338,15 +361,15 @@ namespace ECDLink.Security.Api
                     });
                 }
 
-            } 
-            else if (RegisterTypeConstants.FACEBOOK == registerOAPractitionerModel.RegisterType) 
+            }
+            else if (RegisterTypeConstants.FACEBOOK == registerOAPractitionerModel.RegisterType)
             {  // faceBook signs up with phone number
 
                 newUser = new ApplicationUser()
                 {
                     Id = userId,
                     UserName = registerOAPractitionerModel.Username,
-                    PhoneNumber= UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.Username),
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.Username),
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
@@ -384,22 +407,47 @@ namespace ECDLink.Security.Api
                     Error = "Add role failure"
                 });
             }
+            return Ok();
+        }
 
-            // Step 4: create practitioner
-            var createdPractitioner = _personnelService.AddOAPractitioner(userId);
-            if (createdPractitioner == null)
+        #endregion
+
+        [Route("submit-user-help-form")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> SubmitUserHelpForm([FromBody] AddUserHelpInputModel input)
+        {
+            var newRecord = _userHelpRepo.Insert(new UserHelp()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _applicationUserId.ToString(),
+                Subject = input.Subject,
+                Description = input.Description,
+                UserId = input.UserId,
+                ContactPreference = input.ContactPreference,
+                CellNumber = input.CellNumber,
+                Email = input.Email,
+                IsLoggedIn = input.IsLoggedIn,
+            });
+
+            if (newRecord != null)
+            {
+                await _notificationManager.SendHelpFormSubmissionToAdministratorAsync((Guid)_applicationUserId, newRecord);
+            }
+            else
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 4,
-                    Error = "Add practitioner failure"
+                    ErrorCode = 1,
+                    Error = "Submit of help form failure"
                 });
             }
 
-            return Ok("Success");
+            return Ok();
         }
-
-        #endregion OpenAccess
 
     }
 }
