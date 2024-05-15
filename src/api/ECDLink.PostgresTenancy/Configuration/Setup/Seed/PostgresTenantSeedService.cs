@@ -25,6 +25,7 @@ namespace ECDLink.PostgresTenancy.Configuration.Setup.Seed
 
         public void Seed()
         {
+            /*
             if (_userManager.Users.Count() > 0)
             {
                 return;
@@ -50,6 +51,7 @@ namespace ECDLink.PostgresTenancy.Configuration.Setup.Seed
 
             _userManager.CreateAsync(user);
             _userManager.AddPasswordAsync(user, "2NeYDWfdQ9@8");
+            */
         }
     }
 }

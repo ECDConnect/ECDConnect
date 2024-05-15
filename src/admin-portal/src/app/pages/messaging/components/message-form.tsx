@@ -1,13 +1,13 @@
 import { useQuery } from '@apollo/client';
 import { UseFormRegister } from 'react-hook-form';
-import { GetAllProvince, GetTenantContext } from '@ecdlink/graphql';
+import { GetAllProvince } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ProvinceDto, TenantDto, WardDto } from '@ecdlink/core';
 import { DatePicker, FormInput, Typography } from '@ecdlink/ui';
 import FormField from '../../../components/form-field/form-field';
 import FormSelectorField from '../../../components/form-selector-field/form-selector-field';
 import { MessageRoleDto, ggRoles, ssRoles } from './message';
-import { TenantType } from '../../../utils/constants';
+import { useTenant } from '../../../hooks/useTenant';
 
 export interface MessageFormProps {
   formKey: string;
@@ -37,16 +37,12 @@ const MessageForm: React.FC<MessageFormProps> = ({
   const [provinceData, setProvinceData] = useState<ProvinceDto[]>([]);
   const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
-  const [tenantInfo, setTenantInfo] = useState<TenantDto>();
   const [messageDate, setMessageDate] = useState<Date>(editMessageDate);
   const [messageText, setMessageText] = useState('');
   const [messageTitle, setMessageTitle] = useState('');
+  const tenant = useTenant();
 
   const { data: provinces } = useQuery(GetAllProvince, {
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const { data: tenantData } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -68,17 +64,10 @@ const MessageForm: React.FC<MessageFormProps> = ({
       setProvinceData(copyItems);
     }
 
-    if (tenantData) {
-      setTenantInfo(tenantData?.tenantContext);
-      if (
-        tenantData &&
-        tenantData.tenantContext &&
-        tenantData.tenantContext.tenantType === TenantType.ChwConnect
-      ) {
-        setRoleData(ggRoles);
-      } else {
-        setRoleData(ssRoles);
-      }
+    if (tenant.isCHWConnect) {
+      setRoleData(ggRoles);
+    } else {
+      setRoleData(ssRoles);
     }
 
     if (editRoles) {
@@ -88,7 +77,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
     if (editMessageDate) {
       setMessageDate(editMessageDate);
     }
-  }, [provinces, tenantData, editRoles, editMessageDate]);
+  }, [provinces, tenant, editRoles, editMessageDate]);
 
   const onRoleSelectionChange = (item) => {
     if (!isView) {
@@ -173,7 +162,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
           </div>
           <div className="ml-4 mr-4 sm:col-span-3">
             {
-              tenantInfo && tenantInfo?.organisationName === 'SmartStart' ? (
+              tenant.isFundaApp ? (
                 <>
                   <Typography
                     type={'body'}

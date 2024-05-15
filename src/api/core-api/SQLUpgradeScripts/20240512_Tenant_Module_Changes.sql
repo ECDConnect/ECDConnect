@@ -11,6 +11,7 @@ union select 1, 'OpenAcces', 'OPENACCESS'
 union select 2, 'WhiteLabelTemplate', 'WHITELABELTEMPLATE'
 union select 3, 'CHWConnect', 'CHWCONNECT'
 union select 4, 'WhiteLabel', 'WHITELABEL'
+union select 5, 'FundaApp', 'FUNDAAPP'
 ;
 
 CREATE TABLE public."Module" (

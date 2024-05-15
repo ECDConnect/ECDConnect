@@ -18382,6 +18382,7 @@ export enum TenantType {
   OpenAccess = 'OPEN_ACCESS',
   WhiteLabel = 'WHITE_LABEL',
   WhiteLabelTemplate = 'WHITE_LABEL_TEMPLATE',
+  FundaApp = 'FUNDA_APP',
 }
 
 export type Theme = {
