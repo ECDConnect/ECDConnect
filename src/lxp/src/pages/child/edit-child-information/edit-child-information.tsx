@@ -97,9 +97,8 @@ export const EditChildInformation: React.FC = () => {
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const caregiver = useSelector(
-    caregiverSelectors.getCaregiverById(child?.caregiverId)
-  );
+  const caregiver = child?.caregiver;
+
   const childPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
       child?.userId,

@@ -179,6 +179,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomProgrammes({})
     ).unwrap();
+    // TODO - can remove
     await appDispatch(
       classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();
@@ -193,7 +194,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
-    await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
     await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
     await appDispatch(
@@ -276,6 +276,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomProgrammes({})
     ).unwrap();
+    // TODO - Remove this
     await appDispatch(
       classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();

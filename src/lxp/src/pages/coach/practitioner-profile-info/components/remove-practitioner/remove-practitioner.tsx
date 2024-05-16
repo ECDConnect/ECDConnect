@@ -134,6 +134,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     useState<ClassroomGroupDto[]>();
 
   const classroomsGroupsForPractitioner = async () => {
+    // Needs to be updated
     const classroomDetails = await new PractitionerService(
       authUser?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);

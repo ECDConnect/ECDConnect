@@ -99,9 +99,7 @@ export const ChildRegistration: React.FC = () => {
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
   );
-  const existingCaregiver = useSelector(
-    caregiverSelectors.getCaregiverById(existingChild?.caregiverId)
-  );
+  const existingCaregiver = existingChild?.caregiver;
 
   const existingPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
@@ -405,6 +403,7 @@ export const ChildRegistration: React.FC = () => {
     );
     setCaregiverData(caregiverDto);
 
+    // TODO - should just update with child
     if (existingCaregiver) {
       appDispatch(caregiverActions.updateCaregiver(caregiverDto));
       await appDispatch(

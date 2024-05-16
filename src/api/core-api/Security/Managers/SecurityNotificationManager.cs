@@ -46,17 +46,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var forgotPasswordCallback = $"{_options.Value.ForgotPassword}?username={user.UserName}&token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
-            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
-            string firstName = user.FirstName;
 
             var notificationProvider = _notificationProviderFactory.Create(user);
-
             await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.ForgotPassword)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, forgotPasswordCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, user.FirstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.Username, user.UserName)
               .SendMessageAsync();
         }
 

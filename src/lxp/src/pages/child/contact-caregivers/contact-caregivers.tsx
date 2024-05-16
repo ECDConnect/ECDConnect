@@ -15,9 +15,7 @@ export const ContactCaregivers: React.FC = () => {
   const { childId } = locationState;
   const child = useSelector(childrenSelectors.getChildById(childId));
 
-  const caregiver: CaregiverDto | undefined = useSelector(
-    caregiverSelectors.getCaregiverById(child?.caregiverId)
-  );
+  const caregiver = child?.caregiver;
 
   return (
     <BannerWrapper
