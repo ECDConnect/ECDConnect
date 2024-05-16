@@ -10,7 +10,7 @@ import {
   getChildren,
   updateChild,
 } from './children.actions';
-import { ChildrenState } from './children.types';
+import { CaregiverContactHistory, ChildrenState } from './children.types';
 
 const initialState: ChildrenState = {
   children: undefined,
@@ -77,6 +77,14 @@ const childrenSlice = createSlice({
       if (childIndex < 0) return;
 
       state.children[childIndex] = payloadUpdated;
+    },
+    addContactHistory: (
+      state,
+      action: PayloadAction<CaregiverContactHistory>
+    ) => {
+      if (!state.contactHistory) state.contactHistory = [];
+
+      state.contactHistory.push(action.payload);
     },
   },
   extraReducers: (builder) => {

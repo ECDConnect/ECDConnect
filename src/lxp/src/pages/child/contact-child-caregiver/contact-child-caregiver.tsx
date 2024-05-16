@@ -17,7 +17,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { caregiverActions, caregiverSelectors } from '@store/caregiver';
 import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
-import { childrenSelectors } from '@store/children';
+import { childrenActions, childrenSelectors } from '@store/children';
 import { analyticsActions } from '@store/analytics';
 import { attendanceColor } from './contact-child-caregiver.styles';
 import { ContactChildCaregiverState } from './contact-child-caregiver.types';
@@ -34,9 +34,7 @@ export const ContactChildCaregiver: React.FC = () => {
   const child = useSelector(childrenSelectors.getChildById(childId));
 
   const appDispatch = useAppDispatch();
-  const caregiver = useSelector(
-    caregiverSelectors.getCaregiverById(child?.caregiverId)
-  );
+  const caregiver = child?.caregiver;
 
   useEffect(() => {
     if (!isOnline) {
@@ -57,7 +55,7 @@ export const ContactChildCaregiver: React.FC = () => {
     }
 
     appDispatch(
-      caregiverActions.addContactHistory({
+      childrenActions.addContactHistory({
         caregiverId: caregiver.id ?? '',
         childId: childId,
         contactReason: CaregiverContactReason.WeeklyAttendance,

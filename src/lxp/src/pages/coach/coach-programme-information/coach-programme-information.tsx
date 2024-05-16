@@ -134,6 +134,7 @@ export const CoachProgrammeInformation: React.FC = () => {
   const { theme } = useTheme();
 
   const classroomsDetailsForPractitioner = async () => {
+    // Needs to be updated
     const classroomDetails = await new PractitionerService(
       userAuth?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);

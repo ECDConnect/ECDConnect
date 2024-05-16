@@ -33,12 +33,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ChildTokenAccessMutation
     {
         private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
+        
         [TokenAccess(typeof(ChildOpenAccessValidator))]
         public async Task<bool> OpenAccessAddChild(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
@@ -54,7 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
             AddChildUserConsentTokenModel consent,
-            [Service]INotificationService _notificationService)
+            [Service] INotificationService _notificationService)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -114,7 +115,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);
-                
+
                 scope.SaveChanges();
 
                 dbContextTransaction.Commit();
@@ -281,7 +282,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
             if (consent.IndemnityAgreementAccepted == true)
             {
-                 UserConsent indemnityAgreement = new UserConsent()
+                UserConsent indemnityAgreement = new UserConsent()
                 {
                     Id = Guid.NewGuid(),
                     ConsentId = 174,
@@ -444,7 +445,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = newChild.Id,
                 ChildUserId = appUser.Id.ToString()
-            };         
+            };
 
             await userManager.AddToRoleAsync(appUser, "Child");
 
@@ -497,53 +498,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             };
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
-        }
-
-        public bool UpdateCareGiverGrants(
-  [Service] AuthenticationDbContext context,
-   Guid childUserId,
-  List<Guid> grantIds)
-        {
-            if (childUserId != null && grantIds != null)
-            {
-                //retrieve careGiverId from child
-                var childObj = context.Children.Where(x => x.UserId.ToString() == childUserId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
-                if (childObj != null)
-                {
-                    Guid caregiverId = (Guid)childObj.CaregiverId;
-                    if (caregiverId != null)
-                    {
-                        var grantsToAdd = grantIds.Select(x => new UserGrant
-                        {
-                            GrantId = x,
-                            UserId = caregiverId,
-                            TenantId = _tenantId
-                        });
-
-                        var existingGrants = context.UserGrants
-                          .Where(x => x.UserId == caregiverId);
-
-                        try
-                        {
-                            //remove
-                            context.UserGrants.RemoveRange(existingGrants);
-                            context.SaveChanges();
-                            //reinsert
-                            context.UserGrants.AddRange(grantsToAdd);
-                            context.SaveChanges();
-                            return true;
-                        }
-                        catch (Exception e)
-                        {
-                            // Error
-                            return false;
-                        }
-                    }
-                    else return false;
-                }
-                else return false;
-            }
-            else return false;
-        }
+        }        
     }
 }
