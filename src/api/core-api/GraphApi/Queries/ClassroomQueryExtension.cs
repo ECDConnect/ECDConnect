@@ -62,7 +62,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Learners = x.Learners.Select(y => new BaseLearnerModel
                 {
                     LearnerId = y.Id,
-                    ChildUserId = y.UserId.Value
+                    ChildUserId = y.UserId.Value,
+                    StartedAttendance = y.StartedAttendance
                 }).ToList(),
             }).ToList();
         }
