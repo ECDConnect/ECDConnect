@@ -118,7 +118,7 @@ namespace EcdLink.Api.CoreApi.Documents
                     repo.Update(doc);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }

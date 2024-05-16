@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
-            PagedQueryInput? pagingInput = null,
+            PagedQueryInput pagingInput = null,
             string search = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -104,7 +104,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
-            PagedQueryInput? pagingInput = null,
+            PagedQueryInput pagingInput = null,
             string search = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;

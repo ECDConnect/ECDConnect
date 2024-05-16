@@ -7,13 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Configuration\Setup\Seed\SeedData\Programme\**" />
     <Compile Remove="Entities\Classroom\ProgressTracking\**" />
     <Compile Remove="Entities\Programme\**" />
-    <EmbeddedResource Remove="Configuration\Setup\Seed\SeedData\Programme\**" />
     <EmbeddedResource Remove="Entities\Classroom\ProgressTracking\**" />
     <EmbeddedResource Remove="Entities\Programme\**" />
-    <None Remove="Configuration\Setup\Seed\SeedData\Programme\**" />
     <None Remove="Entities\Classroom\ProgressTracking\**" />
     <None Remove="Entities\Programme\**" />
   </ItemGroup>
@@ -36,6 +33,11 @@
     <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
     <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
     <ProjectReference Include="..\ECDLink.Security\ECDLink.Security.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Configuration\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

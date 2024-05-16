@@ -340,10 +340,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             //graphic
             //health
 
-            var localeId = new System.Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
-            var postnatalId = GetPostnatalId(contentRepo, localeId);
-            var antenatalId = GetAntenatalId(contentRepo, localeId);
-            var natalId = 29;
+            //var localeId = new System.Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            //var postnatalId = GetPostnatalId(contentRepo, localeId);
+            //var antenatalId = GetAntenatalId(contentRepo, localeId);
+            //var natalId = 29;
 
             //var pillar1Data = GetPillar1Data(postnatalId, localeId);
             //var pillar2Data = GetPillar2Data(postnatalId, localeId);

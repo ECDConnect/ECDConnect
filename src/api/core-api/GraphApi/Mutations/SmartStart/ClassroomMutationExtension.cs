@@ -177,7 +177,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
 
             Classroom updateClass = dbRepo.GetById(input.Id);
-            bool sendNotification = false;
 
             if (input.SiteAddress != null)
             {
@@ -198,7 +197,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input?.SiteAddress.ProvinceId != null)
                         address.ProvinceId = input.SiteAddress.ProvinceId;
                     var updateAddressResult = addressRepo.Update(address);
-                    sendNotification = true;
                 }
 
                 if (address is null)
@@ -221,7 +219,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (updateAddressResult != null)
                         updateClass.SiteAddressId = updateAddressResult.Id;
                         var updateResult = dbRepo.Update(updateClass);
-                    sendNotification = true;
                 }
                 //send notification of change to Coach
                 List<TagsReplacements> replacements = new List<TagsReplacements>();

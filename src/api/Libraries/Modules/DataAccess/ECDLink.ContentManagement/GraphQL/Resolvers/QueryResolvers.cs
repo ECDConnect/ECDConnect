@@ -9,7 +9,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 {
     public class QueryResolvers : ResolverBase, IDynamicQueryResolver
     {
-        public ValueTask<object?> GetAllResolver(IResolverContext context)
+        public ValueTask<object> GetAllResolver(IResolverContext context)
         {
             var repository = context.Services.GetService<ContentManagementRepository>();
 
@@ -19,10 +19,10 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 
             var dynamicContentList = repository.GetAll(contentTypeId, localeId);
 
-            return new ValueTask<object?>(dynamicContentList);
+            return new ValueTask<object>(dynamicContentList);
         }
 
-        public ValueTask<object?> GetResolver(IResolverContext context)
+        public ValueTask<object> GetResolver(IResolverContext context)
         {
             var repository = context.Services.GetService<ContentManagementRepository>();
 
@@ -31,7 +31,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 
             var dynamicObject = repository.GetById(contentId, locale);
 
-            return new ValueTask<object?>(dynamicObject);
+            return new ValueTask<object>(dynamicObject);
         }
     }
 }

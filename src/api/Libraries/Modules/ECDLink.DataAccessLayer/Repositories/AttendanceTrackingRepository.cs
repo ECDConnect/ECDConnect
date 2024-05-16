@@ -109,7 +109,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 }
                 return filteredAttendance;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -124,7 +124,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 List<Attendance> attendance = _context.Attendances.Where(f => f.UserId.ToString() == userId)
                     .Where(g => g.ClassroomProgrammeId == classroomId)
                     .Where(y => y.ParentRecordId == parentRecordId)
-                    .Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();//
+                    .Where(e => e.TenantId == tenantId).ToList();//
 
                 List<Attendance> filteredAttendance = new List<Attendance>();
 
@@ -141,7 +141,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 }
                 return filteredAttendance;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -167,8 +167,6 @@ namespace ECDLink.DataAccessLayer.Repositories
                 // Log error
                 return false;
             }
-
-            return true;
         }
 
         public int GetAttendancePercentileByParent(string parentRecordId, DateTime startDate, DateTime endDate)
@@ -191,7 +189,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                             .Where(g => g.ClassroomProgrammeId == programme.Id)
                             .Where(y => y.ParentRecordId == parentRecordId)
                             .Where(x => x.AttendanceDate >= startDate && x.AttendanceDate <= endDate)
-                            .Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();//
+                            .Where(e => e.TenantId == tenantId).ToList();//
 
                         List<Attendance> filteredAttendance = new List<Attendance>();
 
@@ -222,7 +220,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 }
                 return totalPercentageAttendance;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return 0;
             }

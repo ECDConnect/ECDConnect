@@ -14,7 +14,7 @@ namespace ECDLink.Tenancy.Context
         /// <summary>
         /// Gets the current Tenant 
         /// </summary>
-        public static TenantInternalModel? Tenant => tenant.Value;
+        public static TenantInternalModel Tenant => tenant.Value;
 
         public static void SetTenant(TenantInternalModel value, bool acceptNullValue = false)
         {
