@@ -1,4 +1,4 @@
-﻿using ECDLink.PostgresTenancy.Context;
+﻿using ECDLink.DataAccessLayer.Context;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ namespace ECDLink.PostgresTenancy.Repository
 {
     public class JWTRepository : IJWTRepository
     {
-        private PostgresTenancyContext _context;
+        private AuthenticationDbContext _context;
         private DbSet<JWTUserTokensEntity> entities;
         private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
 
@@ -20,7 +20,7 @@ namespace ECDLink.PostgresTenancy.Repository
 
         protected string errorMessage = string.Empty;
 
-        public JWTRepository(PostgresTenancyContext context)
+        public JWTRepository(AuthenticationDbContext context)
         {
             _context = context;
             entities = context.Set<JWTUserTokensEntity>();

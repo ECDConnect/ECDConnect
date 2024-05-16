@@ -141,7 +141,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var growthData = new List<VisitData>();
             var feedingData = new List<VisitData>();
             var immunisationsData = new List<VisitData>();
-            string? previousVisitWeight = null;
+            string previousVisitWeight = null;
             DateTime today = DateTime.Today;
             var totalMonthsOld = ((today.Year - dob.Year) * 12) + today.Month - dob.Month;
             var totalDaysOld = (today - dob).TotalDays;

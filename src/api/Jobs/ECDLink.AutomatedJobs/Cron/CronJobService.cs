@@ -138,9 +138,10 @@ namespace ECDLink.AutomatedJobs.Cron
                         _logger.LogInformation("CronJobs: {0} Next Run @ {1} ({2} from now)", _name, next.Value.ToString(), delay);
                     }
                     _timer.Start();
-                } catch (Exception ex)
+                } 
+                catch (Exception ex)
                 {
-                    throw ex;
+                    throw new Exception("Exception in ScheduleJob", ex);
                 }
             }
             await Task.CompletedTask;

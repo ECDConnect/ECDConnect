@@ -342,7 +342,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // "Note for all actions:
             // - Remove the action item either if the practitioner has completed the associated action and gone online + synced on Funda App(where possible)
             //   OR where the coach has tapped ""I have contacted Bulelwa""(if relevant) "
-            var coachHasContactedPractitionerRegardingThisItem = false;
+            //var coachHasContactedPractitionerRegardingThisItem = false;
 
             //set basic dates to be last month and before last
             // TODO: Get reporting interval from: `ChildReportOptions`
@@ -631,7 +631,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // "Note for all actions:
             // - Remove the action item either if the practitioner has completed the associated action and gone online + synced on Funda App(where possible)
             //   OR where the coach has tapped ""I have contacted Bulelwa""(if relevant) "
-            var coachHasContactedPractitionerRegardingThisItem = false;
+            //var coachHasContactedPractitionerRegardingThisItem = false;
 
             DateTime currentDate = DateTime.Now;
 
@@ -687,9 +687,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
-
-            if (uId == null)
-                throw new ArgumentNullException(nameof(uId));
 
             DateTime currentDate = DateTime.Now;
 

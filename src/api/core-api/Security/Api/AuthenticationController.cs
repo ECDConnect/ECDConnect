@@ -63,6 +63,7 @@ namespace ECDLink.Security.Api
             _userManager = userManager;
             _passwordManager = passwordManager;
             _personnelService = personnelService;
+            _notificationManager = notificationManager;
         }
 
         // POST api/auth/login

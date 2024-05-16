@@ -22,13 +22,13 @@ namespace ECDLink.DataAccessLayer.Entities.Licenses
         public virtual ApplicationUser User { get; set; }
         public DateTime? LicenseDate { get; set; }
         public DateTime? DelicensedDate { get; set; }
-        public string? DelicensedComment { get; set; }
+        public string DelicensedComment { get; set; }
 
         public bool? CollectedSSPlaykit { get; set; }
         public bool? CollectedSSHandbook { get; set; }
 
         public DateTime? DeclinedDate { get; set; }
-        public string? DeclinedCommentsSteps { get; set; }
+        public string DeclinedCommentsSteps { get; set; }
     }
 
     public interface LicenseJoin<TKey>

@@ -55,7 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
 
                 context.SaveChanges();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Error
             }
@@ -80,7 +80,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
 
                     context.SaveChanges();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // Error
                 }

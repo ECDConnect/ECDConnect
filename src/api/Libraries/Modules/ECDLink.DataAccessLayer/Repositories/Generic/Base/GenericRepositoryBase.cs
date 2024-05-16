@@ -440,7 +440,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             return context.Database.GetService<IRelationalDatabaseCreator>().Exists();
         }
 
-        public virtual void SetCustomScope<context>(context dbContext)
+        public virtual void SetCustomScope<Context>(Context dbContext)
         {
             var scopedContext = dbContext as AuthenticationDbContext;
             this.context = scopedContext;

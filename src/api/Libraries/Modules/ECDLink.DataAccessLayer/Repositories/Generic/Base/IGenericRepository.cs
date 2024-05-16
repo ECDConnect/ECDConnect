@@ -27,6 +27,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         void Delete(TKey id);
         bool Exists(TKey id);
         bool dbCreated();
-        void SetCustomScope<context>(context dbContext);
+        void SetCustomScope<Context>(Context dbContext);
     }
 }
