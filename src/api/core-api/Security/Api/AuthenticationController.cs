@@ -1,15 +1,24 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Api.Constants;
+using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
+using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
+using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -25,11 +34,35 @@ namespace ECDLink.Security.Api
     {
         private readonly SecurityManager _securityManager;
         private readonly ApplicationUserManager _userManager;
+        private readonly SecurityNotificationManager _notificationManager;
+        private readonly IPasswordManager<ApplicationUser> _passwordManager;
+        private readonly PersonnelService _personnelService;
 
-        public AuthenticationController(SecurityManager securityManager, ApplicationUserManager userManager)
+        private IHttpContextAccessor _contextAccessor;
+        private IGenericRepositoryFactory _repoFactory;
+        private Guid? _applicationUserId;
+        private IGenericRepository<UserHelp, Guid> _userHelpRepo;
+
+        public AuthenticationController(
+            IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            SecurityManager securityManager, 
+            ApplicationUserManager userManager,
+            IPasswordManager<ApplicationUser> passwordManager,
+            SecurityNotificationManager notificationManager,
+            PersonnelService personnelService,
+            HierarchyEngine hierarchyEngine)
         {
+            _contextAccessor = contextAccessor;
+            _repoFactory = repoFactory;
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+
+            _userHelpRepo = _repoFactory.CreateGenericRepository<UserHelp>(userContext: _applicationUserId);
+
             _securityManager = securityManager;
-            _userManager = userManager; 
+            _userManager = userManager;
+            _passwordManager = passwordManager;
+            _personnelService = personnelService;
         }
 
         // POST api/auth/login
@@ -82,11 +115,11 @@ namespace ECDLink.Security.Api
             var userRoles = await _userManager.GetRolesAsync(user);
 
             if (isAdminPortal)
-            {   
+            {
                 var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.SUPER_ADMINISTRATOR) || userRoles.Contains(RolesGG.TEAM_LEAD);
                 if (!hasAccess)
                 {
-                   
+
                     // TODO: Callcenter number should be in the tenant config?
                     return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
                 }
@@ -161,7 +194,7 @@ namespace ECDLink.Security.Api
         {
             var user = await _securityManager.GetUserByNameAsync(resetModel.Username);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
             }
@@ -211,7 +244,7 @@ namespace ECDLink.Security.Api
             var user = await _securityManager.GetUserByNameAsync(verifyEmailModel.Username);
             var token = TokenHelper.DecodeToken(verifyEmailModel.Token);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
             }
@@ -233,11 +266,11 @@ namespace ECDLink.Security.Api
             var token = TokenHelper.DecodeToken(verifyCellphoneNumberModel.Token);
             var currentPhoneNumber = user.PhoneNumber;
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
-            } 
-            
+            }
+
             user.PhoneNumber = user.PendingPhoneNumber;
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
@@ -257,6 +290,163 @@ namespace ECDLink.Security.Api
             }
 
             return Ok(result);
+        }
+
+        // Open-access
+        #region OpenAccess
+
+        [Route("check-username-phone-number")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
+        {
+            var userByUsername = await _securityManager.GetUserByNameAsync(verifyModel.Username);
+            if (userByUsername != null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Invalid Username"
+                });
+            }
+
+            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
+            var userByPhoneNumber =  _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
+                                && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+            if (userByPhoneNumber != null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "Invalid Phone Number"
+                });
+            }
+
+            return Ok();
+        }
+
+        [Route("register-oa-practitioner")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> RegisterOAPractitioner([FromBody] OARegisterPractitionerModel registerOAPractitionerModel)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var userId = Guid.NewGuid();
+            var newUser = new ApplicationUser();
+
+            // Step 1 - create User
+            if (RegisterTypeConstants.USERNAME == registerOAPractitionerModel.RegisterType)
+            {
+                newUser = new ApplicationUser()
+                {
+                    Id = userId,
+                    UserName = registerOAPractitionerModel.Username,
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.PhoneNumber),
+                    PendingPhoneNumber = UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.PhoneNumber),
+                    PhoneNumberConfirmed = false,
+                    ContactPreference = MessageTypeConstants.SMS,
+                    TenantId = tenantId,
+                    InsertedDate = DateTime.Now,
+                    IsActive = true,
+                    RegisterType = registerOAPractitionerModel.RegisterType
+                };
+
+                // Validate password for user
+                if (!await _passwordManager.IsPasswordSecureAsync(newUser, registerOAPractitionerModel.Password))
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 1,
+                        Error = "Add password failure"
+                    });
+                }
+
+            }
+            else if (RegisterTypeConstants.FACEBOOK == registerOAPractitionerModel.RegisterType)
+            {  // faceBook signs up with phone number
+
+                newUser = new ApplicationUser()
+                {
+                    Id = userId,
+                    UserName = registerOAPractitionerModel.Username,
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.Username),
+                    ContactPreference = MessageTypeConstants.SMS,
+                    TenantId = tenantId,
+                    InsertedDate = DateTime.Now,
+                    IsActive = true,
+                    RegisterType = registerOAPractitionerModel.RegisterType
+                };
+            }
+
+            var created = await _userManager.CreateAsync(newUser);
+            if (!created.Succeeded)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "Add new user failure"
+                });
+            }
+
+            // Get newly created user
+            var user = await _securityManager.GetUserByNameAsync(registerOAPractitionerModel.Username);
+
+            // Step 2 - create password
+            if (RegisterTypeConstants.USERNAME == registerOAPractitionerModel.RegisterType)
+            {
+                await _passwordManager.AddPasswordAsync(user, registerOAPractitionerModel.Password);
+            }
+
+            // Step 3: add user to practitioner role
+            var addToRoleResult = await _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
+            if (!addToRoleResult.Succeeded)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 3,
+                    Error = "Add role failure"
+                });
+            }
+            return Ok();
+        }
+
+        #endregion
+
+        [Route("submit-user-help-form")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> SubmitUserHelpForm([FromBody] AddUserHelpInputModel input)
+        {
+            var newRecord = _userHelpRepo.Insert(new UserHelp()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _applicationUserId.ToString(),
+                Subject = input.Subject,
+                Description = input.Description,
+                UserId = input.UserId,
+                ContactPreference = input.ContactPreference,
+                CellNumber = input.CellNumber,
+                Email = input.Email,
+                IsLoggedIn = input.IsLoggedIn,
+            });
+
+            if (newRecord != null)
+            {
+                await _notificationManager.SendHelpFormSubmissionToAdministratorAsync((Guid)_applicationUserId, newRecord);
+            }
+            else
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Submit of help form failure"
+                });
+            }
+
+            return Ok();
         }
 
     }

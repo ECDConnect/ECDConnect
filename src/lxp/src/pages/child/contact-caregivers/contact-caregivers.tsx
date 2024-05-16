@@ -14,12 +14,8 @@ export const ContactCaregivers: React.FC = () => {
   const { state: locationState } = useLocation<ContactCaregiversState>();
   const { childId } = locationState;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
-  const caregiver: CaregiverDto | undefined = useSelector(
-    caregiverSelectors.getCaregiverById(child?.caregiverId)
-  );
+
+  const caregiver = child?.caregiver;
 
   return (
     <BannerWrapper
@@ -27,12 +23,12 @@ export const ContactCaregivers: React.FC = () => {
       size={'small'}
       onBack={history.goBack}
       color={'primary'}
-      title={`Contact ${childUser?.firstName}'s caregiver`}
+      title={`Contact ${child?.user?.firstName}'s caregiver`}
       displayOffline={!isOnline}
     >
       <div
         className={
-          'pt-2 px-4 pb-20 h-full w-full flex flex-col overflow-y-scroll'
+          'flex h-full w-full flex-col overflow-y-scroll px-4 pt-2 pb-20'
         }
       >
         <Alert

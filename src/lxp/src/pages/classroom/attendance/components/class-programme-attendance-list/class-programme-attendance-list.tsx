@@ -25,7 +25,6 @@ export const ClassProgrammeAttendanceList: React.FC<
   >([]);
 
   const children = useSelector(childrenSelectors.getChildren);
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
@@ -59,9 +58,14 @@ export const ClassProgrammeAttendanceList: React.FC<
         (child) => child.userId === learner.userId && child.isActive
       );
 
-      const childUser = childUsers?.find((y) => y.id === learner.userId);
+      const childUser = children?.find((y) => y.userId === learner.userId);
 
-      if (child && childUser?.firstName && childUser?.surname) {
+      if (
+        child &&
+        !!child.user &&
+        !!child.user.firstName &&
+        !!child.user.surname
+      ) {
         filteredLearners.push(learner);
       }
     }
@@ -75,14 +79,14 @@ export const ClassProgrammeAttendanceList: React.FC<
 
     const attendanceStackList: AttendanceListDataItem[] = learners.map(
       (learner, index) => {
-        const childUser = childUsers?.find((x) => x.id === learner.userId);
+        const child = children?.find((x) => x.userId === learner.userId);
         const profileTextString =
-          childUser?.firstName![0] ?? '' + childUser?.surname![0] ?? '';
+          child?.user?.firstName![0] ?? '' + child?.user?.surname![0] ?? '';
 
         return {
-          title: `${childUser?.firstName} ${childUser?.surname}`,
+          title: `${child?.user?.firstName} ${child?.user?.surname}`,
           profileText: profileTextString.toLocaleUpperCase(),
-          attenendeeId: childUser?.id || index.toString(),
+          attenendeeId: child?.user?.id || index.toString(),
           avatarColor: getAvatarColor(),
           status: 1,
         };

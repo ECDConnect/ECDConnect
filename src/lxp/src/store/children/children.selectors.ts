@@ -1,56 +1,55 @@
-import { ChildDto, RoleSystemNameEnum, UserDto } from '@ecdlink/core';
+import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
-import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import getWeek from 'date-fns/getWeek';
+import { Weekdays } from '@utils/practitioner/playgroups-utils';
+import {
+  CaregiverContactHistory,
+  CaregiverContactReason,
+} from './children.types';
 
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
   state.children.children?.filter(
     (child: ChildDto) => child.isActive !== false
   );
 
-export const getChildUsers = (state: RootState): UserDto[] =>
-  state.children.childUser || [];
-
+// This might need updates for a coach
 export const getChildById = (id?: string) =>
   createSelector(
-    (state: RootState) => {
-      if (!id) return;
-
-      const user = state.user.user;
-
-      const isCoach = user?.roles?.some((role) =>
-        role.systemName.includes(RoleSystemNameEnum.Coach)
-      );
-
-      if (isCoach) {
-        const coachChildren = state?.children?.children;
-        const practitionerChildren =
-          state?.childrenForPractitioner?.childrenForPractitioner;
-
-        let child = practitionerChildren?.find((child) => child.id === id);
-
-        if (!child) {
-          child = coachChildren?.find((child) => child.id === id);
-        }
-
-        return child;
-      }
-
-      return state?.children?.children?.find((child) => child.id === id);
-    },
-    (child: ChildDto | undefined) => {
-      if (!child) return;
-
-      return child;
+    (state: RootState) => state.children.children,
+    (children: ChildDto[] | undefined) => {
+      return (children || []).find((child) => child.id === id);
     }
   );
 
-export const getChildUserById = (userId?: string) =>
+export const findCaregiverContactHistoryLog = (
+  caregiverId?: string,
+  childId?: string,
+  contactReason?: CaregiverContactReason,
+  weekOfYear?: number
+) =>
   createSelector(
-    (state: RootState) => state.children.childUser,
-    (childUsers: UserDto[] | undefined) => {
-      if (!childUsers || !userId) return;
+    (state: RootState) => state.caregivers.contactHistory,
+    (contactHistory: CaregiverContactHistory[] | undefined) => {
+      if (
+        !contactHistory ||
+        !caregiverId ||
+        !childId ||
+        !contactHistory ||
+        !weekOfYear
+      )
+        return;
 
-      return childUsers.find((user) => user.id === userId);
+      const contactHistoryLog = contactHistory.find(
+        (log) =>
+          log.caregiverId === caregiverId &&
+          log.childId === childId &&
+          log.contactReason === contactReason &&
+          getWeek(new Date(log.dateContacted), {
+            weekStartsOn: Weekdays.mon,
+          }) === weekOfYear
+      );
+
+      return contactHistoryLog;
     }
   );

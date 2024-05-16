@@ -18,17 +18,8 @@ import { ChildLearningSupportFormProps } from './child-learning-support-form.typ
 
 export const ChildLearningSupportForm: React.FC<
   ChildLearningSupportFormProps
-> = ({
-  childLearningSupportForm,
-  childId,
-  helpingWithSkillId,
-  helpingWithText,
-  onSubmit,
-}) => {
+> = ({ childLearningSupportForm, childId, helpingWithSkillId, onSubmit }) => {
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
 
   const helpingWithSkill = useSelector(
     progressTrackingSelectors.getProgressTrackingSkillById(helpingWithSkillId)
@@ -60,13 +51,13 @@ export const ChildLearningSupportForm: React.FC<
     <div className={'bg-white px-4 pt-2'}>
       <Typography
         type={'h2'}
-        text={`Supporting ${currentChildUser?.firstName}'s learning`}
+        text={`Supporting ${currentChild?.user?.firstName}'s learning`}
         color={'textDark'}
       />
       <div className="mt-2">
         <Typography
           type={'h4'}
-          text={`What will you do to support ${currentChildUser?.firstName} in developing this skill:`}
+          text={`What will you do to support ${currentChild?.user?.firstName} in developing this skill:`}
           color={'textDark'}
         />
       </div>

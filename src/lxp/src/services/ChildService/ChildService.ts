@@ -19,14 +19,21 @@ class ChildService {
 
   async getChildren(): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          GetAllChild {
+    const response = await apiInstance.post<{
+      data: { GetAllChild: ChildDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query($isActive: Boolean = true) {
+          GetAllChild(where: { isActive: { eq: $isActive } }) {
             id
-            caregiverId
             workflowStatusId
             insertedDate
+            languageId
+            allergies
+            disabilities
+            otherHealthConditions
+            isActive
+            insertedBy
             userId
             user {
               id
@@ -41,24 +48,60 @@ class ChildService {
               isSouthAfricanCitizen
               verifiedByHomeAffairs
             }
-            languageId
-            allergies
-            disabilities
-            otherHealthConditions
-            isActive
-            insertedBy
+            caregiverId 
+            caregiver {
+              id
+              phoneNumber
+              idNumber
+              firstName
+              surname
+              fullName  
+              siteAddressId          
+              siteAddress {
+                id
+                provinceId
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+                isActive
+              }
+              relationId
+              educationId
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
+              additionalFirstName
+              additionalSurname
+              additionalPhoneNumber
+              joinReferencePanel
+              contribution
+              grants {
+                id
+                description
+              }
+              isActive
+              isAllowedCustody
+            }
           }
         }
       `,
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Get Children Failed - Server connection error');
     }
 
     return response.data.data.GetAllChild;
   }
 
+  // Will this still be needed?
   async getChildrenForCoach(userId: string): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
@@ -83,52 +126,6 @@ class ChildService {
     }
 
     return response.data.data.allChildrenForCoach;
-  }
-
-  async getChildrenForPractitioner(userId: string): Promise<ChildDto[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query allChildrenForPractitioner($userId: String) {
-          allChildrenForPractitioner(userId: $userId) {
-            id
-            caregiverId
-            workflowStatusId
-            insertedDate
-            userId
-            user {
-              id
-              firstName
-              surname
-              email
-              genderId
-              dateOfBirth
-              profileImageUrl
-              isActive
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-            }
-            languageId
-            allergies
-            disabilities
-            otherHealthConditions
-            isActive
-          }
-        }    
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Children For Practitioner Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.allChildrenForPractitioner;
   }
 
   async updateChild(id: string, input: ChildInput): Promise<boolean> {
@@ -253,6 +250,7 @@ class ChildService {
     return response.data.data.refreshCaregiverChildToken;
   }
 
+  // How is this used?
   async openAccessAddChildDetail(
     token: string
   ): Promise<ChildRegistrationDetails> {
@@ -330,6 +328,7 @@ class ChildService {
     return response.data.data.openAccessAddChild;
   }
 
+  // Needs rename, used to check for adding duplicate children
   async childCreatedByDetail(
     practitionerId: string,
     firstName: string,

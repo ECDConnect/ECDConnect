@@ -32,9 +32,6 @@ export const ChildProgressObservationReport: React.FC = () => {
     ? new Date(routeState.reportingDate)
     : new Date();
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -144,7 +141,7 @@ export const ChildProgressObservationReport: React.FC = () => {
       size={'small'}
       onBack={onBannerBack}
       onClose={onBannerClose}
-      title={`${currentChildUser?.firstName}'s ${currentReport?.reportingPeriod} report`}
+      title={`${currentChild?.user?.firstName}'s ${currentReport?.reportingPeriod} report`}
       subTitle={`step ${activeStepKey} of 4`}
       displayOffline={!isOnline}
     >

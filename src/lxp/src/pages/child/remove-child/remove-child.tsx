@@ -43,9 +43,7 @@ export const RemoveChild: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const childId = location.state.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
+
   const reasonsForLeaving = useSelector(
     staticDataSelectors.getReasonsForLeaving
   );
@@ -117,7 +115,7 @@ export const RemoveChild: React.FC = () => {
       backgroundColour={'uiBg'}
       className={'overflow-y-auto pb-8'}
       renderBorder={true}
-      title={`Remove ${childUser?.firstName} from programme`}
+      title={`Remove ${child?.user?.firstName} from programme`}
       color={'primary'}
       onBack={() => history.goBack()}
       displayOffline={!isOnline}
@@ -125,15 +123,15 @@ export const RemoveChild: React.FC = () => {
       <div className={'px-4 py-4'}>
         <Alert
           type="error"
-          title={`${childUser?.firstName} will be removed from the programme immediately`}
+          title={`${child?.user?.firstName} will be removed from the programme immediately`}
           list={[
-            `If you remove ${childUser?.firstName} now, you will no longer be able to edit or view this profile.`,
+            `If you remove ${child?.user?.firstName} now, you will no longer be able to edit or view this profile.`,
           ]}
           className={'mb-4'}
         />
         <Typography
           type={'h1'}
-          text={`Why is ${childUser?.firstName} leaving SmartStart?`}
+          text={`Why is ${child?.user?.firstName} leaving SmartStart?`}
           color={'primary'}
           className={'pt-1'}
         />
@@ -182,7 +180,7 @@ export const RemoveChild: React.FC = () => {
           <Typography
             type="h6"
             className="ml-2"
-            text={`Remove ${childUser?.firstName}`}
+            text={`Remove ${child?.user?.firstName}`}
             color="white"
           />
         </Button>

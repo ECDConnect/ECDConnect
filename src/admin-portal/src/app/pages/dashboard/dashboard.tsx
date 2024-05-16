@@ -3,24 +3,16 @@ import { useState } from 'react';
 import GADashboard from './components/dashboard-qa/dashboard-qa';
 import PractitionerDashboard from './components/dashboard-practitioner/dashboard-practitioner';
 import ChildrenDashboard from './components/dashboard-children/dashboard-children';
-import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { GetTenantContext } from '@ecdlink/graphql';
 import MotherDashboard from './components/dashboard-mother/dashboard-mother';
 import HealthWorkerDashboard from './components/dashboard-health-worker/dashboard-health-worker';
-import { TenantType } from '../../utils/constants';
+import { useTenant } from '../../hooks/useTenant';
 
 // TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const tenant = useTenant();
 
   const getNavigationItems = () => {
-    if (
-      data &&
-      data.tenantContext &&
-      data.tenantContext.tenantType === TenantType.ChwConnect
-    ) {
+    if (tenant.isCHWConnect) {
       return [
         {
           title: 'Analytics',

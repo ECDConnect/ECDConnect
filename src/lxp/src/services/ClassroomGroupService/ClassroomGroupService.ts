@@ -57,6 +57,7 @@ class ClassroomGroupService {
             learners {
               learnerId
               childUserId
+              startedAttendance
             }
           }
         }

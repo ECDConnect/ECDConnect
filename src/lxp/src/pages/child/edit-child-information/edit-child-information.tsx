@@ -92,28 +92,24 @@ export const EditChildInformation: React.FC = () => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const languages = useSelector(staticDataSelectors.getLanguages);
-  const currentChild = useSelector(childrenSelectors.getChildById(childId));
+  const child = useSelector(childrenSelectors.getChildById(childId));
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const caregiver = useSelector(
-    caregiverSelectors.getCaregiverById(currentChild?.caregiverId)
-  );
+  const caregiver = child?.caregiver;
+
   const childPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
-      currentChild?.userId,
+      child?.userId,
       ContentConsentTypeEnum.PhotoPermissions
     )
-  );
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
   );
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
   const profilePicture = useSelector(
-    documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
+    documentSelectors.getDocumentByTypeId(child?.userId, typeId)
   );
 
   const caregiverRelation = useSelector(
@@ -184,21 +180,21 @@ export const EditChildInformation: React.FC = () => {
   }, [classroomGroups]);
 
   useEffect(() => {
-    if (currentChild && classroomGroupLearners) {
+    if (child && classroomGroupLearners) {
       const currentChildL = classroomGroupLearners.find(
-        (x) => x.userId === currentChild.userId && x.stoppedAttendance == null
+        (x) => x.userId === child.userId && x.stoppedAttendance == null
       );
       setCurrentChildLearnerRecord(currentChildL);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChild, classroomGroupLearners]);
+  }, [child, classroomGroupLearners]);
 
   useEffect(() => {
-    if (currentChild) {
-      setNewStackListItems(currentChild, caregiver);
+    if (child) {
+      setNewStackListItems(child, caregiver);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChild, caregiver, currentChildLearnerRecord]);
+  }, [child, caregiver, currentChildLearnerRecord]);
 
   const assignToClassNotifications = useSelector(
     notificationsSelectors.getAllNotifications
@@ -231,8 +227,8 @@ export const EditChildInformation: React.FC = () => {
           }
           className="bg-white"
           iconBorderColor="alertBg"
-          importantText={`Confirm ${childUser?.firstName}'s class change`}
-          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm.\n\nMake sure you submit today's attendance before changing the class.`}
+          importantText={`Confirm ${child?.user?.firstName}'s class change`}
+          detailText={`Confirm that ${child?.user?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm.\n\nMake sure you submit today's attendance before changing the class.`}
           actionButtons={[
             {
               text: 'Yes, confirmed with caregiver',
@@ -291,7 +287,7 @@ export const EditChildInformation: React.FC = () => {
         case 'healthInformation':
           return (
             <ChildHealthInformationForm
-              childName={childUser?.firstName ?? ''}
+              childName={child?.user?.firstName ?? ''}
               childHealthInformation={childHealthInformationForm}
               submitButtonIcon="SaveIcon"
               submitButtonText={isCoach ? 'Close' : 'Save'}
@@ -306,7 +302,7 @@ export const EditChildInformation: React.FC = () => {
           return (
             <ChildCaregiverInformation
               childCareGiverInformation={childCaregiverInformation}
-              childName={childUser?.firstName ?? ''}
+              childName={child?.user?.firstName ?? ''}
               submitButtonIcon="SaveIcon"
               submitButtonText={isCoach ? 'Close' : 'Save'}
               canEdit={isCoach}
@@ -320,7 +316,7 @@ export const EditChildInformation: React.FC = () => {
           return (
             <ChildEmergencyContactForm
               childEmergencyContactForm={childEmergencyContactForm}
-              childName={childUser?.firstName ?? ''}
+              childName={child?.user?.firstName ?? ''}
               submitButtonIcon="SaveIcon"
               submitButtonText={isCoach ? 'Close' : 'Save'}
               variation="practitioner"
@@ -391,7 +387,7 @@ export const EditChildInformation: React.FC = () => {
       );
 
       const dobString = format(
-        childUser?.dateOfBirth ? new Date(childUser?.dateOfBirth) : 0,
+        child?.user?.dateOfBirth ? new Date(child?.user?.dateOfBirth) : 0,
         'd MMM yyyy'
       );
 
@@ -603,7 +599,7 @@ export const EditChildInformation: React.FC = () => {
       //this child does not belong to any classroomgroup
       const newLearnerModel: LearnerDto = {
         classroomGroupId: newClassroomGroupId,
-        userId: currentChild?.userId ?? '',
+        userId: child?.userId ?? '',
         attendanceReasonId: undefined,
         otherAttendanceReason: '',
         startedAttendance: new Date().toISOString(),
@@ -718,8 +714,8 @@ export const EditChildInformation: React.FC = () => {
   const saveChildHealthInformation = async (
     childHealthInformationForm: ChildHealthInformationFormModel
   ) => {
-    if (currentChild) {
-      const updateChild = Object.assign({}, currentChild);
+    if (child) {
+      const updateChild = Object.assign({}, child);
 
       if (updateChild) {
         updateChild.allergies = childHealthInformationForm?.allergies || '';
@@ -789,7 +785,7 @@ export const EditChildInformation: React.FC = () => {
         })
       );
     } else {
-      const fileName = `ProfilePicture_${childUser?.id}.png`;
+      const fileName = `ProfilePicture_${child?.userId}.png`;
 
       const statusId = await getWorkflowStatusIdByEnum(
         WorkflowStatusEnum.DocumentVerified
@@ -797,7 +793,7 @@ export const EditChildInformation: React.FC = () => {
 
       const documentInputModel: Document = {
         id: newGuid(),
-        userId: childUser?.id,
+        userId: child?.userId,
         createdUserId: user?.id ?? '',
         workflowStatusId: statusId ?? '',
         documentTypeId: typeId ?? '',
@@ -826,8 +822,8 @@ export const EditChildInformation: React.FC = () => {
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         title={
-          childUser
-            ? `${childUser?.firstName} ${childUser?.surname} Profile`
+          !!child && !!child.user
+            ? `${child.user.firstName} ${child.user.surname} Profile`
             : 'Profile'
         }
         color={'primary'}
@@ -841,7 +837,7 @@ export const EditChildInformation: React.FC = () => {
           className={'flex w-full flex-col items-center justify-center pt-8'}
         >
           <ProfileAvatar
-            dataUrl={profilePicture?.file || childUser?.profileImageUrl || ''}
+            dataUrl={profilePicture?.file || child?.user?.profileImageUrl || ''}
             size={'header'}
             hasConsent={childPhotoConsent ? true : false}
             canChangeImage={childPhotoConsent ? true : false}

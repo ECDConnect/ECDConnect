@@ -36,9 +36,6 @@ export const DownloadChildProgressReport: React.FC = () => {
   const currentChild = useSelector(
     childrenSelectors.getChildById(routeState.childId)
   );
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
   const currentChildLearner = useSelector(
     classroomsSelectors.getChildLearner(currentChild)
   );
@@ -132,7 +129,7 @@ export const DownloadChildProgressReport: React.FC = () => {
 
       saveBase64Pdf(
         base64Pdf,
-        `${currentChildUser?.firstName}-${currentChildUser?.surname}-${summaryReportingPeriod.monthName}-${summaryReportingPeriod.year}`
+        `${currentChild?.user?.firstName}-${currentChild?.user?.surname}-${summaryReportingPeriod.monthName}-${summaryReportingPeriod.year}`
       );
 
       setDownloaded(true);
@@ -188,7 +185,7 @@ export const DownloadChildProgressReport: React.FC = () => {
                 type={'help'}
                 hasMarkup
                 color={'textMid'}
-                text={`Send a voice note with a short summary of what makes ${currentChildUser?.firstName} special, how ${currentChildUser?.firstName} is growing, and the activities that ${currentChildUser?.firstName} enjoys`}
+                text={`Send a voice note with a short summary of what makes ${currentChild?.user?.firstName} special, how ${currentChild?.user?.firstName} is growing, and the activities that ${currentChild?.user?.firstName} enjoys`}
               />
             </li>
             <li className={'mt-2'}>
@@ -196,7 +193,7 @@ export const DownloadChildProgressReport: React.FC = () => {
                 type={'help'}
                 hasMarkup
                 color={'textMid'}
-                text={`Have a meeting with caregivers to explain the report and help them understand ${currentChildUser?.firstName}’s progress`}
+                text={`Have a meeting with caregivers to explain the report and help them understand ${currentChild?.user?.firstName}’s progress`}
               />
             </li>
             <li className={'mt-2'}>
@@ -204,7 +201,7 @@ export const DownloadChildProgressReport: React.FC = () => {
                 type={'help'}
                 hasMarkup
                 color={'textMid'}
-                text={`Let the caregiver know what they can do to help ${currentChildUser?.firstName} grow`}
+                text={`Let the caregiver know what they can do to help ${currentChild?.user?.firstName} grow`}
               />
             </li>
           </ul>

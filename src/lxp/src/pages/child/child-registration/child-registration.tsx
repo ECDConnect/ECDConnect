@@ -61,7 +61,6 @@ import {
 import ROUTES from '@routes/routes';
 import { CaregiverService } from '@/services/CaregiverService';
 import { authSelectors } from '@store/auth';
-import { childrenForPractitionerThunkActions } from '@/store/childrenForPractitioner';
 import { practitionerSelectors } from '@/store/practitioner';
 import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple-children-modal';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
@@ -100,12 +99,7 @@ export const ChildRegistration: React.FC = () => {
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
   );
-  const existingCaregiver = useSelector(
-    caregiverSelectors.getCaregiverById(existingChild?.caregiverId)
-  );
-  const existingChildUser = useSelector(
-    childrenSelectors.getChildUserById(existingChild?.userId)
-  );
+  const existingCaregiver = existingChild?.caregiver;
 
   const existingPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
@@ -183,7 +177,7 @@ export const ChildRegistration: React.FC = () => {
     const userInputModel = childRegisterUtils.mapChildUserDto(
       formState.childInformationFormModel,
       formState.childExtraInformationFormModel,
-      existingChildUser
+      existingChild?.user
     );
 
     const userId = userInputModel.id || '';
@@ -311,7 +305,7 @@ export const ChildRegistration: React.FC = () => {
     }
     // END CONSENT
 
-    if (existingChildUser) {
+    if (existingChild?.user) {
       appDispatch(childrenActions.updateChildUser(userInputModel));
       await appDispatch(
         childrenThunkActions.updateChildUser({
@@ -320,7 +314,8 @@ export const ChildRegistration: React.FC = () => {
         })
       ).unwrap();
     } else {
-      appDispatch(childrenActions.createChildUser(userInputModel));
+      // TODO check when we work on registration. I don't think we need the separate user state on the child store
+      //appDispatch(childrenActions.createChildUser(userInputModel));
       await appDispatch(
         userThunkActions.addUser({ user: userInputModel })
       ).unwrap();
@@ -408,6 +403,7 @@ export const ChildRegistration: React.FC = () => {
     );
     setCaregiverData(caregiverDto);
 
+    // TODO - should just update with child
     if (existingCaregiver) {
       appDispatch(caregiverActions.updateCaregiver(caregiverDto));
       await appDispatch(
@@ -481,8 +477,8 @@ export const ChildRegistration: React.FC = () => {
               title={
                 childDetails
                   ? `${childDetails?.firstName}'s registration is complete, great job!`
-                  : existingChildUser
-                  ? `${existingChildUser.firstName}'s registration is complete, great job!`
+                  : existingChild?.user
+                  ? `${existingChild?.user.firstName}'s registration is complete, great job!`
                   : `This child's registration is complete, great job!`
               }
               detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
@@ -525,11 +521,7 @@ export const ChildRegistration: React.FC = () => {
 
       if (isPrincipal && practitionerUserId) {
         const updatePrincipalChildren = async () => {
-          await appDispatch(
-            childrenForPractitionerThunkActions.getChildrenForPractitioner({
-              id: practitionerUserId,
-            })
-          ).unwrap();
+          await appDispatch(childrenThunkActions.getChildren({})).unwrap();
         };
         updatePrincipalChildren();
       }
@@ -566,7 +558,7 @@ export const ChildRegistration: React.FC = () => {
     const typeId = await getDocumentTypeIdByEnum(fileType);
 
     const documentInputModel = childRegisterUtils.mapDocumentDto(
-      existingChildUser?.id || '',
+      existingChild?.user?.id || '',
       fileName,
       documentStatusId || '',
       typeId || '',
@@ -591,9 +583,9 @@ export const ChildRegistration: React.FC = () => {
 
   useEffect(() => {
     let updatedFormState = { ...formState };
-    if (existingChild && routeStep && existingChildUser) {
-      const userDob = existingChildUser?.dateOfBirth
-        ? new Date(existingChildUser?.dateOfBirth)
+    if (existingChild && routeStep && existingChild?.user) {
+      const userDob = existingChild?.user?.dateOfBirth
+        ? new Date(existingChild?.user?.dateOfBirth)
         : new Date();
 
       const dobDay = getDate(userDob);
@@ -607,9 +599,9 @@ export const ChildRegistration: React.FC = () => {
           dobMonth: dobMonth,
           dobYear: dobYear,
           dob: userDob,
-          firstname: existingChildUser?.firstName || '',
-          surname: existingChildUser?.surname || '',
-          childIdField: existingChildUser?.idNumber || '',
+          firstname: existingChild?.user?.firstName || '',
+          surname: existingChild?.user?.surname || '',
+          childIdField: existingChild?.user?.idNumber || '',
           otherReason: '',
           playgroupId: existingLearner?.classroomGroupId || '',
         },

@@ -8,6 +8,7 @@ class CaregiverService {
     this._accessToken = accessToken;
   }
 
+  // Can remove, fetching it with the child
   async getCaregivers(): Promise<CaregiverDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -184,25 +185,30 @@ class CaregiverService {
   async updateCareGiverGrants(
     childUserId: string,
     grantIds: string[]
-  ): Promise<CaregiverDto> {
+  ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updateCareGiverGrants($childUserId: UUID!, $grantIds: [UUID!] ) {
-                 updateCareGiverGrants(childUserId: $childUserId, grantIds: $grantIds)
-                      }
-      `,
+    const response = await apiInstance.post<{
+      data: { updateCaregiverGrants: boolean };
+      errors?: {};
+    }>(``, {
+      query: `mutation updateCareGiverGrants($childUserId: UUID!, $grantIds: [UUID!] ) {
+        updateCareGiverGrants(childUserId: $childUserId, grantIds: $grantIds)
+      }`,
       variables: {
         childUserId: childUserId,
         grantIds: grantIds,
       },
     });
 
-    if (response.status !== 200) {
+    if (
+      response.status !== 200 ||
+      response.data.data.updateCaregiverGrants == false ||
+      !!response.data.errors
+    ) {
       throw new Error('Updating caregiver failed - Server connection error');
     }
 
-    return response.data.data.updateCareGiverGrants;
+    return response.data.data.updateCaregiverGrants;
   }
 }
 
