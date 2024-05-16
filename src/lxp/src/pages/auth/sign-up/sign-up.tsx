@@ -1,5 +1,9 @@
 import {
+  Config,
   ContentConsentTypeEnum,
+  NOTIFICATION,
+  RegisterRequestModel,
+  useNotifications,
   useQueryParams,
   useTheme,
 } from '@ecdlink/core';
@@ -39,6 +43,7 @@ import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
+import ROUTES from '@/routes/routes';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -46,6 +51,7 @@ let headerSlide: HeaderSlide;
 
 export const SignUp: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const { setNotification } = useNotifications();
   const {
     watch,
     register: signUpRegister,
@@ -134,6 +140,8 @@ export const SignUp: React.FC = () => {
 
   watch();
 
+  console.log({ authToken });
+
   const submitForm = async (formValue: SignUpModel) => {
     const valid = await signUpSchema.isValid(formValue);
 
@@ -149,6 +157,8 @@ export const SignUp: React.FC = () => {
       }
     );
 
+    console.log({ informationVerified });
+
     setIsLoading(false);
 
     if (informationVerified.errorCode) {
@@ -157,7 +167,47 @@ export const SignUp: React.FC = () => {
     }
 
     if (informationVerified.verified) {
-      proceedToPhoneValidation(formValue, authToken || '');
+      // proceedToPhoneValidation(formValue, authToken || '');
+
+      if (authToken) {
+        setIsLoading(true);
+        const body: RegisterRequestModel = {
+          username: formValue.username,
+          password: formValue.password,
+          token: authToken,
+          acceptedTerms: formValue?.termsAndConditionsAccepted,
+        };
+
+        console.log({ body });
+
+        // const isAuthenticated = await new AuthService().RegisterNewUser(
+        //   Config.authApi,
+        //   body
+        // ).catch(() => {
+        //   setNotification({
+        //     title: ` Failed to Sign Up!`,
+        //     variant: NOTIFICATION.ERROR,
+        //   });
+        //   setIsLoading(false);
+        // });
+
+        // if (isAuthenticated) {
+        //   setIsLoading(false);
+        //   await resetAppStore();
+        //   await resetAuth();
+        //   history.push(ROUTES.LOGIN);
+        //   setNotification({
+        //     title: ` Successfully registered!`,
+        //     variant: NOTIFICATION.SUCCESS,
+        //   });
+        // } else {
+        //   setNotification({
+        //     title: ` Successfully registered!`,
+        //     variant: NOTIFICATION.SUCCESS,
+        //   });
+        //   setIsLoading(false);
+        // }
+      }
     } else if (informationVerified.errorCode === 2) {
       setPresentCellNumberMismatch(true);
     }

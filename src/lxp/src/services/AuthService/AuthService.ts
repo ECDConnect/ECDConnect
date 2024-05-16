@@ -7,6 +7,7 @@ import {
   PasswordResetModel,
   SimpleUserModel,
   VerifyInvitationModel,
+  RegisterRequestModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
 import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
@@ -49,7 +50,7 @@ class AuthService {
     const response = await api(BASE_URL)
       .post(APIs.verifyInvitation, JSON.stringify(verifyInvitationModel))
       .catch(handlerError);
-
+    console.log({ response });
     const dataResponse = getDataResponse<boolean>(response);
 
     if (dataResponse.dataError) {
@@ -153,6 +154,16 @@ class AuthService {
     }
 
     return response.data;
+  }
+
+  async RegisterNewUser(baseEndPoint: string, body: RegisterRequestModel) {
+    return await api(baseEndPoint).post(
+      APIs.acceptAdminInvitation,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
   }
 }
 

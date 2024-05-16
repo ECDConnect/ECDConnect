@@ -11,6 +11,8 @@ import {
 } from '@ecdlink/ui';
 import { options, phoneNumberOrEmailOptions } from './help-form-types';
 import { useState } from 'react';
+import { Config, HelpFormModel } from '@ecdlink/core';
+import { HelpService } from '@/services/HelpService';
 
 interface HelpFormProps {
   closeAction?: (item: boolean) => void;
@@ -28,6 +30,21 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     ? 'e.g 0123456789'
     : 'e.g name@email.com';
   const contactLabel = isPhoneSelected ? 'Cellphone number' : 'Email address';
+
+  const sendHelpMessage = async () => {
+    console.log('ahahah');
+    const input: HelpFormModel = {
+      subject: helpType,
+      description: problemValue,
+      cellNumber: isPhoneSelected ? contactValue : '',
+      email: isPhoneSelected === false ? contactValue : '',
+      isLoggedIn: false,
+      contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
+      userId: '',
+    };
+
+    await new HelpService(Config.authApi).SendHelp(input);
+  };
 
   return (
     <div>
@@ -112,7 +129,8 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
               color={'primary'}
               className={'mb-12 w-full'}
               onClick={() => {
-                closeAction && closeAction(false);
+                sendHelpMessage();
+                // closeAction && closeAction(false);
               }}
             >
               {renderIcon('SaveIcon', 'w-5 h-5 text-white mr-1')}

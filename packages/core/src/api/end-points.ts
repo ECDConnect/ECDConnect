@@ -10,4 +10,5 @@ export const APIs = {
   refreshJwtToken: `api/authentication/refresh-token`,
   onlineCheck: `api/authentication/online-check`,
   verifyCellPhoneNumber: 'api/authentication/verify-cellphone-number',
+  addUserHelpRecord: 'api/authentication/add-user-help-record',
 };
