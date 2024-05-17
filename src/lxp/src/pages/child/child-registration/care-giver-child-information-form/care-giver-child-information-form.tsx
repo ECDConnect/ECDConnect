@@ -1,35 +1,25 @@
-import { ProvinceDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Button,
-  Divider,
-  Dropdown,
-  FormInput,
-  Typography,
-  classNames,
-  renderIcon,
-} from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { Button, Divider, FormInput, Typography } from '@ecdlink/ui';
+import { useEffect, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
-import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '@store/static-data';
 import * as styles from './care-giver-child-information-form.styles';
 import {
   CareGiverChildInformationFormModel,
   careGiverChildInformationFormSchema,
 } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { CareGiverChildInformationFormProps } from './care-giver-child-information-form.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
 
 export const CareGiverChildInformationForm: React.FC<
   CareGiverChildInformationFormProps
-> = ({
-  careGiverInformation,
-  submitButtonText = 'Next',
-  submitButtonIcon = 'ArrowCircleRightIcon',
-  onSubmit,
-  canEdit = false,
-}) => {
-  const provinces = useSelector(staticDataSelectors.getProvinces);
+> = ({ careGiverInformation, onSubmit, canEdit }) => {
+  const [readonly, setReadonly] = useState(true);
+
+  const { isLoading } = useThunkFetchCall(
+    'caregivers',
+    CaregiverActions.UPDATE_CAREGIVER
+  );
 
   useEffect(() => {
     document
@@ -39,7 +29,6 @@ export const CareGiverChildInformationForm: React.FC<
 
   const {
     getValues: getCareGiverChildInformationFormValues,
-    setValue: setCareGiverChildInformationFormValue,
     register: careGiverChildInformationFormRegister,
     control: careGiverInformationFormControl,
   } = useForm<CareGiverChildInformationFormModel>({
@@ -53,6 +42,11 @@ export const CareGiverChildInformationForm: React.FC<
   });
 
   const handleFormSubmit = () => {
+    if (readonly) {
+      setReadonly(false);
+      return;
+    }
+
     if (isValid && onSubmit) {
       onSubmit(getCareGiverChildInformationFormValues());
     }
@@ -66,95 +60,41 @@ export const CareGiverChildInformationForm: React.FC<
         color={'primary'}
       />
       <Typography type={'h2'} text={'Address'} color={'textMid'} />
-
       <FormInput<CareGiverChildInformationFormModel>
-        label={'Flat / unit / apartment number'}
-        hint={'Optional'}
-        className={styles.spacer}
-        register={careGiverChildInformationFormRegister}
-        error={errors['apartmentNumber']}
-        nameProp={'apartmentNumber'}
-        placeholder={'203 Oak Apartments'}
-        disabled={canEdit}
-      />
-
-      <FormInput<CareGiverChildInformationFormModel>
+        readonly={readonly}
         label={'Street address'}
+        hint="Optional"
         register={careGiverChildInformationFormRegister}
         nameProp={'streetAddress'}
+        textInputType={readonly ? 'input' : 'textarea'}
         error={errors['streetAddress']}
         className={styles.spacer}
-        placeholder={'E.g. 11 Green Road'}
-        disabled={canEdit}
+        placeholder={'E.g. 203 Oak Apartments, 11 Green Road, Mamelodi East'}
       />
+      <Divider dividerType="dashed" className="py-4" />
       <FormInput<CareGiverChildInformationFormModel>
-        label={'Suburb/area'}
-        register={careGiverChildInformationFormRegister}
-        nameProp={'suburb'}
-        error={errors['suburb']}
-        className={styles.spacer}
-        placeholder={'E.g.  Mamelodi East'}
-        disabled={canEdit}
-      />
-      <FormInput<CareGiverChildInformationFormModel>
-        label={'City'}
-        register={careGiverChildInformationFormRegister}
-        nameProp={'city'}
-        error={errors['city']}
-        className={styles.spacer}
-        placeholder={'E.g. Cape Town'}
-        disabled={canEdit}
-      />
-
-      <Dropdown
-        placeholder={'Choose province'}
-        list={
-          (provinces &&
-            provinces.map((province: ProvinceDto) => {
-              return { label: province.description, value: province.id };
-            })) ||
-          []
-        }
-        fillType="clear"
-        fullWidth
-        label={'Province'}
-        className={classNames(styles.spacer, 'w-full')}
-        selectedValue={getCareGiverChildInformationFormValues().provinceId}
-        onChange={(item: any) => {
-          setCareGiverChildInformationFormValue('provinceId', item, {
-            shouldValidate: true,
-          });
-        }}
-        disabled={canEdit}
-      />
-      <FormInput<CareGiverChildInformationFormModel>
+        readonly={readonly}
         label={'Postal code'}
         register={careGiverChildInformationFormRegister}
         nameProp={'postalCode'}
         error={errors['postalCode']}
-        placeholder={'E.g. 0081'}
-        className={styles.spacer}
-        disabled={canEdit}
+        placeholder={'E.g. 0122'}
       />
-      <div className={'py-4'}>
-        <Divider></Divider>
-      </div>
-      <Button
-        onClick={handleFormSubmit}
-        className="w-full"
-        size="small"
-        color="primary"
-        type="filled"
-        disabled={!isValid}
-      >
-        {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-        <Typography
-          type="h6"
-          className="ml-2"
-          text={submitButtonText}
-          color="white"
+      <Divider dividerType="dashed" className="py-4" />
+      {canEdit && (
+        <Button
+          isLoading={isLoading}
+          onClick={handleFormSubmit}
+          className="mt-auto w-full"
+          size="small"
+          color="quatenary"
+          type="filled"
+          disabled={(!readonly && !isValid) || isLoading}
+          icon={readonly ? 'PencilIcon' : 'SaveIcon'}
+          text={readonly ? 'Edit' : 'Save'}
+          textColor="white"
         />
-      </Button>
+      )}
     </div>
   );
 };

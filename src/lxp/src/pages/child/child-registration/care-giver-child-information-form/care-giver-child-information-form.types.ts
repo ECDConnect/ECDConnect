@@ -4,7 +4,5 @@ import { CareGiverChildInformationFormModel } from '@schemas/child/child-registr
 export interface CareGiverChildInformationFormProps
   extends FormComponentProps<CareGiverChildInformationFormModel> {
   careGiverInformation?: CareGiverChildInformationFormModel;
-  submitButtonText?: string;
-  submitButtonIcon?: string;
   canEdit?: boolean;
 }

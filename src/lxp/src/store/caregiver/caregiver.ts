@@ -7,6 +7,7 @@ import {
   updateCaregiver,
 } from './caregiver.actions';
 import { CaregiverContactHistory, CaregiverState } from './caregiver.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: CaregiverState = {};
 
@@ -50,6 +51,7 @@ const caregiverSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateCaregiver);
     builder.addCase(getCaregivers.fulfilled, (state, action) => {
       if (!state.caregivers) {
         const caregivers = Object.assign([], action.payload) as CaregiverDto[];
@@ -61,6 +63,7 @@ const caregiverSlice = createSlice({
         state.caregivers = caregivers;
       }
     });
+    // TODO: move to children state
     builder.addCase(
       updateCaregiver.fulfilled,
       (state, action: PayloadAction<CaregiverDto>) => {
@@ -73,8 +76,11 @@ const caregiverSlice = createSlice({
 
           state.caregivers[caregiverIndex] = action.payload;
         }
+
+        setFulfilledThunkActionStatus(state, action);
       }
     );
+    // TODO: move to children state
     builder.addCase(
       createCaregiver.fulfilled,
       (state, action: PayloadAction<CaregiverDto>) => {

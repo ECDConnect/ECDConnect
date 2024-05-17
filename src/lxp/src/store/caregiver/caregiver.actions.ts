@@ -14,6 +14,7 @@ export const CaregiverActions = {
   GET_CAREGIVERS: 'getCaregivers',
   UPDATE_CONTACT_HISTORY: 'updateContactCaregiverHistory',
   ADD_CONTACT_HISTORY: 'addContactCaregiverHistory',
+  UPDATE_CAREGIVER: 'updateCaregiver',
 };
 
 export const getCaregivers = createAsyncThunk<
@@ -144,7 +145,7 @@ export const updateCaregiver = createAsyncThunk<
   UpdateCaregiverRequest,
   ThunkApiType<RootState>
 >(
-  'updateCaregiver',
+  CaregiverActions.UPDATE_CAREGIVER,
   async ({ caregiver, id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },

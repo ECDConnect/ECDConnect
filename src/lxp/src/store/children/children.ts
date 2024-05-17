@@ -11,6 +11,7 @@ import {
   updateChild,
 } from './children.actions';
 import { ChildrenState } from './children.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: ChildrenState = {
   children: undefined,
@@ -80,10 +81,12 @@ const childrenSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateChild);
     builder.addCase(getChildren.fulfilled, (state, action) => {
       state.children = action.payload;
     });
     builder.addCase(updateChild.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
       if (!state.children) return;
 
       const childIndex = state.children.findIndex(
