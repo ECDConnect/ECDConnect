@@ -1,6 +1,6 @@
 namespace EcdLink.Api.CoreApi.Security.Models.Requests
 {
-    public class OARegisterPractitionerModel
+    public class OAAddPractitionerModel
     {
         // For Facebook save the id/number to Username
         // For Google save the email to Username
