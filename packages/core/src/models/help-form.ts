@@ -5,5 +5,5 @@ export interface HelpFormModel {
   cellNumber?: string;
   email?: string;
   isLoggedIn?: boolean;
-  userId?: string;
+  userId?: string | null;
 }

@@ -158,7 +158,7 @@ class AuthService {
 
   async RegisterNewUser(baseEndPoint: string, body: RegisterRequestModel) {
     return await api(baseEndPoint).post(
-      APIs.acceptAdminInvitation,
+      APIs.acceptInvitation,
       JSON.stringify(body),
       {
         headers: headers,

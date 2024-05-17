@@ -13,7 +13,7 @@ class HelpService {
   ): Promise<boolean> {
     const apiInstance = api(Config.authApi);
     const response = await apiInstance.post(
-      APIs.addUserHelpRecord,
+      APIs.submitUserHelpForm,
       JSON.stringify(body)
     );
 
