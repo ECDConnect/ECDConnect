@@ -1,9 +1,7 @@
-using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
-using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using ECDLink.Security.Providers.Tokens;
 using ECDLink.Tenancy.EntityFramework.Extensions;
@@ -11,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -57,7 +54,6 @@ namespace EcdLink.Api.CoreApi
 
             services.AddTransient<CustomEmailConfirmationTokenProvider<ApplicationUser>>();
             services.AddTransient<CustomOpenAccessTokenProvider<ApplicationUser>>();
-            services.AddTransient<IAdminUserService, TenantAdminManager>();
         }
     }
 }

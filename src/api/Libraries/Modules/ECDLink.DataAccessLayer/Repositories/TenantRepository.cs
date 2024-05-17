@@ -1,4 +1,4 @@
-﻿using ECDLink.PostgresTenancy.Context;
+﻿using ECDLink.DataAccessLayer.Context;
 using ECDLink.PostgresTenancy.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -10,14 +10,14 @@ namespace ECDLink.PostgresTenancy.Repository
 {
     public class TenantRepository : ITenancyRepository
     {
-        private PostgresTenancyContext _context;
+        private AuthenticationDbContext _context;
         private DbSet<TenantEntity> entities;
 
         protected string _userId;
 
         protected string errorMessage = string.Empty;
 
-        public TenantRepository(PostgresTenancyContext context)
+        public TenantRepository(AuthenticationDbContext context)
         {
             _context = context;
             entities = context.Set<TenantEntity>();

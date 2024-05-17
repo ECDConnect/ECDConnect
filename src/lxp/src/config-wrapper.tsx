@@ -35,8 +35,8 @@ const ConfigWrapper: React.FC = () => {
     return (
       <OnlineStatusProvider pollUrl={pollUrl} interval={3000} timeout={2000}>
         <Provider store={store}>
-          <TenantContextProvider>
-            <PersistGate loading={null} persistor={persistor}>
+          <PersistGate loading={null} persistor={persistor}>
+            <TenantContextProvider>
               <ThemeProvider
                 themeEndPoint={Config.themeUrl}
                 overRideCache={false}
@@ -47,8 +47,8 @@ const ConfigWrapper: React.FC = () => {
                   </WalkthroughProvider>
                 </DialogServiceProvider>
               </ThemeProvider>
-            </PersistGate>
-          </TenantContextProvider>
+            </TenantContextProvider>
+          </PersistGate>
         </Provider>
       </OnlineStatusProvider>
     );

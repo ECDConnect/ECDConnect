@@ -257,7 +257,7 @@ namespace ECDLink.Core.Services
                 }
                 else isReassigned = false;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Error
                 isReassigned = false;
@@ -332,7 +332,7 @@ namespace ECDLink.Core.Services
                 }
                 else isReassigned = false;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Error
                 isReassigned = false;

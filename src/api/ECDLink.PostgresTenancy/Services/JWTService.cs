@@ -58,9 +58,15 @@ namespace ECDLink.PostgresTenancy.Services
                 return default;
             }
 
-            var tokenEntity = _repository.Insert(entity);
+            try
+            {
+                _repository.Insert(entity);
+            }
+            catch(Exception)
+            {
+            }
 
-            return tokenEntity;
+            return entity;
         }
 
         public bool InvalidateExistingTokens(Guid id)
@@ -69,7 +75,7 @@ namespace ECDLink.PostgresTenancy.Services
             {
                 return _repository.DeleteAllTokensById(id);
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
             }

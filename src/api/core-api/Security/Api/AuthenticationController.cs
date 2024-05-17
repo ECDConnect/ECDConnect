@@ -6,6 +6,7 @@ using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -63,6 +64,7 @@ namespace ECDLink.Security.Api
             _userManager = userManager;
             _passwordManager = passwordManager;
             _personnelService = personnelService;
+            _notificationManager = notificationManager;
         }
 
         // POST api/auth/login
@@ -325,34 +327,34 @@ namespace ECDLink.Security.Api
             return Ok();
         }
 
-        [Route("register-oa-practitioner")]
+        [Route("add-oa-practitioner")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> RegisterOAPractitioner([FromBody] OARegisterPractitionerModel registerOAPractitionerModel)
+        public async Task<IActionResult> AddOAPractitioner([FromBody] OAAddPractitionerModel addOAPractitionerModel)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userId = Guid.NewGuid();
             var newUser = new ApplicationUser();
 
             // Step 1 - create User
-            if (RegisterTypeConstants.USERNAME == registerOAPractitionerModel.RegisterType)
+            if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
             {
                 newUser = new ApplicationUser()
                 {
                     Id = userId,
-                    UserName = registerOAPractitionerModel.Username,
-                    PhoneNumber = UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.PhoneNumber),
-                    PendingPhoneNumber = UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.PhoneNumber),
+                    UserName = addOAPractitionerModel.Username,
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
+                    PendingPhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.PhoneNumber),
                     PhoneNumberConfirmed = false,
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
                     IsActive = true,
-                    RegisterType = registerOAPractitionerModel.RegisterType
+                    RegisterType = addOAPractitionerModel.RegisterType
                 };
 
                 // Validate password for user
-                if (!await _passwordManager.IsPasswordSecureAsync(newUser, registerOAPractitionerModel.Password))
+                if (!await _passwordManager.IsPasswordSecureAsync(newUser, addOAPractitionerModel.Password))
                 {
                     return BadRequest(new FailedVerificationModel
                     {
@@ -362,19 +364,19 @@ namespace ECDLink.Security.Api
                 }
 
             }
-            else if (RegisterTypeConstants.FACEBOOK == registerOAPractitionerModel.RegisterType)
+            else if (RegisterTypeConstants.FACEBOOK == addOAPractitionerModel.RegisterType)
             {  // faceBook signs up with phone number
 
                 newUser = new ApplicationUser()
                 {
                     Id = userId,
-                    UserName = registerOAPractitionerModel.Username,
-                    PhoneNumber = UserHelper.NormalizePhoneNumber(registerOAPractitionerModel.Username),
+                    UserName = addOAPractitionerModel.Username,
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(addOAPractitionerModel.Username),
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
                     IsActive = true,
-                    RegisterType = registerOAPractitionerModel.RegisterType
+                    RegisterType = addOAPractitionerModel.RegisterType
                 };
             }
 
@@ -389,12 +391,12 @@ namespace ECDLink.Security.Api
             }
 
             // Get newly created user
-            var user = await _securityManager.GetUserByNameAsync(registerOAPractitionerModel.Username);
+            var user = await _securityManager.GetUserByNameAsync(addOAPractitionerModel.Username);
 
             // Step 2 - create password
-            if (RegisterTypeConstants.USERNAME == registerOAPractitionerModel.RegisterType)
+            if (RegisterTypeConstants.USERNAME == addOAPractitionerModel.RegisterType)
             {
-                await _passwordManager.AddPasswordAsync(user, registerOAPractitionerModel.Password);
+                await _passwordManager.AddPasswordAsync(user, addOAPractitionerModel.Password);
             }
 
             // Step 3: add user to practitioner role
@@ -449,5 +451,24 @@ namespace ECDLink.Security.Api
             return Ok();
         }
 
-    }
+        [Route("register-practitioner")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult RegisterPractitioner([FromBody] Guid userId)
+        {
+            var practitioner = _personnelService.RegisterPractitioner(userId);
+
+            if (practitioner == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Register of practitioner failed"
+                });
+            }
+
+           return Ok();
+        }
+
+     }
 }

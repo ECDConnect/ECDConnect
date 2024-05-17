@@ -26,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public virtual Mother Mother { get; set; }
         public Guid? InfantId { get; set; }
         public virtual Infant Infant { get; set; }
-        public string? Risk { get; set; }
+        public string Risk { get; set; }
         public string Comment { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public Guid? PractitionerId { get; set; }
