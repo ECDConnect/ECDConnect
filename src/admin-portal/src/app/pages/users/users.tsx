@@ -2,26 +2,18 @@ import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
-import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantType } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
+import { useTenant } from '../../hooks/useTenant';
 
 export function Users() {
   const location = useLocation();
+  const tenant = useTenant();
 
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
   const { isTeamLead, isAdministrator } = useUserRole();
 
   const getNavigationItems = () => {
-    if (
-      data &&
-      data.tenantContext &&
-      data.tenantContext.tenantType === TenantType.ChwConnect
-    ) {
+    if (tenant.isCHWConnect) {
       if (isTeamLead && !isAdministrator) {
         return [
           {
@@ -96,13 +88,7 @@ export function Users() {
       <div className="flex bg-white">
         {window.location.pathname !== '/users/view-user' &&
           navigation.map((item) => (
-            <div
-              className={
-                data?.tenantContext.tenantType === TenantType.ChwConnect
-                  ? 'w-3/12 '
-                  : 'w-full'
-              }
-            >
+            <div className={tenant.isCHWConnect ? 'w-3/12 ' : 'w-full'}>
               <SubNavigationLink
                 key={`${item.name}-${new Date().getTime()}`}
                 item={item}

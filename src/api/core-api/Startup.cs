@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi
             
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
-            PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
+            //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
 
             AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
 

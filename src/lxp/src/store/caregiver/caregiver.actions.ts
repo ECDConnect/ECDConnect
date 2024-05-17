@@ -11,60 +11,22 @@ import { RootState, ThunkApiType } from '../types';
 import { CaregiverContactHistory } from './caregiver.types';
 
 export const CaregiverActions = {
-  GET_CAREGIVERS: 'getCaregivers',
   UPDATE_CONTACT_HISTORY: 'updateContactCaregiverHistory',
   ADD_CONTACT_HISTORY: 'addContactCaregiverHistory',
   UPDATE_CAREGIVER: 'updateCaregiver',
 };
 
-export const getCaregivers = createAsyncThunk<
-  CaregiverDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  CaregiverActions.GET_CAREGIVERS,
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      caregivers: { caregivers: caregiversCache },
-    } = getState();
-
-    if (!caregiversCache) {
-      try {
-        let caregivers: CaregiverDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          caregivers = await new CaregiverService(
-            userAuth?.auth_token
-          ).getCaregivers();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!caregivers) {
-          return rejectWithValue('Error getting caregivers');
-        }
-
-        return caregivers;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return caregiversCache;
-    }
-  }
-);
-
+// Does this do anything?
 export const updateCaregiverContactHistory = createAction<
   PayloadAction<CaregiverContactHistory[]>
 >(CaregiverActions.UPDATE_CONTACT_HISTORY);
 
+// Does this do anything?
 export const addCaregiverContactHistory = createAction<
   PayloadAction<CaregiverContactHistory>
 >(CaregiverActions.ADD_CONTACT_HISTORY);
 
+// TODO - should upsert with children now
 export const upsertCareGivers = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types

@@ -34,8 +34,10 @@ using System;
 
 namespace ECDLink.DataAccessLayer.Context
 {
-    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>  //IdentityDbContext<ApplicationUser>
+    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>
     {
+        public DbSet<TenantEntity> Tenants { get; set; }
+        public DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
         public DbSet<UserGrant> UserGrants { get; set; }
@@ -213,7 +215,10 @@ namespace ECDLink.DataAccessLayer.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
+            builder.Entity<TenantEntity>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.ApplicationName, e.SiteAddress });
+            });
             builder.Entity<ApplicationUser>(x =>
             {
                 x.Property(p => p.PhoneNumber).HasConversion(

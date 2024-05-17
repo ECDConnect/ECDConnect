@@ -138,9 +138,10 @@ namespace ECDLink.AutomatedJobs.Cron
                         _logger.LogInformation("CronJobs: {0} Next Run @ {1} ({2} from now)", _name, next.Value.ToString(), delay);
                     }
                     _timer.Start();
-                } catch (Exception ex)
+                } 
+                catch (Exception ex)
                 {
-                    throw ex;
+                    throw new Exception("Exception in ScheduleJob", ex);
                 }
             }
             await Task.CompletedTask;
@@ -151,10 +152,10 @@ namespace ECDLink.AutomatedJobs.Cron
             throw new NotImplementedException();
         }
 
-        private List<TenantModel> GetTenantsInScope()
+        private List<TenantInternalModel> GetTenantsInScope()
         {
             var tenancyRepo = Scope.ServiceProvider.GetRequiredService<TenantService>();
-            var tenants = new List<TenantModel>();
+            var tenants = new List<TenantInternalModel>();
             if (this._tenants == null)
             {
                 tenants.AddRange(tenancyRepo.GetAllTenants()
@@ -193,7 +194,7 @@ namespace ECDLink.AutomatedJobs.Cron
             try
             {
                 this._scope = _scopeFactory.CreateScope();
-                List<TenantModel> tenants = GetTenantsInScope();
+                List<TenantInternalModel> tenants = GetTenantsInScope();
                 _logger.LogInformation("CronJobs: {0} Work Start for {1} tenants", _name, tenants.Count);
                 foreach (var tenant in tenants)
                 {

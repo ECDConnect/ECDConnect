@@ -21,7 +21,6 @@ import { ThumbUpIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetHealthCareWorkerByUserId,
-  GetTenantContext,
   GetUserById,
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
@@ -40,11 +39,11 @@ import { HealthCareWorkerSummary } from './components/health-care-worker-summary
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HealthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
-import { TenantType } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
 import { RoleSystemNameEnum } from '@ecdlink/core';
+import { useTenant } from '../../hooks/useTenant';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -89,6 +88,7 @@ export function ViewUser(props: any) {
   const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
+  const tenant = useTenant();
 
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
@@ -125,10 +125,6 @@ export function ViewUser(props: any) {
         { name: 'View user', url: '' },
       ];
 
-  const { data, loading: loadingTenant } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
-
   const [
     getChwById,
     { data: chwData, refetch: refetchCHW, loading: loadingChw },
@@ -161,7 +157,7 @@ export function ViewUser(props: any) {
       fetchPolicy: 'cache-and-network',
     });
 
-  const isLoading = loadingTenant || loadingChw || loadingUser;
+  const isLoading = loadingChw || loadingUser;
 
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
@@ -411,7 +407,7 @@ export function ViewUser(props: any) {
       ) && (
         <Alert
           className="mt-5 mb-3"
-          message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
+          message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
           type="error"
         />
       )}
@@ -436,9 +432,7 @@ export function ViewUser(props: any) {
       {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered &&
-        data &&
-        data.tenantContext &&
-        data.tenantContext.tenantType === TenantType.ChwConnect && (
+        tenant.isCHWConnect && (
           <DatePicker
             selectsRange
             selected={startDate}
@@ -529,7 +523,7 @@ export function ViewUser(props: any) {
           )}
 
         <p className="ml-auto text-sm text-gray-600">
-          User added to {data?.tenantContext.applicationName} App :{' '}
+          User added to {tenant.tenant?.applicationName} App :{' '}
           {formatDate(
             chwData?.GetHealthCareWorkerById?.insertedDate ||
               userData?.userById?.insertedDate

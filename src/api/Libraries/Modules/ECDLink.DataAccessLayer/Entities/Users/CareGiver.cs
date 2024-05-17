@@ -59,23 +59,20 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
 
-
         [ForeignKey(nameof(RelationId))]
         public virtual Relation Relation { get; set; }
         public Guid? RelationId { get; set; }
-
 
         [ForeignKey(nameof(EducationId))]
         public virtual Education Education { get; set; }
         public Guid? EducationId { get; set; }
 
-        [ForeignKey(nameof(HealthCareWorkerId))]
-        public virtual HealthCareWorker HealthCareWorker { get; set; }
-        public Guid? HealthCareWorkerId { get; set; }
 
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
+
+        // REMOVE THIS
         public bool isMother { get; set; }
 
         [NotMapped]
@@ -83,6 +80,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [NotMapped]
         public Mother Mother { get; set; }
 
+        public Guid? HealthCareWorkerId { get; set; }
+        [ForeignKey(nameof(HealthCareWorkerId))]
+        public virtual HealthCareWorker HealthCareWorker { get; set; }
     }
 
     public interface CaregiverJoin<TKey>

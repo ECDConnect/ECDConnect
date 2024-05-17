@@ -162,6 +162,7 @@ export const ProgrammeDetails = ({
   );
 
   const classroomsDetailsForPractitioner = useCallback(async () => {
+    // Needs to be updated
     const classroomDetails = (await new PractitionerService(
       userAuth?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(

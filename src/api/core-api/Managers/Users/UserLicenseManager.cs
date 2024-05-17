@@ -100,15 +100,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 };
 
                 return _licenseRepo.Insert(input);
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "DueDate",
-                    ReplacementValue = DateTime.Now.AddDays(21).ToShortDateString(),
-                });
+                //List<TagsReplacements> replacements = new List<TagsReplacements>();
+                //replacements.Add(new TagsReplacements()
+                //{
+                //    FindValue = "DueDate",
+                //    ReplacementValue = DateTime.Now.AddDays(21).ToShortDateString(),
+                //});
 
-                var userToSend =  _userManager.FindByIdAsync(userId.ToString()).Result;
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+                //var userToSend =  _userManager.FindByIdAsync(userId.ToString()).Result;
+                //_notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
 
             }
 

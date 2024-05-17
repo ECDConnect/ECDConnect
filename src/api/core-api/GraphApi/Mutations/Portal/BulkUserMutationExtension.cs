@@ -226,7 +226,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     addToRoleResult = await userManager.AddToRoleAsync(user, RolesGG.HEALTH_CARE_WORKER);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     validationErrors.Add(
                         new InputValidationError(
@@ -242,7 +242,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     communityHealthWorkerRepo.Insert(hcw);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     validationErrors.Add(new InputValidationError(
                         rowNum,

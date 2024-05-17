@@ -11,6 +11,7 @@ import App from './app';
 import { ContentLoader } from './components/content-loader/content-loader';
 import Notifications from './components/notifications/notifications';
 import { AuthProvider } from './hooks/useAuth';
+import { TenantContextProvider } from './hooks/useTenant';
 
 const history = createBrowserHistory();
 
@@ -19,19 +20,25 @@ const ConfigWrapper: React.FC = () => {
 
   if (!loading) {
     return (
-      <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={true}>
-        <AuthProvider>
-          <Router history={history}>
-            <NotificationsProvider>
-              <App />
-              <Notifications />
-            </NotificationsProvider>
-          </Router>
-        </AuthProvider>
-      </ThemeProvider>
+      <TenantContextProvider>
+        <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={true}>
+          <AuthProvider>
+            <Router history={history}>
+              <NotificationsProvider>
+                <App />
+                <Notifications />
+              </NotificationsProvider>
+            </Router>
+          </AuthProvider>
+        </ThemeProvider>
+      </TenantContextProvider>
     );
   } else {
-    return <ContentLoader />;
+    return (
+      <TenantContextProvider>
+        <ContentLoader />
+      </TenantContextProvider>
+    );
   }
 };
 

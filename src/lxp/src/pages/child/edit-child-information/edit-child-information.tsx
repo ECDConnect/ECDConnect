@@ -87,7 +87,7 @@ export const EditChildInformation: React.FC = () => {
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const provinces = useSelector(staticDataSelectors.getProvinces);
+
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
@@ -333,8 +333,6 @@ export const EditChildInformation: React.FC = () => {
     }
     return 'Add address';
   };
-
-  console.log({ caregiver });
 
   const setNewStackListItems = (child: ChildDto, caregiver?: CaregiverDto) => {
     const list: ActionListDataItem[] = [];

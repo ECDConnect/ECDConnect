@@ -3,15 +3,15 @@ import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
 
-import { GetAllMessageLogsForAdmin, GetTenantContext } from '@ecdlink/graphql';
-import { useQuery, useLazyQuery } from '@apollo/client';
+import { GetAllMessageLogsForAdmin } from '@ecdlink/graphql';
+import { useLazyQuery } from '@apollo/client';
 import { SearchDropDown, SearchDropDownOption, Dropdown } from '@ecdlink/ui';
 import { subDays } from 'date-fns';
 import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';
 import { MessageRoleDto, ggRoles, ssRoles } from './message';
-import { TenantType } from '../../../utils/constants';
+import { useTenant } from '../../../hooks/useTenant';
 
 export default function MessageList() {
   const history = useHistory();
@@ -25,6 +25,7 @@ export default function MessageList() {
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
   const user = localStorage.getItem(LocalStorageKeys.user);
   const [selectedPageSize] = useState<number>(null);
+  const tenant = useTenant();
 
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
@@ -40,10 +41,6 @@ export default function MessageList() {
       setAuthenticatedUser(JSON.parse(user));
     }
   }, [user]);
-
-  const { data: tenantData } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
 
   const [getAllMessageLogsForAdmin, { data: messages }] = useLazyQuery(
     GetAllMessageLogsForAdmin,
@@ -77,16 +74,10 @@ export default function MessageList() {
   };
 
   useEffect(() => {
-    if (tenantData) {
-      if (
-        tenantData &&
-        tenantData.tenantContext &&
-        tenantData.tenantContext.tenantType === TenantType.ChwConnect
-      ) {
-        setRoleData(ggRoles);
-      } else {
-        setRoleData(ssRoles);
-      }
+    if (tenant.isCHWConnect) {
+      setRoleData(ggRoles);
+    } else {
+      setRoleData(ssRoles);
     }
     if (messages) {
       const copyItems = messages.allMessageLogsForAdmin.map(
@@ -107,7 +98,7 @@ export default function MessageList() {
       );
       setTableData(copyItems);
     }
-  }, [tenantData, messages]);
+  }, [tenant, messages]);
 
   const displayMessagePanel = (message: MessageLogDto) => {
     localStorage.setItem('selectedMessage', JSON.stringify(message));

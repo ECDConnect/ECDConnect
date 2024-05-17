@@ -20,9 +20,9 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
          where TKey : IEquatable<TKey>
     {
         public string Notes { get; set; }
-        public string? ContributionTypeId { get; set; }
-        public string? PayTypeId { get; set; }
-        public string? IncomeTypeId { get; set; }
+        public string ContributionTypeId { get; set; }
+        public string PayTypeId { get; set; }
+        public string IncomeTypeId { get; set; }
         public double Amount { get; set; }
         public double AmountExpected { get; set; }
         public double ChildCoverAmount { get; set; }        
@@ -36,7 +36,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public Guid? StatementsIncomeStatementId { get; set; }
         public Guid? UserId { get; set; }
         public DateTime DateReceived { get; set; }
-        public string? FeeTypeId { get; set; }
+        public string FeeTypeId { get; set; }
     }
 
     public interface StatementsIncomeJoin<TKey>

@@ -16,5 +16,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
     {
         public Guid LearnerId { get; set; }
         public Guid ChildUserId { get; set; }
+        public DateTime StartedAttendance { get; set; }
     }
 }

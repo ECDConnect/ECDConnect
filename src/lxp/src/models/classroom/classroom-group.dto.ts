@@ -9,4 +9,5 @@ export type ClassroomGroupDto = {
 export type LearnerDto = {
   learnerId: string;
   childUserId: string;
+  startedAttendace: string;
 };

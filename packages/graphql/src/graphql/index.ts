@@ -48,7 +48,6 @@ export * from './navigation';
 export * from './health-care-worker';
 export * from './mother';
 export * from './infant';
-export * from './tenant';
 export * from './team-lead';
 export * from './clinic';
 export * from './personalRecords';

@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 if (franchisor != null)
                 {
-                    if (input.StartDate != null)
+                    //if (input.StartDate != null)
                         franchisor.StartDate = input.StartDate;
                     if (input.AreaOfOperation != null)
                         franchisor.AreaOfOperation = input.AreaOfOperation;

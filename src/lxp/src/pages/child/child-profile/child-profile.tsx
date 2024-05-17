@@ -173,7 +173,7 @@ export const ChildProfile: React.FC = () => {
   );
 
   const caregiverHasBeenContacted = useSelector(
-    caregiverSelectors.findCaregiverContactHistoryLog(
+    childrenSelectors.findCaregiverContactHistoryLog(
       child?.caregiverId,
       child?.id,
       CaregiverContactReason.WeeklyAttendance,

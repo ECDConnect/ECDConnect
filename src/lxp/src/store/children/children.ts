@@ -2,16 +2,12 @@ import { ChildDto, UserDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
-  generateCaregiverChildToken,
-  refreshCaregiverChildToken,
-  openAccessAddChildDetail,
   getChildrenForCoach,
-  openAccessAddChild,
   getChildren,
   updateChild,
 } from './children.actions';
-import { ChildrenState } from './children.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { CaregiverContactHistory, ChildrenState } from './children.types';
 
 const initialState: ChildrenState = {
   children: undefined,
@@ -78,6 +74,14 @@ const childrenSlice = createSlice({
       if (childIndex < 0) return;
 
       state.children[childIndex] = payloadUpdated;
+    },
+    addContactHistory: (
+      state,
+      action: PayloadAction<CaregiverContactHistory>
+    ) => {
+      if (!state.contactHistory) state.contactHistory = [];
+
+      state.contactHistory.push(action.payload);
     },
   },
   extraReducers: (builder) => {
