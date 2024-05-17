@@ -1185,6 +1185,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     UpdatedBy = _applicationUserId.ToString(),
                 });
         }
+
+        public Practitioner RegisterPractitioner(Guid userId)
+        {
+            var practitioner = _practiRepo.GetByUserId(userId);
+
+            practitioner.IsRegistered = true;
+            practitioner.UpdatedDate = DateTime.Now;
+            practitioner.UpdatedBy = _applicationUserId.ToString();
+            return _practiRepo.Update(practitioner);
+        }
     }
 }
 

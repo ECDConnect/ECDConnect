@@ -12,7 +12,7 @@ export const APIs = {
   verifyCellPhoneNumber: 'api/authentication/verify-cellphone-number',
   submitUserHelpForm: 'api/authentication/submit-user-help-form',
   tenantCurrent: 'api/tenancy/current',
-  // open access
   checkUsernamePhoneNumber: 'api/authentication/check-username-phone-number',
-  registerOAPractitioner: 'api/authentication/register-oa-practitioner',
+  addOAPractitioner: 'api/authentication/add-oa-practitioner',
+  registerPractitioner: 'api/authentication/register-practitioner',
 };
