@@ -1,11 +1,4 @@
-import {
-  Button,
-  classNames,
-  Divider,
-  FormInput,
-  renderIcon,
-  Typography,
-} from '@ecdlink/ui';
+import { Button, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useFormState } from 'react-hook-form';
 import {
@@ -13,6 +6,9 @@ import {
   childHealthInformationFormSchema,
 } from '@schemas/child/child-registration/child-health-information-form';
 import { ChildHealthInformationFormProps } from './child-health-information-form.types';
+import { useState } from 'react';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ChildrenActions } from '@/store/children/children.actions';
 
 export const ChildHealthInformationForm: React.FC<
   ChildHealthInformationFormProps
@@ -20,10 +16,15 @@ export const ChildHealthInformationForm: React.FC<
   childHealthInformation,
   childName = 'Child',
   onSubmit,
-  submitButtonText = 'Next',
-  submitButtonIcon = 'ArrowCircleRightIcon',
   canEdit = false,
 }) => {
+  const [readonly, setReadonly] = useState(true);
+
+  const { isLoading } = useThunkFetchCall(
+    'children',
+    ChildrenActions.UPDATE_CHILD
+  );
+
   const {
     getValues: getChildHealthInformationFormValues,
     register: childHealthInformationFormRegister,
@@ -39,63 +40,60 @@ export const ChildHealthInformationForm: React.FC<
   });
 
   const handleFormSubmit = () => {
+    if (readonly) {
+      setReadonly(false);
+      return;
+    }
+
     if (isValid && onSubmit) {
       onSubmit(getChildHealthInformationFormValues());
     }
   };
 
   return (
-    <div className={'h-full bg-white px-4 pt-2 pb-4'}>
+    <div className={'flex h-full flex-col bg-white px-4 pt-2 pb-4'}>
       <Typography type={'h1'} text={childName} color={'primary'} />
       <Typography type={'h2'} text={'Health information'} color={'textMid'} />
-      <div>
-        <FormInput<ChildHealthInformationFormModel>
-          label={'List any allergies'}
-          className={'mt-3'}
-          register={childHealthInformationFormRegister}
-          nameProp={'allergies'}
-          placeholder={'E.g. peanuts'}
-          disabled={canEdit}
-        />
-
-        <FormInput<ChildHealthInformationFormModel>
-          label={'List any disabilities'}
-          className={'mt-5'}
-          register={childHealthInformationFormRegister}
-          nameProp={'disabilities'}
-          placeholder={'E.g. blind'}
-          disabled={canEdit}
-        />
-
-        <FormInput<ChildHealthInformationFormModel>
-          label={'List any other health conditions'}
-          className={'mt-5'}
-          textInputType="textarea"
-          register={childHealthInformationFormRegister}
-          nameProp={'healthConditions'}
-          placeholder={'E.g. chronic illnesses such as diabetes or epilepsy'}
-          disabled={canEdit}
-        />
-
-        <div className={'py-4'}>
-          <Divider></Divider>
-        </div>
+      <FormInput<ChildHealthInformationFormModel>
+        readonly={readonly}
+        label={'List any allergies'}
+        className={'mt-3'}
+        register={childHealthInformationFormRegister}
+        nameProp={'allergies'}
+        placeholder={'E.g. peanuts'}
+      />
+      <Divider dividerType="dashed" className="py-4" />
+      <FormInput<ChildHealthInformationFormModel>
+        readonly={readonly}
+        label={'List any disabilities'}
+        register={childHealthInformationFormRegister}
+        nameProp={'disabilities'}
+        placeholder={'E.g. blind'}
+      />
+      <Divider dividerType="dashed" className="py-4" />
+      <FormInput<ChildHealthInformationFormModel>
+        readonly={readonly}
+        label={'List any other health conditions'}
+        textInputType={readonly ? 'input' : 'textarea'}
+        register={childHealthInformationFormRegister}
+        nameProp={'healthConditions'}
+        placeholder={'E.g. chronic illnesses such as diabetes or epilepsy'}
+      />
+      <Divider dividerType="dashed" className="py-4" />
+      {canEdit && (
         <Button
+          isLoading={isLoading}
           onClick={handleFormSubmit}
-          className="w-full"
+          className="mt-auto w-full"
           size="small"
-          color="primary"
+          color="quatenary"
           type="filled"
-        >
-          {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-          <Typography
-            type="h6"
-            className="ml-2"
-            text={submitButtonText}
-            color="white"
-          />
-        </Button>
-      </div>
+          disabled={(!readonly && !isValid) || isLoading}
+          icon={readonly ? 'PencilIcon' : 'SaveIcon'}
+          text={readonly ? 'Edit' : 'Save'}
+          textColor="white"
+        />
+      )}
     </div>
   );
 };

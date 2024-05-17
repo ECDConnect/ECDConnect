@@ -16,6 +16,9 @@ import { ChildService } from '@services/ChildService';
 import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
 
+export const ChildrenActions = {
+  UPDATE_CHILD: 'updateChild',
+};
 export const getChildren = createAsyncThunk<
   ChildDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -89,23 +92,26 @@ export const updateChild = createAsyncThunk<
   ChildDto,
   UpdateChildRequest,
   ThunkApiType<RootState>
->('updateChild', async ({ child }, { getState, rejectWithValue }) => {
-  try {
-    const {
-      auth: { userAuth },
-    } = getState();
-    if (userAuth?.auth_token) {
-      const input = mapChildInput(child);
-      await new ChildService(userAuth?.auth_token).updateChild(
-        input.Id || '',
-        input
-      );
-      return child;
-    } else return rejectWithValue('no access token, profile check required');
-  } catch (err) {
-    return rejectWithValue(err);
+>(
+  ChildrenActions.UPDATE_CHILD,
+  async ({ child }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const input = mapChildInput(child);
+        await new ChildService(userAuth?.auth_token).updateChild(
+          input.Id || '',
+          input
+        );
+        return child;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   }
-});
+);
 
 export const calculateChildrenRegistrationRemoval = createAsyncThunk<
   boolean,
@@ -366,7 +372,7 @@ export type TokenAddChildRequest = {
   token: string;
   caregiver: AddChildCaregiverTokenModelInput;
   learner: AddChildLearnerTokenModelInput;
-  siteAddress: AddChildSiteAddressTokenModelInput;
+  siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>;
   child: AddChildTokenModelInput;
   registration?: AddChildRegistrationTokenModelInput;
   userConsent?: AddChildUserConsentTokenModelInput;

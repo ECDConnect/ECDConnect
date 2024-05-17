@@ -6,8 +6,6 @@ export interface ChildEmergencyContactFormProps
   extends FormComponentProps<ChildEmergencyContactFormModel> {
   childEmergencyContactForm?: ChildEmergencyContactFormModel;
   childName: string;
-  submitButtonText?: string;
-  submitButtonIcon?: string;
   variation: ChildRegistrationVariation;
   canEdit?: boolean;
 }

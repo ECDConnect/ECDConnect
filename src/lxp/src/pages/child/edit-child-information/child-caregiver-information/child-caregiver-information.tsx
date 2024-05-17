@@ -1,11 +1,4 @@
-import {
-  Button,
-  classNames,
-  Divider,
-  FormInput,
-  renderIcon,
-  Typography,
-} from '@ecdlink/ui';
+import { Button, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import {
@@ -14,17 +7,20 @@ import {
 } from '@schemas/child/edit-child-information/care-giver-information-form';
 import * as styles from './child-caregiver-information.styles';
 import { ChildCaregiverInformationProps } from './child-caregiver-information.types';
+import { useState } from 'react';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
 
 export const ChildCaregiverInformation: React.FC<
   ChildCaregiverInformationProps
-> = ({
-  childCareGiverInformation,
-  childName,
-  submitButtonIcon = 'SaveIcon',
-  submitButtonText = 'Save',
-  onSubmit,
-  canEdit = false,
-}) => {
+> = ({ childCareGiverInformation, childName, onSubmit, canEdit }) => {
+  const [readonly, setReadonly] = useState(true);
+
+  const { isLoading } = useThunkFetchCall(
+    'caregivers',
+    CaregiverActions.UPDATE_CAREGIVER
+  );
+
   const {
     getValues: getCareGiverInformationFormValues,
     register: careGiverInformationFormRegister,
@@ -38,6 +34,11 @@ export const ChildCaregiverInformation: React.FC<
   const { isValid, errors } = careGiverInformationFormState;
 
   const handleFormSubmit = () => {
+    if (readonly) {
+      setReadonly(false);
+      return;
+    }
+
     if (isValid && onSubmit) {
       onSubmit(getCareGiverInformationFormValues());
     }
@@ -57,46 +58,42 @@ export const ChildCaregiverInformation: React.FC<
         weight={'bold'}
       />
 
-      <div className={'pt-4'}>
-        <Typography
-          type={'h3'}
-          text={`Relationship to ${childName || ''}?`}
-          color={'textMid'}
-        />
-        <Typography
-          type={'body'}
-          text={`${childCareGiverInformation?.relation}`}
-          color={'textMid'}
-        />
-      </div>
+      <Typography
+        className="mt-8"
+        type={'h4'}
+        text={`Relationship to ${childName || ''}?`}
+        color={'textDark'}
+      />
+      <Typography
+        type={'body'}
+        text={`${childCareGiverInformation?.relation}`}
+        color={'textDark'}
+      />
+      <Divider dividerType="dashed" className="py-4" />
       <FormInput<ChildCaregiverInformationModel>
         label={'Cellphone number'}
         className={'mt-2'}
+        readonly={readonly}
         register={careGiverInformationFormRegister}
         nameProp={'phoneNumber'}
         placeholder={'E.g. 082 345 6789'}
-        disabled={canEdit}
         error={errors['phoneNumber']}
       />
-      <div className={'py-2'}>
-        <Divider></Divider>
-      </div>
-      <Button
-        onClick={handleFormSubmit}
-        className="w-full"
-        size="small"
-        color="primary"
-        type="filled"
-        disabled={!isValid}
-      >
-        {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-        <Typography
-          type="h6"
-          className="ml-2"
-          text={submitButtonText}
-          color="white"
+      <Divider dividerType="dashed" className="py-4" />
+      {canEdit && (
+        <Button
+          isLoading={isLoading}
+          onClick={handleFormSubmit}
+          className="mt-auto w-full"
+          size="small"
+          color="quatenary"
+          type="filled"
+          disabled={(!readonly && !isValid) || isLoading}
+          icon={readonly ? 'PencilIcon' : 'SaveIcon'}
+          text={readonly ? 'Edit' : 'Save'}
+          textColor="white"
         />
-      </Button>
+      )}
     </div>
   );
 };

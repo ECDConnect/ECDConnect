@@ -29,7 +29,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { getWeek, startOfISOWeekYear } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remove-child-prompt';
@@ -74,7 +74,7 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import ChildWrapper from './components/child-wrapper/ChildWrapper';
 import { useAppContext } from '@/walkthrougContext';
-import walktroughImage from '../../../assets/walktroughImage.png';
+import walkthroughImage from '../../../assets/walktroughImage.png';
 import {
   getStorageItem,
   setStorageItem,
@@ -117,13 +117,8 @@ export const ChildProfile: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const progressTrainingDone = practitioner?.attendedChildProgress || false;
   const isPrincipal = practitioner?.isPrincipal;
-  const childrenForPrincipal = useSelector(childrenSelectors.getChildren);
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-
-  const isPrincipalChild = childrenForPrincipal?.find(
-    (item) => item?.userId === child?.userId
-  );
 
   const practitioners = useSelector(
     practitionerSelectors.getPractitioners
@@ -131,7 +126,6 @@ export const ChildProfile: React.FC = () => {
     return x.user?.id !== practitioner?.user?.id;
   });
 
-  // Need to update this, it can be fetched from the list of learners on each class
   const classGroupId = useSelector(
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
@@ -139,7 +133,7 @@ export const ChildProfile: React.FC = () => {
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
-  const playGroup = useSelector(
+  const classroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId || '')
   );
 
@@ -165,6 +159,7 @@ export const ChildProfile: React.FC = () => {
       x.documentTypeId === clinicCardTypeId
   );
 
+  // TODO: this selector isn't working (show photo of child & allow user to add photo of child IF caregiver has consented)
   const childPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
       child?.userId,
@@ -200,34 +195,9 @@ export const ChildProfile: React.FC = () => {
   const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildExternalLink
   );
-  const [attendancePercentage, setAttendancePercentage] = useState<number>(0);
   const [notifications, setNotifications] = useState<ListItemProps[]>([]);
-  const [profileOptions, setProfileOptions] = useState<ListItemProps[]>([
-    {
-      key: 'personal-information',
-      title: 'Personal Information',
-      subTitle: 'Child & caregiver information',
-      buttonType: 'filled',
-      buttonIcon: 'EyeIcon',
-      buttonText: 'View',
-      buttonTextColor: 'secondary',
-      buttonColor: 'secondaryAccent2',
-      showButton: true,
-      showDivider: true,
-      dividerType: 'dashed',
-      withPaddingY: true,
-      onButtonClick: () => {
-        history.push(ROUTES.CHILD.INFORMATION.EDIT, {
-          childId,
-          practitionerIsOnLeave,
-        });
-      },
-    },
-  ]);
   const [attendanceReport, setAttendanceReport] =
     useState<ChildAttendanceReportModel>();
-  const [belongsToNoPlaygroup, setBelongsToNoPlaygroup] =
-    useState<boolean>(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -256,12 +226,12 @@ export const ChildProfile: React.FC = () => {
 
   useEffect(() => {
     if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
-      goToChildProfileWalkhthrough();
+      goToChildProfileWalkthrough();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showOnlineOnly = () => {
+  const showOnlineOnly = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit) => {
@@ -273,16 +243,16 @@ export const ChildProfile: React.FC = () => {
         );
       },
     });
-  };
+  }, [dialog]);
 
-  const goToChildProfileWalkhthrough = () => {
+  const goToChildProfileWalkthrough = () => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={walktroughImage} alt="profile" className="mb-2" />
+              <img src={walkthroughImage} alt="profile" className="mb-2" />
             </div>
           }
           importantText={`Welcome to the child profile on Funda App!`}
@@ -319,7 +289,7 @@ export const ChildProfile: React.FC = () => {
     });
   };
 
-  const progressTrackerNotAvailablePrompt = () => {
+  const progressTrackerNotAvailablePrompt = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
@@ -347,108 +317,7 @@ export const ChildProfile: React.FC = () => {
         />
       ),
     });
-  };
-
-  useEffect(() => {
-    if (playGroup?.name === NoPlaygroupClassroomType.name) {
-      setBelongsToNoPlaygroup(true);
-    }
-
-    const profileOptionsCopy = [...profileOptions];
-
-    profileOptionsCopy.unshift({
-      key: 'progress',
-      title: 'Progress',
-      subTitle: progressTrainingDone
-        ? 'See observations & reports'
-        : 'Not available before training',
-      buttonType: 'filled',
-      buttonIcon: 'EyeIcon',
-      buttonText: progressTrainingDone ? 'View' : 'Info',
-      buttonTextColor: 'secondary',
-      buttonColor: 'secondaryAccent2',
-      showButton: true,
-      showDivider: true,
-      dividerType: 'dashed',
-      withPaddingY: true,
-      onButtonClick: () => {
-        if (progressTrainingDone) {
-          viewChildProgressObservationReports();
-        } else {
-          progressTrackerNotAvailablePrompt();
-        }
-      },
-    });
-
-    profileOptionsCopy.unshift({
-      key: 'attendance-record',
-      title: 'Attendance Record',
-      buttonType: 'filled',
-      buttonIcon: 'EyeIcon',
-      buttonText: 'View',
-      buttonTextColor: 'secondary',
-      buttonColor: 'secondaryAccent2',
-      showButton: true,
-      showSubTitleShape: true,
-      withPaddingY: true,
-      showDivider: true,
-      dividerType: 'dashed',
-      onButtonClick: () => {
-        if (isOnline) {
-          history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
-            childId: child?.id,
-            classroomGroupId: playGroup?.id,
-          });
-        } else {
-          showOnlineOnly();
-        }
-      },
-    });
-
-    profileOptionsCopy.push({
-      key: 'class',
-      title: 'Class',
-      subTitle: `${playGroup?.name}`,
-      buttonType: 'filled',
-      buttonIcon: 'PencilIcon',
-      buttonText: 'Edit',
-      buttonTextColor: 'secondary',
-      buttonColor: 'secondaryAccent2',
-      showButton: practitionerIsOnLeave ? false : true,
-      showDivider: true,
-      dividerType: 'dashed',
-      withPaddingY: true,
-      onButtonClick: () => {
-        history.push(ROUTES.CHILD.INFORMATION.EDIT, {
-          childId,
-          isFromEditClass: true,
-          playgroupEdit: true,
-        });
-      },
-    });
-
-    const noteOption = getNoteProfileOption();
-    profileOptionsCopy.push(noteOption);
-
-    setProfileOptions(profileOptionsCopy);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const option = getNoteProfileOption();
-
-    const indexOfNoteOption = profileOptions.findIndex(
-      (option) => option.key === 'notes'
-    );
-
-    if (indexOfNoteOption > -1) {
-      const profileOptionsCopy = [...profileOptions];
-      profileOptionsCopy[indexOfNoteOption] = option;
-
-      setProfileOptions(profileOptionsCopy);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [createChildNoteVisible]);
+  }, [dialog]);
 
   useEffect(() => {
     if (!attendanceData || !child) return;
@@ -461,12 +330,12 @@ export const ChildProfile: React.FC = () => {
 
     setChildAge(ageOfChild);
 
-    if (playGroup) {
+    if (classroomGroup) {
       if (isOnline) {
         new AttendanceService(authUser?.auth_token ?? '')
           .getChildAttendanceRecords(
             child.userId ?? '',
-            playGroup?.id ?? '',
+            classroomGroup?.id ?? '',
             startOfISOWeekYear(new Date()),
             currentDate
           )
@@ -480,7 +349,7 @@ export const ChildProfile: React.FC = () => {
       const attendanceNotification = getAttendanceNotification(
         child.userId || '',
         attendanceData,
-        playGroup.id || ''
+        classroomGroup.id || ''
       );
 
       if (attendanceNotification) {
@@ -490,35 +359,9 @@ export const ChildProfile: React.FC = () => {
       setNotifications([...applicableNotifications]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceData, child, playGroup]);
+  }, [attendanceData, child, classroomGroup]);
 
-  useEffect(() => {
-    if (!attendanceReport) return;
-    setAttendancePercentage(attendanceReport.attendancePercentage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceReport]);
-
-  useEffect(() => {
-    if (!attendancePercentage) return;
-
-    const optionIndex = profileOptions.findIndex(
-      (x) => x.key === 'attendance-record'
-    );
-
-    if (optionIndex < 0) return;
-
-    const option = profileOptions[optionIndex];
-
-    option.subTitleColor = getColor(attendancePercentage);
-    option.subTitleShape = getShape(attendancePercentage);
-    option.subTitle = `${attendancePercentage.toFixed()}% present this year`;
-
-    profileOptions[optionIndex] = option;
-    setProfileOptions([...profileOptions]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendancePercentage]);
-
-  const getNoteProfileOption = () => {
+  const getNoteProfileOption = useCallback(() => {
     let baseNotesOptions: ListItemProps = {
       key: 'notes',
       title: 'Your notes',
@@ -557,7 +400,7 @@ export const ChildProfile: React.FC = () => {
     }
 
     return baseNotesOptions;
-  };
+  }, [childId, history, notes]);
 
   const getAttendanceNotification = (
     childUserId: string,
@@ -593,11 +436,11 @@ export const ChildProfile: React.FC = () => {
     setCreateChildNoteVisible(false);
   };
 
-  const viewChildProgressObservationReports = () => {
+  const viewChildProgressObservationReports = useCallback(() => {
     history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
       childId: child?.id,
     });
-  };
+  }, [child?.id, history]);
 
   const onNoteCreated = () => {
     setCreateChildNoteVisible(false);
@@ -698,6 +541,126 @@ export const ChildProfile: React.FC = () => {
     return false;
   };
 
+  const options = useMemo((): ListItemProps[] => {
+    const attendancePercentage = attendanceReport?.attendancePercentage;
+
+    return [
+      {
+        key: 'attendance-record',
+        title: 'Attendance Record',
+        subTitle: !!attendancePercentage
+          ? `${attendancePercentage.toFixed()}% present this year`
+          : '',
+        subTitleColor: !!attendancePercentage
+          ? getColor(attendancePercentage)
+          : undefined,
+        subTitleShape: !!attendancePercentage
+          ? getShape(attendancePercentage)
+          : undefined,
+        buttonType: 'filled',
+        buttonIcon: 'EyeIcon',
+        buttonText: 'View',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
+        showButton: true,
+        showSubTitleShape: true,
+        withPaddingY: true,
+        showDivider: true,
+        dividerType: 'dashed',
+        onButtonClick: () => {
+          if (isOnline) {
+            history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
+              childId: child?.id,
+              classroomGroupId: classroomGroup?.id,
+            });
+          } else {
+            showOnlineOnly();
+          }
+        },
+      },
+      {
+        key: 'progress',
+        title: 'Progress reports',
+        subTitle: progressTrainingDone
+          ? 'See observations & reports'
+          : 'Not available before training',
+        buttonType: 'filled',
+        buttonIcon: 'EyeIcon',
+        buttonText: progressTrainingDone ? 'View' : 'Info',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
+        showButton: true,
+        showDivider: true,
+        dividerType: 'dashed',
+        withPaddingY: true,
+        onButtonClick: () => {
+          if (progressTrainingDone) {
+            viewChildProgressObservationReports();
+          } else {
+            progressTrackerNotAvailablePrompt();
+          }
+        },
+      },
+      {
+        key: 'personal-information',
+        title: 'Personal Information',
+        subTitle: 'Child & caregiver information',
+        buttonType: 'filled',
+        buttonIcon: 'EyeIcon',
+        buttonText: 'View',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
+        showButton: true,
+        showDivider: true,
+        dividerType: 'dashed',
+        withPaddingY: true,
+        onButtonClick: () => {
+          history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+            childId,
+            practitionerIsOnLeave,
+          });
+        },
+      },
+      {
+        key: 'class',
+        title: 'Class',
+        subTitle: `${classroomGroup?.name}`,
+        buttonType: 'filled',
+        buttonIcon: 'PencilIcon',
+        buttonText: 'Edit',
+        buttonTextColor: 'white',
+        buttonColor: 'quatenary',
+        showButton: !practitionerIsOnLeave && isPrincipal,
+        showDivider: true,
+        dividerType: 'dashed',
+        withPaddingY: true,
+        onButtonClick: () => {
+          history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+            childId,
+            isFromEditClass: true,
+            playgroupEdit: true,
+          });
+        },
+      },
+      getNoteProfileOption(),
+    ];
+  }, [
+    attendanceReport,
+    child?.id,
+    childId,
+    classroomGroup?.id,
+    classroomGroup?.name,
+    getNoteProfileOption,
+    history,
+    isOnline,
+    isPrincipal,
+    practitionerIsOnLeave,
+    progressTrackerNotAvailablePrompt,
+    progressTrainingDone,
+    showOnlineOnly,
+    viewChildProgressObservationReports,
+  ]);
+
   if (
     child &&
     (child?.workflowStatusId === childPendingWorkflowStatusId ||
@@ -706,9 +669,6 @@ export const ChildProfile: React.FC = () => {
     return <ChildPending child={child} childUser={child?.user} />;
   }
 
-  // const displayWalkthrough = () => {
-  //   goToChildProfileWalkhthrough();
-  // };
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -731,13 +691,13 @@ export const ChildProfile: React.FC = () => {
           }
         }}
         displayOffline={!isOnline}
-        onHelp={() => goToChildProfileWalkhthrough()}
+        onHelp={() => goToChildProfileWalkthrough()}
         displayHelp={true}
       >
         <div className={styles.avatarWrapper}>
           <ProfileAvatar
-            hasConsent={childPhotoConsent ? true : false}
-            canChangeImage={childPhotoConsent ? true : false}
+            hasConsent={!!childPhotoConsent}
+            canChangeImage={!!childPhotoConsent}
             dataUrl={profilePicture?.file || child?.user?.profileImageUrl || ''}
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -746,15 +706,15 @@ export const ChildProfile: React.FC = () => {
         </div>
         <div className={styles.chipsWrapper}>
           <StatusChip
-            backgroundColour="infoDark"
-            borderColour="infoDark"
-            text={playGroup?.name || NoPlaygroupClassroomType.title}
+            backgroundColour="primary"
+            borderColour="primary"
+            text={classroomGroup?.name || NoPlaygroupClassroomType.title}
             textColour={'white'}
             className={'mr-2'}
           />
           <StatusChip
-            backgroundColour="textMid"
-            borderColour="textMid"
+            backgroundColour="secondary"
+            borderColour="secondary"
             text={`${childAge?.years || '0'} years ${
               childAge?.months || '0'
             } months`}
@@ -762,34 +722,6 @@ export const ChildProfile: React.FC = () => {
             className={'mr-2'}
           />
         </div>
-        {belongsToNoPlaygroup && (
-          <Alert
-            className="m-4"
-            title={`${
-              child?.user?.firstName || 'This child'
-            } does not have a class`}
-            list={[
-              `Add ${child?.user?.firstName || 'this child'} to a class now`,
-            ]}
-            type="error"
-            button={
-              <Button
-                color="textMid"
-                type="filled"
-                size="small"
-                onClick={() => {
-                  history.push(ROUTES.CHILD.INFORMATION.EDIT, {
-                    childId: child?.id,
-                    playgroupEdit: true,
-                  });
-                }}
-              >
-                {renderIcon('PlusIcon', 'w-5 h-5 text-white mr-1')}
-                <Typography color="white" text="Add to a class" type="small" />
-              </Button>
-            }
-          />
-        )}
         {showCertificateError() && (
           <Alert
             className="m-4"
@@ -816,26 +748,23 @@ export const ChildProfile: React.FC = () => {
           />
         )}
 
-        {((isPrincipal && isPrincipalChild) ||
-          (!isPrincipal && !isPrincipalChild)) &&
-          notifications &&
-          child && (
-            <div className={styles.notificationsStacklist}>
-              {notifications.map((notification) => (
-                <ListItem
-                  {...notification}
-                  key={`child-profile-notification-${notification.key}`}
-                />
-              ))}
-              {progressTrainingDone && (
-                <div id={`child_progress_observations`} aria-disabled={run}>
-                  <ChildProgressReportAlert child={child} />
-                </div>
-              )}
-            </div>
-          )}
+        {!!notifications?.length && child && (
+          <div className={styles.notificationsStackList}>
+            {notifications.map((notification) => (
+              <ListItem
+                {...notification}
+                key={`child-profile-notification-${notification.key}`}
+              />
+            ))}
+            {progressTrainingDone && (
+              <div id={`child_progress_observations`} aria-disabled={run}>
+                <ChildProgressReportAlert child={child} />
+              </div>
+            )}
+          </div>
+        )}
         <div className={styles.profileOptionsWrapper}>
-          {profileOptions.map((options, index) => (
+          {options.map((options, index) => (
             <div key={`option-${index}`} id={`child_walkthrough_step_${index}`}>
               <ListItem
                 {...options}
@@ -847,30 +776,25 @@ export const ChildProfile: React.FC = () => {
           <Divider dividerType="dashed" className="-mt-1.5" />
           <ChildWrapper />
           <Button
+            icon="ChatAlt2Icon"
+            text="Contact caregiver"
             className={styles.button.replace('mt-4', 'mt-3')}
-            color={'primary'}
+            color="quatenary"
+            textColor="white"
             type="filled"
             onClick={contactCaregivers}
-          >
-            {renderIcon('ChatAlt2Icon', styles.buttonIcon)}
-            <Typography type="button" text="Contact caregiver" color="white" />
-          </Button>
+          />
           {!practitionerIsOnLeave && (
-            <div id="child_remove">
-              <Button
-                className={styles.button}
-                color={'errorMain'}
-                type="outlined"
-              >
-                {renderIcon('TrashIcon', styles.buttonIcon)}
-                <Typography
-                  type="button"
-                  text={`Remove ${child?.user?.firstName}`}
-                  color="errorMain"
-                  onClick={() => setRemoveChildConfirmationVisible(true)}
-                />
-              </Button>
-            </div>
+            <Button
+              id="child_remove"
+              icon="TrashIcon"
+              className={styles.button}
+              color="quatenary"
+              textColor="quatenary"
+              type="outlined"
+              onClick={() => setRemoveChildConfirmationVisible(true)}
+              text={`Remove ${child?.user?.firstName}`}
+            />
           )}
         </div>
       </BannerWrapper>

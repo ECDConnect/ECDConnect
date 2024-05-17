@@ -13,6 +13,7 @@ import { CaregiverContactHistory } from './caregiver.types';
 export const CaregiverActions = {
   UPDATE_CONTACT_HISTORY: 'updateContactCaregiverHistory',
   ADD_CONTACT_HISTORY: 'addContactCaregiverHistory',
+  UPDATE_CAREGIVER: 'updateCaregiver',
 };
 
 // Does this do anything?
@@ -106,7 +107,7 @@ export const updateCaregiver = createAsyncThunk<
   UpdateCaregiverRequest,
   ThunkApiType<RootState>
 >(
-  'updateCaregiver',
+  CaregiverActions.UPDATE_CAREGIVER,
   async ({ caregiver, id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
