@@ -18,18 +18,11 @@ import {
   ChildBasicInfoModel,
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
-import { practitionerSelectors } from '@/store/practitioner';
 import { format } from 'date-fns';
 import { ChildService } from '@/services/ChildService';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ChildMatchingDto } from './child-basic-info.types';
-import { useLocation } from 'react-router';
-import { PractitionerChildRegisterState } from '../types';
-import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { filterUniqueClassrooms } from '@/utils/classroom/classroom';
-import { UNSURE_CLASS } from '@/constants/classroom';
-import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -38,52 +31,6 @@ export const ChildBasicInfo: React.FC<
   const { isOnline } = useOnlineStatus();
   const allClassroomGroups = useSelector(
     classroomsSelectors?.getClassroomGroups
-  );
-  const location = useLocation<PractitionerChildRegisterState>();
-
-  const practitionerIdFromCoachFlow = location?.state?.practitionerId;
-
-  const practitionerFromCoachFlow = useSelector(
-    getPractitionerByUserId(practitionerIdFromCoachFlow || '')
-  );
-  const allPractitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitionerFromPractitionerFlow = useSelector(
-    practitionerSelectors.getPractitioner
-  );
-
-  const practitioner =
-    practitionerFromPractitionerFlow || practitionerFromCoachFlow;
-  const isTrainee = practitioner?.isTrainee;
-  const isPrincipal = practitioner?.isPrincipal;
-
-  const userId = practitioner?.userId;
-
-  const practitionersForPrincipal = allPractitioners?.filter(
-    (item) => item.principalHierarchy === userId
-  );
-  const classroomsByPractitionersForPrincipal = allClassroomGroups.filter(
-    (item) =>
-      practitionersForPrincipal?.some(
-        (practitioner) => practitioner.userId === item.userId
-      )
-  );
-  // Practitioners who are not principals OR FAAs should not be able to see the “Unsure” class or add children to the unsure class
-  const classroomForPractitioner = allClassroomGroups
-    .filter((item) => item.userId === userId)
-    .filter(
-      (item) =>
-        (isTrainee && item) || (!isTrainee && item.name !== UNSURE_CLASS)
-    );
-
-  let classroomsForPrincipal = isPrincipal
-    ? [...classroomForPractitioner, ...classroomsByPractitionersForPrincipal]
-    : allClassroomGroups;
-
-  // suppress also the unsure class for principal
-  classroomsForPrincipal = filterUniqueClassrooms(
-    classroomsForPrincipal.filter(
-      (item: ClassroomGroupDto) => item.name !== UNSURE_CLASS
-    )
   );
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
@@ -184,17 +131,10 @@ export const ChildBasicInfo: React.FC<
         label="Which class will the child attend?"
         placeholder="Select class"
         selectedValue={getSelectedClassroom()}
-        list={
-          !isPrincipal
-            ? classroomForPractitioner.map((x) => ({
-                label: x.name,
-                value: x.id || '',
-              }))
-            : classroomsForPrincipal.map((x) => ({
-                label: x.name,
-                value: x.id || '',
-              }))
-        }
+        list={allClassroomGroups.map((x) => ({
+          label: x.name,
+          value: x.id || '',
+        }))}
         onChange={(classroomId: string) => {
           setValue('playgroupId', classroomId, { shouldValidate: true });
         }}
