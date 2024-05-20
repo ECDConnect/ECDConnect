@@ -471,9 +471,9 @@ namespace ECDLink.Security.Api
         [Route("register-practitioner")]
         [AllowAnonymous]
         [HttpPost]
-        public string RegisterPractitioner([FromBody] string username)
+        public string RegisterPractitioner([FromBody] RegisterPractitionerModel input)
         {
-            var practitioner = _personnelService.RegisterPractitioner(username);
+            var practitioner = _personnelService.RegisterPractitioner(input.Username);
 
             if (practitioner == null)
             {
