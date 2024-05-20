@@ -150,17 +150,17 @@ export const SignUp: React.FC = () => {
 
     setIsLoading(true);
 
-    const informationVerified = await new AuthService().VerifyInvitationRequest(
-      {
-        phoneNumber: formValue.cellphone,
-        token: authToken || '',
-        username: formValue.username || '',
-      }
-    );
+    // const informationVerified = await new AuthService().VerifyInvitationRequest(
+    //   {
+    //     phoneNumber: formValue.cellphone,
+    //     token: authToken || '',
+    //     username: formValue.username || '',
+    //   }
+    // );
 
-    console.log({ informationVerified });
+    // console.log({ informationVerified });
 
-    setIsLoading(false);
+    // setIsLoading(false);
 
     // if (informationVerified.errorCode) {
     //   setRequestError('You entered incorrect details');
@@ -188,26 +188,26 @@ export const SignUp: React.FC = () => {
 
       if (authToken) {
         setIsLoading(true);
-        const body: RegisterRequestModel = {
+        const body: any = {
           username: formValue.username,
-          password: formValue.password,
-          token: authToken,
-          acceptedTerms: formValue?.termsAndConditionsAccepted,
+          // password: formValue.password,
+          // token: authToken,
+          // acceptedTerms: formValue?.termsAndConditionsAccepted,
         };
 
         console.log({ body });
 
-        // const isAuthenticated = await new AuthService()
-        //   .RegisterNewUser(Config.authApi, body)
-        //   .catch(() => {
-        //     setNotification({
-        //       title: ` Failed to Sign Up!`,
-        //       variant: NOTIFICATION.ERROR,
-        //     });
-        //     setIsLoading(false);
-        //   });
+        const isAuthenticated = await new AuthService()
+          .RegisterPractitioner(Config.authApi, body)
+          .catch(() => {
+            setNotification({
+              title: ` Failed to Sign Up!`,
+              variant: NOTIFICATION.ERROR,
+            });
+            setIsLoading(false);
+          });
 
-        if (true) {
+        if (isAuthenticated) {
           setIsLoading(false);
           history.push(ROUTES.CREATE_USERNAME);
           setNotification({

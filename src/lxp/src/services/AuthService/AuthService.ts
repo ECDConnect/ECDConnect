@@ -156,7 +156,7 @@ class AuthService {
     return response.data;
   }
 
-  async RegisterNewUser(baseEndPoint: string, body: RegisterRequestModel) {
+  async RegisterPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
     return await api(baseEndPoint).post(
       APIs.registerPractitioner,
       JSON.stringify(body),
