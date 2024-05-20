@@ -62,7 +62,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
           variant: NOTIFICATION.ERROR,
         });
       });
-    console.log({ message });
+
     if (message) {
       setNotification({
         title: `Message sent!`,

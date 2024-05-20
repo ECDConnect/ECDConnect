@@ -50,7 +50,7 @@ class AuthService {
     const response = await api(BASE_URL)
       .post(APIs.verifyInvitation, JSON.stringify(verifyInvitationModel))
       .catch(handlerError);
-    console.log({ response });
+
     const dataResponse = getDataResponse<boolean>(response);
 
     if (dataResponse.dataError) {
@@ -158,7 +158,7 @@ class AuthService {
 
   async RegisterNewUser(baseEndPoint: string, body: RegisterRequestModel) {
     return await api(baseEndPoint).post(
-      APIs.acceptInvitation,
+      APIs.registerPractitioner,
       JSON.stringify(body),
       {
         headers: headers,

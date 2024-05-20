@@ -7,6 +7,7 @@ const ROUTES = {
   PASSWORD_RESET: '/password-reset',
   NEW_PASSWORD: '/new-password',
   SIGN_UP: '/sign-up',
+  CREATE_USERNAME: '/create-username',
   VERIFY_PHONE: '/verify-phone',
   CHILD_REGISTRATION_LANDING: '/child-registration-landing',
   PROGRAMMES: addPrefix('/programmes', {

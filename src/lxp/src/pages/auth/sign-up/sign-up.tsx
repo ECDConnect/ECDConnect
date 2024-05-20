@@ -85,6 +85,7 @@ export const SignUp: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
+  const tenantName = tenant?.tenant?.applicationName;
 
   if (userDetails) {
     // coach
@@ -161,13 +162,29 @@ export const SignUp: React.FC = () => {
 
     setIsLoading(false);
 
-    if (informationVerified.errorCode) {
-      setRequestError('You entered incorrect details');
-      return;
-    }
+    // if (informationVerified.errorCode) {
+    //   setRequestError('You entered incorrect details');
+    //   return;
+    // }
 
-    if (informationVerified) {
+    if (true) {
       // proceedToPhoneValidation(formValue, authToken || '');
+
+      // if (informationVerified.verified === false) {
+      //   console.log('entrouuu');
+      //   if (informationVerified.errorCode === 1) {
+      //     // setDiplayErrorMessage(['You entered incorrect details']);
+      //     setIsLoading(false);
+      //     // setTimeout(() => {
+      //     //   setDiplayErrorMessage([]);
+      //     // }, 6000);
+      //   }
+      //   if (informationVerified.errorCode === 2) {
+      //     setPresentCellNumberMismatch(true);
+      //     setIsLoading(false);
+      //   }
+      //   return;
+      // }
 
       if (authToken) {
         setIsLoading(true);
@@ -180,21 +197,19 @@ export const SignUp: React.FC = () => {
 
         console.log({ body });
 
-        const isAuthenticated = await new AuthService()
-          .RegisterNewUser(Config.authApi, body)
-          .catch(() => {
-            setNotification({
-              title: ` Failed to Sign Up!`,
-              variant: NOTIFICATION.ERROR,
-            });
-            setIsLoading(false);
-          });
+        // const isAuthenticated = await new AuthService()
+        //   .RegisterNewUser(Config.authApi, body)
+        //   .catch(() => {
+        //     setNotification({
+        //       title: ` Failed to Sign Up!`,
+        //       variant: NOTIFICATION.ERROR,
+        //     });
+        //     setIsLoading(false);
+        //   });
 
-        if (isAuthenticated) {
+        if (true) {
           setIsLoading(false);
-          // await resetAppStore();
-          // await resetAuth();
-          history.push(ROUTES.LOGIN);
+          history.push(ROUTES.CREATE_USERNAME);
           setNotification({
             title: ` Successfully registered!`,
             variant: NOTIFICATION.SUCCESS,
@@ -464,19 +479,19 @@ export const SignUp: React.FC = () => {
       <Dialog
         visible={presentCellNumberMismatch}
         position={DialogPosition.Middle}
+        className="p-4"
       >
+        signUpFormGetValues().cellphone
         <ActionModal
           icon={'InformationCircleIcon'}
           iconColor={'alertMain'}
-          importantText={`SmartStart has a different cellphone number for you: ${
+          importantText={`${tenantName} has a different cellphone number for you`}
+          detailText={`Please check that this is the correct cellphone number: ${
             signUpFormGetValues().cellphone
-          }`}
-          detailText={
-            'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
-          }
+          }. If you have entered the correct number and are still getting this error, fill in the help form.`}
           actionButtons={[
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Edit cellphone number',
               textColour: 'white',
               leadingIcon: 'PencilIcon',
@@ -486,12 +501,13 @@ export const SignUp: React.FC = () => {
               type: 'filled',
             },
             {
-              colour: 'primary',
-              text: 'Call 0800 014 817',
-              textColour: 'primary',
+              colour: 'quatenary',
+              text: 'Get help',
+              textColour: 'quatenary',
               leadingIcon: 'PhoneIcon',
               onClick: () => {
                 setPresentCellNumberMismatch(false);
+                setOpenHelp(true);
               },
               type: 'outlined',
             },
