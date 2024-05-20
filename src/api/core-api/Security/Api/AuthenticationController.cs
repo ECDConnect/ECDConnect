@@ -21,6 +21,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -302,26 +303,42 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
         {
-            var userByUsername = await _securityManager.GetUserByNameAsync(verifyModel.Username);
-            if (userByUsername != null)
+            // if both are empty, return error
+            if (!string.IsNullOrEmpty(verifyModel.Username) && !string.IsNullOrEmpty(verifyModel.PhoneNumber))
             {
                 return BadRequest(new FailedVerificationModel
                 {
                     ErrorCode = 1,
-                    Error = "Invalid Username"
+                    Error = "Username and phone number is empty"
                 });
+            } 
+
+            if (!string.IsNullOrEmpty(verifyModel.Username))
+            {
+                var userByUsername = await _securityManager.GetUserByNameAsync(verifyModel.Username);
+                if (userByUsername != null)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Invalid Username"
+                    });
+                }
             }
 
-            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
-            var userByPhoneNumber =  _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
-                                && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-            if (userByPhoneNumber != null)
+            if (!string.IsNullOrEmpty(verifyModel.PhoneNumber))
             {
-                return BadRequest(new FailedVerificationModel
+                var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
+                var userByPhoneNumber = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
+                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+                if (userByPhoneNumber != null)
                 {
-                    ErrorCode = 2,
-                    Error = "Invalid Phone Number"
-                });
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 3,
+                        Error = "Invalid Phone Number"
+                    });
+                }
             }
 
             return Ok();
@@ -454,21 +471,35 @@ namespace ECDLink.Security.Api
         [Route("register-practitioner")]
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult RegisterPractitioner([FromBody] Guid userId)
+        public string RegisterPractitioner([FromBody] string username)
         {
-            var practitioner = _personnelService.RegisterPractitioner(userId);
+            var practitioner = _personnelService.RegisterPractitioner(username);
 
             if (practitioner == null)
+            {
+                return "Register of practitioner failed";
+            }
+
+           return practitioner.UserId.ToString();
+        }
+
+        [Route("update-username")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult UpdateUsername([FromBody] UpdateUserNameModel input)
+        {
+            var updatedResult = _personnelService.UpdateUsername(input.UserId, input.Username);
+
+            if (!updatedResult.Succeeded)
             {
                 return BadRequest(new FailedVerificationModel
                 {
                     ErrorCode = 1,
-                    Error = "Register of practitioner failed"
+                    Error = "Could not update user"
                 });
             }
-
-           return Ok();
+            return Ok();
         }
 
-     }
+    }
 }
