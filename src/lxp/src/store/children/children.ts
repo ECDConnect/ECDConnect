@@ -1,7 +1,7 @@
 import { ChildDto, UserDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getChildren, updateChild } from './children.actions';
+import { getChildren, updateChild, upsertChildren } from './children.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { CaregiverContactHistory, ChildrenState } from './children.types';
 
@@ -44,15 +44,16 @@ const childrenSlice = createSlice({
 
     //   if (!state.childUser) state.childUser = [];
     //   state.childUser?.push(payloadUpdated);
+    // // },
+    // // TODO - just remove this
+    // updateChildUser: (state, action: PayloadAction<UserDto>) => {
+    //   //const isOnline = navigator.onLine;
+    //   const payloadUpdated = { ...action.payload, synced: false };
+    //   for (let i = 0; i < state.childData.children.length; i++) {
+    //     if (state.childData.children[i].userId === action.payload.id)
+    //       state.childData.children[i].user = payloadUpdated;
+    //   }
     // },
-    updateChildUser: (state, action: PayloadAction<UserDto>) => {
-      //const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, synced: false };
-      for (let i = 0; i < state.childData.children.length; i++) {
-        if (state.childData.children[i].userId === action.payload.id)
-          state.childData.children[i].user = payloadUpdated;
-      }
-    },
     // TODO - refactor so it doesn't require the full DTO, otherwise might as well just use udpate child
     deactivateChild: (state, action: PayloadAction<ChildDto>) => {
       //const isOnline = navigator.onLine;
@@ -104,6 +105,16 @@ const childrenSlice = createSlice({
       state.childData.children[childIndex] = {
         ...action.payload,
         synced: true,
+      };
+    });
+    builder.addCase(upsertChildren.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+      state.childData = {
+        ...state.childData,
+        children: state.childData.children.map((child) => ({
+          ...child,
+          synced: true,
+        })),
       };
     });
     // Refactor when we work on coach stuff

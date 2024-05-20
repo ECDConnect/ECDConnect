@@ -469,15 +469,14 @@ export const ChildProfile: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    const copy = Object.assign({}, child?.user);
+    const copy = Object.assign({}, child);
     if (copy) {
-      // TODO - this should just call update child?
-      copy.profileImageUrl = imageBaseString;
-      appDispatch(childrenActions.updateChildUser(copy));
+      copy.user!.profileImageUrl = imageBaseString;
+      appDispatch(childrenActions.updateChild(copy));
       await appDispatch(
-        childrenThunkActions.updateChildUser({
+        childrenThunkActions.updateChild({
           id: copy.id as string,
-          childUser: copy,
+          child: copy,
         })
       );
     }

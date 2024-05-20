@@ -13,6 +13,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using EcdLink.Api.CoreApi.Services.Interfaces;
+using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -20,6 +22,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class ChildMutationExtention
     {
         private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
+        public bool UpdateChildAndCaregiver(
+            [Service] IChildService childService,
+            UpdateChildAndCaregiverInput input)
+        {
+            childService.UpdateChild(input);
+            return true;
+        }
+
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public bool UpdateCareGiverGrants(

@@ -28,7 +28,11 @@ import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remov
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { Age } from '@models/common/Age';
-import { childrenActions, childrenSelectors } from '@store/children';
+import {
+  childrenActions,
+  childrenSelectors,
+  childrenThunkActions,
+} from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { documentActions, documentSelectors } from '@store/document';
 import {
@@ -253,11 +257,16 @@ export const CoachChildProfile: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    const copy = Object.assign({}, child?.user);
-    if (copy) {
-      // TODO - this should probably just update the child directly?
-      copy.profileImageUrl = imageBaseString;
-      appDispatch(childrenActions.updateChildUser(copy));
+    const childCopy = Object.assign({}, child);
+    if (childCopy) {
+      childCopy.user!.profileImageUrl = imageBaseString;
+      appDispatch(childrenActions.updateChild(childCopy));
+      await appDispatch(
+        childrenThunkActions.updateChild({
+          child: childCopy,
+          id: String(childCopy.id),
+        })
+      ).unwrap();
     }
 
     if (profilePicture) {

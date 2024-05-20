@@ -276,7 +276,7 @@ export const EditChildInformation: React.FC = () => {
               canEdit={!isCoach}
               onSubmit={(form) => {
                 setChildCaregiverInformation(form);
-                saveChildCareGiver(form);
+                saveChildCaregiver(form);
               }}
             />
           );
@@ -552,87 +552,59 @@ export const EditChildInformation: React.FC = () => {
     history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
-  const saveChildCareGiver = async (
+  const saveChildCaregiver = async (
     childCaregiverForm: ChildCaregiverInformationModel
   ) => {
-    if (caregiver) {
-      const careGiverInputModel: CaregiverDto = {
-        id: caregiver?.id ?? newGuid(),
-        isActive: true,
-        idNumber: caregiver?.idNumber ?? '',
-        phoneNumber: childCaregiverForm.phoneNumber,
-        firstName: caregiver?.firstName ?? '',
-        surname: caregiver?.surname ?? '',
-        insertedDate: new Date().toISOString(),
-        relationId: caregiver?.relationId,
-        siteAddress: caregiver?.siteAddress,
-        educationId: caregiver?.educationId,
-        emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
-        emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
-        emergencyContactPhoneNumber:
-          childEmergencyContactForm?.phoneNumber ?? '',
-        additionalFirstName: childEmergencyContactForm?.isAllowedCustody
-          ? childEmergencyContactForm.firstname
-          : childEmergencyContactForm?.custodianFirstname,
-        additionalSurname: childEmergencyContactForm?.isAllowedCustody
-          ? childEmergencyContactForm.surname
-          : childEmergencyContactForm?.custodianSurname,
-        additionalPhoneNumber: childEmergencyContactForm?.isAllowedCustody
-          ? childEmergencyContactForm.phoneNumber
-          : childEmergencyContactForm?.custodianPhoneNumber,
-        joinReferencePanel: caregiver?.joinReferencePanel ?? false,
-        contribution: caregiver?.contribution ?? false,
-        isAllowedCustody: childEmergencyContactForm?.isAllowedCustody ?? false,
+    if (!!child && !!child.caregiver) {
+      const updatedChild = {
+        ...child,
+        caregiver: {
+          ...child.caregiver,
+          phoneNumber: childCaregiverForm.phoneNumber,
+        },
       };
 
-      appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));
+      appDispatch(childrenActions.updateChild(updatedChild));
       await appDispatch(
-        caregiverThunkActions.updateCaregiver({
-          id: careGiverInputModel.id as string,
-          caregiver: careGiverInputModel,
+        childrenThunkActions.updateChild({
+          id: updatedChild.id as string,
+          child: updatedChild,
         })
       );
-      setViewInformationVisible(false);
     }
+    setViewInformationVisible(false);
   };
 
   const saveChildEmergencyContact = async (
-    formData: ChildEmergencyContactFormModel
+    emergencyContactForm: ChildEmergencyContactFormModel
   ) => {
-    if (caregiver) {
-      const careGiverInputModel: CaregiverDto = {
-        id: caregiver.id ?? newGuid(),
-        isActive: true,
-        idNumber: caregiver.idNumber ?? '',
-        phoneNumber: caregiver.phoneNumber,
-        firstName: caregiver.firstName ?? '',
-        surname: caregiver.surname ?? '',
-        insertedDate: new Date().toISOString(),
-        relationId: caregiver.relationId,
-        siteAddress: caregiver.siteAddress,
-        educationId: caregiver.educationId,
-        emergencyContactFirstName: formData.firstname,
-        emergencyContactSurname: formData.surname,
-        emergencyContactPhoneNumber: formData.phoneNumber,
-        additionalFirstName: formData.isAllowedCustody
-          ? formData.firstname
-          : formData.custodianFirstname,
-        additionalSurname: formData.isAllowedCustody
-          ? formData.surname
-          : formData.custodianSurname,
-        additionalPhoneNumber: formData.isAllowedCustody
-          ? formData.phoneNumber
-          : formData.custodianPhoneNumber,
-        joinReferencePanel: caregiver?.joinReferencePanel ?? false,
-        contribution: caregiver?.contribution ?? false,
-        isAllowedCustody: formData.isAllowedCustody,
+    //const updateChild = Object.assign({}, child);
+    if (!!child && !!child.caregiver) {
+      const updatedChild = {
+        ...child,
+        caregiver: {
+          ...child.caregiver,
+          emergencyContactFirstName: emergencyContactForm.firstname,
+          emergencyContactSurname: emergencyContactForm.surname,
+          emergencyContactPhoneNumber: emergencyContactForm?.phoneNumber,
+          additionalFirstName: emergencyContactForm.isAllowedCustody
+            ? emergencyContactForm.firstname
+            : emergencyContactForm?.custodianFirstname,
+          additionalSurname: emergencyContactForm.isAllowedCustody
+            ? emergencyContactForm.surname
+            : emergencyContactForm?.custodianSurname,
+          additionalPhoneNumber: emergencyContactForm.isAllowedCustody
+            ? emergencyContactForm.phoneNumber
+            : emergencyContactForm?.custodianPhoneNumber,
+          isAllowedCustody: emergencyContactForm.isAllowedCustody ?? false,
+        },
       };
 
-      appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));
+      appDispatch(childrenActions.updateChild(updatedChild));
       await appDispatch(
-        caregiverThunkActions.updateCaregiver({
-          id: careGiverInputModel.id as string,
-          caregiver: careGiverInputModel,
+        childrenThunkActions.updateChild({
+          id: updatedChild.id as string,
+          child: updatedChild,
         })
       );
     }
@@ -644,57 +616,56 @@ export const EditChildInformation: React.FC = () => {
     childHealthInformationForm: ChildHealthInformationFormModel
   ) => {
     if (child) {
-      const updateChild = Object.assign({}, child);
+      const updatedChild = {
+        ...child,
+        allergies: childHealthInformationForm.allergies,
+        disabilities: childHealthInformationForm.disabilities,
+        otherHealthConditions: childHealthInformationForm.healthConditions,
+      };
 
-      if (updateChild) {
-        updateChild.allergies = childHealthInformationForm?.allergies || '';
-        updateChild.disabilities =
-          childHealthInformationForm?.disabilities || '';
-        updateChild.otherHealthConditions =
-          childHealthInformationForm?.healthConditions || '';
-
-        appDispatch(childrenActions.updateChild(updateChild));
-        await appDispatch(
-          childrenThunkActions.updateChild({
-            child: updateChild,
-            id: String(updateChild.id),
-          })
-        ).unwrap();
-      }
-
-      setViewInformationVisible(false);
+      appDispatch(childrenActions.updateChild(updatedChild));
+      await appDispatch(
+        childrenThunkActions.updateChild({
+          child: updatedChild,
+          id: String(updatedChild.id),
+        })
+      ).unwrap();
     }
+
+    setViewInformationVisible(false);
   };
 
   const saveChildAddress = async (
-    childHealthInformationForm: CareGiverChildInformationFormModel
+    childAddressInformationForm: CareGiverChildInformationFormModel
   ) => {
-    if (caregiver) {
-      const updateCareGiver: CaregiverDto = JSON.parse(
-        JSON.stringify(caregiver)
-      );
-      if (updateCareGiver) {
-        const siteAddress: SiteAddressDto = {
-          id: updateCareGiver.siteAddress
-            ? updateCareGiver.siteAddress.id
-            : newGuid(),
-          addressLine1: childHealthInformationForm.streetAddress,
-          postalCode: childHealthInformationForm.postalCode,
-        };
-        updateCareGiver.siteAddress = siteAddress;
-        updateCareGiver.siteAddressId = siteAddress.id;
+    if (!!child && !!child.caregiver) {
+      const siteAddressId = !!child.caregiver.siteAddressId
+        ? child.caregiver.siteAddressId
+        : newGuid();
 
-        appDispatch(caregiverActions.updateCaregiver(updateCareGiver));
-        await appDispatch(
-          caregiverThunkActions.updateCaregiver({
-            id: updateCareGiver.id as string,
-            caregiver: updateCareGiver,
-          })
-        );
-      }
+      const updatedChild = {
+        ...child,
+        caregiver: {
+          ...child.caregiver,
+          siteAddressId: siteAddressId,
+          siteAddress: {
+            ...child.caregiver.siteAddress,
+            addressLine1: childAddressInformationForm.streetAddress,
+            postalCode: childAddressInformationForm.postalCode,
+          },
+        },
+      };
 
-      setViewInformationVisible(false);
+      appDispatch(childrenActions.updateChild(updatedChild));
+      await appDispatch(
+        childrenThunkActions.updateChild({
+          child: updatedChild,
+          id: String(updatedChild.id),
+        })
+      ).unwrap();
     }
+
+    setViewInformationVisible(false);
   };
 
   const displayProfilePicturePrompt = () => {
