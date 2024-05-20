@@ -1195,6 +1195,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitioner.UpdatedBy = _applicationUserId.ToString();
             return _practiRepo.Update(practitioner);
         }
+
+        public IdentityResult UpdateUsername(Guid userId, string userName)
+        {
+            var user = _userManager.FindByIdAsync(userId).Result;
+            user.UserName = userName;
+            user.UpdatedDate = DateTime.Now;
+
+            return _userManager.UpdateAsync(user).Result;
+        }
     }
 }
 
