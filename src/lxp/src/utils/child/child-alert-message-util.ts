@@ -1,118 +1,66 @@
-import { NoPlaygroupClassroomType } from './../../enums/ProgrammeType';
-import {
-  AttendanceDto,
-  ChildDto,
-  ChildProgressReportSummaryModel,
-  ClassProgrammeDto,
-  Document,
-  LearnerDto,
-  UserDto,
-} from '@ecdlink/core';
-import { isPractitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
-import {
-  getReportingPeriod,
-  isInFinalMonthOfReportingPeriod,
-  isMatchingReportingPeriods,
-} from './child-profile-utils';
-import { differenceInDays } from 'date-fns';
+import { AttendanceDto, ChildDto } from '@ecdlink/core';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { AlertSeverityType } from '@ecdlink/ui';
 
+interface ChildAlertModel {
+  status: AlertSeverityType;
+  message: string;
+  severity: number;
+}
+
+interface ChildAlertModelProps {
+  child?: ChildDto;
+  attendance?: AttendanceDto[];
+  classroomGroups?: ClassroomGroupDto[];
+}
 // TODO: update function (W5 - use case 3)
-export const getChildAlertModel = (
-  learner?: LearnerDto,
-  pendingStatusId?: string,
-  childUser?: UserDto,
-  child?: ChildDto,
-  userDocuments?: Document[],
-  attendance?: AttendanceDto[],
-  classroomGroups?: ClassroomGroupDto[],
-  classProgrammes?: ClassProgrammeDto[],
-  childReports?: ChildProgressReportSummaryModel[],
-  attendedChildProgressTraining?: boolean,
-  userRole: 'practitioner' | 'coach' = 'practitioner'
-) => {
-  const today = new Date();
-  let alert = 'success';
-  let alertMessage = 'All information captured';
-  if (classroomGroups && learner) {
-    const classroomGroup = classroomGroups.find(
-      (x) => x.id === learner?.classroomGroupId
-    );
-
-    if (classroomGroup?.name === NoPlaygroupClassroomType.name) {
-      alert = 'error';
-      alertMessage = 'No class assigned';
-
-      return { status: alert, message: alertMessage, severity: 1 };
-    }
-  }
-
-  if (
-    !childUser?.firstName ||
-    !childUser?.surname ||
-    !child?.caregiverId ||
-    !learner
-  ) {
-    alert = 'error';
-    alertMessage = 'Child information missing';
-
-    return { status: alert, message: alertMessage, severity: 1 };
-  }
-
-  const report = childReports?.find((x) =>
-    isMatchingReportingPeriods(new Date(x.reportDate), today)
+export const getChildAlertModel = ({
+  attendance,
+  child,
+  classroomGroups,
+}: ChildAlertModelProps): ChildAlertModel => {
+  const isClassAssigned = classroomGroups?.some((classroomGroup) =>
+    classroomGroup?.learners?.some(
+      (learner) => learner.childUserId === child?.userId
+    )
   );
-  const reportingPeriod = getReportingPeriod(today, false);
+  // const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(
+  //   WorkflowStatusEnum.ChildPending
+  // );
+  // const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
+  //   WorkflowStatusEnum.ChildExternalLink
+  // );
 
-  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(
-    reportingPeriod.monthName,
-    today
-  );
-
-  const daysSinceInsertedDate = differenceInDays(
-    new Date(),
-    new Date(child?.insertedDate!)
-  );
-
-  if (
-    attendedChildProgressTraining &&
-    !report &&
-    isCurrentlyInReportingOverduePeriod &&
-    daysSinceInsertedDate > 30
-  ) {
-    alert = 'error';
-    alertMessage = 'Progress report overdue';
-
-    return { status: alert, message: alertMessage, severity: 1 };
+  if (!isClassAssigned) {
+    return { status: 'error', message: 'No class assigned', severity: 1 };
   }
 
-  const userBirthDocument = userDocuments?.find(
-    (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
-  );
+  return { status: 'none', message: '', severity: 0 };
 
-  if (!userBirthDocument && daysSinceInsertedDate >= 14) {
-    alert = 'error';
-    alertMessage = 'Child document missing';
+  // if ((child?.workflowStatusId === childPendingWorkflowStatusId ||
+  //   child?.workflowStatusId === childExternalWorkflowStatusId)) {
+  //   alert = 'warning';
+  //   alertMessage = 'Pending';
 
-    return { status: alert, message: alertMessage, severity: 1 };
-  }
+  //   return { status: alert, message: alertMessage, severity: 2 };
+  // }
 
-  if (classroomGroups && attendance) {
-    const missedAttendance = isPractitionerAttendanceMissingForLearner(
-      classroomGroups,
-      classProgrammes || [],
-      learner,
-      attendance,
-      today
-    );
+  // if (classroomGroups && attendance) {
+  //   const missedAttendance = isPractitionerAttendanceMissingForLearner(
+  //     classroomGroups,
+  //     classProgrammes || [],
+  //     learner,
+  //     attendance,
+  //     today
+  //   );
 
-    if (missedAttendance) {
-      alert = 'warning';
-      alertMessage = 'Missing attendance information';
+  //   if (missedAttendance) {
+  //     alert = 'warning';
+  //     alertMessage = 'Missing attendance information';
 
-      return { status: alert, message: alertMessage, severity: 2 };
-    }
-  }
+  //     return { status: alert, message: alertMessage, severity: 2 };
+  //   }
+  // }
 
   // if (classroomGroups && attendance) {
   //   const classroomGroup = classroomGroups.find(
@@ -142,13 +90,4 @@ export const getChildAlertModel = (
   //     } days last ${userRole === 'coach' ? 'month' : 'week'}`;
   //   }
   // }
-
-  if (child?.workflowStatusId === pendingStatusId) {
-    alert = 'warning';
-    alertMessage = 'Pending';
-
-    return { status: alert, message: alertMessage, severity: 2 };
-  }
-
-  return { status: alert, message: alertMessage, severity: 3 };
 };
