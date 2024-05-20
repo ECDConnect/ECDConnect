@@ -1,7 +1,11 @@
+import { OfflineCache } from '@/models/sync/offline-cache';
+import { OfflineUpdate } from '@/models/sync/offline-update';
 import { ChildDto } from '@ecdlink/core';
 
 export type ChildrenState = {
-  children: ChildDto[] | undefined;
+  childData: {
+    children: (ChildDto & OfflineUpdate)[];
+  } & OfflineCache;
   contactHistory?: CaregiverContactHistory[];
 };
 

@@ -5,7 +5,5 @@ export interface ChildHealthInformationFormProps
   extends FormComponentProps<ChildHealthInformationFormModel> {
   childHealthInformation?: ChildHealthInformationFormModel;
   childName?: string;
-  submitButtonText?: string;
-  submitButtonIcon?: string;
   canEdit?: boolean;
 }

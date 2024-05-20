@@ -4,10 +4,8 @@ import {
   BannerWrapper,
   Button,
   classNames,
-  Divider,
   Dropdown,
   FormInput,
-  renderIcon,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -43,7 +41,7 @@ export const RemoveChild: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const childId = location.state.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
-
+  // TODO: update the reasonsForLeaving
   const reasonsForLeaving = useSelector(
     staticDataSelectors.getReasonsForLeaving
   );
@@ -81,6 +79,7 @@ export const RemoveChild: React.FC = () => {
     control: removeChildFormControl,
   });
 
+  // TODO: update the endpoints
   const handleFormSubmit = async () => {
     if (!child) return;
 
@@ -112,18 +111,17 @@ export const RemoveChild: React.FC = () => {
   return (
     <BannerWrapper
       size={'small'}
-      backgroundColour={'uiBg'}
-      className={'overflow-y-auto pb-8'}
+      className={'overflow-y-auto'}
       renderBorder={true}
       title={`Remove ${child?.user?.firstName} from programme`}
       color={'primary'}
       onBack={() => history.goBack()}
       displayOffline={!isOnline}
     >
-      <div className={'px-4 py-4'}>
+      <div className={'flex h-full flex-col p-4'}>
         <Alert
           type="error"
-          title={`${child?.user?.firstName} will be removed from the programme immediately`}
+          title={`${child?.user?.firstName} will be removed from the preschool immediately`}
           list={[
             `If you remove ${child?.user?.firstName} now, you will no longer be able to edit or view this profile.`,
           ]}
@@ -131,7 +129,8 @@ export const RemoveChild: React.FC = () => {
         />
         <Typography
           type={'h1'}
-          text={`Why is ${child?.user?.firstName} leaving SmartStart?`}
+          // TODO: update the todoName
+          text={`Why is ${child?.user?.firstName} leaving {todoName}?`}
           color={'primary'}
           className={'pt-1'}
         />
@@ -165,40 +164,29 @@ export const RemoveChild: React.FC = () => {
           hint={'Optional'}
           placeholder={'E.g. Did not like the activities'}
         />
-        <div className={'py-4'}>
-          <Divider></Divider>
-        </div>
-        <Button
-          onClick={() => handleFormSubmit()}
-          className="w-full"
-          size="small"
-          color="errorMain"
-          type="filled"
-          disabled={!isValid}
-        >
-          {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
-          <Typography
-            type="h6"
-            className="ml-2"
+        <div className="mt-auto">
+          <Button
+            onClick={() => handleFormSubmit()}
+            className="w-full"
+            size="small"
+            color="quatenary"
+            textColor="white"
+            type="filled"
+            disabled={!isValid}
+            icon="TrashIcon"
             text={`Remove ${child?.user?.firstName}`}
-            color="white"
           />
-        </Button>
-        <Button
-          onClick={() => history.goBack()}
-          className="mt-4 w-full"
-          size="small"
-          color="primary"
-          type="outlined"
-        >
-          {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
-          <Typography
-            type="h6"
-            className="ml-2"
+          <Button
+            onClick={() => history.goBack()}
+            className="mt-4 w-full"
+            size="small"
+            color="quatenary"
+            textColor="quatenary"
+            type="outlined"
+            icon="XIcon"
             text="Cancel"
-            color="primary"
           />
-        </Button>
+        </div>
       </div>
     </BannerWrapper>
   );

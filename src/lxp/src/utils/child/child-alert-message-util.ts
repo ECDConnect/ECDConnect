@@ -10,7 +10,6 @@ import {
 } from '@ecdlink/core';
 import { isPractitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
 import {
-  getChildAttendancePercentageAtPlaygroup,
   getReportingPeriod,
   isInFinalMonthOfReportingPeriod,
   isMatchingReportingPeriods,
@@ -18,6 +17,7 @@ import {
 import { differenceInDays } from 'date-fns';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
+// TODO: update function (W5 - use case 3)
 export const getChildAlertModel = (
   learner?: LearnerDto,
   pendingStatusId?: string,

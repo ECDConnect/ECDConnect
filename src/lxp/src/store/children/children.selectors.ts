@@ -9,14 +9,12 @@ import {
 } from './children.types';
 
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
-  state.children.children?.filter(
-    (child: ChildDto) => child.isActive !== false
-  );
+  state.children.childData.children;
 
 // This might need updates for a coach
 export const getChildById = (id?: string) =>
   createSelector(
-    (state: RootState) => state.children.children,
+    (state: RootState) => state.children.childData.children,
     (children: ChildDto[] | undefined) => {
       return (children || []).find((child) => child.id === id);
     }

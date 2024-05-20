@@ -165,12 +165,8 @@ export const mapSiteAddressDto = (
   if (siteAddress) {
     return {
       ...siteAddress,
-      provinceId: childCareGiverChildInformationForm?.provinceId,
       addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-      addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-      addressLine3: childCareGiverChildInformationForm?.city ?? '',
       postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-      ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
     };
   }
 
@@ -179,12 +175,7 @@ export const mapSiteAddressDto = (
     isActive: true,
     insertedDate: new Date().toISOString(),
     name: '',
-    provinceId: childCareGiverChildInformationForm?.provinceId,
     addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-    addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-    addressLine3: childCareGiverChildInformationForm?.city ?? '',
-    postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-    ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
   };
 };
 
@@ -290,15 +281,11 @@ export const mapAddChildCaregiverTokenModelInput = (
 
 export const mapAddChildSiteAddressTokenModelInput = (
   childCareGiverChildInformationForm?: CareGiverChildInformationFormModel
-): AddChildSiteAddressTokenModelInput => {
+): Omit<AddChildSiteAddressTokenModelInput, 'provinceId'> => {
   return {
     name: '',
-    provinceId: childCareGiverChildInformationForm?.provinceId,
     addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-    addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-    addressLine3: childCareGiverChildInformationForm?.city ?? '',
     postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-    ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
   };
 };
 

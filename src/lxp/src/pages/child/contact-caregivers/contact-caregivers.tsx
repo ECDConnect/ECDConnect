@@ -1,10 +1,8 @@
-import { CaregiverDto } from '@ecdlink/core';
-import { Alert, BannerWrapper } from '@ecdlink/ui';
+import { Alert, BannerWrapper, Divider } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ContactPerson } from '../../../components/contact-person/contact-person';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { caregiverSelectors } from '@store/caregiver';
 import { childrenSelectors } from '@store/children';
 import { ContactCaregiversState } from './contact-caregivers.types';
 
@@ -32,7 +30,7 @@ export const ContactCaregivers: React.FC = () => {
         }
       >
         <Alert
-          className={'mt-2'}
+          className={'mt-4 mb-6'}
           type={'info'}
           title={
             'WhatsApps and phone calls will be charged at your standard carrier rates.'
@@ -40,26 +38,24 @@ export const ContactCaregivers: React.FC = () => {
         />
         {caregiver && (
           <ContactPerson
-            className={'mt-2'}
             name={caregiver.firstName || ''}
             surname={caregiver.surname || ''}
             type={'Primary caregiver'}
             contactNumber={caregiver.phoneNumber || ''}
           />
         )}
+        <Divider dividerType="dashed" className="my-6" />
         {caregiver && !!caregiver.emergencyContactFirstName && (
           <ContactPerson
-            className={'mt-4'}
             name={caregiver.emergencyContactFirstName}
             surname={caregiver.emergencyContactSurname || ''}
             type={'Emergency contact'}
             contactNumber={caregiver.emergencyContactPhoneNumber || ''}
           />
         )}
-
+        <Divider dividerType="dashed" className="my-6" />
         {caregiver && !!caregiver.additionalFirstName && (
           <ContactPerson
-            className={'mt-4'}
             name={caregiver.additionalFirstName}
             surname={caregiver.additionalSurname || ''}
             type={'Alternative pickup'}

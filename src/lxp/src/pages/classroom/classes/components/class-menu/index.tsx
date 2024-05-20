@@ -1,3 +1,4 @@
+import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import {
   ClassDashboardRouteState,
   TabsItemForPrincipal,
@@ -11,24 +12,31 @@ import { useHistory } from 'react-router';
 interface ClassMenuProps {
   isPrincipal: boolean;
   classId: string;
+  className: string;
   onClose: () => void;
 }
 
-export const ClassMenu = ({ isPrincipal, onClose }: ClassMenuProps) => {
+export const ClassMenu = ({
+  isPrincipal,
+  classId,
+  className,
+  onClose,
+}: ClassMenuProps) => {
   const history = useHistory();
 
   return (
     <ActionModal
-      title="What do you want to do for the {className} class?"
+      title={`What do you want to do for the ${className} class?`}
       actionButtons={[
         {
           leadingIcon: 'UserGroupIcon',
           colour: 'quatenary',
           text: 'See children',
           type: 'filled',
-          // TODO: filter children by class
           onClick: () => {
-            history.push(ROUTES.CLASSROOM.CHILDREN);
+            history.push(ROUTES.CLASSROOM.CHILDREN, {
+              classroomGroupId: classId,
+            } as ChildListRouteState);
             onClose();
           },
           textColour: 'white',

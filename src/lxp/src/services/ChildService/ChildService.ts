@@ -293,7 +293,7 @@ class ChildService {
     token: string,
     caregiver: AddChildCaregiverTokenModelInput,
     learner: AddChildLearnerTokenModelInput,
-    siteAddress: AddChildSiteAddressTokenModelInput,
+    siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>,
     child: AddChildTokenModelInput,
     registration?: AddChildRegistrationTokenModelInput,
     consent?: AddChildUserConsentTokenModelInput

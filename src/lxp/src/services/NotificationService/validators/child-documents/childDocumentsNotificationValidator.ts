@@ -35,7 +35,7 @@ export class ChildDocumentsNotificationValidator
     const workflowStatus = staticDataState.WorkflowStatuses?.find(
       (x) => x.enumId === WorkflowStatusEnum.ChildPending
     );
-    for (const child of childrenState.children || []) {
+    for (const child of childrenState.childData.children) {
       const childDocuments = (documentsState.documents || []).filter(
         (doc) => doc.userId === child.userId
       );

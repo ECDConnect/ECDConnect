@@ -84,7 +84,7 @@ export class ChildProgressReportNotificationValidator
 
     if (
       !childrenState ||
-      !childrenState.children ||
+      !childrenState.childData.children.length ||
       !classroomDataState ||
       !classroomDataState.classroomGroups
     )
@@ -94,14 +94,9 @@ export class ChildProgressReportNotificationValidator
       classroomDataState.classroomGroups?.filter(
         (c) => c.userId === practitionerUserId
       ) || [];
-    const learners =
-      classroomDataState.classroomGroupLearners?.filter(
-        (l) =>
-          classroomGroups.some((c) => c.id === l.classroomGroupId) &&
-          l.stoppedAttendance === null
-      ) || [];
-    const children = childrenState.children.filter((c) =>
-      learners.some((l) => c.userId === l.userId)
+    const learners = classroomGroups.flatMap((cg) => cg.learners);
+    const children = childrenState.childData.children.filter((c) =>
+      learners.some((l) => c.userId === l.childUserId)
     );
 
     return children;

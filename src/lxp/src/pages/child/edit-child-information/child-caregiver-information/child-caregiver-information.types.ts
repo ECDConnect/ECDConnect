@@ -5,7 +5,5 @@ export interface ChildCaregiverInformationProps
   extends FormComponentProps<ChildCaregiverInformationModel> {
   childCareGiverInformation?: ChildCaregiverInformationModel;
   childName: string;
-  submitButtonText?: string;
-  submitButtonIcon?: string;
   canEdit?: boolean;
 }

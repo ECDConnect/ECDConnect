@@ -25,6 +25,18 @@ export const getClassroomGroupsForUser = (userId: string) =>
     }
   );
 
+export const getClassroomGroupByChildUserId = (childUserId: string) =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroomGroups,
+    (classroomGroups: SimpleClassroomGroupDto[] | undefined) => {
+      if (!classroomGroups || !childUserId) return;
+
+      return classroomGroups.find((group) =>
+        group.learners?.some((learner) => learner.childUserId === childUserId)
+      );
+    }
+  );
+
 export const getPrincipal = (state: RootState): BasePractitionerDto =>
   state.classroomData.classroom?.principal || ({} as BasePractitionerDto);
 
@@ -80,17 +92,16 @@ export const getClassProgrammesByClassroomGroupId = (classGroupId?: string) =>
     }
   );
 
-// TODO - THIS PROBABLY NEEDS AN UPDATE
 export const getLearnerClassGroupId = (userId?: string) =>
   createSelector(
-    (state: RootState) => state.classroomData.classroomGroupLearners,
-    (classroomGroupLearners: LearnerDto[] | undefined) => {
-      if (!classroomGroupLearners || !userId) return;
-      // TODO: this method filters out learners using stoppedAttendance date.
-      const currentLearner = classroomGroupLearners.find(
-        (learner) =>
-          learner.userId === userId && learner.stoppedAttendance == null
-      );
-      return currentLearner?.classroomGroupId;
+    (state: RootState) => state.classroomData.classroomGroups,
+    (classroomGroups: SimpleClassroomGroupDto[] | undefined) => {
+      if (!classroomGroups?.length || !userId) return;
+
+      return classroomGroups.find((classroomGroup) =>
+        classroomGroup.learners?.some(
+          (learner) => learner.childUserId === userId
+        )
+      )?.id;
     }
   );

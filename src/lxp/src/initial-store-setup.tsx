@@ -179,10 +179,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomProgrammes({})
     ).unwrap();
-    // TODO - can remove
-    await appDispatch(
-      classroomsThunkActions.getClassroomGroupLearners({})
-    ).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(
       attendanceThunkActions.getAttendance({
@@ -275,10 +271,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
     await appDispatch(
       classroomsThunkActions.getClassroomProgrammes({})
-    ).unwrap();
-    // TODO - Remove this
-    await appDispatch(
-      classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();
   };
 
@@ -419,10 +411,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             classroomsForCoachThunkActions.getClassroomForCoach({
               id: userData?.id!,
             })
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            childrenThunkActions.getChildrenForCoach({})
           ).unwrap())();
         (async () =>
           await appDispatch(
