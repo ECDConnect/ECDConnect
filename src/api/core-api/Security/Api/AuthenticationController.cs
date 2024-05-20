@@ -471,20 +471,16 @@ namespace ECDLink.Security.Api
         [Route("register-practitioner")]
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult RegisterPractitioner([FromBody] string username)
+        public string RegisterPractitioner([FromBody] string username)
         {
             var practitioner = _personnelService.RegisterPractitioner(username);
 
             if (practitioner == null)
             {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 1,
-                    Error = "Register of practitioner failed"
-                });
+                return "Register of practitioner failed";
             }
 
-           return Ok();
+           return practitioner.UserId.ToString();
         }
 
         [Route("update-username")]
