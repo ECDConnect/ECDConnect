@@ -15,45 +15,52 @@ import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-regi
 import { ChildService } from '@services/ChildService';
 import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
+import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 
 export const ChildrenActions = {
   UPDATE_CHILD: 'updateChild',
 };
 export const getChildren = createAsyncThunk<
-  ChildDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  { children: ChildDto[]; retrievedFromCache: boolean },
+  {} & RetrieveFromCache,
   ThunkApiType<RootState>
 >(
   'getChildren',
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      children: { children: childrenCache },
+      children: { childData: childDataCache },
     } = getState();
 
-    //if (!childrenCache) {
-    try {
-      let children: ChildDto[] | undefined;
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-      if (userAuth?.auth_token) {
-        children = await new ChildService(userAuth?.auth_token).getChildren();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+    if (
+      !!overrideCache ||
+      !childDataCache.dateRefreshed ||
+      new Date(childDataCache.dateRefreshed) < oneDayAgo
+    ) {
+      try {
+        let children: ChildDto[];
+
+        if (userAuth?.auth_token) {
+          children = await new ChildService(userAuth?.auth_token).getChildren();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!children) {
+          return rejectWithValue('Error getting Children');
+        }
+
+        return { children, retrievedFromCache: false };
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!children) {
-        return rejectWithValue('Error getting Children');
-      }
-
-      return children;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return { children: childDataCache.children, retrievedFromCache: true };
     }
-    // } else {
-    //   return childrenCache;
-    // }
   }
 );
 
@@ -235,7 +242,7 @@ export const upsertChildren = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      children: { children },
+      children: { childData },
       staticData: { WorkflowStatuses },
     } = getState();
 
@@ -244,8 +251,13 @@ export const upsertChildren = createAsyncThunk<
       const workflowStatus = WorkflowStatuses?.find(
         (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
       );
-      if (userAuth?.auth_token && children) {
-        promises = children
+
+      const unsyncedChilren = childData.children.filter(
+        (child) => !child.synced
+      );
+
+      if (userAuth?.auth_token && !!unsyncedChilren) {
+        promises = unsyncedChilren
           .filter((child) => child.workflowStatusId !== workflowStatus?.id)
           .map(async (x) => {
             const input: ChildInput = {
@@ -443,38 +455,40 @@ const mapUserInput = (child: Partial<UserDto>): UserModelInput => ({
   email: child.email,
   profileImageUrl: child.profileImageUrl,
 });
-export const getChildrenForCoach = createAsyncThunk<
-  ChildDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'getChildrenForCoach',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      children: { children: childrenCache },
-    } = getState();
 
-    if (!childrenCache) {
-      try {
-        let children: ChildDto[] | undefined;
+// Refactor when we get to coach, probably won't be needed as fetch should be covered by GetAllChild
+// export const getChildrenForCoach = createAsyncThunk<
+//   ChildDto[],
+//   // eslint-disable-next-line @typescript-eslint/ban-types
+//   {},
+//   ThunkApiType<RootState>
+// >(
+//   'getChildrenForCoach',
+//   // eslint-disable-next-line no-empty-pattern
+//   async ({}, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       children: { children: childrenCache },
+//     } = getState();
 
-        if (userAuth?.auth_token) {
-          children = await new ChildService(
-            userAuth?.auth_token
-          ).getChildrenForCoach(userAuth?.id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
+//     if (!childrenCache) {
+//       try {
+//         let children: ChildDto[] | undefined;
 
-        return children;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return childrenCache;
-    }
-  }
-);
+//         if (userAuth?.auth_token) {
+//           children = await new ChildService(
+//             userAuth?.auth_token
+//           ).getChildrenForCoach(userAuth?.id);
+//         } else {
+//           return rejectWithValue('no access token, profile check required');
+//         }
+
+//         return children;
+//       } catch (err) {
+//         return rejectWithValue(err);
+//       }
+//     } else {
+//       return childrenCache;
+//     }
+//   }
+// );

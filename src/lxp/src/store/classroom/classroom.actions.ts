@@ -149,46 +149,6 @@ export const getClassroomProgrammes = createAsyncThunk<
   }
 );
 
-export const getClassroomGroupLearners = createAsyncThunk<
-  LearnerDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'getClassroomGroupLearners',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomGroupLearners: cache },
-    } = getState();
-
-    if (!cache) {
-      try {
-        let learners: LearnerDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          learners = await new ClassroomGroupLearnerService(
-            userAuth?.auth_token
-          ).getClassroomGroupLearners();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!learners) {
-          return rejectWithValue('Error getting Classroom Group learners');
-        }
-
-        return learners;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return cache;
-    }
-  }
-);
-
 // This currently calls a generic GQL endpoint, may need to update
 export const upsertClassroom = createAsyncThunk<
   boolean[],
@@ -435,7 +395,7 @@ export const updateClassroomGroupLearners = createAsyncThunk<
     const {
       auth: { userAuth },
       classroomData: { classroomGroupLearners },
-      children: { children },
+      children: { childData },
       staticData: { WorkflowStatuses },
     } = getState();
 
@@ -448,7 +408,7 @@ export const updateClassroomGroupLearners = createAsyncThunk<
       if (userAuth?.auth_token && classroomGroupLearners) {
         promises = classroomGroupLearners
           .filter((classroomGroupLearner) => {
-            const child = children?.find(
+            const child = childData.children.find(
               (x) => x.userId === classroomGroupLearner.userId
             );
             return child && child.workflowStatusId !== workflowStatus?.id
@@ -495,7 +455,7 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
     const {
       auth: { userAuth },
       classroomData: { classroomGroupLearners },
-      children: { children },
+      children: { childData },
       staticData: { WorkflowStatuses },
     } = getState();
 
@@ -508,7 +468,7 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
         if (userAuth?.auth_token && classroomGroupLearners) {
           promises = classroomGroupLearners
             .filter((classroomGroupLearner) => {
-              const child = children?.find(
+              const child = childData.children.find(
                 (x) => x.userId === classroomGroupLearner.userId
               );
               return child && child.workflowStatusId !== workflowStatus?.id

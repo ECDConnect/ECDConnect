@@ -42,7 +42,7 @@ export class IncompleteChildRegistrationNotificationValidator
       (x) => x.enumId === WorkflowStatusEnum.ChildPending
     );
     const notifications: Message[] = [];
-    const incompleteChildren = (childrenState.children || []).filter(
+    const incompleteChildren = childrenState.childData.children.filter(
       (child) =>
         child.workflowStatusId === workflowStatus?.id || !child?.caregiverId
     );
