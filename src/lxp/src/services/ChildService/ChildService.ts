@@ -7,6 +7,7 @@ import {
   AddChildTokenModelInput,
   AddChildUserConsentTokenModelInput,
   ChildInput,
+  UpdateChildAndCaregiverInput,
 } from '@ecdlink/graphql';
 import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-registration/caregiver-child-registration.types';
 import { api } from '../axios.helper';
@@ -128,23 +129,24 @@ class ChildService {
     return response.data.data.allChildrenForCoach;
   }
 
-  async updateChild(id: string, input: ChildInput): Promise<boolean> {
+  async updateChild(input: UpdateChildAndCaregiverInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { updateChildAndCaregiver: boolean };
+      errors?: {};
+    }>(``, {
       query: `
-        mutation updateChild($input: ChildInput, $id: UUID) {
-          updateChild(input: $input, id: $id){
-            id
+        mutation UpdateChildAndCaregiver($input: UpdateChildAndCaregiverInput) {
+          updateChildAndCaregiver(input: $input){
           }
         }
       `,
       variables: {
-        id: id,
         input: input,
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Updating child failed - Server connection error');
     }
 

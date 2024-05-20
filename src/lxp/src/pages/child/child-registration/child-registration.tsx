@@ -305,21 +305,22 @@ export const ChildRegistration: React.FC = () => {
     }
     // END CONSENT
 
-    if (existingChild?.user) {
-      appDispatch(childrenActions.updateChildUser(userInputModel));
-      await appDispatch(
-        childrenThunkActions.updateChildUser({
-          id: userInputModel.id as string,
-          childUser: userInputModel,
-        })
-      ).unwrap();
-    } else {
-      // TODO check when we work on registration. I don't think we need the separate user state on the child store
-      //appDispatch(childrenActions.createChildUser(userInputModel));
-      await appDispatch(
-        userThunkActions.addUser({ user: userInputModel })
-      ).unwrap();
-    }
+    // TODO - refactor, this should just update the child in state directly
+    // if (existingChild?.user) {
+    //   appDispatch(childrenActions.updateChildUser(userInputModel));
+    //   await appDispatch(
+    //     childrenThunkActions.updateChildUser({
+    //       id: userInputModel.id as string,
+    //       childUser: userInputModel,
+    //     })
+    //   ).unwrap();
+    // } else {
+    //   // TODO check when we work on registration. I don't think we need the separate user state on the child store
+    //   //appDispatch(childrenActions.createChildUser(userInputModel));
+    //   await appDispatch(
+    //     userThunkActions.addUser({ user: userInputModel })
+    //   ).unwrap();
+    // }
 
     if (existingChild) {
       appDispatch(childrenActions.updateChild(childInputModel));
@@ -532,10 +533,10 @@ export const ChildRegistration: React.FC = () => {
 
   const updateChild = async (child: ChildDto) => {
     if (!child && caregiverData) return;
+    appDispatch(childrenActions.updateChild(child));
     await appDispatch(
       childrenThunkActions.updateChild({ child: child, id: String(child.id) })
     ).unwrap();
-    appDispatch(childrenActions.updateChild(child));
     setSendGrants(true);
   };
 
