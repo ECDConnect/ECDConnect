@@ -6,7 +6,6 @@ import {
   CheckUsernamePhoneNumberModel,
   Config,
   NOTIFICATION,
-  PasswordResetModel,
   UpdateUsernameModel,
   initialPasswordValue,
   passwordSchema,
@@ -21,7 +20,7 @@ import {
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 
 interface CreateUserFormProps {
@@ -41,6 +40,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [messageError, setMessageError] = useState('');
+  const usernameMessageErrorText = `Username already exists! Try using your email address, phone number, or add a number/letter`;
 
   const {
     register: passwordRegister,
@@ -61,16 +61,12 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     const checkUsername = await new AuthService()
       .CheckUsernamePhoneNumber(Config.authApi, body)
       .catch((error) => {
-        setMessageError(error?.response?.data?.error);
+        setMessageError(usernameMessageErrorText);
         setNotification({
           title: ` Failed to check the username!`,
           variant: NOTIFICATION.ERROR,
         });
         setIsLoading(false);
-        setTimeout(() => {
-          setMessageError('');
-        }, 5000);
-
         return;
       });
 
@@ -81,28 +77,29 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       token: '',
     };
 
-    const userCreated = await new AuthService()?.UpdateUsername(
-      Config?.authApi,
-      updateUserInputModel
-    );
+    console.log({ checkUsername });
 
-    console.log({ userCreated });
+    if (checkUsername) {
+      const userCreated = await new AuthService()?.UpdateUsername(
+        Config?.authApi,
+        updateUserInputModel
+      );
 
-    if (userCreated) {
-      setIsLoading(false);
-      history.push(ROUTES.LOGIN);
-      setNotification({
-        title: ` Successfully registered!`,
-        variant: NOTIFICATION.SUCCESS,
-      });
-    } else {
-      setNotification({
-        title: ` Successfully registered!`,
-        variant: NOTIFICATION.SUCCESS,
-      });
-      setIsLoading(false);
+      if (userCreated) {
+        setIsLoading(false);
+        history.push(ROUTES.LOGIN);
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      } else {
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        setIsLoading(false);
+      }
     }
-
     setIsLoading(false);
   };
 
@@ -128,8 +125,12 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             label="Username or email"
             subLabel="Must be unique. Tip: use something that you will remember."
             placeholder="e.g. Nothando_123"
-            onChange={(e) => setUsername(e?.target?.value)}
-            className="mb-4"
+            onChange={(e) => {
+              setUsername(e?.target?.value);
+              setMessageError('');
+            }}
+            // className="mb-4"
+            error={messageError as unknown as FieldError}
           />
           {messageError && (
             <Typography
@@ -156,7 +157,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               type="filled"
               isLoading={isLoading}
               color="quatenary"
-              // disabled={!password}
+              disabled={!password || !username}
               onClick={handleCreateUser}
             >
               <Typography

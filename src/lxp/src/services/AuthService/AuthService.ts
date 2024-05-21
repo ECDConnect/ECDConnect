@@ -183,7 +183,7 @@ class AuthService {
 
   async UpdateUsername(baseEndPoint: string, body: UpdateUsernameModel) {
     return await api(baseEndPoint).post(
-      APIs.updateUsername,
+      APIs.updateUsernamePassword,
       JSON.stringify(body),
       {
         headers: headers,

@@ -30,7 +30,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
   const tenant = useTenant();
   const [openCreateUser, setOpencreateUser] = useState(false);
   const orgName = tenant?.tenant?.organisationName;
-  console.log({ state });
+
   return (
     <BannerWrapper
       size="small"

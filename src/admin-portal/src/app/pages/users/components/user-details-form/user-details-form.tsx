@@ -3,7 +3,7 @@ import { UserDto } from '@ecdlink/core';
 import { useEffect } from 'react';
 
 import 'react-datepicker/dist/react-datepicker.css';
-import { UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 
 export interface UserDetailsFormProps {

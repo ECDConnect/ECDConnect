@@ -2,7 +2,6 @@ import {
   Config,
   ContentConsentTypeEnum,
   NOTIFICATION,
-  RegisterRequestModel,
   useNotifications,
   useQueryParams,
   useTheme,
@@ -21,7 +20,6 @@ import {
   FormInput,
   HeaderCard,
   HeaderSlide,
-  PasswordInput,
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
@@ -86,6 +84,7 @@ export const SignUp: React.FC = () => {
   const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
   const tenantName = tenant?.tenant?.applicationName;
+  const isWhitelabel = tenant?.isWhiteLabel;
 
   if (userDetails) {
     // coach
@@ -163,21 +162,11 @@ export const SignUp: React.FC = () => {
     setIsLoading(false);
 
     if (informationVerified.errorCode) {
-      setRequestError('You entered incorrect details');
-      return;
-    }
-
-    if (true) {
-      // proceedToPhoneValidation(formValue, authToken || '');
-
       if (informationVerified.verified === false) {
-        console.log('entrouuu');
         if (informationVerified.errorCode === 1) {
-          // setDiplayErrorMessage(['You entered incorrect details']);
+          setRequestError('You entered incorrect details');
           setIsLoading(false);
-          // setTimeout(() => {
-          //   setDiplayErrorMessage([]);
-          // }, 6000);
+          return;
         }
         if (informationVerified.errorCode === 2) {
           setPresentCellNumberMismatch(true);
@@ -185,44 +174,38 @@ export const SignUp: React.FC = () => {
         }
         return;
       }
+    }
+    if (authToken) {
+      setIsLoading(true);
+      const body: any = {
+        username: formValue.username,
+      };
 
-      if (authToken) {
-        setIsLoading(true);
-        const body: any = {
-          username: formValue.username,
-          // password: formValue.password,
-          // token: authToken,
-          // acceptedTerms: formValue?.termsAndConditionsAccepted,
-        };
-
-        console.log({ body });
-
-        const isAuthenticated = await new AuthService()
-          .RegisterPractitioner(Config.authApi, body)
-          .catch(() => {
-            setNotification({
-              title: ` Failed to Sign Up!`,
-              variant: NOTIFICATION.ERROR,
-            });
-            setIsLoading(false);
-          });
-        console.log({ isAuthenticated });
-        if (isAuthenticated) {
-          setIsLoading(false);
-          history.push(ROUTES.CREATE_USERNAME, {
-            userId: isAuthenticated?.data,
-          });
+      const isAuthenticated = await new AuthService()
+        .RegisterPractitioner(Config.authApi, body)
+        .catch(() => {
           setNotification({
-            title: ` Successfully registered!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-        } else {
-          setNotification({
-            title: ` Successfully registered!`,
-            variant: NOTIFICATION.SUCCESS,
+            title: ` Failed to Sign Up!`,
+            variant: NOTIFICATION.ERROR,
           });
           setIsLoading(false);
-        }
+        });
+
+      if (isAuthenticated) {
+        setIsLoading(false);
+        history.push(ROUTES.CREATE_USERNAME, {
+          userId: isAuthenticated?.data,
+        });
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      } else {
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        setIsLoading(false);
       }
     }
   };
@@ -264,7 +247,7 @@ export const SignUp: React.FC = () => {
     <div className={styles.wrapper}>
       <BannerWrapper
         color={'primary'}
-        showBackground
+        showBackground={isWhitelabel ? false : true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
@@ -272,9 +255,13 @@ export const SignUp: React.FC = () => {
         renderBorder={false}
         renderOverflow={false}
       >
-        {headerSlide && <HeaderCard className={'mt-4'} slide={headerSlide} />}
+        {headerSlide && !isWhitelabel && (
+          <HeaderCard className={'mt-4'} slide={headerSlide} />
+        )}
 
-        <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
+        {!isWhitelabel && (
+          <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
+        )}
         <form style={{ maxWidth: '442px' }} className={styles.formStyle}>
           {preferId && (
             <FormInput<SignUpModel>
@@ -283,6 +270,7 @@ export const SignUp: React.FC = () => {
               nameProp={'username'}
               register={signUpRegister}
               placeholder={'E.g. 7601010338089'}
+              error={errors?.username}
             />
           )}
           {!preferId && (
@@ -291,6 +279,7 @@ export const SignUp: React.FC = () => {
               visible={true}
               nameProp={'username'}
               register={signUpRegister}
+              error={errors?.username}
             />
           )}
 
@@ -318,9 +307,10 @@ export const SignUp: React.FC = () => {
             visible={true}
             type={'text'}
             register={signUpRegister}
+            error={errors?.cellphone}
           />
 
-          <PasswordInput<SignUpModel>
+          {/* <PasswordInput<SignUpModel>
             label={'Password'}
             nameProp={'password'}
             sufficIconColor={'uiMidDark'}
@@ -328,7 +318,7 @@ export const SignUp: React.FC = () => {
             register={signUpRegister}
             strengthMeterVisible={true}
             className="mb-9"
-          />
+          /> */}
 
           <Typography
             type={'body'}
@@ -445,7 +435,7 @@ export const SignUp: React.FC = () => {
             disabled={!isOnline}
             onClick={handleSubmit(submitForm)}
           >
-            <Typography type="help" color="white" text={'Sign up'}></Typography>
+            <Typography type="help" color="white" text={'Next'}></Typography>
           </Button>
 
           <Divider
