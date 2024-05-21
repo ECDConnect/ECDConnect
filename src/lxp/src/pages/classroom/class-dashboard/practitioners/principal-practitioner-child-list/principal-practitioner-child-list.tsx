@@ -26,6 +26,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { practitionerSelectors } from '@/store/practitioner';
 import { IconInformationIndicator } from '../../../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import ROUTES from '@/routes/routes';
+import { LearnerDto } from '@/models/classroom/classroom-group.dto';
 
 export const PrincipalPractitionerChildList: React.FC<
   ComponentBaseProps
@@ -54,14 +55,12 @@ export const PrincipalPractitionerChildList: React.FC<
     classroomsSelectors.getClassroomGroupLearners
   );
 
-  const learnersForPractitioner = classroomGroupLearners.filter((el) => {
-    return practitionerClassroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
-    });
-  });
+  const learnersForPractitioner = practitionerClassroomGroups.flatMap(
+    (x) => x.learners
+  );
   const childrenForPractitioner = children?.filter((el) => {
     return learnersForPractitioner?.some((f) => {
-      return f.userId === el.userId;
+      return f.childUserId === el.userId;
     });
   });
 
@@ -161,11 +160,10 @@ export const PrincipalPractitionerChildList: React.FC<
     if (childrenForPractitioner && classroomGroupLearners) {
       if (value && value.length > 0) {
         for (const child of childrenForPractitioner) {
-          const learner = classroomGroupLearners.find(
-            (x) =>
-              x.userId === child.userId &&
-              selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-          );
+          const learner = classroomGroups
+            .filter((x) => selectedClassrooms.some((sc) => sc === x.id))
+            .flatMap((cg) => cg.learners)
+            .find((x) => x.childUserId === child.userId);
           if (learner) {
             childListItem.push(mapUserListDataItem(child));
           }
@@ -173,7 +171,7 @@ export const PrincipalPractitionerChildList: React.FC<
       } else {
         for (const child of childrenForPractitioner) {
           const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId
+            (x) => x.childUserId === child.userId
           );
           if (learner) {
             childListItem.push(mapUserListDataItem(child));
@@ -204,10 +202,10 @@ export const PrincipalPractitionerChildList: React.FC<
         const childUserOne = children?.find((x) => x.userId === a.userId);
         const childUserTwo = children?.find((x) => x.userId === b.userId);
         const childLearnerOne = classroomGroupLearners?.find(
-          (x) => x.userId === a.userId
+          (x) => x.childUserId === a.userId
         );
         const childLearnerTwo = classroomGroupLearners?.find(
-          (x) => x.userId === a.userId
+          (x) => x.childUserId === a.userId
         );
 
         switch (column) {

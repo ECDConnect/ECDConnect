@@ -43,16 +43,15 @@ export const EditAddress: React.FC<EditAdressProps> = ({
     const siteAddress: SiteAddressDto = {
       id: siteAddressId,
       addressLine1: editedAddress || '',
-      // TODO
-      addressLine2: '',
-      addressLine3: '',
-      name: '',
-      postalCode: '',
-      ward: '',
+      addressLine2: classroom?.siteAddress?.addressLine2 || '',
+      addressLine3: classroom?.siteAddress?.addressLine3 || '',
+      name: classroom?.siteAddress?.name || '',
+      postalCode: classroom?.siteAddress?.postalCode || '',
+      ward: classroom?.siteAddress?.ward || '',
     };
 
     appDispatch(classroomsActions.updateClassroomSiteAddress(siteAddress));
-    await appDispatch(classroomsThunkActions.upsertClassroomSiteAddress({}));
+    await appDispatch(classroomsThunkActions.upsertClassroom({}));
   };
 
   const handleShowMap = () => {

@@ -61,11 +61,8 @@ export const ChildCompletedObservationReports: React.FC = () => {
       routeState?.childId
     )
   );
-  const classroomGroupId = useSelector(
-    classroomsSelectors.getLearnerClassGroupId(currentChild?.userId)
-  );
   const classroomGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classroomGroupId!)
+    classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
   );
   const childPractioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(classroomGroup?.userId || '')

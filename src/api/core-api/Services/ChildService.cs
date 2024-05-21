@@ -23,6 +23,7 @@ namespace EcdLink.Api.CoreApi.Services
     {
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
+        private IGenericRepository<Learner, Guid> _learnerRepo;
 
         public ChildService(
             IHttpContextAccessor contextAccessor,
@@ -33,6 +34,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: applicationUserId);
             _classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: applicationUserId);
+            _learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: applicationUserId);
         }
 
         public List<Child> GetChildrenForClassroom(Guid classroomId)
@@ -56,6 +58,8 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var child = _childRepo.GetById(input.Id);
             var isActive = child.IsActive && child.User.IsActive;
+
+            // TODO - Based on if the workflow status has changed, add registration points if required
 
             // Update child fields
             child.IsActive = isActive;
@@ -117,6 +121,24 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             _childRepo.Update(child);
+
+            // If child is deactivated, ensure all learner records are also disabled
+            if (!isActive)
+            {
+                var learnerRecords = _learnerRepo.GetListByUserId(child.UserId.Value);
+                if (learnerRecords != null)
+                {
+                    foreach (var learner in learnerRecords)
+                    {
+                        if (learner.IsActive)
+                        {
+                            learner.IsActive = false;
+                            learner.StoppedAttendance = DateTime.Now;
+                            _learnerRepo.Update(learner);
+                        }
+                    }
+                }
+            }
         }
     }
 }

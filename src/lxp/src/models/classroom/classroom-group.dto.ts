@@ -1,3 +1,5 @@
+import { OfflineUpdate } from '../sync/offline-update';
+
 export type ClassroomGroupDto = {
   id: string;
   classroomId: string;
@@ -6,8 +8,10 @@ export type ClassroomGroupDto = {
   learners: LearnerDto[];
 };
 
-export type LearnerDto = {
+export type LearnerDto = OfflineUpdate & {
   learnerId: string;
   childUserId: string;
-  startedAttendace: string;
+  startedAttendance: string;
+  isActive: boolean;
+  stoppedAttendance: string | undefined;
 };

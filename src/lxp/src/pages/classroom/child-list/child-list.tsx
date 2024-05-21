@@ -51,7 +51,10 @@ import {
   TabsItems,
 } from '../class-dashboard/class-dashboard.types';
 import { ChildListRouteState } from './child-list.types';
-import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import {
+  ClassroomGroupDto,
+  LearnerDto,
+} from '@/models/classroom/classroom-group.dto';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -402,7 +405,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     const mappedChildrenForRedirectedClass =
       mappedChildren?.filter((child: UserAlertListDataItem<ChildDto>) =>
         classroomGroup?.learners?.some(
-          (learner) => learner.childUserId === child.extraData?.userId
+          (learner) =>
+            learner.childUserId === child.extraData?.userId && learner.isActive
         )
       ) ?? [];
 

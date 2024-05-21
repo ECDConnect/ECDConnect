@@ -92,8 +92,8 @@ export const ChildRegistration: React.FC = () => {
   const pointsLibraryRegisterChild = useSelector(
     pointsSelectors.getPointsLibraryById(SmartStartPointsLibrary.REGISTER_CHILD)
   );
-  const existingLearner = useSelector(
-    classroomsSelectors.getChildLearner(existingChild)
+  const existingClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(existingChild?.userId!)
   );
   const existingCaregiver = existingChild?.caregiver;
 
@@ -193,14 +193,6 @@ export const ChildRegistration: React.FC = () => {
     );
 
     childInputModel.isActive = true;
-
-    const learnerInputModel = childRegisterUtils.mapLearnerDto(
-      userId,
-      formState.childInformationFormModel,
-      existingLearner
-    );
-
-    learnerInputModel.isActive = true;
 
     // CONSENT
     if (formState.childRegistrationFormModel?.childPhotoConsentAccepted) {
@@ -333,24 +325,25 @@ export const ChildRegistration: React.FC = () => {
       ).unwrap();
     }
 
-    if (existingLearner) {
-      appDispatch(
-        classroomsActions.updateClassroomGroupLearner(learnerInputModel)
-      );
-      await appDispatch(
-        classroomsThunkActions.updateLearner({
-          id: learnerInputModel.id as string,
-          learner: learnerInputModel,
-        })
-      );
-    } else {
-      appDispatch(
-        classroomsActions.createClassroomGroupLearner(learnerInputModel)
-      );
-      await appDispatch(
-        classroomsThunkActions.createLearner({ learner: learnerInputModel })
-      ).unwrap();
-    }
+    // TODO - Learner should be created on initial child creation
+    // if (existingLearner) {
+    //   appDispatch(
+    //     classroomsActions.updateClassroomGroupLearner(learnerInputModel)
+    //   );
+    //   await appDispatch(
+    //     classroomsThunkActions.updateLearner({
+    //       id: learnerInputModel.id as string,
+    //       learner: learnerInputModel,
+    //     })
+    //   );
+    // } else {
+    //   appDispatch(
+    //     classroomsActions.createClassroomGroupLearner(learnerInputModel)
+    //   );
+    //   await appDispatch(
+    //     classroomsThunkActions.createLearner({ learner: learnerInputModel })
+    //   ).unwrap();
+    // }
 
     if (formState.childRegistrationFormModel?.registrationForm) {
       const fileName = 'F4-registrationform.png';
@@ -598,7 +591,7 @@ export const ChildRegistration: React.FC = () => {
           surname: existingChild?.user?.surname || '',
           childIdField: existingChild?.user?.idNumber || '',
           otherReason: '',
-          playgroupId: existingLearner?.classroomGroupId || '',
+          playgroupId: existingClassroomGroup?.id || '',
         },
       };
 

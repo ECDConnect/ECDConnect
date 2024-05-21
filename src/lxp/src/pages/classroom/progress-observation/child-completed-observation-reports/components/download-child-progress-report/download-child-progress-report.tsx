@@ -36,8 +36,8 @@ export const DownloadChildProgressReport: React.FC = () => {
   const currentChild = useSelector(
     childrenSelectors.getChildById(routeState.childId)
   );
-  const currentChildLearner = useSelector(
-    classroomsSelectors.getChildLearner(currentChild)
+  const currentChildClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
   );
   const [selectedReport, setSelectedReport] =
     useState<ChildProgressReportSummaryModel>();
@@ -113,7 +113,7 @@ export const DownloadChildProgressReport: React.FC = () => {
     const base64Pdf = await dispatch(
       contentReportThunkActions.generateChildProgressReport({
         childId: selectedReport.childId || '',
-        classgroupId: currentChildLearner?.classroomGroupId || '',
+        classgroupId: currentChildClassroomGroup?.id || '',
         reportDate: selectedReport.reportDate
           ? new Date(selectedReport.reportDate)
           : new Date(),

@@ -252,11 +252,12 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
     // Check when we work on registration, probably don't need this or fix to update user on the child object
     //dispatch(childrenActions.createChildUser(userInputModel));
-    dispatch(childrenActions.createChild(childInputModel));
-    dispatch(classroomsActions.createClassroomGroupLearner(learnerInputModel));
-    dispatch(
-      classroomsThunkActions.createLearner({ learner: learnerInputModel })
-    );
+    // TODO - learner record should be created on initial child create, so probably no need here
+    // dispatch(childrenActions.createChild(childInputModel));
+    // dispatch(classroomsActions.createClassroomGroupLearner(learnerInputModel));
+    // dispatch(
+    //   classroomsThunkActions.createLearner({ learner: learnerInputModel })
+    // );
   };
 
   return (

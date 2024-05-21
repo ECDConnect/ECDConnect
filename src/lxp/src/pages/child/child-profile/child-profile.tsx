@@ -125,15 +125,12 @@ export const ChildProfile: React.FC = () => {
     return x.user?.id !== practitioner?.user?.id;
   });
 
-  const classGroupId = useSelector(
-    classroomsSelectors.getLearnerClassGroupId(child?.userId)
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
-  );
-  const classroomGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classGroupId || '')
   );
 
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);

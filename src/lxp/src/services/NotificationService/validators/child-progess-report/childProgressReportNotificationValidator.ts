@@ -86,12 +86,12 @@ export class ChildProgressReportNotificationValidator
       !childrenState ||
       !childrenState.childData.children.length ||
       !classroomDataState ||
-      !classroomDataState.classroomGroups
+      !classroomDataState.classroomGroupData.classroomGroups.length
     )
       return [];
 
     const classroomGroups =
-      classroomDataState.classroomGroups?.filter(
+      classroomDataState.classroomGroupData.classroomGroups.filter(
         (c) => c.userId === practitionerUserId
       ) || [];
     const learners = classroomGroups.flatMap((cg) => cg.learners);
