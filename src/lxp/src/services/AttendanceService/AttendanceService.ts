@@ -16,9 +16,9 @@ class AttendanceService {
   }
 
   async getAttendance(
-    year: number,
-    monthOfYear: number,
-    weekOfYear: number
+    year?: number,
+    monthOfYear?: number,
+    weekOfYear?: number
   ): Promise<AttendanceDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

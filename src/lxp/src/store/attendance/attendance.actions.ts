@@ -22,7 +22,7 @@ export const AttendanceActions = {
 
 export const getAttendance = createAsyncThunk<
   AttendanceDto[],
-  AttendanceQueryParams,
+  Partial<AttendanceQueryParams>,
   ThunkApiType<RootState>
 >(
   'getAttendance',

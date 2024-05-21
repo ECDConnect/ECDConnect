@@ -6,7 +6,7 @@ export const icon = 'h-4 w-4 text-primary ml-2';
 export const quickSearchWrapper =
   'w-full flex flex-row items-center px-5 py-1 bg-uiBg overflow-x-auto';
 export const iconFill = 'w-6 text-primary cursor-pointer';
-export const dropdownStyles = 'w-11/12 left-4';
+export const dropdownStyles = 'w-11/12 left-4 -mt-10';
 export const searchIconWrapper =
   'inline-flex items-center p-2 cursor-pointer rounded-full round bg-white border-2 border-primary mr-5';
 export const searchTextWrapper =

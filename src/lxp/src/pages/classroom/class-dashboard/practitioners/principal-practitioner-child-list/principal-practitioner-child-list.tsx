@@ -27,6 +27,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { IconInformationIndicator } from '../../../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import ROUTES from '@/routes/routes';
 
+// TODO: Remove this page and use the one from src/lxp/src/pages/classroom/child-list/child-list.tsx
 export const PrincipalPractitionerChildList: React.FC<
   ComponentBaseProps
 > = () => {
@@ -43,6 +44,10 @@ export const PrincipalPractitionerChildList: React.FC<
   const pendingStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
   );
+  const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildExternalLink
+  );
+
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
@@ -216,6 +221,8 @@ export const PrincipalPractitionerChildList: React.FC<
               attendance: attendanceData,
               child: childUserOne,
               classroomGroups,
+              childExternalWorkflowStatusId,
+              childPendingWorkflowStatusId: pendingStatusId,
             });
 
             const childAlertTwo = getChildAlertModel({
@@ -264,6 +271,8 @@ export const PrincipalPractitionerChildList: React.FC<
       attendance: attendanceData,
       child: child,
       classroomGroups,
+      childExternalWorkflowStatusId,
+      childPendingWorkflowStatusId: pendingStatusId,
     });
 
     return {
