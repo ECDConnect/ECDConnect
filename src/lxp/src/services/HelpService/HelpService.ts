@@ -7,10 +7,7 @@ class HelpService {
     this._accessToken = accessToken;
   }
 
-  async SendHelp(
-    // baseEndPoint: string,
-    body: HelpFormModel
-  ): Promise<boolean> {
+  async SendHelp(body: HelpFormModel): Promise<boolean> {
     const apiInstance = api(Config.authApi);
     const response = await apiInstance.post(
       APIs.submitUserHelpForm,
