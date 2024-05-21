@@ -23,11 +23,7 @@ import { ChildBirthCertificateFormModel } from '@schemas/child/child-registratio
 import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import {
-  caregiverActions,
-  caregiverSelectors,
-  caregiverThunkActions,
-} from '@store/caregiver';
+import { caregiverActions, caregiverThunkActions } from '@store/caregiver';
 import {
   childrenActions,
   childrenSelectors,
@@ -450,9 +446,7 @@ export const ChildRegistration: React.FC = () => {
             <CaregiverMultipleChildrenModal
               title="Child registered!"
               onSubmit={() => {
-                history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
-                  practitionerId,
-                } as ChildRegistrationRouteState);
+                history.push(ROUTES.CHILD_REGISTRATION_LANDING);
                 onClose();
               }}
               onCancel={() => {

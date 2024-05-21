@@ -130,7 +130,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const [classOptions, setClassOptions] = useState<
     SearchDropDownOption<ClassroomGroupDto>[]
   >([]);
-  const practitionerId = practitioner?.id;
   const isPrincipal = practitioner?.isPrincipal === true;
 
   const today = new Date();
@@ -294,7 +293,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         handleIsOnLeaveModal();
         return;
       }
-      history.push(ROUTES.CHILD_REGISTRATION_LANDING, { practitionerId });
+      history.push(ROUTES.CHILD_REGISTRATION_LANDING);
     } else {
       showOnlineOnly();
     }
@@ -496,17 +495,18 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             subTitle="Tap the add a child button below to start"
           />
         )}
-        {filteredChildData?.length ? (
+        {!!childUserListData?.length && !filteredChildData?.length && (
+          <IconInformationIndicator
+            title="You don't have any children in this class yet!"
+            subTitle=""
+          />
+        )}
+        {!!filteredChildData?.length && (
           <StackedList
             className={styles.stackedList}
             listItems={filteredChildData}
             type={'UserAlertList'}
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
-          />
-        ) : (
-          <IconInformationIndicator
-            title="You don't have any children in this class yet!"
-            subTitle=""
           />
         )}
         <FADButton

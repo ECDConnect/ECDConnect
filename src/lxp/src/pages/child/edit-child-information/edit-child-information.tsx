@@ -1,5 +1,4 @@
 import {
-  SiteAddressDto,
   CaregiverDto,
   ChildDto,
   LearnerDto,
@@ -27,7 +26,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
-import { caregiverActions, caregiverThunkActions } from '@store/caregiver';
 import {
   childrenActions,
   childrenSelectors,

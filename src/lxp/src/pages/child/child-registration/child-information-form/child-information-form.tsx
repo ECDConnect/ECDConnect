@@ -39,13 +39,6 @@ import { staticDataSelectors } from '@store/static-data';
 import { calculateFullAge } from '@utils/common/date.utils';
 import * as styles from './child-information-form.styles';
 import { ChildInformationFormProps } from './child-information-form.types';
-import { practitionerSelectors } from '@/store/practitioner';
-import { useLocation } from 'react-router';
-import { PractitionerChildRegisterState } from '../../practitioner-child-registration/types';
-import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { filterUniqueClassrooms } from '@/utils/classroom/classroom';
-import { UNSURE_CLASS } from '@/constants/classroom';
-import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   childInformation,
@@ -67,73 +60,19 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   const [alerts, setAlerts] = useState<AlertProps[]>();
 
-  const location = useLocation<PractitionerChildRegisterState>();
-
-  const practitionerIdFromCoachView = location?.state?.practitionerId;
-  const childDetails = location?.state?.childDetails;
-
   const [provideReason, setProvideReason] = useState(false);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const allClassroomGroups = useSelector(
-    classroomsSelectors.getClassroomGroups
-  );
+
   const reasons = useSelector(
     staticDataSelectors.getProgrammeAttendanceReasons
   );
-  const allPractitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitionersForPrincipal = allPractitioners?.filter(
-    (item) => item.principalHierarchy === practitionerIdFromCoachView
+
+  const classroomGroupsOptions: DropDownOption<string>[] = classroomGroups.map(
+    (group) => ({
+      label: group.name,
+      value: group.id,
+    })
   );
-  const classroomsByPractitionersForPrincipal = allClassroomGroups.filter(
-    (item) =>
-      practitionersForPrincipal?.some(
-        (practitioner) => practitioner.userId === item.userId
-      )
-  );
-  const classroomsForPractitioner = allClassroomGroups.filter((item) => {
-    return practitionerIdFromCoachView
-      ? item.userId === practitionerIdFromCoachView
-      : item;
-  });
-
-  // suppress also the unsure class for principal
-  const classroomsForPrincipal = [
-    ...classroomsForPractitioner,
-    ...classroomsByPractitionersForPrincipal,
-  ].filter((item: ClassroomGroupDto) => item.name !== UNSURE_CLASS);
-
-  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
-    DropDownOption<string>[]
-  >([]);
-
-  const classroomsForPractitionerFromPractitionerFlow = useSelector(
-    classroomsSelectors.getClassroom
-  );
-  const [
-    classroomsForPractitionerAnyType,
-    setClassroomsForPractitionerAnyType,
-  ] = useState<any>([]);
-
-  const practitionerFromCoachView = useSelector(
-    getPractitionerByUserId(practitionerIdFromCoachView || '')
-  );
-
-  const practitionerFromPractitionerView = useSelector(
-    practitionerSelectors.getPractitioner
-  );
-
-  const practitioner =
-    practitionerFromPractitionerView || practitionerFromCoachView;
-
-  const isTrainee = practitioner?.isTrainee;
-
-  useEffect(() => {
-    if (classroomsForPractitionerFromPractitionerFlow) {
-      setClassroomsForPractitionerAnyType([
-        classroomsForPractitionerFromPractitionerFlow,
-      ]);
-    }
-  }, [classroomsForPractitionerFromPractitionerFlow]);
 
   const {
     getValues: getChildInformationFormValues,
@@ -191,55 +130,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dobDay, dobMonth, dobYear]);
-
-  // Should not be able to see the “Unsure” class or add children to the unsure class
-  useEffect(() => {
-    if (
-      !practitionerIdFromCoachView &&
-      practitioner?.isPrincipal !== true &&
-      classroomsForPractitionerAnyType.length > 0
-    ) {
-      const groupedItems: DropDownOption<string>[] = [];
-
-      filterUniqueClassrooms(
-        classroomsForPractitionerAnyType.filter(
-          (item: ClassroomGroupDto) => item.name !== UNSURE_CLASS
-        )
-      ).forEach((groupedItem: any) => {
-        groupedItems.push({
-          label: groupedItem.name,
-          value: groupedItem.id ?? '',
-        });
-      });
-      setUpdatedPlaygroups(groupedItems);
-    }
-    if (classroomGroups.length > 0) {
-      const groupedItems: DropDownOption<string>[] = [];
-
-      const currentClassroomGroups =
-        practitionerIdFromCoachView && practitioner?.isPrincipal
-          ? classroomsForPrincipal
-          : classroomsForPractitioner;
-
-      // WHY IS THIS LIST NO UNIQUE TO START WITH???
-      filterUniqueClassrooms(
-        currentClassroomGroups.filter(
-          (item) =>
-            (isTrainee && item) ||
-            (!isTrainee && item.name !== UNSURE_CLASS) ||
-            childDetails?.playgroupId! === item.classroomId
-        )
-      ).forEach((groupedItem) => {
-        groupedItems.push({
-          label: groupedItem.name,
-          value: groupedItem.id ?? '',
-        });
-      });
-
-      setUpdatedPlaygroups(groupedItems);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, classroomsForPractitionerAnyType, allClassroomGroups]);
 
   const validateDateOfBirth = () => {
     const alertsArray: AlertProps[] = [];
@@ -354,7 +244,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         {variation === 'practitioner' && (
           <PractitionerForm
             childInformationFormRegister={childInformationFormRegister}
-            updatedPlaygroups={updatedPlaygroups}
+            updatedPlaygroups={classroomGroupsOptions}
             getChildInformationFormValues={getChildInformationFormValues}
             setChildInformationFormValue={setChildInformationFormValue}
             triggerChildInformationForm={triggerChildInformationForm}
