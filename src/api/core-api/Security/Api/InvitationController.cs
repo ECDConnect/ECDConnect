@@ -212,7 +212,7 @@ namespace ECDLink.Security.Api
         [Route("update-username-password")]
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult UpdateUsernamePassword([FromBody] UpdateUserNameModel input)
+        public async Task<IActionResult> UpdateUsernamePassword([FromBody] UpdateUserNameModel input)
         {
             // Validate to see if user exists
             var user = _userManager.FindByIdAsync(input.UserId).Result;
@@ -268,14 +268,29 @@ namespace ECDLink.Security.Api
                     });
                 }
 
-                var changedPassword = _securityManager.ChangePasswordAsync(user, input.Password).Result;
-                if (!changedPassword)
+                if (string.IsNullOrWhiteSpace(user.PasswordHash))
                 {
-                    return BadRequest(new FailedVerificationModel
+                    var addPassword = await _passwordManager.AddPasswordAsync(user, input.Password);
+                    if (!addPassword)
                     {
-                        ErrorCode = 5,
-                        Error = "Add password failure"
-                    });
+                        return BadRequest(new FailedVerificationModel
+                        {
+                            ErrorCode = 5,
+                            Error = "Add password failure"
+                        });
+                    }
+                }
+                else
+                {
+                    var changedPassword = await _securityManager.ChangePasswordAsync(user, input.Password);
+                    if (!changedPassword)
+                    {
+                        return BadRequest(new FailedVerificationModel
+                        {
+                            ErrorCode = 6,
+                            Error = "Change password failure"
+                        });
+                    }
                 }
             }
 
