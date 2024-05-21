@@ -180,7 +180,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   };
 
   const onSortItemsChanges = (column: string) => {
-    if (filteredChildData?.length && column) {
+    if (filteredChildData?.length) {
       const sorted = [...filteredChildData].sort((dataA, dataB) => {
         const childA = dataA.extraData;
         const childB = dataB.extraData;
