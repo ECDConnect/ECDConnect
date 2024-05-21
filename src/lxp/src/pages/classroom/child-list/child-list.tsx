@@ -1,6 +1,5 @@
 import {
   ChildDto,
-  LearnerDto,
   useDialog,
   getAvatarColor,
   usePrevious,
@@ -110,13 +109,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
-  const classroomGroupProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
-  );
-  const documents = useSelector(documentSelectors.getDocuments);
-  const childReportSummaries = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports()
-  );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const classroomGroupLearners = useSelector(
@@ -197,54 +189,26 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         childUserListData?.some((x) => x.id === child.id)
       );
       const sorted = [...(filteredChildren || [])].sort(
-        (a: ChildDto, b: ChildDto) => {
-          const childUserOne = children?.find((x) => x.userId === a.userId);
-          const childUserTwo = children?.find((x) => x.userId === b.userId);
-          const childLearnerOne = classroomGroupLearners?.find(
-            (x) => x.userId === a.userId
+        (childA: ChildDto, childB: ChildDto) => {
+          const childUserOne = children?.find(
+            (x) => x.userId === childA.userId
           );
-          const childLearnerTwo = classroomGroupLearners?.find(
-            (x) => x.userId === b.userId
+          const childUserTwo = children?.find(
+            (x) => x.userId === childB.userId
           );
 
           switch (column) {
             case 'priority': {
-              const childUserDocumentsOne = documents?.filter(
-                (x) => x.userId === a.userId
-              );
-              const childReportsOne = childReportSummaries?.filter(
-                (x) => x.childId === a?.id
-              );
-              const childAlertOne = getChildAlertModel(
-                childLearnerOne,
-                pendingStatusId,
-                childUserOne,
-                a,
-                childUserDocumentsOne,
-                attendanceData,
+              const childAlertOne = getChildAlertModel({
+                attendance: attendanceData,
+                child: childA,
                 classroomGroups,
-                classroomGroupProgrammes,
-                childReportsOne,
-                practitioner?.attendedChildProgress || false
-              );
-              const childUserDocumentsTwo = documents?.filter(
-                (x) => x.userId === b.userId
-              );
-              const childReportsTwo = childReportSummaries?.filter(
-                (x) => x.childId === b?.id
-              );
-              const childAlertTwo = getChildAlertModel(
-                childLearnerTwo,
-                pendingStatusId,
-                childUserTwo,
-                b,
-                childUserDocumentsTwo,
-                attendanceData,
+              });
+              const childAlertTwo = getChildAlertModel({
+                attendance: attendanceData,
+                child: childB,
                 classroomGroups,
-                classroomGroupProgrammes,
-                childReportsTwo,
-                practitioner?.attendedChildProgress || false
-              );
+              });
               return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
             }
             case 'surname':
@@ -282,37 +246,19 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
       const childListItem: UserAlertListDataItem[] = [];
       for (const child of sorted) {
-        const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId
-        );
-
-        childListItem.push(mapUserListDataItem(child, learner));
+        childListItem.push(mapUserListDataItem(child));
       }
       setChildUserListData(childListItem || []);
     }
   };
 
   const mapUserListDataItem = useCallback(
-    (child: ChildDto, childLearner?: LearnerDto): UserAlertListDataItem => {
-      const childDocuments = documents?.filter(
-        (x) => x.userId === child.userId
-      );
-      const reports = childReportSummaries?.filter(
-        (x) => x.childId === child?.id
-      );
-
-      const childAlert = getChildAlertModel(
-        childLearner,
-        pendingStatusId,
+    (child: ChildDto): UserAlertListDataItem => {
+      const childAlert = getChildAlertModel({
+        attendance: attendanceData,
         child,
-        child,
-        childDocuments,
-        attendanceData,
         classroomGroups,
-        classroomGroupProgrammes,
-        reports,
-        practitioner?.attendedChildProgress || false
-      );
+      });
 
       return {
         id: child.id,
@@ -325,21 +271,13 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         alertSeverity: childAlert.status as AlertSeverityType,
         avatarColor: getAvatarColor() || '',
         extraData: child,
+        hideAlertSeverity: childAlert.status === 'none',
         onActionClick: () => {
           onChildListItemAction(String(child.id));
         },
       };
     },
-    [
-      attendanceData,
-      childReportSummaries,
-      classroomGroupProgrammes,
-      classroomGroups,
-      documents,
-      onChildListItemAction,
-      pendingStatusId,
-      practitioner,
-    ]
+    [attendanceData, classroomGroups, onChildListItemAction]
   );
 
   const handleListScroll = (scrollTop: number) => {

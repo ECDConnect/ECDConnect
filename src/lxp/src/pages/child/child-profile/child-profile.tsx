@@ -40,7 +40,6 @@ import { Age } from '@models/common/Age';
 import { AttendanceService } from '@services/AttendanceService';
 import { attendanceSelectors } from '@store/attendance';
 import { authSelectors } from '@store/auth';
-import { caregiverSelectors } from '@store/caregiver';
 import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
 import {
   childrenActions,

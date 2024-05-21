@@ -4,7 +4,6 @@ import {
   BannerWrapper,
   Button,
   DialogPosition,
-  Divider,
   Typography,
 } from '@ecdlink/ui';
 import { format, addDays } from 'date-fns';
@@ -58,8 +57,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
 
     const formatedDate = format(addedDays, 'dd MMMM yyyy');
     setDeadlineDateText(formatedDate);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [child]);
+  }, [child, childExpiryTime]);
 
   const completeRegistration = async () => {
     if (isOnline) {
@@ -90,7 +88,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     });
   };
 
-  const onSendcaregiverLink = async () => {
+  const onSendCaregiverLink = async () => {
     if (isOnline) {
       createLink();
     } else {
@@ -157,55 +155,50 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     >
       <div className="flex h-full w-full flex-col p-4">
         <Alert
+          className="mb-8 mt-4"
           title={`${childUser?.firstName}'s registration is not complete`}
           type={'error'}
         />
 
         <Typography
-          className="mt-4"
           type="body"
           color={'textMid'}
           text={`If the registration form is not completed, this profile will be removed on:`}
         />
 
-        <Typography
-          weight="bold"
-          type="body"
-          color={'textMid'}
-          text={`${deadlineDateText}`}
-        />
+        <Typography type="h4" color={'textDark'} text={`${deadlineDateText}`} />
 
         <Typography
           className="mt-4"
-          text="Remember, by allowing a child to attend your programme without getting
-        and uploading a parent’s consent, you might leave your programme open to
-        legal consequences"
+          text="Remember, by allowing a child to attend your preschool without getting and uploading a caregiver’s consent, you might leave your preschool open to legal consequences."
           type="body"
+          color="textMid"
         />
 
-        <Divider className="my-4" />
+        <div className="mt-auto">
+          <Button
+            className="w-full"
+            id="gtm-share-caregiver"
+            type="filled"
+            color="quatenary"
+            text="Copy link to send to caregiver"
+            textColor="white"
+            icon="LinkIcon"
+            iconPosition="start"
+            onClick={onSendCaregiverLink}
+          />
 
-        <Button
-          id="gtm-share-caregiver"
-          type="filled"
-          color="primary"
-          text="Copy link to send to caregiver"
-          textColor="white"
-          icon="LinkIcon"
-          iconPosition="start"
-          onClick={onSendcaregiverLink}
-        />
-
-        <Button
-          type="outlined"
-          className="mt-4"
-          color="primary"
-          text="Upload paper registration form"
-          textColor="primary"
-          icon="UploadIcon"
-          iconPosition="start"
-          onClick={completeRegistration}
-        />
+          <Button
+            type="outlined"
+            className="mt-4 w-full"
+            color="quatenary"
+            text="Upload paper registration form"
+            textColor="quatenary"
+            icon="UploadIcon"
+            iconPosition="start"
+            onClick={completeRegistration}
+          />
+        </div>
       </div>
     </BannerWrapper>
   );
