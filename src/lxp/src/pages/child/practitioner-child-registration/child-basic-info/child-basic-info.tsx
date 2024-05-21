@@ -1,6 +1,5 @@
 import { FormComponentProps, getAvatarColor } from '@ecdlink/core';
 import {
-  Divider,
   Dropdown,
   FormInput,
   Typography,
@@ -10,7 +9,7 @@ import {
   StackedList,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import {
@@ -19,10 +18,14 @@ import {
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
 import { format } from 'date-fns';
-import { ChildService } from '@/services/ChildService';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ChildMatchingDto } from './child-basic-info.types';
+import { useAppDispatch } from '@/store';
+import { childrenThunkActions } from '@/store/children';
+import { debounce } from 'lodash';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ChildrenActions } from '@/store/children/children.actions';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -51,6 +54,13 @@ export const ChildBasicInfo: React.FC<
   const { firstName, surname } = useWatch({
     control: childInfoFormControl,
   });
+
+  const appDispatch = useAppDispatch();
+
+  const { isLoading } = useThunkFetchCall(
+    'children',
+    ChildrenActions.FIND_CREATED_CHILD
+  );
 
   const setNewStackListItems = (checkChild: ChildMatchingDto) => {
     const list: UserAlertListDataItem[] = [
@@ -81,29 +91,39 @@ export const ChildBasicInfo: React.FC<
     }
   }, [checkChild]);
 
-  const onNext = (formValue: ChildBasicInfoModel) => {
-    onSubmit(formValue);
-  };
-
-  const getSelectedClassroom = (): string => {
+  const getSelectedClassroomGroup = (): string => {
     const values = getValues();
 
     return values.playgroupId ?? '';
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedDispatch = useCallback(
+    debounce((firstName, surname, practitionerId) => {
+      appDispatch(
+        childrenThunkActions.findCreatedChild({
+          firstName,
+          surname,
+          practitionerId,
+        })
+      ).then((response) => {
+        if (response?.type.includes('fulfilled')) {
+          setCheckChild(response?.payload || undefined);
+        }
+      });
+    }, 300),
+    []
+  );
+
   useEffect(() => {
-    if (firstName && surname && isOnline) {
-      const checkChildMatching = async () => {
-        const res = await new ChildService(
-          userAuth?.auth_token!
-        ).childCreatedByDetail(userAuth?.id!, firstName, surname);
-
-        setCheckChild(res as ChildMatchingDto);
-      };
-
-      checkChildMatching();
+    if (firstName && surname && isOnline && userAuth?.id) {
+      debouncedDispatch(firstName, surname, userAuth?.id!);
     }
-  }, [firstName, surname, userAuth?.auth_token, userAuth?.id, isOnline]);
+
+    return () => {
+      debouncedDispatch.cancel();
+    };
+  }, [firstName, surname, userAuth?.id, isOnline, debouncedDispatch]);
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
@@ -130,7 +150,7 @@ export const ChildBasicInfo: React.FC<
         className="mt-4"
         label="Which class will the child attend?"
         placeholder="Select class"
-        selectedValue={getSelectedClassroom()}
+        selectedValue={getSelectedClassroomGroup()}
         list={allClassroomGroups.map((x) => ({
           label: x.name,
           value: x.id || '',
@@ -140,7 +160,7 @@ export const ChildBasicInfo: React.FC<
         }}
       />
 
-      {checkChild && (
+      {checkChild?.dateOfBirth && (
         <div>
           <Alert
             title={`There is already a child named ${checkChild?.fullName} at ${
@@ -165,17 +185,18 @@ export const ChildBasicInfo: React.FC<
         </div>
       )}
 
-      <Divider dividerType="solid" className="my-4" />
       <Button
+        className="mt-auto"
         text="Next"
         icon="ArrowCircleRightIcon"
         iconPosition="start"
-        disabled={!formState.isValid}
+        disabled={!formState.isValid || isLoading}
+        isLoading={isLoading}
         type="filled"
-        color="primary"
+        color="quatenary"
         textColor="white"
         onClick={() => {
-          onNext(getValues());
+          onSubmit(getValues());
         }}
       />
     </div>

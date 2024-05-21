@@ -6,6 +6,7 @@ import {
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
   AddChildUserConsentTokenModelInput,
+  ChildCreatedByDetail,
   ChildInput,
   UpdateChildAndCaregiverInput,
 } from '@ecdlink/graphql';
@@ -330,12 +331,11 @@ class ChildService {
     return response.data.data.openAccessAddChild;
   }
 
-  // Needs rename, used to check for adding duplicate children
-  async childCreatedByDetail(
+  async findCreatedChild(
     practitionerId: string,
     firstName: string,
     surname: string
-  ): Promise<ChildDto[]> {
+  ): Promise<ChildCreatedByDetail> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
@@ -353,7 +353,7 @@ class ChildService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
         'Get Children For Practitioner Failed - Server connection error'
       );

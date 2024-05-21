@@ -7,8 +7,8 @@ import {
   AddChildTokenModelInput,
   AddChildUserConsentTokenModelInput,
   ChildCaregiverInput,
+  ChildCreatedByDetail,
   ChildUserUpdateInput,
-  SiteAddressInput,
   UpdateChildAndCaregiverInput,
   UpdateSiteAddressInput,
   WorkflowStatusEnum,
@@ -23,6 +23,7 @@ export const ChildrenActions = {
   GET_CHILDREN: 'getChildren',
   UPDATE_CHILD: 'updateChild',
   UPSERT_CHILDREN: 'upsertChildren',
+  FIND_CREATED_CHILD: 'findCreatedChild',
 };
 
 export const getChildren = createAsyncThunk<
@@ -31,7 +32,6 @@ export const getChildren = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   ChildrenActions.GET_CHILDREN,
-  // eslint-disable-next-line no-empty-pattern
   async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -65,6 +65,36 @@ export const getChildren = createAsyncThunk<
       }
     } else {
       return { children: childDataCache.children, retrievedFromCache: true };
+    }
+  }
+);
+
+export const findCreatedChild = createAsyncThunk<
+  ChildCreatedByDetail,
+  { practitionerId: string; firstName: string; surname: string },
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.FIND_CREATED_CHILD,
+  async (
+    { firstName, surname, practitionerId },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ChildService(userAuth?.auth_token).findCreatedChild(
+          practitionerId,
+          firstName,
+          surname
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
