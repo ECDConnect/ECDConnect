@@ -15,5 +15,5 @@ export const APIs = {
   checkUsernamePhoneNumber: 'api/authentication/check-username-phone-number',
   addOAPractitioner: 'api/authentication/add-oa-practitioner',
   registerPractitioner: 'api/authentication/register-practitioner',
-  updateUsername: 'api/authentication/update-username',
+  updateUsernamePassword: 'api/invitation/update-username-password',
 };

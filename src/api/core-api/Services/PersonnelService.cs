@@ -1189,21 +1189,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public Practitioner RegisterPractitioner(string userName)
         {
             var user = _userManager.FindByNameAsync(userName).Result;
-            var practitioner = _practiRepo.GetByUserId(user.Id);
+            var practitioner = _practiGenericRepo.GetByUserId(user.Id);
 
             practitioner.IsRegistered = true;
             practitioner.UpdatedDate = DateTime.Now;
             practitioner.UpdatedBy = _applicationUserId.ToString();
-            return _practiRepo.Update(practitioner);
-        }
-
-        public IdentityResult UpdateUsername(Guid userId, string userName)
-        {
-            var user = _userManager.FindByIdAsync(userId).Result;
-            user.UserName = userName;
-            user.UpdatedDate = DateTime.Now;
-
-            return _userManager.UpdateAsync(user).Result;
+            return _practiGenericRepo.Update(practitioner);
         }
     }
 }

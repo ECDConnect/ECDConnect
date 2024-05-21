@@ -33,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 NumberOfPractitioners = classroom.NumberPractitioners,
                 PreschoolFeeAmount = classroom.PreschoolFeeAmount,
                 PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate,
-                SiteAddress = new BaseSiteAddressModel(classroom.SiteAddress),
+                SiteAddress = classroom.SiteAddress != null ? new BaseSiteAddressModel(classroom.SiteAddress) : null,
                 Principal = new BasePractitionerModel()
                 {
                     Email = classroom.User.Email,
