@@ -12,6 +12,7 @@ using ECDLink.Security.Managers;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -58,7 +59,7 @@ namespace ECDLink.Security.Api
 
             var user = await _invitationManager.GetValidUserWithTokenAsync(invitationModel.Username, decodedToken);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
             }
@@ -91,7 +92,7 @@ namespace ECDLink.Security.Api
 
             var user = await _invitationManager.GetValidUserWithTokenAsync(invitationModel.Username, decodedToken);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest("Invalid token");
             }
@@ -122,7 +123,7 @@ namespace ECDLink.Security.Api
 
             var user = await _invitationManager.GetValidUserWithTokenAsync(invitationModel.Username, decodedToken);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest("Invalid token");
             }
@@ -154,7 +155,7 @@ namespace ECDLink.Security.Api
 
             var user = await _invitationManager.GetValidUserWithTokenAsync(verifyModel.Username, decodedToken);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest(new FailedVerificationModel
                 {
@@ -186,7 +187,7 @@ namespace ECDLink.Security.Api
 
             var user = await _invitationManager.GetValidUserWithTokenAsync(authModel.Username, decodedToken);
 
-            if (user == default(ApplicationUser))
+            if (user == null)
             {
                 return BadRequest();
             }
@@ -206,6 +207,79 @@ namespace ECDLink.Security.Api
             await _notificationManager.SendAuthenticationCodeAsync(user, result);
 
             return new OkObjectResult(ApplicationUserHelper.GetObscureMessagePrefenceValue(user));
+        }
+
+        [Route("update-username-password")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult UpdateUsernamePassword([FromBody] UpdateUserNameModel input)
+        {
+            // Validate to see if user exists
+            var user = _userManager.FindByIdAsync(input.UserId).Result;
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "No user with provided userId"
+                });
+            }
+
+            // Validate to see if token is valid
+            if (!string.IsNullOrEmpty(input.Token))
+            {
+                var decodedToken = TokenHelper.DecodeToken(input.Token);
+                var tokenUser = _invitationManager.GetValidUserWithTokenAsync(user.UserName, decodedToken).Result;
+
+                if (tokenUser == null)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 2,
+                        Error = "Invalid token"
+                    });
+                }
+            }
+
+            // Update user with new username
+            user.UserName = input.UserName;
+            user.UpdatedDate = DateTime.Now;
+            var updateResult = _userManager.UpdateAsync(user).Result;
+            if (!updateResult.Succeeded)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 3,
+                    Error = "Update of username failure"
+                });
+            }
+
+            // Validate password for user
+            if (!string.IsNullOrEmpty(input.Password))
+            {
+                var isPasswordSecure = _passwordManager.IsPasswordSecureAsync(user, input.Password).Result;
+
+                if (!isPasswordSecure)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 4,
+                        Error = "Validate password failure"
+                    });
+                }
+
+                var changedPassword = _securityManager.ChangePasswordAsync(user, input.Password).Result;
+                if (!changedPassword)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 5,
+                        Error = "Add password failure"
+                    });
+                }
+            }
+
+            return Ok();
         }
 
     }

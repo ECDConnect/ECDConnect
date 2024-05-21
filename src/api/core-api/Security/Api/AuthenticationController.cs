@@ -6,7 +6,6 @@ using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -21,7 +20,6 @@ using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -483,23 +481,6 @@ namespace ECDLink.Security.Api
            return practitioner.UserId.ToString();
         }
 
-        [Route("update-username")]
-        [AllowAnonymous]
-        [HttpPost]
-        public IActionResult UpdateUsername([FromBody] UpdateUserNameModel input)
-        {
-            var updatedResult = _personnelService.UpdateUsername(input.UserId, input.Username);
-
-            if (!updatedResult.Succeeded)
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 1,
-                    Error = "Could not update user"
-                });
-            }
-            return Ok();
-        }
 
     }
 }
