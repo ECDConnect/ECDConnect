@@ -150,41 +150,41 @@ export const SignUp: React.FC = () => {
 
     setIsLoading(true);
 
-    // const informationVerified = await new AuthService().VerifyInvitationRequest(
-    //   {
-    //     phoneNumber: formValue.cellphone,
-    //     token: authToken || '',
-    //     username: formValue.username || '',
-    //   }
-    // );
+    const informationVerified = await new AuthService().VerifyInvitationRequest(
+      {
+        phoneNumber: formValue.cellphone,
+        token: authToken || '',
+        username: formValue.username || '',
+      }
+    );
 
-    // console.log({ informationVerified });
+    console.log({ informationVerified });
 
-    // setIsLoading(false);
+    setIsLoading(false);
 
-    // if (informationVerified.errorCode) {
-    //   setRequestError('You entered incorrect details');
-    //   return;
-    // }
+    if (informationVerified.errorCode) {
+      setRequestError('You entered incorrect details');
+      return;
+    }
 
     if (true) {
       // proceedToPhoneValidation(formValue, authToken || '');
 
-      // if (informationVerified.verified === false) {
-      //   console.log('entrouuu');
-      //   if (informationVerified.errorCode === 1) {
-      //     // setDiplayErrorMessage(['You entered incorrect details']);
-      //     setIsLoading(false);
-      //     // setTimeout(() => {
-      //     //   setDiplayErrorMessage([]);
-      //     // }, 6000);
-      //   }
-      //   if (informationVerified.errorCode === 2) {
-      //     setPresentCellNumberMismatch(true);
-      //     setIsLoading(false);
-      //   }
-      //   return;
-      // }
+      if (informationVerified.verified === false) {
+        console.log('entrouuu');
+        if (informationVerified.errorCode === 1) {
+          // setDiplayErrorMessage(['You entered incorrect details']);
+          setIsLoading(false);
+          // setTimeout(() => {
+          //   setDiplayErrorMessage([]);
+          // }, 6000);
+        }
+        if (informationVerified.errorCode === 2) {
+          setPresentCellNumberMismatch(true);
+          setIsLoading(false);
+        }
+        return;
+      }
 
       if (authToken) {
         setIsLoading(true);
@@ -206,10 +206,12 @@ export const SignUp: React.FC = () => {
             });
             setIsLoading(false);
           });
-
+        console.log({ isAuthenticated });
         if (isAuthenticated) {
           setIsLoading(false);
-          history.push(ROUTES.CREATE_USERNAME);
+          history.push(ROUTES.CREATE_USERNAME, {
+            userId: isAuthenticated?.data,
+          });
           setNotification({
             title: ` Successfully registered!`,
             variant: NOTIFICATION.SUCCESS,

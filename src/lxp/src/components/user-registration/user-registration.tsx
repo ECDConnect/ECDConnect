@@ -11,19 +11,26 @@ import facebookLogo from '../../assets/icon/facebook_white.svg';
 import { useState } from 'react';
 import { CreateUserForm } from './components/create-user-form/create-user-form';
 import { useTenant } from '@/hooks/useTenant';
+import { useLocation } from 'react-router';
 
 interface UserRegistrationProps {
   closeAction?: (item: boolean) => void;
+}
+
+export interface UserRegistrationRouteState {
+  userId?: string;
 }
 
 export const UserRegistration: React.FC<UserRegistrationProps> = ({
   closeAction,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const { state } = useLocation<UserRegistrationRouteState>();
+  const userId = state?.userId;
   const tenant = useTenant();
   const [openCreateUser, setOpencreateUser] = useState(false);
   const orgName = tenant?.tenant?.organisationName;
-
+  console.log({ state });
   return (
     <BannerWrapper
       size="small"
@@ -86,7 +93,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
         position={DialogPosition.Full}
         className="w-full"
       >
-        <CreateUserForm closeAction={setOpencreateUser} />
+        <CreateUserForm closeAction={setOpencreateUser} userId={userId} />
       </Dialog>
     </BannerWrapper>
   );

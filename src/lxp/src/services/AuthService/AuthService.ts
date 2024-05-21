@@ -8,6 +8,8 @@ import {
   SimpleUserModel,
   VerifyInvitationModel,
   RegisterRequestModel,
+  CheckUsernamePhoneNumberModel,
+  UpdateUsernameModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
 import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
@@ -159,6 +161,29 @@ class AuthService {
   async RegisterPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
     return await api(baseEndPoint).post(
       APIs.registerPractitioner,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async CheckUsernamePhoneNumber(
+    baseEndPoint: string,
+    body: CheckUsernamePhoneNumberModel
+  ) {
+    return await api(baseEndPoint).post(
+      APIs.checkUsernamePhoneNumber,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async UpdateUsername(baseEndPoint: string, body: UpdateUsernameModel) {
+    return await api(baseEndPoint).post(
+      APIs.updateUsername,
       JSON.stringify(body),
       {
         headers: headers,
