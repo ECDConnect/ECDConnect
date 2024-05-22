@@ -14,7 +14,7 @@ class HelpService {
       JSON.stringify(body)
     );
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || response.data.errors) {
       throw new Error('Send help message failed - Server connection error');
     }
 

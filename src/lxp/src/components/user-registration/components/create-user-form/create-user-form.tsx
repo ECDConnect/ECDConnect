@@ -77,8 +77,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       token: '',
     };
 
-    console.log({ checkUsername });
-
     if (checkUsername) {
       const userCreated = await new AuthService()?.UpdateUsername(
         Config?.authApi,
@@ -157,7 +155,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               type="filled"
               isLoading={isLoading}
               color="quatenary"
-              disabled={!password || !username}
+              disabled={!password || !username || isLoading}
               onClick={handleCreateUser}
             >
               <Typography

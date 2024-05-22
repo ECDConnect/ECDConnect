@@ -2,6 +2,7 @@ import {
   Config,
   ContentConsentTypeEnum,
   NOTIFICATION,
+  RegisterRequestModel,
   useNotifications,
   useQueryParams,
   useTheme,
@@ -157,8 +158,6 @@ export const SignUp: React.FC = () => {
       }
     );
 
-    console.log({ informationVerified });
-
     setIsLoading(false);
 
     if (informationVerified.errorCode) {
@@ -177,7 +176,7 @@ export const SignUp: React.FC = () => {
     }
     if (authToken) {
       setIsLoading(true);
-      const body: any = {
+      const body: RegisterRequestModel = {
         username: formValue.username,
       };
 
@@ -309,16 +308,6 @@ export const SignUp: React.FC = () => {
             register={signUpRegister}
             error={errors?.cellphone}
           />
-
-          {/* <PasswordInput<SignUpModel>
-            label={'Password'}
-            nameProp={'password'}
-            sufficIconColor={'uiMidDark'}
-            value={signUpFormGetValues().password}
-            register={signUpRegister}
-            strengthMeterVisible={true}
-            className="mb-9"
-          /> */}
 
           <Typography
             type={'body'}

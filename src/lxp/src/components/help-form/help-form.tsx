@@ -19,6 +19,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { HelpService } from '@/services/HelpService';
+import { isEmail } from '@/utils/common/string.utils';
 
 interface HelpFormProps {
   closeAction?: (item: boolean) => void;
@@ -84,9 +85,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     const inputValue = e.target.value;
     setEmail(inputValue);
 
-    // Regular expression for email validation
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValid = emailPattern.test(inputValue);
+    const isValid = isEmail(inputValue);
     setIsValidEmail(isValid);
     if (isValid) {
       setContactValue(email);
