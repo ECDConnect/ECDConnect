@@ -183,8 +183,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
-        monthOfYear: 0,
-        weekOfYear: getWeek(new Date()),
+        // TODO: get the last 3 months
       })
     ).unwrap();
     await appDispatch(

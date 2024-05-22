@@ -28,6 +28,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { LearnerDto } from '@/models/classroom/classroom-group.dto';
 
+// TODO: Remove this page and use the one from src/lxp/src/pages/classroom/child-list/child-list.tsx
 export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
@@ -41,6 +42,10 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const pendingStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
   );
+  const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildExternalLink
+  );
+
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
@@ -193,11 +198,15 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
               child: childUserOne,
               attendance: attendanceData,
               classroomGroups,
+              childExternalWorkflowStatusId,
+              childPendingWorkflowStatusId: pendingStatusId,
             });
             const childAlertTwo = getChildAlertModel({
               child: childUserTwo,
               attendance: attendanceData,
               classroomGroups,
+              childExternalWorkflowStatusId,
+              childPendingWorkflowStatusId: pendingStatusId,
             });
 
             return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
