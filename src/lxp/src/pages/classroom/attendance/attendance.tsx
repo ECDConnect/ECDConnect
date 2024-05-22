@@ -1,4 +1,4 @@
-import { AttendanceDto, LearnerDto, useDialog } from '@ecdlink/core';
+import { AttendanceDto, useDialog } from '@ecdlink/core';
 import {
   ComponentBaseProps,
   Button,
@@ -47,7 +47,10 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
-import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import {
+  ClassroomGroupDto,
+  LearnerDto,
+} from '@/models/classroom/classroom-group.dto';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -214,7 +217,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const uniqueLearners = _learners.filter((object, index, array) => {
       return (
         index ===
-        array.findIndex((newObject) => newObject.userId === object.userId)
+        array.findIndex(
+          (newObject) => newObject.childUserId === object.childUserId
+        )
       );
     });
 

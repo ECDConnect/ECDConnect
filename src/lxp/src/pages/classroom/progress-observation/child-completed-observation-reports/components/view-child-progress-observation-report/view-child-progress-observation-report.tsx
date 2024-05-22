@@ -38,8 +38,8 @@ export const ViewChildProgressObservationReport: React.FC = () => {
   const currentChild = useSelector(
     childrenSelectors.getChildById(routeState.childId)
   );
-  const currentChildLearner = useSelector(
-    classroomsSelectors.getChildLearner(currentChild)
+  const currentChildClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
   );
   const allCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories
@@ -65,7 +65,7 @@ export const ViewChildProgressObservationReport: React.FC = () => {
     const base64Pdf = await appDispatch(
       contentReportThunkActions.generateChildProgressReport({
         childId: currentReport.childId,
-        classgroupId: currentChildLearner?.classroomGroupId || '',
+        classgroupId: currentChildClassroomGroup?.id || '',
         reportDate: currentReport.reportingDate
           ? new Date(currentReport.reportingDate)
           : new Date(),

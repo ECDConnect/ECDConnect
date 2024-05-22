@@ -38,11 +38,6 @@ export const signUpSchema = Yup.object().shape({
   cellphone: Yup.string()
     .required('Cellphone number is required')
     .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
-  password: Yup.string()
-    .required('Password is required')
-    .min(8, 'At least 8 characters')
-    .matches(containsNumericRegex, 'At least 1 number')
-    .matches(containsUpperCaseRegex, 'At least 1 capital letter'),
   termsAndConditionsAccepted: Yup.boolean()
     .required()
     .isTrue('Please accept the terms and conditions'),

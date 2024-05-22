@@ -26,6 +26,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
+import { LearnerDto } from '@/models/classroom/classroom-group.dto';
 
 // TODO: Remove this page and use the one from src/lxp/src/pages/classroom/child-list/child-list.tsx
 export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
@@ -159,11 +160,10 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     if (childrenForPractitionerList && classroomGroupLearners) {
       if (value && value.length > 0) {
         for (const child of childrenForPractitionerList) {
-          const learner = classroomGroupLearners.find(
-            (x) =>
-              x.userId === child.userId &&
-              selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-          );
+          const learner = classroomGroups
+            .filter((cg) => selectedClassrooms.some((sc) => sc === cg.id))
+            .flatMap((cg) => cg.learners)
+            .find((x) => x.childUserId === child.userId);
           if (learner) {
             childListItem.push(mapUserListDataItem(child));
           }
@@ -171,7 +171,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       } else {
         for (const child of childrenForPractitionerList) {
           const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId
+            (x) => x.childUserId === child.userId
           );
           if (learner) {
             childListItem.push(mapUserListDataItem(child));

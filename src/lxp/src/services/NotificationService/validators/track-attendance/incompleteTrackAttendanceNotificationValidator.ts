@@ -48,7 +48,7 @@ export class IncompleteTrackAttendanceNotificationValidator
     if (hours < 12) return [];
 
     const classroomGroups =
-      classroomState?.classroomGroups?.filter(
+      classroomState.classroomGroupData.classroomGroups.filter(
         (classroomGroup) => classroomGroup.userId === userState?.user?.id
       ) || [];
 
@@ -60,8 +60,7 @@ export class IncompleteTrackAttendanceNotificationValidator
       classroomGroups || [],
       classroomState.classroomProgrammes || [],
       attendanceState.attendance || [],
-      this.currentDate,
-      classroomState.classroomGroupLearners
+      this.currentDate
     );
 
     if (!missedAttendance.length) return [];

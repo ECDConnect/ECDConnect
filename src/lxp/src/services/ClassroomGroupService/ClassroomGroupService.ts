@@ -58,6 +58,8 @@ class ClassroomGroupService {
               learnerId
               childUserId
               startedAttendance
+              stoppedAttendance
+              isActive
             }
           }
         }

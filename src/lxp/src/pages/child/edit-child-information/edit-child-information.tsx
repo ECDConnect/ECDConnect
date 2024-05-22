@@ -1,8 +1,6 @@
 import {
-  SiteAddressDto,
   CaregiverDto,
   ChildDto,
-  LearnerDto,
   Document,
   useDialog,
   RoleSystemNameEnum,
@@ -27,7 +25,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
-import { caregiverActions, caregiverThunkActions } from '@store/caregiver';
 import {
   childrenActions,
   childrenSelectors,
@@ -63,6 +60,7 @@ import { UNSURE_CLASS } from '@/constants/classroom';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationsSelectors } from '@/store/notifications';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { getClassroomGroupByChildUserId } from '@/store/classroom/classroom.selectors';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -111,8 +109,10 @@ export const EditChildInformation: React.FC = () => {
     useState<ChildInformationViewType>();
 
   // Data Cache
-  const [currentChildLearnerRecord, setCurrentChildLearnerRecord] =
-    useState<LearnerDto>();
+  const currentChildClassroomGroup = useSelector(
+    getClassroomGroupByChildUserId(child?.userId!)
+  );
+
   const [classRoomGroupsList, setClassRoomGroupsList] = useState<
     DropDownOption<string>[]
   >([]);
@@ -152,21 +152,11 @@ export const EditChildInformation: React.FC = () => {
   }, [classroomGroups]);
 
   useEffect(() => {
-    if (child && classroomGroupLearners) {
-      const currentChildL = classroomGroupLearners.find(
-        (x) => x.userId === child.userId && x.stoppedAttendance == null
-      );
-      setCurrentChildLearnerRecord(currentChildL);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [child, classroomGroupLearners]);
-
-  useEffect(() => {
     if (child) {
       setNewStackListItems(child, caregiver);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [child, caregiver, currentChildLearnerRecord]);
+  }, [child, caregiver]);
 
   const assignToClassNotifications = useSelector(
     notificationsSelectors.getAllNotifications
@@ -209,8 +199,7 @@ export const EditChildInformation: React.FC = () => {
               colour: 'quatenary',
               type: 'filled',
               onClick: () => {
-                // TODO: add the logic to save the new classroom group
-                // saveEditClassroomGroup()
+                saveEditClassroomGroup();
                 history.push(ROUTES.CHILD_PROFILE, { childId });
                 onSubmit();
               },
@@ -475,79 +464,32 @@ export const EditChildInformation: React.FC = () => {
   };
 
   const saveEditClassroomGroup = async () => {
-    if (currentChildLearnerRecord) {
-      const learnerInputModel: LearnerDto = {
-        id: currentChildLearnerRecord?.id,
-        classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
-        userId: currentChildLearnerRecord?.userId ?? '',
-        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-        otherAttendanceReason:
-          currentChildLearnerRecord?.otherAttendanceReason ?? '',
-        startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
-        stoppedAttendance: new Date().toISOString(),
-        isActive: false,
-      };
+    if (!!child) {
+      // They should always be in a classroom group though
+      if (!!currentChildClassroomGroup) {
+        // Deactivate old learner record
+        removeNotifications();
 
-      removeNotifications();
+        appDispatch(
+          classroomsActions.deactivateLearner({
+            childUserId: child.userId!,
+            classroomGroupId: currentChildClassroomGroup.id,
+          })
+        );
+      }
 
       appDispatch(
-        classroomsActions.updateClassroomGroupLearner(learnerInputModel)
-      );
-
-      await appDispatch(
-        classroomsThunkActions.updateLearner({
-          id: learnerInputModel.id as string,
-          learner: learnerInputModel,
+        classroomsActions.createLearner({
+          childUserId: child.userId!,
+          newClassroomGroupId: classroomGroupId,
         })
       );
 
-      const newLearnerModel: LearnerDto = {
-        id: newGuid(),
-        classroomGroupId: classroomGroupId,
-        userId: currentChildLearnerRecord?.userId ?? '',
-        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-        otherAttendanceReason:
-          currentChildLearnerRecord?.otherAttendanceReason ?? '',
-        startedAttendance: new Date().toISOString(),
-        stoppedAttendance: null,
-        isActive: currentChildLearnerRecord?.isActive,
-      };
-
-      appDispatch(
-        classroomsActions.createClassroomGroupLearner(newLearnerModel)
-      );
-
       await appDispatch(
-        classroomsThunkActions.createLearner({ learner: newLearnerModel })
-      ).unwrap();
-
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroups({})
-      ).unwrap();
-    } else {
-      //this child does not belong to any classroomgroup
-      const newLearnerModel: LearnerDto = {
-        classroomGroupId: classroomGroupId,
-        userId: child?.userId ?? '',
-        attendanceReasonId: undefined,
-        otherAttendanceReason: '',
-        startedAttendance: new Date().toISOString(),
-        stoppedAttendance: null,
-        isActive: true,
-      };
-
-      appDispatch(
-        classroomsActions.createClassroomGroupLearner(newLearnerModel)
-      );
-
-      await appDispatch(
-        classroomsThunkActions.createLearner({ learner: newLearnerModel })
-      ).unwrap();
-
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroups({})
+        classroomsThunkActions.upsertClassroomGroupLearners({})
       ).unwrap();
     }
+
     setEditClassVisible(false);
     history.push(ROUTES.CHILD_PROFILE, { childId });
   };

@@ -33,7 +33,9 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const [deadlineDateText, setDeadlineDateText] = useState<string>('');
   const dialog = useDialog();
   const childExpiryTime = useSelector(settingSelectors.getChildExpiryTime);
-  const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
+  const childClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child.userId!)
+  );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupId = classroomGroups?.at(0)?.id;
   const dispatch = useAppDispatch();
@@ -99,7 +101,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const createLink = async () => {
     const response = await dispatch(
       childrenThunkActions.refreshCaregiverChildToken({
-        classgroupId: childLearner?.classroomGroupId || classroomGroupId,
+        classgroupId: childClassroomGroup?.id || classroomGroupId,
         childId: child.id,
       })
     );

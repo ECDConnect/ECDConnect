@@ -20,3 +20,15 @@ export interface AuthCodeModel {
   username: string;
   token: string;
 }
+
+export interface CheckUsernamePhoneNumberModel {
+  username: string;
+  phoneNumber?: string;
+}
+
+export interface UpdateUsernameModel {
+  userId: string;
+  username?: string;
+  password?: string;
+  token?: string;
+}

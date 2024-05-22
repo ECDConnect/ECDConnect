@@ -145,6 +145,7 @@ export const AddProgrammeForm: React.FC<{
     nonSmartStartPractitioners !== null &&
     smartStartPractitioners !== undefined &&
     smartStartPractitioners !== null;
+
   const createClassroom = (
     programme: EditProgrammeModel,
     classroomId: string
@@ -177,13 +178,10 @@ export const AddProgrammeForm: React.FC<{
         ward: '',
       },
     };
-    const programmeInput = programData?.find((x) => x.id === programme.type);
 
     // TODO
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    // if (programmeInput) {
-    //   appDispatch(classroomsActions.setProgrammeType(programmeInput));
-    // }
+    // Should this upsert the classroom ???
   };
 
   const updateClassroom = (
@@ -214,11 +212,8 @@ export const AddProgrammeForm: React.FC<{
       },
     };
 
-    const programmeInput = programData?.find((x) => x.id === programme.type);
+    // This won't actually call the BE
     appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    // if (programmeInput) {
-    //   appDispatch(classroomsActions.setProgrammeType(programmeInput));
-    // }
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
@@ -232,6 +227,7 @@ export const AddProgrammeForm: React.FC<{
     onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 
+  // Do we still have imported users?
   const onSubmitForImportedUser = (e: EditProgrammeModel) => {
     if (!e.isPrincipalOrLeader && e.isPrincipleOrOwnerSmartStarter) {
       setIsNotPrincipal(true);

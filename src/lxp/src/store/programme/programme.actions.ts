@@ -102,7 +102,7 @@ export const upsertProgrammes = createAsyncThunk<
     const {
       auth: { userAuth },
       programmeData: { programmes },
-      classroomData: { classroom, classroomGroups },
+      classroomData: { classroom, classroomGroupData },
     } = getState();
 
     try {
@@ -114,7 +114,8 @@ export const upsertProgrammes = createAsyncThunk<
             Id: programme.id,
             ClassroomId: programme.classroomId || classroom?.id,
             ClassroomGroupId:
-              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id,
+              programme?.classroomGroupId ??
+              classroomGroupData.classroomGroups.at(0)?.id, // Why does this use the first?
             Name: programme.name,
             StartDate: programme.startDate,
             EndDate: programme.endDate,
@@ -168,7 +169,7 @@ export const updateProgrammes = createAsyncThunk<
     const {
       auth: { userAuth },
       programmeData: { programmes },
-      classroomData: { classroom, classroomGroups },
+      classroomData: { classroom, classroomGroupData },
     } = getState();
 
     try {
@@ -180,7 +181,9 @@ export const updateProgrammes = createAsyncThunk<
             id: programme.id,
             classroomId: programme.classroomId || classroom?.id,
             classroomGroupId:
-              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id ?? null,
+              programme?.classroomGroupId ??
+              classroomGroupData.classroomGroups.at(0)?.id ??
+              null, // Why does this just use the first?
             name: programme.name,
             startDate: programme.startDate,
             endDate: programme.endDate,

@@ -119,7 +119,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       const uniqueLearners = _allLearners.filter((object, index, array) => {
         return (
           index ===
-          array.findIndex((newObject) => newObject.userId === object.userId)
+          array.findIndex(
+            (newObject) => newObject.childUserId === object.childUserId
+          )
         );
       });
       setHasChildren(uniqueLearners && uniqueLearners.length > 0);

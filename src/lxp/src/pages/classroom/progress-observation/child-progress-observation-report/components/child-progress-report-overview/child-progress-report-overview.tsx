@@ -33,7 +33,9 @@ export const ChildProgressReportOverview: React.FC<
   const dialog = useDialog();
   const child = useSelector(childrenSelectors.getChildById(childId));
 
-  const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
+  const currentChildClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
+  );
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories
   );
@@ -101,7 +103,7 @@ export const ChildProgressReportOverview: React.FC<
       if (isOnline) {
         await completeReport(
           currentReport,
-          childLearner?.classroomGroupId || ''
+          currentChildClassroomGroup?.id || ''
         );
         history.replace('/download-child-progress-observation-reports', {
           childId: childId,
@@ -109,7 +111,7 @@ export const ChildProgressReportOverview: React.FC<
       } else {
         completeReportLocally(
           currentReport,
-          childLearner?.classroomGroupId || ''
+          currentChildClassroomGroup?.id || ''
         );
         history.replace('/completed-child-progress-observation-reports', {
           childId: childId,

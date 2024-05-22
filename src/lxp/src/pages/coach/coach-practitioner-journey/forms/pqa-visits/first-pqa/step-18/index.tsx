@@ -170,18 +170,13 @@ export const Step18 = ({
       return;
 
     const filteredChildren = [];
-    const _allLearners = allLearners?.filter(
-      (x) => !Boolean(x?.stoppedAttendance)
-    );
 
-    for (const learner of _allLearners) {
-      if (
-        !currentClassroomGroups.some(
-          (item) => item?.id === learner?.classroomGroupId
-        )
-      )
-        continue;
-      const childUser = children?.find((y) => y?.userId === learner?.userId);
+    for (const learner of currentClassroomGroups.flatMap((cg) => cg.learners)) {
+      if (!learner.isActive || learner.stoppedAttendance) continue;
+
+      const childUser = children?.find(
+        (y) => y?.userId === learner?.childUserId
+      );
 
       if (childUser) {
         filteredChildren.push(childUser);

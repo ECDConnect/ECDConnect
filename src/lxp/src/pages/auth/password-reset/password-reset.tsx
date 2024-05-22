@@ -22,6 +22,7 @@ import {
 } from '@schemas/auth/password/password-reset';
 import AuthService from '@services/AuthService/AuthService';
 import ROUTES from '@routes/routes';
+import { HelpForm } from '@/components/help-form/help-form';
 
 export const PasswordReset: React.FC = () => {
   const [userPhoneNumberEnding, setUserPhoneNumberEnding] =
@@ -37,6 +38,7 @@ export const PasswordReset: React.FC = () => {
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
+  const [openHelp, setOpenHelp] = useState(false);
 
   const {
     register: resetPasswordRegister,
@@ -237,10 +239,11 @@ export const PasswordReset: React.FC = () => {
             <div>
               <Alert
                 className={styles.bigSpace}
-                title={`SMS sent to cellphone number ending in ${userPhoneNumberEnding}`}
-                message={
-                  'Please check your messages and click the reset passwork link.'
-                }
+                title={`If an account with this number exists, we will send an SMS to your cellphone number.`}
+                list={[
+                  'Please check your messages and click the passwork reset link.',
+                  `If you haven't received a message, you can try resending the link.`,
+                ]}
                 type={'success'}
               />
               <Divider className={'mt-4 mb-5'}></Divider>
@@ -289,7 +292,7 @@ export const PasswordReset: React.FC = () => {
               color="secondaryAccent2"
               background="transparent"
               size="small"
-              onClick={() => setDisplayCallHelp(true)}
+              onClick={() => setOpenHelp(true)}
             >
               <Typography
                 type="help"
@@ -326,6 +329,13 @@ export const PasswordReset: React.FC = () => {
             },
           ]}
         />
+      </Dialog>
+      <Dialog
+        visible={openHelp}
+        position={DialogPosition.Full}
+        className="w-full"
+      >
+        <HelpForm closeAction={setOpenHelp} />
       </Dialog>
     </div>
   );
