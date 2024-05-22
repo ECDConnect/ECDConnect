@@ -1,5 +1,9 @@
 import {
+  Config,
   ContentConsentTypeEnum,
+  NOTIFICATION,
+  RegisterRequestModel,
+  useNotifications,
   useQueryParams,
   useTheme,
 } from '@ecdlink/core';
@@ -17,7 +21,6 @@ import {
   FormInput,
   HeaderCard,
   HeaderSlide,
-  PasswordInput,
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
@@ -39,13 +42,17 @@ import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
+import ROUTES from '@/routes/routes';
+import { useTenant } from '@/hooks/useTenant';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
 let headerSlide: HeaderSlide;
 
 export const SignUp: React.FC = () => {
+  const tenant = useTenant();
   const appDispatch = useAppDispatch();
+  const { setNotification } = useNotifications();
   const {
     watch,
     register: signUpRegister,
@@ -77,6 +84,8 @@ export const SignUp: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
+  const tenantName = tenant?.tenant?.applicationName;
+  const isWhitelabel = tenant?.isWhiteLabel;
 
   if (userDetails) {
     // coach
@@ -152,14 +161,51 @@ export const SignUp: React.FC = () => {
     setIsLoading(false);
 
     if (informationVerified.errorCode) {
-      setRequestError('You entered incorrect details');
-      return;
+      if (informationVerified.verified === false) {
+        if (informationVerified.errorCode === 1) {
+          setRequestError('You entered incorrect details');
+          setIsLoading(false);
+          return;
+        }
+        if (informationVerified.errorCode === 2) {
+          setPresentCellNumberMismatch(true);
+          setIsLoading(false);
+        }
+        return;
+      }
     }
+    if (authToken) {
+      setIsLoading(true);
+      const body: RegisterRequestModel = {
+        username: formValue.username,
+      };
 
-    if (informationVerified.verified) {
-      proceedToPhoneValidation(formValue, authToken || '');
-    } else if (informationVerified.errorCode === 2) {
-      setPresentCellNumberMismatch(true);
+      const isAuthenticated = await new AuthService()
+        .RegisterPractitioner(Config.authApi, body)
+        .catch(() => {
+          setNotification({
+            title: ` Failed to Sign Up!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setIsLoading(false);
+        });
+
+      if (isAuthenticated) {
+        setIsLoading(false);
+        history.push(ROUTES.CREATE_USERNAME, {
+          userId: isAuthenticated?.data,
+        });
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      } else {
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        setIsLoading(false);
+      }
     }
   };
 
@@ -200,7 +246,7 @@ export const SignUp: React.FC = () => {
     <div className={styles.wrapper}>
       <BannerWrapper
         color={'primary'}
-        showBackground
+        showBackground={isWhitelabel ? false : true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
@@ -208,9 +254,13 @@ export const SignUp: React.FC = () => {
         renderBorder={false}
         renderOverflow={false}
       >
-        {headerSlide && <HeaderCard className={'mt-4'} slide={headerSlide} />}
+        {headerSlide && !isWhitelabel && (
+          <HeaderCard className={'mt-4'} slide={headerSlide} />
+        )}
 
-        <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
+        {!isWhitelabel && (
+          <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
+        )}
         <form style={{ maxWidth: '442px' }} className={styles.formStyle}>
           {preferId && (
             <FormInput<SignUpModel>
@@ -219,6 +269,7 @@ export const SignUp: React.FC = () => {
               nameProp={'username'}
               register={signUpRegister}
               placeholder={'E.g. 7601010338089'}
+              error={errors?.username}
             />
           )}
           {!preferId && (
@@ -227,6 +278,7 @@ export const SignUp: React.FC = () => {
               visible={true}
               nameProp={'username'}
               register={signUpRegister}
+              error={errors?.username}
             />
           )}
 
@@ -254,16 +306,7 @@ export const SignUp: React.FC = () => {
             visible={true}
             type={'text'}
             register={signUpRegister}
-          />
-
-          <PasswordInput<SignUpModel>
-            label={'Password'}
-            nameProp={'password'}
-            sufficIconColor={'uiMidDark'}
-            value={signUpFormGetValues().password}
-            register={signUpRegister}
-            strengthMeterVisible={true}
-            className="mb-9"
+            error={errors?.cellphone}
           />
 
           <Typography
@@ -381,7 +424,7 @@ export const SignUp: React.FC = () => {
             disabled={!isOnline}
             onClick={handleSubmit(submitForm)}
           >
-            <Typography type="help" color="white" text={'Sign up'}></Typography>
+            <Typography type="help" color="white" text={'Next'}></Typography>
           </Button>
 
           <Divider
@@ -417,19 +460,19 @@ export const SignUp: React.FC = () => {
       <Dialog
         visible={presentCellNumberMismatch}
         position={DialogPosition.Middle}
+        className="p-4"
       >
+        signUpFormGetValues().cellphone
         <ActionModal
           icon={'InformationCircleIcon'}
           iconColor={'alertMain'}
-          importantText={`SmartStart has a different cellphone number for you: ${
+          importantText={`${tenantName} has a different cellphone number for you`}
+          detailText={`Please check that this is the correct cellphone number: ${
             signUpFormGetValues().cellphone
-          }`}
-          detailText={
-            'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
-          }
+          }. If you have entered the correct number and are still getting this error, fill in the help form.`}
           actionButtons={[
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Edit cellphone number',
               textColour: 'white',
               leadingIcon: 'PencilIcon',
@@ -439,12 +482,13 @@ export const SignUp: React.FC = () => {
               type: 'filled',
             },
             {
-              colour: 'primary',
-              text: 'Call 0800 014 817',
-              textColour: 'primary',
+              colour: 'quatenary',
+              text: 'Get help',
+              textColour: 'quatenary',
               leadingIcon: 'PhoneIcon',
               onClick: () => {
                 setPresentCellNumberMismatch(false);
+                setOpenHelp(true);
               },
               type: 'outlined',
             },

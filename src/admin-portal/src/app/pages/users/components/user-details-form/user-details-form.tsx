@@ -1,13 +1,11 @@
 import React from 'react';
-import { useQuery } from '@apollo/client';
-import { GenderDto, UserDto } from '@ecdlink/core';
-import { GenderList } from '@ecdlink/graphql';
+import { UserDto } from '@ecdlink/core';
 import { useEffect } from 'react';
-import DatePicker from 'react-datepicker';
+
 import 'react-datepicker/dist/react-datepicker.css';
-import { UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
-import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
+
 export interface UserDetailsFormProps {
   formKey: string;
   user?: UserDto;
@@ -61,6 +59,15 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
               register={register}
               error={errors.email?.message}
               placeholder="e.g name@email.com"
+            />
+          </div>
+          <div className="my-4 sm:col-span-3">
+            <FormField
+              label={'Phone number *'}
+              nameProp={'phoneNumber'}
+              register={register}
+              error={errors?.phoneNumber?.message}
+              placeholder="eg. 0650025055"
             />
           </div>
           <div className="my-4 sm:col-span-3">

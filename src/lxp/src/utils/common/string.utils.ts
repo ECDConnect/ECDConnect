@@ -22,3 +22,7 @@ export const getAlertSeverity = (color: string): AlertSeverityType => {
       return 'none';
   }
 };
+
+export const isEmail = (val: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+};

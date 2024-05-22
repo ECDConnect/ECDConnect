@@ -133,6 +133,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePrevious } from '@ecdlink/core';
 import { Location } from 'history';
 import ChildList from '@/pages/classroom/child-list/child-list';
+import { UserRegistration } from '@/components/user-registration/user-registration';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -143,6 +144,11 @@ const PublicRoutes: React.FC = () => {
         render={() => <Redirect to={ROUTES.LOGIN} />}
       />
       <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+      <Route
+        path={ROUTES.CREATE_USERNAME}
+        component={UserRegistration}
+        exact={true}
+      />
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
