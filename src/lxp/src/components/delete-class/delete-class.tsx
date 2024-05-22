@@ -32,7 +32,9 @@ export const DeleteClassActionModal = ({
     ClassroomActions.UPDATE_CLASSROOM_GROUP
   );
 
-  const canDeleteClassroomGroup = !classroomGroup?.learners.length;
+  const canDeleteClassroomGroup = !classroomGroup?.learners?.filter(
+    (learner) => learner?.isActive !== false
+  ).length;
 
   const onDelete = () => {
     appDispatch(
