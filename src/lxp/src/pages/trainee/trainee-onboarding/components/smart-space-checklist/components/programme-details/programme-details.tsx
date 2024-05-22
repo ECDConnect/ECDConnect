@@ -238,10 +238,11 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
       ward: '',
     };
 
-    appDispatch(classroomsActions.updateClassroomSiteAddress(siteAddress));
-    if (isOnline) {
-      await appDispatch(classroomsThunkActions.upsertClassroomSiteAddress({}));
-    }
+    // Trainees don't exist anymore
+    // appDispatch(classroomsActions.updateClassroomSiteAddress(siteAddress));
+    // if (isOnline) {
+    //   await appDispatch(classroomsThunkActions.upsertClassroomSiteAddress({}));
+    // }
   };
 
   useEffect(() => {

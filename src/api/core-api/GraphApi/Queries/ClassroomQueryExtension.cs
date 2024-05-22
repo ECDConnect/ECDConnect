@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             };
         }
 
-        // This seems to be mostly used to get the school details for a user, lets rename and clean it up
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public List<ClassroomGroupModel> GetClassroomGroupsForUser(
             [Service] IClassroomService classroomService,
             Guid userId)
@@ -63,7 +63,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     LearnerId = y.Id,
                     ChildUserId = y.UserId.Value,
-                    StartedAttendance = y.StartedAttendance
+                    StartedAttendance = y.StartedAttendance,
+                    StoppedAttendance = y.StoppedAttendance,
+                    IsActive = y.IsActive,
                 }).ToList(),
             }).ToList();
         }

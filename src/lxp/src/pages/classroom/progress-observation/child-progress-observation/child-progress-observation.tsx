@@ -95,7 +95,9 @@ export const ChildProgressObservationPage: React.FC = () => {
   const reportingPeriod = getReportingPeriod(reportingDate, firstObservation);
   const child = useSelector(childrenSelectors.getChildById(routeState.childId));
 
-  const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
+  const childClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
+  );
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
   const [
@@ -336,18 +338,12 @@ export const ChildProgressObservationPage: React.FC = () => {
     setCompleteFirstObservationsPromptActive(false);
     if (!!currentReport) {
       if (isOnline) {
-        await completeReport(
-          currentReport,
-          childLearner?.classroomGroupId || ''
-        );
+        await completeReport(currentReport, childClassroomGroup?.id || '');
         history.replace(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
           childId: routeState.childId,
         });
       } else {
-        completeReportLocally(
-          currentReport,
-          childLearner?.classroomGroupId || ''
-        );
+        completeReportLocally(currentReport, childClassroomGroup?.id || '');
         history.replace(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
           childId: routeState.childId,
         });

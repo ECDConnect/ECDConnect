@@ -146,9 +146,9 @@ export const SetupPrincipal: React.FC = () => {
 
     // Update classroom number of practitioners
     appDispatch(
-      classroomsActions.updateClassroomNumberPractitioners({
-        numberPractitioners: principalPractitioners?.length ?? 0,
-      })
+      classroomsActions.updateClassroomNumberPractitioners(
+        principalPractitioners?.length ?? 0
+      )
     );
 
     // Update classroom data

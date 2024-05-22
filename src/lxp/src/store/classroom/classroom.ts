@@ -13,6 +13,9 @@ import {
   getClassroom,
   updatePreschoolFee,
   createLearner,
+  upsertClassroom,
+  upsertClassroomGroups,
+  updateClassroomGroup,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -21,12 +24,11 @@ import { SiteAddressDto } from '@/models/classroom/site-address.dto';
 
 const initialState: ClassroomState = {
   classroom: undefined,
-  classroomGroups: undefined,
+  classroomGroupData: {
+    classroomGroups: [],
+    dateRefreshed: undefined,
+  },
   classroomProgrammes: undefined,
-  classroomGroupLearners: undefined,
-  programmeType: undefined,
-  principal: undefined,
-  classrooGroupsForPractitioner: undefined,
 };
 
 const classroomsSlice = createSlice({
@@ -35,15 +37,15 @@ const classroomsSlice = createSlice({
   reducers: {
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
-      state.classroomGroups = initialState.classroomGroups;
+      state.classroomGroupData = initialState.classroomGroupData;
       state.classroomProgrammes = initialState.classroomProgrammes;
-      state.classroomGroupLearners = initialState.classroomGroupLearners;
-      state.principal = initialState.principal;
-      state.classrooGroupsForPractitioner =
-        initialState.classrooGroupsForPractitioner;
     },
     updateClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
-      state.classroom = action.payload;
+      state.classroom = {
+        ...action.payload,
+        dateRefreshed: state.classroom?.dateRefreshed,
+        synced: false,
+      };
     },
     updateClassroomSiteAddress: (
       state,
@@ -56,26 +58,28 @@ const classroomsSlice = createSlice({
         };
       }
     },
-    // TODO - do we need this? It should just pass in the number, not the whole classroom...
     updateClassroomNumberPractitioners: (
       state,
-      action: PayloadAction<Pick<ClassroomDto, 'numberPractitioners'>>
+      action: PayloadAction<number>
     ) => {
-      if (state.classroom)
-        state.classroom.numberOfPractitioners =
-          action.payload.numberPractitioners!;
+      if (state.classroom) {
+        state.classroom.numberOfPractitioners = action.payload;
+      }
     },
     updateClassroomGroup: (
       state,
       action: PayloadAction<SimpleClassroomGroupDto>
     ) => {
-      if (state.classroomGroups) {
-        const isOnline = navigator.onLine;
-        const payloadUpdated = { ...action.payload, isOnline };
-        for (let i = 0; i < state.classroomGroups.length; i++) {
-          if (state.classroomGroups[i].id === action.payload.id)
-            state.classroomGroups[i] = payloadUpdated;
-        }
+      const payloadUpdated = { ...action.payload, synced: false };
+      for (
+        let i = 0;
+        i < state.classroomGroupData.classroomGroups.length;
+        i++
+      ) {
+        if (
+          state.classroomGroupData.classroomGroups[i].id === action.payload.id
+        )
+          state.classroomGroupData.classroomGroups[i] = payloadUpdated;
       }
     },
     updateClassroomProgramme: (
@@ -91,32 +95,66 @@ const classroomsSlice = createSlice({
         }
       }
     },
-    updateClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
-      if (state.classroomGroupLearners) {
-        const isOnline = navigator.onLine;
-        const payloadUpdated = { ...action.payload, isOnline };
-        for (let i = 0; i < state.classroomGroupLearners.length; i++) {
-          if (
-            state.classroomGroupLearners[i].userId === action.payload.userId &&
-            state.classroomGroupLearners[i].classroomGroupId ===
-              action.payload.classroomGroupId &&
-            state.classroomGroupLearners[i].id === action.payload.id
-          )
-            state.classroomGroupLearners[i] = payloadUpdated;
-        }
-      }
+    deactivateLearner: (
+      state,
+      action: PayloadAction<{ childUserId: string; classroomGroupId: string }>
+    ) => {
+      state.classroomGroupData.classroomGroups =
+        state.classroomGroupData.classroomGroups.map((classroomGroup) =>
+          classroomGroup.id === action.payload.classroomGroupId
+            ? {
+                ...classroomGroup,
+                learners: classroomGroup.learners.map((learner) =>
+                  learner.childUserId === action.payload.childUserId
+                    ? {
+                        ...learner,
+                        isActive: false,
+                        stoppedAttendance: new Date().toUTCString(),
+                        synced: false,
+                      }
+                    : learner
+                ),
+              }
+            : classroomGroup
+        );
+    },
+    createLearner: (
+      state,
+      action: PayloadAction<{
+        childUserId: string;
+        newClassroomGroupId: string;
+      }>
+    ) => {
+      state.classroomGroupData.classroomGroups =
+        state.classroomGroupData.classroomGroups.map((classroomGroup) =>
+          classroomGroup.id === action.payload.newClassroomGroupId
+            ? {
+                ...classroomGroup,
+                learners: classroomGroup.learners.concat({
+                  learnerId: '',
+                  childUserId: action.payload.childUserId,
+                  startedAttendance: new Date().toUTCString(),
+                  isActive: true,
+                  stoppedAttendance: undefined,
+                  synced: false,
+                }),
+              }
+            : classroomGroup
+        );
     },
     createClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
-      state.classroom = action.payload;
+      state.classroom = {
+        ...action.payload,
+        dateRefreshed: undefined,
+        synced: false,
+      };
     },
     createClassroomGroup: (
       state,
       action: PayloadAction<SimpleClassroomGroupDto>
     ) => {
-      if (!state.classroomGroups) state.classroomGroups = [];
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-      state.classroomGroups?.push(payloadUpdated);
+      const payloadUpdated = { ...action.payload, synced: false };
+      state.classroomGroupData.classroomGroups.push(payloadUpdated);
     },
     createClassroomProgramme: (
       state,
@@ -127,33 +165,15 @@ const classroomsSlice = createSlice({
       if (!state.classroomProgrammes) state.classroomProgrammes = [];
       state.classroomProgrammes?.push(payloadUpdated);
     },
-    createClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-      if (!state.classroomGroupLearners) state.classroomGroupLearners = [];
-      state.classroomGroupLearners?.push(payloadUpdated);
-    },
-    removeClassroomGroupOnEdit: (
-      state,
-      action: PayloadAction<Pick<ClassroomGroupDto, 'id'>>
-    ) => {
-      const index = state.classroomGroups?.findIndex(
-        (c) => c.id === action.payload.id
-      );
-      if (index && index > -1) {
-        state.classroomGroups?.splice(index, 1);
-        state.classroomProgrammes = state.classroomProgrammes?.filter(
-          (programme) => programme.classroomGroupId !== action.payload.id
-        );
-      }
-    },
-    // TODO - need to check on this
+    // Only used during classroom setup it seems, is this still used? Only state gets updated, no BE sync
+    // Should deactivate instead, so we can sync later
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (!!action.payload.id && !!state.classroomGroups) {
-        const index = state.classroomGroups?.findIndex(
+      if (!!action.payload.id) {
+        const index = state.classroomGroupData.classroomGroups.findIndex(
           (c) => c.id === action.payload.id
         );
-        if (index && index > -1) state.classroomGroups?.splice(index, 1);
+        if (index && index > -1)
+          state.classroomGroupData.classroomGroups.splice(index, 1);
       }
     },
     deleteClassroomProgramme: (
@@ -174,53 +194,36 @@ const classroomsSlice = createSlice({
         if (index && index > -1) state.classroomProgrammes?.splice(index, 1);
       }
     },
-    // TODO - needs to be updated, to remove learner from the actual classroom group
-    deleteClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
-      const index = state.classroomGroupLearners?.findIndex(
-        (c) =>
-          c.userId === action.payload.userId &&
-          c.classroomGroupId === action.payload.classroomGroupId
-      );
-      if (index && index > -1) state.classroomGroupLearners?.splice(index, 1);
-    },
-    // TODO - needs to be updated, to remove learner from the actual classroom group
-    deactivateClassroomGroupLearner: (
-      state,
-      action: PayloadAction<ChildDto>
-    ) => {
-      if (!state.classroomGroupLearners) return;
-
-      const learnerIndex = state.classroomGroupLearners.findIndex(
-        (learner) =>
-          learner.userId === action.payload.userId &&
-          learner.id === action.payload.id
-      );
-
-      if (learnerIndex < 0) return;
-
-      const newDate = new Date();
-      state.classroomGroupLearners[learnerIndex].stoppedAttendance =
-        newDate.toISOString();
-      state.classroomGroupLearners[learnerIndex].isActive = false;
-    },
   },
   extraReducers: (builder) => {
     builder.addCase(getClassroom.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroom = action.payload;
+        state.classroom = {
+          ...action.payload,
+          dateRefreshed: new Date().toDateString(),
+          synced: true,
+        };
       }
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroups = action.payload;
+        state.classroomGroupData = {
+          classroomGroups: action.payload.map((cg) => ({
+            ...cg,
+            synced: true,
+            learners: cg.learners.map((l) => ({ ...l, synced: true })),
+          })),
+          dateRefreshed: new Date().toDateString(),
+        };
       }
     });
-    // TODO - might need to update this
+    // TODO - might need to update this, at least for sync stuff
     builder.addCase(getClassroomProgrammes.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroomProgrammes = action.payload;
       }
     });
+    // TODO - Need to update creating/updating learners
     builder.addCase(createLearner.fulfilled, (state, action) => {
       // TODO - should this add the learner to the class group in the state?
     });
@@ -232,6 +235,22 @@ const classroomsSlice = createSlice({
           preschoolFeeAmountLastUpdateDate: new Date() as unknown as string,
         };
       }
+    });
+    builder.addCase(upsertClassroom.fulfilled, (state, action) => {
+      if (state.classroom) {
+        state.classroom.synced = true;
+      }
+    });
+    builder.addCase(upsertClassroomGroups.fulfilled, (state, action) => {
+      state.classroomGroupData = {
+        ...state.classroomGroupData,
+        classroomGroups: state.classroomGroupData.classroomGroups.map(
+          (group) => ({
+            ...group,
+            synced: true,
+          })
+        ),
+      };
     });
   },
 });

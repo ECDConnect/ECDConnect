@@ -1,7 +1,12 @@
-import { ChildDto, UserDto } from '@ecdlink/core';
+import { ChildDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getChildren, updateChild, upsertChildren } from './children.actions';
+import {
+  findCreatedChild,
+  getChildren,
+  updateChild,
+  upsertChildren,
+} from './children.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { CaregiverContactHistory, ChildrenState } from './children.types';
 
@@ -78,6 +83,10 @@ const childrenSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, updateChild);
+    setThunkActionStatus(builder, findCreatedChild);
+    builder.addCase(findCreatedChild.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getChildren.fulfilled, (state, action) => {
       if (!action.payload.retrievedFromCache) {
         const unsyncedChildren = state.childData.children.filter(

@@ -21,27 +21,37 @@ import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 
 export const ClassroomActions = {
   GET_CLASSROOM: 'getClassroom',
   GET_CLASSROOM_GROUPS: 'getClassroomGroups',
+  UPSERT_CLASSROOM_GROUPS: 'upsertClassroomGroups',
+  UPSERT_CLASSROOM_GROUPS_LEARNERS: 'upsertClassroomGroupLearners',
 };
 
 export const getClassroom = createAsyncThunk<
   SimpleClassroomDto,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  {} & RetrieveFromCache,
   ThunkApiType<RootState>
 >(
   ClassroomActions.GET_CLASSROOM,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroom: classroomCache },
+      classroomData: { classroom: cache },
     } = getState();
 
-    if (!classroomCache) {
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    if (
+      !!overrideCache ||
+      !cache ||
+      !cache.dateRefreshed ||
+      new Date(cache.dateRefreshed) < oneDayAgo
+    ) {
       try {
         let classroom: SimpleClassroomDto | undefined;
         if (userAuth?.auth_token) {
@@ -60,26 +70,32 @@ export const getClassroom = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
-      return classroomCache;
+      return cache;
     }
   }
 );
 
 export const getClassroomGroups = createAsyncThunk<
   SimpleClassroomGroupDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  {} & RetrieveFromCache,
   ThunkApiType<RootState>
 >(
   ClassroomActions.GET_CLASSROOM_GROUPS,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomGroups: cache },
+      classroomData: { classroomGroupData: cache },
     } = getState();
 
-    if (!cache) {
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    if (
+      !!overrideCache ||
+      !cache.dateRefreshed ||
+      new Date(cache.dateRefreshed) < oneDayAgo
+    ) {
       try {
         let groups: SimpleClassroomGroupDto[] | undefined;
 
@@ -104,7 +120,7 @@ export const getClassroomGroups = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
-      return cache;
+      return cache.classroomGroups;
     }
   }
 );
@@ -149,9 +165,9 @@ export const getClassroomProgrammes = createAsyncThunk<
   }
 );
 
-// This currently calls a generic GQL endpoint, may need to update
+// TODO - check that this actually saves the address, otherwise we can save it separately
 export const upsertClassroom = createAsyncThunk<
-  boolean[],
+  boolean,
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
@@ -168,7 +184,7 @@ export const upsertClassroom = createAsyncThunk<
         const input: ClassroomInput = {
           Id: classroom.id,
           UserId: classroom.principal.userId,
-          //SiteAddressId: classroom.siteAddressId, This might be needed, but I need to test
+          SiteAddressId: classroom.siteAddress?.id,
           Name: classroom.name,
           ClassroomImageUrl: classroom.imageUrl,
           NumberPractitioners: classroom.numberOfPractitioners,
@@ -187,46 +203,9 @@ export const upsertClassroom = createAsyncThunk<
           userAuth?.auth_token
         ).updateClassroom(classroom.id ?? '', input);
 
-        return [result];
+        return result;
       }
-      return [false];
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const upsertClassroomSiteAddress = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'upsertClassroomSiteAddress',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroom },
-    } = getState();
-    try {
-      if (userAuth?.auth_token && classroom) {
-        const input: ClassroomInput = {
-          Id: classroom.id,
-          SiteAddressId: classroom.siteAddress.id,
-          IsActive: true,
-          SiteAddress: classroom?.siteAddress
-            ? mapSiteAddress(classroom?.siteAddress!)
-            : null,
-        };
-
-        const result = await new ClassroomService(
-          userAuth?.auth_token
-        ).updateClassroomSiteAddress(classroom.id ?? '', input);
-
-        return [result];
-      }
-      return [false];
+      return false;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -254,6 +233,9 @@ export const updateClassroomGroup = createAsyncThunk<
         await new ClassroomGroupService(
           userAuth?.auth_token
         ).updateClassroomGroup(input.Id || '', input);
+
+        // Sync learners
+
         return classroomGroup;
       } else return rejectWithValue('no access token, profile check required');
     } catch (err) {
@@ -262,37 +244,40 @@ export const updateClassroomGroup = createAsyncThunk<
   }
 );
 
-// TODO - need to test this, may need updates
 export const upsertClassroomGroups = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'upsertClassroomGroups',
+  ClassroomActions.UPSERT_CLASSROOM_GROUPS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomGroups },
+      classroomData: { classroomGroupData },
     } = getState();
 
     try {
       let promises: Promise<boolean>[] = [];
-      if (userAuth?.auth_token && classroomGroups) {
-        promises = classroomGroups.map(async (x) => {
-          const input: ClassroomGroupInput = {
-            Id: x.id,
-            ClassroomId: x.classroomId,
-            Name: x.name,
-            IsActive: true,
-            UserId: x.userId,
-          };
+      if (userAuth?.auth_token) {
+        promises = classroomGroupData.classroomGroups
+          .filter((group) => !group.synced)
+          .map(async (x) => {
+            const input: ClassroomGroupInput = {
+              Id: x.id,
+              ClassroomId: x.classroomId,
+              Name: x.name,
+              IsActive: true,
+              UserId: x.userId,
+            };
 
-          return await new ClassroomGroupService(
-            userAuth?.auth_token
-          ).updateClassroomGroup(x.id ?? '', input);
-        });
+            return await new ClassroomGroupService(
+              userAuth?.auth_token
+            ).updateClassroomGroup(x.id ?? '', input);
+
+            // Sync learners
+          });
       }
       return Promise.all(promises);
     } catch (err) {
@@ -383,119 +368,52 @@ export const upsertClassroomGroupProgrammes = createAsyncThunk<
   }
 );
 
-export const updateClassroomGroupLearners = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'updateClassroomGroupLearners',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomGroupLearners },
-      children: { childData },
-      staticData: { WorkflowStatuses },
-    } = getState();
-
-    try {
-      let promises: Promise<boolean>[] = [];
-      const workflowStatus = WorkflowStatuses?.find(
-        (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
-      );
-
-      if (userAuth?.auth_token && classroomGroupLearners) {
-        promises = classroomGroupLearners
-          .filter((classroomGroupLearner) => {
-            const child = childData.children.find(
-              (x) => x.userId === classroomGroupLearner.userId
-            );
-            return child && child.workflowStatusId !== workflowStatus?.id
-              ? true
-              : false;
-          })
-          .map(async (x) => {
-            const input: LearnerInput = {
-              UserId: x.userId,
-              ClassroomGroupId: x.classroomGroupId,
-              ProgrammeAttendanceReasonId: x.attendanceReasonId,
-              OtherAttendanceReason: x.otherAttendanceReason,
-              StartedAttendance: x.startedAttendance,
-              StoppedAttendance: x.stoppedAttendance,
-              IsActive: Boolean(x.isActive),
-            };
-            if (x.id && x.id.length > 0) {
-              return await new ClassroomGroupLearnerService(
-                userAuth?.auth_token
-              ).updateLearner(x.id, input);
-            } else {
-              return !!(await new ClassroomGroupLearnerService(
-                userAuth?.auth_token
-              ).createLearner(input));
-            }
-          });
-      }
-      return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
+// Syncs all learners on each classroomgroup
 export const upsertClassroomGroupLearners = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'upsertClassroomGroupLearners',
+  ClassroomActions.UPSERT_CLASSROOM_GROUPS_LEARNERS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomGroupLearners },
+      classroomData: { classroomGroupData },
       children: { childData },
       staticData: { WorkflowStatuses },
     } = getState();
 
     try {
       let promises: Promise<boolean>[] = [];
-      const workflowStatus = WorkflowStatuses?.find(
-        (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
-      );
-      if (classroomGroupLearners?.some((item) => item?.isOnline === false)) {
-        if (userAuth?.auth_token && classroomGroupLearners) {
-          promises = classroomGroupLearners
-            .filter((classroomGroupLearner) => {
-              const child = childData.children.find(
-                (x) => x.userId === classroomGroupLearner.userId
-              );
-              return child && child.workflowStatusId !== workflowStatus?.id
-                ? true
-                : false;
-            })
+      if (!!userAuth && !!userAuth?.auth_token) {
+        classroomGroupData.classroomGroups.forEach((classroomGroup) => {
+          const newPromises = classroomGroup.learners
+            .filter((l) => !l.synced)
             .map(async (x) => {
               const input: LearnerInput = {
-                UserId: x.userId,
-                ClassroomGroupId: x.classroomGroupId,
-                ProgrammeAttendanceReasonId: x.attendanceReasonId,
-                OtherAttendanceReason: x.otherAttendanceReason,
+                UserId: x.childUserId,
+                ClassroomGroupId: classroomGroup.id,
                 StartedAttendance: x.startedAttendance,
                 StoppedAttendance: x.stoppedAttendance,
-                IsActive: Boolean(x.isActive),
+                IsActive: x.isActive,
               };
-              if (x.id && x.id.length > 0) {
+              if (!!x.learnerId && x.learnerId.length > 0) {
                 return await new ClassroomGroupLearnerService(
                   userAuth?.auth_token
-                ).updateLearner(x.id, input);
+                ).updateLearner(x.learnerId, input);
               } else {
                 return !!(await new ClassroomGroupLearnerService(
                   userAuth?.auth_token
                 ).createLearner(input));
               }
             });
-        }
+
+          promises.concat(newPromises);
+        });
+      } else {
+        return rejectWithValue('No auth');
       }
       return Promise.all(promises);
     } catch (err) {

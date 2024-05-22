@@ -97,10 +97,6 @@ export const RemoveChild: React.FC = () => {
       )
     );
 
-    appDispatch(
-      classroomsActions.deactivateClassroomGroupLearner(updatedChild)
-    );
-
     if (isCoach) {
       history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
       return;

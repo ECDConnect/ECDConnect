@@ -40,7 +40,6 @@ import { Age } from '@models/common/Age';
 import { AttendanceService } from '@services/AttendanceService';
 import { attendanceSelectors } from '@store/attendance';
 import { authSelectors } from '@store/auth';
-import { caregiverSelectors } from '@store/caregiver';
 import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
 import {
   childrenActions,
@@ -126,15 +125,12 @@ export const ChildProfile: React.FC = () => {
     return x.user?.id !== practitioner?.user?.id;
   });
 
-  const classGroupId = useSelector(
-    classroomsSelectors.getLearnerClassGroupId(child?.userId)
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
-  );
-  const classroomGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classGroupId || '')
   );
 
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);

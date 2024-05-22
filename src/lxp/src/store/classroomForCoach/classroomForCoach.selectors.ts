@@ -8,22 +8,13 @@ export const getClassroomForCoach = (
   state: RootState
 ): ClassroomDto[] | undefined => state.classroomForCoachData.classroomForCoach;
 
-export const getProgrammeType = () =>
-  createSelector(
-    (state: RootState) => state,
-    (rootState: RootState): ProgrammeTypeDto | undefined => {
-      return rootState.staticData.programmeTypes?.find(
-        (x) => x.id === rootState.classroomData.programmeType
-      );
-    }
-  );
-
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups || [];
+  state.classroomData.classroomGroupData.classroomGroups;
 
 export const getClassroomGroupById = (id?: string) =>
   createSelector(
-    (state: RootState) => state.classroomData.classroomGroups,
+    (state: RootState) =>
+      state.classroomData.classroomGroupData.classroomGroups,
     (classroomGroups: ClassroomGroupDto[] | undefined) => {
       if (!classroomGroups || !id) return;
 

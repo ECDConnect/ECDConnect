@@ -70,13 +70,10 @@ export const CoachChildProfile: React.FC = () => {
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
 
-  const classGroupId = useSelector(
-    classroomsSelectors.getLearnerClassGroupId(child?.userId)
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
   const user = useSelector(userSelectors.getUser);
-  const classroomGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classGroupId!)
-  );
 
   const childDocuments = useSelector(
     documentSelectors.getDocumentsByUserId(child?.userId)
