@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Divider, FormInput, Typography } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import * as styles from './care-giver-child-information-form.styles';
 import {
@@ -13,8 +13,8 @@ import { ChildrenActions } from '@/store/children/children.actions';
 
 export const CareGiverChildInformationForm: React.FC<
   CareGiverChildInformationFormProps
-> = ({ careGiverInformation, onSubmit, canEdit }) => {
-  const [readonly, setReadonly] = useState(true);
+> = ({ careGiverInformation, onSubmit, canEdit, enableReadOnlyMode }) => {
+  const [readonly, setReadonly] = useState(enableReadOnlyMode);
 
   const { isLoading } = useThunkFetchCall(
     'children',
@@ -52,6 +52,17 @@ export const CareGiverChildInformationForm: React.FC<
     }
   };
 
+  const submitButtonProps = useMemo(() => {
+    if (!enableReadOnlyMode) {
+      return { text: 'Next', icon: 'ArrowCircleRightIcon' };
+    }
+    if (readonly) {
+      return { text: 'Edit', icon: 'PencilIcon' };
+    }
+
+    return { text: 'Save', icon: 'SaveIcon' };
+  }, [enableReadOnlyMode, readonly]);
+
   return (
     <div className={styles.wrapper}>
       <Typography
@@ -85,7 +96,7 @@ export const CareGiverChildInformationForm: React.FC<
         placeholder={readonly ? 'None' : 'E.g. 0122'}
       />
       <Divider dividerType="dashed" className="py-4" />
-      {canEdit && (
+      {(canEdit || !enableReadOnlyMode) && (
         <Button
           isLoading={isLoading}
           onClick={handleFormSubmit}
@@ -94,8 +105,8 @@ export const CareGiverChildInformationForm: React.FC<
           color="quatenary"
           type="filled"
           disabled={(!readonly && !isValid) || isLoading}
-          icon={readonly ? 'PencilIcon' : 'SaveIcon'}
-          text={readonly ? 'Edit' : 'Save'}
+          icon={submitButtonProps.icon}
+          text={submitButtonProps.text}
           textColor="white"
         />
       )}

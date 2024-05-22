@@ -234,6 +234,7 @@ export const EditChildInformation: React.FC = () => {
         case 'address':
           return (
             <CareGiverChildInformationForm
+              enableReadOnlyMode
               careGiverInformation={childCareGiverChildInformationForm}
               canEdit={!isCoach && !practitionerIsOnLeave}
               onSubmit={(form) => {
@@ -245,6 +246,7 @@ export const EditChildInformation: React.FC = () => {
         case 'healthInformation':
           return (
             <ChildHealthInformationForm
+              enableReadOnlyMode
               childName={child?.user?.firstName ?? ''}
               childHealthInformation={childHealthInformationForm}
               canEdit={!isCoach && !practitionerIsOnLeave}
@@ -257,6 +259,7 @@ export const EditChildInformation: React.FC = () => {
         case 'caregiverInformation':
           return (
             <ChildCaregiverInformation
+              enableReadOnlyMode
               childCareGiverInformation={childCaregiverInformation}
               childName={child?.user?.firstName ?? ''}
               canEdit={!isCoach}
@@ -269,6 +272,7 @@ export const EditChildInformation: React.FC = () => {
         case 'emergencyContact':
           return (
             <ChildEmergencyContactForm
+              enableReadOnlyMode
               childEmergencyContactForm={childEmergencyContactForm}
               childName={child?.user?.firstName ?? ''}
               variation="practitioner"

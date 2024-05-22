@@ -6,7 +6,7 @@ import {
   childHealthInformationFormSchema,
 } from '@schemas/child/child-registration/child-health-information-form';
 import { ChildHealthInformationFormProps } from './child-health-information-form.types';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
 
@@ -17,8 +17,9 @@ export const ChildHealthInformationForm: React.FC<
   childName = 'Child',
   onSubmit,
   canEdit = false,
+  enableReadOnlyMode,
 }) => {
-  const [readonly, setReadonly] = useState(true);
+  const [readonly, setReadonly] = useState(enableReadOnlyMode);
 
   const { isLoading } = useThunkFetchCall(
     'children',
@@ -49,6 +50,17 @@ export const ChildHealthInformationForm: React.FC<
       onSubmit(getChildHealthInformationFormValues());
     }
   };
+
+  const submitButtonProps = useMemo(() => {
+    if (!enableReadOnlyMode) {
+      return { text: 'Next', icon: 'ArrowCircleRightIcon' };
+    }
+    if (readonly) {
+      return { text: 'Edit', icon: 'PencilIcon' };
+    }
+
+    return { text: 'Save', icon: 'SaveIcon' };
+  }, [enableReadOnlyMode, readonly]);
 
   return (
     <div className={'flex h-full flex-col bg-white px-4 pt-2 pb-4'}>
@@ -84,7 +96,7 @@ export const ChildHealthInformationForm: React.FC<
         }
       />
       <Divider dividerType="dashed" className="py-4" />
-      {canEdit && (
+      {(canEdit || !enableReadOnlyMode) && (
         <Button
           isLoading={isLoading}
           onClick={handleFormSubmit}
@@ -93,8 +105,8 @@ export const ChildHealthInformationForm: React.FC<
           color="quatenary"
           type="filled"
           disabled={(!readonly && !isValid) || isLoading}
-          icon={readonly ? 'PencilIcon' : 'SaveIcon'}
-          text={readonly ? 'Edit' : 'Save'}
+          icon={submitButtonProps.icon}
+          text={submitButtonProps.text}
           textColor="white"
         />
       )}

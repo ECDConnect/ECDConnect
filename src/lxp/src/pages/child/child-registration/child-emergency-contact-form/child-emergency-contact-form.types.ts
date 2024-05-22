@@ -4,6 +4,7 @@ import { ChildRegistrationVariation } from '../child-registration-form/child-reg
 
 export interface ChildEmergencyContactFormProps
   extends FormComponentProps<ChildEmergencyContactFormModel> {
+  enableReadOnlyMode?: boolean;
   childEmergencyContactForm?: ChildEmergencyContactFormModel;
   childName: string;
   variation: ChildRegistrationVariation;
