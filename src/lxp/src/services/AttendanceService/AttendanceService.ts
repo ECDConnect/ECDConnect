@@ -16,7 +16,7 @@ class AttendanceService {
   }
 
   async getAttendance(
-    year?: number,
+    year: number,
     monthOfYear?: number,
     weekOfYear?: number
   ): Promise<AttendanceDto[]> {
