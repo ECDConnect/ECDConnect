@@ -12,7 +12,6 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
-  TitleListItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useEffect, useMemo, useState } from 'react';
@@ -70,24 +69,11 @@ import {
   TabsItemForPrincipal,
   TabsItems,
 } from '../classroom/class-dashboard/class-dashboard.types';
-const { version } = require('../../../package.json');
+import { NavigationNames } from '../navigation';
+import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
+import piggyBankIcon from '../../assets/piggyBank.svg';
 
-export enum NavigationTypes {
-  Home = 'Home',
-  ClientFolders = 'Classroom',
-  Attendance = 'Attendance',
-  Practitioner = 'Practitioner',
-  Classes = 'Classes',
-  Programme = 'Programme',
-  Profile = 'Profile',
-  Messages = 'Messages',
-  Training = 'Training',
-  Community = 'Community',
-  Logout = 'Logout',
-  Practitioners = 'Practitioners',
-  Business = 'Business',
-  SmartStarters = 'SmartStarters',
-}
+const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
   isFromTraineeFlow?: boolean;
@@ -115,7 +101,7 @@ export const Dashboard: React.FC = () => {
   );
 
   const isPractitioner = !!practitioner;
-  const isPrincipal = practitioner?.isPrincipal;
+  const isPrincipal = true; //practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
@@ -536,16 +522,16 @@ export const Dashboard: React.FC = () => {
   }, [practitioner?.userId]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
+    // {
+    //   name: NavigationTypes.Home,
+    //   href: ROUTES.ROOT,
+    //   icon: 'HomeIcon',
+    //   current: true,
+    // },
     {
-      name: NavigationTypes.Home,
-      href: ROUTES.ROOT,
-      icon: 'HomeIcon',
-      current: true,
-    },
-    {
-      name: NavigationTypes.Messages,
+      name: NavigationNames.Messages,
       href: ROUTES.MESSAGES,
-      icon: 'BellIcon',
+      icon: styles.messagesIconName,
       current: false,
       showDivider: true,
       getNotificationCount: () => {
@@ -553,45 +539,66 @@ export const Dashboard: React.FC = () => {
       },
     },
     {
-      name: NavigationTypes.Profile,
+      name: NavigationNames.Profile.Profile,
       href: isCoach
         ? ROUTES.COACH.PROFILE.ROOT
         : ROUTES.PRACTITIONER.PROFILE.ROOT,
-      icon: 'UserIcon',
+      icon: styles.profileIconName,
       current: false,
       showDivider: true,
+      nestedChildren: [
+        {
+          name: NavigationNames.Profile.Account,
+          href: ROUTES.PRACTITIONER.ACCOUNT,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Profile.Preschool,
+          href: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Profile.Journey,
+          href: ROUTES.PRACTITIONER.PROFILE.ROOT,
+          onNavigation: onNavigation,
+          params: { tabIndex: 1 },
+          current: false,
+        },
+      ],
     },
     {
-      name: NavigationTypes.ClientFolders,
-      icon: 'UsersIcon',
+      name: NavigationNames.Classroom.Classroom,
+      icon: styles.classroomIconName,
       current: false,
       showDivider: true,
       nestedChildren:
         isPrincipal && !!practitioners?.length
           ? [
               {
-                name: NavigationTypes.Attendance,
+                name: NavigationNames.Classroom.Attendance,
                 href: ROUTES.CLASSROOM.ROOT,
                 onNavigation: onNavigation,
                 params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
                 current: false,
               },
               {
-                name: NavigationTypes.Practitioners,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.PRACTITIONERS },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Classes,
+                name: NavigationNames.Classroom.Classes,
                 href: ROUTES.CLASSROOM.ROOT,
                 onNavigation: onNavigation,
                 params: { activeTabIndex: TabsItemForPrincipal.CLASSES },
                 current: false,
               },
               {
-                name: NavigationTypes.Programme,
+                name: NavigationNames.Classroom.Practitioners,
+                href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: TabsItemForPrincipal.PRACTITIONERS },
+                current: false,
+              },
+              {
+                name: NavigationNames.Classroom.Programme,
                 href: ROUTES.CLASSROOM.ROOT,
                 onNavigation: onNavigation,
                 params: { activeTabIndex: TabsItemForPrincipal.PROGRAMME },
@@ -600,19 +607,31 @@ export const Dashboard: React.FC = () => {
             ]
           : [
               {
-                name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.ATTENDANCE },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Classes,
+                name: NavigationNames.Classroom.Classes,
                 href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: TabsItems.CLASSES },
                 current: false,
               },
               {
-                name: NavigationTypes.Programme,
+                name: NavigationNames.Classroom.Attendance,
+                href: ROUTES.CLASSROOM.ROOT,
+                params: { activeTabIndex: TabsItems.ATTENDANCE },
+                current: false,
+              },
+              {
+                name: NavigationNames.Classroom.Progress,
+                href: ROUTES.CLASSROOM.ROOT,
+                params: { activeTabIndex: TabsItems.ATTENDANCE },
+                current: false,
+              },
+              {
+                name: NavigationNames.Classroom.Activities,
+                href: ROUTES.CLASSROOM.ROOT,
+                params: { activeTabIndex: TabsItems.PROGRAMME },
+                current: false,
+              },
+              {
+                name: NavigationNames.Classroom.Resources,
                 href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: TabsItems.PROGRAMME },
                 current: false,
@@ -622,35 +641,88 @@ export const Dashboard: React.FC = () => {
     ...(isPrincipal || isFundaAppAdmin
       ? [
           {
-            name: NavigationTypes.Business,
+            name: NavigationNames.Business.Business,
             href: ROUTES.BUSINESS,
-            icon: 'BriefcaseIcon',
+            icon: styles.businessIconName,
             current: false,
             showDivider: true,
+            nestedChildren: [
+              {
+                name: NavigationNames.Business.Staff,
+                href: '',
+                onNavigation: onNavigation,
+                params: { activeTabIndex: 0 },
+                current: false,
+              },
+              {
+                name: NavigationNames.Business.Money,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: 1 },
+                current: false,
+              },
+              {
+                name: NavigationNames.Business.Resources,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: 2 },
+                current: false,
+              },
+            ],
           },
         ]
       : []),
     {
-      name: NavigationTypes.Community,
+      name: NavigationNames.Community.Community,
       href: isFirstTimeCommunitySection
         ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
         : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
       params: { isFromDashboard: true } as CommunityRouteState,
-      icon: 'BookOpenIcon',
+      icon: styles.communityIconName,
       current: false,
       showDivider: true,
+      nestedChildren: [
+        {
+          name: NavigationNames.Community.Community,
+          href: isFirstTimeCommunitySection
+            ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
+            : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Community.Resources,
+          href: '',
+          onNavigation: onNavigation,
+          current: false,
+        },
+      ],
     },
     {
-      name: NavigationTypes.Training,
+      name: NavigationNames.Training,
       href: ROUTES.TRAINING,
-      icon: 'PresentationChartBarIcon',
+      icon: styles.trainingIconName,
       current: false,
       showDivider: true,
     },
     {
-      name: NavigationTypes.Logout,
+      name: NavigationNames.Points,
+      href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
+      icon: styles.pointsIconName,
+      current: false,
+      showDivider: true,
+    },
+    {
+      name: NavigationNames.Calendar,
+      href: ROUTES.CALENDAR,
+      icon: styles.calendarIconName,
+      current: false,
+      showDivider: true,
+    },
+    {
+      name: NavigationNames.Logout,
       href: ROUTES.LOGOUT,
-      icon: 'ExternalLinkIcon',
+      icon: styles.logoutIconName,
       current: false,
       showDivider: true,
     },
@@ -658,30 +730,30 @@ export const Dashboard: React.FC = () => {
 
   const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
     {
-      name: NavigationTypes.Home,
+      name: NavigationNames.Home,
       href: ROUTES.ROOT,
       icon: 'HomeIcon',
       current: true,
     },
     {
-      name: NavigationTypes.SmartStarters,
-      icon: 'AcademicCapIcon',
+      name: NavigationNames.SmartStarters,
+      icon: styles.classroomIconName,
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
     },
     {
-      name: NavigationTypes.Profile,
+      name: NavigationNames.Profile.Profile,
       href: isCoach
         ? ROUTES.COACH.PROFILE.ROOT
         : ROUTES.PRACTITIONER.PROFILE.ROOT,
-      icon: 'UserIcon',
+      icon: styles.profileIconName,
       current: false,
       showDivider: true,
     },
     {
-      name: NavigationTypes.Messages,
+      name: NavigationNames.Messages,
       href: ROUTES.MESSAGES,
-      icon: 'BellIcon',
+      icon: styles.messagesIconName,
       current: false,
       showDivider: true,
       getNotificationCount: () => {
@@ -689,19 +761,19 @@ export const Dashboard: React.FC = () => {
       },
     },
     {
-      name: NavigationTypes.Community,
+      name: NavigationNames.Community.Community,
       href: isFirstTimeCommunitySection
         ? ROUTES.COMMUNITY.WELCOME
         : ROUTES.COMMUNITY.ROOT,
       params: { isFromDashboard: true } as CommunityRouteState,
-      icon: 'BookOpenIcon',
+      icon: styles.communityIconName,
       current: false,
       showDivider: true,
     },
     {
-      name: NavigationTypes.Logout,
+      name: NavigationNames.Logout,
       href: ROUTES.LOGOUT,
-      icon: 'ExternalLinkIcon',
+      icon: styles.logoutIconName,
       current: false,
       showDivider: true,
     },
@@ -712,15 +784,15 @@ export const Dashboard: React.FC = () => {
   if (isCoach) {
     dashboardItems.push(
       {
-        title: 'SmartStarters',
-        titleIcon: 'AcademicCapIcon',
+        title: NavigationNames.SmartStarters,
+        titleIcon: styles.classroomIconName,
         titleIconClassName: styles.icon,
         onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
         classNames: 'bg-uiBg',
       },
       {
-        title: 'Community',
-        titleIcon: 'UserGroupIcon',
+        title: NavigationNames.Community.Community,
+        titleIcon: styles.communityIconName,
         titleIconClassName: styles.icon,
         onActionClick: () => {
           history.push(
@@ -734,8 +806,8 @@ export const Dashboard: React.FC = () => {
       }
     );
     dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
+      title: NavigationNames.Calendar,
+      titleIcon: styles.calendarIconName,
       titleIconClassName: styles.icon,
       classNames: 'bg-uiBg',
       onActionClick: () => {
@@ -746,47 +818,68 @@ export const Dashboard: React.FC = () => {
 
   if (!isCoach) {
     dashboardItems.push({
-      title: 'Classroom',
-      titleIcon: 'AcademicCapIcon',
+      title: NavigationNames.Classroom.Classroom,
+      titleIcon: styles.classroomIconName,
       titleIconClassName: styles.classRoomIcon,
-      classNames: 'bg-uiBg',
+      classNames: 'bg-secondaryAccent2',
       onActionClick: () => {
         goToClassroom();
-      },
-    });
-
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
-      classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
       },
     });
   }
 
   if (!isTrainee) {
-    dashboardItems.splice(1, 0, {
-      title: NavigationTypes.Training,
-      titleIcon: 'PresentationChartBarIcon',
+    dashboardItems.push({
+      title: NavigationNames.Training,
+      titleIcon: styles.trainingIconName,
       titleIconClassName: styles.trainingIcon,
       onActionClick: () => {
         goToTraining();
       },
-      classNames: 'bg-uiBg',
+      classNames: 'bg-successBg',
+    });
+  }
+
+  if (!isCoach && !isTrainee && !isPrincipal && isPractitioner) {
+    dashboardItems.splice(1, 0, {
+      title: NavigationNames.Community.Community,
+      titleIcon: styles.communityIconName,
+      titleIconClassName: styles.communityIcon,
+      onActionClick: () => {
+        history.push(
+          isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          { isFromDashboard: true } as CommunityRouteState
+        );
+      },
+      classNames: 'bg-quatenaryBg',
     });
   }
 
   if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     dashboardItems.splice(1, 0, {
-      title: 'Business',
-      titleIcon: 'BriefcaseIcon',
+      title: NavigationNames.Business.Business,
+      titleIcon: styles.businessIconName,
       titleIconClassName: styles.businessIcon,
       onActionClick: () => {
         goToBusiness();
       },
-      classNames: 'bg-uiBg',
+      classNames: 'bg-alertBg',
+    });
+    dashboardItems.splice(2, 0, {
+      title: NavigationNames.Community.Community,
+      titleIcon: styles.communityIconName,
+      titleIconClassName: styles.communityIcon,
+      onActionClick: () => {
+        history.push(
+          isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          { isFromDashboard: true } as CommunityRouteState
+        );
+      },
+      classNames: 'bg-quatenaryBg',
     });
   }
 
@@ -909,14 +1002,26 @@ export const Dashboard: React.FC = () => {
       }
       menuItems={isCoach ? navigationForCoach : navigation}
       onNavigation={onNavigation}
-      menuLogoUrl={theme?.images.logoUrl}
+      menuLogoUrl={hamburgerLogo}
+      calendarRender={() => {
+        return (
+          <IconBadge
+            onClick={() => history.push(ROUTES.CALENDAR)}
+            badgeColor={'errorMain'}
+            badgeTextColor={'white'}
+            icon={styles.calendarIconName}
+            iconColor={'white'}
+            badgeText={''}
+          />
+        );
+      }}
       notificationRender={() => {
         return (
           <IconBadge
             onClick={() => history.push(ROUTES.MESSAGES)}
             badgeColor={'errorMain'}
             badgeTextColor={'white'}
-            icon={'BellIcon'}
+            icon={styles.messagesIconName}
             iconColor={'white'}
             badgeText={newNotificationCount ? `${newNotificationCount}` : ''}
           />
@@ -937,7 +1042,6 @@ export const Dashboard: React.FC = () => {
         text={`Welcome ${userData && userData?.firstName}`}
         className={styles.welcomeText}
       />
-
       <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
         <DashboardItems
           listItems={dashboardItems}
@@ -977,7 +1081,7 @@ export const Dashboard: React.FC = () => {
             textColour={clubCard.textColour}
           />
         )}
-        {isPractitioner &&
+        {/* {isPractitioner &&
           (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
             <div className="mt-1">
               <TitleListItem
@@ -997,7 +1101,7 @@ export const Dashboard: React.FC = () => {
                 }}
               />
             </div>
-          )}
+          )} */}
       </div>
     </BannerWrapper>
   );

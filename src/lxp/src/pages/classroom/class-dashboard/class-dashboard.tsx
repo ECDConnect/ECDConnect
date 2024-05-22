@@ -29,7 +29,6 @@ import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import PractitionersList from './practitioners/practitioners-list/practitioners-list';
 import walkthroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
 import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
@@ -41,6 +40,7 @@ import {
 } from '@/store/content/programme-theme';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { Classes } from '../classes/classes';
+import { NavigationNames } from '@/pages/navigation';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -147,22 +147,22 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: 'Attendance',
+      title: NavigationNames.Classroom.Attendance,
       initActive: false,
       child: <AttendanceComponent />,
     },
     {
-      title: 'Classes',
+      title: NavigationNames.Classroom.Classes,
       initActive: false,
       child: <Classes />,
     },
     {
-      title: 'Programme',
+      title: NavigationNames.Classroom.Programme,
       initActive: false,
       child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
-      title: 'Resources',
+      title: NavigationNames.Classroom.Resources,
       initActive: false,
       child: (
         <div className={'p-4'}>
@@ -174,27 +174,36 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItemsForPrincipal: TabItem[] = [
     {
-      title: 'Attendance',
-      initActive: false,
-      child: <AttendanceComponent />,
-    },
-    {
-      title: 'Practitioners',
-      initActive: false,
-      child: <PractitionersList />,
-    },
-    {
-      title: 'Classes',
+      title: NavigationNames.Classroom.Classes,
       initActive: false,
       child: <Classes />,
     },
     {
-      title: 'Programme',
+      title: NavigationNames.Classroom.Attendance,
+      initActive: false,
+      child: <AttendanceComponent />,
+    },
+    {
+      title: NavigationNames.Classroom.Progress,
+      initActive: false,
+      child: (
+        <div className={'p-4'}>
+          <Typography type={'body'} color="textDark" text={'Coming soon'} />
+        </div>
+      ),
+    },
+    // {
+    //   title: 'Practitioners',
+    //   initActive: false,
+    //   child: <PractitionersList />,
+    // },
+    {
+      title: NavigationNames.Classroom.Activities,
       initActive: false,
       child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
-      title: 'Resources',
+      title: NavigationNames.Classroom.Resources,
       initActive: false,
       child: (
         <div className={'p-4'}>
@@ -219,10 +228,10 @@ export const ClassDashboard: React.FC = () => {
 
   const displayTutorial = (type?: string) => {
     switch (type) {
-      case 'Attendance':
+      case NavigationNames.Classroom.Attendance:
         setAttendanceTutorialActive(true);
         break;
-      case 'Programme':
+      case NavigationNames.Classroom.Programme:
         history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
         break;
       default:
@@ -231,7 +240,8 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayHelp =
-    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
+    currentTab?.title === NavigationNames.Classroom.Attendance ||
+    currentTab?.title === NavigationNames.Classroom.Programme;
 
   const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {
