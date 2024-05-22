@@ -16,7 +16,7 @@ import {
 } from '@store/classroom';
 import { newGuid } from '@utils/common/uuid.utils';
 import {
-  EditPlaygroupsState,
+  EditPlaygroupsRouteState,
   EditPlaygroupsSteps,
 } from './save-practitioner-playgroups.types';
 import { staticDataSelectors } from '@store/static-data';
@@ -26,7 +26,8 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 
 export const EditPlaygroups: React.FC = () => {
-  const location = useLocation<EditPlaygroupsState>();
+  const location = useLocation<EditPlaygroupsRouteState>();
+
   const routeReturn = location?.state?.returnRoute
     ? location?.state?.returnRoute
     : null;
@@ -308,6 +309,16 @@ export const EditPlaygroups: React.FC = () => {
   const onClose = () => {
     routeReturn ? history.push(routeReturn) : history.goBack();
   };
+
+  useEffect(() => {
+    if (location?.state?.redirectToClassesPage) {
+      setActivePage(EditPlaygroupsSteps.confirm);
+      history.replace({
+        pathname: location.pathname,
+        state: { ...location.state, redirectToClassesPage: undefined },
+      });
+    }
+  }, [history, location.pathname, location.state]);
 
   const exitPrompt = () => {
     dialog({

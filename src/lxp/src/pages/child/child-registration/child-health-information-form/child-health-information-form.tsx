@@ -60,7 +60,7 @@ export const ChildHealthInformationForm: React.FC<
         className={'mt-3'}
         register={childHealthInformationFormRegister}
         nameProp={'allergies'}
-        placeholder={'E.g. peanuts'}
+        placeholder={readonly ? 'None' : 'E.g. peanuts'}
       />
       <Divider dividerType="dashed" className="py-4" />
       <FormInput<ChildHealthInformationFormModel>
@@ -68,7 +68,7 @@ export const ChildHealthInformationForm: React.FC<
         label={'List any disabilities'}
         register={childHealthInformationFormRegister}
         nameProp={'disabilities'}
-        placeholder={'E.g. blind'}
+        placeholder={readonly ? 'None' : 'E.g. blind'}
       />
       <Divider dividerType="dashed" className="py-4" />
       <FormInput<ChildHealthInformationFormModel>
@@ -77,7 +77,11 @@ export const ChildHealthInformationForm: React.FC<
         textInputType={readonly ? 'input' : 'textarea'}
         register={childHealthInformationFormRegister}
         nameProp={'healthConditions'}
-        placeholder={'E.g. chronic illnesses such as diabetes or epilepsy'}
+        placeholder={
+          readonly
+            ? 'None'
+            : 'E.g. chronic illnesses such as diabetes or epilepsy'
+        }
       />
       <Divider dividerType="dashed" className="py-4" />
       {canEdit && (

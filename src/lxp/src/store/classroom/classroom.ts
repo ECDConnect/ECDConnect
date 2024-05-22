@@ -1,10 +1,4 @@
-import {
-  ChildDto,
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-} from '@ecdlink/core';
+import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -21,6 +15,7 @@ import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { SiteAddressDto } from '@/models/classroom/site-address.dto';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: ClassroomState = {
   classroom: undefined,
@@ -251,6 +246,20 @@ const classroomsSlice = createSlice({
           })
         ),
       };
+    });
+    setThunkActionStatus(builder, updateClassroomGroup);
+    builder.addCase(updateClassroomGroup.fulfilled, (state, action) => {
+      const isActive = action.meta?.arg?.classroomGroup?.isActive;
+      const classroomGroupId = action.meta?.arg?.id;
+
+      if (isActive === false) {
+        state.classroomGroupData.classroomGroups =
+          state.classroomGroupData.classroomGroups.filter(
+            (cg) => cg.id !== classroomGroupId
+          );
+      }
+
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

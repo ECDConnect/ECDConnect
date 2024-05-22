@@ -82,9 +82,6 @@ export const EditChildInformation: React.FC = () => {
     classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const classroomGroupLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
-  );
 
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
@@ -316,7 +313,9 @@ export const EditChildInformation: React.FC = () => {
         address += caregiver?.siteAddress?.addressLine1;
       }
       if (caregiver?.siteAddress?.postalCode !== '') {
-        address += ', ' + caregiver?.siteAddress?.postalCode;
+        address = `${address ? (address += ', ') : ''}${
+          caregiver?.siteAddress?.postalCode
+        }`;
       }
       return address;
     }
@@ -413,28 +412,28 @@ export const EditChildInformation: React.FC = () => {
         } as CareGiverChildInformationFormModel);
 
         setChildCaregiverInformation({
-          firstname: caregiver?.firstName || 'None',
-          surname: caregiver?.surname || 'None',
-          relation: caregiverRelation?.description || 'None',
-          relationId: caregiver?.relationId || 'None',
-          phoneNumber: caregiver?.phoneNumber || 'None',
+          firstname: caregiver?.firstName,
+          surname: caregiver?.surname,
+          relation: caregiverRelation?.description,
+          relationId: caregiver?.relationId,
+          phoneNumber: caregiver?.phoneNumber,
         } as ChildCaregiverInformationModel);
 
         setChildEmergencyContactForm({
-          firstname: caregiver.emergencyContactFirstName || 'None',
-          surname: caregiver.emergencyContactSurname || 'None',
-          phoneNumber: caregiver.emergencyContactPhoneNumber || 'None',
+          firstname: caregiver.emergencyContactFirstName,
+          surname: caregiver.emergencyContactSurname,
+          phoneNumber: caregiver.emergencyContactPhoneNumber,
           isAllowedCustody: caregiver.isAllowedCustody,
-          custodianFirstname: caregiver.additionalFirstName || 'None',
-          custodianSurname: caregiver.additionalSurname || 'None',
-          custodianPhoneNumber: caregiver.additionalPhoneNumber || 'None',
+          custodianFirstname: caregiver.additionalFirstName,
+          custodianSurname: caregiver.additionalSurname,
+          custodianPhoneNumber: caregiver.additionalPhoneNumber,
         } as ChildEmergencyContactFormModel);
       }
 
       setChildHealthInformationForm({
-        allergies: child.allergies || 'None',
-        disabilities: child.disabilities || 'None',
-        healthConditions: child.otherHealthConditions || 'None',
+        allergies: child.allergies,
+        disabilities: child.disabilities,
+        healthConditions: child.otherHealthConditions,
       } as ChildHealthInformationFormModel);
     }
 
@@ -592,6 +591,7 @@ export const EditChildInformation: React.FC = () => {
           siteAddressId: siteAddressId,
           siteAddress: {
             ...child.caregiver.siteAddress,
+            id: siteAddressId,
             addressLine1: childAddressInformationForm.streetAddress,
             postalCode: childAddressInformationForm.postalCode,
           },

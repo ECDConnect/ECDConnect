@@ -174,7 +174,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       />
     );
   };
-
+  // TODO: refactor this to use the new component: src/lxp/src/components/delete-class
   const confirmDelete = () => {
     let dialogOptionModel: DialogModalOptions = {
       position: DialogPosition.Middle,

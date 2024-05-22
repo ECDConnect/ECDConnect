@@ -1,6 +1,5 @@
 import {
   ClassProgrammeDto,
-  ClassroomDto,
   ClassroomGroupDto,
   LearnerDto,
   SiteAddressDto,
@@ -11,7 +10,6 @@ import {
   ClassroomInput,
   LearnerInput,
   SiteAddressInput,
-  WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ClassroomGroupLearnerService } from '@services/ClassroomGroupLearnerService';
@@ -28,6 +26,7 @@ export const ClassroomActions = {
   GET_CLASSROOM_GROUPS: 'getClassroomGroups',
   UPSERT_CLASSROOM_GROUPS: 'upsertClassroomGroups',
   UPSERT_CLASSROOM_GROUPS_LEARNERS: 'upsertClassroomGroupLearners',
+  UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
 };
 
 export const getClassroom = createAsyncThunk<
@@ -222,7 +221,7 @@ export const updateClassroomGroup = createAsyncThunk<
   UpdateClassroomGroupdRequest,
   ThunkApiType<RootState>
 >(
-  'updateClassroomGroup',
+  ClassroomActions.UPDATE_CLASSROOM_GROUP,
   async ({ classroomGroup }, { getState, rejectWithValue }) => {
     try {
       const {

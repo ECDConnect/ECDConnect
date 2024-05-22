@@ -1,28 +1,45 @@
+import { DeleteClassActionModal } from '@/components/delete-class/delete-class';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import {
   ClassDashboardRouteState,
   TabsItemForPrincipal,
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
 import ROUTES from '@/routes/routes';
+import { useSnackbar } from '@ecdlink/core';
 import { ActionModal } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
+import { useState } from 'react';
 import { useHistory } from 'react-router';
 
 interface ClassMenuProps {
   isPrincipal: boolean;
-  classId: string;
+  classroomGroupId: string;
   className: string;
   onClose: () => void;
 }
 
 export const ClassMenu = ({
   isPrincipal,
-  classId,
+  classroomGroupId,
   className,
   onClose,
 }: ClassMenuProps) => {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const history = useHistory();
+
+  const { showMessage } = useSnackbar();
+
+  if (isDeleteModalOpen) {
+    return (
+      <DeleteClassActionModal
+        classroomGroupId={classroomGroupId}
+        onClose={onClose}
+      />
+    );
+  }
 
   return (
     <ActionModal
@@ -35,7 +52,7 @@ export const ClassMenu = ({
           type: 'filled',
           onClick: () => {
             history.push(ROUTES.CLASSROOM.CHILDREN, {
-              classroomGroupId: classId,
+              classroomGroupId,
             } as ChildListRouteState);
             onClose();
           },
@@ -61,7 +78,13 @@ export const ClassMenu = ({
           colour: 'quatenary',
           text: 'Track child progress',
           type: 'outlined',
-          onClick: () => {},
+          onClick: () => {
+            // TODO: redirect to W9 when it's ready
+            showMessage({
+              message: 'This feature is not available yet (W9)',
+              type: 'info',
+            });
+          },
           textColour: 'quatenary',
         },
         {
@@ -69,7 +92,14 @@ export const ClassMenu = ({
           colour: 'quatenary',
           text: `${isPrincipal ? 'Plan' : 'See'} activities`,
           type: 'outlined',
-          onClick: () => {},
+          onClick: () => {
+            history.push(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: isPrincipal
+                ? TabsItemForPrincipal.PROGRAMME
+                : TabsItems.PROGRAMME,
+            } as ClassDashboardRouteState);
+            onClose();
+          },
           textColour: 'quatenary',
         },
         ...(isPrincipal
@@ -79,7 +109,12 @@ export const ClassMenu = ({
                 colour: 'quatenary',
                 text: 'Change practitioner',
                 type: 'outlined',
-                onClick: () => {},
+                onClick: () => {
+                  history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
+                    redirectToClassesPage: true,
+                  } as EditPlaygroupsRouteState);
+                  onClose();
+                },
                 textColour: 'quatenary',
               },
               {
@@ -87,7 +122,7 @@ export const ClassMenu = ({
                 colour: 'errorMain',
                 text: 'Remove class',
                 type: 'outlined',
-                onClick: () => {},
+                onClick: () => setIsDeleteModalOpen(true),
                 textColour: 'errorMain',
               },
             ] as ActionModalButton[])
