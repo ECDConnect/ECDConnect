@@ -48,7 +48,7 @@ import {
   TabsItemForPrincipal,
   TabsItems,
 } from '../class-dashboard/class-dashboard.types';
-import { ChildListRouteState } from './child-list.types';
+import { ChildData, ChildListRouteState } from './child-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 const sortOptions: SearchSortOptions = {
@@ -120,9 +120,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   >([]);
   const [activeSort, setActiveSort] = useState<any[]>([]);
   const [childUserListData, setChildUserListData] =
-    useState<UserAlertListDataItem<{ alertSeverity: number } & ChildDto>[]>();
+    useState<UserAlertListDataItem<ChildData>[]>();
   const [filteredChildData, setFilteredChildData] = useState<
-    UserAlertListDataItem<{ alertSeverity: number } & ChildDto>[]
+    UserAlertListDataItem<ChildData>[]
   >([]);
   const [classOptions, setClassOptions] = useState<
     SearchDropDownOption<ClassroomGroupDto>[]
@@ -185,8 +185,11 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         const childA = dataA.extraData;
         const childB = dataB.extraData;
 
-        // TODO: Implement sorting by attendance
         switch (column) {
+          case 'attendance':
+            return childA?.attendancePercentage! > childB?.attendancePercentage!
+              ? 1
+              : -1;
           case 'priority': {
             return childA?.alertSeverity! > childB?.alertSeverity! ? 1 : -1;
           }
@@ -225,9 +228,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   };
 
   const mapUserListDataItem = useCallback(
-    (
-      child: ChildDto
-    ): UserAlertListDataItem<{ alertSeverity: number } & ChildDto> => {
+    (child: ChildDto): UserAlertListDataItem<ChildData> => {
       const childAttendance = attendanceData?.filter(
         (attendance) => attendance.userId === child.userId
       );
@@ -253,6 +254,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         extraData: {
           ...child,
           alertSeverity: childAlert.severity,
+          attendancePercentage: childAlert.attendancePercentage,
         },
         hideAlertSeverity: childAlert.status === 'none',
         onActionClick: () => {

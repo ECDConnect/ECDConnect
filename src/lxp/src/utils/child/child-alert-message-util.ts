@@ -7,6 +7,7 @@ interface ChildAlertModel {
   status: AlertSeverityType;
   message: string;
   severity: number;
+  attendancePercentage: number;
 }
 
 interface ChildAlertModelProps {
@@ -17,7 +18,11 @@ interface ChildAlertModelProps {
   childExternalWorkflowStatusId?: string;
 }
 
-function getAttendancePercentage(schoolDays: AttendanceDto[]) {
+function getAttendanceData(schoolDays: AttendanceDto[]) {
+  if (!schoolDays.length) {
+    return { percentage: 0, attendedDays: 0, totalDays: 0 };
+  }
+
   const totalDays = schoolDays.length;
   const attendedDays = schoolDays.filter((day) => day.attended).length;
 
@@ -46,30 +51,43 @@ export const getChildAlertModel = ({
     (day) => day.weekOfYear === currentWeekOfYear - 1
   );
 
+  const { percentage, attendedDays, totalDays } = getAttendanceData(
+    attendanceLastWeek ?? []
+  );
+
+  const isLessThan75Percent = percentage < 0.75;
+
   if (isChildRegistrationIncomplete) {
     return {
       status: 'error',
       message: 'Child registration incomplete',
       severity: 1,
+      attendancePercentage: percentage,
     };
   }
 
   if (!isClassAssigned) {
-    return { status: 'error', message: 'No class assigned', severity: 2 };
+    return {
+      status: 'error',
+      message: 'No class assigned',
+      severity: 2,
+      attendancePercentage: percentage,
+    };
   }
 
   if (attendanceLastWeek?.length) {
-    const { percentage, attendedDays, totalDays } =
-      getAttendancePercentage(attendanceLastWeek);
-
-    const isLessThan75Percent = percentage < 0.75;
-
     return {
       status: isLessThan75Percent ? 'warning' : 'success',
       message: `Attended ${attendedDays} of ${totalDays} days last week`,
       severity: isLessThan75Percent ? 3 : 4,
+      attendancePercentage: percentage,
     };
   }
 
-  return { status: 'none', message: '', severity: 5 };
+  return {
+    status: 'none',
+    message: '',
+    severity: 5,
+    attendancePercentage: percentage,
+  };
 };
