@@ -68,8 +68,6 @@ export const PractitionerProfile: React.FC = () => {
   //   await appDispatch(settingActions.setLastDataSync());
   // };
 
-  console.log('isTrainee', isTrainee);
-
   const handleOnlineCallback = (callback: () => void) => {
     if (isOnline) {
       callback();
