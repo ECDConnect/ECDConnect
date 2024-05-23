@@ -1196,6 +1196,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitioner.UpdatedBy = _applicationUserId.ToString();
             return _practiGenericRepo.Update(practitioner);
         }
+
+        public Practitioner UpdatePractitionerShareInfo(Guid userId, bool shareInfo)
+        {
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
+
+            practitioner.ShareInfo = shareInfo;
+            practitioner.UpdatedDate = DateTime.Now;
+            practitioner.UpdatedBy = _applicationUserId.ToString();
+            return _practiGenericRepo.Update(practitioner);
+        }
     }
 }
 
