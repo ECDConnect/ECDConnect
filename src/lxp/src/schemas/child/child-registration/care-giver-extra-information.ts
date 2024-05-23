@@ -6,6 +6,6 @@ export interface CareGiverExtraInformationFormModel {
 }
 
 export const careGiverExtraInformationFormSchema = Yup.object().shape({
-  highestEducationId: Yup.string().required(),
-  familyGrants: Yup.array().required().min(1),
+  highestEducationId: Yup.string(),
+  familyGrants: Yup.array(),
 });

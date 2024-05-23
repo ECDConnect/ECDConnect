@@ -4,7 +4,6 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
   classNames,
-  Divider,
   Dropdown,
   renderIcon,
   Typography,
@@ -18,12 +17,11 @@ import {
   careGiverExtraInformationFormSchema,
 } from '@schemas/child/child-registration/care-giver-extra-information';
 import { staticDataSelectors } from '@store/static-data';
-import * as styles from './care-giver-extra-information.styles';
 import { CareGiverExtraInformationFormProps } from './care-giver-extra-information.types';
 
 export const CareGiverExtraInformationForm: React.FC<
   CareGiverExtraInformationFormProps
-> = ({ careGiverExtraInformation, onSubmit }) => {
+> = ({ careGiverExtraInformation, caregiverFirstName, onSubmit }) => {
   const [selectedFamilyGrants, setSelectedFamilyGrants] = useState<string[]>(
     careGiverExtraInformation?.familyGrants || []
   );
@@ -74,13 +72,24 @@ export const CareGiverExtraInformationForm: React.FC<
   }, []);
 
   return (
-    <div className={'h-full bg-white px-4 pt-2 pb-4'}>
+    <div className={'flex h-full flex-col bg-white px-4 pt-2 pb-4'}>
       <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
       <Typography
         type={'h2'}
         text={'Additional information'}
         color={'textMid'}
       />
+      <Typography
+        type="h4"
+        color="textDark"
+        text={
+          caregiverFirstName
+            ? `${caregiverFirstName}’s highest level of education`
+            : 'What is your highest level of education?'
+        }
+        className="mt-4"
+      />
+      <Typography type="help" color="textMid" text="Optional" />
 
       <Dropdown<string>
         placeholder={'Choose highest level of education'}
@@ -88,9 +97,7 @@ export const CareGiverExtraInformationForm: React.FC<
           label: edu.description ?? '',
           value: edu.id ?? '',
         }))}
-        fillType="clear"
         fullWidth
-        label={'What is your highest level of education?'}
         className={'mt-3 w-full'}
         selectedValue={
           getCareGiverExtraInformationFormValues().highestEducationId
@@ -99,11 +106,13 @@ export const CareGiverExtraInformationForm: React.FC<
           onEducationChanged(item as string);
         }}
       />
-
-      <label className={classNames(styles.label, 'mt-4')}>
-        {'Which of these grants does the family receive?'}
-      </label>
-      <label className={styles.hintStyle}>{'Select all that apply'}</label>
+      <Typography
+        type="h4"
+        color="textDark"
+        text="Which of these grants does the family receive?"
+        className="mt-4"
+      />
+      <Typography type="help" color="textMid" text="Optional" />
       <div className={'mt-2'}>
         <ButtonGroup<string>
           type={ButtonGroupTypes.Chip}
@@ -121,16 +130,13 @@ export const CareGiverExtraInformationForm: React.FC<
           color="secondary"
         />
       </div>
-      <div className={'pb-4'}>
-        <Divider></Divider>
-      </div>
       <Button
         onClick={() => {
           handleFormSubmit();
         }}
-        className="w-full"
+        className="mt-auto w-full"
         size="small"
-        color="primary"
+        color="quatenary"
         type="filled"
         disabled={!isValid}
       >

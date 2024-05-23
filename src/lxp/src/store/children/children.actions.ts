@@ -377,7 +377,12 @@ export type TokenAddChildRequest = {
   siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>;
   child: AddChildTokenModelInput;
   registration?: AddChildRegistrationTokenModelInput;
-  userConsent?: AddChildUserConsentTokenModelInput;
+  userConsent?: Omit<
+    AddChildUserConsentTokenModelInput,
+    | 'commitmentAgreementAccepted'
+    | 'consentAgreementAccepted'
+    | 'indemnityAgreementAccepted'
+  >;
 };
 
 export const openAccessAddChild = createAsyncThunk<

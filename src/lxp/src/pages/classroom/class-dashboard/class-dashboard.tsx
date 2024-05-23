@@ -74,7 +74,7 @@ export const ClassDashboard: React.FC = () => {
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const showAttendanceTutorial = useMemo(
     () =>
-      selectedTabIndex === 0 &&
+      selectedTabIndex === TabsItems.ATTENDANCE &&
       (practitioner?.progress! < 3 || practitioner?.progress === undefined) &&
       children?.length! > 0 &&
       showAttendance,
