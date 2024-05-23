@@ -214,6 +214,7 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> UpdateUsernamePassword([FromBody] UpdateUserNameModel input)
         {
+
             // Validate to see if user exists
             var user = _userManager.FindByIdAsync(input.UserId).Result;
             if (user == null)
@@ -221,26 +222,25 @@ namespace ECDLink.Security.Api
                 return BadRequest(new FailedVerificationModel
                 {
                     ErrorCode = 1,
-                    Error = "No user with provided userId"
+                    Error = "No user with for userId"
                 });
             }
 
-            // Validate to see if token is valid
-            if (!string.IsNullOrEmpty(input.Token))
+            // Let's validate the invite token
+            var decodedToken = TokenHelper.DecodeToken(input.Token);
+            var tokenUser = await _invitationManager.GetValidUserWithTokenAsync(user.UserName, decodedToken);
+
+            if (tokenUser == null)
             {
-                var decodedToken = TokenHelper.DecodeToken(input.Token);
-                var tokenUser = _invitationManager.GetValidUserWithTokenAsync(user.UserName, decodedToken).Result;
-
-                if (tokenUser == null)
+                return BadRequest(new FailedVerificationModel
                 {
-                    return BadRequest(new FailedVerificationModel
-                    {
-                        ErrorCode = 2,
-                        Error = "Invalid token"
-                    });
-                }
+                    ErrorCode = 2,
+                    Error = "Invalid token"
+                });
             }
-
+            // Mark invitation as clicked
+            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
+            
             // Update user with new username
             user.UserName = input.UserName;
             user.UpdatedDate = DateTime.Now;
@@ -254,6 +254,17 @@ namespace ECDLink.Security.Api
                 });
             }
 
+            // update Practitioner ShareInfo value
+            var updatePractitioner = _personnelService.UpdatePractitionerShareInfo(user.Id, input.ShareInfo);
+            if (updatePractitioner == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 4,
+                    Error = "Update of ShareInfo failure"
+                });
+            }
+
             // Validate password for user
             if (!string.IsNullOrEmpty(input.Password))
             {
@@ -263,7 +274,7 @@ namespace ECDLink.Security.Api
                 {
                     return BadRequest(new FailedVerificationModel
                     {
-                        ErrorCode = 4,
+                        ErrorCode = 5,
                         Error = "Validate password failure"
                     });
                 }
@@ -275,7 +286,7 @@ namespace ECDLink.Security.Api
                     {
                         return BadRequest(new FailedVerificationModel
                         {
-                            ErrorCode = 5,
+                            ErrorCode = 6,
                             Error = "Add password failure"
                         });
                     }
@@ -287,7 +298,7 @@ namespace ECDLink.Security.Api
                     {
                         return BadRequest(new FailedVerificationModel
                         {
-                            ErrorCode = 6,
+                            ErrorCode = 7,
                             Error = "Change password failure"
                         });
                     }

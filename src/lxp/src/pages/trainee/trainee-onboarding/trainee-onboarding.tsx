@@ -15,6 +15,7 @@ import { userSelectors } from '@/store/user';
 import { CoachVisitInfo } from './components/trainee-onboarding-dashboard/components/coach-visit-info';
 import { SmartSpaceDetails } from './components/trainee-onboarding-dashboard/components/smartspace-details';
 import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const TraineeOnboarding = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
@@ -97,7 +98,9 @@ export const TraineeOnboarding = () => {
           <GetCommunitySupport setNotificationStep={setNotificationStep} />
         );
       case 'Register 3 children':
-        return history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 });
+        return history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.CLASSES,
+        });
       default:
         return (
           <OnboardingTraineeDashboard

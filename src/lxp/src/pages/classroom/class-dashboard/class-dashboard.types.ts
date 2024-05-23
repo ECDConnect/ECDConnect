@@ -4,16 +4,18 @@ export type ClassDashboardRouteState = {
 };
 
 export const enum TabsItems {
-  ATTENDANCE = 0,
-  CLASSES = 1,
-  PROGRAMME = 2,
-  RESOURCES = 3,
+  CLASSES = 0,
+  ATTENDANCE = 1,
+  PROGRESS = 2,
+  ACTIVITES = 3,
+  RESOURCES = 4,
 }
 
 export const enum TabsItemForPrincipal {
-  ATTENDANCE = 0,
-  PRACTITIONERS = 1,
-  CLASSES = 2,
-  PROGRAMME = 3,
+  CLASSES = 0,
+  ATTENDANCE = 1,
+  PROGRESS = 2,
+  ACTIVITES = 3,
   RESOURCES = 4,
+  //PRACTITIONERS = 5, this moved to business and staff
 }

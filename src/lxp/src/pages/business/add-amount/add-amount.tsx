@@ -11,6 +11,7 @@ import ROUTES from '@routes/routes';
 import * as styles from './add-amount.styles';
 import StatementsWrapper from '../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
+import { BusinessTabItems } from '../business.types';
 
 export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
@@ -29,7 +30,11 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => history.push(ROUTES.BUSINESS)}
+      onBack={() =>
+        history.push(ROUTES.BUSINESS, {
+          activeTabIndex: BusinessTabItems.MONEY,
+        })
+      }
       className="w-full p-4"
     >
       <StatementsWrapper />

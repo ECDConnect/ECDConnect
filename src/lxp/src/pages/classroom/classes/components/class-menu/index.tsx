@@ -95,8 +95,8 @@ export const ClassMenu = ({
           onClick: () => {
             history.push(ROUTES.CLASSROOM.ROOT, {
               activeTabIndex: isPrincipal
-                ? TabsItemForPrincipal.PROGRAMME
-                : TabsItems.PROGRAMME,
+                ? TabsItemForPrincipal.ACTIVITES
+                : TabsItems.ACTIVITES,
             } as ClassDashboardRouteState);
             onClose();
           },

@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import { PreviousStatementsList } from '../../components/previous-statements-list';
+import { BusinessTabItems } from '../../business.types';
 
 export const PreviousStatements: React.FC = () => {
   const history = useHistory();
@@ -21,7 +22,11 @@ export const PreviousStatements: React.FC = () => {
       statements={statements}
       unsubmittedIncome={unsubmittedIncome}
       unsubmittedExpenses={unsubmittedExpenses}
-      onBack={() => history.push(ROUTES.BUSINESS)}
+      onBack={() =>
+        history.push(ROUTES.BUSINESS, {
+          activeTabIndex: BusinessTabItems.MONEY,
+        })
+      }
       onActionClick={(statementId: string | undefined) =>
         !!statementId
           ? history.push(ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS, {

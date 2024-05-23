@@ -28,6 +28,7 @@ import ROUTES from '@/routes/routes';
 import { StatementsIncomeInput } from '@ecdlink/graphql';
 import { AddIncomeState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -88,7 +89,9 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
 
     onSubmit(incomeInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
   };
 
   const handleSaveStartupSupportValues = () => {

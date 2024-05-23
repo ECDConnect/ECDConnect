@@ -23,6 +23,10 @@ import { CaregiverChildRegistrationModal } from '../../components/caregiver-chil
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
@@ -139,12 +143,16 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     <BannerWrapper
       onBack={() => {
         if (isPrincipal && practitioners?.length! > 1) {
-          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
+          history.push(ROUTES.CLASSROOM.ROOT, {
+            activeTabIndex: TabsItemForPrincipal.CLASSES,
+          });
         } else {
           if (isCoach) {
             history.goBack();
           } else {
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+            history.push(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItems.CLASSES,
+            });
           }
         }
       }}

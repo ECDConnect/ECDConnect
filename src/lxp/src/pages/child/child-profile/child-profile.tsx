@@ -78,6 +78,10 @@ import {
   getStorageItem,
   setStorageItem,
 } from '@/utils/common/local-storage.utils';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -676,12 +680,16 @@ export const ChildProfile: React.FC = () => {
         renderOverflow={false}
         onBack={() => {
           if (isPrincipal && practitioners?.length! > 1) {
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
+            history.push(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItemForPrincipal.CLASSES,
+            });
           } else {
             if (isCoach) {
               history.goBack();
             } else {
-              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+              history.push(ROUTES.CLASSROOM.ROOT, {
+                activeTabIndex: TabsItems.CLASSES,
+              });
             }
           }
         }}

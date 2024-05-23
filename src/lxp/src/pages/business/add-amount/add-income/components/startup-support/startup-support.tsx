@@ -32,6 +32,7 @@ import { AddIncomeState } from '../../../add-amount.types';
 import { StatementsIncomeInput } from '@ecdlink/graphql';
 import { statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({
   setType,
@@ -93,7 +94,9 @@ export const StartupSupport: React.FC<AddIncomeState> = ({
 
     onSubmit(incomeInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
   };
 
   const handleSaveStartupSupportValues = () => {
