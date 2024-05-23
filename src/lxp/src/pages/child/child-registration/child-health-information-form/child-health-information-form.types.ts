@@ -3,6 +3,7 @@ import { ChildHealthInformationFormModel } from '@schemas/child/child-registrati
 
 export interface ChildHealthInformationFormProps
   extends FormComponentProps<ChildHealthInformationFormModel> {
+  enableReadOnlyMode?: boolean;
   childHealthInformation?: ChildHealthInformationFormModel;
   childName?: string;
   canEdit?: boolean;

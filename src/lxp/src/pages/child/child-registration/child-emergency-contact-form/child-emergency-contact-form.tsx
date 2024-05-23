@@ -14,7 +14,7 @@ import {
   childEmergencyContactFormSchema,
 } from '@schemas/child/child-registration/child-emergency-contact-form';
 import * as styles from './child-emergency-contact-form.styles';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChildEmergencyContactFormProps } from './child-emergency-contact-form.types';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
@@ -22,13 +22,14 @@ import { ChildrenActions } from '@/store/children/children.actions';
 export const ChildEmergencyContactForm: React.FC<
   ChildEmergencyContactFormProps
 > = ({
+  enableReadOnlyMode,
   childEmergencyContactForm,
   childName,
   onSubmit,
   variation = 'practitioner',
   canEdit = false,
 }) => {
-  const [readonly, setReadonly] = useState(true);
+  const [readonly, setReadonly] = useState(enableReadOnlyMode);
   const [contactAllowedCustody, setContactAllowedCustody] = useState<
     boolean | undefined
   >(childEmergencyContactForm?.isAllowedCustody ?? undefined);
@@ -69,6 +70,17 @@ export const ChildEmergencyContactForm: React.FC<
       onSubmit(getChildEmergencyContactFormValues());
     }
   };
+
+  const submitButtonProps = useMemo(() => {
+    if (!enableReadOnlyMode) {
+      return { text: 'Next', icon: 'ArrowCircleRightIcon' };
+    }
+    if (readonly) {
+      return { text: 'Edit', icon: 'PencilIcon' };
+    }
+
+    return { text: 'Save', icon: 'SaveIcon' };
+  }, [enableReadOnlyMode, readonly]);
 
   return (
     <div className="mb-4 flex h-full flex-col bg-white px-4 pt-2 pb-4">
@@ -179,7 +191,7 @@ export const ChildEmergencyContactForm: React.FC<
           <Divider dividerType="dashed" className="my-4" />
         </div>
       )}
-      {canEdit && (
+      {(canEdit || !enableReadOnlyMode) && (
         <Button
           isLoading={isLoading}
           onClick={handleFormSubmit}
@@ -188,8 +200,8 @@ export const ChildEmergencyContactForm: React.FC<
           color="quatenary"
           type="filled"
           disabled={(!readonly && !isValid) || isLoading}
-          icon={readonly ? 'PencilIcon' : 'SaveIcon'}
-          text={readonly ? 'Edit' : 'Save'}
+          icon={submitButtonProps.icon}
+          text={submitButtonProps.text}
           textColor="white"
         />
       )}

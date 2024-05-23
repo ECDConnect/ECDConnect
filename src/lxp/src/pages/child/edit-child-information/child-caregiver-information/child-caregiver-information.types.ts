@@ -3,6 +3,7 @@ import { ChildCaregiverInformationModel } from '@schemas/child/edit-child-inform
 
 export interface ChildCaregiverInformationProps
   extends FormComponentProps<ChildCaregiverInformationModel> {
+  enableReadOnlyMode?: boolean;
   childCareGiverInformation?: ChildCaregiverInformationModel;
   childName: string;
   canEdit?: boolean;

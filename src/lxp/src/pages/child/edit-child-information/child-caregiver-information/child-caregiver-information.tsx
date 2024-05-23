@@ -7,14 +7,20 @@ import {
 } from '@schemas/child/edit-child-information/care-giver-information-form';
 import * as styles from './child-caregiver-information.styles';
 import { ChildCaregiverInformationProps } from './child-caregiver-information.types';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
 
 export const ChildCaregiverInformation: React.FC<
   ChildCaregiverInformationProps
-> = ({ childCareGiverInformation, childName, onSubmit, canEdit }) => {
-  const [readonly, setReadonly] = useState(true);
+> = ({
+  childCareGiverInformation,
+  childName,
+  onSubmit,
+  canEdit,
+  enableReadOnlyMode,
+}) => {
+  const [readonly, setReadonly] = useState(enableReadOnlyMode);
 
   const { isLoading } = useThunkFetchCall(
     'children',
@@ -43,6 +49,17 @@ export const ChildCaregiverInformation: React.FC<
       onSubmit(getCareGiverInformationFormValues());
     }
   };
+
+  const submitButtonProps = useMemo(() => {
+    if (!enableReadOnlyMode) {
+      return { text: 'Next', icon: 'ArrowCircleRightIcon' };
+    }
+    if (readonly) {
+      return { text: 'Edit', icon: 'PencilIcon' };
+    }
+
+    return { text: 'Save', icon: 'SaveIcon' };
+  }, [enableReadOnlyMode, readonly]);
 
   return (
     <div className={styles.wrapper}>
@@ -80,7 +97,7 @@ export const ChildCaregiverInformation: React.FC<
         error={errors['phoneNumber']}
       />
       <Divider dividerType="dashed" className="py-4" />
-      {canEdit && (
+      {(canEdit || !enableReadOnlyMode) && (
         <Button
           isLoading={isLoading}
           onClick={handleFormSubmit}
@@ -89,8 +106,8 @@ export const ChildCaregiverInformation: React.FC<
           color="quatenary"
           type="filled"
           disabled={(!readonly && !isValid) || isLoading}
-          icon={readonly ? 'PencilIcon' : 'SaveIcon'}
-          text={readonly ? 'Edit' : 'Save'}
+          icon={submitButtonProps.icon}
+          text={submitButtonProps.text}
           textColor="white"
         />
       )}
