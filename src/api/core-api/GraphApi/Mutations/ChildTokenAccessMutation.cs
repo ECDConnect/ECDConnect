@@ -80,7 +80,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 TenantId = tenantId
             };
 
-            await userManager.CreateAsync(user);
+            await userManager.CreateAsync(user); 
+            await userManager.AddToRoleAsync(user, "Child");
 
             var child = new Child
             {
@@ -112,7 +113,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             var baseUrl = optionAccessor.Value.Login;
-            var registrationUrl = $"{baseUrl}/child-registration-landing";
+            var registrationUrl = $"{baseUrl}child-registration-landing?token={TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper))}";
             var registrationDetails = new InitialChildRegistrationModel
             {
                 AddedByUserId = addedByUser.Id,
@@ -120,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ChildId = newChild.Id,
                 ChildUserId = child.UserId.Value,
                 CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
-                    $"{registrationUrl}/{TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper))}",
+                    registrationUrl,
                     child.User,
                     "ChildRegistration"),
             };
@@ -482,7 +483,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             var baseUrl = optionAccessor.Value.Login;
-            var registrationUrl = $"{baseUrl}/child-registration-landing";
+            var registrationUrl = $"{baseUrl}child-registration-landing?token={TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper))}";
             var registrationDetails = new InitialChildRegistrationModel
             {
                 AddedByUserId = Guid.Parse(child.InsertedBy),
@@ -490,7 +491,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ChildId = child.Id,
                 ChildUserId = child.UserId.Value,
                 CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
-                    $"{registrationUrl}/{TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper))}",
+                    registrationUrl,
                     child.User,
                     "ChildRegistration"),
             };
