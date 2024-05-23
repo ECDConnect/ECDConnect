@@ -168,6 +168,19 @@ class AuthService {
     );
   }
 
+  async RegisterOpenAccessUser(
+    baseEndPoint: string,
+    body: RegisterRequestModel
+  ) {
+    return await api(baseEndPoint).post(
+      APIs.addOAPractitioner,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
   async CheckUsernamePhoneNumber(
     baseEndPoint: string,
     body: CheckUsernamePhoneNumberModel

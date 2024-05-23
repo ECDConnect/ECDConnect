@@ -24,4 +24,5 @@ export interface RegisterRequestModel {
   idField?: string | undefined;
   preferId?: boolean | undefined;
   phoneNumber?: string;
+  registerType?: string;
 }

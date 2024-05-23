@@ -38,9 +38,7 @@ export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
-  const [displayMessage, setDisplayMessage] = useState(
-    'Password or ID incorrect. Please try again'
-  );
+  const displayMessage = 'Password or ID incorrect. Please try again';
   const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
@@ -95,6 +93,8 @@ export const Login: React.FC = () => {
         : '',
     [userIdHashDecrypted]
   );
+
+  console.log({ displayMessage });
 
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
@@ -163,7 +163,6 @@ export const Login: React.FC = () => {
             ) {
               login();
             } else {
-              setDisplayMessage(isAuthenticated?.payload!);
               setDisplayError(true);
               setIsLoading(false);
             }
@@ -270,7 +269,7 @@ export const Login: React.FC = () => {
               <Button
                 className={'mt-1 mb-3'}
                 type="outlined"
-                color="primary"
+                color="secondary"
                 background={'transparent'}
                 size="small"
                 disabled={!isOnline}
@@ -278,7 +277,7 @@ export const Login: React.FC = () => {
               >
                 <Typography
                   type="buttonSmall"
-                  color="primary"
+                  color="secondary"
                   text={'Forgot my password'}
                 ></Typography>
               </Button>
@@ -287,7 +286,7 @@ export const Login: React.FC = () => {
             {displayError && (
               <Alert
                 className={'mt-5 mb-3'}
-                message={displayMessage}
+                title={displayMessage}
                 type={'error'}
               />
             )}

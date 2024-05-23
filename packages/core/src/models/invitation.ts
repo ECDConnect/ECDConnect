@@ -31,4 +31,5 @@ export interface UpdateUsernameModel {
   username?: string;
   password?: string;
   token?: string;
+  shareInfo?: boolean;
 }
