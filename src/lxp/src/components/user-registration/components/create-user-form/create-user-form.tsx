@@ -48,7 +48,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const [isValidPhoneNumber, setIsValidPhoneNumber] = useState(true);
   const [messageError, setMessageError] = useState('');
   const usernameMessageErrorText = `Username already exists! Try using your email address, phone number, or add a number/letter`;
-  console.log({ phoneNumber });
+
   const {
     register: passwordRegister,
     getValues: passwordGetValues,

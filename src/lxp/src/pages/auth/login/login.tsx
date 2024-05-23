@@ -94,8 +94,6 @@ export const Login: React.FC = () => {
     [userIdHashDecrypted]
   );
 
-  console.log({ displayMessage });
-
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
