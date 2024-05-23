@@ -12,6 +12,7 @@ import { ClassMenu } from './components/class-menu';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { classroomsSelectors } from '@/store/classroom';
+import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
 
 export const Classes = () => {
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
@@ -66,7 +67,7 @@ export const Classes = () => {
       render: (onClose) => (
         <ClassMenu
           isPrincipal={isPrincipal}
-          classId={id}
+          classroomGroupId={id}
           className={name}
           onClose={onClose}
         />
@@ -82,7 +83,10 @@ export const Classes = () => {
         currentClass.practitioner?.name
           ? currentClass.practitioner.name + ' , '
           : ''
-      }${currentClass.learners?.length} children`,
+      }${
+        currentClass.learners?.filter((child) => child?.isActive !== false)
+          ?.length
+      } children`,
       alertSeverity: 'none',
       avatarColor: getAvatarColor(),
       iconColor: 'secondary',
@@ -110,7 +114,11 @@ export const Classes = () => {
           shape={'round'}
           className="absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5"
           // TODO: when W3 (EC-2534) is done, please review this redirect
-          click={() => history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS)}
+          click={() =>
+            history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
+              redirectToClassesPage: true,
+            } as EditPlaygroupsRouteState)
+          }
         />
       )}
     </div>

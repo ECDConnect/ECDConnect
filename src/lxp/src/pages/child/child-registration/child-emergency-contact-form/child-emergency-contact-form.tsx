@@ -17,7 +17,7 @@ import * as styles from './child-emergency-contact-form.styles';
 import { useState } from 'react';
 import { ChildEmergencyContactFormProps } from './child-emergency-contact-form.types';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
+import { ChildrenActions } from '@/store/children/children.actions';
 
 export const ChildEmergencyContactForm: React.FC<
   ChildEmergencyContactFormProps
@@ -34,8 +34,8 @@ export const ChildEmergencyContactForm: React.FC<
   >(childEmergencyContactForm?.isAllowedCustody ?? undefined);
 
   const { isLoading } = useThunkFetchCall(
-    'caregivers',
-    CaregiverActions.UPDATE_CAREGIVER
+    'children',
+    ChildrenActions.UPDATE_CHILD
   );
 
   const {
@@ -84,7 +84,7 @@ export const ChildEmergencyContactForm: React.FC<
         register={childEmergencyContactFormRegister}
         error={errors['firstname']}
         nameProp={'firstname'}
-        placeholder={'First name'}
+        placeholder={readonly ? 'None' : 'First name'}
       />
       <Divider dividerType="dashed" className="my-4" />
       <FormInput<ChildEmergencyContactFormModel>
@@ -93,7 +93,7 @@ export const ChildEmergencyContactForm: React.FC<
         register={childEmergencyContactFormRegister}
         nameProp={'surname'}
         error={errors['surname']}
-        placeholder={'Surname/family name'}
+        placeholder={readonly ? 'None' : 'Surname/family name'}
       />
       <Divider dividerType="dashed" className="my-4" />
       <FormInput<ChildEmergencyContactFormModel>
@@ -102,7 +102,7 @@ export const ChildEmergencyContactForm: React.FC<
         register={childEmergencyContactFormRegister}
         nameProp={'phoneNumber'}
         error={errors['phoneNumber']}
-        placeholder={'E.g. 012 345 6789'}
+        placeholder={readonly ? 'None' : 'E.g. 012 345 6789'}
       />
       <Divider dividerType="dashed" className="my-4" />
       <label className={styles.label}>
@@ -156,7 +156,7 @@ export const ChildEmergencyContactForm: React.FC<
             register={childEmergencyContactFormRegister}
             nameProp={'custodianFirstname'}
             error={errors['custodianFirstname']}
-            placeholder={'First name'}
+            placeholder={readonly ? 'None' : 'First name'}
           />
           <Divider dividerType="dashed" className="my-4" />
           <FormInput<ChildEmergencyContactFormModel>
@@ -165,7 +165,7 @@ export const ChildEmergencyContactForm: React.FC<
             register={childEmergencyContactFormRegister}
             nameProp={'custodianSurname'}
             error={errors['custodianSurname']}
-            placeholder={'Surname/family name'}
+            placeholder={readonly ? 'None' : 'Surname/family name'}
           />
           <Divider dividerType="dashed" className="my-4" />
           <FormInput<ChildEmergencyContactFormModel>
@@ -174,7 +174,7 @@ export const ChildEmergencyContactForm: React.FC<
             register={childEmergencyContactFormRegister}
             nameProp={'custodianPhoneNumber'}
             error={errors['custodianPhoneNumber']}
-            placeholder={'012 345 6789'}
+            placeholder={readonly ? 'None' : '012 345 6789'}
           />
           <Divider dividerType="dashed" className="my-4" />
         </div>

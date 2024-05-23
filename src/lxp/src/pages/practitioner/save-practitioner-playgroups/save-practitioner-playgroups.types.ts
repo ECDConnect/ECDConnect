@@ -1,5 +1,6 @@
-export interface EditPlaygroupsState {
+export interface EditPlaygroupsRouteState {
   returnRoute?: string;
+  redirectToClassesPage?: boolean;
 }
 
 export enum EditPlaygroupsSteps {

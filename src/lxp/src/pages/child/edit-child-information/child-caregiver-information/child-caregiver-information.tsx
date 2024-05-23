@@ -9,7 +9,7 @@ import * as styles from './child-caregiver-information.styles';
 import { ChildCaregiverInformationProps } from './child-caregiver-information.types';
 import { useState } from 'react';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
+import { ChildrenActions } from '@/store/children/children.actions';
 
 export const ChildCaregiverInformation: React.FC<
   ChildCaregiverInformationProps
@@ -17,8 +17,8 @@ export const ChildCaregiverInformation: React.FC<
   const [readonly, setReadonly] = useState(true);
 
   const { isLoading } = useThunkFetchCall(
-    'caregivers',
-    CaregiverActions.UPDATE_CAREGIVER
+    'children',
+    ChildrenActions.UPDATE_CHILD
   );
 
   const {
@@ -76,7 +76,7 @@ export const ChildCaregiverInformation: React.FC<
         readonly={readonly}
         register={careGiverInformationFormRegister}
         nameProp={'phoneNumber'}
-        placeholder={'E.g. 082 345 6789'}
+        placeholder={readonly ? 'None' : 'E.g. 082 345 6789'}
         error={errors['phoneNumber']}
       />
       <Divider dividerType="dashed" className="py-4" />

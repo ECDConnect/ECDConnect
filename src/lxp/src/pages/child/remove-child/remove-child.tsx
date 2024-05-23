@@ -1,4 +1,8 @@
-import { ReasonForLeavingDto, RoleSystemNameEnum } from '@ecdlink/core';
+import {
+  ReasonForLeavingDto,
+  RoleSystemNameEnum,
+  useSnackbar,
+} from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -25,14 +29,18 @@ import {
   childrenSelectors,
   childrenThunkActions,
 } from '@store/children';
-import { classroomsActions } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './remove-child.styles';
 import { RemoveChildRouteState } from './remove-child.types';
 import { userSelectors } from '@store/user';
 import ROUTES from '@routes/routes';
-import { TabsItemForPrincipal } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { ClassDashboardRouteState } from '@/pages/business/business.types';
 
 export const RemoveChild: React.FC = () => {
   const location = useLocation<RemoveChildRouteState>();
@@ -42,14 +50,23 @@ export const RemoveChild: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const childId = location.state.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
+  );
+
   // TODO: update the reasonsForLeaving
   const reasonsForLeaving = useSelector(
     staticDataSelectors.getReasonsForLeaving
   );
   const history = useHistory();
 
+  const { showMessage } = useSnackbar();
+
   const isCoach = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
+  const isPrincipal = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Principal
   );
 
   useEffect(() => {
@@ -80,31 +97,44 @@ export const RemoveChild: React.FC = () => {
     control: removeChildFormControl,
   });
 
-  // TODO: update the endpoints
   const handleFormSubmit = async () => {
     if (!child) return;
 
     const updatedChild = { ...child };
     updatedChild.isActive = false;
-    appDispatch(childrenActions.deactivateChild(updatedChild));
+    appDispatch(
+      classroomsActions.deactivateLearner({
+        childUserId: child.userId!,
+        classroomGroupId: classroomGroup?.id!,
+      })
+    );
+    appDispatch(childrenActions.updateChild(updatedChild));
     appDispatch(
       childrenThunkActions.updateChild({
         child: updatedChild,
         id: String(updatedChild.id),
       })
     ).then(() =>
+      // TODO: Migrate this action to be fully handled by the backend
       appDispatch(
         childrenThunkActions.calculateChildrenRegistrationRemoval(true)
       )
     );
 
+    showMessage({
+      message: `Child removed`,
+      type: 'success',
+    });
+
     if (isCoach) {
       history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
       return;
     }
-    history.replace(ROUTES.CLASSROOM.ROOT, {
-      activeTabIndex: TabsItemForPrincipal.CLASSES,
-    });
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: isPrincipal
+        ? TabsItemForPrincipal.CLASSES
+        : TabsItems.CLASSES,
+    } as ClassDashboardRouteState);
   };
 
   return (
@@ -128,8 +158,7 @@ export const RemoveChild: React.FC = () => {
         />
         <Typography
           type={'h1'}
-          // TODO: update the todoName
-          text={`Why is ${child?.user?.firstName} leaving {todoName}?`}
+          text={`Why is ${child?.user?.firstName} leaving ${classroomGroup?.name}?`}
           color={'primary'}
           className={'pt-1'}
         />

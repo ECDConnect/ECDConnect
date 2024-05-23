@@ -9,7 +9,7 @@ import {
 } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { CareGiverChildInformationFormProps } from './care-giver-child-information-form.types';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
+import { ChildrenActions } from '@/store/children/children.actions';
 
 export const CareGiverChildInformationForm: React.FC<
   CareGiverChildInformationFormProps
@@ -17,8 +17,8 @@ export const CareGiverChildInformationForm: React.FC<
   const [readonly, setReadonly] = useState(true);
 
   const { isLoading } = useThunkFetchCall(
-    'caregivers',
-    CaregiverActions.UPDATE_CAREGIVER
+    'children',
+    ChildrenActions.UPDATE_CHILD
   );
 
   useEffect(() => {
@@ -69,7 +69,11 @@ export const CareGiverChildInformationForm: React.FC<
         textInputType={readonly ? 'input' : 'textarea'}
         error={errors['streetAddress']}
         className={styles.spacer}
-        placeholder={'E.g. 203 Oak Apartments, 11 Green Road, Mamelodi East'}
+        placeholder={
+          readonly
+            ? 'None'
+            : 'E.g. 203 Oak Apartments, 11 Green Road, Mamelodi East'
+        }
       />
       <Divider dividerType="dashed" className="py-4" />
       <FormInput<CareGiverChildInformationFormModel>
@@ -78,7 +82,7 @@ export const CareGiverChildInformationForm: React.FC<
         register={careGiverChildInformationFormRegister}
         nameProp={'postalCode'}
         error={errors['postalCode']}
-        placeholder={'E.g. 0122'}
+        placeholder={readonly ? 'None' : 'E.g. 0122'}
       />
       <Divider dividerType="dashed" className="py-4" />
       {canEdit && (

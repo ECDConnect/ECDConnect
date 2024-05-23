@@ -1,4 +1,4 @@
-import { LearnerDto } from '@ecdlink/core';
+import { ChildDto, LearnerDto } from '@ecdlink/core';
 
 export interface ChildListLearner extends LearnerDto {
   avatarColor: string;
@@ -7,3 +7,8 @@ export interface ChildListLearner extends LearnerDto {
 export interface ChildListRouteState {
   classroomGroupId: string;
 }
+
+export type ChildData = {
+  alertSeverity: number;
+  attendancePercentage: number;
+} & ChildDto;

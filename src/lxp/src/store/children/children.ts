@@ -39,6 +39,13 @@ const childrenSlice = createSlice({
 
       if (childIndex < 0) return;
 
+      if (payloadUpdated?.isActive === false) {
+        state.childData.children = state.childData.children.filter(
+          (child) => child.id !== action.payload.id
+        );
+        return;
+      }
+
       state.childData.children[childIndex] = payloadUpdated;
     },
     // This might need to merge with create child, or update the child
