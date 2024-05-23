@@ -29,7 +29,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => history.push(ROUTES.BUSINESS)}
+      onBack={() => history.push(ROUTES.BUSINESS, { activeTabIndex: 1 })}
       className="w-full p-4"
     >
       <StatementsWrapper />

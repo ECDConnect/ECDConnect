@@ -35,6 +35,7 @@ import { userSelectors } from '@store/user';
 import { classroomsSelectors } from '@/store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
+import { TabsItems } from '../../class-dashboard.types';
 
 const absentInfo = [
   {
@@ -398,7 +399,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 });
                 return;
               }
-              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+              history.push(ROUTES.CLASSROOM.ROOT, {
+                activeTabIndex: TabsItems.CLASSES,
+              });
 
               return;
             }
@@ -428,7 +431,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               });
               return;
             }
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+            history.push(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItems.CLASSES,
+            });
 
             return;
           }
@@ -487,7 +492,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               });
               return;
             }
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+            history.push(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItems.CLASSES,
+            });
 
             return;
           }
@@ -518,7 +525,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             });
             return;
           }
-          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+          history.push(ROUTES.CLASSROOM.ROOT, {
+            activeTabIndex: TabsItems.CLASSES,
+          });
 
           return;
         }
@@ -557,7 +566,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             });
             return;
           }
-          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+          history.push(ROUTES.CLASSROOM.ROOT, {
+            activeTabIndex: TabsItems.CLASSES,
+          });
 
           return;
         }
@@ -597,7 +608,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       });
       return;
     }
-    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: TabsItems.CLASSES });
 
     return;
   };
@@ -611,7 +622,11 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => history.push(ROUTES.CLASSROOM.ROOT)}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.CLASSES,
+        })
+      }
       displayOffline={!isOnline}
     >
       <div className="mb-3 flex w-full flex-wrap p-4">

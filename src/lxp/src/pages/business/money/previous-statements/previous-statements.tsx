@@ -21,7 +21,7 @@ export const PreviousStatements: React.FC = () => {
       statements={statements}
       unsubmittedIncome={unsubmittedIncome}
       unsubmittedExpenses={unsubmittedExpenses}
-      onBack={() => history.push(ROUTES.BUSINESS)}
+      onBack={() => history.push(ROUTES.BUSINESS, { activeTabIndex: 1 })}
       onActionClick={(statementId: string | undefined) =>
         !!statementId
           ? history.push(ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS, {

@@ -46,6 +46,7 @@ import { notificationsSelectors } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { PractitionerNotRegistered } from '../../practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { TabsItemForPrincipal } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
@@ -522,7 +523,9 @@ export const RemovePractitionerFromProgramme: React.FC<
                 removeNotifications();
                 handleFormSubmit(getRemovePractionerFormValues());
                 setRemovePractionerPromptVisible(false);
-                history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+                history.push(ROUTES.CLASSROOM.ROOT, {
+                  activeTabIndex: TabsItemForPrincipal.CLASSES,
+                });
                 showMessage({
                   message: `${practitioner?.user?.firstName} removed`,
                 });

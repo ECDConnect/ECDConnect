@@ -107,7 +107,7 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
 
     onSubmit(expensesInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, { activeTabIndex: 1 });
     setIsLoading(false);
   };
 

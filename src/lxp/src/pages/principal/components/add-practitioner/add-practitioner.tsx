@@ -32,6 +32,7 @@ import { SearchIcon } from '@heroicons/react/solid';
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { practitionerThunkActions } from '@/store/practitioner';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -155,7 +156,7 @@ export const AddPractitioner = ({
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
 
-    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: TabsItems.CLASSES });
   };
 
   const callForHelp = () => {

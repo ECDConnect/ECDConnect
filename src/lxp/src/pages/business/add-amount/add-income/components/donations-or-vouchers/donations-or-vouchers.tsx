@@ -121,7 +121,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
 
     onSubmit(incomeInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, { activeTabIndex: 1 });
   };
 
   const handleSaveStartupSupportValues = () => {

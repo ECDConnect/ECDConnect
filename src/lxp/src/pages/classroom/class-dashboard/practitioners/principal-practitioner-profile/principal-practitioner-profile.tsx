@@ -56,6 +56,7 @@ import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
 import { AbsencesView } from './components/absences-view/absences-view';
+import { TabsItemForPrincipal } from '../../class-dashboard.types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -348,7 +349,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             renderBorder={true}
             renderOverflow={false}
             onBack={() =>
-              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 })
+              history.push(ROUTES.CLASSROOM.ROOT, {
+                activeTabIndex: TabsItemForPrincipal.PRACTITIONERS,
+              })
             }
             displayOffline={!isOnline}
           >
@@ -884,7 +887,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           onCancel={() => {
             cancelPractitionerRemoval();
             setEditRemovalDialogVisable(false);
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+            history.push(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItemForPrincipal.PRACTITIONERS,
+            });
           }}
           onClose={() => {
             setEditRemovalDialogVisable(false);

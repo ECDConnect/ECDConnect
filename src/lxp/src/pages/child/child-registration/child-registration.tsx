@@ -62,7 +62,10 @@ import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { pointsSelectors } from '@/store/points';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
-import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PointsService } from '@/services/PointsService';
 
 export const ChildRegistration: React.FC = () => {
@@ -480,10 +483,12 @@ export const ChildRegistration: React.FC = () => {
                   onClick: () => {
                     if (isTrainee) {
                       history.push(ROUTES.CLASSROOM.ROOT, {
-                        activeTabIndex: 0,
+                        activeTabIndex: TabsItems.ATTENDANCE,
                       });
                     } else {
-                      history.push(ROUTES.CLASSROOM.ROOT);
+                      history.push(ROUTES.CLASSROOM.ROOT, {
+                        activeTabIndex: TabsItemForPrincipal.ATTENDANCE,
+                      });
                     }
                     onClose();
                   },

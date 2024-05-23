@@ -38,6 +38,7 @@ import { classroomsSelectors } from '@/store/classroom';
 import ROUTES from '@/routes/routes';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { userSelectors } from '@store/user';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const ChildAttendanceReportPage: React.FC = () => {
   const history = useHistory();
@@ -147,7 +148,9 @@ export const ChildAttendanceReportPage: React.FC = () => {
           childId
             ? history.push(ROUTES.CHILD_PROFILE, { childId })
             : childUserId
-            ? history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 })
+            ? history.push(ROUTES.CLASSROOM.ROOT, {
+                activeTabIndex: TabsItems.ATTENDANCE,
+              })
             : history.goBack();
         }
       }}
@@ -274,7 +277,9 @@ export const ChildAttendanceReportPage: React.FC = () => {
               childId
                 ? history.push(ROUTES.CHILD_PROFILE, { childId })
                 : childUserId
-                ? history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 })
+                ? history.push(ROUTES.CLASSROOM.ROOT, {
+                    activeTabIndex: TabsItems.ATTENDANCE,
+                  })
                 : history.goBack();
             }}
           ></OnlineOnlyModal>

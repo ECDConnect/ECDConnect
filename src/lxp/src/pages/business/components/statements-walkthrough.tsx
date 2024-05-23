@@ -32,7 +32,7 @@ export const Walkthrough: React.FC<WalkthroughProps> = ({
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
     setShowInfo(false);
-    history.push(ROUTES.BUSINESS);
+    history.push(ROUTES.BUSINESS, { activeTabIndex: 1 });
   };
 
   const gotToStatementsWalkthrough = () => {

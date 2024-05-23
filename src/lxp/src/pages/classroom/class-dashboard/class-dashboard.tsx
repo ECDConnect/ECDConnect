@@ -148,7 +148,7 @@ export const ClassDashboard: React.FC = () => {
   const tabItems: TabItem[] = [
     {
       title: NavigationNames.Classroom.Attendance,
-      initActive: false,
+      initActive: true,
       child: <AttendanceComponent />,
     },
     {
@@ -175,7 +175,7 @@ export const ClassDashboard: React.FC = () => {
   const tabItemsForPrincipal: TabItem[] = [
     {
       title: NavigationNames.Classroom.Classes,
-      initActive: false,
+      initActive: true,
       child: <Classes />,
     },
     {

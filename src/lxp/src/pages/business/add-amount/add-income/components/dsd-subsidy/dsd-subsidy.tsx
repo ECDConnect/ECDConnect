@@ -88,7 +88,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
 
     onSubmit(incomeInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, { activeTabIndex: 1 });
   };
 
   const handleSaveStartupSupportValues = () => {

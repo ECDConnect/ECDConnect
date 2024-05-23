@@ -85,7 +85,7 @@ export const Business: React.FC = () => {
   const tabItemsForPrincipal: TabItem[] = [
     {
       title: NavigationNames.Business.Staff,
-      initActive: true,
+      initActive: false,
       child: (
         <div className={'p-4'}>
           <Typography type={'body'} color="textDark" text={'Coming soon'} />

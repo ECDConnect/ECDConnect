@@ -71,7 +71,7 @@ import {
 } from '../classroom/class-dashboard/class-dashboard.types';
 import { NavigationNames } from '../navigation';
 import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
-import piggyBankIcon from '../../assets/piggyBank.svg';
+import { BusinessTabItems } from '../business/business.types';
 
 const { version } = require('../../../package.json');
 
@@ -577,13 +577,6 @@ export const Dashboard: React.FC = () => {
         isPrincipal && !!practitioners?.length
           ? [
               {
-                name: NavigationNames.Classroom.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
-                current: false,
-              },
-              {
                 name: NavigationNames.Classroom.Classes,
                 href: ROUTES.CLASSROOM.ROOT,
                 onNavigation: onNavigation,
@@ -591,19 +584,40 @@ export const Dashboard: React.FC = () => {
                 current: false,
               },
               {
-                name: NavigationNames.Classroom.Practitioners,
+                name: NavigationNames.Classroom.Attendance,
                 href: ROUTES.CLASSROOM.ROOT,
                 onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.PRACTITIONERS },
+                params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
                 current: false,
               },
               {
-                name: NavigationNames.Classroom.Programme,
+                name: NavigationNames.Classroom.Progress,
                 href: ROUTES.CLASSROOM.ROOT,
                 onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.PROGRAMME },
+                params: { activeTabIndex: TabsItemForPrincipal.PROGRESS },
                 current: false,
               },
+              {
+                name: NavigationNames.Classroom.Activities,
+                href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: TabsItemForPrincipal.ACTIVITES },
+                current: false,
+              },
+              {
+                name: NavigationNames.Classroom.Resources,
+                href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: TabsItemForPrincipal.RESOURCES },
+                current: false,
+              },
+              // {
+              //   name: NavigationNames.Classroom.Practitioners,
+              //   href: ROUTES.CLASSROOM.ROOT,
+              //   onNavigation: onNavigation,
+              //   params: { activeTabIndex: TabsItemForPrincipal.PRACTITIONERS },
+              //   current: false,
+              // },
             ]
           : [
               {
@@ -621,19 +635,19 @@ export const Dashboard: React.FC = () => {
               {
                 name: NavigationNames.Classroom.Progress,
                 href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.ATTENDANCE },
+                params: { activeTabIndex: TabsItems.PROGRESS },
                 current: false,
               },
               {
                 name: NavigationNames.Classroom.Activities,
                 href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.PROGRAMME },
+                params: { activeTabIndex: TabsItems.ACTIVITES },
                 current: false,
               },
               {
                 name: NavigationNames.Classroom.Resources,
                 href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.PROGRAMME },
+                params: { activeTabIndex: TabsItems.RESOURCES },
                 current: false,
               },
             ],
@@ -651,21 +665,21 @@ export const Dashboard: React.FC = () => {
                 name: NavigationNames.Business.Staff,
                 href: '',
                 onNavigation: onNavigation,
-                params: { activeTabIndex: 0 },
+                params: { activeTabIndex: BusinessTabItems.STAFF },
                 current: false,
               },
               {
                 name: NavigationNames.Business.Money,
                 href: ROUTES.BUSINESS,
                 onNavigation: onNavigation,
-                params: { activeTabIndex: 1 },
+                params: { activeTabIndex: BusinessTabItems.MONEY },
                 current: false,
               },
               {
                 name: NavigationNames.Business.Resources,
                 href: ROUTES.BUSINESS,
                 onNavigation: onNavigation,
-                params: { activeTabIndex: 2 },
+                params: { activeTabIndex: BusinessTabItems.RESOURCES },
                 current: false,
               },
             ],
@@ -932,7 +946,9 @@ export const Dashboard: React.FC = () => {
         !missingProgramme) ||
       isTrainee
     ) {
-      history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.CLASSES,
+      });
     } else {
       showCompleteProfileBlockingDialog();
     }
