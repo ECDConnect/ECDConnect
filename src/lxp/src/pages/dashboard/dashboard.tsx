@@ -101,7 +101,7 @@ export const Dashboard: React.FC = () => {
   );
 
   const isPractitioner = !!practitioner;
-  const isPrincipal = true; //practitioner?.isPrincipal;
+  const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
@@ -522,12 +522,6 @@ export const Dashboard: React.FC = () => {
   }, [practitioner?.userId]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
-    // {
-    //   name: NavigationTypes.Home,
-    //   href: ROUTES.ROOT,
-    //   icon: 'HomeIcon',
-    //   current: true,
-    // },
     {
       name: NavigationNames.Messages,
       href: ROUTES.MESSAGES,
@@ -573,84 +567,76 @@ export const Dashboard: React.FC = () => {
       icon: styles.classroomIconName,
       current: false,
       showDivider: true,
-      nestedChildren:
-        isPrincipal && !!practitioners?.length
-          ? [
-              {
-                name: NavigationNames.Classroom.Classes,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.CLASSES },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Progress,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.PROGRESS },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Activities,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.ACTIVITES },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Resources,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: TabsItemForPrincipal.RESOURCES },
-                current: false,
-              },
-              // {
-              //   name: NavigationNames.Classroom.Practitioners,
-              //   href: ROUTES.CLASSROOM.ROOT,
-              //   onNavigation: onNavigation,
-              //   params: { activeTabIndex: TabsItemForPrincipal.PRACTITIONERS },
-              //   current: false,
-              // },
-            ]
-          : [
-              {
-                name: NavigationNames.Classroom.Classes,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.CLASSES },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.ATTENDANCE },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Progress,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.PROGRESS },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Activities,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.ACTIVITES },
-                current: false,
-              },
-              {
-                name: NavigationNames.Classroom.Resources,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: TabsItems.RESOURCES },
-                current: false,
-              },
-            ],
+      nestedChildren: isPrincipal // && !!practitioners?.length
+        ? [
+            {
+              name: NavigationNames.Classroom.Classes,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.CLASSES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Attendance,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Progress,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.PROGRESS },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Activities,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.ACTIVITES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Resources,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.RESOURCES },
+              current: false,
+            },
+          ]
+        : [
+            {
+              name: NavigationNames.Classroom.Children,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.CLASSES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Attendance,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.ATTENDANCE },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Progress,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.PROGRESS },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Activities,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.ACTIVITES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Resources,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.RESOURCES },
+              current: false,
+            },
+          ],
     },
     ...(isPrincipal || isFundaAppAdmin
       ? [
@@ -663,7 +649,7 @@ export const Dashboard: React.FC = () => {
             nestedChildren: [
               {
                 name: NavigationNames.Business.Staff,
-                href: '',
+                href: ROUTES.BUSINESS,
                 onNavigation: onNavigation,
                 params: { activeTabIndex: BusinessTabItems.STAFF },
                 current: false,

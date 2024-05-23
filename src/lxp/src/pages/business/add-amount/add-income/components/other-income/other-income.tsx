@@ -27,6 +27,7 @@ import ROUTES from '@/routes/routes';
 import { StatementsIncomeInput } from '@ecdlink/graphql';
 import { AddIncomeState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const OtherIncome: React.FC<AddIncomeState> = ({
   setType,
@@ -92,7 +93,9 @@ export const OtherIncome: React.FC<AddIncomeState> = ({
 
     onSubmit(incomeInput);
 
-    await history.push(ROUTES.BUSINESS, { activeTabIndex: 1 });
+    await history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
   };
 
   return (

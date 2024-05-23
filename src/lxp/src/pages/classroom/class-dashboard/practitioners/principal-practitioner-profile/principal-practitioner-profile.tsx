@@ -57,6 +57,7 @@ import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
 import { AbsencesView } from './components/absences-view/absences-view';
 import { TabsItemForPrincipal } from '../../class-dashboard.types';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -349,8 +350,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             renderBorder={true}
             renderOverflow={false}
             onBack={() =>
-              history.push(ROUTES.CLASSROOM.ROOT, {
-                activeTabIndex: TabsItemForPrincipal.PRACTITIONERS,
+              history.push(ROUTES.BUSINESS, {
+                activeTabIndex: BusinessTabItems.STAFF,
               })
             }
             displayOffline={!isOnline}
@@ -887,8 +888,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           onCancel={() => {
             cancelPractitionerRemoval();
             setEditRemovalDialogVisable(false);
-            history.push(ROUTES.CLASSROOM.ROOT, {
-              activeTabIndex: TabsItemForPrincipal.PRACTITIONERS,
+            history.push(ROUTES.BUSINESS, {
+              activeTabIndex: BusinessTabItems.STAFF,
             });
           }}
           onClose={() => {

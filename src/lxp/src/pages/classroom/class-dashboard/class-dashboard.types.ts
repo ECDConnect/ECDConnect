@@ -17,5 +17,5 @@ export const enum TabsItemForPrincipal {
   PROGRESS = 2,
   ACTIVITES = 3,
   RESOURCES = 4,
-  PRACTITIONERS = 5,
+  //PRACTITIONERS = 5, this moved to business and staff
 }

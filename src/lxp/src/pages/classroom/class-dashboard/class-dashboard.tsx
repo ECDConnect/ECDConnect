@@ -23,7 +23,7 @@ import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
 import ProgrammeDashboard from '../programme-planning/programme-dashboard/programme-dashboard';
 import * as styles from './class-dashboard.styles';
-import { ClassDashboardRouteState } from './class-dashboard.types';
+import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
 import {
   practitionerSelectors,
@@ -192,11 +192,6 @@ export const ClassDashboard: React.FC = () => {
         </div>
       ),
     },
-    // {
-    //   title: 'Practitioners',
-    //   initActive: false,
-    //   child: <PractitionersList />,
-    // },
     {
       title: NavigationNames.Classroom.Activities,
       initActive: false,
@@ -217,7 +212,7 @@ export const ClassDashboard: React.FC = () => {
     setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
-    if (tabIndex === 3) {
+    if (tabIndex === TabsItems.ACTIVITES) {
       if (themes.length === 0) {
         appDispatch(
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
