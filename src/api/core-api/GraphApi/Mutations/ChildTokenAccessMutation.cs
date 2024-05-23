@@ -5,13 +5,13 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -22,14 +22,15 @@ using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
+using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -39,18 +40,108 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class ChildTokenAccessMutation
     {
         private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
-        
+
+        /// <summary>
+        /// Initially creates a child with basic details and generates token so a caregiver link can be created
+        /// 
+        /// Used by practitioner, to initiate the registration process
+        /// </summary>
+        /// <param name="firstname"></param>
+        /// <param name="surname"></param>
+        /// <param name="classgroupId"></param>
+        /// <returns></returns>
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
+        public async Task<InitialChildRegistrationModel> GenerateCaregiverChildToken(
+            [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
+            [Service] ISystemSetting<SecurityNotificationOptions> optionAccessor,
+            [Service] ShortUrlManager shortUrlManager,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IHttpContextAccessor httpContext,
+            [Service] ApplicationUserManager userManager,
+            string firstname,
+            string surname,
+            Guid classgroupId)
+        {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: httpContext.HttpContext.GetUser().Id);
+            var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
+            var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
+            var addedByUser = httpContext.HttpContext.GetUser();
+
+            var user = new ApplicationUser
+            {
+                FirstName = firstname,
+                Surname = surname,
+                UserName = $"External_Edit_{Guid.NewGuid()}",
+                IsImported = false,
+                IsActive = true,
+                TenantId = tenantId
+            };
+
+            await userManager.CreateAsync(user);
+
+            var child = new Child
+            {
+                WorkflowStatusId = workflowStatus.Id,
+                InsertedBy = $"{addedByUser.FirstName} {addedByUser.Surname}",
+                TenantId = tenantId,
+                UserId = user.Id,
+            };
+
+            var newChild = childRepo.Insert(child);           
+
+            // Create learner record
+            learnerRepo.Insert(new Learner
+            {
+                Id = Guid.NewGuid(),
+                ClassroomGroupId = classgroupId,
+                UserId = child.UserId,
+                StartedAttendance = DateTime.Now,
+                Hierarchy = child.Hierarchy
+            });
+
+            var tokenWrapper = new ChildTokenWrapperModel
+            {
+                AddedByUserId = addedByUser.Id.ToString(),
+                ClassroomGroupId = classgroupId,
+                Token = await tokenManager.GenerateTokenAsync(child.User),
+                ChildId = newChild.Id,
+                ChildUserId = newChild.UserId.ToString()
+            };
+
+            var baseUrl = optionAccessor.Value.Login;
+            var registrationUrl = $"{baseUrl}/child-registration-landing";
+            var registrationDetails = new InitialChildRegistrationModel
+            {
+                AddedByUserId = addedByUser.Id,
+                ClassroomGroupId = classgroupId,
+                ChildId = newChild.Id,
+                ChildUserId = child.UserId.Value,
+                CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
+                    $"{registrationUrl}/{TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper))}",
+                    child.User,
+                    "ChildRegistration"),
+            };
+
+            return registrationDetails;
+        }
+
+        /// <summary>
+        /// This is the endpoint used to complete registration as a caregiver
+        /// </summary>s
+        /// <returns></returns>
         [TokenAccess(typeof(ChildOpenAccessValidator))]
         public async Task<bool> OpenAccessAddChild(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
-            [Service] ApplicationUserManager userManager,
-            [Service] IHttpContextAccessor contextAccessor,
             [Service] IDocumentManagementService documentManagementService,
             string token,
+            // TODO - can we clean up the input???
             AddChildCaregiverTokenModel caregiver,
-            AddChildLearnerTokenModel learner,
+            AddChildLearnerTokenModel learner, // TODO - remove, 
             AddChildSiteAddressTokenModel siteAddress,
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
@@ -70,31 +161,60 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var scope = dbFactory.CreateDbContext();
 
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            using var siteRepo = repoFactory.CreateRepository<SiteAddress>(scope, tokenModel.AddedByUserId);
-            using var caregiverRepo = repoFactory.CreateRepository<Caregiver>(scope, tokenModel.AddedByUserId);
-            using var childRepo = repoFactory.CreateRepository<Child>(scope, tokenModel.AddedByUserId);
-            using var practitionerRepo = repoFactory.CreateRepository<Practitioner>(scope, tokenModel.AddedByUserId);
-            using var pointsRepo = repoFactory.CreateRepository<PointsUserSummary>(scope, tokenModel.AddedByUserId);
-            using var pointsLibraryRepo = repoFactory.CreateRepository<PointsLibrary>(scope, tokenModel.AddedByUserId);
+            var childRepo = repoFactory.CreateRepository<Child>(scope, tokenModel.AddedByUserId);
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(scope, tokenModel.AddedByUserId);
+            var pointsRepo = repoFactory.CreateRepository<PointsUserSummary>(scope, tokenModel.AddedByUserId);
+            var pointsLibraryRepo = repoFactory.CreateRepository<PointsLibrary>(scope, tokenModel.AddedByUserId);
 
             try
             {
-                var siteAddressEntity = AddSiteAddress(siteAddress, siteRepo);
+                // Fetch the child
+                var childEntity = childRepo.GetById(tokenModel.ChildId);
 
-                var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
+                // Update
+                childEntity.User.GenderId = child.GenderId;
+                childEntity.User.DateOfBirth = child.DateOfBirth;
+                childEntity.User.IsSouthAfricanCitizen = child.IsSouthAfricanCitizen;
+                childEntity.User.RaceId = child.RaceId;
+                childEntity.User.VerifiedByHomeAffairs = child.VerifiedByHomeAffairs;
 
-                var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo);
+                childEntity.Allergies = child.Allergies;
+                childEntity.Disabilities = child.Disabilities;
+                childEntity.LanguageId = child.LanguageId;
+                childEntity.OtherHealthConditions = child.OtherHealthConditions;
+                childEntity.WorkflowStatusId = child.WorkflowStatusId;
 
-                AddLearner(childEntity, learner, tokenModel, scope);
+                childEntity.Caregiver = new Caregiver
+                {
+                    AdditionalFirstName = caregiver.AdditionalFirstName,
+                    AdditionalPhoneNumber = caregiver.AdditionalPhoneNumber,
+                    AdditionalSurname = caregiver.AdditionalSurname,
+                    Contribution = caregiver.Contribution,
+                    EducationId = caregiver.EducationId,
+                    EmergencyContactFirstName = caregiver.EmergencyContactFirstName,
+                    EmergencyContactPhoneNumber = caregiver.EmergencyContactPhoneNumber,
+                    EmergencyContactSurname = caregiver.EmergencyContactSurname,
+                    FirstName = caregiver.FirstName,
+                    FullName = $"{caregiver.FirstName} {caregiver.Surname}",
+                    Surname = caregiver.Surname,
+                    IdNumber = caregiver.IdNumber,
+                    IsActive = true,
+                    JoinReferencePanel = caregiver.JoinReferencePanel,
+                    PhoneNumber = caregiver.PhoneNumber,
+                    RelationId = caregiver.RelationId,
+                    SiteAddress = new SiteAddress
+                    {
+                        AddressLine1 = siteAddress.AddressLine1,
+                        AddressLine2 = siteAddress.AddressLine2,
+                        AddressLine3 = siteAddress.AddressLine3,
+                        Name = siteAddress.Name,
+                        PostalCode = siteAddress.PostalCode,
+                        ProvinceId = siteAddress.ProvinceId,
+                        Ward = siteAddress.Ward
+                    }
+                };
 
-                appUser.UserName = appUser.Id.ToString();
-                appUser.GenderId = child.GenderId;
-                appUser.IsActive = true;
-                appUser.DateOfBirth = child.DateOfBirth;
-                appUser.IsSouthAfricanCitizen = child.IsSouthAfricanCitizen;
-                appUser.RaceId = child.RaceId;
-                appUser.VerifiedByHomeAffairs = child.VerifiedByHomeAffairs;
-                await userManager.UpdateAsync(appUser);
+                childRepo.Update(childEntity);
 
                 if (registration != null)
                 {
@@ -106,7 +226,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     AddConsent(scope, consent, tokenModel);
                 }
 
-                // Add points for registering a child
+                // Add points for registering a child - Could also fetch by the inserting user
                 var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
                 if (practitioner != null)
                 {
@@ -128,9 +248,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             finally
             {
                 dbContextTransaction.Dispose();
-                siteRepo.Dispose();
-                caregiverRepo.Dispose();
-                childRepo.Dispose();
             }
 
             return true;
@@ -315,154 +432,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        private SiteAddress AddSiteAddress(AddChildSiteAddressTokenModel siteAddress, IGenericRepository<SiteAddress, Guid> repoFactory)
-        {
-            var siteAddressEntity = new SiteAddress
-            {
-                AddressLine1 = siteAddress.AddressLine1,
-                AddressLine2 = siteAddress.AddressLine2,
-                AddressLine3 = siteAddress.AddressLine3,
-                Name = siteAddress.Name,
-                PostalCode = siteAddress.PostalCode,
-                ProvinceId = siteAddress.ProvinceId,
-                Ward = siteAddress.Ward
-            };
-
-            var updated = repoFactory.Insert(siteAddressEntity);
-
-            return updated;
-        }
-
-        private void AddLearner(Child child, AddChildLearnerTokenModel learner, ChildTokenWrapperModel tokenModel, AuthenticationDbContext context)
-        {
-            context.Learners.Add(new Learner
-            {
-                Id = Guid.NewGuid(),
-                ClassroomGroupId = tokenModel.ClassroomGroupId,
-                ProgrammeAttendanceReasonId = learner.attendanceReasonId,
-                OtherAttendanceReason = learner.otherAttendanceReason,
-                UserId = new Guid(tokenModel.ChildUserId),
-                StartedAttendance = DateTime.Now,
-                Hierarchy = child.Hierarchy
-            });
-        }
-
-        private Caregiver AddCaregiver(AddChildCaregiverTokenModel caregiver, SiteAddress siteAddressEntity, IGenericRepository<Caregiver, Guid> repoFactory)
-        {
-            var caregiverEntity = new Caregiver
-            {
-                AdditionalFirstName = caregiver.AdditionalFirstName,
-                AdditionalPhoneNumber = caregiver.AdditionalPhoneNumber,
-                AdditionalSurname = caregiver.AdditionalSurname,
-                Contribution = caregiver.Contribution,
-                EducationId = caregiver.EducationId,
-                EmergencyContactFirstName = caregiver.EmergencyContactFirstName,
-                EmergencyContactPhoneNumber = caregiver.EmergencyContactPhoneNumber,
-                EmergencyContactSurname = caregiver.EmergencyContactSurname,
-                FirstName = caregiver.FirstName,
-                FullName = $"{caregiver.FirstName} {caregiver.Surname}",
-                Surname = caregiver.Surname,
-                IdNumber = caregiver.IdNumber,
-                IsActive = true,
-                JoinReferencePanel = caregiver.JoinReferencePanel,
-                PhoneNumber = caregiver.PhoneNumber,
-                RelationId = caregiver.RelationId,
-                SiteAddressId = siteAddressEntity.Id
-            };
-
-            var updated = repoFactory.Insert(caregiverEntity);
-
-            return updated;
-        }
-
-        private Child AddChild([Service] IHttpContextAccessor contextAccessor, AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory)
-        {
-            // There may not be a logged in user if open access is used
-            var insertingUsername = contextAccessor.HttpContext.GetUser()?.FullName ?? caregiver?.FullName;
-
-            var childEntity = new Child
-            {
-                Id = tokenModel.ChildId,
-                UserId = new Guid(tokenModel.ChildUserId),
-                Allergies = child.Allergies,
-                Disabilities = child.Disabilities,
-                LanguageId = child.LanguageId,
-                OtherHealthConditions = child.OtherHealthConditions,
-                WorkflowStatusId = child.WorkflowStatusId,
-                CaregiverId = caregiver.Id,
-                InsertedBy = !string.IsNullOrEmpty(insertingUsername) ? insertingUsername : "N/A"
-            };
-
-            var updated = repoFactory.Update(childEntity);
-
-            return updated;
-        }
-
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
-        public async Task<string> GenerateCaregiverChildToken(
+        public async Task<InitialChildRegistrationModel> RefreshCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
-            string firstname,
-            string surname,
-            Guid classgroupId)
-        {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var userId = Guid.NewGuid();
-            var appUser = new ApplicationUser
-            {
-                Id = userId,
-                FirstName = firstname,
-                Surname = surname,
-                UserName = $"External_Edit_{Guid.NewGuid()}",
-                IsImported = false,
-                IsActive = true,
-            };
-            appUser.TenantId = tenantId;
-            await userManager.CreateAsync(appUser);
-
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
-            var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
-            var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
-            var addedByUser = httpContext.HttpContext.GetUser();
-            var insertingUser = addedByUser.FullName;
-
-            var child = new Child
-            {
-                UserId = appUser.Id,
-                WorkflowStatusId = workflowStatus.Id,
-                InsertedBy = !string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A"
-            };
-
-            child.TenantId = tenantId;
-            var newChild = childRepo.Insert(child);
-
-            var tokenWrapper = new ChildTokenWrapperModel
-            {
-                AddedByUserId = addedByUser.Id.ToString(),
-                ClassroomGroupId = classgroupId,
-                Token = await tokenManager.GenerateTokenAsync(appUser),
-                ChildId = newChild.Id,
-                ChildUserId = appUser.Id.ToString()
-            };
-
-            await userManager.AddToRoleAsync(appUser, "Child");
-
-            return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
-        }
-
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
-        public async Task<string> RefreshCaregiverChildToken(
-            [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] ApplicationUserManager userManager,
-            IGenericRepositoryFactory repoFactory,
-            [Service] IHttpContextAccessor httpContext,
+            [Service] ShortUrlManager shortUrlManager,
+            [Service] ISystemSetting<SecurityNotificationOptions> optionAccessor,
             Guid childId,
             Guid classgroupId)
         {
             if (childId == Guid.Empty)
+            {
                 throw new QueryException($"{nameof(childId)} cannot be empty");
+            }
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var child = childRepo.GetById(childId);
@@ -474,16 +458,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 classgroupId = learner.ClassroomGroupId;
             }
 
-            if (child == default)
+            if (child == null)
             {
-                return string.Empty;
+                throw new QueryException($"Child not found");
             }
 
             var appUser = await userManager.FindByIdAsync(child.UserId.ToString());
 
-            if (appUser == default)
+            if (appUser == null)
             {
-                return string.Empty;
+                throw new QueryException($"Child user not found");
             }
 
             await tokenManager.RetractTokensAsync(appUser);
@@ -497,7 +481,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ChildUserId = appUser.Id.ToString()
             };
 
-            return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
+            var baseUrl = optionAccessor.Value.Login;
+            var registrationUrl = $"{baseUrl}/child-registration-landing";
+            var registrationDetails = new InitialChildRegistrationModel
+            {
+                AddedByUserId = Guid.Parse(child.InsertedBy),
+                ClassroomGroupId = classgroupId,
+                ChildId = child.Id,
+                ChildUserId = child.UserId.Value,
+                CaregiverRegistrationUrl = shortUrlManager.GetUrlToken(
+                    $"{registrationUrl}/{TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper))}",
+                    child.User,
+                    "ChildRegistration"),
+            };
+
+            return registrationDetails;
         }        
     }
 }

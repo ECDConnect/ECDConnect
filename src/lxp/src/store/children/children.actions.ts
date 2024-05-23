@@ -18,12 +18,15 @@ import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-regi
 import { ChildService } from '@services/ChildService';
 import { RootState, ThunkApiType } from '../types';
 import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 
 export const ChildrenActions = {
   GET_CHILDREN: 'getChildren',
   UPDATE_CHILD: 'updateChild',
   UPSERT_CHILDREN: 'upsertChildren',
   FIND_CREATED_CHILD: 'findCreatedChild',
+  GENERATE_CAREGIVER_CHILD_TOKEN: 'generateCaregiverChildToken',
+  REFRESH_CAREGIVER_CHILD_TOKEN: 'refreshCaregiverChildToken',
 };
 
 export const getChildren = createAsyncThunk<
@@ -285,12 +288,11 @@ type GenerateCaregiverChildTokenRequest = {
 };
 
 export const generateCaregiverChildToken = createAsyncThunk<
-  string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  ChildRegistrationDto,
   GenerateCaregiverChildTokenRequest,
   ThunkApiType<RootState>
 >(
-  'generateCaregiverChildToken',
+  ChildrenActions.GENERATE_CAREGIVER_CHILD_TOKEN,
   // eslint-disable-next-line no-empty-pattern
   async (
     { firstName, surname, classgroupId },
@@ -322,13 +324,11 @@ type RefreshCaregiverChildTokenRequest = {
 };
 
 export const refreshCaregiverChildToken = createAsyncThunk<
-  string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  ChildRegistrationDto,
   RefreshCaregiverChildTokenRequest,
   ThunkApiType<RootState>
 >(
-  'refreshCaregiverChildToken',
-  // eslint-disable-next-line no-empty-pattern
+  ChildrenActions.REFRESH_CAREGIVER_CHILD_TOKEN,
   async ({ classgroupId, childId }, { getState, rejectWithValue }) => {
     try {
       const {

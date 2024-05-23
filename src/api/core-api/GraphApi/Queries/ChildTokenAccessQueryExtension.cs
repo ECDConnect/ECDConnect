@@ -16,10 +16,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
-    public class ChildTokenAccessQuery
+    public class ChildTokenAccessQueryExtension
     {
         [TokenAccess(typeof(ChildOpenAccessValidator))]
 
@@ -42,11 +42,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var practitionerUser = await userManager.FindByIdAsync(tokenModel.AddedByUserId);
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: tokenModel.AddedByUserId);
-            var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: tokenModel.AddedByUserId);        
+            var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: tokenModel.AddedByUserId);
 
             var classGroup = classGroupRepo.GetById(tokenModel.ClassroomGroupId);
             var classRoom = new Classroom();
- 
+
             if (classGroup == null)
             {
                 classRoom = classroomRepo.GetAll().Where(x => x.UserId == Guid.Parse(tokenModel.AddedByUserId)).OrderBy(x => x.Id).FirstOrDefault();

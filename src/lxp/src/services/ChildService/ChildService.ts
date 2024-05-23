@@ -12,6 +12,7 @@ import {
 } from '@ecdlink/graphql';
 import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-registration/caregiver-child-registration.types';
 import { api } from '../axios.helper';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 class ChildService {
   _accessToken: string;
 
@@ -203,12 +204,18 @@ class ChildService {
     firstname: string,
     surname: string,
     classgroupId: string
-  ): Promise<string> {
+  ): Promise<ChildRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation generateCaregiverChildToken($firstname: String, $surname: String, $classgroupId: UUID!) {
-          generateCaregiverChildToken(firstname: $firstname,surname: $surname, classgroupId: $classgroupId)
+          generateCaregiverChildToken(firstname: $firstname,surname: $surname, classgroupId: $classgroupId) {
+            childId
+            childUserId
+            addedByUserId
+            classroomGroupId
+            caregiverRegistrationUrl
+          }
         }
       `,
       variables: {
@@ -230,12 +237,18 @@ class ChildService {
   async refreshCaregiverChildToken(
     childId: string,
     classgroupId: string
-  ): Promise<string> {
+  ): Promise<ChildRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation refreshCaregiverChildToken($childId: UUID!,$classgroupId: UUID!) {
-          refreshCaregiverChildToken(childId: $childId, classgroupId: $classgroupId)
+          refreshCaregiverChildToken(childId: $childId, classgroupId: $classgroupId) {
+            childId
+            childUserId
+            addedByUserId
+            classroomGroupId
+            caregiverRegistrationUrl
+          }
         }
       `,
       variables: {

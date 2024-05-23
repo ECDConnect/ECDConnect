@@ -18,7 +18,7 @@ import {
   ChildRegistrationRouteState,
   ChildRegistrationSteps,
 } from '../../child-registration/child-registration.types';
-import { classroomsActions, classroomsThunkActions } from '@store/classroom';
+import { classroomsActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
@@ -47,7 +47,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const history = useHistory();
   const location = useLocation<ChildRegistrationRouteState>();
   const dispatch = useAppDispatch();
-  const [childId, setChildId] = useState();
+  const [childId, setChildId] = useState<string>();
   const [loadingLink, setLoadingLink] = useState(false);
 
   const [loadingManualUpload, setLoadingManualUpload] = useState(false);
@@ -68,17 +68,15 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const practitionerId = location?.state?.practitionerId;
 
   const getChildToken = async () => {
-    let token = '';
-
     if (childId) {
-      token = await dispatch(
+      return await dispatch(
         childrenThunkActions.refreshCaregiverChildToken({
           childId: childId,
           classgroupId: childDetails.playgroupId,
         })
       ).unwrap();
     } else {
-      token = await dispatch(
+      return await dispatch(
         childrenThunkActions.generateCaregiverChildToken({
           firstName: childDetails.firstName,
           surname: childDetails.surname,
@@ -86,8 +84,6 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
         })
       ).unwrap();
     }
-
-    return token;
   };
 
   const onSendcaregiverLink = async () => {
@@ -125,25 +121,27 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const createLink = async () => {
     setLoadingLink(true);
-    const token = await getChildToken();
-    const modelString = decodeToken(token);
-    const result = JSON.parse(modelString);
+    const childRegistrationDetails = await getChildToken();
 
-    if (!childId) createLocalUser(result);
+    if (!childId) {
+      createLocalUser(
+        childRegistrationDetails.childId,
+        childRegistrationDetails.childUserId
+      );
+    }
 
-    const caregiverChildregUrl = history.createHref({
-      pathname: window.location.href,
-      search: `?token=${token}`,
-    });
-
-    setChildId(result.ChildId);
-    const linkCopied = await copyToClip(caregiverChildregUrl);
+    setChildId(childRegistrationDetails.childId);
+    const linkCopied = await copyToClip(
+      childRegistrationDetails.caregiverRegistrationUrl
+    );
 
     const whatsapp = () => {
-      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
+      window.open(
+        `whatsapp://send?text=${childRegistrationDetails.caregiverRegistrationUrl}`
+      );
     };
 
-    await copyToClip(caregiverChildregUrl);
+    await copyToClip(childRegistrationDetails.caregiverRegistrationUrl);
     setLoadingLink(false);
     dialog({
       render: (onSubmit, onCancel) => {
@@ -168,17 +166,13 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
             onSubmit={whatsapp}
             onCancel={onCancel}
             childDetails={childDetails}
-            caregiverUrl={caregiverChildregUrl}
+            caregiverUrl={childRegistrationDetails.caregiverRegistrationUrl}
             couldCopyToClipboard={linkCopied}
           />
         );
       },
       position: DialogPosition.Middle,
     });
-  };
-
-  const decodeToken = (token: string) => {
-    return atob(token);
   };
 
   const onUploadSelf = async () => {
@@ -191,30 +185,32 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const goToChildRegistration = async () => {
     setLoadingManualUpload(true);
-    const token = await getChildToken();
-    const modelString = decodeToken(token);
-    const result = JSON.parse(modelString);
+    const childRegistrationDetails = await getChildToken();
     if (!childId) {
-      createLocalUser(result);
-      setChildId(result.ChildId);
+      createLocalUser(
+        childRegistrationDetails.childId,
+        childRegistrationDetails.childUserId
+      );
+      setChildId(childRegistrationDetails.childId);
     }
     setLoadingManualUpload(false);
     history.replace('/child-registration', {
       childDetails,
-      childId: result.ChildId,
+      childId: childRegistrationDetails.childId,
       step: ChildRegistrationSteps.registrationForm,
       practitionerId: isCoachView ? practitionerId : null,
     });
   };
 
-  const createLocalUser = (model: any) => {
+  // This doesn't set any state, or return anything
+  const createLocalUser = (childId: string, childUserId: string) => {
     const childInformation = {
       dobDay: 0,
       dobMonth: 0,
       dobYear: 0,
       firstname: childDetails.firstName,
       surname: childDetails.surname,
-      playgroupId: childDetails.playgroupId,
+      playgroupId: childDetails.playgroupId, // TODO : Rename to classroomGroupId
       otherReason: '',
     };
     const childExtraInformation = { childFirstname: childDetails.firstName };
@@ -226,7 +222,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
     userInputModel = {
       ...userInputModel,
-      id: model.ChildUserId,
+      id: childUserId,
     };
 
     const childStatusId = getWorkflowStatusIdByEnum(
@@ -234,7 +230,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     );
 
     let childInputModel = childRegisterUtils.mapChildDto(
-      model.ChildUserId,
+      childUserId,
       childStatusId ?? '',
       {},
       childExtraInformation
@@ -242,22 +238,17 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
     childInputModel = {
       ...childInputModel,
-      id: model.ChildId,
+      id: childId,
     };
 
-    const learnerInputModel = childRegisterUtils.mapLearnerDto(
-      model.ChildUserId,
-      childInformation
+    // Add values to redux. This could potentially be a refresh for child/classroomGroup data
+    dispatch(childrenActions.createChild(childInputModel));
+    dispatch(
+      classroomsActions.createLearner({
+        childUserId,
+        newClassroomGroupId: childDetails.playgroupId,
+      })
     );
-
-    // Check when we work on registration, probably don't need this or fix to update user on the child object
-    //dispatch(childrenActions.createChildUser(userInputModel));
-    // TODO - learner record should be created on initial child create, so probably no need here
-    // dispatch(childrenActions.createChild(childInputModel));
-    // dispatch(classroomsActions.createClassroomGroupLearner(learnerInputModel));
-    // dispatch(
-    //   classroomsThunkActions.createLearner({ learner: learnerInputModel })
-    // );
   };
 
   return (

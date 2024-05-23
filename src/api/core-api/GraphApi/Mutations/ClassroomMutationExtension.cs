@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ClassroomMutationExtension
@@ -91,10 +91,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 //get the users hierarchy to reuse
                 var oldHierarchy = classRoomGroup.Hierarchy;
-               
+
                 if (input.UserId != null)
-                {                     
-                    if (hierarchy != null && (oldHierarchy != classRoomGroup.Hierarchy))
+                {
+                    if (hierarchy != null && oldHierarchy != classRoomGroup.Hierarchy)
                     {
                         var historyRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
                         ClassReassignmentHistory newReassignment = new ClassReassignmentHistory();
@@ -108,7 +108,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         newReassignment.UserId = (Guid)input.UserId;
                         newReassignment.ReassignedBackToUserId = uId;
                         newReassignment.ReassignedBackToDate = DateTime.Now;
-                       
+
                         historyRepo.Insert(newReassignment);
                     }
                 }
@@ -145,14 +145,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     //message the old user they were removed
                     var oldUserToSend = userManager.FindByIdAsync(previousUser.ToString()).Result;
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(previousUser.Value, "ApplicationUser") });
-                } else
+                }
+                else
                 {
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(input.UserId.Value, "ApplicationUser") });
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
                 var learnersReassigned = UpdateLearners(repoFactory, uId.ToString(), id, hierarchy);
-                UpdateChildren(repoFactory, uId.ToString(), hierarchy, learnersReassigned, input.UserId.ToString());              
+                UpdateChildren(repoFactory, uId.ToString(), hierarchy, learnersReassigned, input.UserId.ToString());
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
                 return classRoomGroup;
@@ -218,7 +219,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     var updateAddressResult = addressRepo.Insert(newAddress);
                     if (updateAddressResult != null)
                         updateClass.SiteAddressId = updateAddressResult.Id;
-                        var updateResult = dbRepo.Update(updateClass);
+                    var updateResult = dbRepo.Update(updateClass);
                 }
                 //send notification of change to Coach
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -231,12 +232,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",
-                    ReplacementValue = updateClass.Name != null  ? updateClass.Name : ""
+                    ReplacementValue = updateClass.Name != null ? updateClass.Name : ""
                 });
 
                 var practitioner = practitionerRepo.GetByUserId(updateClass.UserId.ToString());
-                if (practitioner != null && practitioner.CoachHierarchy != null && practitioner.IsRegistered == true && practitioner.IsPrincipal == true) {
-                   var coachToSend = userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
+                if (practitioner != null && practitioner.CoachHierarchy != null && practitioner.IsRegistered == true && practitioner.IsPrincipal == true)
+                {
+                    var coachToSend = userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
                     if (coachToSend != null)
                     {
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null,
@@ -305,7 +307,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         private void UpdateClassProgrammeForPractitioner(
-            [Service] IHttpContextAccessor contextAccessor, 
+            [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             Guid classroomId,
             string newHierarchy)
@@ -322,9 +324,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         private List<string> UpdateLearners(
-            IGenericRepositoryFactory repoFactory, 
-            string uId, 
-            Guid classroomGroupId, 
+            IGenericRepositoryFactory repoFactory,
+            string uId,
+            Guid classroomGroupId,
             string newHierarchy)
         {
             List<string> learnersReassigned = new List<string>();
@@ -341,15 +343,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         learnerRepo.Update(learner);
                         learnersReassigned.Add(learner.UserId.ToString());
                     }
-                }   
+                }
             }
             return learnersReassigned;
         }
 
         private List<string> UpdateChildren(
-            IGenericRepositoryFactory repoFactory, 
-            string uId, 
-            string newHierarchy, 
+            IGenericRepositoryFactory repoFactory,
+            string uId,
+            string newHierarchy,
             List<string> learnerIds,
             string newUserId)
         {
@@ -362,10 +364,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 foreach (var learnerId in learnerIds)
                 {
                     Child children = childRepo.GetByUserId(learnerId);
-                    if (children != null )
+                    if (children != null)
                     {
-                       string childNewHierarchy = "";
-                       UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId == children.UserId).FirstOrDefault();
+                        string childNewHierarchy = "";
+                        UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId == children.UserId).FirstOrDefault();
 
                         if (childHierarchy != null)
                         {
