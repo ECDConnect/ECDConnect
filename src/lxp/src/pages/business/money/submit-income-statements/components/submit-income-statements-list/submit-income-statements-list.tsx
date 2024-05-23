@@ -32,6 +32,7 @@ import {
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { pointsThunkActions } from '@/store/points';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const SubmitIncomeStatementsList: React.FC = () => {
   const history = useHistory();
@@ -324,7 +325,11 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       title={'Submit income statement'}
       subTitle={date}
       color={'primary'}
-      onBack={() => history.push(ROUTES.BUSINESS)}
+      onBack={() =>
+        history.push(ROUTES.BUSINESS, {
+          activeTabIndex: BusinessTabItems.MONEY,
+        })
+      }
       displayOffline={!isOnline}
     >
       <div className="flex flex-col justify-center p-4">
@@ -436,7 +441,9 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               onClick: () => {
                 submitStatement();
                 setConfimSubmitIncomeValues(false);
-                history.push(ROUTES.BUSINESS);
+                history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.MONEY,
+                });
               },
               leadingIcon: 'ArrowCircleRightIcon',
             },

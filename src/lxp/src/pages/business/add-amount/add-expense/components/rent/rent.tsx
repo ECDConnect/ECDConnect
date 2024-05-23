@@ -31,6 +31,7 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { AddExpenseState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const Rent: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -105,7 +106,9 @@ export const Rent: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
 
     onSubmit(expensesInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
     setIsLoading(false);
   };
 

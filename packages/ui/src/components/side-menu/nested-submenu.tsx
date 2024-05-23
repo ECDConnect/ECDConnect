@@ -24,7 +24,7 @@ export default function NestedSubMenu({ item, onNavigation }) {
           <div
             onClick={handleOpenSubMenu}
             className={classNames(
-              openSubMenu ? 'bg-alertBg text-primary' : 'text-primary',
+              openSubMenu ? 'bg-quatenaryBg text-primary' : 'text-primary',
               'flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium'
             )}
           >

@@ -10,6 +10,7 @@ import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
 import { useSnackbar } from '@ecdlink/core';
+import { TabsItemForPrincipal } from '../../../class-dashboard.types';
 
 export const PractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
@@ -32,7 +33,9 @@ export const PractitionerNotRegistered: React.FC<
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
-    history.push(ROUTES.CLASSROOM.ROOT);
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItemForPrincipal.CLASSES,
+    });
     showMessage({
       message: `${practitioner?.user?.firstName} removed`,
     });

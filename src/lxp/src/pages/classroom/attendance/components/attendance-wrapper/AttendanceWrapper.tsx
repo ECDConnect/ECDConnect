@@ -14,6 +14,7 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export default function AttendanceWrapper() {
   const history = useHistory();
@@ -145,7 +146,9 @@ export default function AttendanceWrapper() {
       if (practitioner?.progress! < 3) {
         await updatePractitionerProgress();
       }
-      history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 });
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.CLASSES,
+      });
     }
   };
 

@@ -31,6 +31,7 @@ import { useHistory } from 'react-router';
 import { AddIncomeState } from '../../../add-amount.types';
 import { StatementsIncomeInput } from '@ecdlink/graphql';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
   setType,
@@ -121,7 +122,9 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
 
     onSubmit(incomeInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
   };
 
   const handleSaveStartupSupportValues = () => {

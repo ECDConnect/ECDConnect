@@ -31,6 +31,7 @@ import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { AddExpenseState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const LearningMaterials: React.FC<AddExpenseState> = ({
   setType,
@@ -109,7 +110,9 @@ export const LearningMaterials: React.FC<AddExpenseState> = ({
 
     onSubmit(expensesInput);
 
-    await history.push(ROUTES.BUSINESS);
+    await history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
     setIsLoading(false);
   };
 

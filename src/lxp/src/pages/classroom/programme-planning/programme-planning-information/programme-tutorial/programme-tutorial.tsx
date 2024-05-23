@@ -28,6 +28,7 @@ import {
 import { useAppDispatch } from '@/store';
 import { MoreInformation } from '@ecdlink/graphql';
 import InfoService from '@/services/InfoService/InfoService';
+import { TabsItemForPrincipal } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 const { usePDF } = require('react-to-pdf');
 
 interface ProgrammeTutorialProps extends ComponentBaseProps {
@@ -154,7 +155,11 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
       renderBorder={true}
       title={'Programme best practices'}
       color={'primary'}
-      onBack={() => history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 })}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItemForPrincipal.ACTIVITES,
+        })
+      }
       className={`${styles.bannerContentWrapper}`}
       backgroundColour="uiBg"
       displayOffline={!isOnline}

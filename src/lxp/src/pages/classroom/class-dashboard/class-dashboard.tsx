@@ -23,13 +23,12 @@ import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
 import ProgrammeDashboard from '../programme-planning/programme-dashboard/programme-dashboard';
 import * as styles from './class-dashboard.styles';
-import { ClassDashboardRouteState } from './class-dashboard.types';
+import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
 import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import PractitionersList from './practitioners/practitioners-list/practitioners-list';
 import walkthroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
 import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
@@ -41,6 +40,7 @@ import {
 } from '@/store/content/programme-theme';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { Classes } from '../classes/classes';
+import { NavigationNames } from '@/pages/navigation';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -147,22 +147,22 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: 'Attendance',
-      initActive: false,
+      title: NavigationNames.Classroom.Attendance,
+      initActive: true,
       child: <AttendanceComponent />,
     },
     {
-      title: 'Classes',
+      title: NavigationNames.Classroom.Classes,
       initActive: false,
       child: <Classes />,
     },
     {
-      title: 'Programme',
+      title: NavigationNames.Classroom.Programme,
       initActive: false,
       child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
-      title: 'Resources',
+      title: NavigationNames.Classroom.Resources,
       initActive: false,
       child: (
         <div className={'p-4'}>
@@ -174,27 +174,31 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItemsForPrincipal: TabItem[] = [
     {
-      title: 'Attendance',
+      title: NavigationNames.Classroom.Classes,
+      initActive: true,
+      child: <Classes />,
+    },
+    {
+      title: NavigationNames.Classroom.Attendance,
       initActive: false,
       child: <AttendanceComponent />,
     },
     {
-      title: 'Practitioners',
+      title: NavigationNames.Classroom.Progress,
       initActive: false,
-      child: <PractitionersList />,
+      child: (
+        <div className={'p-4'}>
+          <Typography type={'body'} color="textDark" text={'Coming soon'} />
+        </div>
+      ),
     },
     {
-      title: 'Classes',
-      initActive: false,
-      child: <Classes />,
-    },
-    {
-      title: 'Programme',
+      title: NavigationNames.Classroom.Activities,
       initActive: false,
       child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
-      title: 'Resources',
+      title: NavigationNames.Classroom.Resources,
       initActive: false,
       child: (
         <div className={'p-4'}>
@@ -208,7 +212,7 @@ export const ClassDashboard: React.FC = () => {
     setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
-    if (tabIndex === 3) {
+    if (tabIndex === TabsItems.ACTIVITES) {
       if (themes.length === 0) {
         appDispatch(
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
@@ -219,10 +223,10 @@ export const ClassDashboard: React.FC = () => {
 
   const displayTutorial = (type?: string) => {
     switch (type) {
-      case 'Attendance':
+      case NavigationNames.Classroom.Attendance:
         setAttendanceTutorialActive(true);
         break;
-      case 'Programme':
+      case NavigationNames.Classroom.Programme:
         history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
         break;
       default:
@@ -231,7 +235,8 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayHelp =
-    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
+    currentTab?.title === NavigationNames.Classroom.Attendance ||
+    currentTab?.title === NavigationNames.Classroom.Programme;
 
   const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {

@@ -32,6 +32,7 @@ import * as styles from './remove-child.styles';
 import { RemoveChildRouteState } from './remove-child.types';
 import { userSelectors } from '@store/user';
 import ROUTES from '@routes/routes';
+import { TabsItemForPrincipal } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const RemoveChild: React.FC = () => {
   const location = useLocation<RemoveChildRouteState>();
@@ -101,7 +102,9 @@ export const RemoveChild: React.FC = () => {
       history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
       return;
     }
-    history.replace(ROUTES.CLASSROOM.ROOT);
+    history.replace(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItemForPrincipal.CLASSES,
+    });
   };
 
   return (

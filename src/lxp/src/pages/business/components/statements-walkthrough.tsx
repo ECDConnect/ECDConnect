@@ -11,6 +11,7 @@ import walktroughImage from '../../../assets/walktroughImage.png';
 import ROUTES from '@/routes/routes';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory } from 'react-router';
+import { BusinessTabItems } from '../business.types';
 
 interface WalkthroughProps {
   setShowInfo: (item: boolean) => void;
@@ -32,7 +33,7 @@ export const Walkthrough: React.FC<WalkthroughProps> = ({
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
     setShowInfo(false);
-    history.push(ROUTES.BUSINESS);
+    history.push(ROUTES.BUSINESS, { activeTabIndex: BusinessTabItems.MONEY });
   };
 
   const gotToStatementsWalkthrough = () => {
