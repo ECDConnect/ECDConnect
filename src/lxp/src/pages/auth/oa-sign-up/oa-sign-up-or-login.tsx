@@ -1,0 +1,163 @@
+import { useTheme } from '@ecdlink/core';
+import {
+  Alert,
+  BannerWrapper,
+  Button,
+  ChipStatus,
+  Dialog,
+  DialogPosition,
+  Divider,
+  HeaderCard,
+  HeaderSlide,
+  SliderPagination,
+  Typography,
+} from '@ecdlink/ui';
+import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
+import { useAppDispatch } from '@store';
+import { staticDataThunkActions } from '@store/static-data';
+import * as styles from './oa-sign-up-or-login.types';
+import { UserService } from '@/services/UserService';
+import { useTenant } from '@/hooks/useTenant';
+import { OAAgreements } from './components/oa-agreements/oa-agreements';
+import ROUTES from '@/routes/routes';
+
+const token = new URLSearchParams(window.location.search).get('token');
+
+let headerSlide: HeaderSlide;
+
+export const OASignUpOrLogin: React.FC = () => {
+  const tenant = useTenant();
+  const appDispatch = useAppDispatch();
+  const [openOaAgreements, setOpenOaAgreements] = useState(false);
+
+  const { resetAppStore, resetAuth } = useStoreSetup();
+  const history = useHistory();
+  const { theme } = useTheme();
+  const { isOnline } = useOnlineStatus();
+  const [userDetails, setUserDetails] = useState<any>();
+  const isWhitelabel = tenant?.isWhiteLabel;
+  const orgName = tenant?.tenant?.organisationName;
+
+  if (userDetails) {
+    // coach
+    if (userDetails.roleName === 'Coach') {
+      headerSlide = {
+        status: ChipStatus.Available,
+        title: 'Manage practitioners',
+        text: 'View practitioner details, see classroom information and fill in important forms.',
+        image: '../../../assets/banner-coach.jpg',
+      };
+    }
+  } else {
+    // practitioner & principal
+    headerSlide = {
+      status: ChipStatus.Available,
+      title: 'Manage your classroom',
+      text: 'Take attendance, track progress, and plan your programme',
+      image: '../../../assets/banner-ss.jpg',
+    };
+  }
+
+  useEffect(() => {
+    async function init() {
+      if (resetAppStore) {
+        await resetAppStore(false);
+        await resetAuth();
+      }
+
+      await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+    }
+    init().catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const getUserDetailsByToken = async () => {
+    let user_details_from_request;
+    if (token) {
+      user_details_from_request = await new UserService('').getUserByToken(
+        token
+      );
+      setUserDetails(user_details_from_request);
+    } else {
+      console.log('user not found');
+    }
+  };
+  useEffect(() => {
+    if (token) {
+      getUserDetailsByToken();
+    }
+  }, []);
+
+  return (
+    <div className={styles.wrapper}>
+      <BannerWrapper
+        color={'primary'}
+        showBackground={isWhitelabel ? false : true}
+        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundImageColour={'primary'}
+        className={styles.contentWrapper}
+        size={'signup'}
+        renderBorder={false}
+        renderOverflow={false}
+        onBack={() => history?.push(ROUTES.ROOT)}
+      >
+        {headerSlide && !isWhitelabel && (
+          <HeaderCard className={'mt-4'} slide={headerSlide} />
+        )}
+
+        {!isWhitelabel && (
+          <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
+        )}
+        <div style={{ maxWidth: '442px' }} className={styles.formStyle}>
+          <Button
+            id="gtm-register"
+            className={styles.formButton}
+            type="filled"
+            color="quatenary"
+            disabled={!isOnline}
+            onClick={() => setOpenOaAgreements(true)}
+          >
+            <Typography type="help" color="white" text={'Sign up'}></Typography>
+          </Button>
+
+          <Divider
+            title={`Already have a ${orgName} account?`}
+            dividerType={'solid'}
+            className={'mt-2 mb-2'}
+          />
+
+          <Button
+            className={styles.formButton}
+            type="outlined"
+            color="quatenary"
+            disabled={!isOnline}
+            onClick={() => history.push('./login')}
+          >
+            <Typography
+              type="help"
+              color="quatenary"
+              text={'Log in'}
+            ></Typography>
+          </Button>
+        </div>
+      </BannerWrapper>
+      <Dialog
+        visible={openOaAgreements}
+        position={DialogPosition.Full}
+        className="w-full"
+      >
+        <OAAgreements closeAction={setOpenOaAgreements} />
+      </Dialog>
+      {!isOnline && (
+        <Alert
+          className={'mt-5 mb-3'}
+          title="Your internet connection is unstable."
+          type={'warning'}
+        />
+      )}
+    </div>
+  );
+};

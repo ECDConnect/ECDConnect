@@ -5,3 +5,4 @@ export * from './base64-convert-blob';
 export * from './image';
 export * from './date.utils';
 export * from './community-utils/community-quarters.utils';
+export * from './numbers.utils';

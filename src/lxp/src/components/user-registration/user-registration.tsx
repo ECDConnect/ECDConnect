@@ -19,6 +19,7 @@ interface UserRegistrationProps {
 
 export interface UserRegistrationRouteState {
   userId?: string;
+  token?: string;
 }
 
 export const UserRegistration: React.FC<UserRegistrationProps> = ({
@@ -27,6 +28,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<UserRegistrationRouteState>();
   const userId = state?.userId;
+  const token = state?.token;
   const tenant = useTenant();
   const [openCreateUser, setOpencreateUser] = useState(false);
   const orgName = tenant?.tenant?.organisationName;
@@ -93,7 +95,11 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
         position={DialogPosition.Full}
         className="w-full"
       >
-        <CreateUserForm closeAction={setOpencreateUser} userId={userId} />
+        <CreateUserForm
+          closeAction={setOpencreateUser}
+          userId={userId}
+          token={token}
+        />
       </Dialog>
     </BannerWrapper>
   );

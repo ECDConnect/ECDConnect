@@ -194,6 +194,7 @@ export const SignUp: React.FC = () => {
         setIsLoading(false);
         history.push(ROUTES.CREATE_USERNAME, {
           userId: isAuthenticated?.data,
+          token: authToken,
         });
         setNotification({
           title: ` Successfully registered!`,
@@ -285,14 +286,14 @@ export const SignUp: React.FC = () => {
           <Button
             className={'mt-4 mb-4'}
             type={'outlined'}
-            color={'primary'}
+            color={'secondary'}
             background={'transparent'}
             shape={'normal'}
             size={'small'}
             onClick={toggleIdAndPassport}
           >
             <Typography
-              color={'primary'}
+              color={'secondary'}
               weight={'bold'}
               text={`Enter ${preferId ? 'Passport' : 'ID'} number instead`}
               type="small"
@@ -419,16 +420,16 @@ export const SignUp: React.FC = () => {
             id="gtm-register"
             className={styles.formButton}
             type="filled"
-            color="primary"
+            color="quatenary"
             isLoading={isLoading}
-            disabled={!isOnline}
+            disabled={!isOnline || isLoading}
             onClick={handleSubmit(submitForm)}
           >
             <Typography type="help" color="white" text={'Next'}></Typography>
           </Button>
 
           <Divider
-            title={'Already have a Funda App account?'}
+            title={`Already have a ${tenantName} App account?`}
             dividerType={'solid'}
             className={'mt-2 mb-2'}
           />
@@ -436,13 +437,13 @@ export const SignUp: React.FC = () => {
           <Button
             className={styles.formButton}
             type="outlined"
-            color="primary"
+            color="quatenary"
             disabled={!isOnline}
             onClick={() => history.push('./login')}
           >
             <Typography
               type="help"
-              color="primary"
+              color="quatenary"
               text={'Log in'}
             ></Typography>
           </Button>

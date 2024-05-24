@@ -134,16 +134,30 @@ import { usePrevious } from '@ecdlink/core';
 import { Location } from 'history';
 import ChildList from '@/pages/classroom/child-list/child-list';
 import { UserRegistration } from '@/components/user-registration/user-registration';
+import { useTenant } from '@/hooks/useTenant';
+import { OASignUpOrLogin } from '@/pages/auth/oa-sign-up/oa-sign-up-or-login';
 
 const PublicRoutes: React.FC = () => {
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
+  console.log({ tenant });
   return (
     <Switch>
       <Route
         exact
         path={ROUTES.ROOT}
-        render={() => <Redirect to={ROUTES.LOGIN} />}
+        render={() => (
+          <Redirect
+            to={isOpenAccess ? ROUTES.OA_SIGN_UP_OR_LOGIN : ROUTES.LOGIN}
+          />
+        )}
       />
       <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+      <Route
+        path={ROUTES.OA_SIGN_UP_OR_LOGIN}
+        component={OASignUpOrLogin}
+        exact={true}
+      />
       <Route
         path={ROUTES.CREATE_USERNAME}
         component={UserRegistration}

@@ -12,7 +12,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './password-reset.styles';
 import {
@@ -29,7 +29,6 @@ export const PasswordReset: React.FC = () => {
     useState<string>('XXXX');
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [displaySuccess, setDisplaySuccess] = useState<boolean>(false);
-  const [idFieldVisible, setIdFieldVisible] = useState<boolean>(true);
   const [sendLinkButtonDisabled, setSendLinkButtonDisabled] =
     useState<boolean>(true);
   const [resendLinkButtonDisabled, setResendLinkButtonDisabled] =
@@ -42,26 +41,28 @@ export const PasswordReset: React.FC = () => {
 
   const {
     register: resetPasswordRegister,
-    setValue: resetPasswordSetValue,
     formState: resetPasswordFormState,
     getValues: resetPasswordFormGetValues,
+    control,
   } = useForm({
     resolver: yupResolver(resetPasswordSchema),
     defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
-
-  const { isValid } = resetPasswordFormState;
+  const { phoneNumber } = useWatch({
+    control: control,
+  });
+  const { isValid, errors } = resetPasswordFormState;
 
   const submitForm = async (formValues: ResetPasswordModel) => {
     setHasSubmitted(true);
-    if (isValid) {
+    if (true) {
       setIsLoading(true);
       setSendLinkButtonDisabled(true);
 
       const requestSentResponse =
         await new AuthService().SendForgotPasswordRequest({
-          username: formValues.username,
+          phoneNumber: phoneNumber,
         });
       if (requestSentResponse.valid) {
         setUserPhoneNumberEnding(
@@ -96,7 +97,7 @@ export const PasswordReset: React.FC = () => {
 
     const requestSentResponse =
       await new AuthService().SendForgotPasswordRequest({
-        username: formValues.username,
+        username: formValues.phoneNumber,
       });
     if (requestSentResponse.valid) {
       setUserPhoneNumberEnding(
@@ -131,13 +132,6 @@ export const PasswordReset: React.FC = () => {
     history.push(ROUTES.LOGIN);
   };
 
-  const toggleIdAndpassport = (visible: boolean) => {
-    const flag = !visible;
-    resetPasswordSetValue('username', '');
-    resetPasswordSetValue('preferId', flag);
-    setIdFieldVisible(flag);
-  };
-
   return (
     <div className={styles.container}>
       <BannerWrapper
@@ -150,70 +144,25 @@ export const PasswordReset: React.FC = () => {
           {!displaySuccess && (
             <div>
               <Typography
-                type="body"
-                color="textMid"
-                text={
-                  'Fill in your ID number and we will send you a link to reset your password'
-                }
+                type="h4"
+                color="textDark"
+                text={`Enter your cellphone number. If we find an account linked to this cellphone, we'll send an SMS with a password reset link.`}
               ></Typography>
               <div className={'mt-4'}>
                 <form>
-                  <div>
-                    {idFieldVisible && (
-                      <FormInput<ResetPasswordModel>
-                        label={'ID number'}
-                        visible={true}
-                        nameProp={'username'}
-                        register={resetPasswordRegister}
-                        placeholder={'E.g. 7601010338089'}
-                      />
-                    )}
-                    {!idFieldVisible && (
-                      <FormInput<ResetPasswordModel>
-                        label={'Passport number'}
-                        visible={true}
-                        nameProp={'username'}
-                        register={resetPasswordRegister}
-                      />
-                    )}
-                    {!idFieldVisible && (
-                      <Button
-                        className={styles.buttonSpace}
-                        type="outlined"
-                        color="primary"
-                        background="transparent"
-                        size="small"
-                        onClick={() => toggleIdAndpassport(idFieldVisible)}
-                      >
-                        <Typography
-                          type="small"
-                          color="primary"
-                          text={'Enter ID number instead'}
-                        ></Typography>
-                      </Button>
-                    )}
-                    {idFieldVisible && (
-                      <Button
-                        className={styles.buttonSpace}
-                        type="outlined"
-                        color="primary"
-                        background="transparent"
-                        size="small"
-                        onClick={() => toggleIdAndpassport(idFieldVisible)}
-                      >
-                        <Typography
-                          type="small"
-                          color="primary"
-                          text={'Enter passport number instead'}
-                        ></Typography>
-                      </Button>
-                    )}
-                    <Divider className={'mt-3 mb-3'}></Divider>
-                  </div>
+                  <FormInput<ResetPasswordModel>
+                    label={'Cellphone number'}
+                    visible={true}
+                    nameProp={'phoneNumber'}
+                    placeholder="e.g. 0601234567"
+                    register={resetPasswordRegister}
+                    className="my-4"
+                    error={errors?.phoneNumber}
+                  />
                   {displayError && (
                     <Alert
                       className={styles.errorDisplay}
-                      title={'ID or Passport number not recognised'}
+                      title={'Cellphone number not recognised'}
                       type={'error'}
                     />
                   )}
@@ -222,7 +171,7 @@ export const PasswordReset: React.FC = () => {
                     type="filled"
                     isLoading={isLoading}
                     color="primary"
-                    disabled={sendLinkButtonDisabled}
+                    disabled={sendLinkButtonDisabled || !isValid}
                     onClick={() => submitForm(resetPasswordFormGetValues())}
                   >
                     <Typography
@@ -252,8 +201,8 @@ export const PasswordReset: React.FC = () => {
                   className={styles.submitButton}
                   type="filled"
                   isLoading={isLoading}
-                  color="primary"
-                  disabled={resendLinkButtonDisabled}
+                  color="quatenary"
+                  disabled={resendLinkButtonDisabled || !isValid}
                   onClick={() => resendLink(resetPasswordFormGetValues())}
                 >
                   <Typography
@@ -284,7 +233,7 @@ export const PasswordReset: React.FC = () => {
               type="unspecified"
               fontSize="14"
               className="mr-2"
-              color="textLight"
+              color="textDark"
               text={'Not able to click the link?'}
             ></Typography>
             <Button
