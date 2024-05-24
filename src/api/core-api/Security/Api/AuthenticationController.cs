@@ -17,7 +17,6 @@ using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
-using GreenDonut;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
