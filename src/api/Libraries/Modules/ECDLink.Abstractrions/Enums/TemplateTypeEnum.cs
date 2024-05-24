@@ -21,5 +21,6 @@ namespace ECDLink.Abstractrions.Enums
         TeamLeadInvitation = 16,
         VerifyCellphoneNumber = 17,
         AdminUserHelpForm = 18,
+        OAAuthCode = 19,
     }
 }

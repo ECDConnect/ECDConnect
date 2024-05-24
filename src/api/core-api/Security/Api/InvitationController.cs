@@ -6,13 +6,21 @@ using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.Managers;
 using ECDLink.UrlShortner.Managers;
+using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -30,6 +38,11 @@ namespace ECDLink.Security.Api
         private readonly ApplicationUserManager _userManager;
         private readonly PersonnelService _personnelService;
 
+        private IHttpContextAccessor _contextAccessor;
+        private IGenericRepositoryFactory _repoFactory;
+        private Guid? _applicationUserId;
+        private IGenericRepository<MessageLog, Guid> _messageRepo;
+
         public InvitationController(
           ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
@@ -38,7 +51,10 @@ namespace ECDLink.Security.Api
           SecurityNotificationManager notificationManager,
           SecurityManager securityManager,
           ApplicationUserManager userManager,
-          PersonnelService personnelService)
+          PersonnelService personnelService,
+          IHttpContextAccessor contextAccessor,
+          IGenericRepositoryFactory repoFactory,
+          HierarchyEngine hierarchyEngine)
         {
             _invitationManager = invitationManager;
             _securityCodeManager = securityCodeManager;
@@ -48,6 +64,12 @@ namespace ECDLink.Security.Api
             _securityManager = securityManager;
             _userManager = userManager;
             _personnelService = personnelService;
+
+            _contextAccessor = contextAccessor;
+            _repoFactory = repoFactory;
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
+
+            _messageRepo = _repoFactory.CreateGenericRepository<MessageLog>(userContext: _applicationUserId);
         }
 
         [Route("accept-invitation")]
@@ -207,6 +229,120 @@ namespace ECDLink.Security.Api
             await _notificationManager.SendAuthenticationCodeAsync(user, result);
 
             return new OkObjectResult(ApplicationUserHelper.GetObscureMessagePrefenceValue(user));
+        }
+
+        [Route("send-oa-auth-code")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> SendOAAuthenticationCode([FromBody] AuthCodeModel authModel)
+        {
+            var user = await _userManager.FindByNameAsync(authModel.Username);
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "User not found with username"
+                });
+            }
+
+            if (!await ((SecurityCodeTokenManager)_securityCodeManager).CanSendAuthCodeAsync(user))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "Cannot send auth code"
+                });
+            }
+
+            var result = await _securityCodeManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 3,
+                    Error = "Generation of token failed"
+                });
+            }
+
+            await _notificationManager.SendOpenAccessAuthenticationCodeAsync(user, result);
+
+            return new OkObjectResult(result);
+        }
+
+        [Route("verify-oa-auth-code")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> VerifyOAAuthCode([FromBody] VerifyInvitationModel verifyModel)
+        {
+            // the token is a 6 digit code
+            var user = await _userManager.FindByNameAsync(verifyModel.Username);
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Invalid username"
+                });
+            }
+            var tokenVerification = await _securityCodeManager.VerifyTokenAsync(user, verifyModel.Token);
+            if (!tokenVerification)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "Invalid token"
+                });
+            }
+            // archive message records linked to user's number
+            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAAuthCode).ToList();
+            if (messages.Count != 0)
+            {
+                foreach (var message in messages)
+                {
+                    message.IsActive = false;
+                    message.UpdatedDate = DateTime.Now;
+                    message.UpdatedBy = _applicationUserId.ToString();
+                    _messageRepo.Update(message);
+                }
+            }
+
+            var updatedPractitioner = _personnelService.RegisterPractitioner(user.UserName);
+            if (updatedPractitioner == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "Register of practitioner failure"
+                });
+            }
+            return Ok(true);
+        }
+
+        [Route("verify-oa-auth-code-status")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> VerifyOAAuthCodeStatus([FromBody] VerifyInvitationModel verifyModel)
+        {
+            // the token is a 6 digit code
+            var user = await _userManager.FindByNameAsync(verifyModel.Username);
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Invalid username"
+                });
+            }
+
+            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAAuthCode).ToList();
+            if (messages.Count == 0)
+            {
+                return Ok(true);
+            } else
+            {
+                return Ok(false);
+            }
         }
 
         [Route("update-username-password")]

@@ -1,6 +1,6 @@
-update "MessageTemplate" set "Message" = 'Hello,<br>
+update "MessageTemplate" set "Message" = 'Hello,<br><br>
 
-A new form submission has been received from the [[ApplicationName]] help form.<br>
+A new form submission has been received from the [[ApplicationName]] help form.<br><br>
 
 Details:
 <ul>
@@ -13,4 +13,4 @@ Details:
 <br>
 Thank you, <br>
 [[OrganisationName]]'
-where "TemplateType" = 'admin-user-help-form'
+where "TemplateType" = 'admin-user-help-form';
