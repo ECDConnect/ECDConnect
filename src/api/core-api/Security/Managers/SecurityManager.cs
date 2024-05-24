@@ -116,6 +116,20 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return firstUserWithThatEmail;
         }
 
+        public async Task<ApplicationUser> GetUserByPhoneNumberAsync(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                return default;
+            }
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var user = await _userManager.Users.FirstOrDefaultAsync(
+                user => user.IsActive == true
+                    && user.PhoneNumber == phoneNumber
+                    && user.TenantId == tenantId);
+            return user;
+        }
+
         public async Task<bool> ForgotPasswordAsync(ApplicationUser user, bool isPortal = false)
         {
             var resetToken = await _passwordManager.RequestPasswordResetTokenAsync(user);
