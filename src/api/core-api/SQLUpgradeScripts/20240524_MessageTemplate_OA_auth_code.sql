@@ -1,0 +1,3 @@
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('1f36b63d-f15e-400a-85ec-f2adb120bd4c', true, current_date, current_date, '', 'sms', 'oa-auth-code', 'Your [[ApplicationName]] code is [[OTPCode]]', null, '[[ApplicationName]]: One-time Pin (OTP)', null,null, null, null, 0, null);

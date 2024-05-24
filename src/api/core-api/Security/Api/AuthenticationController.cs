@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
@@ -16,6 +17,7 @@ using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
+using GreenDonut;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,6 +34,9 @@ namespace ECDLink.Security.Api
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
+        private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
+        private readonly ITokenManager<ApplicationUser, SecurityCodeTokenManager> _securityCodeManager;
+        
         private readonly SecurityManager _securityManager;
         private readonly ApplicationUserManager _userManager;
         private readonly SecurityNotificationManager _notificationManager;
@@ -44,6 +49,8 @@ namespace ECDLink.Security.Api
         private IGenericRepository<UserHelp, Guid> _userHelpRepo;
 
         public AuthenticationController(
+            ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+            ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             SecurityManager securityManager, 
@@ -64,6 +71,8 @@ namespace ECDLink.Security.Api
             _passwordManager = passwordManager;
             _personnelService = personnelService;
             _notificationManager = notificationManager;
+            _invitationManager = invitationManager;
+            _securityCodeManager = securityCodeManager;
         }
 
         // POST api/auth/login
@@ -429,7 +438,31 @@ namespace ECDLink.Security.Api
                     Error = "Add role failure"
                 });
             }
-            return Ok();
+
+            // Step4: add user to practitioner table
+            var newPractitioner = _personnelService.AddOAPractitioner(user.Id);
+            if (newPractitioner == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 4,
+                    Error = "Add practitioner failure"
+                });
+            }
+
+            var token = await _securityCodeManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 5,
+                    Error = "Generate of token failure"
+                });
+            }
+
+            await _notificationManager.SendOpenAccessAuthenticationCodeAsync(user, token);
+
+            return new OkObjectResult(token);
         }
 
         #endregion

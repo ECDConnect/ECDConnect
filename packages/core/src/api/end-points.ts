@@ -16,4 +16,7 @@ export const APIs = {
   addOAPractitioner: 'api/authentication/add-oa-practitioner',
   registerPractitioner: 'api/authentication/register-practitioner',
   updateUsernamePassword: 'api/invitation/update-username-password',
+  sendOAAuthCode: 'api/invitation/send-oa-auth-code',
+  verifyOAAuthCode: 'api/invitation/verify-oa-auth-code',
+  verifyOAAuthCodeStatus: 'api/invitation/verify-oa-auth-code-status',
 };
