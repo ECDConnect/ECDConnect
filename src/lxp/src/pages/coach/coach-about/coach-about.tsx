@@ -135,32 +135,6 @@ export const CoachAbout: React.FC = () => {
     coachAboutFormWatch();
   }, [coachAboutFormWatch]);
 
-  const formatSiteAddressAsText = (user: CoachDto): string => {
-    if (!user || !coach?.siteAddress) return 'Add a work address';
-
-    const address = user?.siteAddress?.ward?.length
-      ? `${user.siteAddress.ward}<br/>`
-      : '';
-
-    if (
-      coach?.siteAddress?.provinceId === undefined ||
-      coach?.siteAddress?.addressLine1 === ''
-    ) {
-      return 'Franchisor Site Address Not Set';
-    } else {
-      return address.concat(`
-        ${coach?.siteAddress?.addressLine1}<br/>
-        ${coach?.siteAddress?.addressLine2}, ${
-        coach?.siteAddress?.addressLine3
-      } ${coach?.siteAddress?.postalCode}
-        <br/>${
-          coach?.siteAddress?.province?.description
-            ? coach?.siteAddress?.province?.description
-            : ''
-        }`);
-    }
-  };
-
   const setNewStackListItems = (currentUser: CoachDto) => {
     const list: ActionListDataItem[] = [
       {
@@ -219,31 +193,6 @@ export const CoachAbout: React.FC = () => {
             formFieldName: 'email',
             value: coachAboutFormGetValues().email,
           });
-        },
-      },
-      {
-        title: 'Work address',
-        subTitle: formatSiteAddressAsText(currentUser),
-        switchTextStyles: true,
-        hasMarkup: true,
-        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
-        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.ADDRESS);
-        },
-      },
-      {
-        title: 'Signature',
-        subTitle: currentUser?.signingSignature
-          ? 'Replace your signature'
-          : 'Add your signature',
-        switchTextStyles: true,
-        actionName: currentUser?.signingSignature ? 'Edit' : 'Add',
-        actionIcon: currentUser?.signingSignature ? 'PencilIcon' : 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.SIGNATURE);
         },
       },
     ];
@@ -456,17 +405,6 @@ export const CoachAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
-          {coach?.signingSignature && (
-            <>
-              <img
-                alt="signature"
-                src={coach.signingSignature}
-                style={{ margin: '20px 0 ' }}
-                width="60"
-              />
-              <br />
-            </>
-          )}
         </div>
       </BannerWrapper>
 

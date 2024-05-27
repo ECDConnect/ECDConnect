@@ -728,6 +728,8 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  console.log('isCoach', isCoach);
+
   const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationNames.Home,

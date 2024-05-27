@@ -228,13 +228,13 @@ namespace ECDLink.Security.Api
 
             await _notificationManager.SendAuthenticationCodeAsync(user, result);
 
-            return new OkObjectResult(ApplicationUserHelper.GetObscureMessagePrefenceValue(user));
+            return new OkObjectResult(result);
         }
 
-        [Route("send-oa-auth-code")]
+        [Route("send-oa-wl-auth-code")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> SendOAAuthenticationCode([FromBody] AuthCodeModel authModel)
+        public async Task<IActionResult> SendOAWLAuthenticationCode([FromBody] AuthCodeModel authModel)
         {
             var user = await _userManager.FindByNameAsync(authModel.Username);
             if (user == null)
@@ -265,15 +265,15 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            await _notificationManager.SendOpenAccessAuthenticationCodeAsync(user, result);
+            await _notificationManager.SendOAWLAuthenticationCodeAsync(user, result);
 
             return new OkObjectResult(result);
         }
 
-        [Route("verify-oa-auth-code")]
+        [Route("verify-oa-wl-auth-code")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> VerifyOAAuthCode([FromBody] VerifyInvitationModel verifyModel)
+        public async Task<IActionResult> VerifyOAWLAuthCode([FromBody] VerifyInvitationModel verifyModel)
         {
             // the token is a 6 digit code
             var user = await _userManager.FindByNameAsync(verifyModel.Username);
@@ -295,7 +295,7 @@ namespace ECDLink.Security.Api
                 });
             }
             // archive message records linked to user's number
-            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAAuthCode).ToList();
+            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
             if (messages.Count != 0)
             {
                 foreach (var message in messages)
@@ -319,10 +319,10 @@ namespace ECDLink.Security.Api
             return Ok(true);
         }
 
-        [Route("verify-oa-auth-code-status")]
+        [Route("verify-oa-wl-auth-code-status")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> VerifyOAAuthCodeStatus([FromBody] VerifyInvitationModel verifyModel)
+        public async Task<IActionResult> VerifyOAWLAuthCodeStatus([FromBody] VerifyInvitationModel verifyModel)
         {
             // the token is a 6 digit code
             var user = await _userManager.FindByNameAsync(verifyModel.Username);
@@ -335,7 +335,7 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAAuthCode).ToList();
+            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
             if (messages.Count == 0)
             {
                 return Ok(true);

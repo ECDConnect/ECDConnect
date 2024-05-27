@@ -32,6 +32,7 @@ import { usePrevious } from 'react-use';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { PractitionerProfileRouteState } from './practitioner-profile.types';
+import { NavigationNames } from '@/pages/navigation';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -163,10 +164,10 @@ export const PractitionerProfile: React.FC = () => {
         },
       },
       {
-        title: 'Logout',
+        title: NavigationNames.Logout,
         titleStyle,
         subTitleStyle,
-        subTitle: 'Logout',
+        subTitle: 'Sign out of the app',
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
         iconBackgroundColor: 'tertiary',
