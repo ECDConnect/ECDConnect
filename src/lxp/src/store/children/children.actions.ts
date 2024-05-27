@@ -27,6 +27,8 @@ export const ChildrenActions = {
   FIND_CREATED_CHILD: 'findCreatedChild',
   GENERATE_CAREGIVER_CHILD_TOKEN: 'generateCaregiverChildToken',
   REFRESH_CAREGIVER_CHILD_TOKEN: 'refreshCaregiverChildToken',
+  OPEN_ACCESS_ADD_CHILD_DETAIL: 'openAccessAddChildDetail',
+  OPEN_ACCESS_ADD_CHILD: 'openAccessAddChild',
 };
 
 export const getChildren = createAsyncThunk<
@@ -352,12 +354,10 @@ type OpenAccessAddChildDetailRequest = {
 
 export const openAccessAddChildDetail = createAsyncThunk<
   ChildRegistrationDetails,
-  // eslint-disable-next-line @typescript-eslint/ban-types
   OpenAccessAddChildDetailRequest,
   ThunkApiType<RootState>
 >(
-  'openAccessAddChildDetail',
-  // eslint-disable-next-line no-empty-pattern
+  ChildrenActions.OPEN_ACCESS_ADD_CHILD_DETAIL,
   async ({ token }, { rejectWithValue }) => {
     try {
       const result = await new ChildService('').openAccessAddChildDetail(
@@ -387,12 +387,10 @@ export type TokenAddChildRequest = {
 
 export const openAccessAddChild = createAsyncThunk<
   string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
   TokenAddChildRequest,
   ThunkApiType<RootState>
 >(
-  'openAccessAddChild',
-  // eslint-disable-next-line no-empty-pattern
+  ChildrenActions.OPEN_ACCESS_ADD_CHILD,
   async (
     {
       token,
@@ -425,6 +423,7 @@ export const openAccessAddChild = createAsyncThunk<
 const mapChildInput = (
   child: Partial<ChildDto>
 ): UpdateChildAndCaregiverInput => ({
+  ...child,
   id: child.id,
   languageId: child.languageId,
   allergies: child.allergies,
@@ -437,6 +436,7 @@ const mapChildInput = (
 });
 
 const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
+  ...childUser,
   id: childUser.id,
   isActive: childUser.isActive || false,
   isSouthAfricanCitizen: childUser.isSouthAfricanCitizen ?? false,
@@ -459,6 +459,7 @@ const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
 });
 
 const mapCaregiver = (x: Partial<CaregiverDto>): ChildCaregiverInput => ({
+  ...x,
   id: x.id,
   idNumber: x.idNumber,
   firstName: x.firstName,

@@ -4,6 +4,8 @@ import localForage from 'localforage';
 import {
   findCreatedChild,
   getChildren,
+  openAccessAddChild,
+  openAccessAddChildDetail,
   updateChild,
   upsertChildren,
 } from './children.actions';
@@ -91,6 +93,14 @@ const childrenSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, updateChild);
     setThunkActionStatus(builder, findCreatedChild);
+    setThunkActionStatus(builder, openAccessAddChildDetail);
+    setThunkActionStatus(builder, openAccessAddChild);
+    builder.addCase(openAccessAddChild.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(openAccessAddChildDetail.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(findCreatedChild.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });

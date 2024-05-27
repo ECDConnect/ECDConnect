@@ -6,4 +6,5 @@ export type ChildRegistrationVariation = 'caregiver' | 'practitioner';
 export interface ChildRegistrationFormProps
   extends FormComponentProps<ChildRegistrationFormModel> {
   childRegisterForm?: ChildRegistrationFormModel;
+  variation: ChildRegistrationVariation;
 }

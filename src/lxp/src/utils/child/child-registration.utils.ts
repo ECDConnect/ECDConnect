@@ -87,6 +87,7 @@ export const mapChildDto = (
       allergies: healthInformationForm?.allergies ?? '',
       disabilities: healthInformationForm?.disabilities ?? '',
       otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+      workflowStatusId: childStatusId,
     };
   }
 
@@ -307,7 +308,7 @@ export const mapAddChildRegistrationTokenModelInput = (
 export const mapAddChildUserConsentTokenModelInput = (
   userId: string,
   childRegistrationFormModel?: ChildRegistrationFormModel
-  // TODO: update this interface because now only childPhotoConsentAccepted and personalInformationAgreementAccepted are used
+  // TODO: update this interface because now only childPhotoConsentAccepted and personalInformationAgreementAccepted are used / remove from backend
 ): Omit<
   AddChildUserConsentTokenModelInput,
   | 'commitmentAgreementAccepted'
@@ -339,7 +340,8 @@ export const mapAddChildTokenModelInput = (
     isSouthAfricanCitizen: true,
     verifiedByHomeAffairs: false,
     userId: userId,
-    raceId: '',
+    // TODO: remove raceId from backend
+    raceId: newGuid(),
     languageId:
       childExtraInformationForm?.homeLanguages &&
       childExtraInformationForm.homeLanguages[0]
