@@ -12,8 +12,7 @@ export const iconWrapperRight = 'w-4/12 flex justify-end';
 export const icons = 'cursor-pointer z-10 w-auto primaryAccent2';
 export const menuIcons =
   'cursor-pointer z-10 rounded-10 bg-primaryAccent1 h-10 w-10 p-2';
-export const logo =
-  'text-center inline-block bg-logo mt-14 w-24 h-7 mb-12 bg-contain';
+export const logo = 'text-center inline-block bg-logo w-28 h-7';
 export const overlayImage = 'w-full';
 
 export const header = (
@@ -30,63 +29,49 @@ export const header = (
         showBackground ? 'bg-transparent' : `bg-${colour}`,
         baseClass,
         renderBorder ? 'h-16' : 'h-116',
-        renderBorder
-          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
-          : ''
+        renderBorder ? 'border-t-0 border-uiMidDark border-r-0 border-l-0' : ''
       );
     case 'medium':
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-116',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder
-          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
-          : ''
+        renderBorder ? 'border-t-0 border-uiMidDark border-r-0 border-l-0' : ''
       );
     case 'smaller':
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-16',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder
-          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
-          : ''
+        renderBorder ? 'border-t-0 border-uiMidDark border-r-0 border-l-0' : ''
       );
     case 'sub-normal':
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-112',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder
-          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
-          : ''
+        renderBorder ? 'border-t-0 border-uiMidDark border-r-0 border-l-0' : ''
       );
     case 'normal':
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-116',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder
-          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
-          : ''
+        renderBorder ? 'border-t-0 border-uiMidDark border-r-0 border-l-0' : ''
       );
     case 'small':
       return classNames(
         baseClass,
         'h-16',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder
-          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
-          : ''
+        renderBorder ? 'border-t-0 border-uiMidDark border-r-0 border-l-0' : ''
       );
     case 'signup':
       return classNames(
         showBackground ? 'bg-transparent' : `bg-${colour}`,
         baseClass,
         renderBorder ? 'h-16' : 'h-16',
-        renderBorder
-          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
-          : ''
+        renderBorder ? 'border-t-0 border-uiMidDark border-r-0 border-l-0' : ''
       );
   }
 };

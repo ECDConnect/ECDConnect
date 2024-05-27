@@ -70,3 +70,7 @@ ion-content {
   grid-template-rows: min-content 1fr;
   gap: 16px;
 }
+
+.bg-logo {
+  background-repeat: no-repeat !important;
+}
