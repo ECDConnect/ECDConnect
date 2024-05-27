@@ -21,6 +21,10 @@ export interface AuthCodeModel {
   token: string;
 }
 
+export interface ResendAuthCodeModel {
+  username: string;
+}
+
 export interface CheckUsernamePhoneNumberModel {
   username: string;
   phoneNumber?: string;

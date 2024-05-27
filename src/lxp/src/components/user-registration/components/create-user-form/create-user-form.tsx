@@ -15,6 +15,8 @@ import {
 import {
   BannerWrapper,
   Button,
+  Dialog,
+  DialogPosition,
   FormInput,
   PasswordInput,
   SA_CELL_REGEX,
@@ -24,6 +26,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
+import { VerifyPhoneNumber } from '../verify-phone-number';
 
 interface CreateUserFormProps {
   closeAction?: (item: boolean) => void;
@@ -47,6 +50,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isValidPhoneNumber, setIsValidPhoneNumber] = useState(true);
   const [messageError, setMessageError] = useState('');
+  const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
   const usernameMessageErrorText = `Username already exists! Try using your email address, phone number, or add a number/letter`;
 
   const {
@@ -82,7 +86,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         username,
         password,
         phoneNumber,
-        // token: '',
         registerType: 'username',
       };
       if (checkUsername) {
@@ -92,7 +95,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         );
         if (userCreated) {
           setIsLoading(false);
-          history.push(ROUTES.LOGIN);
+          setOpenVerifyPhoneNumber(true);
           setNotification({
             title: ` Successfully registered!`,
             variant: NOTIFICATION.SUCCESS,
@@ -232,6 +235,18 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           </Button>
         </div>
       </div>
+      <Dialog
+        visible={openVerifyPhoneNumber}
+        position={DialogPosition.Full}
+        className="w-full"
+      >
+        <VerifyPhoneNumber
+          closeAction={setOpenVerifyPhoneNumber}
+          userId={userId}
+          phoneNumber={phoneNumber}
+          username={username}
+        />
+      </Dialog>
     </BannerWrapper>
   );
 };

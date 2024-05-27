@@ -10,6 +10,8 @@ import {
   RegisterRequestModel,
   CheckUsernamePhoneNumberModel,
   UpdateUsernameModel,
+  AuthCodeModel,
+  ResendAuthCodeModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
 import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
@@ -202,6 +204,32 @@ class AuthService {
         headers: headers,
       }
     );
+  }
+
+  async VerifyAuthCode(baseEndPoint: string, body: AuthCodeModel) {
+    return await api(baseEndPoint).post(
+      APIs.verifyOAWLAuthCode,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async SendOAAuthCode(body: ResendAuthCodeModel): Promise<boolean> {
+    const BASE_URL = Config.authApi;
+    const response = await api(BASE_URL).post(
+      APIs.sendOAWLAuthCode,
+      JSON.stringify({
+        body,
+      })
+    );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return true;
   }
 }
 

@@ -1,5 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
+  Alert,
   BannerWrapper,
   Button,
   ButtonGroup,
@@ -7,7 +8,7 @@ import {
   Checkbox,
   Typography,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTenant } from '@/hooks/useTenant';
 import { ContentConsentTypeEnum } from '@ecdlink/core';
 import Article from '@/components/article/article';
@@ -33,7 +34,11 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
   const [articleTitle, setArticleTitle] = useState<string>();
   const orgName = tenant?.tenant?.organisationName;
   const [termsAndConditions, setTermsAndConditions] = useState(false);
+  const [termsAndConditionsError, setTermsAndConditionsError] = useState(false);
   const [permissionsAgreement, setPermissionAgreement] = useState(false);
+  const [permissionsAgreementError, setPermissionAgreementError] =
+    useState(false);
+  const [permissionsErrorMessage, setPermissionsErrorMessage] = useState('');
   const [shareConsent, setShareConsent] = useState<
     boolean | boolean[] | undefined
   >(undefined);
@@ -43,6 +48,33 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
     setPresentArticle(true);
     setArticleTitle(title);
   };
+
+  const handleSubmitAgreements = () => {
+    if (!termsAndConditions || !permissionsAgreement) {
+      setPermissionsErrorMessage(
+        'You must accept both agreements to continue.'
+      );
+      if (!termsAndConditions) {
+        setTermsAndConditionsError(true);
+      }
+      if (!permissionsAgreement) {
+        setPermissionAgreementError(true);
+      }
+      return;
+    }
+
+    history.push(ROUTES.CREATE_USERNAME);
+  };
+
+  useEffect(() => {
+    if (termsAndConditions) {
+      setTermsAndConditionsError(false);
+    }
+
+    if (permissionsAgreement) {
+      setPermissionAgreementError(false);
+    }
+  }, [permissionsAgreement, termsAndConditions]);
 
   return (
     <BannerWrapper
@@ -62,20 +94,28 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
         />
         <div className="mt-2 flex flex-col gap-2">
           <div
-            className={
-              'bg-uiBg flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4'
-            }
+            className={`${
+              termsAndConditionsError && 'border-errorDark border'
+            } ${
+              termsAndConditions
+                ? 'border-quatenary bg-quatenaryBg border'
+                : 'bg-uiBg'
+            } flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
           >
             <Checkbox
-              onCheckboxChange={() =>
-                setTermsAndConditions((prevState) => !prevState)
-              }
+              onCheckboxChange={() => {
+                setTermsAndConditions((prevState) => !prevState);
+                setPermissionsErrorMessage('');
+              }}
               checked={termsAndConditions}
+              checkboxColor={
+                termsAndConditionsError ? 'errorDark' : 'primaryAccent2'
+              }
             />
             <Typography
               text={'I accept the terms and conditions'}
               type="help"
-              color={false ? 'errorDark' : 'textMid'}
+              color={termsAndConditionsError ? 'errorDark' : 'textMid'}
             />
             &nbsp;
             <Button
@@ -87,27 +127,31 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
               size={'small'}
               onClick={() => {
                 displayArticle(
-                  ContentConsentTypeEnum.DataPermissionsAgreement,
-                  'Data Permissions Agreement'
+                  ContentConsentTypeEnum.TermsAndConditions,
+                  'Terms and Conditions'
                 );
               }}
             />
           </div>
           <div
-            className={
-              'bg-uiBg flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4'
-            }
+            className={`${
+              permissionsAgreementError && 'border-errorDark border'
+            } bg-uiBg flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
           >
             <Checkbox
-              onCheckboxChange={() =>
-                setPermissionAgreement((prevState) => !prevState)
-              }
+              onCheckboxChange={() => {
+                setPermissionAgreement((prevState) => !prevState);
+                setPermissionsErrorMessage('');
+              }}
               checked={permissionsAgreement}
+              checkboxColor={
+                permissionsAgreementError ? 'errorDark' : 'primaryAccent2'
+              }
             />
             <Typography
               text={'I accept the data permissions agreement'}
               type="help"
-              color={false ? 'errorDark' : 'textMid'}
+              color={permissionsAgreementError ? 'errorDark' : 'textMid'}
             />
             &nbsp;
             <Button
@@ -155,14 +199,22 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
             textColor="secondary"
           />
         </div>
+        {permissionsErrorMessage && (
+          <Alert
+            className={'mt-5 mb-3'}
+            title={permissionsErrorMessage}
+            type={'error'}
+          />
+        )}
         <Button
           className={'mt-3 w-full rounded-xl'}
           type="filled"
           color="quatenary"
-          onClick={() => history.push(ROUTES.CREATE_USERNAME)}
+          onClick={handleSubmitAgreements}
           icon="ArrowCircleRightIcon"
           textColor="white"
           text="Next"
+          disabled={shareConsent === undefined}
         ></Button>
       </div>
       {contentConsentTypeEnum && (

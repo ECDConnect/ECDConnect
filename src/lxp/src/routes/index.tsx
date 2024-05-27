@@ -136,11 +136,12 @@ import ChildList from '@/pages/classroom/child-list/child-list';
 import { UserRegistration } from '@/components/user-registration/user-registration';
 import { useTenant } from '@/hooks/useTenant';
 import { OASignUpOrLogin } from '@/pages/auth/oa-sign-up/oa-sign-up-or-login';
+import { OaLogin } from '@/pages/auth/oa-login/oa-login';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
-  console.log({ tenant });
+
   return (
     <Switch>
       <Route
@@ -152,7 +153,11 @@ const PublicRoutes: React.FC = () => {
           />
         )}
       />
-      <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+      <Route
+        path={ROUTES.LOGIN}
+        component={isOpenAccess ? OaLogin : Login}
+        exact={true}
+      />
       <Route
         path={ROUTES.OA_SIGN_UP_OR_LOGIN}
         component={OASignUpOrLogin}

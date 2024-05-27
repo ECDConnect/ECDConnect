@@ -11,7 +11,7 @@ import facebookLogo from '../../assets/icon/facebook_white.svg';
 import { useState } from 'react';
 import { CreateUserForm } from './components/create-user-form/create-user-form';
 import { useTenant } from '@/hooks/useTenant';
-import { useLocation } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 
 interface UserRegistrationProps {
   closeAction?: (item: boolean) => void;
@@ -26,6 +26,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
   closeAction,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
   const { state } = useLocation<UserRegistrationRouteState>();
   const userId = state?.userId;
   const token = state?.token;
@@ -36,7 +37,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
   return (
     <BannerWrapper
       size="small"
-      onBack={() => closeAction && closeAction(false)}
+      onBack={() => history?.goBack()}
       color="primary"
       className={'h-screen'}
       title={orgName}
