@@ -30,7 +30,6 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
         public async Task SendAuthenticationCodeAsync(ApplicationUser user, string otp)
         {
-
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var notificationProvider = _notificationProviderFactory.Create(user);
 
