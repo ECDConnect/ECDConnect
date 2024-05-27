@@ -607,7 +607,7 @@ export const Dashboard: React.FC = () => {
           ]
         : [
             {
-              name: NavigationNames.Classroom.Children,
+              name: NavigationNames.Classroom.Classes,
               href: ROUTES.CLASSROOM.ROOT,
               params: { activeTabIndex: TabsItems.CLASSES },
               current: false,
@@ -674,10 +674,6 @@ export const Dashboard: React.FC = () => {
       : []),
     {
       name: NavigationNames.Community.Community,
-      href: isFirstTimeCommunitySection
-        ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
-        : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
-      params: { isFromDashboard: true } as CommunityRouteState,
       icon: styles.communityIconName,
       current: false,
       showDivider: true,
@@ -685,14 +681,18 @@ export const Dashboard: React.FC = () => {
         {
           name: NavigationNames.Community.Community,
           href: isFirstTimeCommunitySection
-            ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
-            : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          params: { isFromDashboard: true } as CommunityRouteState,
           onNavigation: onNavigation,
           current: false,
         },
         {
           name: NavigationNames.Community.Resources,
-          href: '',
+          href: isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          params: { isFromDashboard: true } as CommunityRouteState,
           onNavigation: onNavigation,
           current: false,
         },
@@ -865,7 +865,7 @@ export const Dashboard: React.FC = () => {
       onActionClick: () => {
         goToBusiness();
       },
-      classNames: 'bg-alertBg',
+      classNames: 'bg-warningBg',
     });
     dashboardItems.splice(2, 0, {
       title: NavigationNames.Community.Community,
@@ -1066,7 +1066,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
+        {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
             mainText={clubCard.mainText}
@@ -1082,7 +1082,7 @@ export const Dashboard: React.FC = () => {
             image={clubCard.image}
             textColour={clubCard.textColour}
           />
-        )}
+        )} */}
         {/* {isPractitioner &&
           (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
             <div className="mt-1">

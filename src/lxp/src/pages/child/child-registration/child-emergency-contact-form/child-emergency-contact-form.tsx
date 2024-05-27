@@ -72,23 +72,30 @@ export const ChildEmergencyContactForm: React.FC<
   };
 
   const submitButtonProps = useMemo(() => {
-    if (!enableReadOnlyMode) {
-      return { text: 'Next', icon: 'ArrowCircleRightIcon' };
-    }
     if (readonly) {
       return { text: 'Edit', icon: 'PencilIcon' };
     }
 
     return { text: 'Save', icon: 'SaveIcon' };
-  }, [enableReadOnlyMode, readonly]);
+  }, [readonly]);
 
   return (
     <div className="mb-4 flex h-full flex-col bg-white px-4 pt-2 pb-4">
       <Typography
         type={'h1'}
-        text={'Person to contact in an emergency'}
+        text={'Additional person to contact in an emergency'}
         color={'primary'}
       />
+      {!readonly && (
+        <Typography
+          type={'h4'}
+          text={
+            'Provide contact details of someone who can be contacted if the caregiver is not available.'
+          }
+          color={'textMid'}
+          className="mb-5"
+        />
+      )}
       <FormInput<ChildEmergencyContactFormModel>
         readonly={readonly}
         label={'First name'}
@@ -98,8 +105,9 @@ export const ChildEmergencyContactForm: React.FC<
         nameProp={'firstname'}
         placeholder={readonly ? 'None' : 'First name'}
       />
-      <Divider dividerType="dashed" className="my-4" />
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
       <FormInput<ChildEmergencyContactFormModel>
+        className={styles.spacer}
         readonly={readonly}
         label={'Surname'}
         register={childEmergencyContactFormRegister}
@@ -107,8 +115,9 @@ export const ChildEmergencyContactForm: React.FC<
         error={errors['surname']}
         placeholder={readonly ? 'None' : 'Surname/family name'}
       />
-      <Divider dividerType="dashed" className="my-4" />
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
       <FormInput<ChildEmergencyContactFormModel>
+        className={styles.spacer}
         readonly={readonly}
         label={'Cellphone number'}
         register={childEmergencyContactFormRegister}
@@ -116,15 +125,17 @@ export const ChildEmergencyContactForm: React.FC<
         error={errors['phoneNumber']}
         placeholder={readonly ? 'None' : 'E.g. 012 345 6789'}
       />
-      <Divider dividerType="dashed" className="my-4" />
-      <label className={styles.label}>
-        {`Is the emergency contact allowed to pick ${
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
+      <Typography
+        type="h4"
+        color="textDark"
+        text={`Is the emergency contact allowed to pick ${
           childName ?? 'Child'
         } up in ${
           variation === 'caregiver' ? 'your' : 'the caregiver’s'
         } place?`}
-      </label>
-      <div className="mt-2">
+      />
+      <div className="mt-2 mb-4">
         {readonly ? (
           <Typography
             type={'body'}
@@ -150,9 +161,9 @@ export const ChildEmergencyContactForm: React.FC<
           />
         )}
       </div>
-      <Divider dividerType="dashed" className="my-4" />
-      {!contactAllowedCustody && (
-        <div className={'mt-4'}>
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
+      {contactAllowedCustody === false && (
+        <>
           <Typography
             type={'h1'}
             text={`Who can pick ${childName} up if ${
@@ -161,6 +172,7 @@ export const ChildEmergencyContactForm: React.FC<
                 : 'the caregiver cannot'
             }?`}
             color={'primary'}
+            className={styles.spacer}
           />
           <FormInput<ChildEmergencyContactFormModel>
             readonly={readonly}
@@ -169,9 +181,13 @@ export const ChildEmergencyContactForm: React.FC<
             nameProp={'custodianFirstname'}
             error={errors['custodianFirstname']}
             placeholder={readonly ? 'None' : 'First name'}
+            className={styles.spacer}
           />
-          <Divider dividerType="dashed" className="my-4" />
+          {readonly && (
+            <Divider dividerType="dashed" className={styles.spacer} />
+          )}
           <FormInput<ChildEmergencyContactFormModel>
+            className={styles.spacer}
             readonly={readonly}
             label={'Surname'}
             register={childEmergencyContactFormRegister}
@@ -179,7 +195,9 @@ export const ChildEmergencyContactForm: React.FC<
             error={errors['custodianSurname']}
             placeholder={readonly ? 'None' : 'Surname/family name'}
           />
-          <Divider dividerType="dashed" className="my-4" />
+          {readonly && (
+            <Divider dividerType="dashed" className={styles.spacer} />
+          )}
           <FormInput<ChildEmergencyContactFormModel>
             readonly={readonly}
             label={'Cellphone number'}
@@ -187,15 +205,18 @@ export const ChildEmergencyContactForm: React.FC<
             nameProp={'custodianPhoneNumber'}
             error={errors['custodianPhoneNumber']}
             placeholder={readonly ? 'None' : '012 345 6789'}
+            className={styles.spacer}
           />
-          <Divider dividerType="dashed" className="my-4" />
-        </div>
+          {readonly && (
+            <Divider dividerType="dashed" className={styles.spacer} />
+          )}
+        </>
       )}
       {(canEdit || !enableReadOnlyMode) && (
         <Button
           isLoading={isLoading}
           onClick={handleFormSubmit}
-          className="mt-auto mb-4 w-full"
+          className="mt-auto w-full"
           size="small"
           color="quatenary"
           type="filled"

@@ -55,6 +55,8 @@ export const LanguageSelector = ({
         fillType="clear"
         selectedValue={locale}
         disabled={disabled}
+        fillColor="quatenary"
+        labelColor="white"
         list={
           (languages &&
             languages

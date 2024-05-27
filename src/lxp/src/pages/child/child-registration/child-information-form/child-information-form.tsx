@@ -1,10 +1,8 @@
-import { getArrayRange, ProgrammeAttendanceReasonDto } from '@ecdlink/core';
+import { getArrayRange } from '@ecdlink/core';
 import {
   Alert,
   AlertProps,
   Button,
-  classNames,
-  Divider,
   Dropdown,
   DropDownOption,
   FormInput,
@@ -14,30 +12,21 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { subYears } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
-import { useSelector } from 'react-redux';
 import { ShortMonths } from '../../../../constants/Dates';
 import {
   ChildInformationFormModel,
   childInformationFormSchema,
   childInformationFormSchemaCaregiver,
   dobYearsBetweenHigher,
-  dobYearsBetweenLower,
-  dobYearsLess,
   idMismatchList,
   idMismatchMessage,
   invalidDateList,
   invalidDateMessage,
   olderList,
   olderMessage,
-  yearsBetweenList,
   yearsHeading,
-  yearsLessList,
-  yearsMessage,
 } from '@schemas/child/child-registration/child-information-form';
-import { classroomsSelectors } from '@store/classroom';
-import { staticDataSelectors } from '@store/static-data';
 import { calculateFullAge } from '@utils/common/date.utils';
-import * as styles from './child-information-form.styles';
 import { ChildInformationFormProps } from './child-information-form.types';
 
 export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
@@ -60,20 +49,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   const [alerts, setAlerts] = useState<AlertProps[]>();
 
-  const [provideReason, setProvideReason] = useState(false);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-
-  const reasons = useSelector(
-    staticDataSelectors.getProgrammeAttendanceReasons
-  );
-
-  const classroomGroupsOptions: DropDownOption<string>[] = classroomGroups.map(
-    (group) => ({
-      label: group.name,
-      value: group.id,
-    })
-  );
-
   const {
     getValues: getChildInformationFormValues,
     setValue: setChildInformationFormValue,
@@ -90,11 +65,10 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
     defaultValues: childInformation,
   });
 
-  const { childIdField, dobDay, dobMonth, dobYear, reason, otherReason } =
-    useWatch({
-      control: childInformationFormControl,
-      defaultValue: childInformation,
-    });
+  const { childIdField, dobDay, dobMonth, dobYear } = useWatch({
+    control: childInformationFormControl,
+    defaultValue: childInformation,
+  });
 
   const { isValid, errors } = useFormState({
     control: childInformationFormControl,
@@ -165,34 +139,20 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
     let yearHigherThresholdBreach = false;
 
-    if (childAge > dobYearsBetweenLower && childAge < dobYearsBetweenHigher) {
-      alertsArray.push({
-        type: 'warning',
-        title: yearsHeading(childAge),
-        message: yearsMessage,
-        list: yearsBetweenList,
-      });
-    }
-
-    if (childAge >= dobYearsBetweenHigher) {
+    if (childAge > dobYearsBetweenHigher) {
       alertsArray.push({
         type: 'error',
-        title: olderMessage,
+        title: olderMessage(childAge),
         list: olderList,
       });
       yearHigherThresholdBreach = true;
-    } else if (dateOfBirth >= today) {
+    }
+
+    if (dateOfBirth >= today) {
       alertsArray.push({
         type: 'error',
         title: invalidDateMessage,
         list: invalidDateList,
-      });
-    } else if (childAge < dobYearsLess) {
-      alertsArray.push({
-        type: 'warning',
-        title: yearsHeading(childAge),
-        message: yearsMessage,
-        list: yearsLessList,
       });
     }
 
@@ -209,7 +169,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       setChildInformationFormValue('dobValid', true);
     }
     triggerChildInformationForm();
-    setProvideReason(childAge > dobYearsBetweenLower);
     setAlerts(alertsArray);
   };
 
@@ -233,182 +192,85 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   };
 
   return (
-    <div className={'h-full bg-white pt-2'}>
-      <Typography
-        type={'h1'}
-        text={"Child's details"}
-        color={'primary'}
-        className={'px-4'}
-      />
-      <div className={'p-4'}>
-        {variation === 'practitioner' && (
-          <PractitionerForm
-            childInformationFormRegister={childInformationFormRegister}
-            updatedPlaygroups={classroomGroupsOptions}
-            getChildInformationFormValues={getChildInformationFormValues}
-            setChildInformationFormValue={setChildInformationFormValue}
-            triggerChildInformationForm={triggerChildInformationForm}
-          />
-        )}
-
-        {variation === 'caregiver' && (
-          <CaregiverForm
-            childInformationFormRegister={childInformationFormRegister}
-          />
-        )}
-
-        <FormInput<ChildInformationFormModel>
-          label={'ID number'}
-          className={'mt-4'}
-          hint={'Leave blank if not available'}
-          nameProp={'childIdField'}
-          register={childInformationFormRegister}
-          error={errors['childIdField']}
-          placeholder={'E.g. 190101 0000 000'}
+    <div className={'flex h-full flex-col bg-white p-4'}>
+      <Typography type={'h1'} text={"Child's details"} color={'primary'} />
+      {variation === 'caregiver' && (
+        <CaregiverForm
+          childInformationFormRegister={childInformationFormRegister}
         />
-        <label className={classNames(styles.label, 'mt-4')}>
-          {'Date of birth'}
-        </label>
-        <div className={'flex items-center justify-between'}>
-          <Dropdown
-            placeholder={'Day'}
-            fillType="clear"
-            selectedValue={getChildInformationFormValues().dobDay}
-            list={dayDropDownList}
-            onChange={(item) => {
-              setChildInformationFormValue('dobDay', item as number);
-            }}
-          />
-          <Dropdown
-            placeholder={'Month'}
-            fillType="clear"
-            list={monthDropDownList}
-            selectedValue={getChildInformationFormValues().dobMonth}
-            onChange={(item) => {
-              setChildInformationFormValue('dobMonth', item as number);
-            }}
-          />
-          <Dropdown
-            placeholder={'Year'}
-            fillType="clear"
-            list={yearDropDownList}
-            selectedValue={getChildInformationFormValues().dobYear}
-            onChange={(item) => {
-              setChildInformationFormValue('dobYear', item as number);
-            }}
-          />
-        </div>
+      )}
 
-        {provideReason && (
-          <>
-            <label className={classNames(styles.label, 'mt-4')}>
-              {'Reason for child registration'}
-            </label>
-            <Dropdown<ProgrammeAttendanceReasonDto>
-              placeholder={!!reason ? reason?.reason : 'Select reason'}
-              fullWidth
-              fillType="clear"
-              list={
-                (reasons &&
-                  reasons.map((x: ProgrammeAttendanceReasonDto) => {
-                    return { label: x.reason, value: x };
-                  })) ||
-                []
-              }
-              selectedValue={getChildInformationFormValues().reason}
-              onChange={(item) => {
-                setChildInformationFormValue('reason', item);
-                triggerChildInformationForm();
-              }}
-            />
-          </>
-        )}
-
-        {reason?.reason === 'Other' && provideReason && (
-          <FormInput<ChildInformationFormModel>
-            label={'Reason'}
-            className={'mt-3'}
-            textInputType="textarea"
-            register={childInformationFormRegister}
-            nameProp={'otherReason'}
-            placeholder={'Please enter reason'}
-          />
-        )}
-
-        {alerts &&
-          alerts.map((alert: AlertProps, index: number) => {
-            return (
-              <Alert
-                key={'child-reg-alert-' + index}
-                className={'mt-5'}
-                title={alert.title}
-                message={alert.message}
-                list={alert.list}
-                type={alert.type}
-              />
-            );
-          })}
-        <div className={'py-4'}>
-          <Divider></Divider>
-        </div>
-        <Button
-          onClick={handleFormSubmit}
-          disabled={
-            !isValid ||
-            (provideReason &&
-              (!reason ||
-                (!!reason && reason?.reason === 'Other' && !otherReason)))
-          }
+      <FormInput<ChildInformationFormModel>
+        label={'ID number'}
+        className={'mt-4'}
+        hint={'Leave blank if not available'}
+        nameProp={'childIdField'}
+        register={childInformationFormRegister}
+        error={errors['childIdField']}
+        placeholder={'E.g. 190101 0000 000'}
+      />
+      <Typography
+        type="h4"
+        color="textDark"
+        text="Date of birth"
+        className="mt-4"
+      />
+      <div className={'flex items-center gap-2'}>
+        <Dropdown
           className="w-full"
-          size="small"
-          color="primary"
-          type="filled"
-          icon="ArrowCircleRightIcon"
-          iconPosition="start"
-          text="Next"
-          textColor="white"
+          placeholder={'Day'}
+          selectedValue={getChildInformationFormValues().dobDay}
+          list={dayDropDownList}
+          onChange={(item) => {
+            setChildInformationFormValue('dobDay', item as number);
+          }}
+        />
+        <Dropdown
+          className="w-full"
+          placeholder={'Month'}
+          list={monthDropDownList}
+          selectedValue={getChildInformationFormValues().dobMonth}
+          onChange={(item) => {
+            setChildInformationFormValue('dobMonth', item as number);
+          }}
+        />
+        <Dropdown
+          className="w-full"
+          placeholder={'Year'}
+          list={yearDropDownList}
+          selectedValue={getChildInformationFormValues().dobYear}
+          onChange={(item) => {
+            setChildInformationFormValue('dobYear', item as number);
+          }}
         />
       </div>
-    </div>
-  );
-};
 
-const PractitionerForm: React.FC<any> = ({
-  childInformationFormRegister,
-  updatedPlaygroups,
-  getChildInformationFormValues,
-  setChildInformationFormValue,
-  triggerChildInformationForm,
-}) => {
-  return (
-    <>
-      <FormInput<ChildInformationFormModel>
-        label={'First name'}
-        register={childInformationFormRegister}
-        nameProp={'firstname'}
-        placeholder={'First name'}
+      {alerts &&
+        alerts.map((alert: AlertProps, index: number) => {
+          return (
+            <Alert
+              key={'child-reg-alert-' + index}
+              className={'mt-5'}
+              title={alert.title}
+              message={alert.message}
+              list={alert.list}
+              type={alert.type}
+            />
+          );
+        })}
+      <Button
+        onClick={handleFormSubmit}
+        disabled={!isValid}
+        className="mt-auto w-full"
+        size="small"
+        color="quatenary"
+        type="filled"
+        icon="ArrowCircleRightIcon"
+        iconPosition="start"
+        text="Next"
+        textColor="white"
       />
-      <FormInput<ChildInformationFormModel>
-        label={'Surname'}
-        className={'mt-3'}
-        register={childInformationFormRegister}
-        nameProp={'surname'}
-        placeholder={'Surname/family name'}
-      />
-      <Dropdown<string>
-        placeholder={'Select class'}
-        list={updatedPlaygroups}
-        fillType="clear"
-        label={'Which class will the child attend?'}
-        fullWidth
-        className={'mt-3 w-full'}
-        selectedValue={getChildInformationFormValues().playgroupId}
-        onChange={(item) => {
-          setChildInformationFormValue('playgroupId', item);
-          triggerChildInformationForm();
-        }}
-      />
-    </>
+    </div>
   );
 };
 

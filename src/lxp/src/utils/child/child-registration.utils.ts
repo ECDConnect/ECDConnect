@@ -9,7 +9,6 @@ import {
 } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
-  AddChildLearnerTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
   AddChildRegistrationTokenModelInput,
@@ -47,7 +46,7 @@ export const mapChildUserDto = (
       surname: childInformationForm.surname,
       dateOfBirth: dateOfBirth.toISOString() || '',
       genderId: childExtraInformationForm?.genderId,
-      raceId: childExtraInformationForm?.race,
+      raceId: '',
     };
   }
 
@@ -58,7 +57,7 @@ export const mapChildUserDto = (
     verifiedByHomeAffairs: false,
     dateOfBirth: dateOfBirth.toISOString(),
     genderId: childExtraInformationForm?.genderId,
-    raceId: childExtraInformationForm?.race,
+    raceId: '',
     firstName: childInformationForm.firstname ?? '',
     surname: childInformationForm.surname ?? '',
     contactPreference: 'none',
@@ -79,6 +78,7 @@ export const mapChildDto = (
   if (child) {
     return {
       ...child,
+      // TODO: update language field to be an array
       languageId:
         childExtraInformationForm?.homeLanguages &&
         childExtraInformationForm.homeLanguages[0]
@@ -120,8 +120,6 @@ export const mapLearnerDto = (
       id: learner.id && learner.id.length > 0 ? learner.id : newGuid(),
       classroomGroupId: childInformationForm?.playgroupId ?? '',
       userId: userId,
-      attendanceReasonId: childInformationForm?.reason?.id,
-      otherAttendanceReason: childInformationForm?.otherReason ?? '',
     };
   }
 
@@ -129,8 +127,8 @@ export const mapLearnerDto = (
     id: newGuid(),
     classroomGroupId: childInformationForm?.playgroupId ?? '',
     userId: userId,
-    attendanceReasonId: childInformationForm?.reason?.id,
-    otherAttendanceReason: childInformationForm?.otherReason ?? '',
+    attendanceReasonId: '',
+    otherAttendanceReason: '',
     startedAttendance: new Date().toISOString(),
     stoppedAttendance: null,
   };
@@ -191,10 +189,10 @@ export const mapCaregiverDto = (
   if (caregiver) {
     return {
       ...caregiver,
-      idNumber:
-        caregiverInformationForm?.careGiverIdField ??
-        caregiverInformationForm?.careGiverPassportField ??
-        '',
+      // idNumber:
+      //   caregiverInformationForm?.careGiverIdField ??
+      //   caregiverInformationForm?.careGiverPassportField ??
+      //   '',
       firstName: caregiverInformationForm?.firstname ?? '',
       surname: caregiverInformationForm?.surname ?? '',
       relationId: caregiverInformationForm?.relationId,
@@ -218,10 +216,10 @@ export const mapCaregiverDto = (
   return {
     id: newGuid(),
     isActive: true,
-    idNumber:
-      caregiverInformationForm?.careGiverIdField ??
-      caregiverInformationForm?.careGiverPassportField ??
-      '',
+    // idNumber:
+    //   caregiverInformationForm?.careGiverIdField ??
+    //   caregiverInformationForm?.careGiverPassportField ??
+    //   '',
     phoneNumber: caregiverInformationForm?.phoneNumber || '',
     firstName: caregiverInformationForm?.firstname ?? '',
     surname: caregiverInformationForm?.surname ?? '',
@@ -257,10 +255,10 @@ export const mapAddChildCaregiverTokenModelInput = (
   childCareGiverContributionForm?: CareGiverContributionFormModel
 ): AddChildCaregiverTokenModelInput => {
   return {
-    idNumber:
-      caregiverInformationForm?.careGiverIdField ??
-      caregiverInformationForm?.careGiverPassportField ??
-      '',
+    // idNumber:
+    //   caregiverInformationForm?.careGiverIdField ??
+    //   caregiverInformationForm?.careGiverPassportField ??
+    //   '',
     phoneNumber: caregiverInformationForm?.phoneNumber,
     firstName: caregiverInformationForm?.firstname ?? '',
     surname: caregiverInformationForm?.surname ?? '',
@@ -309,28 +307,19 @@ export const mapAddChildRegistrationTokenModelInput = (
 export const mapAddChildUserConsentTokenModelInput = (
   userId: string,
   childRegistrationFormModel?: ChildRegistrationFormModel
-): AddChildUserConsentTokenModelInput => {
+  // TODO: update this interface because now only childPhotoConsentAccepted and personalInformationAgreementAccepted are used
+): Omit<
+  AddChildUserConsentTokenModelInput,
+  | 'commitmentAgreementAccepted'
+  | 'consentAgreementAccepted'
+  | 'indemnityAgreementAccepted'
+> => {
   return {
     userId: userId,
     childPhotoConsentAccepted:
       childRegistrationFormModel?.childPhotoConsentAccepted || false,
-    commitmentAgreementAccepted:
-      childRegistrationFormModel?.commitmentAgreementAccepted || false,
-    consentAgreementAccepted:
-      childRegistrationFormModel?.consentAgreementAccepted || false,
-    indemnityAgreementAccepted:
-      childRegistrationFormModel?.indemnityAgreementAccepted || false,
     personalInformationAgreementAccepted:
       childRegistrationFormModel?.personalInformationAgreementAccepted || false,
-  };
-};
-
-export const mapAddChildLearnerTokenModelInput = (
-  childInformationForm?: ChildInformationFormModel
-): AddChildLearnerTokenModelInput => {
-  return {
-    attendanceReasonId: childInformationForm?.reason?.id,
-    otherAttendanceReason: childInformationForm?.otherReason ?? '',
   };
 };
 
@@ -350,7 +339,7 @@ export const mapAddChildTokenModelInput = (
     isSouthAfricanCitizen: true,
     verifiedByHomeAffairs: false,
     userId: userId,
-    raceId: childExtraInformationForm?.race,
+    raceId: '',
     languageId:
       childExtraInformationForm?.homeLanguages &&
       childExtraInformationForm.homeLanguages[0]

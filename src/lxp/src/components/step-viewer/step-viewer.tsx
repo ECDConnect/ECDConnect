@@ -55,7 +55,7 @@ export const StepViewer: React.FC<StepViewProps> = ({
       }
       onBack={onBack}
       renderOverflow={true}
-      backgroundColour={'uiBg'}
+      backgroundColour={'white'}
       onClose={onClose}
       displayOffline={!isOnline}
     >

@@ -89,7 +89,6 @@ export const CaregiverChildRegistration: React.FC<
         dobDay: 0,
         dobMonth: 0,
         dobYear: 0,
-        otherReason: '',
         playgroupId: '',
       },
     });
@@ -180,10 +179,7 @@ export const CaregiverChildRegistration: React.FC<
         );
     }
 
-    const learnerInputModel =
-      childRegisterUtils.mapAddChildLearnerTokenModelInput(
-        formState.childInformationFormModel
-      );
+    const learnerInputModel = {};
 
     const siteAddress =
       childRegisterUtils.mapAddChildSiteAddressTokenModelInput(
@@ -254,7 +250,6 @@ export const CaregiverChildRegistration: React.FC<
         viewBannerWapper={true}
       >
         <ChildRegistrationForm
-          variation="caregiver"
           onSubmit={(value) =>
             onStepChange(CaregiverChildRegistrationSteps.childInformationForm, {
               formProp: 'childRegistrationFormModel',

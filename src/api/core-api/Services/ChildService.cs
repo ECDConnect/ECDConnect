@@ -1,9 +1,4 @@
-﻿using DinkToPdf.Contracts;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
-using EcdLink.Api.CoreApi.Managers;
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+﻿using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -89,6 +84,12 @@ namespace EcdLink.Api.CoreApi.Services
             // Update caregiver fields
             if (input.Caregiver != null)
             {
+                // Caregiver could be null if this is called from child registration
+                if (child.Caregiver == null)
+                {
+                    child.Caregiver = new Caregiver();
+                }
+
                 child.Caregiver.IdNumber = input.Caregiver.IdNumber;
                 child.Caregiver.FirstName = input.Caregiver.FirstName;
                 child.Caregiver.Surname = input.Caregiver.Surname;
@@ -107,8 +108,13 @@ namespace EcdLink.Api.CoreApi.Services
                 child.Caregiver.AdditionalPhoneNumber = input.Caregiver.AdditionalPhoneNumber;
                 // TODO - do we need to set updated date/by, do we need to check if we updated the caregiver?
 
-                if (child.Caregiver.SiteAddress != null)
+                if (input.Caregiver.SiteAddress != null)
                 {
+                    if (child.Caregiver.SiteAddress == null)
+                    {
+                        child.Caregiver.SiteAddress = new SiteAddress();
+                    }
+
                     child.Caregiver.SiteAddress.AddressLine1 = input.Caregiver.SiteAddress.AddressLine1;
                     child.Caregiver.SiteAddress.AddressLine2 = input.Caregiver.SiteAddress.AddressLine2;
                     child.Caregiver.SiteAddress.AddressLine3 = input.Caregiver.SiteAddress.AddressLine3;

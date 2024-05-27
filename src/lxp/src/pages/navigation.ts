@@ -15,7 +15,6 @@ export const NavigationNames = {
     Resources: 'Resources',
     Practitioners: 'Practitioners',
     Programme: 'Programme',
-    Children: 'Children',
   },
   Business: {
     Business: 'Business',
@@ -32,5 +31,5 @@ export const NavigationNames = {
   Messages: 'Messages',
   SmartStarters: 'SmartStarters',
   Calendar: 'Calendar',
-  Logout: 'Logout',
+  Logout: 'Log out',
 };

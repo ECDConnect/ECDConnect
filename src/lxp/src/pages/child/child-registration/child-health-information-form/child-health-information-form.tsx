@@ -69,33 +69,39 @@ export const ChildHealthInformationForm: React.FC<
       <FormInput<ChildHealthInformationFormModel>
         readonly={readonly}
         label={'List any allergies'}
-        className={'mt-3'}
+        hint={readonly ? undefined : 'Optional'}
+        className={'mt-3 mb-4'}
         register={childHealthInformationFormRegister}
         nameProp={'allergies'}
         placeholder={readonly ? 'None' : 'E.g. peanuts'}
       />
-      <Divider dividerType="dashed" className="py-4" />
+      {readonly && <Divider dividerType="dashed" className="mb-4" />}
       <FormInput<ChildHealthInformationFormModel>
         readonly={readonly}
         label={'List any disabilities'}
+        hint={readonly ? undefined : 'Optional'}
         register={childHealthInformationFormRegister}
         nameProp={'disabilities'}
         placeholder={readonly ? 'None' : 'E.g. blind'}
+        className="mb-4"
       />
-      <Divider dividerType="dashed" className="py-4" />
+      {readonly && <Divider dividerType="dashed" className="mb-4-4" />}
       <FormInput<ChildHealthInformationFormModel>
         readonly={readonly}
         label={'List any other health conditions'}
+        hint={readonly ? undefined : 'Optional'}
         textInputType={readonly ? 'input' : 'textarea'}
         register={childHealthInformationFormRegister}
         nameProp={'healthConditions'}
+        className="mb-4"
         placeholder={
           readonly
             ? 'None'
             : 'E.g. chronic illnesses such as diabetes or epilepsy'
         }
       />
-      <Divider dividerType="dashed" className="py-4" />
+      {readonly && <Divider dividerType="dashed" className="mb-4" />}
+
       {(canEdit || !enableReadOnlyMode) && (
         <Button
           isLoading={isLoading}

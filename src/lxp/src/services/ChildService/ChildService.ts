@@ -312,7 +312,12 @@ class ChildService {
     siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>,
     child: AddChildTokenModelInput,
     registration?: AddChildRegistrationTokenModelInput,
-    consent?: AddChildUserConsentTokenModelInput
+    consent?: Omit<
+      AddChildUserConsentTokenModelInput,
+      | 'commitmentAgreementAccepted'
+      | 'consentAgreementAccepted'
+      | 'indemnityAgreementAccepted'
+    >
   ): Promise<string> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

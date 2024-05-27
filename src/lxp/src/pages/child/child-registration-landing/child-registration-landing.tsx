@@ -14,7 +14,7 @@ export const ChildRegistrationLanding: React.FC = () => {
   const location = useLocation();
   const { resetAppStore, resetAuth } = useStoreSetup();
   const queryParams = useQueryParams(location.search);
-  const authToken = queryParams.getValue('token');
+  const caregiverToken = queryParams.getValue('token');
   const [loading, setLoading] = useState(true);
   const [childDetails, setChildDetails] = useState<any>();
   const dispatch = useAppDispatch();
@@ -57,7 +57,7 @@ export const ChildRegistrationLanding: React.FC = () => {
       }
       const response = await dispatch(
         childrenThunkActions.openAccessAddChildDetail({
-          token: authToken || '',
+          token: caregiverToken || '',
         })
       ).unwrap();
 
@@ -74,7 +74,7 @@ export const ChildRegistrationLanding: React.FC = () => {
       return response;
     };
 
-    if (authToken) {
+    if (caregiverToken) {
       const details = getChildDetails();
       details
         .then((details) => {
@@ -90,14 +90,14 @@ export const ChildRegistrationLanding: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!authToken && !loading) {
+  if (!caregiverToken && !loading) {
     return <PractitionerChildRegistration />;
   }
-  if (authToken && childDetails) {
+  if (caregiverToken && childDetails) {
     return (
       <CaregiverChildRegistration
         childDetails={childDetails}
-        caregiverAuthToken={authToken}
+        caregiverAuthToken={caregiverToken}
       />
     );
   }
