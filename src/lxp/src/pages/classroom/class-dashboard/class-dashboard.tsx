@@ -147,14 +147,14 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: NavigationNames.Classroom.Attendance,
+      title: NavigationNames.Classroom.Classes,
       initActive: true,
-      child: <AttendanceComponent />,
+      child: <Classes />,
     },
     {
-      title: NavigationNames.Classroom.Classes,
+      title: NavigationNames.Classroom.Attendance,
       initActive: false,
-      child: <Classes />,
+      child: <AttendanceComponent />,
     },
     {
       title: NavigationNames.Classroom.Programme,

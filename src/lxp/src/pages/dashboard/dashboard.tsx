@@ -674,10 +674,6 @@ export const Dashboard: React.FC = () => {
       : []),
     {
       name: NavigationNames.Community.Community,
-      href: isFirstTimeCommunitySection
-        ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
-        : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
-      params: { isFromDashboard: true } as CommunityRouteState,
       icon: styles.communityIconName,
       current: false,
       showDivider: true,
@@ -685,14 +681,18 @@ export const Dashboard: React.FC = () => {
         {
           name: NavigationNames.Community.Community,
           href: isFirstTimeCommunitySection
-            ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
-            : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          params: { isFromDashboard: true } as CommunityRouteState,
           onNavigation: onNavigation,
           current: false,
         },
         {
           name: NavigationNames.Community.Resources,
-          href: '',
+          href: isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          params: { isFromDashboard: true } as CommunityRouteState,
           onNavigation: onNavigation,
           current: false,
         },

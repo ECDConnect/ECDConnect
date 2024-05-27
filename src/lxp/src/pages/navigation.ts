@@ -32,5 +32,5 @@ export const NavigationNames = {
   Messages: 'Messages',
   SmartStarters: 'SmartStarters',
   Calendar: 'Calendar',
-  Logout: 'Logout',
+  Logout: 'Log out',
 };
