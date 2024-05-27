@@ -865,7 +865,7 @@ export const Dashboard: React.FC = () => {
       onActionClick: () => {
         goToBusiness();
       },
-      classNames: 'bg-alertBg',
+      classNames: 'bg-warningBg',
     });
     dashboardItems.splice(2, 0, {
       title: NavigationNames.Community.Community,
@@ -1066,7 +1066,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
+        {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
             mainText={clubCard.mainText}
@@ -1082,7 +1082,7 @@ export const Dashboard: React.FC = () => {
             image={clubCard.image}
             textColour={clubCard.textColour}
           />
-        )}
+        )} */}
         {/* {isPractitioner &&
           (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
             <div className="mt-1">
