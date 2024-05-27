@@ -1,12 +1,9 @@
-import { ProgrammeAttendanceReasonDto } from '@ecdlink/core';
 import { SA_ID_REGEX } from '@ecdlink/ui';
 import * as Yup from 'yup';
 
 export interface ChildInformationFormModel {
-  firstname: string;
-  surname: string;
-  reason?: ProgrammeAttendanceReasonDto;
-  otherReason: string;
+  firstname?: string;
+  surname?: string;
   playgroupId: string;
   childIdField?: string;
   dobDay: number;
@@ -17,10 +14,6 @@ export interface ChildInformationFormModel {
 }
 
 export const childInformationFormSchema = Yup.object().shape({
-  firstname: Yup.string().required(),
-  surname: Yup.string().required(),
-  playgroupId: Yup.string().required(),
-  otherReason: Yup.string(),
   dobValid: Yup.bool().isTrue().required(),
   childIdField: Yup.lazy((value: string) => {
     if (!!value)
@@ -36,7 +29,6 @@ export const childInformationFormSchema = Yup.object().shape({
 export const childInformationFormSchemaCaregiver = Yup.object().shape({
   firstname: Yup.string().required(),
   surname: Yup.string().required(),
-  otherReason: Yup.string(),
   dobValid: Yup.bool().isTrue().required(),
   childIdField: Yup.lazy((value: string) => {
     if (!!value)
@@ -49,9 +41,7 @@ export const childInformationFormSchemaCaregiver = Yup.object().shape({
   }),
 });
 
-export const dobYearsLess = 3;
-export const dobYearsBetweenLower = 5;
-export const dobYearsBetweenHigher = 10;
+export const dobYearsBetweenHigher = 7;
 
 export const idMismatchMessage = 'ID number and date of birth do not match.';
 export const idMismatchList = [
@@ -62,14 +52,6 @@ export const idMismatchList = [
 export const yearsHeading = (age: number) => {
   return `${age} years old.`;
 };
-export const yearsMessage = 'Please check date of birth.';
-export const yearsLessList = [
-  'Note that SmartStart programmes are designed for 3-5 year olds.',
-  'Children 0-18 months should have their own class and teacher and adhere to DSD guidelines on ratios.',
-];
-export const yearsBetweenList = [
-  `Note that SmartStart programmes are designed for ${dobYearsLess}-${dobYearsBetweenLower} year olds.`,
-];
 
 export const invalidDateMessage = 'Please enter a valid date of birth';
 
@@ -77,8 +59,9 @@ export const invalidDateList = [
   "Date of birth cannot be today's date or a future date",
 ];
 
-export const olderMessage = 'Child is older than 10';
-
+export const olderMessage = (age: number) => {
+  return `${age} years old - check date of birth`;
+};
 export const olderList = [
-  `Note that SmartStart programmes are designed for ${dobYearsLess}-${dobYearsBetweenLower} year olds.`,
+  'You can only add children who are 7 years old or younger.',
 ];

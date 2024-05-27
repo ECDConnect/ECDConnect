@@ -123,23 +123,22 @@ export const Article = ({
               onBack={onClose}
               title={title}
               className={styles.bannerContentWrapper}
-              backgroundColour={'uiBg'}
+              backgroundColour={'white'}
               displayOffline={!isOnline}
             >
               <div className={styles.localeDropDownWrapper}>
                 <LanguageSelector
+                  labelClassName="text-textDark mr-2"
                   currentLocale="en-za"
                   selectLanguage={(data) => changeLanugage(data)}
                 />
               </div>
-              <Divider />
               <div className={styles.articleTextWrapper}>
                 <Typography type={'markdown'} text={articleText} />
               </div>
 
               {showClose && (
                 <div className={styles.bottom}>
-                  <Divider />
                   <Button
                     color={'primary'}
                     type={'outlined'}

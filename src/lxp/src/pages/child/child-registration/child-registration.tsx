@@ -29,11 +29,6 @@ import {
   childrenSelectors,
   childrenThunkActions,
 } from '@store/children';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@store/classroom';
 import { contentConsentSelectors } from '@store/content/consent';
 import { documentActions, documentThunkActions } from '@store/document';
 import { userActions, userSelectors, userThunkActions } from '@store/user';
@@ -67,6 +62,8 @@ import {
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PointsService } from '@/services/PointsService';
+import { classroomsSelectors } from '@/store/classroom';
+import { ChildEmergencyContactFormModel } from '@/schemas/child/child-registration/child-emergency-contact-form';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -104,27 +101,6 @@ export const ChildRegistration: React.FC = () => {
     userSelectors.getUserConsentByType(
       existingChild?.userId,
       ContentConsentTypeEnum.PhotoPermissions
-    )
-  );
-
-  const existingCommitmentConsent = useSelector(
-    userSelectors.getUserConsentByType(
-      existingChild?.userId,
-      ContentConsentTypeEnum.CommitmentAgreement
-    )
-  );
-
-  const existingConsent = useSelector(
-    userSelectors.getUserConsentByType(
-      existingChild?.userId,
-      ContentConsentTypeEnum.ConsentAgreement
-    )
-  );
-
-  const existingIndemnity = useSelector(
-    userSelectors.getUserConsentByType(
-      existingChild?.userId,
-      ContentConsentTypeEnum.IndemnityAgreement
     )
   );
 
@@ -168,6 +144,7 @@ export const ChildRegistration: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
+  // TODO: Remove this when onSaveChildAndCaregiver is done
   const saveChild = async (
     healthInformationForm: ChildHealthInformationFormModel
   ) => {
@@ -216,63 +193,7 @@ export const ChildRegistration: React.FC = () => {
         }
       }
     }
-    if (formState.childRegistrationFormModel?.commitmentAgreementAccepted) {
-      const commitmentAgreementConsent = consentList?.find(
-        (x) => x.type === ContentConsentTypeEnum.CommitmentAgreement
-      );
-      if (commitmentAgreementConsent) {
-        const childCommitmentConsent = mapUserConsentDto(
-          user?.id ?? '',
-          userId,
-          commitmentAgreementConsent,
-          existingCommitmentConsent?.id
-        );
-        appDispatch(userActions.createUserConsent(childCommitmentConsent));
-        if (isOnline) {
-          appDispatch(
-            userThunkActions.upsertUserConsents(childCommitmentConsent)
-          );
-        }
-      }
-    }
-    if (formState.childRegistrationFormModel?.consentAgreementAccepted) {
-      const consentAgreement = consentList?.find(
-        (x) => x.type === ContentConsentTypeEnum.ConsentAgreement
-      );
-      if (consentAgreement) {
-        const childAgreementConsent = mapUserConsentDto(
-          user?.id ?? '',
-          userId,
-          consentAgreement,
-          existingConsent?.id
-        );
-        appDispatch(userActions.createUserConsent(childAgreementConsent));
-        if (isOnline) {
-          appDispatch(
-            userThunkActions.upsertUserConsents(childAgreementConsent)
-          );
-        }
-      }
-    }
-    if (formState.childRegistrationFormModel?.indemnityAgreementAccepted) {
-      const indemnityAgreementconsent = consentList?.find(
-        (x) => x.type === ContentConsentTypeEnum.IndemnityAgreement
-      );
-      if (indemnityAgreementconsent) {
-        const childIndemnityConsent = mapUserConsentDto(
-          user?.id ?? '',
-          userId,
-          indemnityAgreementconsent,
-          existingIndemnity?.id
-        );
-        appDispatch(userActions.createUserConsent(childIndemnityConsent));
-        if (isOnline) {
-          appDispatch(
-            userThunkActions.upsertUserConsents(childIndemnityConsent)
-          );
-        }
-      }
-    }
+
     if (
       formState.childRegistrationFormModel?.personalInformationAgreementAccepted
     ) {
@@ -348,33 +269,77 @@ export const ChildRegistration: React.FC = () => {
     //   ).unwrap();
     // }
 
-    if (formState.childRegistrationFormModel?.registrationForm) {
-      const fileName = 'F4-registrationform.png';
-      const documentStatusId = await getWorkflowStatusIdByEnum(
-        WorkflowStatusEnum.DocumentPendingVerification
-      );
-      const typeId = await getDocumentTypeIdByEnum(
-        FileTypeEnum.ChildRegistrationForm
-      );
-
-      const documentInputModel = childRegisterUtils.mapDocumentDto(
-        userId,
-        fileName,
-        documentStatusId ?? '',
-        typeId ?? '',
-        FileTypeEnum.ChildRegistrationForm,
-        formState.childRegistrationFormModel?.registrationForm,
-        user
-      );
-      appDispatch(documentActions.createDocument(documentInputModel));
-      await appDispatch(
-        documentThunkActions.createDocument(documentInputModel)
-      ).unwrap();
-    }
-
     setCurrentChildInputModel(childInputModel);
   };
 
+  const onFinished = () => {
+    if (isFromPqa) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <CaregiverMultipleChildrenModal
+              title="Child registered!"
+              onSubmit={() => {
+                history.push(ROUTES.CHILD_REGISTRATION_LANDING);
+                onClose();
+              }}
+              onCancel={() => {
+                isPractitioner
+                  ? history.push(ROUTES.CLASSROOM.ROOT, {
+                      activeTabIndex: TabsItems.CLASSES,
+                    } as ClassDashboardRouteState)
+                  : history.push(ROUTES.COACH.PRACTITIONERS);
+                onClose();
+              }}
+            />
+          );
+        },
+      });
+    } else {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <ActionModal
+              customIcon={<Emoji3 className="mb-2" />}
+              title={
+                existingChild?.user
+                  ? `${existingChild?.user.firstName}'s registration is complete, great job!`
+                  : `This child's registration is complete, great job!`
+              }
+              detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
+              actionButtons={[
+                {
+                  colour: 'primary',
+                  text: 'Close',
+                  textColour: 'primary',
+                  type: 'outlined',
+                  leadingIcon: 'XCircleIcon',
+                  onClick: () => {
+                    if (isTrainee) {
+                      history.push(ROUTES.CLASSROOM.ROOT, {
+                        activeTabIndex: TabsItems.ATTENDANCE,
+                      });
+                    } else {
+                      history.push(ROUTES.CLASSROOM.ROOT, {
+                        activeTabIndex: TabsItemForPrincipal.ATTENDANCE,
+                      });
+                    }
+                    onClose();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  };
+
+  // TODO: Remove this when onSaveChildAndCaregiver is done
   const saveCaregiver = async (
     caregiverReferencePanelForm: CareGiverReferencePanelFormModel
   ) => {
@@ -433,72 +398,7 @@ export const ChildRegistration: React.FC = () => {
     }
 
     setIsLoading(false);
-    if (isFromPqa) {
-      return dialog({
-        position: DialogPosition.Middle,
-        blocking: true,
-        render: (onClose) => {
-          return (
-            <CaregiverMultipleChildrenModal
-              title="Child registered!"
-              onSubmit={() => {
-                history.push(ROUTES.CHILD_REGISTRATION_LANDING);
-                onClose();
-              }}
-              onCancel={() => {
-                isPractitioner
-                  ? history.push(ROUTES.CLASSROOM.ROOT, {
-                      activeTabIndex: TabsItems.CLASSES,
-                    } as ClassDashboardRouteState)
-                  : history.push(ROUTES.COACH.PRACTITIONERS);
-                onClose();
-              }}
-            />
-          );
-        },
-      });
-    } else {
-      return dialog({
-        position: DialogPosition.Middle,
-        blocking: true,
-        render: (onClose) => {
-          return (
-            <ActionModal
-              customIcon={<Emoji3 className="mb-2" />}
-              title={
-                childDetails
-                  ? `${childDetails?.firstName}'s registration is complete, great job!`
-                  : existingChild?.user
-                  ? `${existingChild?.user.firstName}'s registration is complete, great job!`
-                  : `This child's registration is complete, great job!`
-              }
-              detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
-              actionButtons={[
-                {
-                  colour: 'primary',
-                  text: 'Close',
-                  textColour: 'primary',
-                  type: 'outlined',
-                  leadingIcon: 'XCircleIcon',
-                  onClick: () => {
-                    if (isTrainee) {
-                      history.push(ROUTES.CLASSROOM.ROOT, {
-                        activeTabIndex: TabsItems.ATTENDANCE,
-                      });
-                    } else {
-                      history.push(ROUTES.CLASSROOM.ROOT, {
-                        activeTabIndex: TabsItemForPrincipal.ATTENDANCE,
-                      });
-                    }
-                    onClose();
-                  },
-                },
-              ]}
-            />
-          );
-        },
-      });
-    }
+    onFinished();
   };
 
   useEffect(() => {
@@ -524,7 +424,8 @@ export const ChildRegistration: React.FC = () => {
   }, [sendGrants]);
 
   const updateChild = async (child: ChildDto) => {
-    if (!child && caregiverData) return;
+    if (!child) return;
+
     appDispatch(childrenActions.updateChild(child));
     await appDispatch(
       childrenThunkActions.updateChild({ child: child, id: String(child.id) })
@@ -532,39 +433,139 @@ export const ChildRegistration: React.FC = () => {
     setSendGrants(true);
   };
 
-  const saveChildBirthCertificate = async (
-    birthCertificateForm: ChildBirthCertificateFormModel
+  const onSaveChildAndCaregiver = async (
+    childEmergencyContactFormModel: ChildEmergencyContactFormModel
   ) => {
-    if (!birthCertificateForm?.birthCertificateImage) return;
-
-    const fileName = `${birthCertificateForm.birthCertificateType}.png`;
-
-    const documentStatusId = await getWorkflowStatusIdByEnum(
-      WorkflowStatusEnum.DocumentPendingVerification
+    const userInputModel = childRegisterUtils.mapChildUserDto(
+      formState.childInformationFormModel!,
+      formState.childExtraInformationFormModel,
+      existingChild?.user
     );
 
-    const fileType =
-      birthCertificateForm?.birthCertificateType === 'clinicCard'
-        ? FileTypeEnum.ChildClinicCard
-        : FileTypeEnum.ChildBirthCertificate;
+    const userId = userInputModel.id || '';
 
-    const typeId = await getDocumentTypeIdByEnum(fileType);
-
-    const documentInputModel = childRegisterUtils.mapDocumentDto(
-      existingChild?.user?.id || '',
-      fileName,
-      documentStatusId || '',
-      typeId || '',
-      fileType,
-      birthCertificateForm.birthCertificateImage,
-      user
+    const childStatusId = getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.ChildActive
     );
 
-    appDispatch(documentActions.createDocument(documentInputModel));
-    await appDispatch(
-      documentThunkActions.createDocument(documentInputModel)
-    ).unwrap();
+    const childInputModel = childRegisterUtils.mapChildDto(
+      userId,
+      childStatusId!,
+      formState.childHealthInformationFormModel,
+      formState.childExtraInformationFormModel,
+      existingChild
+    );
+
+    const caregiverSiteAddressDto = childRegisterUtils.mapSiteAddressDto(
+      formState.careGiverChildInformationFormModel,
+      existingCaregiver?.siteAddress
+    );
+
+    const caregiverDto = childRegisterUtils.mapCaregiverDto(
+      formState.careGiverInformationFormModel,
+      caregiverSiteAddressDto,
+      formState.careGiverExtraInformationFormModel,
+      childEmergencyContactFormModel,
+      {} as CareGiverReferencePanelFormModel,
+      formState.careGiverContributionFormModel,
+      existingCaregiver
+    );
+
+    const child: ChildDto = {
+      ...childInputModel,
+      isActive: true,
+      user: {
+        ...userInputModel,
+        isActive: true,
+      },
+      caregiverId: caregiverDto.id,
+      caregiver: caregiverDto,
+      insertedBy: user?.fullName,
+    };
+
+    updateChild(child);
+
+    if (formState.childRegistrationFormModel?.childPhotoConsentAccepted) {
+      const photoPermissionConsent = consentList?.find(
+        (x) => x.name === ContentConsentTypeEnum.PhotoPermissions
+      );
+
+      if (photoPermissionConsent) {
+        const childPhotoConsent = mapUserConsentDto(
+          user?.id ?? '',
+          userId,
+          photoPermissionConsent,
+          existingPhotoConsent?.id
+        );
+        // TODO: check if the sync is correct
+        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        if (isOnline) {
+          appDispatch(userThunkActions.upsertUserConsents(childPhotoConsent));
+        }
+      }
+    }
+
+    if (
+      formState.childRegistrationFormModel?.personalInformationAgreementAccepted
+    ) {
+      const personalConsent = consentList?.find(
+        (x) => x.name === ContentConsentTypeEnum.PersonalInformationAgreement
+      );
+      if (personalConsent) {
+        const childPersonalConsent = mapUserConsentDto(
+          user?.id ?? '',
+          userId,
+          personalConsent,
+          existingInformation?.id
+        );
+
+        // TODO: check if the sync is correct
+        appDispatch(userActions.createUserConsent(childPersonalConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childPersonalConsent)
+          );
+        }
+      }
+    }
+
+    onFinished();
   };
+
+  // INFO: Not included in WL
+  // const saveChildBirthCertificate = async (
+  //   birthCertificateForm: ChildBirthCertificateFormModel
+  // ) => {
+  //   if (!birthCertificateForm?.birthCertificateImage) return;
+
+  //   const fileName = `${birthCertificateForm.birthCertificateType}.png`;
+
+  //   const documentStatusId = await getWorkflowStatusIdByEnum(
+  //     WorkflowStatusEnum.DocumentPendingVerification
+  //   );
+
+  //   const fileType =
+  //     birthCertificateForm?.birthCertificateType === 'clinicCard'
+  //       ? FileTypeEnum.ChildClinicCard
+  //       : FileTypeEnum.ChildBirthCertificate;
+
+  //   const typeId = await getDocumentTypeIdByEnum(fileType);
+
+  //   const documentInputModel = childRegisterUtils.mapDocumentDto(
+  //     existingChild?.user?.id || '',
+  //     fileName,
+  //     documentStatusId || '',
+  //     typeId || '',
+  //     fileType,
+  //     birthCertificateForm.birthCertificateImage,
+  //     user
+  //   );
+
+  //   appDispatch(documentActions.createDocument(documentInputModel));
+  //   await appDispatch(
+  //     documentThunkActions.createDocument(documentInputModel)
+  //   ).unwrap();
+  // };
 
   const exitRegistrationPrompt = () => {
     setExitRegistrationPromptVisible(true);
@@ -595,7 +596,6 @@ export const ChildRegistration: React.FC = () => {
           firstname: existingChild?.user?.firstName || '',
           surname: existingChild?.user?.surname || '',
           childIdField: existingChild?.user?.idNumber || '',
-          otherReason: '',
           playgroupId: existingClassroomGroup?.id || '',
         },
       };
@@ -612,8 +612,7 @@ export const ChildRegistration: React.FC = () => {
           dobYear: 0,
           firstname: childDetails?.firstName || '',
           surname: childDetails?.surname || '',
-          otherReason: '',
-          playgroupId: childDetails?.playgroupId || '',
+          playgroupId: existingClassroomGroup?.id || '',
         },
       });
     }
@@ -641,7 +640,6 @@ export const ChildRegistration: React.FC = () => {
           >
             <ChildRegistrationForm
               childRegisterForm={formState.childRegistrationFormModel}
-              variation="practitioner"
               onSubmit={(form) => {
                 onStepChange(ChildRegistrationSteps.childInformationForm, {
                   formProp: 'childRegistrationFormModel',
@@ -691,15 +689,19 @@ export const ChildRegistration: React.FC = () => {
               childName={formState.childInformationFormModel?.firstname ?? ''}
               childHealthInformation={formState.childHealthInformationFormModel}
               onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.childBirthCertificateForm, {
-                  formProp: 'childHealthInformationFormModel',
-                  value: form,
-                });
-                saveChild(form);
+                onStepChange(
+                  ChildRegistrationSteps.childCareGiverInformationForm,
+                  {
+                    formProp: 'childHealthInformationFormModel',
+                    value: form,
+                  }
+                );
+                // saveChild(form);
               }}
             />
           </Step>
-          <Step
+          {/* Not included in WL */}
+          {/* <Step
             stepKey={ChildRegistrationSteps.childBirthCertificateForm}
             viewBannerWapper
           >
@@ -719,7 +721,7 @@ export const ChildRegistration: React.FC = () => {
                 saveChildBirthCertificate(form);
               }}
             />
-          </Step>
+          </Step> */}
 
           <Step
             stepKey={ChildRegistrationSteps.childCareGiverInformationForm}
@@ -765,22 +767,22 @@ export const ChildRegistration: React.FC = () => {
             viewBannerWapper
           >
             <CareGiverExtraInformationForm
+              caregiverFirstName={
+                formState.careGiverInformationFormModel?.firstname
+              }
               careGiverExtraInformation={
                 formState.careGiverExtraInformationFormModel
               }
               onSubmit={(form) => {
-                onStepChange(
-                  ChildRegistrationSteps.childCareGiverContributionForm,
-                  {
-                    formProp: 'careGiverExtraInformationFormModel',
-                    value: form,
-                  }
-                );
+                onStepChange(ChildRegistrationSteps.childEmergencyContactForm, {
+                  formProp: 'careGiverExtraInformationFormModel',
+                  value: form,
+                });
               }}
             />
           </Step>
 
-          <Step
+          {/* <Step
             stepKey={ChildRegistrationSteps.childCareGiverContributionForm}
             viewBannerWapper
           >
@@ -796,7 +798,7 @@ export const ChildRegistration: React.FC = () => {
                 });
               }}
             />
-          </Step>
+          </Step> */}
 
           <Step
             stepKey={ChildRegistrationSteps.childEmergencyContactForm}
@@ -809,17 +811,11 @@ export const ChildRegistration: React.FC = () => {
               childName={formState.childInformationFormModel?.firstname ?? ''}
               variation="practitioner"
               onSubmit={(form) => {
-                onStepChange(
-                  ChildRegistrationSteps.careGiverReferencePanelForm,
-                  {
-                    formProp: 'childEmergencyContactFormModel',
-                    value: form,
-                  }
-                );
+                onSaveChildAndCaregiver(form);
               }}
             />
           </Step>
-
+          {/* 
           <Step
             stepKey={ChildRegistrationSteps.careGiverReferencePanelForm}
             viewBannerWapper
@@ -834,7 +830,7 @@ export const ChildRegistration: React.FC = () => {
               }}
               isLoading={isLoading}
             />
-          </Step>
+          </Step> */}
         </StepViewer>
       </IonContent>
       <Dialog

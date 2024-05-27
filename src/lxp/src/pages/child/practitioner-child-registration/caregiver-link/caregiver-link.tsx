@@ -239,6 +239,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     childInputModel = {
       ...childInputModel,
       id: childId,
+      user: userInputModel,
     };
 
     // Add values to redux. This could potentially be a refresh for child/classroomGroup data
