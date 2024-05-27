@@ -135,9 +135,9 @@ export const CoachProfile: React.FC = () => {
                     },
                     {
                       text: 'No, cancel',
-                      textColour: 'white',
-                      colour: 'primary',
-                      type: 'filled',
+                      textColour: 'primary',
+                      colour: 'white',
+                      type: 'outlined',
                       onClick: () => onClose && onClose(),
                       leadingIcon: 'XCircleIcon',
                     },
