@@ -459,7 +459,7 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            await _notificationManager.SendOpenAccessAuthenticationCodeAsync(user, token);
+            await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
 
             return new OkObjectResult(token);
         }
