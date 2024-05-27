@@ -94,7 +94,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           registerOpenAccessUserInput
         );
         if (userCreated) {
-          console.log({ userCreated });
           setIsLoading(false);
           setOpenVerifyPhoneNumber(true);
           setNotification({

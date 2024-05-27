@@ -67,7 +67,6 @@ export const VerifyPhoneNumber: React.FC<VerifyPhoneNumberProps> = ({
       });
       history.push(ROUTES.LOGIN);
     }
-    console.log({ confirmAuthToken });
   };
 
   const resendOAAuthCode = async () => {
@@ -75,8 +74,6 @@ export const VerifyPhoneNumber: React.FC<VerifyPhoneNumberProps> = ({
       username,
     };
     const resendAuthCode = await new AuthService().SendOAAuthCode(body);
-
-    console.log({ resendAuthCode });
   };
 
   return (

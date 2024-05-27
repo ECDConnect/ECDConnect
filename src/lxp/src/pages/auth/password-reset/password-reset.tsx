@@ -225,31 +225,31 @@ export const PasswordReset: React.FC = () => {
                   ></Typography>
                 </Button>
               </div>
+              <div className={styles.getHelpContainer}>
+                {renderIcon('QuestionMarkCircleIcon', styles.buttonIcon)}
+                <Typography
+                  type="unspecified"
+                  fontSize="14"
+                  className="mr-2"
+                  color="textDark"
+                  text={'Not able to click the link?'}
+                ></Typography>
+                <Button
+                  type="filled"
+                  color="secondaryAccent2"
+                  background="transparent"
+                  size="small"
+                  onClick={() => setOpenHelp(true)}
+                >
+                  <Typography
+                    type="help"
+                    color="secondary"
+                    text={'Get help'}
+                  ></Typography>
+                </Button>
+              </div>
             </div>
           )}
-          <div className={styles.getHelpContainer}>
-            {renderIcon('QuestionMarkCircleIcon', styles.buttonIcon)}
-            <Typography
-              type="unspecified"
-              fontSize="14"
-              className="mr-2"
-              color="textDark"
-              text={'Not able to click the link?'}
-            ></Typography>
-            <Button
-              type="filled"
-              color="secondaryAccent2"
-              background="transparent"
-              size="small"
-              onClick={() => setOpenHelp(true)}
-            >
-              <Typography
-                type="help"
-                color="secondary"
-                text={'Get help'}
-              ></Typography>
-            </Button>
-          </div>
         </div>
       </BannerWrapper>
 

@@ -134,7 +134,7 @@ export const OASignUpOrLogin: React.FC = () => {
             type="outlined"
             color="quatenary"
             disabled={!isOnline}
-            onClick={() => history.push('./login')}
+            onClick={() => history.push('./oa-login')}
           >
             <Typography
               type="help"

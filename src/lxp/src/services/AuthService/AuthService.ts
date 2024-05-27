@@ -208,7 +208,7 @@ class AuthService {
 
   async VerifyAuthCode(baseEndPoint: string, body: AuthCodeModel) {
     return await api(baseEndPoint).post(
-      APIs.verifyOAAuthCode,
+      APIs.verifyOAWLAuthCode,
       JSON.stringify(body),
       {
         headers: headers,
@@ -219,7 +219,7 @@ class AuthService {
   async SendOAAuthCode(body: ResendAuthCodeModel): Promise<boolean> {
     const BASE_URL = Config.authApi;
     const response = await api(BASE_URL).post(
-      APIs.sendOAAuthCode,
+      APIs.sendOAWLAuthCode,
       JSON.stringify({
         body,
       })
