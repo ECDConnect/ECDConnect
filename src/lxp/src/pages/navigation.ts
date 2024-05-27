@@ -15,7 +15,6 @@ export const NavigationNames = {
     Resources: 'Resources',
     Practitioners: 'Practitioners',
     Programme: 'Programme',
-    Children: 'Children',
   },
   Business: {
     Business: 'Business',

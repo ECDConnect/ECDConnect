@@ -607,7 +607,7 @@ export const Dashboard: React.FC = () => {
           ]
         : [
             {
-              name: NavigationNames.Classroom.Children,
+              name: NavigationNames.Classroom.Classroom,
               href: ROUTES.CLASSROOM.ROOT,
               params: { activeTabIndex: TabsItems.CLASSES },
               current: false,

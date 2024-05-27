@@ -157,7 +157,16 @@ export const ClassDashboard: React.FC = () => {
       child: <AttendanceComponent />,
     },
     {
-      title: NavigationNames.Classroom.Programme,
+      title: NavigationNames.Classroom.Progress,
+      initActive: false,
+      child: (
+        <div className={'p-4'}>
+          <Typography type={'body'} color="textDark" text={'Coming soon'} />
+        </div>
+      ),
+    },
+    {
+      title: NavigationNames.Classroom.Activities,
       initActive: false,
       child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
