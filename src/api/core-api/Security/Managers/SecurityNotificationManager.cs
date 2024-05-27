@@ -41,12 +41,12 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 .SendMessageAsync();
         }
 
-        public async Task SendOpenAccessAuthenticationCodeAsync(ApplicationUser user, string otp)
+        public async Task SendOAWLAuthenticationCodeAsync(ApplicationUser user, string otp)
         {
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var notificationProvider = _notificationProviderFactory.Create(user);
 
-            await notificationProvider.SetMessageTemplate(TemplateTypeEnum.OAAuthCode)
+            await notificationProvider.SetMessageTemplate(TemplateTypeEnum.OAWLAuthCode)
                 .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, otp)
                 .AddOrUpdateFieldReplacement(MessageTemplateConstants.OTPCode, otp)
                 .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)

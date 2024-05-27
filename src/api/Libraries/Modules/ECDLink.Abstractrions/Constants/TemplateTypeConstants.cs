@@ -5,7 +5,7 @@ namespace ECDLink.Abstractrions.Constants
         //sms/email
         public const string ForgotPassword = "forgot-password";
         public const string AuthCode = "auth-code";
-        public const string OAAuthCode = "oa-auth-code";
+        public const string OAWLAuthCode = "oa-wl-auth-code";
         public const string Invitation = "invitation";
         public const string ThreeWeekNotLoggedOn = "three-week-notification";
         public const string FourWeekNotLoggedOn = "four-week-notification";

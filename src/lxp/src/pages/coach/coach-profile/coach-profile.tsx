@@ -22,6 +22,7 @@ import {
 } from '@ecdlink/ui';
 import { syncThunkActions } from '@/store/sync';
 import { settingActions } from '@/store/settings';
+import { NavigationNames } from '@/pages/navigation';
 
 export const CoachProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
@@ -92,7 +93,6 @@ export const CoachProfile: React.FC = () => {
         subTitle: 'Password',
         subTitleStyle,
         menuIcon: 'ShieldCheckIcon',
-        menuIconClassName: 'text-white bg-primary',
         iconBackgroundColor: 'tertiary',
         showIcon: true,
         iconColor: 'white',
@@ -101,9 +101,9 @@ export const CoachProfile: React.FC = () => {
         },
       },
       {
-        title: 'Logout',
+        title: NavigationNames.Logout,
         titleStyle,
-        subTitle: 'Logout',
+        subTitle: 'Sign out of the app',
         subTitleStyle,
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
@@ -135,9 +135,9 @@ export const CoachProfile: React.FC = () => {
                     },
                     {
                       text: 'No, cancel',
-                      textColour: 'white',
-                      colour: 'primary',
-                      type: 'filled',
+                      textColour: 'primary',
+                      colour: 'white',
+                      type: 'outlined',
                       onClick: () => onClose && onClose(),
                       leadingIcon: 'XCircleIcon',
                     },
