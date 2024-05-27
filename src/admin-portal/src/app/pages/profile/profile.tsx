@@ -365,6 +365,19 @@ export function Profile(props: any) {
                     />
 
                     <div className="flex w-full flex-col">
+                      <div className="my-2 flex items-center gap-2">
+                        <Typography
+                          type="body"
+                          color="textDark"
+                          weight="bold"
+                          text={'Email address:'}
+                        />
+                        <Typography
+                          type="body"
+                          color="textDark"
+                          text={user?.user?.email}
+                        />
+                      </div>
                       <div>
                         <FormField
                           label={'First Name *'}
