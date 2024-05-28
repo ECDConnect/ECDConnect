@@ -50,7 +50,7 @@ export const CoachProgrammeInformation: React.FC = () => {
   );
   // THIS PROBABLY NEEDS TO BE UPDATED
   const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.principal.userId === practitionerId
+    (item) => item?.principal?.userId === practitionerId
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerClassroomGroups = practitionerClassroom

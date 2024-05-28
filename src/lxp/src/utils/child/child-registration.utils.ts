@@ -340,8 +340,7 @@ export const mapAddChildTokenModelInput = (
     isSouthAfricanCitizen: true,
     verifiedByHomeAffairs: false,
     userId: userId,
-    // TODO: remove raceId from backend
-    raceId: newGuid(),
+    raceId: null,
     languageId:
       childExtraInformationForm?.homeLanguages &&
       childExtraInformationForm.homeLanguages[0]

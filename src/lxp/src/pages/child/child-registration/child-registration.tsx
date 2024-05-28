@@ -297,41 +297,6 @@ export const ChildRegistration: React.FC = () => {
     onFinished();
   };
 
-  // INFO: Not included in WL
-  // const saveChildBirthCertificate = async (
-  //   birthCertificateForm: ChildBirthCertificateFormModel
-  // ) => {
-  //   if (!birthCertificateForm?.birthCertificateImage) return;
-
-  //   const fileName = `${birthCertificateForm.birthCertificateType}.png`;
-
-  //   const documentStatusId = await getWorkflowStatusIdByEnum(
-  //     WorkflowStatusEnum.DocumentPendingVerification
-  //   );
-
-  //   const fileType =
-  //     birthCertificateForm?.birthCertificateType === 'clinicCard'
-  //       ? FileTypeEnum.ChildClinicCard
-  //       : FileTypeEnum.ChildBirthCertificate;
-
-  //   const typeId = await getDocumentTypeIdByEnum(fileType);
-
-  //   const documentInputModel = childRegisterUtils.mapDocumentDto(
-  //     existingChild?.user?.id || '',
-  //     fileName,
-  //     documentStatusId || '',
-  //     typeId || '',
-  //     fileType,
-  //     birthCertificateForm.birthCertificateImage,
-  //     user
-  //   );
-
-  //   appDispatch(documentActions.createDocument(documentInputModel));
-  //   await appDispatch(
-  //     documentThunkActions.createDocument(documentInputModel)
-  //   ).unwrap();
-  // };
-
   const exitRegistrationPrompt = () => {
     setExitRegistrationPromptVisible(true);
   };
@@ -466,29 +431,6 @@ export const ChildRegistration: React.FC = () => {
               }}
             />
           </Step>
-          {/* Not included in WL */}
-          {/* <Step
-            stepKey={ChildRegistrationSteps.childBirthCertificateForm}
-            viewBannerWapper
-          >
-            <ChildBirthCertificateForm
-              childBirthCertificateForm={
-                formState.childBirthCertificateFormModel
-              }
-              childInformation={formState.childInformationFormModel}
-              onSubmit={(form) => {
-                onStepChange(
-                  ChildRegistrationSteps.childCareGiverInformationForm,
-                  {
-                    formProp: 'childBirthCertificateFormModel',
-                    value: form,
-                  }
-                );
-                saveChildBirthCertificate(form);
-              }}
-            />
-          </Step> */}
-
           <Step
             stepKey={ChildRegistrationSteps.childCareGiverInformationForm}
             viewBannerWapper
@@ -547,25 +489,6 @@ export const ChildRegistration: React.FC = () => {
               }}
             />
           </Step>
-
-          {/* <Step
-            stepKey={ChildRegistrationSteps.childCareGiverContributionForm}
-            viewBannerWapper
-          >
-            <CareGiverContributionForm
-              careGiverContributionForm={
-                formState.careGiverContributionFormModel
-              }
-              variation="practitioner"
-              onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.childEmergencyContactForm, {
-                  formProp: 'careGiverContributionFormModel',
-                  value: form,
-                });
-              }}
-            />
-          </Step> */}
-
           <Step
             stepKey={ChildRegistrationSteps.childEmergencyContactForm}
             viewBannerWapper
@@ -581,22 +504,6 @@ export const ChildRegistration: React.FC = () => {
               }}
             />
           </Step>
-          {/* 
-          <Step
-            stepKey={ChildRegistrationSteps.careGiverReferencePanelForm}
-            viewBannerWapper
-          >
-            <CareGiverReferencePanelForm
-              variation="practitioner"
-              careGiverReferencePanelForm={
-                formState.careGiverReferencePanelFormModel
-              }
-              onSubmit={(form) => {
-                saveCaregiver(form);
-              }}
-              isLoading={isLoading}
-            />
-          </Step> */}
         </StepViewer>
       </IonContent>
       <Dialog

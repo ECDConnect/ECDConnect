@@ -1,7 +1,6 @@
 import { ChildDto, Config } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
-  AddChildLearnerTokenModelInput,
   AddChildRegistrationTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
@@ -308,7 +307,6 @@ class ChildService {
   async openAccessAddChild(
     token: string,
     caregiver: AddChildCaregiverTokenModelInput,
-    learner: AddChildLearnerTokenModelInput,
     siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>,
     child: AddChildTokenModelInput,
     registration?: AddChildRegistrationTokenModelInput,
@@ -324,18 +322,16 @@ class ChildService {
       query: `
         mutation openAccessAddChild($token: String, 
           $caregiver: AddChildCaregiverTokenModelInput, 
-          $learner: AddChildLearnerTokenModelInput, 
           $siteAddress: AddChildSiteAddressTokenModelInput, 
           $child: AddChildTokenModelInput,
           $registration: AddChildRegistrationTokenModelInput,
           $consent: AddChildUserConsentTokenModelInput) {
-            openAccessAddChild(token: $token,caregiver: $caregiver, learner: $learner, siteAddress: $siteAddress, child: $child, registration: $registration, consent: $consent)
+            openAccessAddChild(token: $token,caregiver: $caregiver, siteAddress: $siteAddress, child: $child, registration: $registration, consent: $consent)
         }
       `,
       variables: {
         token: token,
         caregiver: caregiver,
-        learner: learner,
         siteAddress: siteAddress,
         child: child,
         registration: registration,

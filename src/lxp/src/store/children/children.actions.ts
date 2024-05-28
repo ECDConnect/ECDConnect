@@ -387,27 +387,18 @@ export type TokenAddChildRequest = {
 
 export const openAccessAddChild = createAsyncThunk<
   string,
-  TokenAddChildRequest,
+  Omit<TokenAddChildRequest, 'learner'>,
   ThunkApiType<RootState>
 >(
   ChildrenActions.OPEN_ACCESS_ADD_CHILD,
   async (
-    {
-      token,
-      caregiver,
-      learner,
-      siteAddress,
-      child,
-      registration,
-      userConsent,
-    },
+    { token, caregiver, siteAddress, child, registration, userConsent },
     { rejectWithValue }
   ) => {
     try {
       const result = await new ChildService('').openAccessAddChild(
         token,
         caregiver,
-        learner,
         siteAddress,
         child,
         registration,
