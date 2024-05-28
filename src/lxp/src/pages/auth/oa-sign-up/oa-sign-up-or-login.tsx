@@ -9,6 +9,7 @@ import {
   Divider,
   HeaderCard,
   HeaderSlide,
+  HeaderSlider,
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
@@ -23,10 +24,10 @@ import { UserService } from '@/services/UserService';
 import { useTenant } from '@/hooks/useTenant';
 import { OAAgreements } from './components/oa-agreements/oa-agreements';
 import ROUTES from '@/routes/routes';
+import Banner1 from '../../../assets/banner-ss.jpg';
+import Banner2 from '../../../assets/banner2-ss.jpeg';
 
 const token = new URLSearchParams(window.location.search).get('token');
-
-let headerSlide: HeaderSlide;
 
 export const OASignUpOrLogin: React.FC = () => {
   const tenant = useTenant();
@@ -39,27 +40,20 @@ export const OASignUpOrLogin: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
   const isWhitelabel = tenant?.isWhiteLabel;
-  const orgName = tenant?.tenant?.organisationName;
+  const applicationName = tenant?.tenant?.applicationName;
 
-  if (userDetails) {
-    // coach
-    if (userDetails.roleName === 'Coach') {
-      headerSlide = {
-        status: ChipStatus.Available,
-        title: 'Manage practitioners',
-        text: 'View practitioner details, see classroom information and fill in important forms.',
-        image: '../../../assets/banner-coach.jpg',
-      };
-    }
-  } else {
-    // practitioner & principal
-    headerSlide = {
-      status: ChipStatus.Available,
+  const headerSlide: HeaderSlide[] = [
+    {
       title: 'Manage your classroom',
       text: 'Take attendance, track progress, and plan your programme',
-      image: '../../../assets/banner-ss.jpg',
-    };
-  }
+      image: Banner1,
+    },
+    {
+      title: 'Grow your community',
+      text: 'Meet other practitioners in your area',
+      image: Banner2,
+    },
+  ];
 
   useEffect(() => {
     async function init() {
@@ -104,17 +98,18 @@ export const OASignUpOrLogin: React.FC = () => {
         renderOverflow={false}
         onBack={() => history?.push(ROUTES.ROOT)}
       >
-        {headerSlide && !isWhitelabel && (
-          <HeaderCard className={'mt-4'} slide={headerSlide} />
-        )}
+        <HeaderSlider
+          className="h-360 mx-4"
+          slides={headerSlide}
+          autoPlay
+          infiniteLoop
+          transitionTime={500}
+        />
 
-        {!isWhitelabel && (
-          <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
-        )}
-        <div style={{ maxWidth: '442px' }} className={styles.formStyle}>
+        <div style={{ maxWidth: '442px' }} className={'w-full px-2'}>
           <Button
             id="gtm-register"
-            className={styles.formButton}
+            className={'mb-4 w-full'}
             type="filled"
             color="quatenary"
             disabled={!isOnline}
@@ -124,13 +119,13 @@ export const OASignUpOrLogin: React.FC = () => {
           </Button>
 
           <Divider
-            title={`Already have a ${orgName} account?`}
+            title={`Already have a ${applicationName} account?`}
             dividerType={'solid'}
-            className={'mt-2 mb-2'}
+            className="py-2"
           />
 
           <Button
-            className={styles.formButton}
+            className={'mt-6 mb-12 w-full'}
             type="outlined"
             color="quatenary"
             disabled={!isOnline}
