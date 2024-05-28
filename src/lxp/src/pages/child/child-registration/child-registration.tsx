@@ -237,9 +237,7 @@ export const ChildRegistration: React.FC = () => {
         ...userInputModel,
         isActive: true,
       },
-      caregiverId: caregiverDto.id,
       caregiver: caregiverDto,
-      insertedBy: user?.fullName,
     };
 
     updateChild(child);
