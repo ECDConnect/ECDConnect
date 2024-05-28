@@ -22,12 +22,11 @@ import { useHistory } from 'react-router';
 
 interface VerifyPhoneNumberProps {
   closeAction?: (item: boolean) => void;
-  userId?: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   username: string;
 }
 
-export const VerifyPhoneNumber: React.FC<VerifyPhoneNumberProps> = ({
+export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   closeAction,
   phoneNumber,
   username,
