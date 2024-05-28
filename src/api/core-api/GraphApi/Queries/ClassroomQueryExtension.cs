@@ -23,6 +23,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var classroom = classroomService.GetClassroomForUser(userId);
 
+            if (classroom == null)
+            {
+                return null;
+            }
+
             return new ClassroomModel()
             {
                 Id = classroom.Id,
