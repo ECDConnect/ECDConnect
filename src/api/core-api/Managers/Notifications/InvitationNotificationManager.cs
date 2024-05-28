@@ -47,12 +47,12 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
-            var invitationUrl = $"{_options.Value.AdminSignup}/{encodedToken}";
+            var invitationUrl = $"{_options.Value.AdminSignup}{encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
             string firstName = user.FirstName;
 
-            var notificationProvider = _notificationProviderFactory.Create(user);
+            var notificationProvider = _notificationProviderFactory.Create(user, MessageTypeConstants.EMAIL);
 
             await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.AdminPortalInvitation)
