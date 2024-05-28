@@ -63,10 +63,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid classgroupId)
         {
             var tenantId = TenantExecutionContext.Tenant.Id;
+            var userId = httpContext.HttpContext.GetUser().Id;
 
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
-            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: httpContext.HttpContext.GetUser().Id);
-            var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: userId);
+            var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: userId);
             var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
             var addedByUser = httpContext.HttpContext.GetUser();
 
@@ -86,7 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var child = new Child
             {
                 WorkflowStatusId = workflowStatus.Id,
-                InsertedBy = $"{addedByUser.FirstName} {addedByUser.Surname}",
+                InsertedBy = userId.ToString(),
                 TenantId = tenantId,
                 UserId = user.Id,
             };
@@ -225,13 +226,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     AddConsent(scope, consent, tokenModel);
                 }
 
-                // Add points for registering a child - Could also fetch by the inserting user
-                var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
-                if (practitioner != null)
-                {
-                    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
-                    await notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString());
-                }
+                // TODO - Points needs to be updated after GG changes
+                //// Add points for registering a child - Could also fetch by the inserting user
+                //var practitioner = practitionerRepo.GetAll().Where(x => childEntity.Hierarchy.StartsWith(x.Hierarchy)).FirstOrDefault();
+                //if (practitioner != null)
+                //{
+                //    AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
+                //    await notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString());
+                //}
 
                 await tokenManager.RetractTokensAsync(appUser);
 

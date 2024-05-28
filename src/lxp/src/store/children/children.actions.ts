@@ -1,7 +1,6 @@
 import { CaregiverDto, ChildDto, SiteAddressDto, UserDto } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
-  AddChildLearnerTokenModelInput,
   AddChildRegistrationTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
@@ -373,7 +372,6 @@ export const openAccessAddChildDetail = createAsyncThunk<
 export type TokenAddChildRequest = {
   token: string;
   caregiver: AddChildCaregiverTokenModelInput;
-  learner: AddChildLearnerTokenModelInput;
   siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>;
   child: AddChildTokenModelInput;
   registration?: AddChildRegistrationTokenModelInput;
@@ -414,7 +412,6 @@ export const openAccessAddChild = createAsyncThunk<
 const mapChildInput = (
   child: Partial<ChildDto>
 ): UpdateChildAndCaregiverInput => ({
-  ...child,
   id: child.id,
   languageId: child.languageId,
   allergies: child.allergies,
@@ -427,7 +424,6 @@ const mapChildInput = (
 });
 
 const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
-  ...childUser,
   id: childUser.id,
   isActive: childUser.isActive || false,
   isSouthAfricanCitizen: childUser.isSouthAfricanCitizen ?? false,
@@ -441,8 +437,6 @@ const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
     childUser.genderId && childUser.genderId.length > 0
       ? childUser.genderId
       : null,
-  raceId:
-    childUser.raceId && childUser.raceId.length > 0 ? childUser.raceId : null,
   firstName: childUser.firstName,
   surname: childUser.surname,
   contactPreference: childUser.contactPreference,
@@ -450,7 +444,6 @@ const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
 });
 
 const mapCaregiver = (x: Partial<CaregiverDto>): ChildCaregiverInput => ({
-  ...x,
   id: x.id,
   idNumber: x.idNumber,
   firstName: x.firstName,
@@ -468,6 +461,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): ChildCaregiverInput => ({
   joinReferencePanel: x.joinReferencePanel || false,
   contribution: x.contribution || false,
   isAllowedCustody: x.isAllowedCustody ?? false,
+  grantIds: x.grants,
 });
 
 const mapSiteAddress = (

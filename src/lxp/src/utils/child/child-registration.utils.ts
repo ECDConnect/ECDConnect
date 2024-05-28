@@ -175,6 +175,7 @@ export const mapSiteAddressDto = (
     insertedDate: new Date().toISOString(),
     name: '',
     addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
+    postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
   };
 };
 
