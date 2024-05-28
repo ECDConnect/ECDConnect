@@ -140,14 +140,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             [Service] IDocumentManagementService documentManagementService,
             string token,
-            // TODO - can we clean up the input???
             AddChildCaregiverTokenModel caregiver,
-            AddChildLearnerTokenModel learner, // TODO - remove, 
             AddChildSiteAddressTokenModel siteAddress,
             AddChildTokenModel child,
             AddChildRegistrationTokenModel registration,
             AddChildUserConsentTokenModel consent,
-            [Service] INotificationService _notificationService)
+            [Service] INotificationService notificationService)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -232,7 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (practitioner != null)
                 {
                     AddRegistrationPoints(pointsRepo, pointsLibraryRepo, practitioner.UserId.ToString(), practitioner.IsPrincipalOrAdmin());
-                    await _notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString());
+                    await notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString());
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);
@@ -365,55 +363,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 };
                 context.UserConsents.Add(consentPhoto);
                 context.SaveChanges();
-            }
-            if (consent.CommitmentAgreementAccepted == true)
-            {
-                UserConsent commitmentAgreement = new UserConsent()
-                {
-                    Id = Guid.NewGuid(),
-                    ConsentId = 173,
-                    ConsentType = "CommitmentAgreement",
-                    UserId = new Guid(consent.UserId),
-                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
-                    TenantId = _tenantId,
-                    IsActive = true,
-                    InsertedDate = DateTime.Now
-                };
-                context.UserConsents.Add(commitmentAgreement);
-                context.SaveChanges();
-            }
-            if (consent.ConsentAgreementAccepted == true)
-            {
-                UserConsent consentAgreement = new UserConsent()
-                {
-                    Id = Guid.NewGuid(),
-                    ConsentId = 172,
-                    ConsentType = "ConsentAgreement",
-                    UserId = new Guid(consent.UserId),
-                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
-                    TenantId = _tenantId,
-                    IsActive = true,
-                    InsertedDate = DateTime.Now
-                };
-                context.UserConsents.Add(consentAgreement);
-                context.SaveChanges();
-            }
-            if (consent.IndemnityAgreementAccepted == true)
-            {
-                UserConsent indemnityAgreement = new UserConsent()
-                {
-                    Id = Guid.NewGuid(),
-                    ConsentId = 174,
-                    ConsentType = "IndemnityAgreement",
-                    UserId = new Guid(consent.UserId),
-                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
-                    TenantId = _tenantId,
-                    IsActive = true,
-                    InsertedDate = DateTime.Now
-                };
-                context.UserConsents.Add(indemnityAgreement);
-                context.SaveChanges();
-            }
+            }            
             if (consent.PersonalInformationAgreementAccepted == true)
             {
                 UserConsent personalAgreement = new UserConsent()

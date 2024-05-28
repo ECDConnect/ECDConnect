@@ -40,16 +40,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string InsertedBy { get; set; }
     }
 
-    public class AddChildLearnerTokenModel
-    {
-        public Guid? attendanceReasonId { get; set; }
-
-        public string otherAttendanceReason { get; set; }
-    }
-
     public class AddChildSiteAddressTokenModel
     {
-        public Guid ProvinceId { get; set; }
+        public Guid? ProvinceId { get; set; }
 
         public string Name { get; set; }
 
@@ -112,10 +105,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public bool ChildPhotoConsentAccepted { get; set; }
 
         public bool PersonalInformationAgreementAccepted { get; set; }
-        public bool ConsentAgreementAccepted { get; set; }
-        public bool CommitmentAgreementAccepted { get; set; }
-        public bool IndemnityAgreementAccepted { get; set; }
-
     }
-
 }

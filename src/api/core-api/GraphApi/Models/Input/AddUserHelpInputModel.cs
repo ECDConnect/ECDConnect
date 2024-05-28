@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input
+namespace EcdLink.Api.CoreApi.GraphApi.Models.Input
 {
     public class AddUserHelpInputModel
     {
