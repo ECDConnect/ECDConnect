@@ -231,6 +231,19 @@ class AuthService {
 
     return true;
   }
+
+  async VerifyOaAuthCodeStatus(
+    baseEndPoint: string,
+    body: CheckUsernamePhoneNumberModel
+  ) {
+    return await api(baseEndPoint).post(
+      APIs.verifyOAWLAuthCodeStatus,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
 }
 
 export default AuthService;
