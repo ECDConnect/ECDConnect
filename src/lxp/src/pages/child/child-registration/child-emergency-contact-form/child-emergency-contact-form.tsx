@@ -34,10 +34,16 @@ export const ChildEmergencyContactForm: React.FC<
     boolean | undefined
   >(childEmergencyContactForm?.isAllowedCustody ?? undefined);
 
-  const { isLoading } = useThunkFetchCall(
+  const { isLoading: updatingChild } = useThunkFetchCall(
     'children',
     ChildrenActions.UPDATE_CHILD
   );
+  const { isLoading: isLoadingOpenAccess } = useThunkFetchCall(
+    'children',
+    ChildrenActions.OPEN_ACCESS_ADD_CHILD
+  );
+
+  const isLoading = updatingChild || isLoadingOpenAccess;
 
   const {
     getValues: getChildEmergencyContactFormValues,

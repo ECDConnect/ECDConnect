@@ -173,38 +173,37 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
     setOtherLoading(true);
-    await appDispatch(userThunkActions.getUser({})).unwrap();
-    await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
-    await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
-    await appDispatch(
-      classroomsThunkActions.getClassroomProgrammes({})
-    ).unwrap();
-    await appDispatch(childrenThunkActions.getChildren({})).unwrap();
-    await appDispatch(
-      attendanceThunkActions.getAttendance({
-        year: getYear(new Date()),
-        // TODO: get the last 3 months
-      })
-    ).unwrap();
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
-    await appDispatch(documentThunkActions.getDocuments({})).unwrap();
-    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
-    await appDispatch(
-      contentReportThunkActions.getChildProgressReportSummary(50)
-    ).unwrap();
-    await appDispatch(notesThunkActions.getNotes({})).unwrap();
-    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
-    await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(
-      calendarThunkActions.getCalendarEvents({
-        start: subMonths(
-          new Date(new Date().getFullYear(), new Date().getMonth(), 0),
-          1
-        ),
-      })
-    );
+    const promises = [
+      appDispatch(userThunkActions.getUser({})).unwrap(),
+      appDispatch(classroomsThunkActions.getClassroom({})).unwrap(),
+      appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap(),
+      appDispatch(classroomsThunkActions.getClassroomProgrammes({})).unwrap(),
+      appDispatch(childrenThunkActions.getChildren({})).unwrap(),
+      appDispatch(
+        attendanceThunkActions.getAttendance({
+          year: getYear(new Date()),
+          // TODO: get the last 3 months
+        })
+      ).unwrap(),
+      appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
+      appDispatch(documentThunkActions.getDocuments({})).unwrap(),
+      appDispatch(contentReportThunkActions.getDetailedProgressReports(50)),
+      appDispatch(
+        contentReportThunkActions.getChildProgressReportSummary(50)
+      ).unwrap(),
+      appDispatch(notesThunkActions.getNotes({})).unwrap(),
+      appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
+      appDispatch(userThunkActions.getUserConsents({})).unwrap(),
+      appDispatch(
+        calendarThunkActions.getCalendarEvents({
+          start: subMonths(
+            new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+            1
+          ),
+        })
+      ),
+    ];
+    await Promise.allSettled(promises);
     setOtherLoading(false);
   };
 

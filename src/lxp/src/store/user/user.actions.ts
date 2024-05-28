@@ -87,51 +87,48 @@ export const getUserConsents = createAsyncThunk<
 
 export const upsertUserConsents = createAsyncThunk<
   any,
-  // eslint-disable-next-line @typescript-eslint/ban-types
   UserConsentDto,
   ThunkApiType<RootState>
->(
-  'upsertUserConsents',
-  // eslint-disable-next-line no-empty-pattern
-  async (input, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      user: { userConsent },
-    } = getState();
+>('upsertUserConsents', async (input, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    user: { userConsent },
+  } = getState();
 
-    try {
-      if (userAuth?.auth_token && input.id) {
-        return await new UserService(userAuth?.auth_token).updateUserConsents(
-          input.id,
-          mapConsent(input)
-        );
-      }
-
-      let promises: Promise<boolean>[] = [];
-
-      if (userAuth?.auth_token && userConsent) {
-        promises = userConsent.map(async (x) => {
-          const input: UserConsentInput = {
-            Id: x.id,
-            ConsentId: x.consentId,
-            ConsentType: x.consentType,
-            CreatedUserId: x.createdUserId,
-            UserId: x.userId,
-            IsActive: true,
-          };
-
-          return await new UserService(userAuth?.auth_token).updateUserConsents(
-            x.id ?? '',
-            input
-          );
-        });
-      }
-      return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
+  try {
+    if (userAuth?.auth_token && input.id) {
+      return await new UserService(userAuth?.auth_token).updateUserConsents(
+        input.id,
+        mapConsent(input)
+      );
     }
+
+    const unsyncedConsent = userConsent?.filter((consent) => !consent.synced);
+
+    let promises: Promise<boolean>[] = [];
+
+    if (userAuth?.auth_token && !!unsyncedConsent?.length) {
+      promises = unsyncedConsent.map(async (x) => {
+        const input: UserConsentInput = {
+          Id: x.id,
+          ConsentId: x.consentId,
+          ConsentType: x.consentType,
+          CreatedUserId: x.createdUserId,
+          UserId: x.userId,
+          IsActive: true,
+        };
+
+        return await new UserService(userAuth?.auth_token).updateUserConsents(
+          x.id ?? '',
+          input
+        );
+      });
+    }
+    return Promise.all(promises);
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 export const resetUserPassword = createAsyncThunk<
   boolean,

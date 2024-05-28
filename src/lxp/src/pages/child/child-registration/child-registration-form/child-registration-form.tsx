@@ -24,6 +24,7 @@ const yesNoOptions = [
 ];
 
 export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
+  variation,
   onSubmit,
   childRegisterForm,
 }) => {
@@ -85,11 +86,13 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
   return (
     <div className={'flex h-full flex-1 flex-col overflow-scroll bg-white p-4'}>
       <Typography type="h1" color="primary" text="Agreements" />
-      <Typography
-        type="h4"
-        color="textMid"
-        text="Give the phone to the caregiver and ask them if they accept the agreements below"
-      />
+      {variation === 'practitioner' && (
+        <Typography
+          type="h4"
+          color="textMid"
+          text="Give the phone to the caregiver and ask them if they accept the agreements below"
+        />
+      )}
       <Divider dividerType="dashed" className="my-4" />
       <Typography
         type="h4"

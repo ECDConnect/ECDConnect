@@ -194,12 +194,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   return (
     <div className={'flex h-full flex-col bg-white p-4'}>
       <Typography type={'h1'} text={"Child's details"} color={'primary'} />
-      {variation === 'caregiver' && (
-        <CaregiverForm
-          childInformationFormRegister={childInformationFormRegister}
-        />
-      )}
-
       <FormInput<ChildInformationFormModel>
         label={'ID number'}
         className={'mt-4'}
@@ -271,25 +265,5 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         textColor="white"
       />
     </div>
-  );
-};
-
-const CaregiverForm: React.FC<any> = ({ childInformationFormRegister }) => {
-  return (
-    <>
-      <FormInput<ChildInformationFormModel>
-        label={'First name'}
-        register={childInformationFormRegister}
-        nameProp={'firstname'}
-        placeholder={'First name'}
-      />
-      <FormInput<ChildInformationFormModel>
-        label={'Surname'}
-        className={'mt-3'}
-        register={childInformationFormRegister}
-        nameProp={'surname'}
-        placeholder={'Surname/family name'}
-      />
-    </>
   );
 };
