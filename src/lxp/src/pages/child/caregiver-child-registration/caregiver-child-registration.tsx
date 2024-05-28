@@ -217,7 +217,7 @@ export const CaregiverChildRegistration: React.FC<
         token: caregiverAuthToken,
         caregiver: caregiverInput,
         child: childInputModel,
-        siteAddress: { ...siteAddress },
+        siteAddress: siteAddress,
         registration: registrationInputModel,
         userConsent: userConsentInputModel,
       })
