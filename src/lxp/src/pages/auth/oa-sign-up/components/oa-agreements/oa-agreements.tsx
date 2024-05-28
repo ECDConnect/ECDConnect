@@ -229,6 +229,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
           title={articleTitle}
           onClose={() => setPresentArticle(false)}
           isOpen={true}
+          isFromRegistration={true}
         />
       )}
     </BannerWrapper>
