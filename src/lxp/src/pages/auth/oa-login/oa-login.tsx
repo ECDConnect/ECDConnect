@@ -1,4 +1,4 @@
-import { useTheme, LoginRequestModel } from '@ecdlink/core';
+import { useTheme, LoginRequestModel, Config } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -31,6 +31,8 @@ import {
   initialOaLoginValues,
   oaLoginSchema,
 } from '@/schemas/auth/login/oa-login';
+import { AuthService } from '@/services/AuthService';
+import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -76,6 +78,7 @@ export const OaLogin: React.FC = () => {
   const userIdHash = CryptoJS.AES.encrypt(username, 'user id').toString();
   const userLocalxpiration = Date.now() + 3600000000;
   const currentUserId = JSON.parse(localStorage?.getItem('userIdHash')!);
+  const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
 
   const userIdHashDecrypted = useMemo(
     () => (currentUserId ? CryptoJS.AES.decrypt(currentUserId, 'user id') : ''),
@@ -115,6 +118,16 @@ export const OaLogin: React.FC = () => {
 
   const submitForm = async () => {
     setDisplayError(false);
+    const checkUserAuthCode = await new AuthService()
+      .VerifyOaAuthCodeStatus(Config.authApi, {
+        username: loginFormGetValues().username,
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        setOpenVerifyPhoneNumber(true);
+        return;
+      });
+
     if (isValid) {
       if (freeMemory > 300 || freeMemory === 0) {
         setIsLoading(true);
@@ -291,6 +304,18 @@ export const OaLogin: React.FC = () => {
             <Typography type="help" color="white" text={'Log in'}></Typography>
           </Button>
         </form>
+        {username && (
+          <Dialog
+            visible={openVerifyPhoneNumber}
+            position={DialogPosition.Full}
+            className="w-full"
+          >
+            <VerifyPhoneNumberAuthCode
+              closeAction={setOpenVerifyPhoneNumber}
+              username={username}
+            />
+          </Dialog>
+        )}
       </div>
     </BannerWrapper>
   );

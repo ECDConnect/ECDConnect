@@ -27,7 +27,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
-import { VerifyPhoneNumber } from '../verify-phone-number';
+import { VerifyPhoneNumberAuthCode } from '../verify-phone-number';
 
 interface CreateUserFormProps {
   closeAction?: (item: boolean) => void;
@@ -242,9 +242,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         position={DialogPosition.Full}
         className="w-full"
       >
-        <VerifyPhoneNumber
+        <VerifyPhoneNumberAuthCode
           closeAction={setOpenVerifyPhoneNumber}
-          userId={userId}
           phoneNumber={phoneNumber}
           username={username}
         />
