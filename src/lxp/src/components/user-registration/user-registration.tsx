@@ -52,7 +52,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
         />
         <div>
           <Button
-            className={'mt-3 w-full rounded-xl'}
+            className={'mt-10 w-full rounded-xl'}
             type="filled"
             color="infoMain"
             onClick={() => {}}
@@ -82,7 +82,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
           <Divider className="absolute w-6/12" />
         </div>
         <Button
-          className={'mt-3 w-full rounded-xl'}
+          className={'mt-2 w-full rounded-xl'}
           type="filled"
           color="quatenary"
           onClick={() => setOpencreateUser(true)}
