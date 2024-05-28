@@ -10,7 +10,7 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useTenant } from '@/hooks/useTenant';
-import { ContentConsentTypeEnum } from '@ecdlink/core';
+import { ContentConsentTypeEnum, useTheme } from '@ecdlink/core';
 import Article from '@/components/article/article';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -26,13 +26,14 @@ export const yesOrNoOptions = [
 
 export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
   const { isOnline } = useOnlineStatus();
+  const { theme } = useTheme();
   const history = useHistory();
   const tenant = useTenant();
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [articleTitle, setArticleTitle] = useState<string>();
-  const orgName = tenant?.tenant?.organisationName;
+  const applicationName = tenant?.tenant?.applicationName;
   const [termsAndConditions, setTermsAndConditions] = useState(false);
   const [termsAndConditionsError, setTermsAndConditionsError] = useState(false);
   const [permissionsAgreement, setPermissionAgreement] = useState(false);
@@ -82,7 +83,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
       onBack={() => closeAction && closeAction(false)}
       color="primary"
       className={'h-screen'}
-      title={orgName}
+      menuLogoUrl={theme?.images?.logoUrl}
       displayOffline={!isOnline}
     >
       <div className="p-4">
@@ -101,12 +102,12 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
                 ? 'border-quatenary bg-quatenaryBg border'
                 : 'bg-uiBg'
             } flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+            onClick={() => {
+              setTermsAndConditions((prevState) => !prevState);
+              setPermissionsErrorMessage('');
+            }}
           >
             <Checkbox
-              onCheckboxChange={() => {
-                setTermsAndConditions((prevState) => !prevState);
-                setPermissionsErrorMessage('');
-              }}
               checked={termsAndConditions}
               checkboxColor={
                 termsAndConditionsError ? 'errorDark' : 'primaryAccent2'
@@ -136,13 +137,17 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
           <div
             className={`${
               permissionsAgreementError && 'border-errorDark border'
+            } ${
+              permissionsAgreement
+                ? 'border-quatenary bg-quatenaryBg border'
+                : 'bg-uiBg'
             } bg-uiBg flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+            onClick={() => {
+              setPermissionAgreement((prevState) => !prevState);
+              setPermissionsErrorMessage('');
+            }}
           >
             <Checkbox
-              onCheckboxChange={() => {
-                setPermissionAgreement((prevState) => !prevState);
-                setPermissionsErrorMessage('');
-              }}
               checked={permissionsAgreement}
               checkboxColor={
                 permissionsAgreementError ? 'errorDark' : 'primaryAccent2'
@@ -170,7 +175,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
             />
           </div>
         </div>
-        <div className="py-2">
+        <div className="py-4">
           <Typography
             type={'h4'}
             text={
@@ -185,7 +190,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
               'If you say yes, you may be contacted to share more information'
             }
             className={'mb-2 text-sm font-normal'}
-            color={'textDark'}
+            color={'textMid'}
           />
           <ButtonGroup<boolean>
             color="secondary"
@@ -207,9 +212,9 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
           />
         )}
         <Button
-          className={'mt-3 w-full rounded-xl'}
+          className={'mt-5 w-full rounded-xl'}
           type="filled"
-          color="quatenary"
+          color={'quatenary'}
           onClick={handleSubmitAgreements}
           icon="ArrowCircleRightIcon"
           textColor="white"

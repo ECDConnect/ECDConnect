@@ -39,7 +39,9 @@ export const getButtonClassName = (
     case 'filled':
       className = classNames(
         solid,
-        disabled ? disabledSolid : `bg-${color} text-white`
+        disabled
+          ? `bg-${color} text-white opacity-50`
+          : `bg-${color} text-white`
       );
       break;
     case 'outlined':

@@ -21,6 +21,7 @@ import {
   FormInput,
   HeaderCard,
   HeaderSlide,
+  HeaderSlider,
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
@@ -44,10 +45,10 @@ import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
 import ROUTES from '@/routes/routes';
 import { useTenant } from '@/hooks/useTenant';
+import Banner1 from '../../../assets/banner-ss.jpg';
+import Banner2 from '../../../assets/banner2-ss.jpeg';
 
 const token = new URLSearchParams(window.location.search).get('token');
-
-let headerSlide: HeaderSlide;
 
 export const SignUp: React.FC = () => {
   const tenant = useTenant();
@@ -87,25 +88,18 @@ export const SignUp: React.FC = () => {
   const tenantName = tenant?.tenant?.applicationName;
   const isWhitelabel = tenant?.isWhiteLabel;
 
-  if (userDetails) {
-    // coach
-    if (userDetails.roleName === 'Coach') {
-      headerSlide = {
-        status: ChipStatus.Available,
-        title: 'Manage practitioners',
-        text: 'View practitioner details, see classroom information and fill in important forms.',
-        image: '../../../assets/banner-coach.jpg',
-      };
-    }
-  } else {
-    // practitioner & principal
-    headerSlide = {
-      status: ChipStatus.Available,
+  const headerSlide: HeaderSlide[] = [
+    {
       title: 'Manage your classroom',
       text: 'Take attendance, track progress, and plan your programme',
-      image: '../../../assets/banner-ss.jpg',
-    };
-  }
+      image: Banner1,
+    },
+    {
+      title: 'Grow your community',
+      text: 'Meet other practitioners in your area',
+      image: Banner2,
+    },
+  ];
 
   useEffect(() => {
     async function init() {
@@ -255,9 +249,13 @@ export const SignUp: React.FC = () => {
         renderBorder={false}
         renderOverflow={false}
       >
-        {headerSlide && !isWhitelabel && (
-          <HeaderCard className={'mt-4'} slide={headerSlide} />
-        )}
+        <HeaderSlider
+          className="h-360 mx-4"
+          slides={headerSlide}
+          autoPlay
+          infiniteLoop
+          transitionTime={500}
+        />
 
         {!isWhitelabel && (
           <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
