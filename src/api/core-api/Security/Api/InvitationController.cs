@@ -13,12 +13,14 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
+using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -312,11 +314,19 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 2,
+                    ErrorCode = 3,
                     Error = "Register of practitioner failure"
                 });
             }
-            return Ok(true);
+
+            // Update user, to save last login
+            user.LastSeen = DateTime.Now;
+            await _userManager.UpdateAsync(user);
+
+            var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
+            var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
+            var package = new OkObjectResult(jwtObj);
+            return package;
         }
 
         [Route("verify-oa-wl-auth-code-status")]
@@ -339,7 +349,8 @@ namespace ECDLink.Security.Api
             if (messages.Count == 0)
             {
                 return Ok(true);
-            } else
+            } 
+            else
             {
                 return Ok(false);
             }
