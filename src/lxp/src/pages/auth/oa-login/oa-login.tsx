@@ -284,7 +284,7 @@ export const OaLogin: React.FC = () => {
             className={'mt-3 mb-8 w-full'}
             type="filled"
             isLoading={isLoading}
-            color="primary"
+            color="quatenary"
             disabled={!isValid}
             onClick={submitForm}
           >
