@@ -61,9 +61,6 @@ export const getClassroom = createAsyncThunk<
           return rejectWithValue('no access token, profile check required');
         }
 
-        if (!classroom) {
-          return rejectWithValue('Error getting Classrooms');
-        }
         return classroom;
       } catch (err) {
         return rejectWithValue(err);

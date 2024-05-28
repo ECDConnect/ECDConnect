@@ -32,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-
+        [Obsolete]
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public bool UpdateCareGiverGrants(
             [Service] IHttpContextAccessor contextAccessor,

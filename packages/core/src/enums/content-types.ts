@@ -1,5 +1,5 @@
 export enum ContentConsentTypeEnum {
-  TermsAndConditions = 'Terms And Conditions',
+  TermsAndConditions = 'Terms and Conditions',
   DataPermissionsAgreement = 'Data Permissions Agreement',
   PersonalInformationAgreement = 'Personal Information',
   ConsentAgreement = 'Consent Agreement',

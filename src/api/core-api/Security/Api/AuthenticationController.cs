@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
+using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;

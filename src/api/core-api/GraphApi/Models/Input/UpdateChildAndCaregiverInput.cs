@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Input
 {
@@ -13,7 +14,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Input
         public bool IsActive { get; set; }
         public ChildUserUpdateInput User { get; set; }
         public ChildCaregiverInput Caregiver { get; set; }
-
     }
 
     public class ChildUserUpdateInput
@@ -51,5 +51,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Input
         public bool JoinReferencePanel { get; set; }
         public bool Contribution { get; set; }
         public UpdateSiteAddressInput SiteAddress { get; set; }
+        public List<Guid> GrantIds { get; set; }
     }
 }

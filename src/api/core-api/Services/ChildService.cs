@@ -11,6 +11,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System.Linq;
 using EcdLink.Api.CoreApi.GraphApi.Models.Input;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Context;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -19,17 +21,21 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
         private IGenericRepository<Learner, Guid> _learnerRepo;
+        private AuthenticationDbContext _dbContext;
 
         public ChildService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HierarchyEngine hierarchyEngine)
+            HierarchyEngine hierarchyEngine,
+            [Service] AuthenticationDbContext dbContext)
         {
             var applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
 
             _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: applicationUserId);
             _classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: applicationUserId);
             _learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: applicationUserId);
+
+            _dbContext = dbContext;
         }
 
         public List<Child> GetChildrenForClassroom(Guid classroomId)
@@ -128,6 +134,12 @@ namespace EcdLink.Api.CoreApi.Services
 
             _childRepo.Update(child);
 
+            // Add new grants
+            if (input.Caregiver != null && input.Caregiver.GrantIds != null && child.CaregiverId != null)
+            {
+                UpdateCaregiverGrants(child.CaregiverId.Value, input.Caregiver.GrantIds);
+            }
+
             // If child is deactivated, ensure all learner records are also disabled
             if (!isActive)
             {
@@ -145,6 +157,29 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
             }
+        }
+
+        public void UpdateCaregiverGrants(Guid caregiverId, List<Guid> grantIds)
+        {
+            if (grantIds == null || !grantIds.Any())
+            {
+                return;
+            }
+
+            var grantsToAdd = grantIds.Select(x => new UserGrant
+            {
+                GrantId = x,
+                UserId = caregiverId,
+            });
+
+            var existingGrants = _dbContext.UserGrants
+                .Where(x => x.UserId == caregiverId);
+
+            //remove
+            _dbContext.UserGrants.RemoveRange(existingGrants);
+            //reinsert
+            _dbContext.UserGrants.AddRange(grantsToAdd);
+            _dbContext.SaveChanges();
         }
     }
 }
