@@ -38,7 +38,9 @@ export const getChildAlertModel = ({
 }: ChildAlertModelProps): ChildAlertModel => {
   const isClassAssigned = classroomGroups?.some((classroomGroup) =>
     classroomGroup?.learners?.some(
-      (learner) => learner.childUserId === child?.userId
+      (learner) =>
+        learner.childUserId === child?.userId ||
+        learner.childUserId === child?.user?.id
     )
   );
   const isChildRegistrationIncomplete =
