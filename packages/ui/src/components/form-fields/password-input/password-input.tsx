@@ -173,7 +173,7 @@ export const PasswordInput = <T extends FieldValues>({
     <>
       <label
         htmlFor={nameProp}
-        className="font-body text-textMid block text-base font-semibold leading-snug"
+        className="font-body text-textDark block text-base font-semibold leading-snug"
       >
         {label}
       </label>

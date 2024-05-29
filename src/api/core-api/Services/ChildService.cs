@@ -135,9 +135,9 @@ namespace EcdLink.Api.CoreApi.Services
             _childRepo.Update(child);
 
             // Add new grants
-            if (input.Caregiver != null && input.Caregiver.GrantIds != null && child.CaregiverId != null)
+            if (input.Caregiver != null && input.Caregiver.GrantIds != null)
             {
-                UpdateCaregiverGrants(child.CaregiverId.Value, input.Caregiver.GrantIds);
+                UpdateCaregiverGrants(child.UserId.Value, input.Caregiver.GrantIds);
             }
 
             // If child is deactivated, ensure all learner records are also disabled
@@ -159,7 +159,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-        public void UpdateCaregiverGrants(Guid caregiverId, List<Guid> grantIds)
+        public void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds)
         {
             if (grantIds == null || !grantIds.Any())
             {
@@ -169,11 +169,11 @@ namespace EcdLink.Api.CoreApi.Services
             var grantsToAdd = grantIds.Select(x => new UserGrant
             {
                 GrantId = x,
-                UserId = caregiverId,
+                UserId = childUserId,
             });
 
             var existingGrants = _dbContext.UserGrants
-                .Where(x => x.UserId == caregiverId);
+                .Where(x => x.UserId == childUserId);
 
             //remove
             _dbContext.UserGrants.RemoveRange(existingGrants);

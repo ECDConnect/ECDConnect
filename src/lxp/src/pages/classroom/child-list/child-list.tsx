@@ -394,7 +394,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       mappedChildren?.filter((child) =>
         classroomGroup?.learners?.some(
           (learner) =>
-            learner.childUserId === child.extraData?.userId && learner.isActive
+            (learner.childUserId === child.extraData?.userId ||
+              learner.childUserId === child.extraData?.user?.id) &&
+            learner.isActive
         )
       ) ?? [];
 

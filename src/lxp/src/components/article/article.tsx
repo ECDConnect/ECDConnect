@@ -19,7 +19,7 @@ import {
 } from '@store/content/consent';
 import LanguageSelector from '../language-selector/language-selector';
 import * as styles from './article.styles';
-import { ArticleProps } from './article.types';
+import { ArticleProps, LanguagesModels } from './article.types';
 
 export const Article = ({
   visible = true,
@@ -28,6 +28,7 @@ export const Article = ({
   onClose,
   showClose = true,
   isOpen = false,
+  isFromRegistration,
 }: ArticleProps) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -61,7 +62,9 @@ export const Article = ({
     ).unwrap();
 
     if (!!content && content.length > 0) {
-      const consentFilter = content.find((x) => x.name === consentEnumType);
+      const consentFilter = isFromRegistration
+        ? content?.[0]
+        : content.find((x) => x.name === consentEnumType);
       setArticleText(consentFilter?.description ?? '');
     } else {
       setArticleText('');
@@ -131,6 +134,8 @@ export const Article = ({
                   labelClassName="text-textDark mr-2"
                   currentLocale="en-za"
                   selectLanguage={(data) => changeLanugage(data)}
+                  availableLanguages={LanguagesModels}
+                  notLogged={true}
                 />
               </div>
               <div className={styles.articleTextWrapper}>

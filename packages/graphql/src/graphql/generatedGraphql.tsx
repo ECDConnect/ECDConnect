@@ -297,11 +297,6 @@ export type AddChildCaregiverTokenModelInput = {
   surname?: InputMaybe<Scalars['String']>;
 };
 
-export type AddChildLearnerTokenModelInput = {
-  attendanceReasonId?: InputMaybe<Scalars['UUID']>;
-  otherAttendanceReason?: InputMaybe<Scalars['String']>;
-};
-
 export type AddChildRegistrationTokenModelInput = {
   file?: InputMaybe<Scalars['String']>;
   fileName?: InputMaybe<Scalars['String']>;
@@ -315,7 +310,7 @@ export type AddChildSiteAddressTokenModelInput = {
   addressLine3?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   postalCode?: InputMaybe<Scalars['String']>;
-  provinceId: Scalars['UUID'];
+  provinceId?: InputMaybe<Scalars['UUID']>;
   ward?: InputMaybe<Scalars['String']>;
 };
 
@@ -342,9 +337,6 @@ export type AddChildTokenModelInput = {
 
 export type AddChildUserConsentTokenModelInput = {
   childPhotoConsentAccepted: Scalars['Boolean'];
-  commitmentAgreementAccepted: Scalars['Boolean'];
-  consentAgreementAccepted: Scalars['Boolean'];
-  indemnityAgreementAccepted: Scalars['Boolean'];
   personalInformationAgreementAccepted: Scalars['Boolean'];
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -736,8 +728,10 @@ export type BaseClinicModelFilterInput = {
 export type BaseLearnerModel = {
   __typename?: 'BaseLearnerModel';
   childUserId: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
   learnerId: Scalars['UUID'];
   startedAttendance: Scalars['DateTime'];
+  stoppedAttendance?: Maybe<Scalars['DateTime']>;
 };
 
 export type BasePractitionerModel = {
@@ -1378,6 +1372,7 @@ export type ChildCaregiverInput = {
   emergencyContactPhoneNumber?: InputMaybe<Scalars['String']>;
   emergencyContactSurname?: InputMaybe<Scalars['String']>;
   firstName?: InputMaybe<Scalars['String']>;
+  grantIds?: InputMaybe<Array<Scalars['UUID']>>;
   id: Scalars['UUID'];
   idNumber?: InputMaybe<Scalars['String']>;
   isAllowedCustody: Scalars['Boolean'];
@@ -5102,6 +5097,15 @@ export type InfographicsInput = {
   visit?: InputMaybe<Scalars['String']>;
 };
 
+export type InitialChildRegistrationModel = {
+  __typename?: 'InitialChildRegistrationModel';
+  addedByUserId: Scalars['UUID'];
+  caregiverRegistrationUrl?: Maybe<Scalars['String']>;
+  childId: Scalars['UUID'];
+  childUserId: Scalars['UUID'];
+  classroomGroupId: Scalars['UUID'];
+};
+
 export enum InputFilterComparer {
   ContainedBy = 'CONTAINED_BY',
   Contains = 'CONTAINS',
@@ -7014,7 +7018,7 @@ export type Mutation = {
   expireRelationshipLinksService: Scalars['Boolean'];
   fileUpload?: Maybe<DocumentModel>;
   gGBottom75PercPointsTeam: Scalars['Boolean'];
-  generateCaregiverChildToken?: Maybe<Scalars['String']>;
+  generateCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
   importHealthCareWorkers?: Maybe<UserImportModel>;
   importTeamLeads?: Maybe<UserImportModel>;
   integrationAttendanceByDueData: Scalars['Boolean'];
@@ -7040,7 +7044,7 @@ export type Mutation = {
   reassignAbsentees: Scalars['Boolean'];
   reassignAllClassroomsFromHistoryService: Scalars['Boolean'];
   reassignClassroomsFromHistoryService: Scalars['Boolean'];
-  refreshCaregiverChildToken?: Maybe<Scalars['String']>;
+  refreshCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
   rejectNewClubLeaderRole: Scalars['Boolean'];
   remapPrincipalToPrincipal?: Maybe<Practitioner>;
   removeFromProgramme: Scalars['Boolean'];
@@ -7152,6 +7156,7 @@ export type Mutation = {
   updateCalendarEvent?: Maybe<CalendarEvent>;
   updateCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
   updateCalendarEventType?: Maybe<CalendarEventType>;
+  /** @deprecated No longer supported. */
   updateCareGiverGrants: Scalars['Boolean'];
   updateCaregiver?: Maybe<Caregiver>;
   updateChild?: Maybe<Child>;
@@ -9085,7 +9090,6 @@ export type MutationOpenAccessAddChildArgs = {
   caregiver?: InputMaybe<AddChildCaregiverTokenModelInput>;
   child?: InputMaybe<AddChildTokenModelInput>;
   consent?: InputMaybe<AddChildUserConsentTokenModelInput>;
-  learner?: InputMaybe<AddChildLearnerTokenModelInput>;
   registration?: InputMaybe<AddChildRegistrationTokenModelInput>;
   siteAddress?: InputMaybe<AddChildSiteAddressTokenModelInput>;
   token?: InputMaybe<Scalars['String']>;

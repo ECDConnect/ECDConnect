@@ -12,6 +12,7 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
   labelClassName?: string;
   selectLanguage: (value: LanguageDto) => void;
   availableLanguages?: LanguageDto[];
+  notLogged?: boolean;
 }
 
 export const LanguageSelector = ({
@@ -21,6 +22,7 @@ export const LanguageSelector = ({
   labelClassName,
   selectLanguage,
   availableLanguages,
+  notLogged,
 }: LanguageSelectorProps) => {
   const allLanguages = useSelector(staticDataSelectors.getLanguages);
   const languages: LanguageDto[] = availableLanguages
@@ -33,7 +35,9 @@ export const LanguageSelector = ({
   const setLanguage = (locale: string) => {
     setLocale(locale);
 
-    const language = languages?.find((x: LanguageDto) => x.locale === locale);
+    const language = notLogged
+      ? availableLanguages?.find((x: LanguageDto) => x.locale === locale)
+      : languages?.find((x: LanguageDto) => x.locale === locale);
 
     if (language) selectLanguage(language);
   };
@@ -58,16 +62,25 @@ export const LanguageSelector = ({
         fillColor="quatenary"
         labelColor="white"
         list={
-          (languages &&
-            languages
-              .filter((x) => x.locale?.length > 0)
-              .map((language: LanguageDto) => {
-                return {
-                  label: language.description,
-                  value: language.locale,
-                };
-              })) ||
-          []
+          notLogged
+            ? availableLanguages
+                ?.filter((x) => x.locale?.length > 0)
+                .map((language: LanguageDto) => {
+                  return {
+                    label: language.description,
+                    value: language.locale,
+                  };
+                }) || []
+            : (languages &&
+                languages
+                  .filter((x) => x.locale?.length > 0)
+                  .map((language: LanguageDto) => {
+                    return {
+                      label: language.description,
+                      value: language.locale,
+                    };
+                  })) ||
+              []
         }
         onChange={(item) => {
           setLanguage(item);

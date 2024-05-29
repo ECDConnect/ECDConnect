@@ -190,14 +190,6 @@ export const ChildRegistration: React.FC = () => {
     await appDispatch(
       childrenThunkActions.updateChild({ child: child, id: String(child.id) })
     ).unwrap();
-
-    // TODO: It should be done in the backend, not with an extra call here
-    // Call BE to add points for registering child
-    if (!!userAuth && !!user) {
-      await new PointsService(userAuth.auth_token).addChildRegistrationPoints(
-        user.id!
-      );
-    }
   };
 
   const onSaveChildAndCaregiver = async (
@@ -245,9 +237,7 @@ export const ChildRegistration: React.FC = () => {
         ...userInputModel,
         isActive: true,
       },
-      caregiverId: caregiverDto.id,
       caregiver: caregiverDto,
-      insertedBy: user?.fullName,
     };
 
     updateChild(child);

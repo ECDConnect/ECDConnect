@@ -11,6 +11,7 @@ import {
   initialPasswordValue,
   passwordSchema,
   useNotifications,
+  useTheme,
 } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -26,7 +27,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
-import { VerifyPhoneNumber } from '../verify-phone-number';
+import { VerifyPhoneNumberAuthCode } from '../verify-phone-number';
 
 interface CreateUserFormProps {
   closeAction?: (item: boolean) => void;
@@ -41,10 +42,10 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const { setNotification } = useNotifications();
+  const { theme } = useTheme();
   const history = useHistory();
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
-  const orgName = tenant?.tenant?.organisationName;
   const [isLoading, setIsLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -162,7 +163,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       onBack={() => closeAction && closeAction(false)}
       color="primary"
       className={'h-screen'}
-      title={orgName}
+      menuLogoUrl={theme?.images?.logoUrl}
       displayOffline={!isOnline}
     >
       <div className="p-4">
@@ -182,6 +183,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             setMessageError('');
           }}
           error={messageError as unknown as FieldError}
+          className="my-2"
         />
         {messageError && (
           <Typography
@@ -192,7 +194,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           />
         )}
         {isOpenAccess && (
-          <div className="mt-2 space-y-1">
+          <div className="mt-4 space-y-1">
             <FormInput
               label={'Cellphone number *'}
               nameProp={'phoneNumber'}
@@ -211,14 +213,14 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             )}
           </div>
         )}
-        <div className="mt-8">
+        <div className="mt-4">
           <PasswordInput
             label={'Password'}
             nameProp={'password'}
             sufficIconColor={'uiMidDark'}
             value={password}
             strengthMeterVisible={true}
-            className="mb-9"
+            className="mb-5"
             register={passwordRegister}
           />
         </div>
@@ -240,9 +242,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         position={DialogPosition.Full}
         className="w-full"
       >
-        <VerifyPhoneNumber
+        <VerifyPhoneNumberAuthCode
           closeAction={setOpenVerifyPhoneNumber}
-          userId={userId}
           phoneNumber={phoneNumber}
           username={username}
         />

@@ -39,14 +39,15 @@ export const mapChildUserDto = (
     new Date().getHours()
   );
   if (user) {
+    const { email, fullName, phoneNumber, insertedDate, ...restUser } = user;
     return {
-      ...user,
+      ...restUser,
       idNumber: childInformationForm.childIdField || '',
       firstName: childInformationForm.firstname,
       surname: childInformationForm.surname,
       dateOfBirth: dateOfBirth.toISOString() || '',
       genderId: childExtraInformationForm?.genderId,
-      raceId: '',
+      raceId: undefined,
     };
   }
 
@@ -76,8 +77,17 @@ export const mapChildDto = (
   child?: ChildDto
 ): ChildDto => {
   if (child) {
+    const {
+      insertedDate,
+      insertedBy,
+      userId,
+      caregiverId,
+      // @ts-ignore
+      synced,
+      ...restChild
+    } = child;
     return {
-      ...child,
+      ...restChild,
       // TODO: update language field to be an array
       languageId:
         childExtraInformationForm?.homeLanguages &&
@@ -175,6 +185,7 @@ export const mapSiteAddressDto = (
     insertedDate: new Date().toISOString(),
     name: '',
     addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
+    postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
   };
 };
 
@@ -188,8 +199,10 @@ export const mapCaregiverDto = (
   caregiver?: CaregiverDto
 ): CaregiverDto => {
   if (caregiver) {
+    const { fullName, siteAddressId, isActive, grants, ...restCaregiver } =
+      caregiver;
     return {
-      ...caregiver,
+      ...restCaregiver,
       // idNumber:
       //   caregiverInformationForm?.careGiverIdField ??
       //   caregiverInformationForm?.careGiverPassportField ??
@@ -197,10 +210,11 @@ export const mapCaregiverDto = (
       firstName: caregiverInformationForm?.firstname ?? '',
       surname: caregiverInformationForm?.surname ?? '',
       relationId: caregiverInformationForm?.relationId,
-      siteAddressId: siteAddressInputModel?.id,
+      // siteAddressId: siteAddressInputModel?.id,
       siteAddress: siteAddressInputModel,
       educationId: childCareGiverExtraInformationForm?.highestEducationId,
-      grants: childCareGiverExtraInformationForm?.familyGrants,
+      // @ts-ignore
+      grantIds: childCareGiverExtraInformationForm?.familyGrants,
       emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
       emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
       emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
@@ -216,7 +230,6 @@ export const mapCaregiverDto = (
 
   return {
     id: newGuid(),
-    isActive: true,
     // idNumber:
     //   caregiverInformationForm?.careGiverIdField ??
     //   caregiverInformationForm?.careGiverPassportField ??
@@ -224,9 +237,9 @@ export const mapCaregiverDto = (
     phoneNumber: caregiverInformationForm?.phoneNumber || '',
     firstName: caregiverInformationForm?.firstname ?? '',
     surname: caregiverInformationForm?.surname ?? '',
-    insertedDate: new Date().toISOString(),
     relationId: caregiverInformationForm?.relationId,
-    grants: childCareGiverExtraInformationForm?.familyGrants,
+    // @ts-ignore
+    grantIds: childCareGiverExtraInformationForm?.familyGrants,
     siteAddress: siteAddressInputModel,
     educationId: childCareGiverExtraInformationForm?.highestEducationId,
     emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',

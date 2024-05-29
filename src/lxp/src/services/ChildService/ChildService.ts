@@ -339,7 +339,10 @@ class ChildService {
       },
     });
 
-    if (response.status !== 200) {
+    if (
+      response.status !== 200 ||
+      response.data?.data?.openAccessAddChild === false
+    ) {
       throw new Error('adding token child failed - Server connection error');
     }
     return response.data.data.openAccessAddChild;
