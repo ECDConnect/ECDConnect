@@ -1192,6 +1192,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var practitioner = _practiGenericRepo.GetByUserId(user.Id);
 
             practitioner.IsRegistered = true;
+            practitioner.StartDate = DateTime.Now;
             practitioner.UpdatedDate = DateTime.Now;
             practitioner.UpdatedBy = _applicationUserId.ToString();
             return _practiGenericRepo.Update(practitioner);

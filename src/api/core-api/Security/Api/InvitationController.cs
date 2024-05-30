@@ -238,12 +238,21 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> SendOAWLAuthenticationCode([FromBody] AuthCodeModel authModel)
         {
+            if (string.IsNullOrEmpty(authModel.Username))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Username is null or empty"
+                });
+            }
+
             var user = await _userManager.FindByNameAsync(authModel.Username);
             if (user == null)
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 1,
+                    ErrorCode = 2,
                     Error = "User not found with username"
                 });
             }
@@ -252,7 +261,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 2,
+                    ErrorCode = 3,
                     Error = "Cannot send auth code"
                 });
             }
@@ -262,7 +271,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 3,
+                    ErrorCode = 4,
                     Error = "Generation of token failed"
                 });
             }
