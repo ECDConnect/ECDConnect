@@ -33,6 +33,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { PractitionerProfileRouteState } from './practitioner-profile.types';
 import { NavigationNames } from '@/pages/navigation';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -41,6 +42,7 @@ export const PractitionerProfile: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isTrainee = practitioner?.isTrainee;
+  const isPrincipal = practitioner?.isPrincipal;
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomForPractitionerAnyType: any = classroom;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -51,6 +53,10 @@ export const PractitionerProfile: React.FC = () => {
   const [displayError] = useState(false);
   const history = useHistory();
   const dialog = useDialog();
+  const missingProgramme =
+    (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
+    !practitioner?.principalHierarchy &&
+    !isPrincipal;
 
   const location = useLocation<PractitionerProfileRouteState>();
 
@@ -123,6 +129,16 @@ export const PractitionerProfile: React.FC = () => {
             onSubmit={onSubmit}
           ></OnlineOnlyModal>
         );
+      },
+    });
+  };
+
+  const showCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} />;
       },
     });
   };
@@ -230,54 +246,17 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
-          if ((classroom && classroom.id) || classroomGroups) {
+          if (
+            (classroom && classroom.id) ||
+            (classroomGroups && !missingProgramme)
+          ) {
             if (isOnline) {
               history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
             } else {
               showOnlineOnly();
             }
           } else {
-            dialog({
-              render: (onSubmit, onCancel) => {
-                return (
-                  <ActionModal
-                    icon="ExclamationCircleIcon"
-                    iconBorderColor="alertBg"
-                    iconColor="alertMain"
-                    title="Tell us more about you!"
-                    paragraphs={[
-                      `Please Complete your profile to unlock the classroom feature`,
-                    ]}
-                    actionButtons={[
-                      {
-                        colour: 'primary',
-                        text: 'Okay',
-                        textColour: 'white',
-                        type: 'filled',
-                        leadingIcon: 'ArrowCircleRightIcon',
-                        onClick: async () => {
-                          onSubmit();
-                          handleOnlineCallback(() =>
-                            history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-                          );
-                        },
-                      },
-                      {
-                        colour: 'primary',
-                        text: 'Close',
-                        textColour: 'primary',
-                        type: 'outlined',
-                        leadingIcon: 'XIcon',
-                        onClick: () => {
-                          onCancel();
-                        },
-                      },
-                    ]}
-                  />
-                );
-              },
-              position: DialogPosition.Bottom,
-            });
+            showCompleteProfileBlockingDialog();
           }
         },
       });
@@ -286,46 +265,27 @@ export const PractitionerProfile: React.FC = () => {
     return stackedMenuList;
   };
 
-  const tabItem: TabItem[] = isTrainee
-    ? [
-        {
-          title: 'Profile',
-          initActive: true,
-          child: (
-            <div>
-              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
-              <StackedList
-                listItems={getStackedMenuList()}
-                type={'MenuList'}
-                className={'flex flex-col gap-1 px-4 pt-1'}
-              ></StackedList>
-            </div>
-          ),
-        },
-      ]
-    : [
-        {
-          title: 'Profile',
-          initActive: true,
-          child: (
-            <div>
-              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
-              <StackedList
-                listItems={getStackedMenuList()}
-                type={'MenuList'}
-                className={'flex flex-col gap-1 px-4 pt-1'}
-              ></StackedList>
-            </div>
-          ),
-        },
-        {
-          title: 'Journey',
-          initActive: false,
-          child: (
-            <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />
-          ),
-        },
-      ];
+  const tabItem: TabItem[] = [
+    {
+      title: 'Profile',
+      initActive: true,
+      child: (
+        <div>
+          {/* {practitioner?.progress !== 0 ? null : <CompleteProfile />} */}
+          <StackedList
+            listItems={getStackedMenuList()}
+            type={'MenuList'}
+            className={'flex flex-col gap-1 px-4 pt-1'}
+          ></StackedList>
+        </div>
+      ),
+    },
+    {
+      title: 'Journey',
+      initActive: false,
+      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
+    },
+  ];
 
   if (isJourneyFormOpen) {
     return <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />;
