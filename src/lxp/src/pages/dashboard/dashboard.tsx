@@ -114,7 +114,6 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
@@ -242,29 +241,6 @@ export const Dashboard: React.FC = () => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
 
-  useEffect(() => {
-    if (
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend &&
-        completedSteps?.length === 8) ||
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend !== true &&
-        completedSteps?.length === 7)
-    ) {
-      const copy = Object.assign({}, practitioner);
-
-      const input: PractitionerInput = {
-        Id: copy.id,
-        IsActive: true,
-        Progress: copy.progress,
-        IsTrainee: false,
-      };
-
-      appDispatch(practitionerActions.updatePractitioner(copy));
-      appDispatch(practitionerThunkActions.updatePractitioner(input));
-    }
-  }, [completedSteps?.length]);
-
   const clubCard = useMemo((): ScoreCardProps => {
     const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
       club?.pointsTotal ?? 0,
@@ -374,11 +350,7 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (isOnline) {
       initStaticStoreSetup();
-      if (
-        dashboardNotification?.isNew &&
-        practitioner?.progress! >= 2 &&
-        !practitioner?.isTrainee
-      ) {
+      if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
         appDispatch(notificationActions.resetFrontendNotificationState());
       }
     }
@@ -452,14 +424,13 @@ export const Dashboard: React.FC = () => {
 
   const onNavigation = (navItem: any) => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme
     ) {
       history.push(navItem.href, navItem.params);
     } else if (navItem.href.includes('classroom') && isWhiteLabel) {
@@ -794,19 +765,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (!isTrainee) {
-    dashboardItems.push({
-      title: NavigationNames.Training,
-      titleIcon: styles.trainingIconName,
-      titleIconClassName: styles.trainingIcon,
-      onActionClick: () => {
-        goToTraining();
-      },
-      classNames: 'bg-successBg',
-    });
-  }
-
-  if (!isCoach && !isTrainee && !isPrincipal && isPractitioner) {
+  if (!isCoach && !isPrincipal && isPractitioner) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Community.Community,
       titleIcon: styles.communityIconName,
@@ -818,7 +777,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+  if (isPrincipal || isFundaAppAdmin) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
       titleIcon: styles.businessIconName,
@@ -841,15 +800,14 @@ export const Dashboard: React.FC = () => {
 
   const goToCommunity = () => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme &&
-        isWhiteLabel) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
     ) {
       history.push(
         isFirstTimeCommunitySection
@@ -902,15 +860,14 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme &&
-        isWhiteLabel) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
     ) {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.CLASSES,
@@ -922,14 +879,13 @@ export const Dashboard: React.FC = () => {
 
   const goToCalendar = () => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme
     ) {
       history.push(ROUTES.CALENDAR);
     } else {
@@ -938,31 +894,22 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToBusiness = () => {
-    if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+    if (isPrincipal || isFundaAppAdmin) {
       history.push(ROUTES.BUSINESS);
-      return;
-    }
-    if (isTrainee) {
-      if (practitioner?.setupTraineeInitiated) {
-        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
-        return;
-      }
-      history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }
   };
 
   const goToTraining = () => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme &&
-        isWhiteLabel) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
     ) {
       history.push(ROUTES.TRAINING);
     } else {
@@ -1038,7 +985,7 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {!!pointsScoreProps && !isCoach && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
