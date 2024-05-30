@@ -471,19 +471,11 @@ namespace ECDLink.Security.Api
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            if (string.IsNullOrEmpty(input.UserId))
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 1,
-                    Error = "UserId unavailable"
-                });
-            }
             if (string.IsNullOrEmpty(input.Username))
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 2,
+                    ErrorCode = 1,
                     Error = "Username unavailable"
                 });
             }
@@ -491,7 +483,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 3,
+                    ErrorCode = 2,
                     Error = "Password unavailable"
                 });
             }
@@ -499,12 +491,21 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 4,
+                    ErrorCode = 3,
                     Error = "Phone number unavailable"
                 });
             }
 
-            var user = await _userManager.FindByIdAsync(input.UserId);
+            var user = await _securityManager.GetUserByNameAsync(input.Username);
+
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 4,
+                    Error = "User not found with username"
+                });
+            }
 
             // Validate password for user
             if (!await _passwordManager.IsPasswordSecureAsync(user, input.Password))
@@ -514,20 +515,6 @@ namespace ECDLink.Security.Api
                     ErrorCode = 5,
                     Error = "Password insecure"
                 });
-            }
-
-            // If the input user name is different from the user, we need to validate
-            if (user.UserName != input.Username)
-            {
-                var userWithUserName = await _securityManager.GetUserByNameAsync(input.Username);
-                if (userWithUserName != null)
-                {
-                    return BadRequest(new FailedVerificationModel
-                    {
-                        ErrorCode = 6,
-                        Error = "Invalid username"
-                    });
-                }
             }
 
             // If the input phone number is different from the user, we need to validate
@@ -540,7 +527,7 @@ namespace ECDLink.Security.Api
                 {
                     return BadRequest(new FailedVerificationModel
                     {
-                        ErrorCode = 7,
+                        ErrorCode = 6,
                         Error = "Invalid phone number"
                     });
                 }
@@ -556,8 +543,7 @@ namespace ECDLink.Security.Api
                 await _securityManager.ChangePasswordAsync(user, input.Password);
             }
 
-            // Change user values
-            user.UserName = input.Username;
+            // Change phone number
             user.PhoneNumber = normalizePhoneNumber;
             user.UpdatedDate = DateTime.Now;
             await _userManager.UpdateAsync(user);
@@ -568,7 +554,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 8,
+                    ErrorCode = 7,
                     Error = "Generate of token failure"
                 });
             }
