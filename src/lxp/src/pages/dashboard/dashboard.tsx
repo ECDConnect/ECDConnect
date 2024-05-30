@@ -736,7 +736,7 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationNames.SmartStarters,
+      name: NavigationNames.Practitioners,
       icon: styles.classroomIconName,
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
@@ -783,9 +783,9 @@ export const Dashboard: React.FC = () => {
 
   if (isCoach) {
     dashboardItems.push({
-      title: NavigationNames.SmartStarters,
+      title: NavigationNames.Practitioners,
       titleIcon: styles.classroomIconName,
-      titleIconClassName: styles.smartStarterIcon,
+      titleIconClassName: styles.practitionerIcon,
       onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
       classNames: 'bg-uiBg',
     });

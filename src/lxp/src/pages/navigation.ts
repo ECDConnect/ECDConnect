@@ -29,7 +29,7 @@ export const NavigationNames = {
   Training: 'Training',
   Points: 'Points',
   Messages: 'Messages',
-  SmartStarters: 'Practitioners',
+  Practitioners: 'Practitioners',
   Calendar: 'Calendar',
   Logout: 'Log out',
 };
