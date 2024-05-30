@@ -76,9 +76,6 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   return (
     <BannerWrapper
       size="small"
-      onBack={() => {
-        closeAction && closeAction(false);
-      }}
       color="primary"
       className={'h-screen'}
       title={orgName}
