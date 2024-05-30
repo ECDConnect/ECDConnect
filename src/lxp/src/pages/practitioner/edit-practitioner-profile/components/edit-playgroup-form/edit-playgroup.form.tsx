@@ -4,14 +4,12 @@ import {
   Button,
   ButtonGroup,
   DialogPosition,
-  Divider,
   FormInput,
   Typography,
   Dropdown,
   ButtonGroupTypes,
-  renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
 import {
@@ -39,9 +37,6 @@ import { authSelectors } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { practitionerSelectors } from '@/store/practitioner';
-import { classroomsSelectors } from '@/store/classroom';
-
-const playgroupId = 'c8858630-bb66-4d93-b93f-295cf7cd9ed5';
 
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
@@ -244,7 +239,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   }, [playgroup]);
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       <Typography
         type={'h1'}
         text={title}
@@ -324,11 +319,10 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           </div>
         </div>
       )} */}
-      <Divider className="mt-4 mb-2" />
-      <>
+      <div className="mt-auto">
         <Button
           type="filled"
-          color="primary"
+          color="quatenary"
           className={'mt-10 w-full'}
           onClick={() => {
             onSubmit(
@@ -339,30 +333,22 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
             );
           }}
           disabled={!isFormValid()}
-        >
-          {renderIcon(
-            `${isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}`,
-            styles.icon
-          )}
-
-          <Typography
-            type={'help'}
-            text={`${isNew ? 'Next' : 'Save'}`}
-            color={'white'}
-          />
-        </Button>
+          icon={isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}
+          text={isNew ? 'Next' : 'Save'}
+          textColor="white"
+        />
         {!isNew && (
           <Button
             type="outlined"
-            color="primary"
-            className="mt-10 w-full"
+            color="quatenary"
+            className="mt-4 w-full"
             onClick={confirmDelete}
-          >
-            {renderIcon('TrashIcon', styles.iconPrimary)}
-            <Typography type={'help'} text={'Delete'} color={'primary'} />
-          </Button>
+            icon="TrashIcon"
+            text="Delete"
+            textColor="quatenary"
+          />
         )}
-      </>
-    </>
+      </div>
+    </div>
   );
 };

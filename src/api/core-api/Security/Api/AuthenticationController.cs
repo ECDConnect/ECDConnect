@@ -358,7 +358,7 @@ namespace ECDLink.Security.Api
         [Route("add-oa-practitioner")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> AddOAPractitioner([FromBody] OAAddPractitionerModel addOAPractitionerModel)
+        public async Task<IActionResult> AddOAPractitioner([FromBody] OAPractitionerModel addOAPractitionerModel)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userId = Guid.NewGuid();
@@ -455,6 +455,106 @@ namespace ECDLink.Security.Api
                 return BadRequest(new FailedVerificationModel
                 {
                     ErrorCode = 5,
+                    Error = "Generate of token failure"
+                });
+            }
+
+            await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+
+            return new OkObjectResult(token);
+        }
+
+        [Route("update-oa-practitioner")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> UpdateOAPractitioner([FromBody] OAPractitionerModel input)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            if (string.IsNullOrEmpty(input.Username))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Username unavailable"
+                });
+            }
+            if (string.IsNullOrEmpty(input.Password))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "Password unavailable"
+                });
+            }
+            if (string.IsNullOrEmpty(input.PhoneNumber))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 3,
+                    Error = "Phone number unavailable"
+                });
+            }
+
+            var user = await _securityManager.GetUserByNameAsync(input.Username);
+
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 4,
+                    Error = "User not found with username"
+                });
+            }
+
+            // Validate password for user
+            if (!await _passwordManager.IsPasswordSecureAsync(user, input.Password))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 5,
+                    Error = "Password insecure"
+                });
+            }
+
+            // If the input phone number is different from the user, we need to validate
+            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(input.PhoneNumber);
+            if (user.UserName != normalizePhoneNumber)
+            {
+                var userByPhoneNumber = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
+                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+                if (userByPhoneNumber != null)
+                {
+                    return BadRequest(new FailedVerificationModel
+                    {
+                        ErrorCode = 6,
+                        Error = "Invalid phone number"
+                    });
+                }
+            }
+
+            // Change password
+            if (string.IsNullOrWhiteSpace(user.PasswordHash))
+            {
+                await _passwordManager.AddPasswordAsync(user, input.Password);
+            }
+            else
+            {
+                await _securityManager.ChangePasswordAsync(user, input.Password);
+            }
+
+            // Change phone number
+            user.PhoneNumber = normalizePhoneNumber;
+            user.UpdatedDate = DateTime.Now;
+            await _userManager.UpdateAsync(user);
+
+            // Generate token
+            var token = await _securityCodeManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 7,
                     Error = "Generate of token failure"
                 });
             }

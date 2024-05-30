@@ -83,6 +83,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Security
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<UserHierarchyEntity> UserHierarchy { get; set; }
         public DbSet<HierarchyEntity> Hierarchy { get; set; }
         public DbSet<AspNetJWTSession> AspNetJWTSession { get; set; }

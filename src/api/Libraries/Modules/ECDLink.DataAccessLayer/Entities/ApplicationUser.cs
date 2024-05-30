@@ -61,6 +61,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ReasonForLeavingComments { get; set; }
         public string RegisterType { get; set; }
 
+        public virtual ICollection<UserPermission> UserPermissions { get; set; }
+
         [NotMapped]
         public virtual Franchisor franchisorObjectData { get; set; }
         [NotMapped] 

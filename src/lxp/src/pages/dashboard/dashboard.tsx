@@ -678,7 +678,7 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationNames.SmartStarters,
+      name: NavigationNames.Practitioners,
       icon: styles.classroomIconName,
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
@@ -724,32 +724,12 @@ export const Dashboard: React.FC = () => {
   const dashboardItems: StackedListItemType[] = [];
 
   if (isCoach) {
-    dashboardItems.push(
-      {
-        title: NavigationNames.SmartStarters,
-        titleIcon: styles.classroomIconName,
-        titleIconClassName: styles.icon,
-        onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: NavigationNames.Community.Community,
-        titleIcon: styles.communityIconName,
-        titleIconClassName: styles.icon,
-        onActionClick: () => {
-          goToCommunity();
-        },
-        classNames: 'bg-uiBg',
-      }
-    );
     dashboardItems.push({
-      title: NavigationNames.Calendar,
-      titleIcon: styles.calendarIconName,
-      titleIconClassName: styles.icon,
+      title: NavigationNames.Practitioners,
+      titleIcon: styles.classroomIconName,
+      titleIconClassName: styles.practitionerIcon,
+      onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
       classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
     });
   }
 
@@ -977,7 +957,7 @@ export const Dashboard: React.FC = () => {
       <Typography
         type={'h1'}
         color="white"
-        text={`Welcome ${userData && userData?.firstName}`}
+        text={`Hi ${userData && userData?.firstName}!`}
         className={styles.welcomeText}
       />
       <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>

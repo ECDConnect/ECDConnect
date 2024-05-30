@@ -24,6 +24,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
+import { s } from 'msw/lib/glossary-297d38ba';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsRouteState>();
@@ -33,7 +34,8 @@ export const EditPlaygroups: React.FC = () => {
     : null;
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
-  const [activePlaygroupIndex, setActivePlaygroupIndex] = useState<number>(0);
+  const [activeClassroomGroupIndex, setActiveClassroomGroupIndex] =
+    useState<number>();
   const [activePage, setActivePage] = useState<EditPlaygroupsSteps>(
     EditPlaygroupsSteps.confirm
   );
@@ -51,7 +53,7 @@ export const EditPlaygroups: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal === true;
 
-  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
+  const [updatedClassroomGroups, setUpdatedClassroomGroups] = useState<
     EditPlaygroupModel[]
   >([]);
 
@@ -82,7 +84,7 @@ export const EditPlaygroups: React.FC = () => {
         } as EditPlaygroupModel);
       });
 
-      setUpdatedPlaygroups(groupedItems);
+      setUpdatedClassroomGroups(groupedItems);
     }
   }, [classroomGroups, classProgrammes]);
 
@@ -91,8 +93,8 @@ export const EditPlaygroups: React.FC = () => {
     index: number,
     addingPlayGroup: boolean = false
   ) => {
-    setUpdatedPlaygroups(playgroups);
-    setActivePlaygroupIndex(index);
+    setUpdatedClassroomGroups(playgroups);
+    setActiveClassroomGroupIndex(index);
     setActivePage(EditPlaygroupsSteps.edit);
     setAddingPlayGroup(addingPlayGroup);
   };
@@ -144,7 +146,7 @@ export const EditPlaygroups: React.FC = () => {
   };
 
   const confirmPlaygroups = async (playgroups: EditPlaygroupModel[]) => {
-    setUpdatedPlaygroups(playgroups);
+    setUpdatedClassroomGroups(playgroups);
 
     const removedClassroomGroups = classroomGroups.filter(
       (group) => !playgroups.some((pg) => pg.classroomGroupId === group.id)
@@ -253,12 +255,12 @@ export const EditPlaygroups: React.FC = () => {
   };
 
   const deletePlayGroup = async (playgroup: EditPlaygroupModel) => {
-    const index = updatedPlaygroups.findIndex(
+    const index = updatedClassroomGroups.findIndex(
       (pg) => pg.classroomGroupId === playgroup.classroomGroupId
     );
-    updatedPlaygroups.splice(index, 1);
+    updatedClassroomGroups.splice(index, 1);
 
-    setUpdatedPlaygroups(updatedPlaygroups);
+    setUpdatedClassroomGroups(updatedClassroomGroups);
 
     setActivePage(EditPlaygroupsSteps.confirm);
   };
@@ -269,11 +271,12 @@ export const EditPlaygroups: React.FC = () => {
         return (
           <EditMultiplePlayGroups
             numberOfPlaygroups={classProgrammes?.length ?? 0}
-            defaultPlayGroups={updatedPlaygroups}
-            editPlaygroupAtIndex={activePlaygroupIndex}
+            defaultPlayGroups={updatedClassroomGroups}
+            editPlaygroupAtIndex={activeClassroomGroupIndex}
             onPlayGroupDelete={deletePlayGroup}
             onSubmit={(value) => {
-              setUpdatedPlaygroups(value);
+              setUpdatedClassroomGroups(value);
+              setActiveClassroomGroupIndex(undefined);
               setActivePage(EditPlaygroupsSteps.confirm);
             }}
           />
@@ -282,7 +285,7 @@ export const EditPlaygroups: React.FC = () => {
       default:
         return (
           <ConfirmPlayGroups
-            defaultPlayGroups={updatedPlaygroups || []}
+            defaultPlayGroups={updatedClassroomGroups || []}
             onEditPlaygroup={onPlayGroupsEdit}
             title={isPrincipal ? 'Edit classes' : 'View classes'}
             isLoading={isLoading}
@@ -297,9 +300,10 @@ export const EditPlaygroups: React.FC = () => {
   const onBack = () => {
     if (activePage === EditPlaygroupsSteps.edit) {
       if (addingPlayGroup) {
-        updatedPlaygroups.splice(updatedPlaygroups.length - 1, 1);
-        setUpdatedPlaygroups(updatedPlaygroups);
+        updatedClassroomGroups.splice(updatedClassroomGroups.length - 1, 1);
+        setUpdatedClassroomGroups(updatedClassroomGroups);
       }
+      setActiveClassroomGroupIndex(undefined);
       setActivePage(EditPlaygroupsSteps.confirm);
     } else {
       history.goBack();
@@ -311,14 +315,28 @@ export const EditPlaygroups: React.FC = () => {
   };
 
   useEffect(() => {
-    if (location?.state?.redirectToClassesPage) {
+    if (
+      location?.state?.redirectToClassesPage &&
+      updatedClassroomGroups?.length
+    ) {
       setActivePage(EditPlaygroupsSteps.confirm);
+
+      if (location.state?.selectedClassroomGroupId) {
+        const classroomGroupIndex = updatedClassroomGroups.findIndex(
+          (x) => x.classroomGroupId === location.state.selectedClassroomGroupId
+        );
+        onPlayGroupsEdit(updatedClassroomGroups, classroomGroupIndex, true);
+      }
       history.replace({
         pathname: location.pathname,
-        state: { ...location.state, redirectToClassesPage: undefined },
+        state: {
+          ...location.state,
+          redirectToClassesPage: undefined,
+          selectedClassroomGroupId: undefined,
+        },
       });
     }
-  }, [history, location.pathname, location.state]);
+  }, [history, location.pathname, location.state, updatedClassroomGroups]);
 
   const exitPrompt = () => {
     dialog({
@@ -358,7 +376,13 @@ export const EditPlaygroups: React.FC = () => {
 
   return (
     <BannerWrapper
-      title={isPrincipal ? 'Edit classes' : 'View Classes'}
+      title={
+        isPrincipal
+          ? `Edit class${
+              typeof activeClassroomGroupIndex === 'number' ? '' : 'es'
+            }`
+          : 'View Classes'
+      }
       onBack={onBack}
       onClose={exitPrompt}
       size="medium"

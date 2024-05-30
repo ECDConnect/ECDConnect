@@ -250,6 +250,14 @@ class PractitionerService {
             id
             userId
             isNewInClub
+            permissions {
+              id
+              isActive
+              permissionId
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
             user {
               gender {
                 description
@@ -329,6 +337,14 @@ class PractitionerService {
             id
             userId
             isNewInClub
+            permissions {
+              id
+              isActive
+              permissionId
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
             user {
               gender {
                 description
@@ -435,6 +451,14 @@ class PractitionerService {
             dateAccepted
             dateToBeRemoved
             daysAbsentLastMonth
+            permissions {
+              id
+              isActive
+              permissionId
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
             siteAddress {
               addressLine1
               addressLine2

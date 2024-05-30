@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   StackedList,
   BannerWrapper,
@@ -45,8 +45,8 @@ const sortOptions: SearchSortOptions = {
   columns: [
     {
       id: '1',
-      label: 'Due date',
-      value: 'due date',
+      label: 'Priority',
+      value: 'priority',
     },
     {
       id: '2',
@@ -60,7 +60,7 @@ const sortOptions: SearchSortOptions = {
     },
   ],
   defaultSort: {
-    column: 'due date',
+    column: 'priority',
     dir: 'asc',
   },
 };
@@ -110,9 +110,19 @@ export const Practitioners: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
 
-  const { isLoading } = useThunkFetchCall(
+  const { isLoading: isLoadingMetrics } = useThunkFetchCall(
     'practitioner',
     PractitionerActions.GET_PRACTITIONERS_DISPLAY_METRICS
+  );
+
+  const { isLoading: isLoadingPractitioners } = useThunkFetchCall(
+    'practitioner',
+    PractitionerActions.GET_ALL_PRACTITIONERS
+  );
+
+  const { isLoading: isLoadingPractitionersForCoach } = useThunkFetchCall(
+    'practitionerForCoach',
+    PractitionerActions.GET_PRACTITIONERS_FOR_COACH
   );
 
   const handleClick = (practitionerId: string) => {
@@ -126,13 +136,6 @@ export const Practitioners: React.FC = () => {
       });
     }
   };
-
-  // Need to load clubs so we have the names when viewing each practitioner
-  useEffect(() => {
-    if (userData?.id && isOnline) {
-      appDispatch(getClubsForCoach({ userId: userData?.id }));
-    }
-  }, [appDispatch, isOnline, userData?.id]);
 
   useEffect(() => {
     if (
@@ -155,16 +158,16 @@ export const Practitioners: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersList?.length, practitionersMessages]);
 
-  useEffect(() => {
-    applyFilter();
-  }, [taskFilterOptions]);
-
-  const applyFilter = () => {
+  const applyFilter = useCallback(() => {
     if (stateFilter && taskFilterOptions.length > 0) {
-      const newFilter = taskFilterOptions.filter((o) => o.id == stateFilter);
+      const newFilter = taskFilterOptions.filter((o) => o.id === stateFilter);
       setFilterByTask(newFilter);
     }
-  };
+  }, [stateFilter, taskFilterOptions]);
+
+  useEffect(() => {
+    applyFilter();
+  }, [applyFilter, taskFilterOptions]);
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -297,7 +300,7 @@ export const Practitioners: React.FC = () => {
       const sortBy = activeSort[0].value;
       result.sort((a, b) => {
         switch (sortBy) {
-          case 'due date':
+          case 'priority':
             const as = AlertSeverityMapping[a.alertSeverity] || 4;
             const bs = AlertSeverityMapping[b.alertSeverity] || 4;
             if (as > bs) return 1;
@@ -328,7 +331,7 @@ export const Practitioners: React.FC = () => {
       <BannerWrapper
         size={'small'}
         renderBorder={true}
-        title={`SmartStarters`}
+        title={`Practitioners`}
         subTitle={format(new Date(), 'dd MMM yyyy')}
         color={'primary'}
         onBack={() => history.push(ROUTES.DASHBOARD)}
@@ -344,42 +347,7 @@ export const Practitioners: React.FC = () => {
         >
           <SearchDropDown<string>
             displayMenuOverlay={true}
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={taskFilterOptions}
-            selectedOptions={filterByTask}
-            onChange={(value) => {
-              setFilterByTask(value);
-            }}
-            multiple
-            placeholder={'Task'}
-            pluralSelectionText={'Tasks'}
-            color={'secondary'}
-            info={{
-              name: 'Task',
-              hint: 'You can select multiple tasks',
-            }}
-          />
-          <SearchDropDown<string>
-            displayMenuOverlay={true}
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={areaFilterOptions}
-            selectedOptions={filterByArea}
-            onChange={(value) => {
-              setFilterByArea(value);
-            }}
-            multiple
-            placeholder={'Area'}
-            pluralSelectionText={'Areas'}
-            color={'secondary'}
-            info={{
-              name: 'Area',
-              hint: 'You can select multiple areas',
-            }}
-          />
-          <SearchDropDown<string>
-            displayMenuOverlay={true}
+            overlayTopOffset={'5'}
             menuItemClassName={styles.dropdownStyles}
             options={sortOptions.columns}
             selectedOptions={activeSort}
@@ -390,7 +358,7 @@ export const Practitioners: React.FC = () => {
             }}
             placeholder={'Sort by'}
             multiple={false}
-            color={'secondary'}
+            color={'quatenary'}
             info={{
               name: `Sort by`,
             }}
@@ -398,7 +366,24 @@ export const Practitioners: React.FC = () => {
         </SearchHeader>
         {practitionersList !== undefined && practitionersList?.length > 0 ? (
           <div className="flex justify-center">
-            {isLoading && isOnline ? (
+            <div className="w-11/12">
+              <StackedList
+                className={styles.stackedList}
+                listItems={
+                  practitionerUserListData
+                    ? filterAndSort(practitionerUserListData)
+                    : []
+                }
+                type={'UserAlertList'}
+              ></StackedList>
+            </div>
+          </div>
+        ) : (
+          <>
+            {(isLoadingMetrics ||
+              isLoadingPractitioners ||
+              isLoadingPractitionersForCoach) &&
+            isOnline ? (
               <LoadingSpinner
                 className="mt-6"
                 size={'medium'}
@@ -406,21 +391,9 @@ export const Practitioners: React.FC = () => {
                 backgroundColor={'uiLight'}
               />
             ) : (
-              <div className="w-11/12">
-                <StackedList
-                  className={styles.stackedList}
-                  listItems={
-                    practitionerUserListData
-                      ? filterAndSort(practitionerUserListData)
-                      : []
-                  }
-                  type={'UserAlertList'}
-                ></StackedList>
-              </div>
+              <EmptyPractitioners />
             )}
-          </div>
-        ) : (
-          <EmptyPractitioners />
+          </>
         )}
       </BannerWrapper>
     </>
