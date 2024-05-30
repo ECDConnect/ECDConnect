@@ -805,15 +805,6 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
-    dashboardItems.push({
-      title: NavigationNames.Calendar,
-      titleIcon: styles.calendarIconName,
-      titleIconClassName: styles.icon,
-      classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
-    });
   }
 
   if (!isCoach) {
