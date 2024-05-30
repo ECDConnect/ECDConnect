@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
@@ -200,6 +201,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
             practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
             practitionerRecord.StipendType = practitioner.StipendType;
+            practitionerRecord.Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList();
 
             ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
             if (practitionerRecord != null)
@@ -1192,6 +1194,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var practitioner = _practiGenericRepo.GetByUserId(user.Id);
 
             practitioner.IsRegistered = true;
+            practitioner.StartDate = DateTime.Now;
             practitioner.UpdatedDate = DateTime.Now;
             practitioner.UpdatedBy = _applicationUserId.ToString();
             return _practiGenericRepo.Update(practitioner);

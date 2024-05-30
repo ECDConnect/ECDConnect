@@ -112,6 +112,7 @@ export const ClassMenu = ({
                 onClick: () => {
                   history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
                     redirectToClassesPage: true,
+                    selectedClassroomGroupId: classroomGroupId,
                   } as EditPlaygroupsRouteState);
                   onClose();
                 },

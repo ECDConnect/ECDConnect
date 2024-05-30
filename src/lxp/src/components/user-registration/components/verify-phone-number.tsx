@@ -69,10 +69,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   };
 
   const resendOAAuthCode = async () => {
-    const body: ResendAuthCodeModel = {
-      username,
-    };
-    const resendAuthCode = await new AuthService().SendOAAuthCode(body);
+    const resendAuthCode = await new AuthService().SendOAAuthCode(username);
   };
 
   return (

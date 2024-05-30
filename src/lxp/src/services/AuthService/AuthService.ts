@@ -216,12 +216,12 @@ class AuthService {
     );
   }
 
-  async SendOAAuthCode(body: ResendAuthCodeModel): Promise<boolean> {
+  async SendOAAuthCode(username: string): Promise<boolean> {
     const BASE_URL = Config.authApi;
     const response = await api(BASE_URL).post(
       APIs.sendOAWLAuthCode,
       JSON.stringify({
-        body,
+        username,
       })
     );
 
@@ -236,8 +236,24 @@ class AuthService {
     baseEndPoint: string,
     body: CheckUsernamePhoneNumberModel
   ) {
-    return await api(baseEndPoint).post(
+    const response = await api(baseEndPoint).post(
       APIs.verifyOAWLAuthCodeStatus,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return true;
+  }
+
+  async UpdateOaPractitioner(baseEndPoint: string, body: UpdateUsernameModel) {
+    return await api(baseEndPoint).post(
+      APIs.updateOAPractitioner,
       JSON.stringify(body),
       {
         headers: headers,

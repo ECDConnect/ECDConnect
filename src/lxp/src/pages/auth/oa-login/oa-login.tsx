@@ -130,6 +130,10 @@ export const OaLogin: React.FC = () => {
         return;
       });
 
+    if (checkUserAuthCode === false) {
+      setOpenVerifyPhoneNumber(true);
+    }
+
     if (isValid) {
       if (freeMemory > 300 || freeMemory === 0) {
         setIsLoading(true);

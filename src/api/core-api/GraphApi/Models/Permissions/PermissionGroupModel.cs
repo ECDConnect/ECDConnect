@@ -1,7 +1,7 @@
 using ECDLink.DataAccessLayer.Entities;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.Permissions
 {
     public class PermissionGroupModel
     {
