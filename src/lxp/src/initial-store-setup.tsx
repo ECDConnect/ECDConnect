@@ -155,7 +155,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (isOnline && !userData) {
       setInitLoading(true);
       await initStaticStoreSetup();
-      await initAdditionalStoreSetup();
+      if (!!userData && !isCoach) {
+        await initAdditionalStoreSetup();
+      }
       appDispatch(settingActions.setLastDataSync());
       setInitLoading(false);
       setShouldSaveStateHash(true);
@@ -174,7 +176,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     // SPECIFIC DATA
     setOtherLoading(true);
     const promises = [
-      appDispatch(userThunkActions.getUser({})).unwrap(),
       appDispatch(classroomsThunkActions.getClassroom({})).unwrap(),
       appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap(),
       appDispatch(classroomsThunkActions.getClassroomProgrammes({})).unwrap(),
@@ -386,6 +387,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       if (isCoach) {
         (async () =>
           await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getAllPractitioners({})
+          ).unwrap())();
         (async () =>
           await appDispatch(
             practitionerForCoachThunkActions.getPractitionersForCoach({})

@@ -782,37 +782,12 @@ export const Dashboard: React.FC = () => {
   const dashboardItems: StackedListItemType[] = [];
 
   if (isCoach) {
-    dashboardItems.push(
-      {
-        title: NavigationNames.SmartStarters,
-        titleIcon: styles.classroomIconName,
-        titleIconClassName: styles.icon,
-        onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: NavigationNames.Community.Community,
-        titleIcon: styles.communityIconName,
-        titleIconClassName: styles.icon,
-        onActionClick: () => {
-          history.push(
-            isFirstTimeCommunitySection
-              ? ROUTES.COMMUNITY.WELCOME
-              : ROUTES.COMMUNITY.ROOT,
-            { isFromDashboard: true } as CommunityRouteState
-          );
-        },
-        classNames: 'bg-uiBg',
-      }
-    );
     dashboardItems.push({
-      title: NavigationNames.Calendar,
-      titleIcon: styles.calendarIconName,
-      titleIconClassName: styles.icon,
+      title: NavigationNames.SmartStarters,
+      titleIcon: styles.classroomIconName,
+      titleIconClassName: styles.smartStarterIcon,
+      onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
       classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
     });
   }
 
@@ -836,7 +811,7 @@ export const Dashboard: React.FC = () => {
       onActionClick: () => {
         goToTraining();
       },
-      classNames: 'bg-successBg',
+      classNames: 'bg-uiBg',
     });
   }
 
@@ -1041,7 +1016,7 @@ export const Dashboard: React.FC = () => {
       <Typography
         type={'h1'}
         color="white"
-        text={`Welcome ${userData && userData?.firstName}`}
+        text={`Hi ${userData && userData?.firstName}!`}
         className={styles.welcomeText}
       />
       <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
