@@ -201,7 +201,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
             practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
             practitionerRecord.StipendType = practitioner.StipendType;
-            practitionerRecord.Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList();
+            practitionerRecord.Permissions = practitioner.User.UserPermissions.Where(x => x.Permission.Grouping == UserPermissionGroups.PRACTITIONER).Select(x => new UserPermissionModel(x)).ToList();
 
             ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
             if (practitionerRecord != null)
