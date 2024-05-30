@@ -14,6 +14,7 @@ export const APIs = {
   tenantCurrent: 'api/tenancy/current',
   checkUsernamePhoneNumber: 'api/authentication/check-username-phone-number',
   addOAPractitioner: 'api/authentication/add-oa-practitioner',
+  updateOAPractitioner: 'api/authentication/update-oa-practitioner',
   registerPractitioner: 'api/authentication/register-practitioner',
   updateUsernamePassword: 'api/invitation/update-username-password',
   sendOAWLAuthCode: 'api/invitation/send-oa-wl-auth-code',
