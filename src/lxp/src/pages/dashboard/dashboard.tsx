@@ -916,7 +916,6 @@ export const Dashboard: React.FC = () => {
         activeTabIndex: TabsItems.CLASSES,
       });
     } else {
-      console.log('ahahaha');
       showCompleteProfileBlockingDialog();
     }
   };

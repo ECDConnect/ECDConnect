@@ -81,7 +81,7 @@ export const Login: React.FC = () => {
   ).toString();
   const userLocalxpiration = Date.now() + 3600000000;
   const currentUserId = JSON.parse(localStorage?.getItem('userIdHash')!);
-  console.log({ practitioner });
+
   const userIdHashDecrypted = useMemo(
     () => (currentUserId ? CryptoJS.AES.decrypt(currentUserId, 'user id') : ''),
     [currentUserId]
