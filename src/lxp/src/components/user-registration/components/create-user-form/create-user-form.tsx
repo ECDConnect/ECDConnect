@@ -53,6 +53,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const [messageError, setMessageError] = useState('');
   const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
   const usernameMessageErrorText = `Username already exists! Try using your email address, phone number, or add a number/letter`;
+  const [isFromAuthCodeScreen, setIsFromAuthCodeScreen] = useState(false);
 
   const {
     register: passwordRegister,
@@ -66,6 +67,36 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const { password } = watch();
 
   const handleCreateUser = async () => {
+    const registerOpenAccessUserInput: RegisterRequestModel = {
+      username,
+      password,
+      phoneNumber,
+      registerType: 'username',
+    };
+    if (isFromAuthCodeScreen && isOpenAccess) {
+      const userUpdated = await new AuthService()?.UpdateOaPractitioner(
+        Config?.authApi,
+        registerOpenAccessUserInput
+      );
+      if (userUpdated) {
+        setIsLoading(false);
+        setOpenVerifyPhoneNumber(true);
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      } else {
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        setIsLoading(false);
+      }
+
+      setIsLoading(false);
+      return;
+    }
+
     const body: CheckUsernamePhoneNumberModel = {
       username,
     };
@@ -89,6 +120,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         phoneNumber,
         registerType: 'username',
       };
+
       if (checkUsername) {
         const userCreated = await new AuthService()?.RegisterOpenAccessUser(
           Config?.authApi,
@@ -246,6 +278,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           closeAction={setOpenVerifyPhoneNumber}
           phoneNumber={phoneNumber}
           username={username}
+          setIsFromAuthCodeScreen={setIsFromAuthCodeScreen}
         />
       </Dialog>
     </BannerWrapper>

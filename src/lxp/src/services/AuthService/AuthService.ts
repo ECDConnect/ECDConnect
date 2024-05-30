@@ -251,7 +251,7 @@ class AuthService {
     return true;
   }
 
-  async UpdateOaPractitioner(baseEndPoint: string, body: UpdateUsernameModel) {
+  async UpdateOaPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
     return await api(baseEndPoint).post(
       APIs.updateOAPractitioner,
       JSON.stringify(body),
