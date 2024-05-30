@@ -8,20 +8,12 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const EditAttendanceRegister = ({
   attendanceDate,
-  onComplete,
-  submitText = 'Submit',
   onBack,
   editAttendanceRegisterVisible,
   classroomName,
-  classroomgroupId,
+  classroomGroupId,
 }: EditAttendanceRegisterProps) => {
   const { isOnline } = useOnlineStatus();
-
-  const attendanceSubmitted = (attendanceSuccessList: AttendanceResult) => {
-    if (onComplete) {
-      onComplete(attendanceSuccessList);
-    }
-  };
 
   return (
     <BannerWrapper
@@ -36,12 +28,13 @@ export const EditAttendanceRegister = ({
     >
       <AttendanceList
         attendanceDate={attendanceDate}
-        submitText={submitText}
-        onSubmitSuccess={(attendanceSuccessList: AttendanceResult) =>
-          attendanceSubmitted(attendanceSuccessList)
+        // TODO: add snackbar
+        onSubmitSuccess={
+          (attendanceSuccessList: AttendanceResult) => {}
+          // attendanceSubmitted(attendanceSuccessList)
         }
         editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-        classroomgroupId={classroomgroupId}
+        classroomGroupId={classroomGroupId}
       />
     </BannerWrapper>
   );

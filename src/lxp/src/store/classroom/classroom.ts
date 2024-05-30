@@ -16,6 +16,7 @@ import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { SiteAddressDto } from '@/models/classroom/site-address.dto';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { formatISO } from 'date-fns';
 
 const initialState: ClassroomState = {
   classroom: undefined,
@@ -128,7 +129,7 @@ const classroomsSlice = createSlice({
                 learners: classroomGroup.learners.concat({
                   learnerId: '',
                   childUserId: action.payload.childUserId,
-                  startedAttendance: new Date().toUTCString(),
+                  startedAttendance: formatISO(new Date()),
                   isActive: true,
                   stoppedAttendance: undefined,
                   synced: false,

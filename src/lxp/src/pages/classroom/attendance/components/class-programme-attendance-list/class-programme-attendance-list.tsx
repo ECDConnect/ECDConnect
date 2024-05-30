@@ -61,8 +61,6 @@ export const ClassProgrammeAttendanceList: React.FC<
         (child) => child.userId === learner.childUserId && child.isActive
       );
 
-      const childUser = children?.find((y) => y.userId === learner.childUserId);
-
       if (
         child &&
         !!child.user &&
@@ -110,29 +108,25 @@ export const ClassProgrammeAttendanceList: React.FC<
   return (
     <div className={styles.wrapper}>
       {isMultipleClasses && (
-        <div className={'bg-uiBg mt-2 flex w-full flex-col items-start border'}>
+        <div className={'mt-2 mb-2 flex w-full flex-col'}>
           <Typography
             type={'body'}
             weight={'bold'}
             text={classroomGroup?.name}
             color={'black'}
-            className={'mr-1 ml-4'}
           />
           <Typography
-            type={'help'}
+            type={'h4'}
             text={
               isPrimaryClass || attendanceDate.getTime() !== todayDate.getTime()
                 ? 'Mark attendance for all children'
                 : 'Only mark attendance for children who are here today'
             }
-            color={'textLight'}
-            className={'mr-1 ml-4'}
+            color={'textMid'}
           />
         </div>
       )}
-
       <AttendanceStackedList
-        className={'ml-4 w-11/12'}
         scroll={false}
         listItems={attendanceList || []}
         onChange={(updateList: AttendanceListDataItem[]) => {
