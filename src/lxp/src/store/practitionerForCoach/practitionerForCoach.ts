@@ -75,7 +75,7 @@ const practitionerForCoachSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getChildProgressReportsStatusForUser);
-
+    setThunkActionStatus(builder, getPractitionersForCoach);
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitionerForCoach = action.payload;
     });

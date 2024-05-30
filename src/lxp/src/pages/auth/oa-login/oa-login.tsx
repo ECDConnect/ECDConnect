@@ -25,6 +25,7 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { syncThunkActions } from '@/store/sync';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
+import { userThunkActions } from '@/store/user';
 import facebookLogo from '../../../assets/icon/facebook_white.svg';
 import {
   OaLoginModel,
@@ -95,6 +96,7 @@ export const OaLogin: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
+    appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
     history.push(ROUTES.DASHBOARD);
   };

@@ -75,6 +75,7 @@ const practitionerSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
     setThunkActionStatus(builder, getPractitionerDisplayMetrics);
+    setThunkActionStatus(builder, getAllPractitioners);
     builder.addCase(
       getPractitionerDisplayMetrics.fulfilled,
       (state, action) => {

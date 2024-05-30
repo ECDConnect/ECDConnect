@@ -29,6 +29,8 @@ export const PractitionerActions = {
   UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
   UPDATE_PRINCIPAL_INVITATION: 'updatePrincipalInvitation',
   GET_PRACTITIONERS_DISPLAY_METRICS: 'getPractitionersDisplayMetrics',
+  GET_PRACTITIONERS_FOR_COACH: 'getPractitionersForCoach',
+  GET_ALL_PRACTITIONERS: 'getAllPractitioners',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -37,7 +39,7 @@ export const getPractitionersForCoach = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getPractitionersForCoach',
+  PractitionerActions.GET_PRACTITIONERS_FOR_COACH,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -148,7 +150,7 @@ export const getAllPractitioners = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getAllPractitioners',
+  PractitionerActions.GET_ALL_PRACTITIONERS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
