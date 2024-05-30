@@ -6,6 +6,7 @@ import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { ClassroomActions } from '@/store/classroom/classroom.actions';
 import { useSnackbar } from '@ecdlink/core';
 import { ActionModal } from '@ecdlink/ui';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -43,7 +44,7 @@ export const DeleteClassActionModal = ({
         classroomGroup: {
           ...classroomGroup!,
           learners: [],
-          isActive: true,
+          isActive: false,
         },
       })
     );
@@ -73,19 +74,21 @@ export const DeleteClassActionModal = ({
   if (!canDeleteClassroomGroup) {
     return (
       <ActionModal
+        customIcon={
+          <ExclamationCircleIcon className="text-alertMain mb-4 h-10 w-10" />
+        }
         title={`Cannot delete this class`}
         paragraphs={[
-          'You cannot delete this class because there are still children in the class.',
-          'Please move the children to a different class before deleting.',
+          'To delete a class, first move all children to a different class or remove children who are no longer in your preschool.',
         ]}
         actionButtons={[
           {
-            text: 'Okay',
-            textColour: 'white',
+            text: 'Close',
+            textColour: 'quatenary',
             colour: 'quatenary',
-            type: 'filled',
+            type: 'outlined',
             onClick: onClose,
-            leadingIcon: 'CheckCircleIcon',
+            leadingIcon: 'XIcon',
           },
         ]}
       />
@@ -94,13 +97,16 @@ export const DeleteClassActionModal = ({
 
   return (
     <ActionModal
-      title={`Delete ${classroomGroup?.name}.`}
+      customIcon={
+        <ExclamationCircleIcon className="text-alertMain mb-4 h-10 w-10" />
+      }
+      title={`Delete ${classroomGroup?.name} class?`}
       paragraphs={[
         `Are you sure you want to delete ${classroomGroup?.name} class?`,
       ]}
       actionButtons={[
         {
-          text: 'Delete',
+          text: 'Yes, delete class',
           textColour: 'white',
           colour: 'quatenary',
           type: 'filled',
@@ -110,7 +116,7 @@ export const DeleteClassActionModal = ({
           leadingIcon: 'TrashIcon',
         },
         {
-          text: 'Cancel',
+          text: 'No, cancel',
           textColour: isLoading ? 'textLight' : 'quatenary',
           colour: 'quatenary',
           type: 'outlined',
