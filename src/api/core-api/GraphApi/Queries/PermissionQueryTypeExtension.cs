@@ -39,8 +39,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return grouped;
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
-        public List<PractitionerPermissionModel> GetPractitionerPermissions(IGenericRepositoryFactory repoFactory)
+        [Permission(PermissionGroups.USERPERMISSION, GraphActionEnum.View)]
+        public List<PractitionerPermissionModel> GetPractitionerRolePermissions(IGenericRepositoryFactory repoFactory)
         {
             var permissionsRepository = repoFactory.CreateRepository<Permission>();
             return permissionsRepository

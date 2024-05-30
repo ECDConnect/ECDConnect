@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class UserPermissionMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.USERPERMISSION, GraphActionEnum.Update)]
         public List<UserPermissionModel> UpdateUserPermission(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
@@ -29,9 +29,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var userPermissionRepo = repoFactory.CreateGenericRepository<UserPermission>(userContext: uId);
             var permissionRepo = repoFactory.CreateGenericRepository<Permission>(userContext: uId);
 
-            if (input.UserId == null || input.PermissionIds.Count == 0)
+            if (input == null)
             {
-                return null;
+                throw new ArgumentNullException("input");
+            }
+
+            if (input.UserId.ToString() != "")
+            {
+                throw new ArgumentException("UserId is empty");
+            }
+
+            if (input.PermissionIds.Count == 0)
+            {
+                throw new ArgumentException("No permissions available");
             }
 
             // Fetch all available system permissions for practitioners for assignment to current user
@@ -41,7 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                                     .ToList();
 
             // Current permissions linked to user 
-            var allUserPermissions = userPermissionRepo.GetAll().Where(x => x.UserId == (Guid)input.UserId).ToList();
+            var allUserPermissions = userPermissionRepo.GetAll().Where(x => x.UserId == input.UserId).ToList();
             var allUserPermissionIds = allUserPermissions.Select(x => x.PermissionId).ToList();
 
             var permissionIdsToAddAsArchived = practitionerSystemPermissionsIds.Where(x => !input.PermissionIds.Contains(x)).ToList();
@@ -57,7 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     newPermissions.Add(new UserPermission()
                     {
                         Id = Guid.NewGuid(),
-                        UserId = (Guid)input.UserId,
+                        UserId = input.UserId,
                         PermissionId = item,
                         IsActive = false
                     });
@@ -73,7 +83,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     newPermissions.Add(new UserPermission()
                     {
                         Id = Guid.NewGuid(),
-                        UserId = (Guid)input.UserId,
+                        UserId = input.UserId,
                         PermissionId = item,
                         IsActive = true
                     });
@@ -86,10 +96,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 foreach (var item in permissionIdsToArchive)
                 {
                     var permissionToArchive = allUserPermissions.Where(x => x.PermissionId == item).FirstOrDefault();
-                    permissionToArchive.IsActive = false;
-                    permissionToArchive.UpdatedDate = DateTime.Now;
-                    permissionToArchive.UpdatedBy = uId.ToString();
-                    userPermissionRepo.Update(permissionToArchive);
+                    userPermissionRepo.Delete(permissionToArchive.Id);
                 }
             }
 
@@ -108,7 +115,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return userPermissionRepo
                 .GetAll()
                 .Include(x => x.Permission)
-                .Where(x => x.UserId == (Guid)input.UserId).Select(x => new UserPermissionModel(x))
+                .Where(x => x.UserId == input.UserId).Select(x => new UserPermissionModel(x))
                 .ToList();
         }
     }
