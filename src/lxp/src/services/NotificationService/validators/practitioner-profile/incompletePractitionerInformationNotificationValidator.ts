@@ -124,9 +124,8 @@ export class IncompletePractitionerInformationNotificationValidator
         return [
           {
             reference: `practitioner-profile`,
-            title: 'Tell us more about you!',
-            message:
-              'Share more information about your programme to make Funda App useful for you.',
+            title: 'Join or add a preschool!',
+            message: 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
             priority: NotificationPriority.highest,
             viewOnDashboard: true,

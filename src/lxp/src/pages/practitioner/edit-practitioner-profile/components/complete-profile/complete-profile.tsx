@@ -58,47 +58,24 @@ export const CompleteProfile: React.FC = () => {
 
   const showNotificationForPractitionerFlow =
     (hasPractitionerRole || addedByPrincipal) && notRegistered;
-  if (
-    practitioner?.isTrainee === true &&
-    ((practitioner?.isOnStipend && completedSteps?.length < 8) ||
-      (practitioner?.isOnStipend !== true && completedSteps?.length < 7))
-  ) {
-    return (
-      <div className="px-4">
-        <NotificationHeaderCard
-          header={'Start your trainee journey!'}
-          message={
-            'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.'
-          }
-          actionText={'Get started'}
-          onActioned={
-            practitioner?.setupTraineeInitiated
-              ? () => history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
-              : () => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)
-          }
-        />
-      </div>
-    );
-  } else {
-    return (
-      <div className="px-4">
-        <NotificationHeaderCard
-          header={'Tell us more about you!'}
-          message={
-            'Share more information about your programme to make Funda App useful for you.'
-          }
-          actionText={'Tell us more about you!'}
-          onActioned={() =>
-            handleOnlineCallback(() =>
-              showNotificationForPractitionerFlow
-                ? history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-                : history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-            )
-          }
-        />
-      </div>
-    );
-  }
+  return (
+    <div className="px-4">
+      <NotificationHeaderCard
+        header={'Tell us more about you!'}
+        message={
+          'Share more information about your programme to make Funda App useful for you.'
+        }
+        actionText={'Tell us more about you!'}
+        onActioned={() =>
+          handleOnlineCallback(() =>
+            showNotificationForPractitionerFlow
+              ? history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+              : history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+          )
+        }
+      />
+    </div>
+  );
 };
 
 export default CompleteProfile;

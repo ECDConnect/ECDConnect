@@ -100,7 +100,8 @@ export const Login: React.FC = () => {
     appDispatch(authActions.setUserExpired());
     appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
-    history.push(ROUTES.DASHBOARD);
+
+    history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
   const checkSyncData = async () => {

@@ -16,7 +16,7 @@ import {
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
@@ -72,14 +72,22 @@ import {
 import { NavigationNames } from '../navigation';
 import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
 import { BusinessTabItems } from '../business/business.types';
+import { useTenant } from '@/hooks/useTenant';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 
 const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
   isFromTraineeFlow?: boolean;
+  isFromLogin?: boolean;
 }
 
 export const Dashboard: React.FC = () => {
+  const location = useLocation<DashboardRouteState>();
+  const isFromLogin = location?.state?.isFromLogin;
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+  const isWhiteLabel = tenant?.isWhiteLabel;
   const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
@@ -106,7 +114,6 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
@@ -141,6 +148,12 @@ export const Dashboard: React.FC = () => {
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
+
+  useEffect(() => {
+    if (isFromLogin && practitioner?.progress === 0) {
+      history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+    }
+  }, []);
 
   // Sync the coach data -> TODO make a better sync method
   useEffect(() => {
@@ -227,29 +240,6 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
-
-  useEffect(() => {
-    if (
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend &&
-        completedSteps?.length === 8) ||
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend !== true &&
-        completedSteps?.length === 7)
-    ) {
-      const copy = Object.assign({}, practitioner);
-
-      const input: PractitionerInput = {
-        Id: copy.id,
-        IsActive: true,
-        Progress: copy.progress,
-        IsTrainee: false,
-      };
-
-      appDispatch(practitionerActions.updatePractitioner(copy));
-      appDispatch(practitionerThunkActions.updatePractitioner(input));
-    }
-  }, [completedSteps?.length]);
 
   const clubCard = useMemo((): ScoreCardProps => {
     const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
@@ -360,11 +350,7 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (isOnline) {
       initStaticStoreSetup();
-      if (
-        dashboardNotification?.isNew &&
-        practitioner?.progress! >= 2 &&
-        !practitioner?.isTrainee
-      ) {
+      if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
         appDispatch(notificationActions.resetFrontendNotificationState());
       }
     }
@@ -429,69 +415,25 @@ export const Dashboard: React.FC = () => {
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
-      position: DialogPosition.Top,
+      position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            className="z-50"
-            icon="XCircleIcon"
-            iconBorderColor="errorBg"
-            iconColor="errorMain"
-            title="Missing programme information"
-            paragraphs={[
-              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
-            ]}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Add programme details',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'PlusIcon',
-                onClick: isTrainee
-                  ? async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
-                      );
-                    }
-                  : async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-                      );
-                    },
-              },
-              {
-                colour: 'primary',
-                text: 'Close',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'XIcon',
-                onClick: () => {
-                  onSubmit();
-                },
-              },
-            ]}
-          />
-        );
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} />;
       },
     });
   };
 
   const onNavigation = (navItem: any) => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme
     ) {
       history.push(navItem.href, navItem.params);
-    } else if (navItem.href.includes('classroom')) {
+    } else if (navItem.href.includes('classroom') && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     } else {
       history.push(navItem.href, navItem.params);
@@ -803,36 +745,19 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (!isTrainee) {
-    dashboardItems.push({
-      title: NavigationNames.Training,
-      titleIcon: styles.trainingIconName,
-      titleIconClassName: styles.trainingIcon,
-      onActionClick: () => {
-        goToTraining();
-      },
-      classNames: 'bg-uiBg',
-    });
-  }
-
-  if (!isCoach && !isTrainee && !isPrincipal && isPractitioner) {
+  if (!isCoach && !isPrincipal && isPractitioner) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Community.Community,
       titleIcon: styles.communityIconName,
       titleIconClassName: styles.communityIcon,
       onActionClick: () => {
-        history.push(
-          isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          { isFromDashboard: true } as CommunityRouteState
-        );
+        goToCommunity();
       },
       classNames: 'bg-quatenaryBg',
     });
   }
 
-  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+  if (isPrincipal || isFundaAppAdmin) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
       titleIcon: styles.businessIconName,
@@ -847,16 +772,33 @@ export const Dashboard: React.FC = () => {
       titleIcon: styles.communityIconName,
       titleIconClassName: styles.communityIcon,
       onActionClick: () => {
-        history.push(
-          isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          { isFromDashboard: true } as CommunityRouteState
-        );
+        goToCommunity();
       },
       classNames: 'bg-quatenaryBg',
     });
   }
+
+  const goToCommunity = () => {
+    if (
+      ((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
+    ) {
+      history.push(
+        isFirstTimeCommunitySection
+          ? ROUTES.COMMUNITY.WELCOME
+          : ROUTES.COMMUNITY.ROOT,
+        { isFromDashboard: true } as CommunityRouteState
+      );
+    } else {
+      showCompleteProfileBlockingDialog();
+    }
+  };
 
   useEffect(() => {
     if (shouldUserSync) {
@@ -898,14 +840,14 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
     ) {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.CLASSES,
@@ -916,43 +858,42 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToCalendar = () => {
-    history.push(ROUTES.CALENDAR);
+    if (
+      ((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme
+    ) {
+      history.push(ROUTES.CALENDAR);
+    } else {
+      showCompleteProfileBlockingDialog();
+    }
   };
 
   const goToBusiness = () => {
-    if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+    if (isPrincipal || isFundaAppAdmin) {
       history.push(ROUTES.BUSINESS);
-      return;
-    }
-    if (isTrainee) {
-      if (practitioner?.setupTraineeInitiated) {
-        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
-        return;
-      }
-      history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }
   };
 
   const goToTraining = () => {
-    history.push(ROUTES.TRAINING);
-  };
-
-  const showOnlineOnly = () => {
-    dialog({
-      color: 'bg-white',
-      position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
-  };
-
-  const handleOnlineCallback = (callback: () => void) => {
-    if (isOnline) {
-      callback();
+    if (
+      ((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
+    ) {
+      history.push(ROUTES.TRAINING);
     } else {
-      showOnlineOnly();
+      showCompleteProfileBlockingDialog();
     }
   };
 
@@ -983,7 +924,7 @@ export const Dashboard: React.FC = () => {
       calendarRender={() => {
         return (
           <IconBadge
-            onClick={() => history.push(ROUTES.CALENDAR)}
+            onClick={() => goToCalendar()}
             badgeColor={'errorMain'}
             badgeTextColor={'white'}
             icon={styles.calendarIconName}
@@ -1024,7 +965,7 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {!!pointsScoreProps && !isCoach && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
