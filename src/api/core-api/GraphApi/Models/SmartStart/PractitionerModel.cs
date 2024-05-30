@@ -45,6 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public int DaysAbsentLastMonth { get; set; } = 0;
         public bool IsOnLeave { get; set; } = false;
         public List<AbsenteeDetail> Absentees { get; set; }
+        public List<UserPermissionModel> Permissions { get; set; }
     }
 
 }

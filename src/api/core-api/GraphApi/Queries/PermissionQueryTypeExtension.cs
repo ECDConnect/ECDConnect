@@ -1,10 +1,9 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Permissions;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -38,6 +37,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             return grouped;
+        }
+
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        public List<PractitionerPermissionModel> GetPractitionerPermissions(IGenericRepositoryFactory repoFactory)
+        {
+            var permissionsRepository = repoFactory.CreateRepository<Permission>();
+            return permissionsRepository
+                .GetAll()
+                .Where(x => x.IsActive && x.Grouping == UserPermissionGroups.PRACTITIONER)
+                .Select(item => new PractitionerPermissionModel(item)).ToList();
         }
     }
 }

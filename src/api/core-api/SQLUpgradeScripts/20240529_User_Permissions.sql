@@ -26,5 +26,5 @@ create table public."UserPermission" (
 );
 
 ALTER TABLE "UserPermission" ADD CONSTRAINT "FK_UserPermission_UserId" FOREIGN KEY ("UserId") REFERENCES "AspNetUsers"("Id") ON DELETE RESTRICT;
-ALTER TABLE "UserPermission" ADD CONSTRAINT "FK_UserPermission_PermissionId" FOREIGN KEY ("PermissionId") REFERENCES "Permissions"("Id") ON DELETE RESTRICT;
+ALTER TABLE "UserPermission" ADD CONSTRAINT "FK_UserPermission_PermissionId" FOREIGN KEY ("PermissionId") REFERENCES "Permission"("Id") ON DELETE RESTRICT;
  
