@@ -6,7 +6,6 @@ import {
   AuthCodeModel,
   Config,
   NOTIFICATION,
-  ResendAuthCodeModel,
   useNotifications,
 } from '@ecdlink/core';
 import {
@@ -24,12 +23,14 @@ interface VerifyPhoneNumberProps {
   closeAction?: (item: boolean) => void;
   phoneNumber?: string;
   username: string;
+  setIsFromAuthCodeScreen?: (item: boolean) => void;
 }
 
 export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   closeAction,
   phoneNumber,
   username,
+  setIsFromAuthCodeScreen,
 }) => {
   const { isOnline } = useOnlineStatus();
   const { setNotification } = useNotifications();
@@ -75,7 +76,9 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   return (
     <BannerWrapper
       size="small"
-      onBack={() => closeAction && closeAction(false)}
+      onBack={() => {
+        closeAction && closeAction(false);
+      }}
       color="primary"
       className={'h-screen'}
       title={orgName}
@@ -161,7 +164,10 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
             color="secondaryAccent2"
             background="transparent"
             size="small"
-            onClick={() => {}}
+            onClick={() => {
+              setIsFromAuthCodeScreen && setIsFromAuthCodeScreen(true);
+              closeAction && closeAction(false);
+            }}
           >
             <Typography
               type="help"

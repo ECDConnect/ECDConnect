@@ -132,6 +132,7 @@ export const OaLogin: React.FC = () => {
 
     if (checkUserAuthCode === false) {
       setOpenVerifyPhoneNumber(true);
+      return;
     }
 
     if (isValid) {
