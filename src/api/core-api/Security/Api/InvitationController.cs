@@ -311,10 +311,7 @@ namespace ECDLink.Security.Api
             {
                 foreach (var message in messages)
                 {
-                    message.IsActive = false;
-                    message.UpdatedDate = DateTime.Now;
-                    message.UpdatedBy = _applicationUserId.ToString();
-                    _messageRepo.Update(message);
+                    _messageRepo.Delete(message.Id);
                 }
             }
 
@@ -353,15 +350,16 @@ namespace ECDLink.Security.Api
                     Error = "Invalid username"
                 });
             }
-
+            // If the user reaches the confirm auth code screen, but for some reason leaves the flow. And after that, the user tries to log in directly with the username,
+            // we should check the auth code status. If it's not confirmed yet, we should redirect the user to the confirm auth code screen again.
             var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
             if (messages.Count == 0)
             {
-                return Ok(true);
+                return Ok(false);
             } 
             else
             {
-                return Ok(false);
+                return Ok(true);
             }
         }
 
