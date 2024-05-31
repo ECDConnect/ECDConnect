@@ -98,7 +98,7 @@ export const Login: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
-    appDispatch(userThunkActions.getUser({})).unwrap();
+    await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
 
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
