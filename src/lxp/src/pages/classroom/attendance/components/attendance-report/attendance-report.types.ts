@@ -6,4 +6,5 @@ export interface AttendanceReportProps extends ComponentBaseProps {
   classroom?: ClassroomDto;
   currentClassroomGroup?: ClassroomGroupDto;
   classroomGroups?: ClassroomGroupDto[];
+  isAllRegistersCompleted?: boolean;
 }

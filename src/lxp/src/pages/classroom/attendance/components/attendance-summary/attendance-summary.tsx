@@ -42,8 +42,6 @@ import {
 } from '@utils/common/local-storage.utils';
 import EditAttendanceRegister from '../edit-attendance-register/edit-attendance-register';
 import * as styles from './attendance-summary.styles';
-import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { userSelectors } from '@store/user';
 import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { AttendanceSummaryState } from './attendance-summary.types';
@@ -55,7 +53,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   currentUserId,
 }) => {
   const [classroomName, setClassroomName] = useState<string>('');
-
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(false);
 
@@ -66,15 +63,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     ActionListDataItem[]
   >([]);
 
-  const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [attendanceEditDay, setAttendanceEditDay] = useState<Date>();
   const [missedAttendanceGroups, setMissedAttendanceGroups] = useState<
     MissedAttendanceGroups[]
   >([]);
-  const [submitText, setSubmitText] = useState<string>(
-    'Submit & go to next day'
-  );
   const [editAttendanceRegisterVisible, setEditAttendanceRegisterVisible] =
     useState<boolean>(false);
   const [isValidAttendanceDay, setIsValidAttendanceDay] =
@@ -82,30 +75,22 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const [currentEditClassroomGroupId, setCurrentEditClassroomGroupId] =
     useState<string>();
   const [todayDate] = useState(new Date());
-  const allClassroomGroups = useSelector(
-    classroomsSelectors.getClassroomGroups
-  );
-  const classroomGroups = allClassroomGroups.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
-  );
+
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const classroomGroupsForPrincipal = classroomGroups.filter(
-    (item) => item?.userId === userData?.id
-  );
 
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
-  const classProgrammesForPrincipal = classProgrammes.filter((el) => {
-    return classroomGroupsForPrincipal.some((f) => {
+  const allClassProgrammes = useSelector(
+    classroomsSelectors.getClassProgrammes
+  );
+  const classProgrammes = allClassProgrammes.filter((el) => {
+    return classroomGroups.some((f) => {
       return f.id === el.classroomGroupId;
     });
   });
 
-  const classProgrammesUpdated =
-    practitioner?.isPrincipal === true
-      ? classProgrammesForPrincipal
-      : classProgrammes;
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const trackedAttendance = useSelector(
@@ -163,19 +148,16 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       const attendance = attendanceData as AttendanceDto[];
       const holidays = publicHolidays as Holiday[];
 
-      const meetingDays: number[] = getClassroomGroupSchoolDays(
-        classProgrammesUpdated
-      );
+      const meetingDays: number[] =
+        getClassroomGroupSchoolDays(classProgrammes);
 
       setIsValidAttendanceDay(
         isValidAttendableDate(todayDate, meetingDays || [], holidays)
       );
       const attendanceToDoList: MissedAttendanceGroups[] =
         getMissedAttendanceSummaryGroups(
-          practitioner?.isPrincipal === true
-            ? classroomGroupsForPrincipal
-            : classroomGroups || [],
-          classProgrammesUpdated,
+          classroomGroups,
+          classProgrammes,
           attendance,
           holidays,
           todayDate,
@@ -190,11 +172,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     publicHolidays,
     attendanceData,
     previousAttendanceData,
-    classProgrammesUpdated,
     classProgrammes,
     todayDate,
     practitioner?.isPrincipal,
-    classroomGroupsForPrincipal,
     classroomGroups,
     classroomGroupLearners,
   ]);
@@ -210,7 +190,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       !isValidAttendanceDay &&
       missedAttendanceGroups &&
       missedAttendanceGroups.length === 0 &&
-      classProgrammesUpdated
+      classProgrammes
     ) {
       const startOfWeekDate = startOfWeek(todayDate, { weekStartsOn: 1 });
       let actionListToDisplayWrapper: {
@@ -218,17 +198,12 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         item: ActionListDataItem;
         group: ClassroomGroupDto;
       }[] = [];
-      for (const classProgramme of classProgrammesUpdated) {
-        const group =
-          practitioner?.isPrincipal === true
-            ? classroomGroupsForPrincipal?.find(
-                (x) => x.id === classProgramme.classroomGroupId
-              )
-            : classroomGroups?.find(
-                (x) => x.id === classProgramme.classroomGroupId
-              );
+      for (const classProgramme of classProgrammes) {
+        const classroomGroup = classroomGroups?.find(
+          (x) => x.id === classProgramme.classroomGroupId
+        );
 
-        if (group) {
+        if (classroomGroup) {
           const dayDate = addDays(
             startOfWeekDate,
             classProgramme.meetingDay - 1
@@ -240,9 +215,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           if (theDate < new Date().valueOf() && theDate > programmeStartDate) {
             actionListToDisplayWrapper.push({
               date: dayDate,
-              group: group,
+              group: classroomGroup,
               item: {
-                title: group.name || '',
+                title: classroomGroup.name || '',
                 subTitle: format(dayDate, 'EEEE, d LLLL'),
                 actionName: 'Edit',
                 actionIcon: 'PencilIcon',
@@ -269,13 +244,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    classProgrammesUpdated,
-    classroomGroups,
-    classroomGroupsForPrincipal,
-    isValidAttendanceDay,
-    missedAttendanceGroups,
-  ]);
+  }, [classroomGroups, isValidAttendanceDay, missedAttendanceGroups]);
 
   useEffect(() => {
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
@@ -340,8 +309,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       setAttendanceEditDay(attendanceDay);
       setEditAttendanceRegisterVisible(true);
     }
-
-    setSubmitText(isLast ? 'Submit' : 'Submit & go to next day');
   };
 
   const goToNextEditAttendanceRegister = (
@@ -380,10 +347,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       }
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
-        setSubmitText(
-          missedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit'
-        );
-
         const dateSubmitted = new Date(attendanceResult.attendanceDate);
 
         if (allMissedAttendanceDays.length !== 0) {
@@ -423,7 +386,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
 
   return (
     <>
-      <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
+      <div className={'flex h-full flex-1 flex-col gap-4'}>
         {isValidAttendanceDay ? (
           <div></div>
         ) : (
@@ -447,29 +410,25 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
             </div>
           </>
         )}
-
         {attendanceActionList.length > 0 &&
           missedAttendanceGroups.length > 0 && (
-            <div className={'flex flex-col'}>
-              <div className={'flex flex-row items-center'}>
-                <div className={styles.iconRound}>
-                  <Typography
-                    type={'help'}
-                    weight={'bold'}
-                    text={attendanceActionList.length.toString()}
-                    color={'white'}
-                  />
-                </div>
+            <div className={'flex flex-row items-center'}>
+              <div className={styles.iconRound}>
                 <Typography
-                  type={'body'}
+                  type={'help'}
                   weight={'bold'}
-                  text={'incomplete registers this week.'}
-                  color={'alertMain'}
+                  text={attendanceActionList.length.toString()}
+                  color={'white'}
                 />
               </div>
+              <Typography
+                type={'body'}
+                weight={'bold'}
+                text={'incomplete registers:'}
+                color={'textDark'}
+              />
             </div>
           )}
-
         <StackedList
           listItems={attendanceActionList}
           type={'ActionList'}
@@ -481,19 +440,16 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           visible={editAttendanceRegisterVisible}
           position={DialogPosition.Top}
         >
-          <div className={styles.dialogContent}>
-            <EditAttendanceRegister
-              attendanceDate={attendanceEditDay}
-              submitText={submitText}
-              onComplete={(attendanceSuccessList: AttendanceResult) =>
-                goToNextEditAttendanceRegister(attendanceSuccessList)
-              }
-              onBack={() => closeEditAttendanceRegister()}
-              editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-              classroomName={classroomName ?? ''}
-              classroomgroupId={currentEditClassroomGroupId ?? ''}
-            />
-          </div>
+          <EditAttendanceRegister
+            attendanceDate={attendanceEditDay}
+            // onComplete={(attendanceSuccessList: AttendanceResult) =>
+            //   goToNextEditAttendanceRegister(attendanceSuccessList)
+            // }
+            onBack={() => closeEditAttendanceRegister()}
+            editAttendanceRegisterVisible={editAttendanceRegisterVisible}
+            classroomName={classroomName ?? ''}
+            classroomGroupId={currentEditClassroomGroupId ?? ''}
+          />
         </Dialog>
       )}
     </>

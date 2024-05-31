@@ -5,6 +5,7 @@ import {
   getAttendance,
   getMonthlyAttendanceReport,
   getPreviousWeekAttendance,
+  trackAttendanceSync,
 } from './attendance.actions';
 import { AttendanceState, TrackAttendanceModelInput } from './attendance.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
@@ -66,6 +67,10 @@ const attendanceSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getMonthlyAttendanceReport);
+    setThunkActionStatus(builder, trackAttendanceSync);
+    builder.addCase(trackAttendanceSync.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getAttendance.fulfilled, (state, action) => {
       state.attendance = action.payload;
     });

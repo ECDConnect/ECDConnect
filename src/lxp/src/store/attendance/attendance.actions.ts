@@ -18,6 +18,7 @@ import {
 export const AttendanceActions = {
   GET_ATTENDANCE: 'getAttendance',
   GET_MONTHLY_ATTENDANCE_REPORT: 'getMonthlyAttendanceReport',
+  TRACK_ATTENDANCE_SYNC: 'trackAttendanceSync',
 };
 
 export const getAttendance = createAsyncThunk<
@@ -164,44 +165,47 @@ export const trackAttendanceSync = createAsyncThunk<
   boolean[],
   any,
   ThunkApiType<RootState>
->('trackAttendanceSync', async (any, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-    attendanceData: { attendanceTracked },
-  } = getState();
+>(
+  AttendanceActions.TRACK_ATTENDANCE_SYNC,
+  async (any, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      attendanceData: { attendanceTracked },
+    } = getState();
 
-  try {
-    let promises: Promise<boolean>[] = [];
+    try {
+      let promises: Promise<boolean>[] = [];
 
-    if (userAuth && attendanceTracked) {
-      promises = attendanceTracked.map(async (x) => {
-        const trackAttendanceModelInput: TrackAttendanceModelInput = {
-          classroomProgrammeId: x.classroomProgrammeId,
-          programmeOwnerId: x.programmeOwnerId,
-          attendees: [],
-          attendanceDate: x.attendanceDate,
-        };
+      if (userAuth && attendanceTracked) {
+        promises = attendanceTracked.map(async (x) => {
+          const trackAttendanceModelInput: TrackAttendanceModelInput = {
+            classroomProgrammeId: x.classroomProgrammeId,
+            programmeOwnerId: x.programmeOwnerId,
+            attendees: [],
+            attendanceDate: x.attendanceDate,
+          };
 
-        trackAttendanceModelInput.attendees = [];
+          trackAttendanceModelInput.attendees = [];
 
-        x.attendees?.forEach((z) => {
-          const trackAttendanceAttendeeModelInput: TrackAttendanceAttendeeModelInput =
-            {
-              userId: z.userId,
-              attended: z.attended,
-            };
-          trackAttendanceModelInput.attendees?.push(
-            trackAttendanceAttendeeModelInput
-          );
+          x.attendees?.forEach((z) => {
+            const trackAttendanceAttendeeModelInput: TrackAttendanceAttendeeModelInput =
+              {
+                userId: z.userId,
+                attended: z.attended,
+              };
+            trackAttendanceModelInput.attendees?.push(
+              trackAttendanceAttendeeModelInput
+            );
+          });
+
+          return await new AttendanceService(
+            userAuth?.auth_token
+          ).trackAttendance([trackAttendanceModelInput]);
         });
-
-        return await new AttendanceService(
-          userAuth?.auth_token
-        ).trackAttendance([trackAttendanceModelInput]);
-      });
+      }
+      return Promise.all(promises);
+    } catch (err) {
+      return rejectWithValue(err);
     }
-    return Promise.all(promises);
-  } catch (err) {
-    return rejectWithValue(err);
   }
-});
+);
