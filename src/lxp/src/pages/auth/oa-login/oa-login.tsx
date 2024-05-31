@@ -316,10 +316,12 @@ export const OaLogin: React.FC = () => {
             visible={openVerifyPhoneNumber}
             position={DialogPosition.Full}
             className="w-full"
+            stretch
           >
             <VerifyPhoneNumberAuthCode
               closeAction={setOpenVerifyPhoneNumber}
               username={username}
+              password={password as string}
             />
           </Dialog>
         )}
