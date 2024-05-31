@@ -228,7 +228,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         {isOpenAccess && (
           <div className="mt-4 space-y-1">
             <FormInput
-              label={'Cellphone number *'}
+              label={'Cellphone number'}
               nameProp={'phoneNumber'}
               placeholder="e.g 0123456789"
               onChange={(e) => {
@@ -239,7 +239,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             {!isValidPhoneNumber && phoneNumber && (
               <Typography
                 type="help"
-                text="Please enter a valid South African cellphone number."
+                text="Please enter a valid cellphone number"
                 color="errorMain"
               />
             )}
