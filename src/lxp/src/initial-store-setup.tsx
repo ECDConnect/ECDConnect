@@ -153,6 +153,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const initStoreSetup = useCallback(async () => {
     if (isOnline) {
+      setInitLoading(true);
       await initStaticStoreSetup();
 
       if (!!userData && !isCoach) {
