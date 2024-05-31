@@ -14,7 +14,7 @@ module.exports = {
         headercard: '328px',
       },
       height: {
-        bannerimage: '200px',
+        bannerimage: '220px',
       },
       borderRadius: {
         10: '0.625rem',
@@ -31,6 +31,7 @@ module.exports = {
         120: '120px',
         177: '177px',
         180: '180px',
+        340: '340px',
         360: '360px',
         244: '244px',
         54: '54px',

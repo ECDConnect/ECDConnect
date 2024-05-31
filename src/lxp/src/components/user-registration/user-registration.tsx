@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { CreateUserForm } from './components/create-user-form/create-user-form';
 import { useTenant } from '@/hooks/useTenant';
 import { useHistory, useLocation } from 'react-router';
+import { useTheme } from '@ecdlink/core';
 
 interface UserRegistrationProps {
   closeAction?: (item: boolean) => void;
@@ -30,9 +31,8 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
   const { state } = useLocation<UserRegistrationRouteState>();
   const userId = state?.userId;
   const token = state?.token;
-  const tenant = useTenant();
   const [openCreateUser, setOpencreateUser] = useState(false);
-  const orgName = tenant?.tenant?.organisationName;
+  const { theme } = useTheme();
 
   return (
     <BannerWrapper
@@ -40,7 +40,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
       onBack={() => history?.goBack()}
       color="primary"
       className={'h-screen'}
-      title={orgName}
+      backgroundUrl={theme?.images.graphicOverlayUrl}
       displayOffline={!isOnline}
     >
       <div className="p-4">

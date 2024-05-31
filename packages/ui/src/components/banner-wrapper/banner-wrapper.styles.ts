@@ -94,7 +94,7 @@ export const backgroundImageWrapper = (
     case 'signup':
       return classNames(
         baseBackgroundImageClass,
-        'h-244',
+        'h-340',
         `bg-${backgroundImageColour}`
       );
     case 'medium':
