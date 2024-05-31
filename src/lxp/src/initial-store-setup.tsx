@@ -174,6 +174,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     setOtherLoading(true);
     const promises = [
       appDispatch(classroomsThunkActions.getClassroom({})).unwrap(),
@@ -182,8 +184,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(
         attendanceThunkActions.getAttendance({
-          year: getYear(new Date()),
-          // TODO: get the last 3 months
+          startDate: thirtyDaysAgo,
+          endDate: new Date(),
         })
       ).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),

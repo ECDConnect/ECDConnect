@@ -16,18 +16,19 @@ class AttendanceService {
   }
 
   async getAttendance(
-    year: number,
-    monthOfYear?: number,
-    weekOfYear?: number
+    startDate: Date,
+    endDate: Date
   ): Promise<AttendanceDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { attendance: AttendanceDto[] };
+      errors?: {};
+    }>(``, {
       query: `
-      query attendance($year: Int!, $monthOfYear: Int, $weekOfYear: Int) {
+      query attendance($startDate: DateTime!, $endDate: DateTime!) {
         attendance(
-          year: $year
-          monthOfYear: $monthOfYear
-          weekOfYear: $weekOfYear
+          startDate: $startDate
+          endDate: $endDate
         ) {
           classroomProgrammeId
           userId
@@ -40,13 +41,12 @@ class AttendanceService {
       }
       `,
       variables: {
-        year: year,
-        monthOfYear: monthOfYear,
-        weekOfYear: weekOfYear,
+        startDate: startDate,
+        endDate: endDate,
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Get Attendance failed - Server connection error');
     }
 

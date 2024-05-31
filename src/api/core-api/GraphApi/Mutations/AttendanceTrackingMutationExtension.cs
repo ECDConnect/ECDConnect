@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class AttendanceTrackingMutationExtension
@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
           List<TrackAttendanceModel> attendance
           )
         {
-            System.Guid tenantId = TenantExecutionContext.Tenant.Id;
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var dbEntities = new List<Attendance>();
 
             if (attendance != null)

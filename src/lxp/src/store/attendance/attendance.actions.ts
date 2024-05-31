@@ -11,22 +11,22 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AttendanceService } from '@services/AttendanceService';
 import { RootState, ThunkApiType } from '../types';
 import {
-  AttendanceQueryParams,
   ChildAttendanceReportQueryParams,
   MonthlyAttendanceReportQueryParams,
 } from './attendance.types';
 
 export const AttendanceActions = {
+  GET_ATTENDANCE: 'getAttendance',
   GET_MONTHLY_ATTENDANCE_REPORT: 'getMonthlyAttendanceReport',
 };
 
 export const getAttendance = createAsyncThunk<
   AttendanceDto[],
-  { year: number; monthOfYear?: number; weekOfYear?: number },
+  { startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
-  'getAttendance',
-  async ({ year, monthOfYear, weekOfYear }, { getState, rejectWithValue }) => {
+  AttendanceActions.GET_ATTENDANCE,
+  async ({ startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       attendanceData: { attendance: attendanceCache },
@@ -39,7 +39,7 @@ export const getAttendance = createAsyncThunk<
         if (userAuth?.auth_token) {
           attendance = await new AttendanceService(
             userAuth?.auth_token
-          ).getAttendance(year, monthOfYear, weekOfYear);
+          ).getAttendance(startDate, endDate);
         }
 
         if (!attendance) {
@@ -56,13 +56,14 @@ export const getAttendance = createAsyncThunk<
   }
 );
 
+// This should probably be removed and the above used to get all relevant attendance data
 export const getPreviousWeekAttendance = createAsyncThunk<
   AttendanceDto[],
-  AttendanceQueryParams,
+  { startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
   'getPreviousWeekAttendance',
-  async ({ year, monthOfYear, weekOfYear }, { getState, rejectWithValue }) => {
+  async ({ startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -73,7 +74,7 @@ export const getPreviousWeekAttendance = createAsyncThunk<
       if (userAuth?.auth_token) {
         attendance = await new AttendanceService(
           userAuth?.auth_token
-        ).getAttendance(year, monthOfYear, weekOfYear);
+        ).getAttendance(startDate, endDate);
       }
 
       if (!attendance) {

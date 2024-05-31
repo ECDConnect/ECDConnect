@@ -192,7 +192,6 @@ namespace EcdLink.Api.CoreApi
                 return new SynchronizedConverter(new PdfTools());
             });
 
-            services.AddTransient<IAttendancePdfService, AttendancePdfService>();
             services.AddControllers();
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);

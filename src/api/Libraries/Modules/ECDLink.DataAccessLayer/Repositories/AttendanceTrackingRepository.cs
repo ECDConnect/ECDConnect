@@ -36,13 +36,31 @@ namespace ECDLink.DataAccessLayer.Repositories
             return true;
         }
 
+        public IQueryable<Attendance> GetAllAttendances(List<Guid> classroomGroupIds)
+        {
+            if (classroomGroupIds == null || !classroomGroupIds.Any())
+            {
+                return Enumerable.Empty<Attendance>().AsQueryable();
+            }
+
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var attendances = _context.Attendances
+                              .Include(x => x.User)
+                              .Include(x => x.ClassroomProgramme)
+                                .ThenInclude(x => x.ClassroomGroup)
+                              .Where(x => x.ClassroomProgramme.ClassroomGroupId.HasValue && classroomGroupIds.Contains(x.ClassroomProgramme.ClassroomGroupId.Value))
+                              .Where(e => e.TenantId == Guid.Empty || e.TenantId == tenantId);
+
+            return attendances;
+        }
         public IQueryable<Attendance> GetAllAttendancesByParentId(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Enumerable.Empty<Attendance>().AsQueryable();
             }
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            var tenantId = TenantExecutionContext.Tenant.Id;
             var attendances = _context.Attendances
                               .Include(x => x.User)
                               .Include(x => x.ClassroomProgramme)

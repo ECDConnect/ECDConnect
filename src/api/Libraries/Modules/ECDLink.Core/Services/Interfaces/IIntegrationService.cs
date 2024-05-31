@@ -14,8 +14,6 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> PushPQAData();
         Task<bool> PushReAccreditationData();
         Task IntegrationStatementsData();
-        Task IntegrationAttendanceByDueData();
-        Task PushMonthlyAttendancePdf();
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();
         Task AutoSubmitStatements();
