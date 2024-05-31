@@ -95,6 +95,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
         visible={openCreateUser}
         position={DialogPosition.Full}
         className="w-full"
+        stretch
       >
         <CreateUserForm
           closeAction={setOpencreateUser}
