@@ -33,7 +33,6 @@ namespace ECDLink.Security.Api
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
         private readonly ITokenManager<ApplicationUser, SecurityCodeTokenManager> _securityCodeManager;
         
         private readonly SecurityManager _securityManager;
@@ -48,7 +47,6 @@ namespace ECDLink.Security.Api
         private IGenericRepository<UserHelp, Guid> _userHelpRepo;
 
         public AuthenticationController(
-            ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
             ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -70,7 +68,6 @@ namespace ECDLink.Security.Api
             _passwordManager = passwordManager;
             _personnelService = personnelService;
             _notificationManager = notificationManager;
-            _invitationManager = invitationManager;
             _securityCodeManager = securityCodeManager;
         }
 
