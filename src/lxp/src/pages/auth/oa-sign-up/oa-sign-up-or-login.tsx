@@ -26,6 +26,7 @@ import { OAAgreements } from './components/oa-agreements/oa-agreements';
 import ROUTES from '@/routes/routes';
 import Banner1 from '../../../assets/banner-ss.jpg';
 import Banner2 from '../../../assets/banner2-ss.jpeg';
+import Banner3 from '../../../assets/banner2-ss-svg.svg';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -45,13 +46,13 @@ export const OASignUpOrLogin: React.FC = () => {
   const headerSlide: HeaderSlide[] = [
     {
       title: 'Manage your classroom',
-      text: 'Take attendance, track progress, and plan your programme',
+      text: 'Take attendance, track progress, and plan your activities',
       image: Banner1,
     },
     {
       title: 'Grow your community',
       text: 'Meet other practitioners in your area',
-      image: Banner2,
+      image: Banner3,
     },
   ];
 
@@ -98,15 +99,17 @@ export const OASignUpOrLogin: React.FC = () => {
         renderOverflow={false}
         onBack={() => history?.push(ROUTES.ROOT)}
       >
-        <HeaderSlider
-          className="h-360 mx-4"
-          slides={headerSlide}
-          autoPlay
-          infiniteLoop
-          transitionTime={500}
-        />
+        <div>
+          <HeaderSlider
+            className="h-360 mx-4"
+            slides={headerSlide}
+            autoPlay
+            infiniteLoop
+            transitionTime={500}
+          />
+        </div>
 
-        <div style={{ maxWidth: '442px' }} className={'w-full px-2'}>
+        <div className={'mt-8 w-11/12 px-2 md:mt-48'}>
           <Button
             id="gtm-register"
             className={'mb-4 w-full'}
@@ -121,7 +124,7 @@ export const OASignUpOrLogin: React.FC = () => {
           <Divider
             title={`Already have a ${applicationName} account?`}
             dividerType={'solid'}
-            className="py-2"
+            className="my-2"
           />
 
           <Button
@@ -143,6 +146,7 @@ export const OASignUpOrLogin: React.FC = () => {
         visible={openOaAgreements}
         position={DialogPosition.Full}
         className="w-full"
+        stretch
       >
         <OAAgreements closeAction={setOpenOaAgreements} />
       </Dialog>
