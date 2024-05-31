@@ -13,15 +13,10 @@ import {
   BannerWrapper,
   Button,
   Checkbox,
-  ChipStatus,
-  classNames,
   Dialog,
   DialogPosition,
   Divider,
   FormInput,
-  HeaderCard,
-  HeaderSlide,
-  HeaderSlider,
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
@@ -45,8 +40,6 @@ import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
 import ROUTES from '@/routes/routes';
 import { useTenant } from '@/hooks/useTenant';
-import Banner1 from '../../../assets/banner-ss.jpg';
-import Banner2 from '../../../assets/banner2-ss.jpeg';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -61,6 +54,7 @@ export const SignUp: React.FC = () => {
     getValues: signUpFormGetValues,
     handleSubmit,
     control,
+    clearErrors,
   } = useForm<SignUpModel>({
     resolver: yupResolver(signUpSchema),
     defaultValues: initialRegisterValues,
@@ -85,21 +79,9 @@ export const SignUp: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
-  const tenantName = tenant?.tenant?.applicationName;
+  const tenantName = tenant?.tenant?.organisationName;
   const isWhitelabel = tenant?.isWhiteLabel;
-
-  const headerSlide: HeaderSlide[] = [
-    {
-      title: 'Manage your classroom',
-      text: 'Take attendance, track progress, and plan your programme',
-      image: Banner1,
-    },
-    {
-      title: 'Grow your community',
-      text: 'Meet other practitioners in your area',
-      image: Banner2,
-    },
-  ];
+  const [permissionsErrorMessage, setPermissionsErrorMessage] = useState('');
 
   useEffect(() => {
     async function init() {
@@ -131,11 +113,21 @@ export const SignUp: React.FC = () => {
     }
   }, []);
 
-  const errorStrings = Object.keys(errors).map(
-    (x) => errors[x as keyof SignUpModel]?.message || ''
-  );
-
   watch();
+
+  useEffect(() => {
+    if (
+      errors.termsAndConditionsAccepted?.message ||
+      errors.dataPermissionAgreementAccepted?.message
+    ) {
+      setPermissionsErrorMessage(
+        'You must accept both agreements to continue.'
+      );
+    }
+  }, [
+    errors.dataPermissionAgreementAccepted?.message,
+    errors.termsAndConditionsAccepted?.message,
+  ]);
 
   const submitForm = async (formValue: SignUpModel) => {
     const valid = await signUpSchema.isValid(formValue);
@@ -157,7 +149,7 @@ export const SignUp: React.FC = () => {
     if (informationVerified.errorCode) {
       if (informationVerified.verified === false) {
         if (informationVerified.errorCode === 1) {
-          setRequestError('You entered incorrect details');
+          setRequestError(`If you are having trouble, tap "Get help"`);
           setIsLoading(false);
           return;
         }
@@ -204,21 +196,6 @@ export const SignUp: React.FC = () => {
     }
   };
 
-  const proceedToPhoneValidation = async (
-    { cellphone, username, password }: SignUpModel,
-    token: string
-  ) => {
-    setIsLoading(true);
-
-    setIsLoading(false);
-    history.push('/verify-phone', {
-      phoneNumber: cellphone,
-      password: password,
-      username,
-      token,
-    });
-  };
-
   const toggleIdAndPassport = () => {
     setPreferId(!preferId);
     signUpSetValue('preferId', !preferId, {
@@ -249,14 +226,6 @@ export const SignUp: React.FC = () => {
         renderBorder={false}
         renderOverflow={false}
       >
-        <HeaderSlider
-          className="h-360 mx-4"
-          slides={headerSlide}
-          autoPlay
-          infiniteLoop
-          transitionTime={500}
-        />
-
         {!isWhitelabel && (
           <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
         )}
@@ -309,14 +278,29 @@ export const SignUp: React.FC = () => {
           />
 
           <Typography
-            type={'body'}
-            color={'uiMidDark'}
+            type={'h4'}
+            color={'textDark'}
             weight={'bold'}
-            text={'Terms and conditions'}
+            text={'Accept the agreements to continue'}
             className={styles.marginBottom}
           />
           <div
-            className={classNames(styles.checkboxWrapper, styles.marginBottom)}
+            className={`${
+              errors.termsAndConditionsAccepted?.message &&
+              'border-errorDark border'
+            } ${
+              signUpFormGetValues()?.termsAndConditionsAccepted
+                ? 'border-quatenary bg-quatenaryBg border'
+                : 'bg-uiBg'
+            } mb-4 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+            onClick={() => {
+              signUpSetValue(
+                'termsAndConditionsAccepted',
+                !signUpFormGetValues()?.termsAndConditionsAccepted
+              );
+              clearErrors('termsAndConditionsAccepted');
+              setPermissionsErrorMessage('');
+            }}
           >
             <Checkbox<SignUpModel>
               register={signUpRegister}
@@ -352,7 +336,24 @@ export const SignUp: React.FC = () => {
               }}
             />
           </div>
-          <div className={styles.checkboxWrapper}>
+          <div
+            className={`${
+              errors.dataPermissionAgreementAccepted?.message &&
+              'border-errorDark border'
+            } ${
+              signUpFormGetValues()?.dataPermissionAgreementAccepted
+                ? 'border-quatenary bg-quatenaryBg border'
+                : 'bg-uiBg'
+            } flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+            onClick={() => {
+              signUpSetValue(
+                'dataPermissionAgreementAccepted',
+                !signUpFormGetValues()?.dataPermissionAgreementAccepted
+              );
+              clearErrors('dataPermissionAgreementAccepted');
+              setPermissionsErrorMessage('');
+            }}
+          >
             <Checkbox<SignUpModel>
               register={signUpRegister}
               nameProp={'dataPermissionAgreementAccepted'}
@@ -387,17 +388,24 @@ export const SignUp: React.FC = () => {
               }}
             />
           </div>
-          {errorStrings.length > 0 && (
+          {permissionsErrorMessage && (
+            <Alert
+              className={'mt-5 mb-3'}
+              title={permissionsErrorMessage}
+              type={'error'}
+            />
+          )}
+          {/* {errorStrings.length > 0 && (
             <Alert
               title={`There were ${errorStrings.length} errors with your submission`}
               type={'error'}
               list={errorStrings}
               className={styles.marginTop}
             />
-          )}
+          )} */}
           {(requestError?.length ?? 0) > 0 && (
             <Alert
-              title={`There were errors with your submission`}
+              title={`Please check your ID and cellphone number.`}
               type={'error'}
               list={requestError ? [requestError] : []}
               className={styles.marginTop}
@@ -429,7 +437,7 @@ export const SignUp: React.FC = () => {
           <Divider
             title={`Already have a ${tenantName} App account?`}
             dividerType={'solid'}
-            className={'mt-2 mb-2'}
+            className={'mb-2'}
           />
 
           <Button
@@ -461,7 +469,6 @@ export const SignUp: React.FC = () => {
         position={DialogPosition.Middle}
         className="p-4"
       >
-        signUpFormGetValues().cellphone
         <ActionModal
           icon={'InformationCircleIcon'}
           iconColor={'alertMain'}
@@ -498,6 +505,7 @@ export const SignUp: React.FC = () => {
         visible={openHelp}
         position={DialogPosition.Full}
         className="w-full"
+        stretch
       >
         <HelpForm closeAction={setOpenHelp} />
       </Dialog>
