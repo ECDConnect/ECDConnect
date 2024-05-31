@@ -126,6 +126,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           Config?.authApi,
           registerOpenAccessUserInput
         );
+
         if (userCreated) {
           setIsLoading(false);
           setOpenVerifyPhoneNumber(true);
@@ -154,12 +155,12 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     };
 
     if (checkUsername) {
-      const userCreated = await new AuthService()?.UpdateUsername(
+      const updateUsername = await new AuthService()?.UpdateUsername(
         Config?.authApi,
         updateUserInputModel
       );
 
-      if (userCreated) {
+      if (updateUsername) {
         setIsLoading(false);
         history.push(ROUTES.LOGIN);
         setNotification({
@@ -273,12 +274,14 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         visible={openVerifyPhoneNumber}
         position={DialogPosition.Full}
         className="w-full"
+        stretch
       >
         <VerifyPhoneNumberAuthCode
           closeAction={setOpenVerifyPhoneNumber}
           phoneNumber={phoneNumber}
           username={username}
           setIsFromAuthCodeScreen={setIsFromAuthCodeScreen}
+          password={password}
         />
       </Dialog>
     </BannerWrapper>

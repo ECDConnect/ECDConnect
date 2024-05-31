@@ -2,9 +2,14 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
 import ROUTES from '@/routes/routes';
 import { AuthService } from '@/services/AuthService';
+import { useAppDispatch } from '@/store';
+import { authActions, authThunkActions } from '@/store/auth';
+import { settingActions } from '@/store/settings';
+import { userThunkActions } from '@/store/user';
 import {
   AuthCodeModel,
   Config,
+  LoginRequestModel,
   NOTIFICATION,
   useNotifications,
 } from '@ecdlink/core';
@@ -18,12 +23,14 @@ import {
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
+const { version } = require('../../../../package.json');
 
 interface VerifyPhoneNumberProps {
   closeAction?: (item: boolean) => void;
   phoneNumber?: string;
   username: string;
   setIsFromAuthCodeScreen?: (item: boolean) => void;
+  password: string;
 }
 
 export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
@@ -31,8 +38,10 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   phoneNumber,
   username,
   setIsFromAuthCodeScreen,
+  password,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   const { setNotification } = useNotifications();
   const history = useHistory();
   const tenant = useTenant();
@@ -42,7 +51,16 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   const userAuthCodeLength = userAuthCode?.length;
   const [errorMessage, setErrorMessage] = useState('');
 
+  const login = async () => {
+    appDispatch(settingActions.setApplicationVersion(version));
+    appDispatch(authActions.setUserExpired());
+    await appDispatch(userThunkActions.getUser({})).unwrap();
+    setIsLoading(false);
+    history.push(ROUTES.DASHBOARD);
+  };
+
   const handleConfirmAuthCode = async () => {
+    setIsLoading(true);
     const body: AuthCodeModel = {
       username,
       token: String(userAuthCode),
@@ -65,7 +83,27 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
         title: `Auth code confirmed`,
         variant: NOTIFICATION.SUCCESS,
       });
-      history.push(ROUTES.LOGIN);
+      const body: LoginRequestModel = {
+        username,
+        password,
+      };
+
+      appDispatch(authThunkActions.login(body))
+        .then(async (isAuthenticated: any) => {
+          if (
+            isAuthenticated &&
+            isAuthenticated?.error === undefined &&
+            isAuthenticated?.payload?.response?.status !== 401
+          ) {
+            login();
+            setIsLoading(false);
+          } else {
+            setIsLoading(false);
+          }
+        })
+        .catch(() => {
+          setIsLoading(false);
+        });
     }
   };
 
