@@ -109,6 +109,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   if (isLoading) {
     return (
       <LoadingSpinner
+        className="p-4"
         backgroundColor="quatenary"
         size="medium"
         spinnerColor="uiBg"
@@ -117,7 +118,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-y-auto">
+    <div className="flex h-full w-full flex-col overflow-y-auto p-4">
       <div className={'flex flex-col'}>
         <Typography
           type="h2"

@@ -50,6 +50,7 @@ import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { ChildAttendanceReportState } from '@/pages/child/child-attendance-report/child-attendance-report.types';
 
 export const CoachChildProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -174,7 +175,7 @@ export const CoachChildProfile: React.FC = () => {
         history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
           childId: child?.id,
           classroomGroupId: classroomGroup?.id,
-        });
+        } as ChildAttendanceReportState);
       },
     });
 

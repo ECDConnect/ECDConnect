@@ -82,6 +82,7 @@ import {
   TabsItemForPrincipal,
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { ChildAttendanceReportState } from '../child-attendance-report/child-attendance-report.types';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -571,7 +572,7 @@ export const ChildProfile: React.FC = () => {
             history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
               childId: child?.id,
               classroomGroupId: classroomGroup?.id,
-            });
+            } as ChildAttendanceReportState);
           } else {
             showOnlineOnly();
           }
@@ -645,7 +646,7 @@ export const ChildProfile: React.FC = () => {
     ];
   }, [
     attendanceReport,
-    child?.id,
+    child,
     childId,
     classroomGroup?.id,
     classroomGroup?.name,

@@ -1,4 +1,9 @@
-import { AttendanceDto, ClassProgrammeDto, HolidayDto } from '@ecdlink/core';
+import {
+  AttendanceDto,
+  ChildAttendanceOverallReportModel,
+  ClassProgrammeDto,
+  HolidayDto,
+} from '@ecdlink/core';
 import { AttendanceStatus, Colours, SubTitleShape } from '@ecdlink/ui';
 import {
   addDays,
@@ -38,6 +43,7 @@ import {
 import { isWorkingDay } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
 import {
+  ClassroomGroupDto,
   LearnerDto,
   ClassroomGroupDto as SimpleClassroomGroupDto,
 } from '@/models/classroom/classroom-group.dto';
@@ -536,4 +542,69 @@ export const getColor = (score: number): Colours => {
   }
 
   return 'errorDark';
+};
+
+interface MergedClassProgramme {
+  classroomGroupId: string;
+  items: Omit<ClassProgrammeDto, 'classroomGroupId'>[];
+}
+
+interface MergedChildAttendanceOverallReportModel {
+  classroomGroup?: ClassroomGroupDto;
+  classroomGroupId: string;
+  items: Omit<ChildAttendanceOverallReportModel, 'classgroupId'>[];
+}
+
+export const mergeClassProgrammesWithSameClassroomGroupId = (
+  objects: ClassProgrammeDto[]
+): MergedClassProgramme[] => {
+  const mergedObjects = objects.reduce<Record<string, MergedClassProgramme>>(
+    (acc, obj) => {
+      const { classroomGroupId, ...rest } = obj;
+      if (!acc[classroomGroupId]) {
+        acc[classroomGroupId] = { classroomGroupId, items: [rest] };
+      } else {
+        acc[classroomGroupId].items.push(rest);
+      }
+      return acc;
+    },
+    {}
+  );
+
+  return Object.values(mergedObjects);
+};
+
+export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
+  objects: ChildAttendanceOverallReportModel[],
+  classroomGroups?: ClassroomGroupDto[]
+): MergedChildAttendanceOverallReportModel[] => {
+  const mergedObjects = objects.reduce<
+    Record<string, MergedChildAttendanceOverallReportModel>
+  >((acc, obj) => {
+    const { classgroupId, ...rest } = obj;
+
+    let classroomGroup: ClassroomGroupDto | undefined;
+
+    if (classroomGroups) {
+      const _classroomGroup = classroomGroups.find(
+        (x) => x.id === classgroupId
+      );
+      if (_classroomGroup) {
+        classroomGroup = _classroomGroup;
+      }
+    }
+
+    if (!acc[classgroupId]) {
+      acc[classgroupId] = {
+        classroomGroupId: classgroupId,
+        classroomGroup,
+        items: [rest],
+      };
+    } else {
+      acc[classgroupId].items.push(rest);
+    }
+    return acc;
+  }, {});
+
+  return Object.values(mergedObjects);
 };

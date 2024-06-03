@@ -40,8 +40,8 @@ const GeneratePdfReportButton = ({
   return (
     <Button
       type="filled"
-      color="primary"
-      className={'mt'}
+      color="quatenary"
+      className={'w-full'}
       onClick={() =>
         generateReport(
           tableData ?? [],
