@@ -50,6 +50,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 
         public double? PreschoolFeeAmount { get; set; }
         public DateTime? PreschoolFeeAmountLastUpdateDate { get; set; }
+        public string PreschoolCode { get; set; }
     }
 
     public interface ClassroomJoin<TKey>

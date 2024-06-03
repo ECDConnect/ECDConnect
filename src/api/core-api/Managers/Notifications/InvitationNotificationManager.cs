@@ -103,6 +103,39 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
               .SendMessageAsync();
         }
 
+        public async Task SendPreSchoolInvitationAsync(ApplicationUser user, string principalFirstName, string preSchoolName, string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+
+            var invitationUrl = $"{_options.Value.PreSchoolInvitation}?token={encodedToken}";
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.PreSchoolInvitation)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, principalFirstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.PreSchoolName, preSchoolName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .SendMessageAsync();
+        }
+
+        public async Task SendPrincipalInvitationAsync(ApplicationUser user, string practitionerFirstName, string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+
+            var invitationUrl = $"{_options.Value.PrincipalSignup}?token={encodedToken}";
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.PrincipalInvitation)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, practitionerFirstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .SendMessageAsync();
+        }
+
 
     }
 }
