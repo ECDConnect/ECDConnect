@@ -20,6 +20,10 @@ namespace ECDLink.Abstractrions.Constants
         public const string ForgotPasswordPortal = "forgot-password-portal";
         public const string VerifyCellphoneNumber = "verify-cellphone-number";
 
+
+        public const string WLInvitation = "wl-invitation";
+        public const string OAInvitation = "oa-invitation";
+
         // help
         public const string AdminUserHelpForm = "admin-user-help-form";
 

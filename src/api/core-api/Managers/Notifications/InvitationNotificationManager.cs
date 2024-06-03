@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Enums;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
@@ -26,8 +27,23 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         public async Task SendInvitationAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
-
+            var tenantInfo = TenantExecutionContext.Tenant;
+            var invitationEnum = TemplateTypeEnum.Invitation;
             var invitationUrl = $"{_options.Value.Signup}?token={encodedToken}";
+
+            if (tenantInfo != null)
+            {
+                if (tenantInfo.TenantType == TenantType.WhiteLabel)
+                {
+                    invitationEnum = TemplateTypeEnum.WLInvitation;
+                    invitationUrl = $"{_options.Value.WLSignup}?token={encodedToken}";
+                } else if (tenantInfo.TenantType == TenantType.OpenAccess)
+                {
+                    invitationEnum = TemplateTypeEnum.OAInvitation;
+                    invitationUrl = $"{_options.Value.OASignup}?token={encodedToken}";
+                }
+            }
+
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
             string firstName = user.FirstName;
@@ -35,7 +51,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             var notificationProvider = _notificationProviderFactory.Create(user);
 
             await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.Invitation)
+              .SetMessageTemplate(invitationEnum)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
