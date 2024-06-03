@@ -352,15 +352,21 @@ namespace ECDLink.Security.Api
             }
             // If the user reaches the confirm auth code screen, but for some reason leaves the flow. And after that, the user tries to log in directly with the username,
             // we should check the auth code status. If it's not confirmed yet, we should redirect the user to the confirm auth code screen again.
-            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
-            if (messages.Count == 0)
+            var latestMessage = _messageRepo.GetAll()
+                .Where(x => x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode)
+                .OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            if (latestMessage == null)
             {
-                return Ok(false);
-            } 
-            else
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "No messages found for username"
+                });
+            } else
             {
-                return Ok(true);
+                return Ok(latestMessage.IsActive);
             }
+            
         }
 
         [Route("update-username-password")]
