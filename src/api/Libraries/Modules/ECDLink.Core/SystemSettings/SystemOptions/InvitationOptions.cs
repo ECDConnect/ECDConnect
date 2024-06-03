@@ -6,6 +6,8 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
     public class InvitationOptions
     {
         public string Signup { get; set; }
+        public string WLSignup { get; set; }
+        public string OASignup { get; set; }
         public string AdminSignup { get; set; }
         public string TeamLeadSignup { get; set; }
         public string PreSchoolInvitation { get; set; }
