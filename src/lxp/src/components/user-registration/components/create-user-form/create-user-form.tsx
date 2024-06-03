@@ -74,6 +74,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       registerType: 'username',
     };
     if (isFromAuthCodeScreen && isOpenAccess) {
+      setIsLoading(true);
       const userUpdated = await new AuthService()?.UpdateOaPractitioner(
         Config?.authApi,
         registerOpenAccessUserInput

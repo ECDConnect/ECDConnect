@@ -120,6 +120,7 @@ export const OaLogin: React.FC = () => {
 
   const submitForm = async () => {
     setDisplayError(false);
+    setIsLoading(true);
     const checkUserAuthCode = await new AuthService()
       .VerifyOaAuthCodeStatus(Config.authApi, {
         username: loginFormGetValues().username,
@@ -130,10 +131,11 @@ export const OaLogin: React.FC = () => {
         return;
       });
 
-    if (checkUserAuthCode === false) {
+    if (checkUserAuthCode) {
       setOpenVerifyPhoneNumber(true);
       return;
     }
+    setIsLoading(false);
 
     if (isValid) {
       if (freeMemory > 300 || freeMemory === 0) {
