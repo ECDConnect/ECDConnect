@@ -74,6 +74,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       registerType: 'username',
     };
     if (isFromAuthCodeScreen && isOpenAccess) {
+      setIsLoading(true);
       const userUpdated = await new AuthService()?.UpdateOaPractitioner(
         Config?.authApi,
         registerOpenAccessUserInput
@@ -126,6 +127,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           Config?.authApi,
           registerOpenAccessUserInput
         );
+
         if (userCreated) {
           setIsLoading(false);
           setOpenVerifyPhoneNumber(true);
@@ -154,12 +156,12 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     };
 
     if (checkUsername) {
-      const userCreated = await new AuthService()?.UpdateUsername(
+      const updateUsername = await new AuthService()?.UpdateUsername(
         Config?.authApi,
         updateUserInputModel
       );
 
-      if (userCreated) {
+      if (updateUsername) {
         setIsLoading(false);
         history.push(ROUTES.LOGIN);
         setNotification({
@@ -228,7 +230,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         {isOpenAccess && (
           <div className="mt-4 space-y-1">
             <FormInput
-              label={'Cellphone number *'}
+              label={'Cellphone number'}
               nameProp={'phoneNumber'}
               placeholder="e.g 0123456789"
               onChange={(e) => {
@@ -239,7 +241,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             {!isValidPhoneNumber && phoneNumber && (
               <Typography
                 type="help"
-                text="Please enter a valid South African cellphone number."
+                text="Please enter a valid cellphone number"
                 color="errorMain"
               />
             )}
@@ -273,12 +275,14 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         visible={openVerifyPhoneNumber}
         position={DialogPosition.Full}
         className="w-full"
+        stretch
       >
         <VerifyPhoneNumberAuthCode
           closeAction={setOpenVerifyPhoneNumber}
           phoneNumber={phoneNumber}
           username={username}
           setIsFromAuthCodeScreen={setIsFromAuthCodeScreen}
+          password={password}
         />
       </Dialog>
     </BannerWrapper>

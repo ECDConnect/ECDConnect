@@ -55,7 +55,6 @@ class AttendanceService {
 
   async getClassroomAttendanceReport(
     userId: string,
-    classgroupId: string,
     startDate: Date,
     endDate: Date
   ): Promise<ClassRoomChildAttendanceMonthlyReportModel> {
@@ -64,12 +63,10 @@ class AttendanceService {
       query: `
       query classroomAttendanceOverviewReport(
         $userId: String
-        $classgroupId: UUID!
         $startDate: DateTime!
         $endDate: DateTime!) {
         classroomAttendanceOverviewReport(
             userId: $userId
-            classgroupId: $classgroupId
             startDate: $startDate
             endDate: $endDate) {
         classroomAttendanceReport{
@@ -95,7 +92,6 @@ class AttendanceService {
       `,
       variables: {
         userId: userId,
-        classgroupId: classgroupId,
         startDate: startDate,
         endDate: endDate,
       },
@@ -111,7 +107,6 @@ class AttendanceService {
 
   async getMonthlyAttendanceReport(
     userId: string,
-    classroomId: string,
     startDate: Date,
     endDate: Date
   ): Promise<MonthlyAttendanceRecord[]> {
@@ -120,12 +115,10 @@ class AttendanceService {
       query: `
       query monthlyAttendanceReport(
         $userId: String
-        $classroomId: UUID!
         $startMonth: DateTime!
         $endMonth: DateTime!) {
         monthlyAttendanceReport(
           userId: $userId
-          classroomId: $classroomId
           startMonth: $startMonth
           endMonth: $endMonth          
         ) {
@@ -140,7 +133,6 @@ class AttendanceService {
       `,
       variables: {
         userId: userId,
-        classroomId: classroomId,
         startMonth: startDate,
         endMonth: endDate,
       },

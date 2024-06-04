@@ -34,7 +34,6 @@ export type ChildAttendanceReportQueryParams = {
 
 export type MonthlyAttendanceReportQueryParams = {
   userId: string;
-  classroomId: string;
   startDate: Date;
   endDate: Date;
 };

@@ -11,7 +11,7 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
 import { default as React, useEffect, useState } from 'react';
-import ReactGA from 'react-ga';
+import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'react-redux';
 import { AuthRoutes, PublicRoutes } from '@routes';
@@ -63,8 +63,27 @@ const App: React.FC = () => {
   useEffect(() => {
     if (applicationSettings && applicationSettings.Google) {
       if (applicationSettings.Google.GoogleAnalyticsTag) {
-        ReactGA.initialize(applicationSettings.Google.GoogleAnalyticsTag);
-        ReactGA.pageview(window.location.pathname + window.location.search);
+        ReactGA.initialize([
+          {
+            trackingId: applicationSettings.Google.GoogleAnalyticsTag,
+            gaOptions: {
+              debug_mode:
+                window.location.host.indexOf('localhost') > 0 ? true : false,
+            },
+            gtagOptions: {
+              debug_mode:
+                window.location.host.indexOf('localhost') > 0 ? true : false,
+            },
+          },
+          // {
+          //   trackingId: "your second GA measurement id",
+          // },
+        ]);
+
+        ReactGA.send({
+          hitType: 'pageview',
+          page: window.location.pathname + window.location.search,
+        });
       }
 
       if (applicationSettings.Google.GoogleTagManager) {

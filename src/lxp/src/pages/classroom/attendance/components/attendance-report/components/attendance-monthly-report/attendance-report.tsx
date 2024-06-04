@@ -127,6 +127,8 @@ export const MonthlyAttendanceReport = ({
     [reportData, classroomGroups]
   );
 
+  console.log({ monthlyReport });
+
   useEffect(() => {
     appDispatch(
       attendanceThunkActions.getClassroomAttendanceReport({

@@ -101,7 +101,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
 >(
   AttendanceActions.GET_MONTHLY_ATTENDANCE_REPORT,
   async (
-    { userId, classroomId, startDate, endDate, overrideCache },
+    { userId, startDate, endDate, overrideCache },
     { getState, rejectWithValue }
   ) => {
     const {
@@ -128,7 +128,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       if (userAuth?.auth_token) {
         reportData = await new AttendanceService(
           userAuth?.auth_token
-        ).getMonthlyAttendanceReport(userId, classroomId, startDate, endDate);
+        ).getMonthlyAttendanceReport(userId, startDate, endDate);
       }
 
       if (!reportData) {
@@ -264,12 +264,7 @@ export const getClassroomAttendanceReport = createAsyncThunk<
 
         const result = await new AttendanceService(
           userAuth?.auth_token ?? ''
-        ).getClassroomAttendanceReport(
-          userId ?? '',
-          classgroupId,
-          startDate,
-          endDate
-        );
+        ).getClassroomAttendanceReport(userId ?? '', startDate, endDate);
 
         return { data: result, retrievedFromCache: false };
       } else {

@@ -79,7 +79,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     attendanceSummary?.length !== previousAttendanceSummary?.length;
 
   const formattedAttendanceSummary = useMemo(() => {
-    const copy = [...attendanceSummary].reverse() ?? [];
+    const copy = [...(attendanceSummary ?? [])]?.reverse() ?? [];
 
     if (isInitialStartDate) {
       return copy.slice(0, 4);
@@ -106,7 +106,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       attendanceThunkActions.getMonthlyAttendanceReport({
         overrideCache: true,
         userId: authUser?.id!,
-        classroomId: classroomID!,
         startDate: nextStartOfPeriod,
         endDate: today,
       })
@@ -128,7 +127,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       appDispatch(
         attendanceThunkActions.getMonthlyAttendanceReport({
           userId: authUser?.id!,
-          classroomId: classroomID!,
           startDate: fourthRecentMonth,
           endDate: today,
         })

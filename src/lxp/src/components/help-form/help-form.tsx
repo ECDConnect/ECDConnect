@@ -34,7 +34,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
   );
   const [problemValue, setProblemValue] = useState('');
   const [contactValue, setContactValue] = useState('');
-  const contactPlaceholder = contactValue
+  const contactPlaceholder = isPhoneSelected
     ? 'e.g 0123456789'
     : 'e.g name@email.com';
   const contactLabel = isPhoneSelected ? 'Cellphone number' : 'Email address';
@@ -43,6 +43,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
   const [isValidEmail, setIsValidEmail] = useState(true);
   const [cellphone, setCellphone] = useState('');
   const [isValidCellphone, setIsValidCellphone] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const sendHelpMessage = async () => {
     const input: HelpFormModel = {
@@ -54,7 +55,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
       contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
       userId: null,
     };
-
+    setIsLoading(true);
     const message = await new HelpService(Config.authApi)
       .SendHelp(input)
       .catch(() => {
@@ -69,13 +70,15 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
         title: `Message sent!`,
         variant: NOTIFICATION.SUCCESS,
       });
+      setIsLoading(false);
     } else {
       setNotification({
         title: `Message not sent!`,
         variant: NOTIFICATION.SUCCESS,
       });
+      setIsLoading(false);
     }
-
+    setIsLoading(false);
     closeAction && closeAction(false);
   };
 

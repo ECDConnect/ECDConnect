@@ -15,22 +15,8 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
     [ExtendObjectType(OperationTypeNames.Query)]
     public class AttendanceReportQuery
     {
-        public IEnumerable<MonthlyAttendanceReportModel> MonthlyAttendanceReport(
-          [Service] MonthlyAttendanceReport report,
-          string userId,
-          Guid classroomId,
-          DateTime startMonth,
-          DateTime endMonth)
-        {
-            startMonth = startMonth.GetStartOfMonth();
-            //endMonth = endMonth.GetEndOfMonth();
-            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1).Date : DateTime.Now.GetEndOfDay()) : endMonth.GetEndOfMonth().GetEndOfDay());
-
-
-            return report.GenerateMonthlyAttendanceReport(userId, classroomId, startMonth, endMonth);
-        }
-
+        // Need to find out how/where this is used
+        // It is used by the admin portal
         public async Task<FileModel> MonthlyAttendanceRecordCSV(
           [Service] MonthlyAttendanceReport report,
           [Service] IFileGenerationService fileService,
@@ -53,7 +39,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
 
             foreach (var classroom in filteredList)
             {
-                var monthReport = report.GenerateMonthlyAttendanceReport(classroom.UserId.ToString(), classroom.Id, startOfMonth, endOfMonth).FirstOrDefault();
+                var monthReport = report.GenerateMonthlyAttendanceReport(classroom.UserId.ToString(), startOfMonth, endOfMonth).FirstOrDefault();
 
                 if (monthReport == default(MonthlyAttendanceReportModel))
                 {
@@ -71,53 +57,6 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
 
             var reportName = $"{DateTime.Now.ToString("Y")} Practitioner Tracking Report";
             return await fileService.DataTableToExcelFile(reportList.ToDataTable(), reportName);
-        }
-
-        public async Task<ChildAttendanceReportModel> ChildAttendanceReport(
-          [Service] ChildAttendanceReport report,
-          string userId,
-          Guid classgroupId,
-          DateTime startDate,
-          DateTime endDate)
-        {
-            var startMonth = startDate.GetStartOfMonth();
-            //var endMonth = endDate.GetEndOfMonth();
-
-            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
-
-
-            return report.GetChildAttendance(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
-        }
-
-        public async Task<List<ClassroomGroupChildAttendanceReportModel>> ClassroomAttendanceReport(
-             [Service] ChildAttendanceReport report,
-             string userId,
-             Guid classgroupId, // TODO - rename to classroomId
-             DateTime startDate,
-             DateTime endDate)
-        {
-            var startMonth = startDate.GetStartOfMonth();
-            //var endMonth = endDate.GetEndOfMonth();
-            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
-
-            return report.GetClassroomAttendance(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
-        }
-
-        public async Task<ClassroomGroupChildAttendanceReportOverviewModel> ClassroomAttendanceOverviewReport(
-            [Service] ChildAttendanceReport report,
-            string userId,
-            Guid classgroupId, // TODO - rename to classroomId
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var startMonth = startDate.GetStartOfMonth();
-            //var endMonth = endDate.GetEndOfMonth();
-            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
-
-            return report.GetClassroomAttendanceOverView(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
         }
     }
 }

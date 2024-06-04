@@ -248,7 +248,7 @@ class AuthService {
 
     if (dataResponse.dataError) return false;
 
-    return true;
+    return dataResponse?.data;
   }
 
   async UpdateOaPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
