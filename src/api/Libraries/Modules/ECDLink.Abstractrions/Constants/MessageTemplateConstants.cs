@@ -16,6 +16,7 @@
         public const string AffectedUserFullName = "AffectedUserFullName";
         public const string LoginLinkShort = "LoginLink:shorturl";
         public const string Username = "Username";
+        public const string PreSchoolName = "PreSchoolName";
 
         // Help form
         public const string HelpContactDetail = "HelpContactDetail";

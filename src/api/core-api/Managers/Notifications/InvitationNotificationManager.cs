@@ -119,6 +119,61 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
               .SendMessageAsync();
         }
 
+        public async Task SendPreSchoolInvitationAsync(ApplicationUser user, string principalFirstName, string preSchoolName, string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+            var tenantInfo = TenantExecutionContext.Tenant;
+            var invitationEnum = TemplateTypeEnum.WLPreSchoolInvitation;
+            var invitationUrl = $"{_options.Value.WLPreSchoolInvitation}?token={encodedToken}";
+
+            if (tenantInfo != null)
+            {
+                if (tenantInfo.TenantType == TenantType.OpenAccess)
+                {
+                    invitationEnum = TemplateTypeEnum.OAPreSchoolInvitation;
+                    invitationUrl = $"{_options.Value.OAPreSchoolInvitation}?token={encodedToken}";
+                }
+            }
+
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(invitationEnum)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, principalFirstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.PreSchoolName, preSchoolName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .SendMessageAsync();
+        }
+
+        public async Task SendPrincipalInvitationAsync(ApplicationUser user, string practitionerFirstName, string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+            var tenantInfo = TenantExecutionContext.Tenant;
+            var invitationEnum = TemplateTypeEnum.WLPrincipalInvitation;
+            var invitationUrl = $"{_options.Value.WLPrincipalSignup}?token={encodedToken}";
+
+            if (tenantInfo != null)
+            {
+                if (tenantInfo.TenantType == TenantType.OpenAccess)
+                {
+                    invitationEnum = TemplateTypeEnum.OAPrincipalInvitation;
+                    invitationUrl = $"{_options.Value.OAPrincipalSignup}?token={encodedToken}";
+                }
+            }
+
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(invitationEnum)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, practitionerFirstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .SendMessageAsync();
+        }
+
 
     }
 }
