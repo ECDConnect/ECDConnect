@@ -337,7 +337,7 @@ namespace EcdLink.Api.CoreApi.Services
             var timesScored = 0;
             foreach (var classroom in classrooms)
             {
-                var monthlyReport = _monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(userId, classroom, today.GetStartOfMonth(), today.GetEndOfMonth()).SingleOrDefault();
+                var monthlyReport = _monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(userId, today.GetStartOfMonth(), today.GetEndOfMonth()).SingleOrDefault();
 
                 timesScored += monthlyReport.NumberOfSessions;
                 allScores.Add(monthlyReport.PercentageAttendance);

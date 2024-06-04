@@ -63,12 +63,7 @@ export const AttendanceMonthlyReport: React.FC<
       const nextDay = add(startDate, { days: 1 });
       // TODO: cache the report data
       new AttendanceService(authUser?.auth_token ?? '')
-        .getClassroomAttendanceReport(
-          authUser?.id ?? '',
-          classroomId,
-          nextDay,
-          endDate
-        )
+        .getClassroomAttendanceReport(authUser?.id ?? '', nextDay, endDate)
         .then((data) => {
           setReportData(data.classroomAttendanceReport);
           setTotalAttendance(data.totalAttendance);

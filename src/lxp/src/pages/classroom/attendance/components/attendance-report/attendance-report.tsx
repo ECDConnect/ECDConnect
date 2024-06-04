@@ -81,7 +81,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       appDispatch(
         attendanceThunkActions.getMonthlyAttendanceReport({
           userId: authUser?.id!,
-          classroomId: classroomID!,
           startDate: firstDayOfYear,
           endDate: new Date(),
         })
