@@ -272,25 +272,25 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     console.log('trackAttendanceInput', trackAttendanceInput);
 
-    // appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
+    appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
     appDispatch(
       attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
     );
 
-    // appDispatch(
-    //   analyticsActions.createEventTracking({
-    //     action: 'Attendance tracking click',
-    //     category: 'Attendance tracking click',
-    //   })
-    // );
+    appDispatch(
+      analyticsActions.createEventTracking({
+        action: 'Attendance tracking click',
+        category: 'Attendance tracking click',
+      })
+    );
 
-    // onSubmitSuccess({
-    //   attendanceDate,
-    //   classroomGroupId: currentAttendanceGroup.cacheId,
-    // });
-    // setAttendanceGroups([]);
-    // setSelectedClassroomGroups([]);
-    // updateAttendanceState([]);
+    onSubmitSuccess({
+      attendanceDate,
+      classroomGroupId: currentAttendanceGroup.cacheId,
+    });
+    setAttendanceGroups([]);
+    setSelectedClassroomGroups([]);
+    updateAttendanceState([]);
   };
 
   const submitPrompt = () => {

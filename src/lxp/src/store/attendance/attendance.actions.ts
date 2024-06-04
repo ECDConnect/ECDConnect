@@ -192,41 +192,40 @@ export const trackAttendanceSync = createAsyncThunk<
       auth: { userAuth },
       attendanceData: { attendanceTracked },
     } = getState();
-    return [];
-    // try {
-    //   let promises: Promise<boolean>[] = [];
+    try {
+      let promises: Promise<boolean>[] = [];
 
-    //   if (userAuth && attendanceTracked) {
-    //     promises = attendanceTracked.map(async (x) => {
-    //       const trackAttendanceModelInput: TrackAttendanceModelInput = {
-    //         classroomProgrammeId: x.classroomProgrammeId,
-    //         programmeOwnerId: x.programmeOwnerId,
-    //         attendees: [],
-    //         attendanceDate: x.attendanceDate,
-    //       };
+      if (userAuth && attendanceTracked) {
+        promises = attendanceTracked.map(async (x) => {
+          const trackAttendanceModelInput: TrackAttendanceModelInput = {
+            classroomProgrammeId: x.classroomProgrammeId,
+            programmeOwnerId: x.programmeOwnerId,
+            attendees: [],
+            attendanceDate: x.attendanceDate,
+          };
 
-    //       trackAttendanceModelInput.attendees = [];
+          trackAttendanceModelInput.attendees = [];
 
-    //       x.attendees?.forEach((z) => {
-    //         const trackAttendanceAttendeeModelInput: TrackAttendanceAttendeeModelInput =
-    //           {
-    //             userId: z.userId,
-    //             attended: z.attended,
-    //           };
-    //         trackAttendanceModelInput.attendees?.push(
-    //           trackAttendanceAttendeeModelInput
-    //         );
-    //       });
+          x.attendees?.forEach((z) => {
+            const trackAttendanceAttendeeModelInput: TrackAttendanceAttendeeModelInput =
+              {
+                userId: z.userId,
+                attended: z.attended,
+              };
+            trackAttendanceModelInput.attendees?.push(
+              trackAttendanceAttendeeModelInput
+            );
+          });
 
-    //       return await new AttendanceService(
-    //         userAuth?.auth_token
-    //       ).trackAttendance([trackAttendanceModelInput]);
-    //     });
-    //   }
-    //   return Promise.all(promises);
-    // } catch (err) {
-    //   return rejectWithValue(err);
-    // }
+          return await new AttendanceService(
+            userAuth?.auth_token
+          ).trackAttendance([trackAttendanceModelInput]);
+        });
+      }
+      return Promise.all(promises);
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   }
 );
 
