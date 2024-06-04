@@ -1,6 +1,11 @@
 import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
-import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import {
+  ComponentBaseProps,
+  BannerWrapper,
+  Typography,
+  Divider,
+} from '@ecdlink/ui';
+import { useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -8,6 +13,7 @@ import {
   getColor,
   getShape,
   getShapeClass,
+  mergeMonthlyAttendanceReportWithSameClassroomGroupId,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
@@ -18,6 +24,8 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import ROUTES from '@routes/routes';
 import { useHistory } from 'react-router';
+import { classroomsSelectors } from '@/store/classroom';
+import { childrenSelectors } from '@/store/children';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -69,9 +77,22 @@ export const MonthlyAttendanceReport = ({
 
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const children = useSelector(childrenSelectors.getChildren);
+
   const [reportDetails, setReportDetails] =
     useState<ReportDetailsForPractitionerData>();
 
+  const reportDataWithClassroomGroup = useMemo(
+    () =>
+      mergeMonthlyAttendanceReportWithSameClassroomGroupId(
+        reportData,
+        classroomGroups
+      ),
+    [reportData, classroomGroups]
+  );
+
+  // TODO: check if this endpoint is needed (w7)
   useEffect(() => {
     const getClassroomDetails = async () => {
       const res = await new PractitionerService(
@@ -218,83 +239,74 @@ export const MonthlyAttendanceReport = ({
       onBack={onBack}
       title={`View ${reportMonth} Report `}
       subTitle={''}
-      className={'h-full overflow-y-auto'}
+      className={'flex h-full flex-col p-4'}
     >
-      <div className={'flex w-full flex-col pt-2 pb-5'}>
-        <Typography
-          className={'px-4'}
-          type="h1"
-          color={'black'}
-          text={` ${reportMonth} attendance register`}
-        />
+      <Typography
+        type="h1"
+        color="textDark"
+        text={` ${reportMonth} attendance register`}
+      />
 
-        <Typography
-          className={'p-4'}
-          type="body"
-          color={'black'}
-          text={`Tap a child’s name to see their attendance record.`}
-        />
-      </div>
-      <div
-        className={
-          'border-uiLight flex w-full flex-row items-center justify-between border-b border-solid py-3 '
-        }
-      >
-        <Typography
-          className={'mt-2 w-1/2 pl-6'}
-          type="small"
-          color={'textMid'}
-          text={'CHILD'}
-        />
-        <Typography
-          className={'mt-2 w-1/2 pl-6'}
-          type="small"
-          color={'textMid'}
-          text={'% PRESENT'}
-        />
-      </div>
+      <Typography
+        type="body"
+        color="textMid"
+        text={`Tap a child’s name to see their attendance record.`}
+      />
+      <Divider className="mt-4" dividerType="dashed" />
+      {reportDataWithClassroomGroup?.map((classroomGroupReport) => (
+        <>
+          <Typography
+            type="h2"
+            color="textDark"
+            text={classroomGroupReport.classroomGroup?.name ?? ''}
+            className="mt-6 mb-5"
+          />
+          <table className="text-textDark text-left">
+            <tr className="bg-uiBg border-quatenary border-b">
+              <th className="py-3 pl-4">CHILD</th>
+              <th>% PRESENT</th>
+            </tr>
+            {classroomGroupReport.items?.map((report, idx) => {
+              const reportItemColor = getColor(report?.attendancePercentage);
+              const reportItemShape = getShape(report?.attendancePercentage);
 
-      {reportData?.map((report, idx) => {
-        const reportItemColor = getColor(report?.attendancePercentage);
-        const reportItemShape = getShape(report?.attendancePercentage);
-        return (
-          <div
-            key={`child-attendance-report-month-${idx}`}
-            className={`flex w-full flex-row items-center justify-between py-4 bg-${
-              (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
-            }`}
-          >
-            <>
-              <Typography
-                className={'w-1/2 pl-6'}
-                type="body"
-                weight="bold"
-                color={'black'}
-                text={report.childFullName}
-                onClick={() => {
-                  history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
-                    childUserId: report?.childUserId,
-                    classroomGroupId: report?.classgroupId,
-                  });
-                }}
-              />
-              <div className={'flex w-1/2 flex-row items-center pl-6'}>
-                <div
-                  className={getShapeClass(reportItemShape, reportItemColor)}
-                ></div>
-                <Typography
-                  align={'center'}
-                  className={'ml-2'}
-                  type="body"
-                  color={reportItemColor}
-                  text={`${report?.attendancePercentage} %`}
-                />
-              </div>
-            </>
-          </div>
-        );
-      })}
-      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+              return (
+                <tr
+                  className={`${(idx + 1) % 2 === 0 ? 'bg-uiBg' : 'bg-white'}`}
+                  key={`child-attendance-report-month-${idx}`}
+                  onClick={() => {
+                    history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
+                      childUserId: report?.childUserId,
+                      classroomGroupId: classroomGroupReport.classroomGroupId,
+                      childId:
+                        children?.find(
+                          (child) => child.user?.id === report?.childUserId
+                        )?.id ?? '',
+                    } as ChildAttendanceReportState);
+                  }}
+                >
+                  <td className="py-3 pl-4">{report.childFullName}</td>
+                  <td className="flex items-center gap-2 py-3">
+                    <div
+                      className={getShapeClass(
+                        reportItemShape,
+                        reportItemColor
+                      )}
+                    />
+                    <Typography
+                      type="body"
+                      color={reportItemColor}
+                      text={`${report?.attendancePercentage} %`}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </table>
+        </>
+      ))}
+
+      <div className={'mt-auto w-full py-4'}>
         <GeneratePdfReportButton
           title="Download Register"
           outputName={`${reportMonth}-attandance-report.pdf`}

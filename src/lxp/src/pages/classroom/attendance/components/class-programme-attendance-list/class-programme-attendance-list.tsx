@@ -2,6 +2,7 @@ import { getAvatarColor } from '@ecdlink/core';
 import {
   AttendanceListDataItem,
   AttendanceStackedList,
+  AttendanceStatus,
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -58,7 +59,9 @@ export const ClassProgrammeAttendanceList: React.FC<
 
     for (const learner of uniqueLearners) {
       const child = children?.find(
-        (child) => child.userId === learner.childUserId && child.isActive
+        (child) =>
+          (child.userId === learner.childUserId || child?.user?.id) &&
+          child.isActive
       );
 
       if (
@@ -80,7 +83,11 @@ export const ClassProgrammeAttendanceList: React.FC<
 
     const attendanceStackList: AttendanceListDataItem[] = learners.map(
       (learner, index) => {
-        const child = children?.find((x) => x.userId === learner.childUserId);
+        const child = children?.find(
+          (x) =>
+            x.userId === learner.childUserId ||
+            x?.user?.id === learner.childUserId
+        );
         const profileTextString =
           child?.user?.firstName![0] ?? '' + child?.user?.surname![0] ?? '';
 
@@ -89,7 +96,10 @@ export const ClassProgrammeAttendanceList: React.FC<
           profileText: profileTextString.toLocaleUpperCase(),
           attenendeeId: child?.user?.id || index.toString(),
           avatarColor: getAvatarColor(),
-          status: 1,
+          status: isPrimaryClass
+            ? AttendanceStatus.Present
+            : AttendanceStatus.None,
+          disabledAbsentStatus: !isPrimaryClass,
         };
       }
     );
@@ -108,7 +118,7 @@ export const ClassProgrammeAttendanceList: React.FC<
   return (
     <div className={styles.wrapper}>
       {isMultipleClasses && (
-        <div className={'mt-2 mb-2 flex w-full flex-col'}>
+        <div className={'mt-2 mb-2 flex w-full flex-col '}>
           <Typography
             type={'body'}
             weight={'bold'}
