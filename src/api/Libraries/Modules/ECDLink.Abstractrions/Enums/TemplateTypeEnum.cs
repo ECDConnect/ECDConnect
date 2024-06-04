@@ -22,7 +22,7 @@ namespace ECDLink.Abstractrions.Enums
         VerifyCellphoneNumber = 17,
         AdminUserHelpForm = 18,
         OAWLAuthCode = 19,
-        PreSchoolInvitation = 20,
-        PrincipalInvitation = 21
+        OAInvitation = 20,
+        WLInvitation = 21,
     }
 }
