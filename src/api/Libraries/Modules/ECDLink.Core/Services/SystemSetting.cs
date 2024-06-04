@@ -1,7 +1,11 @@
 ﻿using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Attributes;
 using ECDLink.Core.Caching;
+using ECDLink.Core.Caching.Configuration;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,6 +17,8 @@ namespace ECDLink.Core.Services
     {
         private readonly ICacheService<ITenantCache> _cacheService;
         private readonly ISystemSettingsService _settingsService;
+        private readonly CachingSection.CachingItem _cachingConfig;
+
         private T _value;
 
         public T Value
@@ -41,10 +47,17 @@ namespace ECDLink.Core.Services
             }
         }
 
-        public SystemSetting(ICacheService<ITenantCache> cacheService, ISystemSettingsService settingsService)
+        public SystemSetting(ICacheService<ITenantCache> cacheService, ISystemSettingsService settingsService, IConfiguration configuration)
         {
             _cacheService = cacheService;
             _settingsService = settingsService;
+            var cachingConfig = configuration.GetSection<CachingSection>(CachingSection.Name);
+            _cachingConfig = new CachingSection.CachingItem();
+            if (cachingConfig != null && cachingConfig.SystemSetting != null)
+            {
+                _cachingConfig.SlidingExpiration = cachingConfig.Content.SlidingExpiration;
+                _cachingConfig.AbsoluteExpiration = cachingConfig.Content.AbsoluteExpiration;
+            }
         }
 
         public T GetSettings(string settingsGroup)
@@ -95,7 +108,11 @@ namespace ECDLink.Core.Services
                 }
             }
 
-            _cacheService.SetCacheItem(CacheKeyConstants.SystemSettingCache, cacheToAdd);
+            var options = new Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions()
+                .SetSize(1)
+                .SetSlidingExpiration(TimeSpan.FromSeconds(_cachingConfig.SlidingExpiration))
+                .SetAbsoluteExpiration(TimeSpan.FromSeconds(_cachingConfig.AbsoluteExpiration));
+            _cacheService.SetCacheItem(CacheKeyConstants.SystemSettingCache, cacheToAdd, options);
         }
 
     }
