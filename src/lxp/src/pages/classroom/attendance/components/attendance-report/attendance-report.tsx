@@ -1,9 +1,12 @@
-import { Button, LoadingSpinner, renderIcon, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  DialogPosition,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { OfflineCard } from '../../../../../components/offline-card/offline-card';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
-import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@store';
 import { AttendanceReportProps } from './attendance-report.types';
@@ -12,10 +15,18 @@ import {
   attendanceSelectors,
   attendanceThunkActions,
 } from '@/store/attendance';
-import { addDays, startOfYear } from 'date-fns';
+import { isSameDay, startOfMonth, subMonths } from 'date-fns';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { AttendanceActions } from '@/store/attendance/attendance.actions';
+import {
+  MonthlyAttendanceRecord,
+  useDialog,
+  usePrevious,
+  useSnackbar,
+} from '@ecdlink/core';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -24,7 +35,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   isAllRegistersCompleted,
 }) => {
   const appDispatch = useAppDispatch();
-  const isOnline = true;
+  const { isOnline } = useOnlineStatus();
 
   const classroomGroup = classroomGroups?.find((x) => x.classroomId != null);
 
@@ -35,33 +46,72 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     classroomGroup?.classroomId;
 
   const authUser = useSelector(authSelectors.getAuthUser);
-  const attendanceReports = useSelector(
+  const attendanceSummary = useSelector(
     attendanceSelectors.getAttendanceReportsForUser(authUser?.id ?? '')
   );
+
+  const previousAttendanceSummary = usePrevious(attendanceSummary) as
+    | MonthlyAttendanceRecord[]
+    | undefined;
 
   const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
+  const [lastStartOfPeriod, setLastStartOfPeriod] = useState<Date>();
 
   const today = new Date();
+  const firstDayOfMonth = startOfMonth(today);
+  const fourthRecentMonth = subMonths(firstDayOfMonth, 3);
 
-  const { isLoading } = useThunkFetchCall(
+  const { isLoading, wasLoading, isFulfilled } = useThunkFetchCall(
     'attendanceData',
     AttendanceActions.GET_MONTHLY_ATTENDANCE_REPORT
   );
 
-  const attendanceSummary = useMemo(
-    (): AttendanceSummary[] =>
-      attendanceReports
-        ?.map((report) => ({
-          month: report.month,
-          monthOfYear: +report.monthOfYear,
-          attendanceScore: report.percentageAttendance,
-        }))
-        ?.reverse(),
-    [attendanceReports]
-  );
+  const { showMessage } = useSnackbar();
+  const dialog = useDialog();
+
+  const isInitialStartDate =
+    lastStartOfPeriod && isSameDay(fourthRecentMonth, lastStartOfPeriod);
+  const isToShowSeeMoreButton =
+    isInitialStartDate ||
+    attendanceSummary?.length !== previousAttendanceSummary?.length;
+
+  const formattedAttendanceSummary = useMemo(() => {
+    const copy = [...attendanceSummary].reverse() ?? [];
+
+    if (isInitialStartDate) {
+      return copy.slice(0, 4);
+    }
+
+    return copy;
+  }, [attendanceSummary, isInitialStartDate]);
+
+  const onSeeMoreRegisters = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+    const nextStartOfPeriod = subMonths(lastStartOfPeriod!, 1);
+
+    setLastStartOfPeriod(nextStartOfPeriod);
+
+    appDispatch(
+      attendanceThunkActions.getMonthlyAttendanceReport({
+        overrideCache: true,
+        userId: authUser?.id!,
+        classroomId: classroomID!,
+        startDate: nextStartOfPeriod,
+        endDate: today,
+      })
+    );
+  };
 
   useEffect(() => {
     setSelectedClassroomGroups(
@@ -72,23 +122,20 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }, [classroomGroups, classroomID]);
 
   useEffect(() => {
-    const firstDay = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
-
-    const firstDayOfYear = addDays(firstDay, 1);
-
     if (!attendanceTracked) {
-      // TODO: add cache for attendance report
+      setLastStartOfPeriod(fourthRecentMonth);
+
       appDispatch(
         attendanceThunkActions.getMonthlyAttendanceReport({
           userId: authUser?.id!,
           classroomId: classroomID!,
-          startDate: firstDayOfYear,
-          endDate: new Date(),
+          startDate: fourthRecentMonth,
+          endDate: today,
         })
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedClassroomGroups]);
+  }, [selectedClassroomGroups, attendanceTracked]);
 
   useEffect(() => {
     if (!attendanceTracked) {
@@ -105,6 +152,16 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (wasLoading && isFulfilled && !isToShowSeeMoreButton) {
+      showMessage({
+        message: 'No more registers to show',
+        type: 'info',
+        duration: 10000,
+      });
+    }
+  }, [isFulfilled, isToShowSeeMoreButton, showMessage, wasLoading]);
 
   if (isLoading) {
     return (
@@ -133,34 +190,21 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           icon={'SparklesIcon'}
         />
         <AttendanceMonthlyReport
-          attendanceSummary={attendanceSummary}
+          attendanceSummary={formattedAttendanceSummary}
           classroomId={classroomID!}
         />
-        {!isOnline && <OfflineCard />}
       </div>
-      <div
-        className={'static bottom-0 flex h-full w-full flex-1 flex-col px-2'}
-      >
-        {attendanceSummary?.length > 6 && (
-          <Button
-            type="outlined"
-            color="primary"
-            className={'mt-0'}
-            // TODO: Implement see more registers
-            onClick={() => {
-              // setSeeRegister(true);
-            }}
-          >
-            {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
-            <Typography
-              type="h6"
-              color="primary"
-              text={'See more registers'}
-              className="ml-2"
-            ></Typography>
-          </Button>
-        )}
-      </div>
+      {isToShowSeeMoreButton && (
+        <Button
+          className="mt-6"
+          type="outlined"
+          color="quatenary"
+          textColor="quatenary"
+          icon="EyeIcon"
+          text="See more registers"
+          onClick={onSeeMoreRegisters}
+        ></Button>
+      )}
     </div>
   );
 };

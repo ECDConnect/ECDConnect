@@ -1,3 +1,3 @@
 export type RetrieveFromCache = {
-  overrideCache?: boolean;
+  retrievedFromCache?: boolean;
 };
