@@ -4,54 +4,60 @@
 --WL
 INSERT INTO public."MessageTemplate"
 ("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
-VALUES('b67faf9a-748b-4cb6-9dba-18eebed9dd09', true, current_date, current_date, '', 'sms', 'pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
+VALUES('b67faf9a-748b-4cb6-9dba-18eebed9dd09', true, current_date, current_date, '', 'sms', 'wl-pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
 --OA
 INSERT INTO public."MessageTemplate"
 ("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
-VALUES('b67faf9a-748b-4cb6-9dba-18eebed9dd09', true, current_date, current_date, '', 'sms', 'pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
+VALUES('b67faf9a-748b-4cb6-9dba-18eebed9dd09', true, current_date, current_date, '', 'sms', 'oa-pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
 
--- principal invite OA
+-- principal invite 
+--WL
 INSERT INTO public."MessageTemplate"
 ("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
-VALUES('bed227b9-da3b-49a1-98a0-a65302fe2d28', true, current_date, current_date, '', 'sms', 'principal-invitation', '[[FirstName]] has invited you to join [[ApplicationName]], your assistant in brighter beginnings!  Sign up now to connect: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
-
-
--- DEV - System Settings
--- pre-school invite
-INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
-('fcdf0757-3235-4070-a7d1-75144de55820','General.Callback.Invitations','General.Callback.Invitations.PreSchoolInvitation','PreSchoolInvitation','https://ecdconnect-develop-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
-
-INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
-('fcdf0757-3235-4070-a7d1-75144de55820','General.Callback.Invitations','General.Callback.Invitations.PreSchoolInvitation','PreSchoolInvitation','https://ecdconnect-develop-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
-
-
--- principal invite
-INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
-('e66fa5f9-6edd-4629-8866-59188284e031','General.Callback.Invitations','General.Callback.Invitations.PrincipalSignup','PrincipalSignup','https://ecdconnect-develop-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
-
-INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
-('e66fa5f9-6edd-4629-8866-59188284e031','General.Callback.Invitations','General.Callback.Invitations.PrincipalSignup','PrincipalSignup','https://ecdconnect-develop-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
-
+VALUES('bed227b9-da3b-49a1-98a0-a65302fe2d28', true, current_date, current_date, '', 'sms', 'wl-principal-invitation', '[[FirstName]] has invited you to join [[ApplicationName]], your assistant in brighter beginnings!  Sign up now to connect: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
+--OA
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('bed227b9-da3b-49a1-98a0-a65302fe2d28', true, current_date, current_date, '', 'sms', 'oa-principal-invitation', '[[FirstName]] has invited you to join [[ApplicationName]], your assistant in brighter beginnings!  Sign up now to connect: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
 
 
 ALTER TABLE public."Classroom" ADD "PreschoolCode" varchar NULL;
 
-
-
-
--- QA
+-- DEV - System Settings
+-- pre-school invite
 --INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
---('fcdf0757-3235-4070-a7d1-75144de55820','General.Callback.Invitations','General.Callback.Invitations.PreSchoolInvitation','PreSchoolInvitation','https://ecdconnect-qa-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+--('c420b2e6-a91a-418f-8220-48348f3bbb1b','General.Callback.Invitations','General.Callback.Invitations.WLPreSchoolInvitation','WLPreSchoolInvitation','https://whitelabel-develop-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+--INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+--('fcdf0757-3235-4070-a7d1-75144de55820','General.Callback.Invitations','General.Callback.Invitations.OAPreSchoolInvitation','OAPreSchoolInvitation','https://ecdconnect-develop-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+
 
 -- principal invite
 --INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
---('e66fa5f9-6edd-4629-8866-59188284e031','General.Callback.Invitations','General.Callback.Invitations.PrincipalSignup','PrincipalSignup','https://ecdconnect-qa-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+--('4246e432-528a-4765-87c1-2967726f0180','General.Callback.Invitations','General.Callback.Invitations.WLPrincipalSignup','WLPrincipalSignup','https://whitelabel-develop-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+--INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+--('e66fa5f9-6edd-4629-8866-59188284e031','General.Callback.Invitations','General.Callback.Invitations.OAPrincipalSignup','OAPrincipalSignup','https://ecdconnect-develop-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+
+
+-- QA
+-- pre-school invite
+INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+('c420b2e6-a91a-418f-8220-48348f3bbb1b','General.Callback.Invitations','General.Callback.Invitations.WLPreSchoolInvitation','WLPreSchoolInvitation','https://whitelabel-qa-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+('fcdf0757-3235-4070-a7d1-75144de55820','General.Callback.Invitations','General.Callback.Invitations.OAPreSchoolInvitation','OAPreSchoolInvitation','https://ecdconnect-qa-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+-- principal invite
+INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+('4246e432-528a-4765-87c1-2967726f0180','General.Callback.Invitations','General.Callback.Invitations.WLPrincipalSignup','WLPrincipalSignup','https://whitelabel-qa-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+('e66fa5f9-6edd-4629-8866-59188284e031','General.Callback.Invitations','General.Callback.Invitations.OAPrincipalSignup','OAPrincipalSignup','https://ecdconnect-qa-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
 
 
 -- PROD
 --INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
---('fcdf0757-3235-4070-a7d1-75144de55820','General.Callback.Invitations','General.Callback.Invitations.PreSchoolInvitation','PreSchoolInvitation','https://??/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
-
+--('c420b2e6-a91a-418f-8220-48348f3bbb1b','General.Callback.Invitations','General.Callback.Invitations.WLPreSchoolInvitation','WLPreSchoolInvitation','https://whitelabel-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+--INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+--('fcdf0757-3235-4070-a7d1-75144de55820','General.Callback.Invitations','General.Callback.Invitations.OAPreSchoolInvitation','OAPreSchoolInvitation','https://ecdconnect-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
 -- principal invite
 --INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
---('e66fa5f9-6edd-4629-8866-59188284e031','General.Callback.Invitations','General.Callback.Invitations.PrincipalSignup','PrincipalSignup','https://??/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+--('4246e432-528a-4765-87c1-2967726f0180','General.Callback.Invitations','General.Callback.Invitations.WLPrincipalSignup','WLPrincipalSignup','https://whitelabel-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+--INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+--('e66fa5f9-6edd-4629-8866-59188284e031','General.Callback.Invitations','General.Callback.Invitations.OAPrincipalSignup','OAPrincipalSignup','https://ecdconnect-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');

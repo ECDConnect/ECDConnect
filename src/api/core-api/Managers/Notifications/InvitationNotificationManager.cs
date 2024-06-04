@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Enums;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
@@ -26,8 +27,23 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         public async Task SendInvitationAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
-
+            var tenantInfo = TenantExecutionContext.Tenant;
+            var invitationEnum = TemplateTypeEnum.Invitation;
             var invitationUrl = $"{_options.Value.Signup}?token={encodedToken}";
+
+            if (tenantInfo != null)
+            {
+                if (tenantInfo.TenantType == TenantType.WhiteLabel)
+                {
+                    invitationEnum = TemplateTypeEnum.WLInvitation;
+                    invitationUrl = $"{_options.Value.WLSignup}?token={encodedToken}";
+                } else if (tenantInfo.TenantType == TenantType.OpenAccess)
+                {
+                    invitationEnum = TemplateTypeEnum.OAInvitation;
+                    invitationUrl = $"{_options.Value.OASignup}?token={encodedToken}";
+                }
+            }
+
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
             string firstName = user.FirstName;
@@ -35,7 +51,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             var notificationProvider = _notificationProviderFactory.Create(user);
 
             await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.Invitation)
+              .SetMessageTemplate(invitationEnum)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
@@ -106,13 +122,24 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         public async Task SendPreSchoolInvitationAsync(ApplicationUser user, string principalFirstName, string preSchoolName, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
+            var tenantInfo = TenantExecutionContext.Tenant;
+            var invitationEnum = TemplateTypeEnum.WLPreSchoolInvitation;
+            var invitationUrl = $"{_options.Value.WLPreSchoolInvitation}?token={encodedToken}";
 
-            var invitationUrl = $"{_options.Value.PreSchoolInvitation}?token={encodedToken}";
+            if (tenantInfo != null)
+            {
+                if (tenantInfo.TenantType == TenantType.OpenAccess)
+                {
+                    invitationEnum = TemplateTypeEnum.OAPreSchoolInvitation;
+                    invitationUrl = $"{_options.Value.OAPreSchoolInvitation}?token={encodedToken}";
+                }
+            }
+
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var notificationProvider = _notificationProviderFactory.Create(user);
 
             await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.PreSchoolInvitation)
+              .SetMessageTemplate(invitationEnum)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, principalFirstName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.PreSchoolName, preSchoolName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
@@ -123,13 +150,24 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         public async Task SendPrincipalInvitationAsync(ApplicationUser user, string practitionerFirstName, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
+            var tenantInfo = TenantExecutionContext.Tenant;
+            var invitationEnum = TemplateTypeEnum.WLPrincipalInvitation;
+            var invitationUrl = $"{_options.Value.WLPrincipalSignup}?token={encodedToken}";
 
-            var invitationUrl = $"{_options.Value.PrincipalSignup}?token={encodedToken}";
+            if (tenantInfo != null)
+            {
+                if (tenantInfo.TenantType == TenantType.OpenAccess)
+                {
+                    invitationEnum = TemplateTypeEnum.OAPrincipalInvitation;
+                    invitationUrl = $"{_options.Value.OAPrincipalSignup}?token={encodedToken}";
+                }
+            }
+
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var notificationProvider = _notificationProviderFactory.Create(user);
 
             await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.PrincipalInvitation)
+              .SetMessageTemplate(invitationEnum)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, practitionerFirstName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
