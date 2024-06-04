@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import ReactGA from 'react-ga';
+import ReactGA from 'react-ga4';
 import { RootState, ThunkApiType } from '../types';
 
 export const pushAnalytics = createAsyncThunk<
@@ -18,11 +18,11 @@ export const pushAnalytics = createAsyncThunk<
     try {
       if (viewTracking) {
         for (const viewTrackingItem of viewTracking) {
-          ReactGA.pageview(
-            viewTrackingItem.pageView,
-            undefined,
-            viewTrackingItem.title
-          );
+          ReactGA.send({
+            hitType: 'pageview',
+            page: undefined,
+            title: viewTrackingItem.title,
+          });
         }
       }
 
