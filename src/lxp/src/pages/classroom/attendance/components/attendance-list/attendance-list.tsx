@@ -270,8 +270,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       currentProgramme.id ?? ''
     );
 
-    console.log('trackAttendanceInput', trackAttendanceInput);
-
     appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
     appDispatch(
       attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
