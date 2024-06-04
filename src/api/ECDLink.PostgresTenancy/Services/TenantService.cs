@@ -1,6 +1,7 @@
 ﻿using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Model;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,29 +10,59 @@ namespace ECDLink.PostgresTenancy.Services
 {
     public class TenantService
     {
-        private readonly ITenancyRepository _repository;
+        private readonly ITenancyRepository<TenantEntity> _repository;
 
-        public TenantService(ITenancyRepository repository)
+        public TenantService(ITenancyRepository<TenantEntity> repository)
         {
             _repository = repository;
         }
 
         public IEnumerable<TenantInternalModel> GetAllTenants()
         {
-            return _repository.GetAll().ToList().Select(t => Cast(t));
-        }
+            var tenants = _repository.GetAll().ToList();
+            var tenantModules = _repository.GetSet<TenantHasModule>().ToList();
 
-        public TenantInternalModel GetTenantById(string id)
-        {
-            var tenant = _repository.GetById(id);
-
-            if (tenant == null)
+            var results = new List<TenantInternalModel>();
+            foreach (var dbTenant in tenants)
             {
-                return default;
+                var tenant = Cast(dbTenant);
+                var modules = tenantModules.Where(x => x.TenantId == tenant.Id).Select(x => x.Module);
+                if ((tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel) || (tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabelTemplate))
+                {
+                    tenant.Modules = new TenantModuleModel();
+                    if (modules != null && modules.Count() > 0)
+                    {
+                        foreach (var item in modules)
+                        {
+                            if (item.NormalizedName == "COACH ROLE")
+                            {
+                                tenant.Modules.CoachRoleName = "Coach";
+                                tenant.Modules.CoachRoleEnabled = true;
+                            }
+                            if (item.NormalizedName == "CLASSROOM ACTIVITIES") tenant.Modules.ClassroomActivitiesEnabled = true;
+                            if (item.NormalizedName == "PROGRESS") tenant.Modules.ProgressEnabled = true;
+                            if (item.NormalizedName == "ATTENDANCE") tenant.Modules.AttendanceEnabled = true;
+                            if (item.NormalizedName == "CALENDAR") tenant.Modules.CalendarEnabled = true;
+                            if (item.NormalizedName == "TRAINING") tenant.Modules.TrainingEnabled = true;
+                            if (item.NormalizedName == "BUSINESS") tenant.Modules.BusinessEnabled = true;
+                        }
+                    }
+                }
+                results.Add(tenant);
             }
 
-            return Cast(tenant);
+            return results;
         }
+
+        //public TenantInternalModel GetTenantById(string id)
+        //{
+        //    var tenant = _repository.GetById(id);
+        //    if (tenant == null)
+        //    {
+        //        return default;
+        //    }
+        //    return Cast(tenant);
+        //}
 
         public TenantInternalModel GetTenantByUrl(string url)
         {

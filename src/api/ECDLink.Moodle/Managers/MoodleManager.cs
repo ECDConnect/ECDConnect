@@ -32,9 +32,9 @@ namespace ECDLink.Moodle.Managers
 
         public async Task<bool> CreateUserAsync(MoodleConfig config, MoodleUser user)
         {
-            user.UserName = $"{user.IdNumber}@ecdconnect.co.za"; //string.Format(config.Site.UserNameFormatString, user);
+            user.UserName = $"{user.Id}"; //string.Format(config.Site.UserNameFormatString, user);
             user.Password = config.Site.DefaultPassword;
-            user.Email = $"{user.IdNumber}@ecdconnect.co.za";  //string.Format(config.Site.EmailFormatString, user);
+            user.Email = $"{user.UserName}@ecdconnect.co.za";  //string.Format(config.Site.EmailFormatString, user);
 
             var cohorts = new List<string>();
             var allCohorts = config.UserTypes.First(x => x.UserType == "*").Cohorts;
@@ -182,7 +182,7 @@ namespace ECDLink.Moodle.Managers
 
         private async Task<long> GetMoodleCohortId(NpgsqlConnection conn, string name)
         {
-            await using var cmd = new NpgsqlCommand("SELECT id FROM public.mdl_cohort where name = (@cohortName)", conn)
+            await using var cmd = new NpgsqlCommand("SELECT id FROM public.mdl_cohort where name = (@cohortName) or idnumber = (@cohortName)", conn)
             {
                 Parameters = { new NpgsqlParameter("cohortName", name) }
             };

@@ -8,10 +8,10 @@ using System.Linq;
 
 namespace ECDLink.PostgresTenancy.Repository
 {
-    public class TenantRepository : ITenancyRepository
+    public class TenantRepository<T> : ITenancyRepository<T> where T: class
     {
-        private AuthenticationDbContext _context;
-        private DbSet<TenantEntity> entities;
+        public readonly AuthenticationDbContext Context;
+        private DbSet<T> entities;
 
         protected string _userId;
 
@@ -19,49 +19,48 @@ namespace ECDLink.PostgresTenancy.Repository
 
         public TenantRepository(AuthenticationDbContext context)
         {
-            _context = context;
-            entities = context.Set<TenantEntity>();
+            Context = context;
+            entities = context.Set<T>();
         }
 
-        public bool dbCreated()
+        public DbSet<Y> GetSet<Y>() where Y : class
         {
-            return _context.Database.GetService<IRelationalDatabaseCreator>().Exists();
+            return Context.Set<Y>();
         }
 
-        public bool Exists(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return false;
-            }
+        //public bool Exists(string id)
+        //{
+        //    if (string.IsNullOrWhiteSpace(id))
+        //    {
+        //        return false;
+        //    }
+        //    return entities.Any(e => e.Id == Guid.Parse(id));
+        //}
 
-            return entities.Any(e => e.Id == Guid.Parse(id));
-        }
-
-        public IQueryable<TenantEntity> GetAll()
+        public IQueryable<T> GetAll()
         {
             return entities;
         }
 
-        public virtual TenantEntity GetById(string id)
-        {
-            return entities
-                    .Where(e => e.Id == Guid.Parse(id))
-                    .OrderBy(x => x.Id)
-                    .FirstOrDefault();
-        }
+        //public virtual TenantEntity GetById(string id)
+        //{
+        //    return entities
+        //            .Where(e => e.Id == Guid.Parse(id))
+        //            .OrderBy(x => x.Id)
+        //            .FirstOrDefault();
+        //}
 
-        public virtual TenantEntity Insert(TenantEntity entity)
+        public virtual T Insert(T entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");
 
             entities.Add(entity);
-            _context.SaveChanges();
+            Context.SaveChanges();
 
             return entity;
         }
 
-        public virtual TenantEntity Update(TenantEntity entity)
+        public virtual T Update(T entity)
         {
             if (entity == null)
             {
@@ -70,14 +69,14 @@ namespace ECDLink.PostgresTenancy.Repository
 
             entities.Update(entity);
 
-            _context.SaveChanges();
+            Context.SaveChanges();
 
             return entity;
         }
 
-        public void Delete(string id)
-        {
-            throw new NotImplementedException();
-        }
+        //public void Delete(string id)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }
