@@ -6651,7 +6651,6 @@ export type MotherSortInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptNewClubLeaderRole: Scalars['Boolean'];
-  acceptPractitionerInviteToPreSchool: Scalars['Boolean'];
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
@@ -7061,7 +7060,6 @@ export type Mutation = {
   reassignClassroomsFromHistoryService: Scalars['Boolean'];
   refreshCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
   rejectNewClubLeaderRole: Scalars['Boolean'];
-  rejectPractitionerInviteToPreSchool: Scalars['Boolean'];
   remapPrincipalToPrincipal?: Maybe<Practitioner>;
   removeFromProgramme: Scalars['Boolean'];
   removePermissionsFromNavigation: Scalars['Boolean'];
@@ -7358,10 +7356,6 @@ export type MutationAcceptNewClubLeaderRoleArgs = {
   clubId: Scalars['UUID'];
   clubSupportPractitionerId: Scalars['UUID'];
   practitionerId: Scalars['UUID'];
-};
-
-export type MutationAcceptPractitionerInviteToPreSchoolArgs = {
-  userId: Scalars['UUID'];
 };
 
 export type MutationAddAbsenteeForPractitionerArgs = {
@@ -9147,10 +9141,6 @@ export type MutationRejectNewClubLeaderRoleArgs = {
   practitionerId: Scalars['UUID'];
 };
 
-export type MutationRejectPractitionerInviteToPreSchoolArgs = {
-  userId: Scalars['UUID'];
-};
-
 export type MutationRemapPrincipalToPrincipalArgs = {
   newPrincipalId?: InputMaybe<Scalars['String']>;
   oldPrincipalId?: InputMaybe<Scalars['String']>;
@@ -9543,8 +9533,7 @@ export type MutationSendPrincipalChangedNotificationArgs = {
 };
 
 export type MutationSendPrincipalInviteToApplicationArgs = {
-  preSchoolName?: InputMaybe<Scalars['String']>;
-  principalFirstName?: InputMaybe<Scalars['String']>;
+  practitionerFirstName?: InputMaybe<Scalars['String']>;
   userId: Scalars['UUID'];
 };
 
@@ -13533,9 +13522,6 @@ export type Query = {
   classAttendanceMetricsByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomActionItems?: Maybe<Array<Maybe<NotificationDisplay>>>;
   classroomAttendanceOverviewReport?: Maybe<ClassroomGroupChildAttendanceReportOverviewModel>;
-  classroomAttendanceReport?: Maybe<
-    Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
-  >;
   classroomForUser?: Maybe<ClassroomModel>;
   classroomGroupsForUser?: Maybe<Array<Maybe<ClassroomGroupModel>>>;
   clinicById?: Maybe<ClinicModel>;
@@ -15652,14 +15638,6 @@ export type QueryClassroomActionItemsArgs = {
 };
 
 export type QueryClassroomAttendanceOverviewReportArgs = {
-  classgroupId: Scalars['UUID'];
-  endDate: Scalars['DateTime'];
-  startDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryClassroomAttendanceReportArgs = {
-  classgroupId: Scalars['UUID'];
   endDate: Scalars['DateTime'];
   startDate: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
@@ -16522,7 +16500,6 @@ export type QueryMonthlyAttendanceRecordCsvArgs = {
 };
 
 export type QueryMonthlyAttendanceReportArgs = {
-  classroomId: Scalars['UUID'];
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
@@ -17130,9 +17107,13 @@ export type Setting_InvitationCutoffDelay = {
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
-  PreSchoolInvitation: Scalars['String'];
-  PrincipalSignup: Scalars['String'];
+  OAPreSchoolInvitation: Scalars['String'];
+  OAPrincipalSignup: Scalars['String'];
+  OASignup: Scalars['String'];
   Signup: Scalars['String'];
+  WLPreSchoolInvitation: Scalars['String'];
+  WLPrincipalSignup: Scalars['String'];
+  WLSignup: Scalars['String'];
 };
 
 export type Setting_Jwts = {
@@ -18409,11 +18390,24 @@ export type TenantModel = {
   adminSiteAddress?: Maybe<Scalars['String']>;
   applicationName?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  modules?: Maybe<TenantModuleModel>;
   moodleUrl?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
   tenantType: TenantType;
   themePath?: Maybe<Scalars['String']>;
+};
+
+export type TenantModuleModel = {
+  __typename?: 'TenantModuleModel';
+  attendanceEnabled: Scalars['Boolean'];
+  businessEnabled: Scalars['Boolean'];
+  calendarEnabled: Scalars['Boolean'];
+  classroomActivitiesEnabled: Scalars['Boolean'];
+  coachRoleEnabled: Scalars['Boolean'];
+  coachRoleName?: Maybe<Scalars['String']>;
+  progressEnabled: Scalars['Boolean'];
+  trainingEnabled: Scalars['Boolean'];
 };
 
 export enum TenantType {
