@@ -5,7 +5,7 @@ export interface ClassProgrammeWithMissedDate extends ClassProgrammeDto {
   missedDate: Date;
 }
 export interface MissedAttendanceGroups {
-  classroomGroup: ClassroomGroupDto & {};
+  classroomGroup: ClassroomGroupDto;
   missedDay: Date;
   classProgramme: ClassProgrammeWithMissedDate;
 }
