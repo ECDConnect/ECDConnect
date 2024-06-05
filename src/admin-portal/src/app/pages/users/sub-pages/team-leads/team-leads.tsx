@@ -134,7 +134,7 @@ export default function TeamLeads() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: ROUTES.VIEW_USERS,
+      pathname: ROUTES.USERS.VIEW_USER,
       state: {
         component: UsersRouteRedirectTypeEnum.teamLeads,
         userId: selectedRow?.user?.id,

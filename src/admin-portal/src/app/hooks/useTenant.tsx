@@ -8,6 +8,7 @@ export type TenantContextType = {
   isOpenAccess: boolean;
   isCHWConnect: boolean;
   isFundaApp: boolean;
+  modules: any | null;
 };
 
 const TenantContext = React.createContext<TenantContextType>({
@@ -16,6 +17,7 @@ const TenantContext = React.createContext<TenantContextType>({
   isOpenAccess: true,
   isCHWConnect: false,
   isFundaApp: false,
+  modules: null,
 });
 
 export const TenantContextProvider: React.FC<{}> = ({ children }) => {
@@ -25,6 +27,7 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
     isOpenAccess: true,
     isCHWConnect: false,
     isFundaApp: false,
+    modules: null,
   });
 
   useEffect(() => {
@@ -32,6 +35,7 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
       const result = await GetCurrentTenant(Config.authApi);
       const value: TenantContextType = {
         tenant: result,
+        modules: result.modules,
         isWhiteLabel: !result
           ? false
           : result.tenantType === TenantType.WhiteLabel ||

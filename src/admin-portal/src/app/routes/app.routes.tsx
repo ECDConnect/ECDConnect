@@ -258,7 +258,7 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={ROUTES.USERS.ALL_ROLES} component={ApplicationUsers}></Route>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={ROUTES.VIEW_USERS} component={ViewUser}></Route>
+      <Route path={ROUTES.USERS.VIEW_USER} component={ViewUser}></Route>
       <Route path={ROUTES.USERS.ADMINS} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>

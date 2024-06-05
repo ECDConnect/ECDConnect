@@ -21,7 +21,6 @@ const ROUTES = {
   LOGOUT: '/logout',
   UPLOAD_USERS: '/upload-users',
   DOCUMENTS: '/documents',
-  VIEW_USERS: '/users/view-user',
   PROFILE: '/profile',
   RESET: '/reset',
   TEAM_LEAD_LEAGUES: '/tl-leagues',
@@ -51,6 +50,10 @@ const ROUTES = {
     ALL_ROLES: '/all-roles',
     TEAM_LEADS: '/team-leads',
     HEALTH_CARE_WORKERS: '/health-care-worker',
+    PRACTITIONERS: '/practitioners',
+    COACHES: '/coaches',
+    CHILDREN: '/children',
+    VIEW_USER: '/view-user',
   }),
   CLASSROOM: addPrefix('/classroom', {
     UPDATE_FEE: '/preschool-fee',
