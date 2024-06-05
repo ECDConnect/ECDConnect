@@ -17,6 +17,8 @@ export interface TenantModel {
     prgoressEnabled: boolean;
     trainingEnabled: boolean;
   } | null;
+  googleAnalyticsTag: string;
+  googleTagManager: string;
 }
 
 export enum TenantType {

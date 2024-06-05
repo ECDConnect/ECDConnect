@@ -17,4 +17,6 @@ export interface TenantDto extends EntityBase {
     prgoressEnabled: boolean;
     trainingEnabled: boolean;
   } | null;
+  googleAnalyticsTag: string;
+  googleTagManager: string;
 }
