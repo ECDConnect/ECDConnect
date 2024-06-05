@@ -219,7 +219,7 @@ export default function HealthCareWorkers() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: ROUTES.VIEW_USERS,
+      pathname: ROUTES.USERS.VIEW_USER,
       state: {
         component: 'chw',
         userId: selectedRow?.userId,

@@ -1,29 +1,27 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Helpers;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Moodle.Managers;
 using ECDLink.Moodle.Models;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Helpers;
-using ECDLink.Abstractrions.GraphQL.Attributes;
-using Microsoft.AspNetCore.Http;
-using ECDLink.Security.Extensions;
-using HotChocolate.Data;
-using ECDLink.Core.Models;
-using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -57,8 +55,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
 
-            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
 
+            usersQuery = await ExcludeChildren(userManager, usersQuery);
+            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
@@ -79,6 +78,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     || EF.Functions.ILike(h.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.Email, $"%{search}%"));
             return usersQuery;
+        }
+
+        private static async Task<IQueryable<ApplicationUser>> ExcludeChildren(ApplicationUserManager userManager, IQueryable<ApplicationUser> usersQuery)
+        {
+            var children = await userManager.GetUsersInRoleAsync(Roles.CHILD);
+            var userIds = children
+                .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
+                .Select(r => r.Id)
+                .ToList();
+            return usersQuery.Where(u => !userIds.Contains(u.Id));
         }
 
         private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(ApplicationUserManager userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
