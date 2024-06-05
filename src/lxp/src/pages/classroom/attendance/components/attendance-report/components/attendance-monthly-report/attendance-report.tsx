@@ -4,6 +4,7 @@ import {
   BannerWrapper,
   Typography,
   Divider,
+  Button,
 } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -26,13 +27,14 @@ import ROUTES from '@routes/routes';
 import { useHistory } from 'react-router';
 import { classroomsSelectors } from '@/store/classroom';
 import { childrenSelectors } from '@/store/children';
-import { endOfMonth, startOfMonth } from 'date-fns';
+import { endOfMonth, startOfMonth, subDays, isAfter } from 'date-fns';
 import {
   attendanceSelectors,
   attendanceThunkActions,
 } from '@/store/attendance';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { AttendanceActions } from '@/store/attendance/attendance.actions';
+import { EditRegistersRouteState } from '@/pages/classroom/attendance/edit-registers/edit-registers.types';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -67,7 +69,7 @@ export const MonthlyAttendanceReport = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const today = new Date().toDateString();
+  const today = new Date();
   const history = useHistory();
   const { errorDialog } = useRequestResponseDialog();
 
@@ -95,6 +97,10 @@ export const MonthlyAttendanceReport = ({
 
     return { startDate: firstDayOfMonth, endDate: lastDayOfMonth };
   }, [selectedMonth.monthOfYear, selectedMonth.year]);
+
+  const isCurrentMonth = today.getMonth() === startDate.getMonth();
+  const is30DaysWindow =
+    !isCurrentMonth && isAfter(endDate, subDays(today, 31));
 
   const monthlyReport = useSelector(
     attendanceSelectors.getClassroomAttendanceOverviewReportByPeriod(
@@ -126,8 +132,6 @@ export const MonthlyAttendanceReport = ({
       ),
     [reportData, classroomGroups]
   );
-
-  console.log({ monthlyReport });
 
   useEffect(() => {
     appDispatch(
@@ -358,6 +362,22 @@ export const MonthlyAttendanceReport = ({
       ))}
 
       <div className={'mt-auto w-full py-4'}>
+        {is30DaysWindow && (
+          <Button
+            className="mb-4 w-full"
+            type="outlined"
+            color="quatenary"
+            textColor="quatenary"
+            text="Edit registers"
+            icon="PencilIcon"
+            onClick={() =>
+              history.push(ROUTES.CLASSROOM.ATTENDANCE.EDIT_REGISTERS, {
+                startDate,
+                endDate,
+              } as EditRegistersRouteState)
+            }
+          />
+        )}
         <GeneratePdfReportButton
           title="Download Register"
           outputName={`${selectedMonth.month}-attandance-report.pdf`}
@@ -369,7 +389,7 @@ export const MonthlyAttendanceReport = ({
           tableFootStyles={tableFootStyles}
           tableStyles={tableStyles}
           signature={practitioner?.signingSignature ?? ''}
-          downloadDate={today}
+          downloadDate={today.toDateString()}
           numberOfChildren={attendanceSum}
         />
       </div>
