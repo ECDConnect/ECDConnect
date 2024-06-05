@@ -1,5 +1,7 @@
 ﻿using ECDLink.Tenancy.Enums;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ECDLink.Tenancy.Model
 {
@@ -19,6 +21,9 @@ namespace ECDLink.Tenancy.Model
             TenantType = model.TenantType;
             ThemePath = model.ThemePath;
             MoodleUrl = model.MoodleUrl;
+            Modules = model.Modules;
+            GoogleAnalyticsTag = model.GoogleAnalyticsTag;
+            GoogleTagManager = model.GoogleTagManager;
         }
 
         public Guid Id { get; set; }
@@ -36,6 +41,12 @@ namespace ECDLink.Tenancy.Model
         public string ThemePath { get; set; }
 
         public string MoodleUrl { get; set; }
+
+        public TenantModuleModel Modules { get; set; }
+
+        public string GoogleAnalyticsTag { get; set; }
+
+        public string GoogleTagManager { get; set; }
     }
 
     public class TenantModelAPI
@@ -63,6 +74,9 @@ namespace ECDLink.Tenancy.Model
                 case Enums.TenantType.FundaApp: TenantType = "FUNDA_APP"; break;
                 default: TenantType = ""; break;
             }
+            Modules = model.Modules;
+            GoogleAnalyticsTag = model.GoogleAnalyticsTag;
+            GoogleTagManager = model.GoogleTagManager;
         }
 
         public Guid Id { get; set; }
@@ -80,5 +94,11 @@ namespace ECDLink.Tenancy.Model
         public string ThemePath { get; set; }
 
         public string MoodleUrl { get; set; }
+
+        public TenantModuleModel Modules { get; set; }
+
+        public string GoogleAnalyticsTag { get; set; }
+
+        public string GoogleTagManager { get; set; }
     }
 }

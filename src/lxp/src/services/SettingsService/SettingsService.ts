@@ -20,10 +20,6 @@ class SettingsService {
               ChildInitialObservationPeriod
               ChildExpiryTime
             }
-            Google {
-              GoogleAnalyticsTag
-              GoogleTagManager
-            }
           }
         }
           `,

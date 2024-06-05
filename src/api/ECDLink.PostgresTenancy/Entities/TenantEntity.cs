@@ -8,11 +8,8 @@ namespace ECDLink.PostgresTenancy.Entities
     public class TenantEntity : EntityBase
     {
         public string ApplicationName { get; set; }
-
         public string SiteAddress { get; set; }
-
         public string OrganisationName { get; set; }
-
         public TenantType TenantTypeId { get; set; }
         public string AdminSiteAddress { get; set; }
         public string ThemePath { get; set; }
@@ -20,6 +17,7 @@ namespace ECDLink.PostgresTenancy.Entities
         public string AdminTestSiteAddress { get; set; }
         public string MoodleUrl { get; set; }
         public string MoodleConfig { get; set; }
-
+        public string GoogleAnalyticsTag { get; set; }
+        public string GoogleTagManager { get; set; }
     }
 }

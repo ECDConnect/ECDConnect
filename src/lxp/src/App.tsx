@@ -19,7 +19,7 @@ import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
-import { settingActions, settingSelectors } from './store/settings';
+import { settingActions } from './store/settings';
 // import BackgroundSync from './components/background-sync/background-sync';
 import { differenceInHours, getTime, isSameDay } from 'date-fns';
 import { syncThunkActions } from './store/sync';
@@ -27,19 +27,18 @@ import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
 import { AppErrorHandler } from '@ecdlink/core';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
+import { useTenant } from './hooks/useTenant';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
 }
 
 const App: React.FC = () => {
+  const tenant = useTenant();
   const dialog = useDialog();
   const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
-  const applicationSettings = useSelector(
-    settingSelectors.getApplicationSettings
-  );
   const userLocalxpiration = JSON.parse(
     localStorage?.getItem('userLocalxpiration')!
   );
@@ -61,11 +60,11 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (applicationSettings && applicationSettings.Google) {
-      if (applicationSettings.Google.GoogleAnalyticsTag) {
+    if (!!tenant && !!tenant.tenant) {
+      if (!!tenant.tenant.googleAnalyticsTag) {
         ReactGA.initialize([
           {
-            trackingId: applicationSettings.Google.GoogleAnalyticsTag,
+            trackingId: tenant.tenant.googleAnalyticsTag,
             gaOptions: {
               debug_mode:
                 window.location.host.indexOf('localhost') > 0 ? true : false,
@@ -86,16 +85,16 @@ const App: React.FC = () => {
         });
       }
 
-      if (applicationSettings.Google.GoogleTagManager) {
+      if (!!tenant.tenant.googleTagManager) {
         const tagManagerArgs = {
-          gtmId: applicationSettings.Google.GoogleTagManager,
+          gtmId: tenant.tenant.googleTagManager,
         };
 
         TagManager.initialize(tagManagerArgs);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applicationSettings]);
+  }, [tenant]);
 
   useEffect(() => {
     if (userExpired) {

@@ -113,9 +113,6 @@
             {
                 public const string GoogleGrouping = "General.Analytics.Google";
                 public const string GoogleReport = "General.Analytics.Google.DashboardGoogleReport";
-
-                public const string Tag = "General.Analytics.Google.GoogleAnalyticsTag";
-                public const string TagManager = "General.Analytics.Google.GoogleTagManager";
             }
         }
 

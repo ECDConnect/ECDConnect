@@ -13,7 +13,4 @@ export interface Setting_ChildrenDto {
   ChildInitialObservationPeriod: string;
 }
 
-export interface Setting_GoogleDto {
-  GoogleAnalyticsTag: string;
-  GoogleTagManager: string;
-}
+export interface Setting_GoogleDto {}

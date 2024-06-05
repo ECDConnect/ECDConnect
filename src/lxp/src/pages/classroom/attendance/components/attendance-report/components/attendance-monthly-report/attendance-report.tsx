@@ -139,7 +139,6 @@ export const MonthlyAttendanceReport = ({
     appDispatch(
       attendanceThunkActions.getClassroomAttendanceReport({
         userId: userAuth?.id ?? '',
-        classgroupId: classroomGroupId,
         startDate,
         endDate,
       })
