@@ -18389,6 +18389,8 @@ export type TenantModel = {
   __typename?: 'TenantModel';
   adminSiteAddress?: Maybe<Scalars['String']>;
   applicationName?: Maybe<Scalars['String']>;
+  googleAnalyticsTag?: Maybe<Scalars['String']>;
+  googleTagManager?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   modules?: Maybe<TenantModuleModel>;
   moodleUrl?: Maybe<Scalars['String']>;
