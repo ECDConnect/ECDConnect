@@ -37,23 +37,6 @@ export const getClassroomAttendanceOverviewReportByPeriod = (
       state.attendanceData.classroomAttendanceOverviewReport,
     (reports) => {
       return reports?.find((report) => {
-        console.log({
-          reportStartDate: parseISO(report.startDate),
-          startDate,
-          type: typeof report.startDate,
-          type2: typeof startDate,
-        });
-        console.log({ reportEndDate: parseISO(report.endDate), endDate });
-        console.log({
-          rule:
-            isSameDay(parseISO(report.startDate), startDate) &&
-            isSameDay(
-              typeof report.endDate === 'string'
-                ? parseISO(report.endDate)
-                : report.endDate,
-              endDate
-            ),
-        });
         return (
           isSameDay(
             typeof report.startDate === 'string'
