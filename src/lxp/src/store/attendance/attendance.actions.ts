@@ -235,10 +235,7 @@ export const getClassroomAttendanceReport = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   AttendanceActions.GET_CLASSROOM_ATTENDANCE_REPORT,
-  async (
-    { classgroupId, startDate, endDate, userId },
-    { getState, rejectWithValue }
-  ) => {
+  async ({ startDate, endDate, userId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       attendanceData: { classroomAttendanceOverviewReport },
