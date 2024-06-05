@@ -35,7 +35,9 @@ export const EditRegisters = () => {
   const history = useHistory();
 
   const today = new Date();
-  const isCurrentMonth = today.getMonth() === startDate.getMonth();
+  const isCurrentMonth =
+    today.getMonth() === startDate.getMonth() &&
+    today.getFullYear() === startDate.getFullYear();
   const thirtyDaysAgoDate = subDays(today, 30);
   const thirtyDaysAgoDay = thirtyDaysAgoDate.getDate();
 

@@ -98,7 +98,9 @@ export const MonthlyAttendanceReport = ({
     return { startDate: firstDayOfMonth, endDate: lastDayOfMonth };
   }, [selectedMonth.monthOfYear, selectedMonth.year]);
 
-  const isCurrentMonth = today.getMonth() === startDate.getMonth();
+  const isCurrentMonth =
+    today.getMonth() === startDate.getMonth() &&
+    today.getFullYear() === startDate.getFullYear();
   const is30DaysWindow =
     !isCurrentMonth && isAfter(endDate, subDays(today, 31));
 
