@@ -94,10 +94,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   'getMonthlyAttendanceReport',
-  async (
-    { userId, classroomId, startDate, endDate },
-    { getState, rejectWithValue }
-  ) => {
+  async ({ userId, startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -108,7 +105,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       if (userAuth?.auth_token) {
         reportData = await new AttendanceService(
           userAuth?.auth_token
-        ).getMonthlyAttendanceReport(userId, classroomId, startDate, endDate);
+        ).getMonthlyAttendanceReport(userId, startDate, endDate);
       }
 
       if (!reportData) {

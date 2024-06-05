@@ -7,6 +7,7 @@ export interface AttendanceListDataItem extends ListItem {
   menuIconClassName?: string;
   attenendeeId: string;
   status?: AttendanceStatus;
+  disabledAbsentStatus?: boolean;
   avatarColor: string;
   className?: string;
 }

@@ -63,7 +63,6 @@ export const ClubMemberView: React.FC = () => {
         appDispatch(
           attendanceThunkActions.getMonthlyAttendanceReport({
             userId: practitioner.userId,
-            classroomId: classroomId,
             startDate: new Date(new Date().getFullYear(), 1, 1),
             endDate: new Date(),
           })

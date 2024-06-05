@@ -37,6 +37,8 @@ namespace ECDLink.DataAccessLayer.Context
     public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>
     {
         public DbSet<TenantEntity> Tenants { get; set; }
+        public DbSet<Module> Modules { get; set; }
+        public DbSet<TenantHasModule> TenantHasModules { get; set; } 
         public DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
@@ -219,6 +221,14 @@ namespace ECDLink.DataAccessLayer.Context
             builder.Entity<TenantEntity>(x =>
             {
                 x.HasKey(e => new { e.Id, e.ApplicationName, e.SiteAddress });
+            });
+            builder.Entity<TenantHasModule>(x =>
+            {
+                x.HasKey(e => new { e.ModuleId, e.TenantId });
+            });
+            builder.Entity<Module>(x =>
+            {
+                x.HasKey(e => new { e.Id });
             });
             builder.Entity<ApplicationUser>(x =>
             {

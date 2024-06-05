@@ -20,6 +20,5 @@ namespace ECDLink.PostgresTenancy.Entities
         public string AdminTestSiteAddress { get; set; }
         public string MoodleUrl { get; set; }
         public string MoodleConfig { get; set; }
-
     }
 }

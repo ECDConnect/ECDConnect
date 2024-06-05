@@ -6,7 +6,7 @@ import {
   DialogPosition,
   renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { AttendanceService } from '@services/AttendanceService';
 import { getMonthRange } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
@@ -17,6 +17,8 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { useHistory, useLocation } from 'react-router';
+import { ClassDashboardRouteState } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
@@ -27,6 +29,9 @@ export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
 > = ({ attendanceSummary, classroomId }) => {
   const [displayReport, setDisplayReport] = useState<boolean>(false);
+
+  const location = useLocation<ClassDashboardRouteState>();
+  const history = useHistory();
 
   const [totalAttendance, setTotalAttendance] = useState<
     {
@@ -56,13 +61,9 @@ export const AttendanceMonthlyReport: React.FC<
       const { startDate, endDate } = getMonthRange(viewReportDate);
 
       const nextDay = add(startDate, { days: 1 });
+      // TODO: cache the report data
       new AttendanceService(authUser?.auth_token ?? '')
-        .getClassroomAttendanceReport(
-          authUser?.id ?? '',
-          classroomId,
-          nextDay,
-          endDate
-        )
+        .getClassroomAttendanceReport(authUser?.id ?? '', nextDay, endDate)
         .then((data) => {
           setReportData(data.classroomAttendanceReport);
           setTotalAttendance(data.totalAttendance);
@@ -74,6 +75,12 @@ export const AttendanceMonthlyReport: React.FC<
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewReportDate]);
+
+  useLayoutEffect(() => {
+    if (location.state?.fromChildAttendanceReport && !displayReport) {
+      setDisplayReport(true);
+    }
+  }, [displayReport, history, location]);
 
   return (
     <div className={styles.wrapper}>
@@ -136,7 +143,16 @@ export const AttendanceMonthlyReport: React.FC<
             <MonthlyAttendanceReport
               reportMonth={viewReportDate ?? ''}
               onDownloadReport={() => {}}
-              onBack={() => closeReport()}
+              onBack={() => {
+                closeReport();
+                history.replace({
+                  ...location,
+                  state: {
+                    ...location.state,
+                    fromChildAttendanceReport: false,
+                  },
+                });
+              }}
               classroomGroupId={classroomId}
               reportData={reportData}
               totalAttendance={totalAttendance}

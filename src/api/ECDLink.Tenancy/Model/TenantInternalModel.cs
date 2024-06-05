@@ -1,5 +1,6 @@
 ﻿using ECDLink.Tenancy.Enums;
 using System;
+using System.Collections.Generic;
 
 namespace ECDLink.Tenancy.Model
 {
@@ -23,5 +24,6 @@ namespace ECDLink.Tenancy.Model
         public string MoodleConfig { get; set; }
         public string Path { get; set; }
         public string Host { get; set; }
+        public TenantModuleModel Modules { get; set; }
     }
 }

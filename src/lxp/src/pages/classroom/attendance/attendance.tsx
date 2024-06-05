@@ -117,6 +117,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     practitioner!
   );
 
+  // TODO: Implement permission check (W3)
+  const hasPermissionToEdit = true;
+
   const handleComebackDay = useCallback((date: Date) => {
     if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
       return nextMonday(new Date(date));
@@ -258,12 +261,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return setAttendanceComponentType('report');
     }
 
-    if (missedDays.length === 0) {
+    if (missedDays.length === 0 || !hasPermissionToEdit) {
       return setAttendanceComponentType('report');
     } else {
       return setAttendanceComponentType('summary');
     }
   }, [
+    hasPermissionToEdit,
     missedDays,
     allChildrenInsertedBeforeToday,
     attendance,
@@ -333,6 +337,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         return (
           <AttendanceSummary
             openReports={() => setAttendanceComponentType('report')}
+            openCompletedRegisters={() => setSeeRegister(true)}
             currentUserId={userData?.id || ''}
           />
         );
@@ -362,25 +367,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   }
 
   return (
-    <div
-      className={'flex flex-col p-4'}
-      style={{ height: height - headerHeight }}
-    >
+    <div className={'flex flex-col'} style={{ height: height - headerHeight }}>
       <AttendanceWrapper />
       {attendanceComponentType && getComponentToRender(attendanceComponentType)}
-      {attendanceComponentType === 'summary' && (
-        <Button
-          type="filled"
-          color="quatenary"
-          className={'mt-0'}
-          onClick={() => {
-            setSeeRegister(true);
-          }}
-          icon="EyeIcon"
-          text="See completed registers"
-          textColor="white"
-        />
-      )}
       <Dialog
         position={DialogPosition.Full}
         visible={seeRegister}
@@ -392,7 +381,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
           title="Attendance registers"
           size="small"
           onBack={() => setSeeRegister(false)}
-          className="p-4"
         >
           <AttendanceReport
             isAllRegistersCompleted={isAllRegistersCompleted}

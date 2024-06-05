@@ -12,8 +12,8 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { format, getDay } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -26,6 +26,7 @@ import {
   getAttendanceStatusCheck,
   getPlaygroup,
   mapTrackAttendance,
+  mergeClassProgrammesWithSameClassroomGroupId,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
@@ -70,16 +71,48 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     });
   });
 
-  const primaryClassProgramme = classProgrammes.filter(
-    (prog) => prog.meetingDay === getDay(attendanceDate)
+  const selectedClassroomGroup = classroomGroups.filter(
+    (classroomGroup) => classroomGroup.id === classroomGroupId
   );
 
+  const classProgrammesWithSameClassroomGroup =
+    mergeClassProgrammesWithSameClassroomGroupId(classProgrammes);
+
+  const classroomGroupsWithoutDailyMeetings = classroomGroups?.filter(
+    (classroomGroup) =>
+      classroomGroup?.id !== classroomGroupId &&
+      classProgrammesWithSameClassroomGroup.some(
+        (data) =>
+          data.classroomGroupId === classroomGroup.id && data.items?.length < 5
+      )
+  );
+
+  const searchDropDownOptions = useMemo(() => {
+    if (!classroomGroupsWithoutDailyMeetings?.length) return [];
+
+    const options = [
+      ...classroomGroupsWithoutDailyMeetings,
+      ...selectedClassroomGroup,
+    ];
+
+    return options.map((option) => {
+      return {
+        id: option.id,
+        value: option,
+        label: option.name,
+        disabled: false,
+      };
+    });
+  }, [classroomGroupsWithoutDailyMeetings, selectedClassroomGroup]);
+
+  // TODO: check if this is needed
+  // const primaryClassProgramme = classProgrammes.filter(
+  //   (prog) => prog.meetingDay === getDay(attendanceDate)
+  // );
+
   useEffect(() => {
-    if (classroomGroups) {
-      const selectedGroups = classroomGroups.filter(
-        (x) => x.id === classroomGroupId
-      );
-      setSelectedClassroomGroups(selectedGroups);
+    if (classroomGroups?.length) {
+      setSelectedClassroomGroups(selectedClassroomGroup);
 
       const _allLearners = allLearners.filter(
         (x) =>
@@ -155,12 +188,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         isRequired: isPrimaryList,
         list: updateList,
       });
-      setAttendanceGroups(
-        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
-      );
-      updateAttendanceState(
-        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
-      );
+
+      setAttendanceGroups(newAttendanceGroups);
+      updateAttendanceState(newAttendanceGroups);
     }
   };
 
@@ -313,20 +343,13 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   return (
     <div className={styles.wrapper}>
       <>
-        {classroomGroups.length > 1 && (
+        {searchDropDownOptions?.length && (
           <div className={'bg-uiBg flex w-full flex-col items-start pb-2 pt-1'}>
             <SearchDropDown<any>
               displayMenuOverlay
               menuItemClassName={styles.dropdownStyles}
               className={'mr-1 ml-2'}
-              options={classroomGroups.map((x) => {
-                return {
-                  id: x.id ?? '',
-                  value: x,
-                  label: x.name,
-                  disabled: false,
-                };
-              })}
+              options={searchDropDownOptions}
               onChange={(value) => onFilterItemsChanges(value)}
               placeholder={'Class'}
               pluralSelectionText={'Classes'}
@@ -374,8 +397,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           </div>
           <div className={styles.attendanceListsWrapper}>
             {selectedClassroomGroups.map((selectedGroup, idx) => {
-              const isPrimaryList =
-                selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
+              const isPrimaryClass = selectedGroup.id === classroomGroupId;
               return (
                 <div
                   key={`attencance_list_${idx}`}
@@ -383,7 +405,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 >
                   <ClassProgrammeAttendanceList
                     key={`class_attencance_list_${idx}`}
-                    isPrimaryClass={isPrimaryList}
+                    isPrimaryClass={isPrimaryClass}
                     classroomGroup={selectedGroup}
                     attendanceDate={attendanceDate}
                     isMultipleClasses={selectedClassroomGroups.length > 1}
@@ -391,7 +413,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                       validateAttendanceList(
                         selectedGroup.id ?? '',
                         state.listItems,
-                        isPrimaryList
+                        false
                       );
                     }}
                     id={`attendance-list${selectedGroup.id}`}
