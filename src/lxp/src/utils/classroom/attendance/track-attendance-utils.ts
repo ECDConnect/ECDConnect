@@ -17,6 +17,7 @@ import {
   isThursday,
   isTuesday,
   isWednesday,
+  isWeekend,
   nextFriday,
   nextMonday,
   nextThursday,
@@ -25,13 +26,17 @@ import {
   parse,
   startOfMonth,
   startOfWeek,
+  subDays,
 } from 'date-fns';
 import {
   averageScoreThreshold,
   badScoreThreshold,
   goodScoreThreshold,
 } from '@models/classroom/attendance/ClassAttendance';
-import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
+import {
+  ClassProgrammeWithMissedDate,
+  MissedAttendanceGroups,
+} from '@models/classroom/attendance/MissedAttendanceGroups';
 import {
   AttendanceState,
   AttendanceStateCheckResult,
@@ -119,6 +124,21 @@ export const nextAttendableDateAfterStartDate = (
   return nextAttendableDate;
 };
 
+const getLast30BusinessDays = (
+  date: Date
+): { date: Date; dayOfWeek: number }[] => {
+  const businessDays = [];
+  let count = 0;
+
+  while (businessDays.length < 30) {
+    const currentDate = subDays(date, count);
+    businessDays.push({ date: currentDate, dayOfWeek: getDay(currentDate) });
+    count++;
+  }
+
+  return businessDays.filter((date) => !isWeekend(date.date));
+};
+
 export const getMissedClassAttendance = (
   classroomGroups: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
@@ -127,7 +147,7 @@ export const getMissedClassAttendance = (
 ) => {
   const dayOfWeek = getDay(date);
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
-  const returnProgrammes: ClassProgrammeDto[] = [];
+  const returnProgrammes: ClassProgrammeWithMissedDate[] = [];
 
   const groupProgrammes = classProgrammes;
 
@@ -146,21 +166,41 @@ export const getMissedClassAttendance = (
           programStartDate.getTime() < date.getTime();
   });
 
+  const last30BusinessDays = getLast30BusinessDays(date);
+  // Map through the last 30 business days
+  const last30DaysProgrammes = last30BusinessDays
+    // For each day, create an object with the date and the programmes for that day
+    ?.map((day) => ({
+      date: day.date,
+      programmes: classProgrammesUpToCurrentDay?.filter(
+        // Filter programmes that occur on the same day of the week as the current day
+        // and whose start date is before or on the current day
+        (programme) =>
+          programme.meetingDay === day.dayOfWeek &&
+          new Date(programme.programmeStartDate).getTime() <= day.date.getTime()
+      ),
+    }))
+    // Filter out days that don't have any programmes
+    ?.filter((x) => x.programmes && x.programmes.length > 0)
+    // Flatten the array of dayProgrammes into an array of individual programmes with their dates
+    ?.flatMap((dayProgrammes) =>
+      dayProgrammes.programmes.map((programme) => ({
+        date: dayProgrammes.date,
+        programme: programme,
+      }))
+    );
+
   const meetingDays = getClassroomGroupSchoolDays(
     classProgrammesUpToCurrentDay
   );
 
-  // TODO
-  const startOfWeekDate = startOfWeek(new Date().setHours(23, 59, 59, 999), {
-    weekStartsOn: 1,
-  });
-
-  if (classProgrammesUpToCurrentDay)
-    for (const programme of classProgrammesUpToCurrentDay) {
-      const missedDayDate = addDays(startOfWeekDate, programme.meetingDay - 1);
+  if (last30DaysProgrammes)
+    for (const day of last30DaysProgrammes) {
+      const programme = day.programme!;
+      const missedDayDate = day.date;
 
       const classGroups = classroomGroups.filter((x) => {
-        return x.id === programme.classroomGroupId;
+        return x.id === programme?.classroomGroupId;
       });
       const classLearners = classGroups
         .flatMap((x) => x.learners)
@@ -177,7 +217,7 @@ export const getMissedClassAttendance = (
         classLearners.length > 0 &&
         !attendance.some((att) => att.classroomProgrammeId === programme.id)
       ) {
-        returnProgrammes.push(programme);
+        returnProgrammes.push({ ...programme, missedDate: missedDayDate });
       }
     }
 
@@ -373,17 +413,12 @@ export const getMissedAttendanceSummaryGroups = (
         currentDate
       );
 
-      const startOfWeekDate = startOfWeek(currentDate, { weekStartsOn: 1 });
-
       for (const classroomGroup of classroomGroups) {
         const currentGroupMissedAttendance = missedAttendance.filter(
           (x) => x.classroomGroupId === classroomGroup.id
         );
         for (const missedAttendanceClassProgramme of currentGroupMissedAttendance) {
-          const missedDayDate = addDays(
-            startOfWeekDate,
-            missedAttendanceClassProgramme.meetingDay - 1
-          );
+          const missedDayDate = missedAttendanceClassProgramme.missedDate;
 
           const isValidDay = isValidAttendableDate(
             missedDayDate,

@@ -23,6 +23,7 @@ import { userSelectors } from '@/store/user';
 import { analyticsActions } from '@/store/analytics';
 import { attendanceActions, attendanceThunkActions } from '@/store/attendance';
 import { format } from 'date-fns';
+import { useSnackbar } from '@ecdlink/core';
 
 export const EditRegistersAttendanceList = ({
   selectedRegister,
@@ -49,6 +50,8 @@ export const EditRegistersAttendanceList = ({
   const attendanceDate = selectedRegister.date;
 
   const appDispatch = useAppDispatch();
+
+  const { showMessage } = useSnackbar();
 
   const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
     const attendanceStatusCheck = getAttendanceStatusCheck(
@@ -101,6 +104,8 @@ export const EditRegistersAttendanceList = ({
     );
 
     setAttendanceGroups([]);
+    showMessage({ message: 'Register saved!', type: 'success' });
+    onBack();
   };
 
   return (
