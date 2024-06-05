@@ -61,7 +61,7 @@ export default function ApplicationUsers() {
       search: '',
       pagingInput: {
         pageNumber: 1,
-        pageSize: 10,
+        pageSize: null,
       },
       order: [
         {
