@@ -98,7 +98,9 @@ namespace ECDLink.PostgresTenancy.Services
                 TestSiteAddress = tenant.TestSiteAddress,
                 AdminTestSiteAddress = tenant.AdminTestSiteAddress,
                 MoodleUrl = tenant.MoodleUrl,
-                MoodleConfig = tenant.MoodleConfig
+                MoodleConfig = tenant.MoodleConfig,
+                GoogleAnalyticsTag = tenant.GoogleAnalyticsTag,
+                GoogleTagManager = tenant.GoogleTagManager
             });
 
             return Cast(entity);
@@ -118,7 +120,9 @@ namespace ECDLink.PostgresTenancy.Services
                 TestSiteAddress = tenantEntity.TestSiteAddress,
                 AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress,
                 MoodleUrl = tenantEntity.MoodleUrl,
-                MoodleConfig = tenantEntity.MoodleConfig
+                MoodleConfig = tenantEntity.MoodleConfig,
+                GoogleAnalyticsTag = tenantEntity.GoogleAnalyticsTag,
+                GoogleTagManager = tenantEntity.GoogleTagManager
             };
         }
     }

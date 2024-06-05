@@ -22,6 +22,8 @@ namespace ECDLink.Tenancy.Model
             ThemePath = model.ThemePath;
             MoodleUrl = model.MoodleUrl;
             Modules = model.Modules;
+            GoogleAnalyticsTag = model.GoogleAnalyticsTag;
+            GoogleTagManager = model.GoogleTagManager;
         }
 
         public Guid Id { get; set; }
@@ -41,6 +43,10 @@ namespace ECDLink.Tenancy.Model
         public string MoodleUrl { get; set; }
 
         public TenantModuleModel Modules { get; set; }
+
+        public string GoogleAnalyticsTag { get; set; }
+
+        public string GoogleTagManager { get; set; }
     }
 
     public class TenantModelAPI
@@ -69,6 +75,8 @@ namespace ECDLink.Tenancy.Model
                 default: TenantType = ""; break;
             }
             Modules = model.Modules;
+            GoogleAnalyticsTag = model.GoogleAnalyticsTag;
+            GoogleTagManager = model.GoogleTagManager;
         }
 
         public Guid Id { get; set; }
@@ -88,5 +96,9 @@ namespace ECDLink.Tenancy.Model
         public string MoodleUrl { get; set; }
 
         public TenantModuleModel Modules { get; set; }
+
+        public string GoogleAnalyticsTag { get; set; }
+
+        public string GoogleTagManager { get; set; }
     }
 }
