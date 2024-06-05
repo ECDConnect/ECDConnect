@@ -413,6 +413,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                       validateAttendanceList(
                         selectedGroup.id ?? '',
                         state.listItems,
+                        // TODO: check this hardcoded value
                         false
                       );
                     }}
