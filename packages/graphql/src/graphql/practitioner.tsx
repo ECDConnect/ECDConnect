@@ -150,3 +150,44 @@ export const practitionerExcelTemplateGenerator = gql`
     }
   }
 `;
+
+export const GetAllPortalPractitioners = gql`
+  query GetAllPortalPractitioners(
+    $search: String
+    $provinceSearch: [UUID!]
+    $connectUsageSearch: [String]
+    $practitionerTypeSearch: [String]
+    $pagingInput: PagedQueryInput
+    $order: [PortalPractitionerModelSortInput!]
+  ) {
+    allPortalPractitioners(
+      search: $search
+      provinceSearch: $provinceSearch
+      connectUsageSearch: $connectUsageSearch
+      practitionerTypeSearch: $practitionerTypeSearch
+      pagingInput: $pagingInput
+      order: $order
+    ) {
+      id
+      userId
+      isPrincipal
+      isFundaAppAdmin
+      isRegistered
+      user {
+        id
+        idNumber
+        insertedDate
+        lastSeen
+        firstName
+        surname
+        fullName
+        userName
+        phoneNumber
+        email
+        isActive
+        connectUsage
+        connectUsageColor
+      }
+    }
+  }
+`;

@@ -1,6 +1,5 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;

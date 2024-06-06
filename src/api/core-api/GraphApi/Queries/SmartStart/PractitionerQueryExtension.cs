@@ -1,3 +1,5 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
@@ -5,13 +7,17 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -19,12 +25,16 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using static ECDLink.Core.SystemSettings.SettingGroups.CallBacks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -335,6 +345,115 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public List<PractitionerModel> GetAllPractitioners([Service] PersonnelService personnelService)
         {
             return personnelService.GetAllPractitioners();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        [UseSorting]
+        public List<PortalPractitionerModel> GetAllPortalPractitioners(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            CancellationToken cancellationToken,
+            PagedQueryInput pagingInput = null,
+            string search = null,
+            List<Guid?> provinceSearch = null,
+            List<string> connectUsageSearch = null,
+            List<string> practitionerTypeSearch = null
+            )
+        {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+
+            var practitionerQuery = practitionerRepo.GetAll(pagingInput);
+            // General search term
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                practitionerQuery = practitionerQuery
+                    .Where(h =>
+                        EF.Functions.ILike(h.User.FullName, $"%{search}%")
+                        || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
+                        || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
+                        || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+            }
+
+            // Province search
+            if (provinceSearch != null && provinceSearch.Any())
+            {
+                practitionerQuery = practitionerQuery.Where(x => provinceSearch.Contains(x.SiteAddress.ProvinceId));
+            }
+
+            // Practitioner Type search
+            if (practitionerTypeSearch != null && practitionerTypeSearch.Any())
+            {
+                if (practitionerTypeSearch.Contains("Practitioner"))
+                {
+                    practitionerQuery = practitionerQuery.Where(x => x.IsPrincipal.HasValue && !x.IsPrincipal.Value);
+                }
+                if (practitionerTypeSearch.Contains("Principal"))
+                {
+                    practitionerQuery = practitionerQuery.Where(x => x.IsPrincipal.HasValue && x.IsPrincipal.Value);
+                }
+            }
+
+            // Some connect status search items
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+            {
+                practitionerQuery = practitionerQuery.Where(x => x.User.IsActive == false);
+            }
+
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+            {
+                practitionerQuery = practitionerQuery.Where(x =>
+                    x.IsRegistered.HasValue && x.IsRegistered.Value
+                    && x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date >= sixMonthsAgo);
+            }
+
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
+            {
+                practitionerQuery = practitionerQuery.Where(x =>
+                    x.IsRegistered.HasValue && x.IsRegistered.Value
+                    && x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date <= sixMonthsAgo);
+            }
+
+            var userIds = practitionerQuery.Select(x => x.UserId.Value).ToList();
+            var invitations = shortenUrlEntityRepo.GetAll()
+                .Where(x =>
+                    userIds.Contains(x.UserId.Value)
+                    && (x.MessageType == TemplateTypeConstants.Invitation || x.MessageType == TemplateTypeConstants.WLInvitation)
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .Select(x => new { x.UserId, x.InsertedDate })
+                .OrderByDescending(x => x.InsertedDate)
+                .GroupBy(x => x.UserId)
+                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
+
+            var practitionerModels = practitionerQuery
+                .Select(item => new PortalPractitionerModel
+                {
+                    Id = item.Id,
+                    IsRegistered = (item.IsRegistered == null ? false: (bool)item.IsRegistered),
+                    UserId = item.UserId,
+                    IsPrincipal = item.IsPrincipal,
+                    IsFundaAppAdmin = item.IsFundaAppAdmin,
+                    InsertedDate = item.InsertedDate,
+                    User = new PortalPractitionerUserModel(item.User, (item.IsRegistered == null ? false : (bool)item.IsRegistered), invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null)
+                })
+                .ToList();
+
+            return practitionerModels;
         }
     }
 }
