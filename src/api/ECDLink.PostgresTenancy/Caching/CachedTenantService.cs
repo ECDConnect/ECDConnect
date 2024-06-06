@@ -67,7 +67,7 @@ namespace ECDLink.PostgresTenancy.Caching
 
         public TenantInternalModel GetTenantByKey(string key) // key=TenantId|SiteAddress
         {
-            _logger.LogInformation("GetTenantByClaim: {0}", key);
+            _logger.LogDebug("GetTenantByClaim: {0}", key);
             var tenant = _memoryCache.Get<TenantInternalModel>(CacheKeyWithKey(key));
             if (tenant == null)
             {
@@ -79,7 +79,7 @@ namespace ECDLink.PostgresTenancy.Caching
                         var parts = key.Split('|');
                         if (parts.Length > 0)
                         {
-                            _logger.LogInformation("GetTenantByClaim: {0} - query", key);
+                            _logger.LogDebug("GetTenantByClaim: {0} - query", key);
                             tenant = _tenantService.GetTenantById(Guid.Parse(parts[0]), parts[1]).FirstOrDefault();
                             if (tenant != null) AddToCache(tenant);
                         }
@@ -93,7 +93,7 @@ namespace ECDLink.PostgresTenancy.Caching
         {
             var uri = new Uri((url.StartsWith("http:") || url.StartsWith("https:")) ? url : "http://" + url);
             var siteAddress = uri.IsDefaultPort ? uri.Host : string.Format("{0}:{1}", uri.Host, uri.Port);
-            _logger.LogInformation("GetTenantByUrl: {0}", siteAddress);
+            _logger.LogDebug("GetTenantByUrl: {0}", siteAddress);
             var tenant = _memoryCache.Get<TenantInternalModel>(CacheKeyWithSiteAddress(siteAddress));
             if (tenant == null)
             {
@@ -102,7 +102,7 @@ namespace ECDLink.PostgresTenancy.Caching
                     tenant = _memoryCache.Get<TenantInternalModel>(CacheKeyWithSiteAddress(siteAddress));
                     if (tenant == null)
                     {
-                        _logger.LogInformation("GetTenantByUrl: {0} - query", siteAddress);
+                        _logger.LogDebug("GetTenantByUrl: {0} - query", siteAddress);
                         tenant = _tenantService.GetTenantBySiteAddress(siteAddress).FirstOrDefault();
                         if (tenant != null) AddToCache(tenant);
                     }
