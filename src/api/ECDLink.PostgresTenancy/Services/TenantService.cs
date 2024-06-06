@@ -1,7 +1,6 @@
 ﻿using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Model;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +16,28 @@ namespace ECDLink.PostgresTenancy.Services
             _repository = repository;
         }
 
-        public IEnumerable<TenantInternalModel> GetAllTenants()
+        private IEnumerable<TenantInternalModel> GetAllTenants(Guid? tenantId, string siteAddress)
         {
-            var tenants = _repository.GetAll().ToList();
-            var tenantModules = _repository.GetSet<TenantHasModule>().ToList();
+            List<TenantEntity> tenants = null;
+            List<TenantHasModule> tenantModules = null;
+
+            var tenantQuery = _repository.GetAll();
+            var tenantModulesQuery = _repository.GetSet<TenantHasModule>().AsQueryable();
+            if (tenantId.HasValue)
+            {
+                tenantQuery = tenantQuery.Where(x => x.Id == tenantId.Value);
+                if (!string.IsNullOrEmpty(siteAddress)) tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress);
+                tenantModulesQuery = tenantModulesQuery.Where(x => x.TenantId == tenantId.Value);
+                tenants = tenantQuery.ToList();
+                tenantModules = tenantModulesQuery.ToList();
+            }
+            else if (!string.IsNullOrEmpty(siteAddress))
+            {
+                tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress);
+                tenants = tenantQuery.ToList();
+                if (tenants.Count > 0) tenantModulesQuery = tenantModulesQuery.Where(x => x.TenantId == tenants[0].Id);
+                tenantModules = tenantModulesQuery.ToList();
+            }
 
             var results = new List<TenantInternalModel>();
             foreach (var dbTenant in tenants)
@@ -54,31 +71,37 @@ namespace ECDLink.PostgresTenancy.Services
             return results;
         }
 
-        //public TenantInternalModel GetTenantById(string id)
-        //{
-        //    var tenant = _repository.GetById(id);
-        //    if (tenant == null)
-        //    {
-        //        return default;
-        //    }
-        //    return Cast(tenant);
-        //}
+        public IEnumerable<TenantInternalModel> GetAllTenants()
+        {
+            return GetAllTenants(null, null);
+        }
 
+        public IEnumerable<TenantInternalModel> GetTenantById(Guid tenantId, string siteAddress = null)
+        {
+            return GetAllTenants(tenantId, siteAddress);
+        }
+
+        public IEnumerable<TenantInternalModel> GetTenantBySiteAddress(string siteAddress)
+        {
+            return GetAllTenants(null, siteAddress);
+        }
+
+        /*
         public TenantInternalModel GetTenantByUrl(string url)
         {
             var tenant = _repository.GetAll()
                             .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
                             .OrderBy(x => x.Id)
                             .FirstOrDefault();
-
             if (tenant == null)
             {
                 return default;
             }
-
             return Cast(tenant);
         }
+        */
 
+        /*
         public TenantInternalModel AddTenant(TenantInternalModel tenant)
         {
             if (tenant == null)
@@ -105,6 +128,7 @@ namespace ECDLink.PostgresTenancy.Services
 
             return Cast(entity);
         }
+        */
 
         private static TenantInternalModel Cast(TenantEntity tenantEntity)
         {

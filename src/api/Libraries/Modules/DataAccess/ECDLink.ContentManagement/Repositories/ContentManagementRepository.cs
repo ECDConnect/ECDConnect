@@ -44,6 +44,14 @@ namespace ECDLink.ContentManagement.Repositories
             }
         }
 
+        private MemoryCacheEntryOptions GetCacheOptions()
+        {
+            var cacheEntryOptions = new MemoryCacheEntryOptions();
+            if (_slidingExpiration > 0) cacheEntryOptions.SetSlidingExpiration(TimeSpan.FromSeconds(_slidingExpiration));
+            if (_absoluteExpiration > 0) cacheEntryOptions.SetAbsoluteExpiration(TimeSpan.FromSeconds(_absoluteExpiration));
+            return cacheEntryOptions;
+        }
+
         public IEnumerable<object> GetAll(int contentTypeId, Guid localeId)
         {
             var currentTenant = TenantExecutionContext.Tenant.Id;
@@ -145,11 +153,7 @@ namespace ECDLink.ContentManagement.Repositories
 
                 results = allContentValuePairs;
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(_slidingExpiration))
-                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(_absoluteExpiration));
-
-                _memoryCache.Set(key, results, cacheEntryOptions);
+                _memoryCache.Set(key, results, GetCacheOptions());
             }
             else
             {
@@ -215,11 +219,7 @@ namespace ECDLink.ContentManagement.Repositories
 
                 result = contentValues.ToObject();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(_slidingExpiration))
-                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(_absoluteExpiration));
-
-                _memoryCache.Set(key, result, cacheEntryOptions);
+                _memoryCache.Set(key, result, GetCacheOptions());
             }
             return result;
         }
@@ -242,11 +242,7 @@ namespace ECDLink.ContentManagement.Repositories
                             .FirstOrDefault();
                 results = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(_slidingExpiration))
-                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(_absoluteExpiration));
-
-                _memoryCache.Set(key, results, cacheEntryOptions);
+                _memoryCache.Set(key, results, GetCacheOptions());
             }
             return results;
         }
@@ -321,10 +317,7 @@ namespace ECDLink.ContentManagement.Repositories
                 }
 
                 results = dynamicContentList;
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(_slidingExpiration))
-                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(_absoluteExpiration));
-                _memoryCache.Set(key, results, cacheEntryOptions);
+                _memoryCache.Set(key, results, GetCacheOptions());
             }
             else
             {

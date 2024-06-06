@@ -14,7 +14,7 @@ namespace EcdLink.Api.CoreApi
         {
             services.AddTransient<ICacheService<ITenantCache>, TenantMemoryCacheWrapper>();
             services.AddScoped<TenantService>();
-            services.AddScoped<ITenantService, TenantCache>();
+            services.AddScoped<ITenantService, CachedTenantService>();
         }
     }
 }
