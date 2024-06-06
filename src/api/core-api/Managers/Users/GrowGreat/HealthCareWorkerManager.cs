@@ -1,9 +1,7 @@
-﻿using DotLiquid.Util;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
