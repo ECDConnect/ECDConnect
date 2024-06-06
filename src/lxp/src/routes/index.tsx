@@ -137,6 +137,7 @@ import { UserRegistration } from '@/components/user-registration/user-registrati
 import { useTenant } from '@/hooks/useTenant';
 import { OASignUpOrLogin } from '@/pages/auth/oa-sign-up/oa-sign-up-or-login';
 import { OaLogin } from '@/pages/auth/oa-login/oa-login';
+import { EditRegisters } from '@/pages/classroom/attendance/edit-registers/edit-registers';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -536,6 +537,11 @@ const AuthRoutes: React.FC = () => {
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />
       <Route exact path={ROUTES.CLASSROOM.ROOT} component={ClassDashboard} />
       <Route exact path={ROUTES.CLASSROOM.CHILDREN} component={ChildList} />
+      <Route
+        exact
+        path={ROUTES.CLASSROOM.ATTENDANCE.EDIT_REGISTERS}
+        component={EditRegisters}
+      />
       <Route
         exact
         path={ROUTES.CLASSROOM.UPDATE_FEE}
