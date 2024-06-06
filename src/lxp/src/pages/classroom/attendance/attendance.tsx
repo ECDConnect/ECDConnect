@@ -33,7 +33,6 @@ import {
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { AttendanceComponentType } from './attendance.types';
-import AttendanceList from './components/attendance-list/attendance-list';
 import { AttendanceReport } from './components/attendance-report/attendance-report';
 import { AttendanceSummary } from './components/attendance-summary/attendance-summary';
 import { isWorkingDay } from '@/utils/common/date.utils';

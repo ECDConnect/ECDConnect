@@ -234,7 +234,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           },
         }));
       if (missedAttendanceGroups.length > 0) {
-        setAttendanceActionList(actionListToDisplay);
+        setAttendanceActionList(actionListToDisplay.reverse());
       } else {
         openReports();
       }
@@ -268,7 +268,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           },
         });
       });
-      setAttendanceActionList(actionListToDisplay);
+      setAttendanceActionList(actionListToDisplay.reverse());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missedAttendanceGroups]);
@@ -366,7 +366,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           )}
         <div>
           <StackedList
-            listItems={attendanceActionList.reverse().slice(0, registersToShow)}
+            listItems={attendanceActionList.slice(0, registersToShow)}
             type={'ActionList'}
           />
         </div>

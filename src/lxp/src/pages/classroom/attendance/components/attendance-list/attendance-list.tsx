@@ -1,4 +1,4 @@
-import { useDialog } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -45,6 +45,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   classroomGroupId,
 }) => {
   const appDispatch = useAppDispatch();
+
+  const { showMessage } = useSnackbar();
 
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
@@ -289,6 +291,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
     updateAttendanceState([]);
+    showMessage({ message: 'Great job, register saved!', type: 'success' });
   };
 
   const submitPrompt = () => {
