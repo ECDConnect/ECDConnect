@@ -6,6 +6,7 @@ import {
   Button,
   ActionListDataItem,
   Alert,
+  Card,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
@@ -21,8 +22,11 @@ import {
   PractitionerSetupSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { classroomsSelectors } from '@/store/classroom';
+import { useTenant } from '@/hooks/useTenant';
 
-interface StackListItems extends ActionListDataItem {
+export interface StackListItems extends ActionListDataItem {
   idNumber: string;
 }
 
@@ -41,6 +45,8 @@ export default function ConfirmPractitioners({
 }) {
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   const practitionersForPrincipal = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -52,16 +58,8 @@ export default function ConfirmPractitioners({
   const [hasTrainees, setHasTrainees] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
     useState<RegisterPractitioner>();
-  const [listItems, setListItems] = useState<StackListItems[]>([
-    {
-      title: user?.fullName ?? '',
-      idNumber: user?.idNumber ?? '',
-      subTitle: isFundaAppAdmin ? 'Funda App Administrator' : 'Principal/owner',
-      titleStyle:
-        'text-textDark font-body text-base font-semibold leading-snug ',
-      subTitleStyle: 'text-textMid font-body text-sm leading-5 ',
-    },
-  ]);
+  const clasroom = useSelector(classroomsSelectors.getClassroom);
+  const [listItems, setListItems] = useState<StackListItems[]>([]);
   const isSmartLinkImported = user?.isImported;
 
   const callForHelp = () => {
@@ -215,10 +213,6 @@ export default function ConfirmPractitioners({
       (l) => l.isRegistered === true
     );
     setAllInFundaApp(allInFunda);
-    const hasTrainees = principalPractitioners.every(
-      (l) => l.isTrainee === true
-    );
-    setHasTrainees(hasTrainees);
 
     setConfirmPractitionerPage(ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS);
   };
@@ -237,32 +231,33 @@ export default function ConfirmPractitioners({
         return (
           <div className="wrapper-with-sticky-button">
             <div className="flex flex-col gap-4 pt-4">
-              <div>
-                <Typography
-                  type={'h2'}
-                  text={'Confirm practitioners'}
-                  color={'textDark'}
-                />
-                <Typography
-                  type={'h4'}
-                  text={
-                    'You can only add SmartStart practitioners to Funda App.'
-                  }
-                  color={'textMid'}
-                />
-              </div>
-              {!!hasTrainees && (
-                <div>
-                  <Alert
-                    type={'info'}
-                    title={'One or more of your practitioners is a trainee.'}
-                    list={[
-                      'You will not be able to view their profile or add them to a class until they complete trainee onboarding.',
-                    ]}
-                  />
+              <div className="flex flex-col gap-11">
+                <div className="flex flex-col gap-11">
+                  <div>
+                    <Card
+                      className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+                      borderRaduis="xl"
+                      shadowSize="lg"
+                    >
+                      <div className="">
+                        <Cebisa />
+                      </div>
+                      <Typography
+                        color="textDark"
+                        text={`If there are other practitioners at ${clasroom?.name}, you can invite them to ${appName}.`}
+                        type={'h3'}
+                        align="center"
+                      />
+                    </Card>
+                  </div>
                 </div>
-              )}
-              {allInFundaApp !== undefined && (
+              </div>
+              <Typography
+                type={'h2'}
+                text={'Invite practitioners'}
+                color={'textDark'}
+              />
+              {/* {allInFundaApp !== undefined && (
                 <div>
                   <Alert
                     type={allInFundaApp ? 'success' : 'warning'}
@@ -292,20 +287,16 @@ export default function ConfirmPractitioners({
                     }
                   />
                 </div>
-              )}
-              <div>
-                <Divider className="-my-1" dividerType="dashed" />
-                <StackedList<ActionListDataItem>
-                  listItems={listItems}
-                  type={'ActionList'}
-                />
-              </div>
-
+              )} */}
+              <StackedList<ActionListDataItem>
+                listItems={listItems}
+                type={'ActionList'}
+              />
               <div>
                 <Button
                   size="small"
                   type="filled"
-                  color="primary"
+                  color="quatenary"
                   text="Add practitioner"
                   textColor="white"
                   icon="PlusIcon"
@@ -323,7 +314,7 @@ export default function ConfirmPractitioners({
                 size="normal"
                 className="mb-4 w-full"
                 type="filled"
-                color="primary"
+                color="quatenary"
                 text="Confirm"
                 textColor="white"
                 icon="CheckCircleIcon"
@@ -337,11 +328,15 @@ export default function ConfirmPractitioners({
           <AddOrEditPractitioner
             onSubmit={handleAddOrEditPractitionerSubmit}
             formData={editPractitioner}
+            listItems={listItems}
           />
         );
       case ConfirmPractitionersSteps.ADD_PRACTITIONER:
         return (
-          <AddOrEditPractitioner onSubmit={handleAddOrEditPractitionerSubmit} />
+          <AddOrEditPractitioner
+            onSubmit={handleAddOrEditPractitionerSubmit}
+            listItems={listItems}
+          />
         );
     }
   };

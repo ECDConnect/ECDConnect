@@ -72,7 +72,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
       )}
 
       <div className="space-y-4">
-        <div className={'w-full'}>
+        {/* <div className={'w-full'}>
           <label className={styles.label}>
             Are you the principal/owner of your ECD programme?
           </label>
@@ -90,7 +90,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
               className={'w-full'}
             />
           </div>
-        </div>
+        </div> */}
 
         {isPrincipalOrLeader === true && (
           <>

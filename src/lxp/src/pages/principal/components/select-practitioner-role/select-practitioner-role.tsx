@@ -1,0 +1,141 @@
+import {
+  Typography,
+  Card,
+  Button,
+  StackedList,
+  MenuListDataItem,
+  Dialog,
+  DialogPosition,
+} from '@ecdlink/ui';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { useTenant } from '@/hooks/useTenant';
+import { useState } from 'react';
+import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
+import { PractitionerSetupSteps } from '../../setup-principal/setup-principal.types';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
+
+export const SelectPractitionerRole = ({
+  onNext,
+  setIsNotPrincipal,
+  setPage,
+}: {
+  onNext: () => void;
+  setIsNotPrincipal: (item: boolean) => void;
+  setPage: (item: PractitionerSetupSteps) => void;
+}) => {
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
+  const [shareSomeDetails, setShareSomeDetails] = useState(false);
+  const user = useSelector(userSelectors.getUser);
+
+  const listItems: MenuListDataItem[] = [
+    {
+      title: `Principal`,
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'I run a preschool',
+      subTitleStyle: 'text-sm font-h1 font-normal text-textMid',
+      menuIcon: 'HomeIcon',
+      iconBackgroundColor: 'quatenary',
+      iconColor: 'white',
+      showIcon: true,
+      onActionClick:
+        isOpenAccess && !user?.firstName
+          ? () => {
+              setIsNotPrincipal(false);
+              setShareSomeDetails(true);
+            }
+          : () => {
+              setIsNotPrincipal(false);
+              onNext();
+            },
+    },
+    {
+      title: `Practitioner`,
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'I teach at a preschool that has a principal',
+      subTitleStyle: 'text-sm font-h1 font-normal text-textMid',
+      menuIcon: 'LightBulbIcon',
+      iconBackgroundColor: 'secondary',
+      iconColor: 'white',
+      showIcon: true,
+      backgroundColor: 'secondaryAccent2',
+      onActionClick:
+        isOpenAccess && !user?.firstName
+          ? () => {
+              setIsNotPrincipal(true);
+              setShareSomeDetails(true);
+            }
+          : () => {
+              setIsNotPrincipal(true);
+              onNext();
+            },
+    },
+  ];
+
+  return (
+    <>
+      <div className="h-full pt-7">
+        <div className="flex flex-col gap-11">
+          <div className="flex flex-col gap-11">
+            <div>
+              <Card
+                className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+                borderRaduis="xl"
+                shadowSize="lg"
+              >
+                <div className="">
+                  <Cebisa />
+                </div>
+                <Typography
+                  color="textDark"
+                  text={`What is your role at the preschool?`}
+                  type={'h3'}
+                  align="center"
+                />
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        <Typography
+          color="textMid"
+          text={`I am a...`}
+          type={'h3'}
+          className="my-4"
+        />
+
+        <StackedList<MenuListDataItem>
+          listItems={listItems}
+          type={'MenuList'}
+          className="flex flex-col gap-2"
+        />
+
+        <div className="absolute bottom-0 left-0 right-0 max-h-20 p-4">
+          <Button
+            size="normal"
+            className="w-full"
+            type="filled"
+            color="quatenary"
+            text="Start"
+            textColor="white"
+            icon="ArrowCircleRightIcon"
+            onClick={onNext}
+          />
+        </div>
+        <Dialog
+          stretch={true}
+          visible={shareSomeDetails}
+          position={DialogPosition.Full}
+        >
+          <ShareSomeDetails
+            onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
+            setIsNotPrincipal={setIsNotPrincipal}
+            setShareSomeDetails={setShareSomeDetails}
+          />
+        </Dialog>
+      </div>
+    </>
+  );
+};

@@ -319,6 +319,7 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
+    await appDispatch(staticDataThunkActions.getPermissions({})).unwrap();
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
     await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
     await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();

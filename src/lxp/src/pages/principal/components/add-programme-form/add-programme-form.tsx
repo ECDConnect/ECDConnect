@@ -1,6 +1,13 @@
 import { ProgrammeTypeDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  ButtonGroup,
+  Card,
+  FormInput,
+  Typography,
+} from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
@@ -24,10 +31,12 @@ import { useEffect } from 'react';
 import { practitionerSelectors } from '@/store/practitioner';
 import { traineeSelectors } from '@/store/trainee';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 
 export const AddProgrammeForm: React.FC<{
   onNext: OnNext;
-  setIsNotPrincipal: any;
+  setIsNotPrincipal: (item: boolean) => void;
+  isNotPrincipal: boolean;
   isFundaAppAdmin: any;
   setIsFundaAppAdmin: any;
   onChangeIsPrincipal: (value: boolean) => void;
@@ -37,6 +46,7 @@ export const AddProgrammeForm: React.FC<{
   isFundaAppAdmin,
   setIsFundaAppAdmin,
   onChangeIsPrincipal,
+  isNotPrincipal,
 }) => {
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -63,7 +73,8 @@ export const AddProgrammeForm: React.FC<{
     mode: 'onChange',
   });
 
-  const { isValid } = useFormState({ control: programmeFormControl });
+  const { isValid, errors } = useFormState({ control: programmeFormControl });
+
   const {
     isPrincipalOrLeader,
     isPrincipleOrOwnerSmartStarter,
@@ -118,7 +129,7 @@ export const AddProgrammeForm: React.FC<{
       const programmeName =
         traineeVisitData &&
         traineeVisitData?.find(
-          (item) => item?.question === 'What is the name of your programme?'
+          (item) => item?.question === 'What is the name of your preschool?'
         )?.questionAnswer;
       const programmeType =
         traineeVisitData &&
@@ -259,13 +270,26 @@ export const AddProgrammeForm: React.FC<{
   ]);
 
   return (
-    <div>
-      <Typography
-        type={'h2'}
-        text={'Set up your programme'}
-        color={'textDark'}
-        className={'my-3'}
-      />
+    <div className="h-full pt-7">
+      <div className="flex flex-col gap-11">
+        <div>
+          <Card
+            className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+            borderRaduis="xl"
+            shadowSize="lg"
+          >
+            <div className="">
+              <Cebisa />
+            </div>
+            <Typography
+              color="textDark"
+              text={`Ok, let's set up your preschool!`}
+              type={'h3'}
+              align="center"
+            />
+          </Card>
+        </div>
+      </div>
 
       {isPrincipalOrLeader === true && (
         <div className="my-4">
@@ -277,7 +301,17 @@ export const AddProgrammeForm: React.FC<{
       )}
 
       <div className="space-y-4">
-        {!(
+        <FormInput<EditProgrammeModel>
+          label={'What is the name of your preschool?'}
+          register={programmeFormRegister}
+          nameProp={'name'}
+          placeholder={'E.g. Little Lambs Preschool'}
+          type={'text'}
+          maxCharacters={40}
+          maxLength={40}
+          value={getProgrammeFormValues()?.name}
+        ></FormInput>
+        {/* {!(
           isPrincipleOrOwnerSmartStarter === false &&
           isPrincipalOrLeader === false
         ) && (
@@ -304,20 +338,17 @@ export const AddProgrammeForm: React.FC<{
               />
             </div>
           </div>
-        )}
+        )} */}
 
-        {(isPrincipalOrLeader === true ||
-          (isFundaAppAdmin === true && isPrincipalOrLeader === false)) && (
+        {/* {isNotPrincipal === false && (
           <>
-            {isPrincipalOrLeader === false && isFundaAppAdmin === true && (
-              <div className="my-4">
-                <Alert
-                  type="info"
-                  title="Each programme must have one person responsible for administration tasks on Funda App."
-                  message={`• Since the principal at your programme is not a SmartStarter, you will be required to fill this administration role on Funda App.`}
-                />
-              </div>
-            )}
+            <div className="my-4">
+              <Alert
+                type="info"
+                title="Each programme must have one person responsible for administration tasks on Funda App."
+                message={`• Since the principal at your programme is not a SmartStarter, you will be required to fill this administration role on Funda App.`}
+              />
+            </div>
             <FormInput<EditProgrammeModel>
               label={'What is the name of your programme?'}
               register={programmeFormRegister}
@@ -376,9 +407,8 @@ export const AddProgrammeForm: React.FC<{
               type={'number'}
             ></FormInput>
           </>
-        )}
-
-        {isPrincipalOrLeader === false && !isFundaAppAdmin && (
+        )} */}
+        {/* {isPrincipalOrLeader === false && !isFundaAppAdmin && (
           <div className={'w-full'}>
             <label className={styles.label}>
               Is the principal/owner of your programme a SmartStarter?
@@ -405,8 +435,7 @@ export const AddProgrammeForm: React.FC<{
               />
             </div>
           </div>
-        )}
-
+        )} */}
         {isPrincipleOrOwnerSmartStarter === true &&
           isPrincipalOrLeader === false && (
             <div className="my-4">
@@ -416,13 +445,12 @@ export const AddProgrammeForm: React.FC<{
               />
             </div>
           )}
-
         <div className="mb-2">
           <Button
             type="filled"
-            color="primary"
+            color="quatenary"
             className={styles.button}
-            disabled={isFundaAppAdmin ? !validationForFundaAdmin : !isValid}
+            disabled={!getProgrammeFormValues()?.name}
             onClick={
               isSmartLinkImported
                 ? handleSubmit(onSubmitForImportedUser)

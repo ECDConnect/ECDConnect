@@ -10,7 +10,7 @@ import {
   ProgrammeTypeEnum,
 } from '@ecdlink/graphql';
 import { IonContent } from '@ionic/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
@@ -41,6 +41,7 @@ import ROUTES from '@/routes/routes';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { notificationActions } from '@/store/notifications';
 import { PractitionerSignature } from '../components/practitioner-signature/practitioner-signature';
+import { SelectPractitionerRole } from '../components/select-practitioner-role/select-practitioner-role';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -263,8 +264,17 @@ export const SetupPrincipal: React.FC = () => {
         return (
           <WelcomePage
             onNext={() => {
-              setPage(PractitionerSetupSteps.SETUP_PROGRAMME);
+              setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
             }}
+          />
+        );
+
+      case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
+        return (
+          <SelectPractitionerRole
+            onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
+            setIsNotPrincipal={setIsNotPrincipal}
+            setPage={setPage}
           />
         );
 
@@ -273,6 +283,7 @@ export const SetupPrincipal: React.FC = () => {
           <AddProgrammeForm
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}
+            isNotPrincipal={isNotPrincipal}
             isFundaAppAdmin={isFundaAppAdmin}
             setIsFundaAppAdmin={setIsFundaAppAdmin}
             onChangeIsPrincipal={onChangeIsPrincipal}
@@ -319,7 +330,7 @@ export const SetupPrincipal: React.FC = () => {
   const onBack = () => {
     switch (page) {
       case PractitionerSetupSteps.SETUP_PROGRAMME:
-        return setPage(PractitionerSetupSteps.WELCOME);
+        return setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
 
       case PractitionerSetupSteps.CONFIRM_PRACTITIONERS:
         if (
@@ -358,23 +369,46 @@ export const SetupPrincipal: React.FC = () => {
     }
   };
 
+  const renderBannerWrapperTitle = useMemo(() => {
+    if (
+      confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+      confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+    ) {
+      return 'Add Practitioners';
+    }
+
+    if (
+      page === PractitionerSetupSteps.SETUP_PROGRAMME ||
+      page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS ||
+      page === PractitionerSetupSteps.CONFIRM_CLASSES
+    ) {
+      return 'Preschool information';
+    }
+    return 'Edit profile';
+  }, [confirmPractitionerPage, page]);
+
   return (
     <IonContent scrollY={true}>
       <BannerWrapper
-        size={page === PractitionerSetupSteps.WELCOME ? 'large' : 'medium'}
+        size={'large'}
         renderBorder={true}
-        showBackground={page === PractitionerSetupSteps.WELCOME}
-        title={
+        showBackground={
           confirmPractitionerPage ===
-            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
-          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
-            ? 'Add Practitioners'
-            : 'Edit Profile'
+            ConfirmPractitionersSteps.ADD_PRACTITIONER ||
+          (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
+            classesPage === ConfirmClassesSteps.ADD_CLASS) ||
+          confirmPractitionerPage ===
+            ConfirmPractitionersSteps.EDIT_PRACTITIONER
+            ? false
+            : true
         }
+        title={renderBannerWrapperTitle}
         subTitle={
           confirmPractitionerPage ===
             ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
-          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+          confirmPractitionerPage ===
+            ConfirmPractitionersSteps.ADD_PRACTITIONER ||
+          PractitionerSetupSteps.SETUP_PROGRAMME
             ? ''
             : label
         }
@@ -385,12 +419,8 @@ export const SetupPrincipal: React.FC = () => {
         }
         onClose={exitPrompt}
         backgroundColour={'white'}
-        className={page === PractitionerSetupSteps.WELCOME ? 'relative' : ''}
-        backgroundUrl={
-          page === PractitionerSetupSteps.WELCOME
-            ? theme?.images.graphicOverlayUrl
-            : ''
-        }
+        className={'relative'}
+        backgroundUrl={theme?.images.graphicOverlayUrl}
         displayOffline={!isOnline}
       >
         <div className={'px-4'}>{renderStep(page)}</div>
