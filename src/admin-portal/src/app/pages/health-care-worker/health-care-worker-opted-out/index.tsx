@@ -113,7 +113,7 @@ export const HealthCareWorkerOptedOut: React.FC = () => {
 
         localStorage.setItem('selectedUser', chw?.user?.id ?? chw?.id);
         history.push({
-          pathname: ROUTES.VIEW_USERS,
+          pathname: ROUTES.USERS.VIEW_USER,
           state: {
             component: 'chw',
             userId: chw?.user?.id,

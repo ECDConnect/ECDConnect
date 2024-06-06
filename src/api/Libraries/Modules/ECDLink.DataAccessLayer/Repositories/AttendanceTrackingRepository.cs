@@ -23,7 +23,29 @@ namespace ECDLink.DataAccessLayer.Repositories
         {
             try
             {
-                _context.Attendances.AddRange(attendances);
+                // Check for existing records
+                foreach (var attendance in attendances)
+                {
+                    var existingRecord = _context.Attendances.FirstOrDefault(x =>
+                        x.AttendanceDate.Date == attendance.AttendanceDate.Date
+                        && x.UserId == attendance.UserId
+                        && x.ParentRecordId == attendance.ParentRecordId
+                        && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId);
+
+                    if (existingRecord != null)
+                    {
+                        // Update existing record
+                        if (existingRecord.Attended != attendance.Attended)
+                        {
+                            existingRecord.Attended = attendance.Attended;
+                        }
+                    }
+                    else
+                    {
+                        // Add new record
+                        _context.Attendances.AddRange(attendances);
+                    }
+                }
 
                 await _context.SaveChangesAsync();
             }
@@ -53,6 +75,7 @@ namespace ECDLink.DataAccessLayer.Repositories
 
             return attendances;
         }
+
         public IQueryable<Attendance> GetAllAttendancesByParentId(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))

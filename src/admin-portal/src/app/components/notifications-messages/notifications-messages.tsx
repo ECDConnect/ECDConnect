@@ -141,7 +141,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
 
   const goToTargetChw = useCallback(() => {
     history.push({
-      pathname: ROUTES.VIEW_USERS,
+      pathname: ROUTES.USERS.VIEW_USER,
       state: {
         component: UsersRouteRedirectTypeEnum.chw,
         userId: targetHcw?.user?.id,
@@ -156,7 +156,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
 
   const goToTargetTeamLead = useCallback(() => {
     history.push({
-      pathname: ROUTES.VIEW_USERS,
+      pathname: ROUTES.USERS.VIEW_USER,
       state: {
         component: UsersRouteRedirectTypeEnum.teamLeads,
         userId: targetTeamLead?.user?.id,

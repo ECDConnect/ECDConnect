@@ -19,7 +19,7 @@ namespace ECDLink.EGraphQL
     {
         public static void ConfigureDataAccessServices(IServiceCollection services)
         {
-            services.AddTransient<ITenancyRepository, TenantRepository>();
+            services.AddTransient(typeof(ITenancyRepository<>), typeof(TenantRepository<>));
             services.AddScoped(typeof(IGenericRepositoryFactory), typeof(GenericRepositoryFactory));
             services.AddScoped(typeof(RolePermissionRepository));
             services.AddScoped(typeof(NavigationPermissionRepository));

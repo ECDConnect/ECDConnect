@@ -8,16 +8,18 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Managers;
 using HotChocolate;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class SendInvitationMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+       // [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<bool> SendInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -113,6 +115,75 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return result;
+        }
+
+        public async Task<string> SendPractitionerInviteToPreSchool(
+                 [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+                 [Service] InvitationNotificationManager notificationManager,
+                 [Service] ApplicationUserManager userManager,
+                 Guid userId,
+                 string principalFirstName,
+                 string preSchoolName)
+        {
+            if (string.IsNullOrEmpty(userId.ToString()))
+            {
+                throw new ArgumentException("UserId is empty");
+            }
+            if (string.IsNullOrEmpty(principalFirstName))
+            {
+                throw new ArgumentException("Principal first name is empty");
+            }
+            if (string.IsNullOrEmpty(preSchoolName))
+            {
+                throw new ArgumentException("Pre-school name is empty");
+            }
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new QueryException("User not found");
+            }
+
+            var token = await invitationManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new QueryException("Token generation failed");
+            }
+
+            await notificationManager.SendPreSchoolInvitationAsync(user, principalFirstName, preSchoolName, token);
+
+            return token;
+        }
+
+        public async Task<string> SendPrincipalInviteToApplication(
+                 [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+                 [Service] InvitationNotificationManager notificationManager,
+                 [Service] ApplicationUserManager userManager,
+                 Guid userId,
+                 string practitionerFirstName)
+        {
+            if (string.IsNullOrEmpty(userId.ToString()))
+            {
+                throw new ArgumentException("UserId is empty");
+            }
+            if (string.IsNullOrEmpty(practitionerFirstName))
+            {
+                throw new ArgumentException("Practitioner first name is empty");
+            }
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new QueryException("User not found");
+            }
+
+            var token = await invitationManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new QueryException("Token generation failed");
+            }
+
+            await notificationManager.SendPrincipalInvitationAsync(user, practitionerFirstName, token);
+
+            return token;
         }
     }
 }

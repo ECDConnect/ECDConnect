@@ -1,6 +1,7 @@
 export type ClassDashboardRouteState = {
   activeTabIndex?: number;
   programmeStartDate?: Date | undefined;
+  fromChildAttendanceReport?: boolean;
 };
 
 export const enum TabsItems {

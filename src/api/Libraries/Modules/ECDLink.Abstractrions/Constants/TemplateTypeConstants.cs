@@ -27,6 +27,12 @@ namespace ECDLink.Abstractrions.Constants
         // help
         public const string AdminUserHelpForm = "admin-user-help-form";
 
+        // WL / OA
+        public const string WLPreSchoolInvitation = "wl-pre-school-invitation";
+        public const string OAPreSchoolInvitation = "oa-pre-school-invitation";
+        public const string WLPrincipalInvitation = "wl-principal-invitation";
+        public const string OAPrincipalInvitation = "oa-principal-invitation";
+
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";
         public const string ProgrammeInvitation = "ProgrammeInvitation";

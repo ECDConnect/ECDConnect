@@ -7,24 +7,16 @@ import { Holiday } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
   Alert,
+  Button,
   Dialog,
   DialogPosition,
   StackedList,
   Typography,
 } from '@ecdlink/ui';
-import {
-  addDays,
-  format,
-  getDay,
-  getTime,
-  isSameDay,
-  startOfWeek,
-} from 'date-fns';
-import _ from 'lodash';
+import { addDays, format, getDay, getTime, startOfWeek } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
-import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
 import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
 import { attendanceSelectors } from '@store/attendance';
 import { classroomsSelectors } from '@store/classroom';
@@ -51,12 +43,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,
   openReports,
   currentUserId,
+  openCompletedRegisters,
 }) => {
+  const [registersToShow, setRegistersToShow] = useState(5);
+
   const [classroomName, setClassroomName] = useState<string>('');
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(false);
-
-  const [missedAttendanceDays, setMissedAttendanceDays] = useState<Date[]>([]);
 
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
   const [attendanceActionList, setAttendanceActionList] = useState<
@@ -104,6 +97,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   let isCurrentSmartStartUser = getStorageItem<boolean>(
     LocalStorageKeys.isSmartStartUser
   );
+
+  const onSeeMoreRegisters = () => {
+    setRegistersToShow(registersToShow + 5);
+  };
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('currentUserId');
@@ -237,7 +234,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           },
         }));
       if (missedAttendanceGroups.length > 0) {
-        setAttendanceActionList(actionListToDisplay);
+        setAttendanceActionList(actionListToDisplay.reverse());
       } else {
         openReports();
       }
@@ -271,7 +268,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           },
         });
       });
-      setAttendanceActionList(actionListToDisplay);
+      setAttendanceActionList(actionListToDisplay.reverse());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missedAttendanceGroups]);
@@ -311,68 +308,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     }
   };
 
-  const goToNextEditAttendanceRegister = (
-    attendanceResult: AttendanceResult
-  ) => {
-    if (
-      currentEditClassroomGroupId &&
-      missedAttendanceGroups &&
-      attendanceResult
-    ) {
-      const updatedMissedAttendanceItemIndex = missedAttendanceGroups.findIndex(
-        (x) => {
-          return isSameDay(x.missedDay, attendanceResult.attendanceDate);
-        }
-      );
-
-      const updatedMissedAttendance: MissedAttendanceGroups[] = _.cloneDeep(
-        missedAttendanceGroups
-      );
-
-      if (updatedMissedAttendanceItemIndex >= 0) {
-        updatedMissedAttendance.splice(updatedMissedAttendanceItemIndex, 1);
-      }
-
-      setMissedAttendanceGroups(updatedMissedAttendance);
-
-      const allMissedAttendanceDays =
-        getAllMissedAttendanceGroupsByClassroomGroupId(
-          updatedMissedAttendance,
-          currentEditClassroomGroupId
-        );
-
-      if (allMissedAttendanceDays.length === 0) {
-        setAttendanceActionList([]);
-        openReports();
-      }
-
-      if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
-        const dateSubmitted = new Date(attendanceResult.attendanceDate);
-
-        if (allMissedAttendanceDays.length !== 0) {
-          const filteredDates = allMissedAttendanceDays.filter(
-            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
-          );
-          setMissedAttendanceDays(filteredDates);
-        } else {
-          const filteredDates = allMissedAttendanceDays.filter(
-            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
-          );
-          setMissedAttendanceDays(filteredDates);
-        }
-      } else {
-        setEditAttendanceRegisterVisible(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    setAttendanceEditDay(missedAttendanceDays[0]);
-    if (missedAttendanceDays.length === 0) {
-      setAttendanceEditDay(missedAttendanceDays[-1]);
-    }
-  }, [missedAttendanceDays]);
-
   const closeEditAttendanceRegister = () => {
     setEditAttendanceRegisterVisible(false);
   };
@@ -385,8 +320,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   };
 
   return (
-    <>
-      <div className={'flex h-full flex-1 flex-col gap-4'}>
+    <div className="flex h-full flex-col px-4 pt-4">
+      <>
         {isValidAttendanceDay ? (
           <div></div>
         ) : (
@@ -429,11 +364,35 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
               />
             </div>
           )}
-        <StackedList
-          listItems={attendanceActionList}
-          type={'ActionList'}
-        ></StackedList>
-      </div>
+        <div>
+          <StackedList
+            listItems={attendanceActionList.slice(0, registersToShow)}
+            type={'ActionList'}
+          />
+        </div>
+        {registersToShow < attendanceActionList.length && (
+          <Button
+            type="outlined"
+            color="quatenary"
+            className="mt-4"
+            onClick={onSeeMoreRegisters}
+            icon="EyeIcon"
+            text="See more registers"
+            textColor="quatenary"
+          />
+        )}
+        <div className="mt-auto w-full py-4">
+          <Button
+            className="w-full"
+            type="filled"
+            color="quatenary"
+            onClick={openCompletedRegisters}
+            icon="EyeIcon"
+            text="See completed registers"
+            textColor="white"
+          />
+        </div>
+      </>
       {attendanceEditDay && (
         <Dialog
           fullScreen
@@ -452,6 +411,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           />
         </Dialog>
       )}
-    </>
+    </div>
   );
 };

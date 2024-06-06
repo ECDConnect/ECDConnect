@@ -18,9 +18,9 @@ namespace ECDLink.Core.Caching
               .SetAbsoluteExpiration(TimeSpan.FromDays(30));
         }
 
-        public void SetCacheItem<T>(string key, T collection)
+        public void SetCacheItem<T>(string key, T collection, MemoryCacheEntryOptions options = null)
         {
-            _memoryCache.Set(key, collection, _cacheEntryOptions);
+            _memoryCache.Set(key, collection, options != null ? options : _cacheEntryOptions);
         }
 
         public T GetCacheItem<T>(string key)

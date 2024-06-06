@@ -37,6 +37,9 @@ const ROUTES = {
   CALENDAR: '/calendar',
   CLASSROOM: addPrefix('/classroom', {
     CHILDREN: '/children',
+    ATTENDANCE: addPrefix('/attendance', {
+      EDIT_REGISTERS: '/edit-registers',
+    }),
     UPDATE_FEE: '/preschool-fee',
   }),
   TRAINING: '/training',
