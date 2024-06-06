@@ -1,5 +1,9 @@
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
-import { AttendanceListDataItem, ComponentBaseProps } from '@ecdlink/ui';
+import {
+  AttendanceListDataItem,
+  AttendanceStatus,
+  ComponentBaseProps,
+} from '@ecdlink/ui';
 
 export interface ClassProgrammeAttendanceListProps extends ComponentBaseProps {
   isPrimaryClass: boolean;
@@ -7,6 +11,7 @@ export interface ClassProgrammeAttendanceListProps extends ComponentBaseProps {
   attendanceDate: Date;
   onAttendanceUpdated: (state: AttendanceListState) => void;
   isMultipleClasses: boolean;
+  initialAttendanceList?: { childUserId: string; status: AttendanceStatus }[];
 }
 
 export interface AttendanceListState {
