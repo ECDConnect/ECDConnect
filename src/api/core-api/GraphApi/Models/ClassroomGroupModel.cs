@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECDLink.DataAccessLayer.Entities.Classroom;
+using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
@@ -10,6 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Name { get; set; }
         public Guid UserId { get; set; }
         public List<BaseLearnerModel> Learners { get; set; }
+        public List<ClassProgramme> ClassProgrammes { get; set; }
     }
 
     public class BaseLearnerModel

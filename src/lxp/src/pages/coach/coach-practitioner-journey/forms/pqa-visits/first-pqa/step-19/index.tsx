@@ -102,7 +102,6 @@ export const Step19 = ({
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups.filter(
     (x) => x.name !== NoPlaygroupClassroomType.name
   );
@@ -114,11 +113,9 @@ export const Step19 = ({
     (item) => item?.userId === smartStarter?.userId
   );
   const isPrincipal = smartStarter?.isPrincipal === true;
-  const currentClassProgrammes = classProgrammes.filter((el) => {
-    return currentClassroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
-    });
-  });
+  const currentClassProgrammes = currentClassroomGroups
+    .flatMap((x) => x.classProgrammes)
+    .filter((x) => x.isActive);
 
   const primaryClassProgramme = currentClassProgrammes.filter(
     (prog) => prog.meetingDay === getDay(new Date())

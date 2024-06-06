@@ -19,7 +19,11 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { buttonDays } from '../edit-playgroup-form/edit-playgroup.form.types';
 import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -119,26 +123,21 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         name: data?.name ?? '',
         userId: data?.practitionerId!,
         learners: [],
+        classProgrammes: data.meetingDays.map((x) => {
+          return {
+            id: newGuid(),
+            classroomGroupId: classroomGroupId,
+            meetingDay: x,
+            isActive: true,
+            programmeStartDate: today,
+            isFullDay: data?.isFullDay || false,
+            synced: false,
+          };
+        }),
       };
 
       appDispatch(classroomsActions.createClassroomGroup(classroomGroupModel));
-
-      for (const meetingDay of data.meetingDays) {
-        const classProgrammeId = newGuid();
-
-        const classProgrammeInputModel: ClassProgrammeDto = {
-          id: classProgrammeId,
-          classroomGroupId: classroomGroupId,
-          meetingDay: meetingDay,
-          isFullDay: data?.isFullDay || false,
-          programmeStartDate: today,
-          isActive: true,
-        };
-
-        appDispatch(
-          classroomsActions.createClassroomProgramme(classProgrammeInputModel)
-        );
-      }
+      appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
     }
   };
 

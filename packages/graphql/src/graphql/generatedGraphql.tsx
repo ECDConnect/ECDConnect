@@ -1682,7 +1682,6 @@ export type CircleTabClubs = {
 export type ClassProgramme = {
   __typename?: 'ClassProgramme';
   attendance?: Maybe<Array<Maybe<Attendance>>>;
-  classroomGroup?: Maybe<ClassroomGroup>;
   classroomGroupId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -1700,7 +1699,6 @@ export type ClassProgrammeAttendanceArgs = {
 
 export type ClassProgrammeFilterInput = {
   and?: InputMaybe<Array<ClassProgrammeFilterInput>>;
-  classroomGroup?: InputMaybe<ClassroomGroupFilterInput>;
   classroomGroupId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1714,7 +1712,6 @@ export type ClassProgrammeFilterInput = {
 };
 
 export type ClassProgrammeInput = {
-  ClassroomGroup?: InputMaybe<ClassroomGroupInput>;
   ClassroomGroupId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -1725,7 +1722,6 @@ export type ClassProgrammeInput = {
 };
 
 export type ClassProgrammeSortInput = {
-  classroomGroup?: InputMaybe<ClassroomGroupSortInput>;
   classroomGroupId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -1994,6 +1990,7 @@ export type ClassroomGroupInput = {
 
 export type ClassroomGroupModel = {
   __typename?: 'ClassroomGroupModel';
+  classProgrammes?: Maybe<Array<Maybe<ClassProgramme>>>;
   classroomId: Scalars['UUID'];
   id: Scalars['UUID'];
   learners?: Maybe<Array<Maybe<BaseLearnerModel>>>;
