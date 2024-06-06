@@ -40,12 +40,13 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 import { coachSelectors } from '@/store/coach';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useWindowSize } from '@reach/window-size';
+import { ClassDashboardRouteState } from '../class-dashboard/class-dashboard.types';
 
 const headerHeight = 121;
 
@@ -53,6 +54,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const { height } = useWindowSize();
   const dialog = useDialog();
   const coach = useSelector(coachSelectors.getCoach);
+  const location = useLocation<ClassDashboardRouteState>();
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
@@ -189,6 +191,12 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       handleIsOnLeaveModal();
     }
   }, [practitionerIsOnLeave]);
+
+  useEffect(() => {
+    if (location.state?.fromChildAttendanceReport && !seeRegister) {
+      setSeeRegister(true);
+    }
+  }, [seeRegister, history, location]);
 
   useEffect(() => {
     if (!classroomGroups?.length) return;
@@ -379,7 +387,16 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         <BannerWrapper
           title="Attendance registers"
           size="small"
-          onBack={() => setSeeRegister(false)}
+          onBack={() => {
+            setSeeRegister(false);
+            history.replace({
+              ...location,
+              state: {
+                ...location.state,
+                fromChildAttendanceReport: false,
+              },
+            });
+          }}
         >
           <AttendanceReport
             isAllRegistersCompleted={isAllRegistersCompleted}

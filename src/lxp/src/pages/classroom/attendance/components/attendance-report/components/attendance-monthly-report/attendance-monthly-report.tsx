@@ -6,44 +6,25 @@ import {
   DialogPosition,
   renderIcon,
 } from '@ecdlink/ui';
-import { useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { getYear } from 'date-fns';
-import { useHistory, useLocation } from 'react-router';
-import { ClassDashboardRouteState } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { MonthlyAttendanceRecord } from '@ecdlink/core';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: MonthlyAttendanceRecord[];
-  classroomId: string;
 }
 
 export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
-> = ({ attendanceSummary, classroomId }) => {
+> = ({ attendanceSummary }) => {
   const [displayReport, setDisplayReport] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<MonthlyAttendanceRecord>();
 
-  const location = useLocation<ClassDashboardRouteState>();
-  const history = useHistory();
-
   const closeReport = () => {
     setDisplayReport(!displayReport);
-    history.replace({
-      ...location,
-      state: {
-        ...location.state,
-        fromChildAttendanceReport: false,
-      },
-    });
   };
-
-  useLayoutEffect(() => {
-    if (location.state?.fromChildAttendanceReport && !displayReport) {
-      setDisplayReport(true);
-    }
-  }, [displayReport, history, location]);
 
   return (
     <div className={styles.wrapper}>
@@ -111,7 +92,6 @@ export const AttendanceMonthlyReport: React.FC<
               selectedMonth={selectedMonth}
               onDownloadReport={() => {}}
               onBack={closeReport}
-              classroomGroupId={classroomId}
             />
           </div>
         </Dialog>

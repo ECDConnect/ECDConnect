@@ -58,12 +58,10 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   selectedMonth: MonthlyAttendanceRecord;
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
-  classroomGroupId: string;
 }
 
 export const MonthlyAttendanceReport = ({
   selectedMonth,
-  classroomGroupId,
   onBack,
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();

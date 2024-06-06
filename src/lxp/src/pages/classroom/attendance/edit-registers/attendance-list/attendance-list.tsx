@@ -24,6 +24,10 @@ import { analyticsActions } from '@/store/analytics';
 import { attendanceActions, attendanceThunkActions } from '@/store/attendance';
 import { format } from 'date-fns';
 import { useSnackbar } from '@ecdlink/core';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { ClassDashboardRouteState } from '@/pages/business/business.types';
 
 export const EditRegistersAttendanceList = ({
   selectedRegister,
@@ -48,10 +52,22 @@ export const EditRegistersAttendanceList = ({
   });
 
   const attendanceDate = selectedRegister.date;
+  const attendanceDay = attendanceDate.getDate();
+
+  const initialAttendanceList = selectedRegister.register.map((child) => ({
+    childUserId: child.childUserId,
+    status: child.attendance?.some(
+      (day) => day.key === attendanceDay && day.value === 1
+    )
+      ? AttendanceStatus.Present
+      : AttendanceStatus.Absent,
+  }));
 
   const appDispatch = useAppDispatch();
 
   const { showMessage } = useSnackbar();
+
+  const history = useHistory();
 
   const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
     const attendanceStatusCheck = getAttendanceStatusCheck(
@@ -105,7 +121,10 @@ export const EditRegistersAttendanceList = ({
 
     setAttendanceGroups([]);
     showMessage({ message: 'Register saved!', type: 'success' });
-    onBack();
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItems.ATTENDANCE,
+      fromChildAttendanceReport: true,
+    } as ClassDashboardRouteState);
   };
 
   return (
@@ -142,6 +161,7 @@ export const EditRegistersAttendanceList = ({
           classroomGroup={classroomGroup!}
           attendanceDate={selectedRegister.date}
           isMultipleClasses={false}
+          initialAttendanceList={initialAttendanceList}
           onAttendanceUpdated={(state) =>
             updateAttendanceState([
               {

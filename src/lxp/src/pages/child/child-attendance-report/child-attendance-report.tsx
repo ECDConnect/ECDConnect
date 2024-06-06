@@ -42,6 +42,7 @@ import {
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const ChildAttendanceReportPage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<ChildAttendanceReportState>();
@@ -102,15 +103,14 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   useEffect(() => {
     async function init() {
+      // TODO: update sync rules, today its syncing all attendance records every time we visit this page
       if (attendanceData && attendanceData.length > 0) {
-        await appDispatch(
-          attendanceThunkActions.trackAttendanceSync({})
-        ).unwrap();
+        appDispatch(attendanceThunkActions.trackAttendanceSync({})).unwrap();
       }
       const startDate = new Date(learner?.startedAttendance || new Date());
       const endDate = new Date();
 
-      new AttendanceService(authUser?.auth_token ?? '')
+      await new AttendanceService(authUser?.auth_token ?? '')
         .getChildAttendanceRecords(
           child?.userId ?? childUserId ?? '',
           classroomGroupId,
@@ -120,6 +120,8 @@ export const ChildAttendanceReportPage: React.FC = () => {
         .then((data) => {
           setChildAttendanceReportData(data);
         });
+
+      setIsLoading(false);
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,6 +143,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       className="h-full overflow-y-auto"
       onBack={() => {
         if (isCoach) {

@@ -189,7 +189,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         />
         <AttendanceMonthlyReport
           attendanceSummary={formattedAttendanceSummary}
-          classroomId={classroomID!}
         />
       </div>
       {isToShowSeeMoreButton && (

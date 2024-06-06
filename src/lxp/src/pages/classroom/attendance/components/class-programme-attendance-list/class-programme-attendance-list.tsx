@@ -20,6 +20,7 @@ export const ClassProgrammeAttendanceList: React.FC<
   onAttendanceUpdated,
   attendanceDate,
   isMultipleClasses,
+  initialAttendanceList,
 }) => {
   const [attendanceList, setAttendanceList] = useState<
     AttendanceListDataItem[]
@@ -88,6 +89,10 @@ export const ClassProgrammeAttendanceList: React.FC<
             x.userId === learner.childUserId ||
             x?.user?.id === learner.childUserId
         );
+        const initialStatus = initialAttendanceList?.find(
+          (x) => x.childUserId === learner.childUserId
+        )?.status;
+
         const profileTextString =
           child?.user?.firstName![0] ?? '' + child?.user?.surname![0] ?? '';
 
@@ -96,7 +101,9 @@ export const ClassProgrammeAttendanceList: React.FC<
           profileText: profileTextString.toLocaleUpperCase(),
           attenendeeId: child?.user?.id || index.toString(),
           avatarColor: getAvatarColor(),
-          status: isPrimaryClass
+          status: initialStatus
+            ? initialStatus
+            : isPrimaryClass
             ? AttendanceStatus.Present
             : AttendanceStatus.None,
           disabledAbsentStatus: !isPrimaryClass,
