@@ -13,5 +13,7 @@
         public CachingItem Content { get; set; }
 
         public CachingItem SystemSetting { get; set; }
+
+        public CachingItem Tenant { get; set; }
     }
 }

@@ -55,8 +55,8 @@ namespace ECDLink.Core.Services
             _cachingConfig = new CachingSection.CachingItem();
             if (cachingConfig != null && cachingConfig.SystemSetting != null)
             {
-                _cachingConfig.SlidingExpiration = cachingConfig.Content.SlidingExpiration;
-                _cachingConfig.AbsoluteExpiration = cachingConfig.Content.AbsoluteExpiration;
+                _cachingConfig.SlidingExpiration = cachingConfig.SystemSetting.SlidingExpiration;
+                _cachingConfig.AbsoluteExpiration = cachingConfig.SystemSetting.AbsoluteExpiration;
             }
         }
 
@@ -108,10 +108,10 @@ namespace ECDLink.Core.Services
                 }
             }
 
-            var options = new Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions()
-                .SetSize(1)
-                .SetSlidingExpiration(TimeSpan.FromSeconds(_cachingConfig.SlidingExpiration))
-                .SetAbsoluteExpiration(TimeSpan.FromSeconds(_cachingConfig.AbsoluteExpiration));
+            var options = new MemoryCacheEntryOptions()
+                .SetSize(1);
+            if (_cachingConfig.SlidingExpiration > 0) options.SetSlidingExpiration(TimeSpan.FromSeconds(_cachingConfig.SlidingExpiration));
+            if (_cachingConfig.AbsoluteExpiration > 0) options.SetAbsoluteExpiration(TimeSpan.FromSeconds(_cachingConfig.AbsoluteExpiration));
             _cacheService.SetCacheItem(CacheKeyConstants.SystemSettingCache, cacheToAdd, options);
         }
 
