@@ -218,7 +218,7 @@ export default function Practitioners() {
       practitionerTypeSearch: filteredPractitionerTypes,
       pagingInput: {
         pageNumber: 1,
-        pageSize: 10,
+        pageSize: null,
       },
       order: [
         {
@@ -345,7 +345,7 @@ export default function Practitioners() {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title="CHW Invite"
+          title="Practitioner Invite"
           message={`You are about to send an invite to ${practitioner.user.firstName} ${practitioner.user.surname}`}
           onCancel={onCancel}
           onSubmit={() => {
@@ -618,7 +618,7 @@ export default function Practitioners() {
             columns={columns}
             onClearFilters={clearFilters}
             onChangeSelectedRows={setSelectedUsers}
-            onClickRow={viewSelectedRow}
+            // onClickRow={viewSelectedRow}
             noContentText={noContentText}
             loading={{
               isLoading: tableData === undefined || isLoading,
