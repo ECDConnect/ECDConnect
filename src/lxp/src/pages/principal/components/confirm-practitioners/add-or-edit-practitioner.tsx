@@ -26,9 +26,15 @@ import {
   AddPractitinerInitialState,
   AddNewPractitionerModel,
 } from '../add-practitioner/add-practitioner.types';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerActions,
+  practitionerSelectors,
+} from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
+import { useAppDispatch } from '@/store';
+import PermissionsService from '@/services/PermissionsService/PermissionsService';
+import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -40,6 +46,7 @@ export const AddOrEditPractitioner = ({
   listItems?: any[];
 }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const dispatch = useAppDispatch();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const {
@@ -97,7 +104,6 @@ export const AddOrEditPractitioner = ({
   };
 
   const handleSearch = () => {
-    console.log('searchhhh');
     let validPassportOrIdNumber = true;
     // if (idNumber) {
     //   setIsValidPractitioner(undefined);
@@ -158,6 +164,15 @@ export const AddOrEditPractitioner = ({
     const practitionerUserDetails: any =
       await getPractitionerDetailsByIdNumber();
 
+    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
+      userId: practitionerUserDetails?.appUser?.id,
+      permissionIds: permissionsAdded,
+    };
+
+    const updatePermissions = await new PermissionsService(
+      userAuth?.auth_token!
+    ).UpdateUserPermission(updatePermissionInput);
+
     onSubmit({
       id: practitionerUserDetails?.appUser?.practitionerObjectData?.id ?? '',
       userId: practitionerUserDetails?.appUser?.id ?? '',
@@ -188,7 +203,6 @@ export const AddOrEditPractitioner = ({
 
   function updateArray(checkbox: any, id: string) {
     console.log({ checkbox });
-    const value = checkbox.value;
     if (checkbox.checked) {
       setPermissionsAdded([...permissionsAdded, id]);
     } else {
@@ -377,7 +391,7 @@ export const AddOrEditPractitioner = ({
               checked={permissionsAdded?.some((option) => option === item.id)}
               value={item.id}
               onChange={(event) => {
-                updateArray(event, item?.id);
+                updateArray(event, item?.id!);
               }}
               className="mb-1"
               icon={

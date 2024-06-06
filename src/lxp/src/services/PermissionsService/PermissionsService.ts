@@ -1,3 +1,4 @@
+import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { Config, PermissionDto } from '@ecdlink/core';
 class PermissionsService {
@@ -27,34 +28,35 @@ class PermissionsService {
     return response.data.data.practitionerRolePermissions;
   }
 
-  //     async UpdateUserPermission(input: UpdateUserPermissionInputModel): Promise<boolean> {
-  //     const apiInstance = api(Config.graphQlApi, this._accessToken);
-  //     const response = await apiInstance.post<any>(``, {
-  //       query: `
-  //         mutation UpdateUserPermission($input: UpdateUserPermissionInputModelInput) {
-  //     updateUserPermission(input: $input) {
-  //         id
-  //         userId
-  //         permissionId
-  //         isActive
-  //         permissionName
-  //         permissionNormalizedName
-  //         permissionGrouping
-  //     }
-  // }
-  //       `,
-  //       variables: {
-  //         id: id,
-  //         input: input,
-  //       },
-  //     });
+  async UpdateUserPermission(
+    input: UpdateUserPermissionInputModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+          mutation UpdateUserPermission($input: UpdateUserPermissionInputModelInput) {
+      updateUserPermission(input: $input) {
+          id
+          userId
+          permissionId
+          isActive
+          permissionName
+          permissionNormalizedName
+          permissionGrouping
+      }
+  }
+        `,
+      variables: {
+        input: input,
+      },
+    });
 
-  //     if (response.status !== 200) {
-  //       throw new Error('Updating document failed - Server connection error');
-  //     }
+    if (response.status !== 200) {
+      throw new Error('Updating document failed - Server connection error');
+    }
 
-  //     return true;
-  //   }
+    return response.data.updateUserPermission;
+  }
 }
 
 export default PermissionsService;
