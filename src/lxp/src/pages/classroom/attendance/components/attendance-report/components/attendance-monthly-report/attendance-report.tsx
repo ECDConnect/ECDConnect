@@ -1,9 +1,10 @@
-import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
+import { MonthlyAttendanceRecord } from '@ecdlink/core';
 import {
   ComponentBaseProps,
   BannerWrapper,
   Typography,
   Divider,
+  Button,
 } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -26,6 +27,14 @@ import ROUTES from '@routes/routes';
 import { useHistory } from 'react-router';
 import { classroomsSelectors } from '@/store/classroom';
 import { childrenSelectors } from '@/store/children';
+import { endOfMonth, startOfMonth, subDays, isAfter } from 'date-fns';
+import {
+  attendanceSelectors,
+  attendanceThunkActions,
+} from '@/store/attendance';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { AttendanceActions } from '@/store/attendance/attendance.actions';
+import { EditRegistersRouteState } from '@/pages/classroom/attendance/edit-registers/edit-registers.types';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -46,42 +55,76 @@ interface ReportDetailsForPractitionerData {
 }
 
 export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
-  reportMonth: string;
+  selectedMonth: MonthlyAttendanceRecord;
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
   classroomGroupId: string;
-  reportData: ChildAttendanceOverallReportModel[];
-  totalAttendance: any[];
-  totalAttendanceStatsReport:
-    | {
-        totalSessions: number;
-        totalMonthlyAttendance: number;
-        totalChildrenAttendedAllSessions: number;
-      }
-    | undefined;
 }
 
 export const MonthlyAttendanceReport = ({
-  reportMonth,
+  selectedMonth,
+  classroomGroupId,
   onBack,
-  reportData,
-  totalAttendance,
-  totalAttendanceStatsReport,
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const today = new Date().toDateString();
+  const today = new Date();
   const history = useHistory();
   const { errorDialog } = useRequestResponseDialog();
 
-  const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const children = useSelector(childrenSelectors.getChildren);
 
   const [reportDetails, setReportDetails] =
     useState<ReportDetailsForPractitionerData>();
+
+  const { isLoading } = useThunkFetchCall(
+    'attendanceData',
+    AttendanceActions.GET_CLASSROOM_ATTENDANCE_REPORT
+  );
+
+  const { startDate, endDate } = useMemo(() => {
+    const date = new Date(
+      Number(selectedMonth.year),
+      Number(selectedMonth.monthOfYear) - 1,
+      1
+    );
+
+    const firstDayOfMonth = startOfMonth(date);
+    const lastDayOfMonth = endOfMonth(date);
+
+    return { startDate: firstDayOfMonth, endDate: lastDayOfMonth };
+  }, [selectedMonth.monthOfYear, selectedMonth.year]);
+
+  const isCurrentMonth =
+    today.getMonth() === startDate.getMonth() &&
+    today.getFullYear() === startDate.getFullYear();
+  const is30DaysWindow =
+    !isCurrentMonth && isAfter(endDate, subDays(today, 31));
+
+  const monthlyReport = useSelector(
+    attendanceSelectors.getClassroomAttendanceOverviewReportByPeriod(
+      startDate,
+      endDate
+    )
+  );
+
+  const reportData = useMemo(
+    () => monthlyReport?.classroomAttendanceReport ?? [],
+    [monthlyReport]
+  );
+  const totalAttendance = useMemo(
+    () => monthlyReport?.totalAttendance ?? [],
+    [monthlyReport]
+  );
+  const totalAttendanceStatsReport = useMemo(
+    () => monthlyReport?.totalAttendanceStatsReport,
+    [monthlyReport]
+  );
+
+  const numDays = totalAttendance.length;
 
   const reportDataWithClassroomGroup = useMemo(
     () =>
@@ -91,6 +134,17 @@ export const MonthlyAttendanceReport = ({
       ),
     [reportData, classroomGroups]
   );
+
+  useEffect(() => {
+    appDispatch(
+      attendanceThunkActions.getClassroomAttendanceReport({
+        userId: userAuth?.id ?? '',
+        startDate,
+        endDate,
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // TODO: check if this endpoint is needed (w7)
   useEffect(() => {
@@ -116,12 +170,13 @@ export const MonthlyAttendanceReport = ({
       appDispatch(
         analyticsActions.createViewTracking({
           pageView: window.location.pathname,
-          title: `View ${reportMonth} Report `,
+          title: `View ${selectedMonth.month} Report `,
         })
       );
     }
-  }, [appDispatch, isOnline, reportMonth]);
+  }, [appDispatch, isOnline, selectedMonth]);
 
+  // TODO: move table data to a separate file (w7)
   const tableBody = reportData.map(
     (item: {
       attendance?: any;
@@ -175,7 +230,7 @@ export const MonthlyAttendanceReport = ({
   }
 
   const tableTopContent = {
-    pageTitle: `${reportMonth} Attendance Report`,
+    pageTitle: `${selectedMonth.month} Attendance Report`,
     subtitle: '',
     text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
     text_coulumn_one_row_two: `ID: ${
@@ -233,18 +288,19 @@ export const MonthlyAttendanceReport = ({
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       size={'small'}
       showBackground={false}
       color={'primary'}
       onBack={onBack}
-      title={`View ${reportMonth} Report `}
+      title={`View ${selectedMonth.month} Report `}
       subTitle={''}
       className={'flex h-full flex-col p-4'}
     >
       <Typography
         type="h1"
         color="textDark"
-        text={` ${reportMonth} attendance register`}
+        text={` ${selectedMonth.month} attendance register`}
       />
 
       <Typography
@@ -307,9 +363,25 @@ export const MonthlyAttendanceReport = ({
       ))}
 
       <div className={'mt-auto w-full py-4'}>
+        {is30DaysWindow && (
+          <Button
+            className="mb-4 w-full"
+            type="outlined"
+            color="quatenary"
+            textColor="quatenary"
+            text="Edit registers"
+            icon="PencilIcon"
+            onClick={() =>
+              history.push(ROUTES.CLASSROOM.ATTENDANCE.EDIT_REGISTERS, {
+                startDate,
+                endDate,
+              } as EditRegistersRouteState)
+            }
+          />
+        )}
         <GeneratePdfReportButton
           title="Download Register"
-          outputName={`${reportMonth}-attandance-report.pdf`}
+          outputName={`${selectedMonth.month}-attandance-report.pdf`}
           tableData={finalTableData}
           tableFooter={footer}
           content={tableTopContent}
@@ -318,7 +390,7 @@ export const MonthlyAttendanceReport = ({
           tableFootStyles={tableFootStyles}
           tableStyles={tableStyles}
           signature={practitioner?.signingSignature ?? ''}
-          downloadDate={today}
+          downloadDate={today.toDateString()}
           numberOfChildren={attendanceSum}
         />
       </div>

@@ -19,7 +19,7 @@ import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
-import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
+import { OverrideCache } from '@/models/sync/override-cache';
 
 export const ClassroomActions = {
   GET_CLASSROOM: 'getClassroom',
@@ -31,7 +31,7 @@ export const ClassroomActions = {
 
 export const getClassroom = createAsyncThunk<
   SimpleClassroomDto,
-  {} & RetrieveFromCache,
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
   ClassroomActions.GET_CLASSROOM,
@@ -73,7 +73,7 @@ export const getClassroom = createAsyncThunk<
 
 export const getClassroomGroups = createAsyncThunk<
   SimpleClassroomGroupDto[],
-  {} & RetrieveFromCache,
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
   ClassroomActions.GET_CLASSROOM_GROUPS,
