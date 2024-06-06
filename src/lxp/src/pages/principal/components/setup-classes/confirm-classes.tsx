@@ -1,7 +1,6 @@
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
 import { practitionerSelectors } from '@/store/practitioner';
 import { formatMeetingDays } from '@/utils/practitioner/playgroups-utils';
-import { ClassroomGroupDto } from '@ecdlink/core';
 import {
   ActionListDataItem,
   Button,
@@ -18,6 +17,7 @@ import {
 } from '../../setup-principal/setup-principal.types';
 import { UNSURE_CLASS } from '@/constants/classroom';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const ConfirmClasses = ({
   title,
@@ -69,10 +69,10 @@ export const ConfirmClasses = ({
         onActionClick: () => {
           editClass({
             id: classroomGroup?.id || '',
-            classroomId: classroomGroup?.classroom?.id,
+            classroomId: classroomGroup?.classroomId,
             name: classroomGroup.name,
             meetEveryday: classroomGroup.classProgrammes?.length === 5,
-            practitionerId: classroomGroup.practitionerId ?? '',
+            practitionerId: classroomGroup.userId ?? '',
             meetingDays:
               classroomGroup.classProgrammes?.map(
                 (a: { meetingDay: any }) => a.meetingDay

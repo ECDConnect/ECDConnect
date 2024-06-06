@@ -1,3 +1,4 @@
+import { ClassProgrammeDto } from '@ecdlink/core';
 import { OfflineUpdate } from '../sync/offline-update';
 
 export type ClassroomGroupDto = {
@@ -6,6 +7,7 @@ export type ClassroomGroupDto = {
   name: string;
   userId: string; // This would be the practitioner running the classroom group
   learners: LearnerDto[];
+  classProgrammes: (ClassProgrammeDto & OfflineUpdate)[];
 };
 
 export type LearnerDto = OfflineUpdate & {

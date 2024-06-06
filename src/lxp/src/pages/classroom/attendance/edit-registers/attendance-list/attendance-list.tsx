@@ -44,12 +44,10 @@ export const EditRegistersAttendanceList = ({
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
   );
   const user = useSelector(userSelectors.getUser);
-  const allClassProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
+
+  const classProgrammes = classroomGroup!.classProgrammes.filter(
+    (x) => x.isActive
   );
-  const classProgrammes = allClassProgrammes.filter((el) => {
-    return classroomGroupId === el.classroomGroupId;
-  });
 
   const attendanceDate = selectedRegister.date;
   const attendanceDay = attendanceDate.getDate();

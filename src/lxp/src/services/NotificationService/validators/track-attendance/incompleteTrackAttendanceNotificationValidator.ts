@@ -58,7 +58,9 @@ export class IncompleteTrackAttendanceNotificationValidator
 
     const missedAttendance = getMissedClassAttendance(
       classroomGroups || [],
-      classroomState.classroomProgrammes || [],
+      classroomGroups
+        .flatMap((x) => x.classProgrammes)
+        .filter((x) => x.isActive),
       attendanceState.attendance || [],
       this.currentDate
     );

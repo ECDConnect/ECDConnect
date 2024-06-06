@@ -27,6 +27,7 @@ export const ClassroomActions = {
   UPSERT_CLASSROOM_GROUPS: 'upsertClassroomGroups',
   UPSERT_CLASSROOM_GROUPS_LEARNERS: 'upsertClassroomGroupLearners',
   UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
+  UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
 };
 
 export const getClassroom = createAsyncThunk<
@@ -117,46 +118,6 @@ export const getClassroomGroups = createAsyncThunk<
       }
     } else {
       return cache.classroomGroups;
-    }
-  }
-);
-
-export const getClassroomProgrammes = createAsyncThunk<
-  ClassProgrammeDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'getClassroomProgrammes',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomProgrammes: cache },
-    } = getState();
-
-    if (!cache) {
-      try {
-        let programmes: ClassProgrammeDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          programmes = await new ClassroomGroupProgrammesService(
-            userAuth?.auth_token
-          ).getClassroomProgrammes();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmes) {
-          return rejectWithValue('Error getting Classroom Programmes');
-        }
-
-        return programmes;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return cache;
     }
   }
 );
@@ -282,24 +243,26 @@ export const upsertClassroomGroups = createAsyncThunk<
   }
 );
 
-export const updateClassroomGroupProgrammes = createAsyncThunk<
+export const upsertClassroomGroupProgrammes = createAsyncThunk<
   boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'updateClassroomGroupProgrammes',
+  ClassroomActions.UPSERT_CLASS_PROGRAMMES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomProgrammes },
+      classroomData: { classroomGroupData },
     } = getState();
+
+    const classroomProgrammes = classroomGroupData.classroomGroups
+      .flatMap((x) => x.classProgrammes)
+      .filter((x) => !x.synced);
 
     try {
       let promises: Promise<boolean>[] = [];
-
-      if (userAuth?.auth_token && classroomProgrammes) {
+      if (userAuth?.auth_token && classroomProgrammes.length) {
         promises = classroomProgrammes.map(async (x) => {
           const input: ClassProgrammeInput = {
             Id: x.id,
@@ -316,48 +279,6 @@ export const updateClassroomGroupProgrammes = createAsyncThunk<
         });
       }
       return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const upsertClassroomGroupProgrammes = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'upsertClassroomGroupProgrammes',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomProgrammes },
-    } = getState();
-
-    try {
-      let promises: Promise<boolean>[] = [];
-      if (classroomProgrammes?.some((item) => item?.isOnline === false)) {
-        if (userAuth?.auth_token && classroomProgrammes) {
-          promises = classroomProgrammes.map(async (x) => {
-            const input: ClassProgrammeInput = {
-              Id: x.id,
-              ClassroomGroupId: x.classroomGroupId,
-              ProgrammeStartDate: x.programmeStartDate ?? new Date(),
-              MeetingDay: x.meetingDay,
-              IsFullDay: x.isFullDay,
-              IsActive: x.isActive === false ? false : true,
-            };
-
-            return await new ClassroomGroupProgrammesService(
-              userAuth?.auth_token
-            ).updateClassProgramme(x.id ?? '', input);
-          });
-        }
-        return Promise.all(promises);
-      }
-      return [true];
     } catch (err) {
       return rejectWithValue(err);
     }

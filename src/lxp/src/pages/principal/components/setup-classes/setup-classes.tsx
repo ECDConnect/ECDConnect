@@ -1,4 +1,3 @@
-import { ClassroomGroupDto } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { classroomsSelectors } from '@/store/classroom';
@@ -10,6 +9,7 @@ import {
   ConfirmClassesSteps,
   OnNext,
 } from '../../setup-principal/setup-principal.types';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 interface SetupClassesProps {
   onNext: OnNext;
@@ -27,10 +27,6 @@ export const SetupClasses = ({
     classroomsSelectors.getClassroomGroups
   );
 
-  const classroomGroupProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
-  );
-
   const [currentTitle, setCurrentTitle] = useState('Add Classes');
   const [editClassroom, setEditClassroom] = useState<EditClassModel>(
     {} as EditClassModel
@@ -38,23 +34,17 @@ export const SetupClasses = ({
   const [classroomGroups, setClassroomGroups] = useState<ClassroomGroupDto[]>();
 
   useEffect(() => {
-    // todo
-    // if (classroomGroupsFromStore.length) {
-    //   setCurrentTitle('Confirm Class');
-    //   const _classroomGroups: ClassroomGroupDto[] = [];
-    //   for (const classroomGroup of classroomGroupsFromStore) {
-    //     const _hold = {
-    //       ...classroomGroup,
-    //     };
-    //     _hold.classProgrammes = classroomGroupProgrammes.filter(
-    //       (a) => a.classroomGroupId === classroomGroup.id
-    //     );
-    //     _classroomGroups.push(_hold);
-    //   }
-    //   setClassroomGroups(_classroomGroups);
-    // }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroupProgrammes, classroomGroupsFromStore.length]);
+    if (classroomGroupsFromStore.length) {
+      setCurrentTitle('Confirm Class');
+      const _classroomGroups: ClassroomGroupDto[] = [];
+      for (const classroomGroup of classroomGroupsFromStore) {
+        _classroomGroups.push({
+          ...classroomGroup,
+        });
+      }
+      setClassroomGroups(_classroomGroups);
+    }
+  }, [classroomGroupsFromStore.length]);
 
   const onEditClass = (classroom: EditClassModel) => {
     setEditClassroom(classroom);
