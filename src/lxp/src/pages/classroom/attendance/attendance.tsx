@@ -72,15 +72,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
   const children = useSelector(childrenSelectors.getChildren);
-  const allClassProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
-  );
 
-  const classProgrammes = allClassProgrammes.filter((el) => {
-    return classroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
-    });
-  });
+  const classProgrammes = classroomGroups
+    .flatMap((x) => x.classProgrammes)
+    .filter((x) => x.isActive);
 
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);
@@ -244,10 +239,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       }
     }
 
-    const currentClassProgrammes = classProgrammes.filter(
-      (classProgramme) =>
-        classProgramme.classroomGroupId === currentDayClassroomGroup?.id
-    );
+    const currentClassProgrammes =
+      currentDayClassroomGroup?.classProgrammes.filter((x) => x.isActive) || [];
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
@@ -287,7 +280,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     publicHolidays,
     seeRegister,
     previousClassroomGroupId,
-    allClassProgrammes,
   ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {

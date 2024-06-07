@@ -181,7 +181,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     const promises = [
       appDispatch(classroomsThunkActions.getClassroom({})).unwrap(),
       appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap(),
-      appDispatch(classroomsThunkActions.getClassroomProgrammes({})).unwrap(),
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(
         attendanceThunkActions.getAttendance({
@@ -260,9 +259,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       classroomsThunkActions.upsertClassroomGroups({})
     ).unwrap();
     await appDispatch(
-      classroomsThunkActions.updateClassroomGroupProgrammes({})
-    ).unwrap();
-    await appDispatch(
       classroomsThunkActions.upsertClassroomGroupLearners({})
     ).unwrap();
   };
@@ -271,9 +267,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(classroomsActions.resetClassroomState());
     await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
-    await appDispatch(
-      classroomsThunkActions.getClassroomProgrammes({})
-    ).unwrap();
   };
 
   const getLoadingMessage = () => {

@@ -25,10 +25,11 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 
         public bool IsFullDay { get; set; }
 
+        [GraphQLIgnore]
         public virtual ClassroomGroup ClassroomGroup { get; set; }
         public Guid? ClassroomGroupId { get; set; }
         [GraphQLIgnore]
-        public string Hierarchy { get; set; }
+        public string Hierarchy { get; set; } // This should be removed
     }
 
     public interface ClassProgrammeJoin<TKey>

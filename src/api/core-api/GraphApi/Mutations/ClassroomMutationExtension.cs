@@ -250,6 +250,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return updateClass;
         }
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public ClassProgramme UpdateClassProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -259,51 +260,52 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             IGenericRepository<ClassroomGroup, Guid> classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classroomGroup = classRepo.GetAll().Where(x => x.Id == input.ClassroomGroupId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-            string hierarchy = engine.GetUserHierarchy(classroomGroup.UserId.GetValueOrDefault(uId));
+            var classroomGroup = classRepo.GetAll().Where(x => x.Id == input.ClassroomGroupId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             if (classroomGroup != null)
             {
-                if (!string.IsNullOrEmpty(hierarchy))
-                {
-                    var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-                    var existingClassProgramme = classProgrammeRepo.GetById(id);
-
-                    if (existingClassProgramme == null)
-                    {
-                        //create new ClassProgramme
-                        ClassProgramme classProgrammeCreate = new ClassProgramme()
-                        {
-                            Id = input.Id,
-                            ClassroomGroupId = input.ClassroomGroupId,
-                            IsActive = true,
-                            UpdatedBy = uId.ToString(),
-                            ProgrammeStartDate = input.ProgrammeStartDate,
-                            MeetingDay = input.MeetingDay,
-                            IsFullDay = input.IsFullDay,
-                            UpdatedDate = DateTime.Now,
-                            Hierarchy = hierarchy
-                        };
-
-                        return classProgrammeRepo.Insert(classProgrammeCreate);
-                    }
-                    else
-                    {
-                        existingClassProgramme.UpdatedDate = DateTime.Now;
-                        existingClassProgramme.ClassroomGroupId = input.ClassroomGroupId;
-                        existingClassProgramme.Hierarchy = hierarchy;
-                        existingClassProgramme.MeetingDay = input.MeetingDay;
-                        // TODO: existingClassProgramme.ProgrammeStartDate should not be updated?
-                        //existingClassProgramme.ProgrammeStartDate = input.ProgrammeStartDate,
-                        existingClassProgramme.IsFullDay = input.IsFullDay;
-                        existingClassProgramme.IsActive = input.IsActive;
-
-                        return classProgrammeRepo.Update(existingClassProgramme);
-                    }
-                }
+                throw new ArgumentException("Classroom Group not found");
             }
 
-            return new ClassProgramme();
+            string hierarchy = engine.GetUserHierarchy(classroomGroup.UserId.GetValueOrDefault(uId));
+
+            if (string.IsNullOrEmpty(hierarchy))
+            {
+                throw new ArgumentException("Hierarchy for practitioner not found");
+            }
+
+            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
+            var existingClassProgramme = classProgrammeRepo.GetById(id);
+
+            if (existingClassProgramme == null)
+            {
+                //create new ClassProgramme
+                ClassProgramme classProgrammeCreate = new ClassProgramme()
+                {
+                    Id = input.Id,
+                    ClassroomGroupId = input.ClassroomGroupId,
+                    IsActive = true,
+                    UpdatedBy = uId.ToString(),
+                    ProgrammeStartDate = input.ProgrammeStartDate,
+                    MeetingDay = input.MeetingDay,
+                    IsFullDay = input.IsFullDay,
+                    UpdatedDate = DateTime.Now,
+                    Hierarchy = hierarchy
+                };
+
+                return classProgrammeRepo.Insert(classProgrammeCreate);
+            }
+            else
+            {
+                existingClassProgramme.UpdatedDate = DateTime.Now;
+                existingClassProgramme.ClassroomGroupId = input.ClassroomGroupId;
+                existingClassProgramme.Hierarchy = hierarchy;
+                existingClassProgramme.MeetingDay = input.MeetingDay;
+                existingClassProgramme.IsFullDay = input.IsFullDay;
+                existingClassProgramme.IsActive = input.IsActive;
+
+                return classProgrammeRepo.Update(existingClassProgramme);
+            }
         }
 
         private void UpdateClassProgrammeForPractitioner(
