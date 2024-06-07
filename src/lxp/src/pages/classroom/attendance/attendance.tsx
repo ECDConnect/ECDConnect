@@ -74,8 +74,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const children = useSelector(childrenSelectors.getChildren);
 
   const classProgrammes = classroomGroups
-    .flatMap((x) => x.classProgrammes)
-    .filter((x) => x.isActive);
+    ?.flatMap((x) => x?.classProgrammes)
+    ?.filter((x) => x?.isActive);
 
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);

@@ -65,8 +65,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const dialog = useDialog();
 
   const classProgrammes = classroomGroups
-    .flatMap((x) => x.classProgrammes)
-    .filter((x) => x.isActive);
+    ?.flatMap((x) => x?.classProgrammes)
+    ?.filter((x) => x?.isActive);
 
   const selectedClassroomGroup = classroomGroups.filter(
     (classroomGroup) => classroomGroup.id === classroomGroupId

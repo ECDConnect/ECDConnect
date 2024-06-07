@@ -14,21 +14,10 @@ import {
   NotificationDisplay,
   PractitionerInput,
   PractitionerRemovalHistory,
+  PractitionerReportDetails,
   PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 
-interface ReportDetailsForPractitionerData {
-  classroomGroupName: string;
-  name: string;
-  principalName: string;
-  classroomGroupId: string;
-  programmeTypeName: string;
-  idNumber: string;
-  insertedDate: string;
-  programmeDays: string;
-  phone: string;
-  classSiteAddress: null | string;
-}
 class PractitionerService {
   _accessToken: string;
 
@@ -612,7 +601,7 @@ class PractitionerService {
 
   async getReportDetailsForPractitioner(
     userId: string
-  ): Promise<ReportDetailsForPractitionerData> {
+  ): Promise<PractitionerReportDetails> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
