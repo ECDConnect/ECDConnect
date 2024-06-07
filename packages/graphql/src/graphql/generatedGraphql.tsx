@@ -1682,6 +1682,7 @@ export type CircleTabClubs = {
 export type ClassProgramme = {
   __typename?: 'ClassProgramme';
   attendance?: Maybe<Array<Maybe<Attendance>>>;
+  classroomGroup?: Maybe<ClassroomGroup>;
   classroomGroupId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -1699,6 +1700,7 @@ export type ClassProgrammeAttendanceArgs = {
 
 export type ClassProgrammeFilterInput = {
   and?: InputMaybe<Array<ClassProgrammeFilterInput>>;
+  classroomGroup?: InputMaybe<ClassroomGroupFilterInput>;
   classroomGroupId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1712,6 +1714,7 @@ export type ClassProgrammeFilterInput = {
 };
 
 export type ClassProgrammeInput = {
+  ClassroomGroup?: InputMaybe<ClassroomGroupInput>;
   ClassroomGroupId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -1722,6 +1725,7 @@ export type ClassProgrammeInput = {
 };
 
 export type ClassProgrammeSortInput = {
+  classroomGroup?: InputMaybe<ClassroomGroupSortInput>;
   classroomGroupId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -11804,6 +11808,7 @@ export type PortalNatalModel = {
 export type PortalPractitionerModel = {
   __typename?: 'PortalPractitionerModel';
   id: Scalars['UUID'];
+  insertedDate?: Maybe<Scalars['DateTime']>;
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
   isRegistered: Scalars['Boolean'];
@@ -11814,6 +11819,7 @@ export type PortalPractitionerModel = {
 export type PortalPractitionerModelFilterInput = {
   and?: InputMaybe<Array<PortalPractitionerModelFilterInput>>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   isFundaAppAdmin?: InputMaybe<BooleanOperationFilterInput>;
   isPrincipal?: InputMaybe<BooleanOperationFilterInput>;
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
@@ -11824,6 +11830,7 @@ export type PortalPractitionerModelFilterInput = {
 
 export type PortalPractitionerModelSortInput = {
   id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
   isFundaAppAdmin?: InputMaybe<SortEnumType>;
   isPrincipal?: InputMaybe<SortEnumType>;
   isRegistered?: InputMaybe<SortEnumType>;
@@ -15610,8 +15617,12 @@ export type QueryAllNotificationsArgs = {
 };
 
 export type QueryAllPortalPractitionersArgs = {
+  connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   order?: InputMaybe<Array<PortalPractitionerModelSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
+  practitionerTypeSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  provinceSearch?: InputMaybe<Array<InputMaybe<Scalars['UUID']>>>;
+  search?: InputMaybe<Scalars['String']>;
   where?: InputMaybe<PortalPractitionerModelFilterInput>;
 };
 

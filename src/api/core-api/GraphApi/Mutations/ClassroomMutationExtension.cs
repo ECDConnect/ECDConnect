@@ -262,7 +262,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepository<ClassroomGroup, Guid> classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classroomGroup = classRepo.GetAll().Where(x => x.Id == input.ClassroomGroupId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
-            if (classroomGroup != null)
+            if (classroomGroup == null)
             {
                 throw new ArgumentException("Classroom Group not found");
             }

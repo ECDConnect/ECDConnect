@@ -24,8 +24,6 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public int MeetingDay { get; set; }
 
         public bool IsFullDay { get; set; }
-
-        [GraphQLIgnore]
         public virtual ClassroomGroup ClassroomGroup { get; set; }
         public Guid? ClassroomGroupId { get; set; }
         [GraphQLIgnore]
