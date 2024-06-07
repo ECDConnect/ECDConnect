@@ -2,25 +2,22 @@ import { getAvatarColor } from '@ecdlink/core';
 import {
   AttendanceListDataItem,
   AttendanceStatus,
-  BannerWrapper,
   Button,
   Typography,
   Card,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import * as styles from './attendance-tutorial.styles';
 import { AttendanceTutorialProps } from './attendance-tutorial.types';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { useAppContext } from '@/walkthrougContext';
+import { InfoPage } from '@/pages/business/money/submit-income-statements/components/info-page';
+import { useTenant } from '@/hooks/useTenant';
 
 export const AttendanceTutorial = ({
-  onComplete,
   onClose,
   updatePractitionerProgress,
 }: AttendanceTutorialProps) => {
-  const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
   const [tutorialProgressClicks, setTutorialProgressClicks] =
@@ -36,6 +33,11 @@ export const AttendanceTutorial = ({
   const history = useHistory();
 
   const { setState } = useAppContext();
+
+  const { tenant } = useTenant();
+
+  // Todo: get the section from the portal
+  const section = 'todo';
 
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
@@ -72,84 +74,42 @@ export const AttendanceTutorial = ({
   };
 
   return (
-    <BannerWrapper
-      size={'medium'}
-      renderBorder
-      showBackground={false}
-      color={'primary'}
-      onBack={onClose}
-      title={'Taking child attendance'}
-      className={styles.bannerContentWrapper}
-      displayOffline={!isOnline}
+    <InfoPage
+      title="Taking child attendance"
+      section={section}
+      closeText="Start taking attendance"
+      closeIcon=""
+      onClose={onClose}
     >
-      <div className={'h-full bg-white p-4'}>
-        <Card className="bg-uiBg flex w-full flex-col justify-center rounded-2xl p-4">
-          <Typography
-            className={'mt-4'}
-            color={'textDark'}
-            type={'h2'}
-            text={'How can I take attendance on Funda App?'}
-          />
-          <Typography
-            className={'mt-4'}
-            color={'textMid'}
-            type={'body'}
-            text={'How can I take attendance on Funda App?'}
-          />
-          <Button
-            text={`Start walkthrough`}
-            icon={'ArrowCircleRightIcon'}
-            type={'filled'}
-            color={'primary'}
-            textColor={'white'}
-            className={'mt-4 max-h-10'}
-            iconPosition={'start'}
-            onClick={handleClickStart}
-          />
-        </Card>
-
+      <Card className="bg-uiBg flex w-full flex-col justify-center rounded-2xl p-4">
         <Typography
-          color={'textDark'}
-          type={'body'}
-          weight={'bold'}
-          text={'Why take attendance daily?'}
-          className="mt-2"
+          className="mt-4"
+          color="textDark"
+          type="h2"
+          text={`How can I take attendance ${
+            tenant?.applicationName ? `on ${tenant.applicationName}` : ''
+          }?`}
         />
         <Typography
-          className={'mt-4'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'To receive your monthly stipend, you need to take and submit attendance every day.'
-          }
+          className="mt-4"
+          color="textMid"
+          type="body"
+          text={`Tap the button below to see how to use this part ${
+            tenant?.applicationName ? `of ${tenant.applicationName}` : ''
+          }.`}
         />
-        <Typography
-          className={'mt-6'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'This record will also help when you talk to  caregivers about any attendance concerns you have.'
-          }
-        />
-      </div>
-      <div className={'bg-uiBg px-4 pt-2'}>
         <Button
-          color={'primary'}
-          type={'filled'}
-          onClick={onComplete}
-          className={styles.closeButton}
-        >
-          <Typography
-            color={'white'}
-            type={'help'}
-            weight={'normal'}
-            text={'Start taking attendance'}
-          />
-        </Button>
-      </div>
-    </BannerWrapper>
+          text="Start walkthrough"
+          icon="ArrowCircleRightIcon"
+          type="filled"
+          color="quatenary"
+          textColor="white"
+          className="mt-4 max-h-10 shadow-lg"
+          iconPosition="start"
+          onClick={handleClickStart}
+        />
+      </Card>
+    </InfoPage>
   );
 };
 
