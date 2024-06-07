@@ -436,11 +436,12 @@ export const ClassDashboard: React.FC = () => {
       setSelectedTabIndex(state?.activeTabIndex || 0);
       history.replace({
         state: {
+          ...state,
           activeTabIndex: undefined,
         },
       });
     }
-  }, [history, selectedTabIndex, state?.activeTabIndex]);
+  }, [history, selectedTabIndex, state, state?.activeTabIndex]);
 
   return (
     <>

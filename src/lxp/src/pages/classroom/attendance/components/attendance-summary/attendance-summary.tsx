@@ -2,6 +2,7 @@ import {
   AttendanceDto,
   LocalStorageKeys,
   sortDateFunction,
+  useSnackbar,
 } from '@ecdlink/core';
 import { Holiday } from '@ecdlink/graphql';
 import {
@@ -13,7 +14,15 @@ import {
   StackedList,
   Typography,
 } from '@ecdlink/ui';
-import { addDays, format, getDay, getTime, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  closestTo,
+  format,
+  getDay,
+  getTime,
+  isSameDay,
+  startOfWeek,
+} from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
@@ -38,6 +47,8 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { AttendanceSummaryState } from './attendance-summary.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { useHistory, useLocation } from 'react-router';
+import { ClassDashboardRouteState } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,
@@ -93,6 +104,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const previousMissedAttendanceGroups =
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
+
+  const location = useLocation<ClassDashboardRouteState>();
+  const history = useHistory();
+
+  const { showMessage } = useSnackbar();
 
   let isCurrentSmartStartUser = getStorageItem<boolean>(
     LocalStorageKeys.isSmartStartUser
@@ -230,7 +246,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         .map((x, idx) => ({
           ...x.item,
           onActionClick: () => {
-            openEditRegister(x.group.id ?? '', x.date, true, x.item.title);
+            openEditRegister(x.group.id ?? '', x.date, x.item.title);
           },
         }));
       if (missedAttendanceGroups.length > 0) {
@@ -250,6 +266,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       const sortedMissedAttendanceGroups = missedAttendanceGroups.sort((a, b) =>
         a.missedDay > b.missedDay ? 1 : -1
       );
+
       sortedMissedAttendanceGroups.forEach((group, idx) => {
         actionListToDisplay.push({
           title: group.classroomGroup.name || '',
@@ -262,13 +279,42 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
             openEditRegister(
               group.classroomGroup.id ?? '',
               group.missedDay,
-              idx === sortedMissedAttendanceGroups.length - 1,
               group?.classroomGroup?.name
             );
           },
         });
       });
       setAttendanceActionList(actionListToDisplay.reverse());
+
+      if (location.state?.classroomGroupIdFromClassTab) {
+        const missedAttendanceGroup = sortedMissedAttendanceGroups.filter(
+          (attendanceGroup) =>
+            attendanceGroup?.classroomGroup?.id ===
+            location.state?.classroomGroupIdFromClassTab
+        );
+
+        if (missedAttendanceGroup?.length) {
+          const closestDate = closestTo(
+            new Date(),
+            missedAttendanceGroup.map((group) => group.missedDay)
+          );
+          const closestDay = missedAttendanceGroup.find((item) =>
+            isSameDay(item.missedDay, closestDate!)
+          )!;
+
+          openEditRegister(
+            closestDay.classroomGroup.id ?? '',
+            closestDay.missedDay,
+            closestDay?.classroomGroup?.name
+          );
+        } else {
+          showMessage({
+            message:
+              'The selected class has all attendance registers up to date.',
+            type: 'info',
+          });
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missedAttendanceGroups]);
@@ -276,7 +322,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const openEditRegister = (
     classroomGroupCacheId: string,
     attendanceDay: Date,
-    isLast: boolean,
     classGroupName: string
   ) => {
     if (isValidAttendanceDay) {
@@ -310,6 +355,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
 
   const closeEditAttendanceRegister = () => {
     setEditAttendanceRegisterVisible(false);
+    history.replace(location.pathname, {
+      ...location.state,
+      classroomGroupIdFromClassTab: undefined,
+    });
   };
 
   const closeNotification = () => {
@@ -401,9 +450,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         >
           <EditAttendanceRegister
             attendanceDate={attendanceEditDay}
-            // onComplete={(attendanceSuccessList: AttendanceResult) =>
-            //   goToNextEditAttendanceRegister(attendanceSuccessList)
-            // }
             onBack={() => closeEditAttendanceRegister()}
             editAttendanceRegisterVisible={editAttendanceRegisterVisible}
             classroomName={classroomName ?? ''}
