@@ -17,7 +17,6 @@ import {
   mergeMonthlyAttendanceReportWithSameClassroomGroupId,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
-import { UserOptions } from 'jspdf-autotable';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
@@ -35,23 +34,12 @@ import {
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { AttendanceActions } from '@/store/attendance/attendance.actions';
 import { EditRegistersRouteState } from '@/pages/classroom/attendance/edit-registers/edit-registers.types';
+import { getTableData } from './table-data';
+import { PractitionerReportDetails } from '@ecdlink/graphql';
 
 export interface ChildAttendanceReportState {
   childId: string;
   classroomGroupId: string;
-}
-
-interface ReportDetailsForPractitionerData {
-  classroomGroupName: string;
-  name: string;
-  principalName: string;
-  classroomGroupId: string;
-  programmeTypeName: string;
-  idNumber: string;
-  insertedDate: string;
-  programmeDays: string;
-  phone: string;
-  classSiteAddress: null | string;
 }
 
 export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
@@ -75,8 +63,9 @@ export const MonthlyAttendanceReport = ({
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const children = useSelector(childrenSelectors.getChildren);
 
+  const [isLoadingReportDetails, setIsLoadingReportDetails] = useState(true);
   const [reportDetails, setReportDetails] =
-    useState<ReportDetailsForPractitionerData>();
+    useState<PractitionerReportDetails>();
 
   const { isLoading } = useThunkFetchCall(
     'attendanceData',
@@ -109,29 +98,29 @@ export const MonthlyAttendanceReport = ({
     )
   );
 
-  const reportData = useMemo(
-    () => monthlyReport?.classroomAttendanceReport ?? [],
-    [monthlyReport]
-  );
-  const totalAttendance = useMemo(
-    () => monthlyReport?.totalAttendance ?? [],
-    [monthlyReport]
-  );
-  const totalAttendanceStatsReport = useMemo(
-    () => monthlyReport?.totalAttendanceStatsReport,
-    [monthlyReport]
-  );
+  const reportData = monthlyReport?.classroomAttendanceReport ?? [];
 
-  const numDays = totalAttendance.length;
+  const reportDataWithClassroomGroup =
+    mergeMonthlyAttendanceReportWithSameClassroomGroupId(
+      reportData,
+      classroomGroups
+    );
 
-  const reportDataWithClassroomGroup = useMemo(
-    () =>
-      mergeMonthlyAttendanceReportWithSameClassroomGroupId(
-        reportData,
-        classroomGroups
-      ),
-    [reportData, classroomGroups]
-  );
+  const {
+    attendanceSum,
+    finalTableData,
+    tableBottomContent,
+    tableFootStyles,
+    tableHeadStyles,
+    tableStyles,
+    tableTopContent,
+    footer,
+  } = getTableData({
+    selectedMonth,
+    monthlyReport,
+    practitioner,
+    reportDetails,
+  });
 
   useEffect(() => {
     appDispatch(
@@ -144,7 +133,6 @@ export const MonthlyAttendanceReport = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // TODO: check if this endpoint is needed (w7)
   useEffect(() => {
     const getClassroomDetails = async () => {
       const res = await new PractitionerService(
@@ -159,7 +147,8 @@ export const MonthlyAttendanceReport = ({
       })
       .catch((err) => {
         errorDialog(err.message);
-      });
+      })
+      .finally(() => setIsLoadingReportDetails(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -173,116 +162,6 @@ export const MonthlyAttendanceReport = ({
       );
     }
   }, [appDispatch, isOnline, selectedMonth]);
-
-  // TODO: move table data to a separate file (w7)
-  const tableBody = reportData.map(
-    (item: {
-      attendance?: any;
-      childFullName?: any;
-      childIdNumber?: string;
-    }) => {
-      const { childFullName, childIdNumber } = item;
-      const attendance = item.attendance.reduce(
-        (obj: { [x: string]: any }, { key, value }: any, i: number) => {
-          obj[`day${key}`] = value !== null ? value : '*';
-          return obj;
-        },
-        {}
-      );
-      return { child: childFullName, id: childIdNumber, ...attendance };
-    }
-  );
-
-  const tableHeaders = [
-    { header: 'Child', dataKey: 'child' },
-    { header: 'ID/Passport', dataKey: 'id' },
-    ...totalAttendance.slice(0, numDays).map(({ key }) => ({
-      header: `${key}`,
-      dataKey: `day${key}`, // using key value as dataKey
-    })),
-  ];
-
-  const finalTableData = [
-    {
-      tableName: '',
-      type: '',
-      total: '',
-      headers: tableHeaders,
-      data: tableBody,
-    },
-  ];
-
-  const footer = [
-    'Child Attendance per Day',
-    '', // Placeholder for ID/Passport column
-  ];
-
-  totalAttendance.forEach((obj) => {
-    footer.push(obj.value.toString());
-  });
-
-  let attendanceSum = 0;
-
-  for (let i = 0; i < totalAttendance.length; i++) {
-    attendanceSum += totalAttendance[i].value;
-  }
-
-  const tableTopContent = {
-    pageTitle: `${selectedMonth.month} Attendance Report`,
-    subtitle: '',
-    text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_coulumn_one_row_two: `ID: ${
-      reportDetails?.idNumber === null ? '' : reportDetails?.idNumber
-    }`,
-    text_coulumn_one_row_three: `Phone: ${
-      reportDetails?.phone === null ? '' : reportDetails?.phone
-    }`,
-    //column2 with 3 rows of text
-    text_column_two_row_one: `Programme Type: ${
-      reportDetails?.programmeTypeName === null
-        ? ''
-        : reportDetails?.programmeTypeName
-    } `,
-    text_column_two_row_two: `Programme Days: ${
-      reportDetails?.programmeDays === null ? '' : reportDetails?.programmeDays
-    } `,
-    text_column_two_row_three: `Site: ${
-      reportDetails?.classSiteAddress === null
-        ? ''
-        : reportDetails?.classSiteAddress
-    }`,
-  };
-
-  const tableBottomContent = [
-    `Total monthly attendance: ${attendanceSum}`,
-    `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
-    `Number of children who attended all sessions: ${
-      attendanceSum === 0
-        ? '0'
-        : totalAttendanceStatsReport?.totalChildrenAttendedAllSessions
-    }`,
-    '* = child was not registered yet OR practitioner did not take attendance',
-  ];
-
-  const tableHeadStyles: UserOptions['headStyles'] = {
-    fillColor: [211, 211, 211], // Light grey
-    textColor: [0, 0, 0],
-    fontSize: 10,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-  const tableStyles: UserOptions['styles'] = {
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-    fontSize: 8,
-  };
-  const tableFootStyles: UserOptions['footStyles'] = {
-    textColor: [0, 0, 0],
-    fillColor: [211, 211, 211], // Light grey
-    fontSize: 8,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
 
   return (
     <BannerWrapper
@@ -378,8 +257,9 @@ export const MonthlyAttendanceReport = ({
           />
         )}
         <GeneratePdfReportButton
+          isLoading={isLoadingReportDetails}
           title="Download Register"
-          outputName={`${selectedMonth.month}-attandance-report.pdf`}
+          outputName={`${selectedMonth.month}-attendance-report.pdf`}
           tableData={finalTableData}
           tableFooter={footer}
           content={tableTopContent}

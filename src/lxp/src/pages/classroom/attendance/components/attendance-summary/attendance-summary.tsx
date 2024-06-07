@@ -76,8 +76,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   );
 
   const classProgrammes = classroomGroups
-    .flatMap((x) => x.classProgrammes)
-    .filter((x) => x.isActive);
+    ?.flatMap((x) => x?.classProgrammes)
+    ?.filter((x) => x?.isActive);
 
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);

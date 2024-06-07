@@ -138,8 +138,8 @@ export const ChildProfile: React.FC = () => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
 
-  const classProgrammes = classroomGroup!.classProgrammes.filter(
-    (x) => x.isActive
+  const classProgrammes = classroomGroup!.classProgrammes?.filter(
+    (x) => x?.isActive
   );
 
   const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));

@@ -4,6 +4,7 @@ import { Typography, Button, renderIcon } from '@ecdlink/ui';
 import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
 
 export interface GeneratePdfReportButtonProps {
+  isLoading?: boolean;
   tableFootStyles: UserOptions['footStyles'];
   title: string;
   outputName: string;
@@ -21,6 +22,7 @@ export interface GeneratePdfReportButtonProps {
 }
 
 const GeneratePdfReportButton = ({
+  isLoading,
   title,
   tableFooter,
   tableData,
@@ -39,6 +41,8 @@ const GeneratePdfReportButton = ({
   const { generateReport } = useGeneratePdfReport();
   return (
     <Button
+      isLoading={isLoading}
+      disabled={isLoading}
       type="filled"
       color="quatenary"
       className={'w-full'}
