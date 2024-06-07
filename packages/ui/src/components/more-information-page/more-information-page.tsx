@@ -5,6 +5,7 @@ import BannerWrapper from '../banner-wrapper/banner-wrapper';
 import Button from '../button/button';
 import LanguageSelector from '../language-selector/language-selector';
 import { useWindowSize } from '@reach/window-size';
+import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 // This is a copy paste from the text.utils, since this project doesn't have access
 const replaceBraces = (sentenceWithBraces: string, value: string) => {
@@ -18,6 +19,8 @@ export interface MoreInformationPageProps {
   isClosable?: boolean;
   subTitle?: string;
   name?: string;
+  closeText?: string;
+  closeIcon?: string;
   onClose: () => void;
   setSelectedLanguage: (locale: string) => void;
   selectedLanguage?: string;
@@ -43,6 +46,8 @@ export const MoreInformationPage = ({
   childrenPosition = 'top',
   languageSelectorPosition = 'top',
   isClosable = true,
+  closeText = 'Close',
+  closeIcon = 'XIcon',
 }: MoreInformationPageProps) => {
   const { height } = useWindowSize();
 
@@ -210,7 +215,6 @@ export const MoreInformationPage = ({
 
   return (
     <BannerWrapper
-      isLoading={isLoading}
       size="small"
       onBack={onClose}
       title={title}
@@ -222,33 +226,42 @@ export const MoreInformationPage = ({
           {renderLanguageSelector}
         </div>
       )}
-      <div
-        className="flex flex-col p-4"
-        style={{
-          height:
-            languageSelectorPosition === 'top'
-              ? height - SELECTOR_HEIGHT
-              : height,
-        }}
-      >
-        {childrenPosition === 'top' && children}
-        {languageSelectorPosition === 'bottom' && (
-          <div className="border-primary mb-4 border border-l-0 border-r-0 border-dashed pb-1">
-            {renderLanguageSelector}
-          </div>
-        )}
-        {renderContent}
-        {childrenPosition === 'bottom' && children}
-        <Button
-          className="mt-auto mb-4"
-          type="filled"
-          color="primary"
-          textColor="white"
-          text="Close"
-          icon="XIcon"
-          onClick={onClose}
+      {isLoading ? (
+        <LoadingSpinner
+          size="medium"
+          className="mt-4"
+          spinnerColor="primary"
+          backgroundColor="uiLight"
         />
-      </div>
+      ) : (
+        <div
+          className="flex flex-col p-4"
+          style={{
+            height:
+              languageSelectorPosition === 'top'
+                ? height - SELECTOR_HEIGHT
+                : height,
+          }}
+        >
+          {childrenPosition === 'top' && children}
+          {languageSelectorPosition === 'bottom' && (
+            <div className="border-primary mb-4 border border-l-0 border-r-0 border-dashed pb-1">
+              {renderLanguageSelector}
+            </div>
+          )}
+          {renderContent}
+          {childrenPosition === 'bottom' && children}
+          <Button
+            className="mt-auto mb-4"
+            type="filled"
+            color="quatenary"
+            textColor="white"
+            text={closeText}
+            icon={closeIcon}
+            onClick={onClose}
+          />
+        </div>
+      )}
     </BannerWrapper>
   );
 };

@@ -105,8 +105,13 @@ const attendanceSlice = createSlice({
 
       const programmeOwnerId = action.meta.arg.programmeOwnerId;
       // reset the dateRefreshed for the monthly attendance report
-      state.monthlyAttendanceRecordsByUser[programmeOwnerId].dateRefreshed =
-        undefined;
+      if (
+        state.monthlyAttendanceRecordsByUser &&
+        state.monthlyAttendanceRecordsByUser[programmeOwnerId]
+      ) {
+        state.monthlyAttendanceRecordsByUser[programmeOwnerId].dateRefreshed =
+          undefined;
+      }
       state.classroomAttendanceOverviewReport = [];
     });
     builder.addCase(getAttendance.fulfilled, (state, action) => {
