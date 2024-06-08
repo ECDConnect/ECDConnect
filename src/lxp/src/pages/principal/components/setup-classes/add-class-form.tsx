@@ -146,13 +146,8 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         }),
       };
 
-      await appDispatch(
-        classroomsActions.createClassroomGroup(classroomGroupModel)
-      );
-      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroupProgrammes({})
-      );
+      appDispatch(classroomsActions.createClassroomGroup(classroomGroupModel));
+      appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
     }
   };
 

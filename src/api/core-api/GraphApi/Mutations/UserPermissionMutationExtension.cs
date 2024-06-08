@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new ArgumentNullException("input");
             }
 
-            if (input.UserId.ToString() != "")
+            if (input.UserId.ToString() == "")
             {
                 throw new ArgumentException("UserId is empty");
             }

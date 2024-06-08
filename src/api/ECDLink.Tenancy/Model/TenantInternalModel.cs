@@ -22,5 +22,10 @@ namespace ECDLink.Tenancy.Model
         public TenantModuleModel Modules { get; set; }
         public string GoogleAnalyticsTag { get; set; }
         public string GoogleTagManager { get; set; }
+
+        public string GetClaimString()
+        {
+            return string.Format("{0}|{1}", this.Id.ToString(), this.SiteAddress);
+        }
     }
 }

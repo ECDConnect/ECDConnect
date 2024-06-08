@@ -4,7 +4,6 @@ import {
   TeamLeadsTemplate,
   UploadHealthCareWorkers,
   UploadTeamLeads,
-  importAll,
 } from '@ecdlink/graphql';
 import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../admin-portal/src/app/components/form-file-input/form-file-input';
@@ -13,7 +12,6 @@ import { b64toBlob, useNotifications, NOTIFICATION } from '@ecdlink/core';
 import {
   ArrowLeftIcon,
   DownloadIcon,
-  LockClosedIcon,
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';

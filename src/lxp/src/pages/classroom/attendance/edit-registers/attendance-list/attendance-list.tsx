@@ -45,8 +45,8 @@ export const EditRegistersAttendanceList = ({
   );
   const user = useSelector(userSelectors.getUser);
 
-  const classProgrammes = classroomGroup!.classProgrammes.filter(
-    (x) => x.isActive
+  const classProgrammes = classroomGroup!.classProgrammes?.filter(
+    (x) => x?.isActive
   );
 
   const attendanceDate = selectedRegister.date;
