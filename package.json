@@ -4,10 +4,10 @@
   "scripts": {
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",
     "build:ui": "lerna bootstrap --force-local && lerna run --scope @ecdlink/ui tsc",
-    "portal": "cd ./src/admin-portal && export PORT=3003 && yarn start ",
-    "portal-wl": "cd ./src/admin-portal && export PORT=3006 && yarn start",
+    "portal": "cd ./src/admin-portal && SET PORT=3003 && yarn start ",
+    "portal-wl": "cd ./src/admin-portal && SET PORT=3006 && yarn start",
     "app": "cd ./src/lxp && yarn start",
-    "app-wl": "cd ./src/lxp && export PORT=3005 && yarn start",
+    "app-wl": "cd ./src/lxp && SET PORT=3005 && yarn start",
     "app:mocks": "cd ./src/lxp && yarn start:mocks",
     "app:withSW": "cd ./src/lxp && npx serve -s build -l 4000",
     "build:portal": "yarn bootstrap && (cd ./src/admin-portal && yarn build)",
