@@ -830,13 +830,12 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String,  $programmeTypeId: UUID!) {
+        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String) {
           addPractitionerToPrincipal(
             firstName: $firstName
             idNumber: $idNumber
             lastName: $lastName
             userId: $userId
-            programmeTypeId: $programmeTypeId
           ) {
             userId
             isActive

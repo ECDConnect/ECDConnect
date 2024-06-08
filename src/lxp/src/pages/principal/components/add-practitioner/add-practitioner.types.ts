@@ -3,6 +3,7 @@ export type AddNewPractitionerModel = {
   surname?: string;
   idNumber?: string;
   userId?: string;
+  username?: string;
 };
 
 export const AddPractitinerInitialState = {
@@ -10,4 +11,5 @@ export const AddPractitinerInitialState = {
   surname: '',
   idNumber: '',
   userId: '',
+  username: '',
 };

@@ -13,7 +13,6 @@ import {
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { authSelectors } from '@/store/auth';
-import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 import { WelcomePage } from '@/components/welcome-page';
 import { PractitionerService } from '@/services/PractitionerService';
 import {
@@ -25,6 +24,10 @@ import { useAppDispatch } from '@store';
 import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { PractitionerSignature } from './components/practitioner-signature/practitioner-signature';
+import { ShareSomeDetails } from '@/pages/principal/components/share-some-detail/share-some-detail';
+import { PractitionerShareDetails } from './components/practitioner-share-details/practitioner-share-details';
+import { useTenant } from '@/hooks/useTenant';
+import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -32,6 +35,10 @@ export const EditPractitionerProfile: React.FC = () => {
   const { theme } = useTheme();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
+
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
@@ -82,7 +89,7 @@ export const EditPractitionerProfile: React.FC = () => {
       setLabel('Welcome');
     } else {
       setLabel(
-        `step ${activeStep} of ${
+        `step ${activeStep - 1} of ${
           Object.values(EditPractitionerSteps).filter(Number).length
         }`
       );
@@ -124,22 +131,30 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const steps = (step: EditPractitionerSteps) => {
     switch (step) {
+      case EditPractitionerSteps.SET_PRACTITIONER_DETAILS:
+        return (
+          <PractitionerShareDetails
+            onNext={() =>
+              setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER)
+            }
+          />
+        );
       case EditPractitionerSteps.SETUP_PRACTITIONER:
         return (
           <PractitionerSetup
             onSubmit={(form: PractitionerFormData) => {
               setFormData(form);
-              setActiveStep(EditPractitionerSteps.ADD_SIGNATURE);
+              setActiveStep(EditPractitionerSteps.ADD_PHOTO);
             }}
           />
         );
-
-      case EditPractitionerSteps.ADD_SIGNATURE:
-        return (
-          <PractitionerSignature
-            onSubmit={(e) => setActiveStep(EditPractitionerSteps.ADD_PHOTO)}
-          />
-        );
+      // Check with Kim if this won't be needed anymore.
+      // case EditPractitionerSteps.ADD_SIGNATURE:
+      //   return (
+      //     <PractitionerSignature
+      //       onSubmit={(e) => setActiveStep(EditPractitionerSteps.ADD_PHOTO)}
+      //     />
+      //   );
 
       case EditPractitionerSteps.ADD_PHOTO:
         return (
@@ -155,7 +170,9 @@ export const EditPractitionerProfile: React.FC = () => {
         return (
           <WelcomePage
             onNext={() =>
-              setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER)
+              isOpenAccess && !user?.firstName
+                ? setActiveStep(EditPractitionerSteps.SET_PRACTITIONER_DETAILS)
+                : setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER)
             }
           />
         );
@@ -217,27 +234,19 @@ export const EditPractitionerProfile: React.FC = () => {
     <>
       <IonContent scrollY={true}>
         <BannerWrapper
-          size={
-            activeStep === EditPractitionerSteps.WELCOME ? 'large' : 'medium'
-          }
+          size={'large'}
           renderBorder={true}
-          showBackground={activeStep === EditPractitionerSteps.WELCOME}
+          showBackground={true}
           title={'Edit Profile'}
           subTitle={label}
           onBack={onBack}
           onClose={exitPrompt}
           backgroundColour={'white'}
-          className={
-            activeStep === EditPractitionerSteps.WELCOME ? 'relative' : ''
-          }
-          backgroundUrl={
-            activeStep === EditPractitionerSteps.WELCOME
-              ? theme?.images.graphicOverlayUrl
-              : ''
-          }
+          className={'relative'}
+          backgroundUrl={theme?.images.graphicOverlayUrl}
           displayOffline={!isOnline}
         >
-          <div className={'px-4'}>{steps(activeStep)}</div>
+          <div className={'h-screen px-4'}>{steps(activeStep)}</div>
         </BannerWrapper>
       </IonContent>
     </>

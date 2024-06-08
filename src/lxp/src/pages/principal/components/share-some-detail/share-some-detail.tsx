@@ -22,8 +22,8 @@ export const ShareSomeDetails = ({
   setShareSomeDetails,
 }: {
   onNext: () => void;
-  setIsNotPrincipal: (item: boolean) => void;
-  setShareSomeDetails: (item: boolean) => void;
+  setIsNotPrincipal?: (item: boolean) => void;
+  setShareSomeDetails?: (item: boolean) => void;
 }) => {
   const { theme } = useTheme();
   const appDispatch = useAppDispatch();
@@ -73,7 +73,7 @@ export const ShareSomeDetails = ({
           renderBorder={true}
           showBackground={true}
           title={'Edit Profile'}
-          onBack={() => setShareSomeDetails(false)}
+          onBack={() => setShareSomeDetails && setShareSomeDetails(false)}
           backgroundColour={'white'}
           className={'relative'}
           backgroundUrl={theme?.images.graphicOverlayUrl}

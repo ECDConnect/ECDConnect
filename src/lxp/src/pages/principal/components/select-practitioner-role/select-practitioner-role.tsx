@@ -14,6 +14,12 @@ import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
 import { PractitionerSetupSteps } from '../../setup-principal/setup-principal.types';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
+import { cloneDeep } from '@apollo/client/utilities';
+import {
+  practitionerActions,
+  practitionerSelectors,
+} from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
 
 export const SelectPractitionerRole = ({
   onNext,
@@ -24,11 +30,30 @@ export const SelectPractitionerRole = ({
   setIsNotPrincipal: (item: boolean) => void;
   setPage: (item: PractitionerSetupSteps) => void;
 }) => {
+  const appDispatch = useAppDispatch();
   const tenant = useTenant();
-  const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const [shareSomeDetails, setShareSomeDetails] = useState(false);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const user = useSelector(userSelectors.getUser);
+
+  const savePractitionerIsPrincipal = () => {
+    const copy = cloneDeep(practitioner);
+    if (copy) {
+      copy.isPrincipal = true;
+
+      appDispatch(practitionerActions.updatePractitioner(copy));
+    }
+  };
+
+  const savePractitionerIsNotPrincipal = () => {
+    const copy = cloneDeep(practitioner);
+    if (copy) {
+      copy.isPrincipal = false;
+
+      appDispatch(practitionerActions.updatePractitioner(copy));
+    }
+  };
 
   const listItems: MenuListDataItem[] = [
     {
@@ -44,10 +69,12 @@ export const SelectPractitionerRole = ({
         isOpenAccess && !user?.firstName
           ? () => {
               setIsNotPrincipal(false);
+              savePractitionerIsPrincipal();
               setShareSomeDetails(true);
             }
           : () => {
               setIsNotPrincipal(false);
+              savePractitionerIsPrincipal();
               onNext();
             },
     },
@@ -65,10 +92,12 @@ export const SelectPractitionerRole = ({
         isOpenAccess && !user?.firstName
           ? () => {
               setIsNotPrincipal(true);
+              savePractitionerIsNotPrincipal();
               setShareSomeDetails(true);
             }
           : () => {
               setIsNotPrincipal(true);
+              savePractitionerIsNotPrincipal();
               onNext();
             },
     },

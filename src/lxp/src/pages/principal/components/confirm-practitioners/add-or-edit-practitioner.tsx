@@ -73,10 +73,8 @@ export const AddOrEditPractitioner = ({
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const permissions = useSelector(staticDataSelectors.getPermissions);
 
-  console.log({ permissions });
-
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
-  console.log({ permissionsAdded });
+
   const { preferId, idNumber, passport } = useWatch({
     control,
   });
@@ -105,15 +103,6 @@ export const AddOrEditPractitioner = ({
 
   const handleSearch = () => {
     let validPassportOrIdNumber = true;
-    // if (idNumber) {
-    //   setIsValidPractitioner(undefined);
-    //   validPassportOrIdNumber = SA_ID_REGEX.test(idNumber);
-    // }
-
-    // if (passport) {
-    //   setIsValidPractitioner(undefined);
-    //   validPassportOrIdNumber = SA_PASSPORT_REGEX.test(passport);
-    // }
 
     if (validPassportOrIdNumber) {
       getPractitionerDetailsByIdNumber().then((p: any) => {
@@ -131,12 +120,15 @@ export const AddOrEditPractitioner = ({
         if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
           setIsPractitionerRegistered(true);
         }
-        setIsValidPractitioner(!!p?.appUser?.idNumber);
+        setIsValidPractitioner(
+          !!p?.appUser?.idNumber || !!p?.appUser?.userName
+        );
         setNewPractitioner({
           firstName: p?.appUser?.firstName,
           surname: p?.appUser?.surname,
           idNumber: p?.appUser?.idNumber,
           userId: p?.appUser?.id,
+          username: p?.appUser?.userName,
         });
       });
     }
@@ -202,7 +194,6 @@ export const AddOrEditPractitioner = ({
   }, []);
 
   function updateArray(checkbox: any, id: string) {
-    console.log({ checkbox });
     if (checkbox.checked) {
       setPermissionsAdded([...permissionsAdded, id]);
     } else {
@@ -219,9 +210,7 @@ export const AddOrEditPractitioner = ({
         <div>
           <Typography
             type={'h2'}
-            text={`Practitioner ${
-              listItems && listItems?.length > 0 && listItems?.length + 1
-            }`}
+            text={`Practitioner ${listItems && listItems?.length + 1}`}
             color={'textDark'}
           />
         </div>
@@ -365,7 +354,9 @@ export const AddOrEditPractitioner = ({
             <Typography type={'h3'} text={`First name`} color={'textMid'} />
             <Typography
               type={'h4'}
-              text={`${newPractitioner?.firstName}`}
+              text={`${
+                newPractitioner?.firstName || newPractitioner?.username
+              }`}
               color={'textMid'}
             />
             <Typography

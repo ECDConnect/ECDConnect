@@ -20,7 +20,11 @@ import {
 } from '@schemas/practitioner/edit-programme';
 import { yesNoOptions } from './add-programme-form.types';
 import { userSelectors } from '@/store/user';
-import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {
@@ -192,6 +196,7 @@ export const AddProgrammeForm: React.FC<{
 
     // TODO
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
+    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
     // Should this upsert the classroom ???
   };
 
@@ -225,6 +230,7 @@ export const AddProgrammeForm: React.FC<{
 
     // This won't actually call the BE
     appDispatch(classroomsActions.updateClassroom(classroomInputModel));
+    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
