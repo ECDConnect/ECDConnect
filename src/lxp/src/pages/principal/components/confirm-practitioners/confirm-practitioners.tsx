@@ -257,37 +257,6 @@ export default function ConfirmPractitioners({
                 text={'Invite practitioners'}
                 color={'textDark'}
               />
-              {/* {allInFundaApp !== undefined && (
-                <div>
-                  <Alert
-                    type={allInFundaApp ? 'success' : 'warning'}
-                    title={
-                      allInFundaApp
-                        ? 'All practitioners at your programme are registered on Funda app.'
-                        : 'One or more of your practitioners are not registered on Funda App. Ask all of your SmartStart practitioners to register.'
-                    }
-                    list={[
-                      allInFundaApp
-                        ? 'Practitioners have been notified.'
-                        : 'If your practitioners need help, please contact the SmartStart call centre.',
-                    ]}
-                    button={
-                      !allInFundaApp ? (
-                        <Button
-                          text="Contact call centre"
-                          icon="PhoneIcon"
-                          type={'filled'}
-                          color={'primary'}
-                          textColor={'white'}
-                          onClick={callForHelp}
-                        />
-                      ) : (
-                        <></>
-                      )
-                    }
-                  />
-                </div>
-              )} */}
               <StackedList<ActionListDataItem>
                 listItems={listItems}
                 type={'ActionList'}

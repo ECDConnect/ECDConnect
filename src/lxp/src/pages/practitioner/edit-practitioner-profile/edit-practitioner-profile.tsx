@@ -23,8 +23,6 @@ import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@store';
 import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { PractitionerSignature } from './components/practitioner-signature/practitioner-signature';
-import { ShareSomeDetails } from '@/pages/principal/components/share-some-detail/share-some-detail';
 import { PractitionerShareDetails } from './components/practitioner-share-details/practitioner-share-details';
 import { useTenant } from '@/hooks/useTenant';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
@@ -148,13 +146,6 @@ export const EditPractitionerProfile: React.FC = () => {
             }}
           />
         );
-      // Check with Kim if this won't be needed anymore.
-      // case EditPractitionerSteps.ADD_SIGNATURE:
-      //   return (
-      //     <PractitionerSignature
-      //       onSubmit={(e) => setActiveStep(EditPractitionerSteps.ADD_PHOTO)}
-      //     />
-      //   );
 
       case EditPractitionerSteps.ADD_PHOTO:
         return (
