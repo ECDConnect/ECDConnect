@@ -1,12 +1,17 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
@@ -15,12 +20,14 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -253,6 +260,90 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public List<ClubMember> GetClubsMembers([Service] IClubService clubService, Guid[] clubIds)
         {
             return clubService.GetClubsMembers(clubIds);
-        }       
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        [UseSorting]
+        public List<PortalCoachModel> GetAllPortalCoaches(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            CancellationToken cancellationToken,
+            PagedQueryInput pagingInput = null,
+            string search = null,
+            List<string> connectUsageSearch = null
+            )
+        {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+
+            var coachQuery = coachRepo.GetAll(pagingInput);
+            // General search term
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                coachQuery = coachQuery
+                    .Where(h =>
+                        EF.Functions.ILike(h.User.FullName, $"%{search}%")
+                        || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
+                        || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
+                        || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+            }
+
+            // Some connect status search items
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+            {
+                coachQuery = coachQuery.Where(x => x.User.IsActive == false);
+            }
+
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+            {
+                coachQuery = coachQuery.Where(x =>
+                    x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date >= sixMonthsAgo);
+            }
+
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
+            {
+                coachQuery = coachQuery.Where(x =>
+                    x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date <= sixMonthsAgo);
+            }
+
+            var userIds = coachQuery.Select(x => x.UserId.Value).ToList();
+            var invitations = shortenUrlEntityRepo.GetAll()
+                .Where(x =>
+                    userIds.Contains(x.UserId.Value)
+                    && (x.MessageType == TemplateTypeConstants.Invitation)
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .Select(x => new { x.UserId, x.InsertedDate })
+                .OrderByDescending(x => x.InsertedDate)
+                .GroupBy(x => x.UserId)
+                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
+
+            var coachModels = coachQuery
+                .Select(item => new PortalCoachModel
+                {
+                    Id = item.Id,
+                    IsRegistered = (item.IsRegistered == null ? false : (bool)item.IsRegistered),
+                    UserId = item.UserId,
+                    InsertedDate = item.InsertedDate,
+                    User = new PortalCoachUserModel(item.User, (item.IsRegistered == null ? false : (bool)item.IsRegistered), invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null)
+                })
+                .ToList();
+
+            return coachModels;
+        }
     }
 }

@@ -1,10 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { getAvatarColor, usePanel, useTheme } from '@ecdlink/core';
-import {
-  GetAllMessageLogsForTeamLead,
-  GetAllNavigation,
-  GetAllNotifications,
-} from '@ecdlink/graphql';
+import { GetAllNavigation, GetAllNotifications } from '@ecdlink/graphql';
 import { Avatar, Button, IconBadge, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
@@ -39,17 +35,6 @@ type menuItemProps = {
   item: INavigation;
 };
 
-export const tlMeetings = {
-  description: 'Team meetings',
-  icon: 'PresentationChartBarIcon',
-  id: '96d4070a-e5a6-4148-961b-20d9c05dje41',
-  isActive: true,
-  name: 'Team meetings',
-  permissions: [],
-  route: '/team-meetings',
-  sequence: 8,
-};
-
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeMatch = useRouteMatch(item.route);
 
@@ -81,7 +66,7 @@ export default function Shell() {
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
-  const { isTeamLead, isAdministrator, isSuperAdmin } = useUserRole();
+  const { isAdministrator, isSuperAdmin } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const history = useHistory();
   const location = useLocation();
@@ -101,25 +86,10 @@ export default function Shell() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: tlNotificationsData } = useQuery(GetAllMessageLogsForTeamLead, {
-    variables: {
-      userId: user?.id,
-    },
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const isGrowGreatTenant = tenant.isCHWConnect;
-
   const notifications = notificationsData?.allNotifications;
   const notReadNotifications = useMemo(
     () => notifications?.filter((item) => !item?.readDate),
     [notifications]
-  );
-
-  const tlNotifications = tlNotificationsData?.allMessageLogsForTeamLead;
-  const tlNotReadNotifications = useMemo(
-    () => tlNotifications?.filter((item) => !item?.readDate),
-    [tlNotifications]
   );
 
   useEffect(() => {
@@ -137,14 +107,6 @@ export default function Shell() {
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
-      const teamLeadNavigationItems = [
-        NavbarTypes.Users,
-        NavbarTypes.Clinics,
-        NavbarTypes.League,
-        NavbarTypes.Referrals,
-        NavbarTypes.TeamMeetings,
-      ];
-
       const adminNavigationItems = [
         NavbarTypes.Dashboard,
         NavbarTypes.Users,
@@ -154,23 +116,19 @@ export default function Shell() {
         NavbarTypes.TLMeetings,
         NavbarTypes.Documents,
         NavbarTypes.CMS,
-        ...(isGrowGreatTenant ? [] : [NavbarTypes.Reporting]),
+        [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
-        ...(isGrowGreatTenant ? [] : [NavbarTypes.Settings]),
+        [NavbarTypes.Settings],
         NavbarTypes.Notifications,
         NavbarTypes.CHWsOptedOut,
       ];
 
       const navigationList = [
         ...navigationData?.GetAllNavigation,
-        tlMeetings,
         ...navigationFromFrontend,
       ];
 
-      const teamLeadNavigationList: INavigation[] = navigationList?.filter(
-        (item) => teamLeadNavigationItems?.includes(item?.name)
-      );
       const adminNavigationList: INavigation[] = navigationList?.filter(
         (item) =>
           adminNavigationItems?.some((adminItem) =>
@@ -186,10 +144,6 @@ export default function Shell() {
         setNavigation(
           adminNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
         );
-      } else if (isTeamLead) {
-        setNavigation(
-          teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
-        );
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -197,17 +151,10 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [
-    user,
-    navigationData,
-    isAdministrator,
-    isSuperAdmin,
-    isTeamLead,
-    isGrowGreatTenant,
-  ]);
+  }, [user, navigationData, isAdministrator, isSuperAdmin]);
 
   const getLogoUrl = () => {
-    if (theme && theme.images && !isGrowGreatTenant) {
+    if (theme && theme.images) {
       return theme.images.logoUrl;
     } else {
       return ggLogo;
@@ -217,13 +164,8 @@ export default function Shell() {
   const signOutClick = useCallback(() => {
     logout();
 
-    if (isTeamLead) {
-      history.push(ROUTES.ROOT_TEAM_LEAD);
-      return;
-    }
-
     history.push('/');
-  }, [logout, history, isTeamLead]);
+  }, [logout, history]);
 
   const gotToProfile = () => {
     history.push(ROUTES.PROFILE);
@@ -270,20 +212,10 @@ export default function Shell() {
   }, [signOutClick]);
 
   const renderBadgeValue = useMemo(() => {
-    if (isTeamLead) {
-      return !!tlNotReadNotifications?.length
-        ? `${tlNotReadNotifications?.length}`
-        : ``;
-    } else {
-      return !!notReadNotifications?.length
-        ? `${notReadNotifications?.length}`
-        : '';
-    }
-  }, [
-    isTeamLead,
-    notReadNotifications?.length,
-    tlNotReadNotifications?.length,
-  ]);
+    return !!notReadNotifications?.length
+      ? `${notReadNotifications?.length}`
+      : '';
+  }, [notReadNotifications?.length]);
 
   return (
     <div className="flex h-full overflow-hidden bg-gray-100">
