@@ -3,21 +3,19 @@ using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 {
-    public class PortalPractitionerModel
+    public class PortalCoachModel
     {
         public Guid Id { get; set; }
         public Guid? UserId { get; set; }
         public bool IsRegistered { get; set; }
-        public bool? IsPrincipal { get; set; }
-        public bool? IsFundaAppAdmin { get; set; }
         public DateTime? InsertedDate { get; set; }
-        public PortalPractitionerUserModel User { get; set; }
+        public PortalCoachUserModel User { get; set; }
     }
 
-    public class PortalPractitionerUserModel: AppUsageModel
+    public class PortalCoachUserModel : AppUsageModel
     {
 
-        public PortalPractitionerUserModel(ApplicationUser user, bool isRegistered, DateTime? invitationDate)
+        public PortalCoachUserModel(ApplicationUser user, bool isRegistered, DateTime? invitationDate)
             : base(user.IsActive, isRegistered, user.LastSeen, user.UpdatedDate, invitationDate)
         {
             Id = user.Id;

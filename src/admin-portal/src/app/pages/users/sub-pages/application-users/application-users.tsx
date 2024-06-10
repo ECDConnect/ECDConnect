@@ -15,7 +15,7 @@ import { format } from 'date-fns';
 
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
-import { columnColor } from '../../../../utils/health-care-worker/components-utils';
+import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import { ColumnNames, UserSearch } from './application-user.types';
 
 export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [

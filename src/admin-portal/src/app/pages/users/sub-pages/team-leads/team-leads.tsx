@@ -35,7 +35,7 @@ import TeamLeadPanelCreate from './components/team-lead-panel-create/team-lead-p
 import ROUTES from '../../../../routes/app.routes-constants';
 import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
-import { columnColor } from '../../../../utils/health-care-worker/components-utils';
+import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [

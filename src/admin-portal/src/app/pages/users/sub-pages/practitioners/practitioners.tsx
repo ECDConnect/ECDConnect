@@ -45,7 +45,7 @@ import {
 } from './practitioner.types';
 import { ConnectUsage, PractionerType, Status } from '../../user.types';
 import PractitionerPanelCreate from './components/practitioner-panel-create/practitioner-panel-create';
-import { columnColor } from '../../../../utils/health-care-worker/components-utils';
+import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import { useTenant } from '../../../../hooks/useTenant';
 
 export const oaSortByConnectUsage: SearchDropDownOption<string>[] = [
@@ -187,28 +187,28 @@ export default function Practitioners() {
     [connectUsageFilter]
   );
 
-  const viewSelectedRow = (selectedRow: any) => {
-    const user = tableData?.find(
-      (item) => item?.userId === selectedRow?.userId
-    );
+  // const viewSelectedRow = (selectedRow: any) => {
+  //   const user = tableData?.find(
+  //     (item) => item?.userId === selectedRow?.userId
+  //   );
 
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
-    );
-    history.push({
-      pathname: ROUTES.USERS.VIEW_USER,
-      state: {
-        component: 'chw',
-        userId: selectedRow?.userId,
-        clinicId: selectedRow?.clinicId,
-        hcwId: selectedRow?.id,
-        isRegistered: selectedRow?.isRegistered,
-        connectUsage: selectedRow?.connectUsage,
-        connectUsageColor: user?.user?.connectUsageColor,
-      },
-    });
-  };
+  //   localStorage.setItem(
+  //     'selectedUser',
+  //     selectedRow?.userId ?? selectedRow?.id
+  //   );
+  //   history.push({
+  //     pathname: ROUTES.USERS.VIEW_USER,
+  //     state: {
+  //       component: 'practitioners',
+  //       userId: selectedRow?.userId,
+  //       clinicId: selectedRow?.clinicId,
+  //       practitionerId: selectedRow?.id,
+  //       isRegistered: selectedRow?.isRegistered,
+  //       connectUsage: selectedRow?.connectUsage,
+  //       connectUsageColor: user?.user?.connectUsageColor,
+  //     },
+  //   });
+  // };
 
   const queryVariables = useMemo(
     () => ({
@@ -339,33 +339,32 @@ export default function Practitioners() {
     }
   }, [data, endDate, startDate, statusFilter]);
 
-  // TODO: Is this function used?
-  const sendInvite = async (practitioner: PractitionerDto) => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Practitioner Invite"
-          message={`You are about to send an invite to ${practitioner.user.firstName} ${practitioner.user.surname}`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            sendInviteToApplication({
-              variables: {
-                userId: practitioner.userId,
-                inviteToPortal: false,
-              },
-            }).then(() => {
-              setNotification({
-                title: 'Successfully Sent CHW Invite!',
-                variant: NOTIFICATION.SUCCESS,
-              });
-            });
-          }}
-        />
-      ),
-    });
-  };
+  // const sendInvite = async (practitioner: PractitionerDto) => {
+  //   dialog({
+  //     position: DialogPosition.Middle,
+  //     render: (onSubmit: any, onCancel: any) => (
+  //       <AlertModal
+  //         title="Practitioner Invite"
+  //         message={`You are about to send an invite to ${practitioner.user.firstName} ${practitioner.user.surname}`}
+  //         onCancel={onCancel}
+  //         onSubmit={() => {
+  //           onSubmit();
+  //           sendInviteToApplication({
+  //             variables: {
+  //               userId: practitioner.userId,
+  //               inviteToPortal: false,
+  //             },
+  //           }).then(() => {
+  //             setNotification({
+  //               title: 'Successfully Sent CHW Invite!',
+  //               variant: NOTIFICATION.SUCCESS,
+  //             });
+  //           });
+  //         }}
+  //       />
+  //     ),
+  //   });
+  // };
 
   const displayPanel = () => {
     panel({
@@ -547,7 +546,7 @@ export default function Practitioners() {
           title={`Deactivate ${
             selectedUsers?.length - registeredOrInactiveUsers?.length
           } Practitioners?`}
-          message={`Are you sure you want to deactivate these Practitioners? Practitioners will lose their access to CHW Connect immediately. Make sure you have communicated this to Practitioners before deactivating them.`}
+          message={`Are you sure you want to deactivate these Practitioners? Practitioners will lose their access to the app immediately. Make sure you have communicated this to Practitioners before deactivating them.`}
           btnText={['Yes, deactivate Practitioners', 'No, Cancel']}
           hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
           alertMessage={`Note: ${registeredOrInactiveUsers?.length} Practitioners selected have already been deactivated.`}
@@ -752,6 +751,7 @@ export default function Practitioners() {
               onClick: () =>
                 history.push({
                   pathname: ROUTES.UPLOAD_USERS,
+                  state: { component: 'practitioners' },
                 }),
               leadingIcon: 'UsersIcon',
             },

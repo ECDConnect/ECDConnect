@@ -17,7 +17,7 @@ const ColumnStatusIndicator = ({ icon, iconColor, text }) => (
   </div>
 );
 
-export const columnColor = (value?: string) => {
+export const columnColor = (value?: string, valueColor?: string) => {
   const iconMapping = {
     [ConnectUsageName?.InvitationActive]: {
       icon: ClockIcon,
@@ -39,5 +39,11 @@ export const columnColor = (value?: string) => {
     : 'default';
   const { icon, color } = iconMapping[key];
 
-  return <ColumnStatusIndicator icon={icon} iconColor={color} text={value} />;
+  return (
+    <ColumnStatusIndicator
+      icon={icon}
+      iconColor={'text-' + valueColor}
+      text={value}
+    />
+  );
 };
