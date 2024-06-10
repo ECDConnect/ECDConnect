@@ -1,7 +1,6 @@
 import { AttendanceDto, useDialog } from '@ecdlink/core';
 import {
   ComponentBaseProps,
-  Button,
   DialogPosition,
   ActionModal,
   Dialog,
@@ -57,7 +56,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const location = useLocation<ClassDashboardRouteState>();
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
-  const [seeRegister, setSeeRegister] = useState<boolean>(false);
+  const [seeCompletedRegisters, setSeeCompletedRegisters] =
+    useState<boolean>(false);
   const [previousClassroomGroupId, setPreviousClassroomGroupId] =
     useState<string>('');
   const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
@@ -188,10 +188,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   }, [practitionerIsOnLeave]);
 
   useEffect(() => {
-    if (location.state?.fromChildAttendanceReport && !seeRegister) {
-      setSeeRegister(true);
+    if (location.state?.fromChildAttendanceReport && !seeCompletedRegisters) {
+      setSeeCompletedRegisters(true);
     }
-  }, [seeRegister, history, location]);
+  }, [seeCompletedRegisters, history, location]);
 
   useEffect(() => {
     if (!classroomGroups?.length) return;
@@ -278,7 +278,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     learners,
     practitioner?.isPrincipal,
     publicHolidays,
-    seeRegister,
+    seeCompletedRegisters,
     previousClassroomGroupId,
   ]);
 
@@ -321,6 +321,17 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     }
   };
 
+  const onCloseCompletedRegisters = () => {
+    setSeeCompletedRegisters(false);
+    history.replace({
+      ...location,
+      state: {
+        ...location.state,
+        fromChildAttendanceReport: false,
+      },
+    });
+  };
+
   const getComponentToRender = (type?: AttendanceComponentType) => {
     switch (type) {
       case 'report':
@@ -336,7 +347,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         return (
           <AttendanceSummary
             openReports={() => setAttendanceComponentType('report')}
-            openCompletedRegisters={() => setSeeRegister(true)}
+            openCompletedRegisters={() => setSeeCompletedRegisters(true)}
             currentUserId={userData?.id || ''}
           />
         );
@@ -371,7 +382,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       {attendanceComponentType && getComponentToRender(attendanceComponentType)}
       <Dialog
         position={DialogPosition.Full}
-        visible={seeRegister}
+        visible={seeCompletedRegisters}
         backdropColour="white"
         borderRadius="normal"
         stretch
@@ -379,22 +390,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         <BannerWrapper
           title="Attendance registers"
           size="small"
-          onBack={() => {
-            setSeeRegister(false);
-            history.replace({
-              ...location,
-              state: {
-                ...location.state,
-                fromChildAttendanceReport: false,
-              },
-            });
-          }}
+          onBack={onCloseCompletedRegisters}
         >
           <AttendanceReport
             isAllRegistersCompleted={isAllRegistersCompleted}
             classroom={classroom}
             currentClassroomGroup={userCurrentClassroomGroup}
             classroomGroups={classroomGroups}
+            onTakeAttendance={onCloseCompletedRegisters}
           />
         </BannerWrapper>
       </Dialog>

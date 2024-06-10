@@ -65,9 +65,8 @@ export const ClassMenu = ({
           type: 'outlined',
           onClick: () => {
             history.push(ROUTES.CLASSROOM.ROOT, {
-              activeTabIndex: isPrincipal
-                ? TabsItemForPrincipal.ATTENDANCE
-                : TabsItems.ATTENDANCE,
+              activeTabIndex: TabsItems.ATTENDANCE,
+              classroomGroupIdFromClassTab: classroomGroupId,
             } as ClassDashboardRouteState);
             onClose();
           },
