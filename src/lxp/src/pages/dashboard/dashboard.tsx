@@ -53,7 +53,6 @@ import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
-import { PractitionerInput } from '@ecdlink/graphql';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
@@ -319,6 +318,7 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
+    await appDispatch(staticDataThunkActions.getPermissions({})).unwrap();
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
     await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
     await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();
@@ -961,7 +961,7 @@ export const Dashboard: React.FC = () => {
       <Typography
         type={'h1'}
         color="white"
-        text={`Hi ${userData && userData?.firstName}!`}
+        text={`Hi ${(userData && userData?.firstName) || userData?.userName}!`}
         className={styles.welcomeText}
       />
       <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>

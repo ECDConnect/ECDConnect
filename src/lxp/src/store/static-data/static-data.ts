@@ -8,6 +8,7 @@ import {
   getHolidays,
   getLanguages,
   getNoteTypes,
+  getPermissions,
   getProgrammeAttendanceReasons,
   getProgrammeTypes,
   getProvinces,
@@ -37,6 +38,7 @@ const initialState: StaticDataState = {
   documentTypes: undefined,
   WorkflowStatuses: undefined,
   noteTypes: undefined,
+  permissions: undefined,
 };
 
 const staticDataSlice = createSlice({
@@ -62,6 +64,7 @@ const staticDataSlice = createSlice({
       state.documentTypes = initialState.documentTypes;
       state.WorkflowStatuses = initialState.WorkflowStatuses;
       state.noteTypes = initialState.noteTypes;
+      state.permissions = initialState.permissions;
     },
   },
   extraReducers: (builder) => {
@@ -121,6 +124,9 @@ const staticDataSlice = createSlice({
     });
     builder.addCase(getNoteTypes.fulfilled, (state, action) => {
       state.noteTypes = action.payload;
+    });
+    builder.addCase(getPermissions.fulfilled, (state, action) => {
+      state.permissions = action.payload;
     });
   },
 });

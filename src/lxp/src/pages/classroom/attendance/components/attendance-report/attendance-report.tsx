@@ -33,9 +33,13 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   currentClassroomGroup,
   classroomGroups,
   isAllRegistersCompleted,
+  onTakeAttendance,
 }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+
+  // TODO: Implement permission check (W3)
+  const hasPermissionToEdit = true;
 
   const classroomGroup = classroomGroups?.find((x) => x.classroomId != null);
 
@@ -201,6 +205,17 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           text="See more registers"
           onClick={onSeeMoreRegisters}
         ></Button>
+      )}
+      {!isAllRegistersCompleted && hasPermissionToEdit && (
+        <Button
+          className="mt-auto"
+          type="filled"
+          color="quatenary"
+          textColor="white"
+          text="Take attendance"
+          icon="PencilAltIcon"
+          onClick={onTakeAttendance}
+        />
       )}
     </div>
   );

@@ -41,6 +41,8 @@ import {
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { Classes } from '../classes/classes';
 import { NavigationNames } from '@/pages/navigation';
+import { WalkthroughModal } from '@/components/walkthrough/modal';
+import { InitialAttendanceTutorialModal } from '../attendance/components/attendance-tutorial/initial-tutorial-modal/initial-tutorial-modal';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -59,7 +61,8 @@ export const ClassDashboard: React.FC = () => {
   );
   const [promptPhotoReportPermission, setPromptPhotoReportPermission] =
     useState<boolean>(false);
-  const [showAttendance, setShowAttendance] = useState(true);
+  const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
+    useState(false);
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
@@ -72,13 +75,13 @@ export const ClassDashboard: React.FC = () => {
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
-  const showAttendanceTutorial = useMemo(
+
+  const isToShowAttendanceTutorial = useMemo(
     () =>
       selectedTabIndex === TabsItems.ATTENDANCE &&
       (practitioner?.progress! < 3 || practitioner?.progress === undefined) &&
-      children?.length! > 0 &&
-      showAttendance,
-    [children?.length, practitioner?.progress, selectedTabIndex, showAttendance]
+      children?.length! > 0,
+    [children?.length, practitioner?.progress, selectedTabIndex]
   );
 
   const reportingPeriod = useMemo(
@@ -266,7 +269,6 @@ export const ClassDashboard: React.FC = () => {
   const completeTutorial = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
     setAttendanceTutorialComplete(true);
-    setSelectedTabIndex(0);
     setAttendanceTutorialActive(false);
     updatePractitionerProgress();
   };
@@ -311,56 +313,36 @@ export const ClassDashboard: React.FC = () => {
     });
   }, [dialog]);
 
-  const handleAttendanceTutorial = useCallback(() => {
-    if (practitionerIsOnLeave) return;
+  const handleAttendanceWalkthroughLanguage = useCallback(() => {
+    setShowAttendanceWalkthrough(false);
 
-    dialog({
+    return dialog({
+      blocking: true,
       position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          customIcon={
-            <img src={walkthroughImage} alt="profile" className="mb-2" />
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Want to learn how to track attendance on Funda App?`}
-          actionButtons={[
-            {
-              text: 'Yes, help me!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                setAttendanceTutorialActive(true);
-                submit();
-              },
-              leadingIcon: 'ChevronRightIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                setShowAttendance(false);
-                handleDeclineAttendanceTutorial();
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
+      color: 'bg-white',
+      render: (onClose) => (
+        <WalkthroughModal
+          onStart={() => {
+            setAttendanceTutorialActive(true);
+            onClose();
+          }}
         />
       ),
     });
-  }, [dialog, handleDeclineAttendanceTutorial, practitionerIsOnLeave]);
+  }, [dialog]);
 
   useEffect(() => {
-    if (showAttendanceTutorial && !attendanceTutorialComplete) {
-      handleAttendanceTutorial();
+    if (
+      isToShowAttendanceTutorial &&
+      !attendanceTutorialComplete &&
+      !practitionerIsOnLeave
+    ) {
+      setShowAttendanceWalkthrough(true);
     }
   }, [
     attendanceTutorialComplete,
-    handleAttendanceTutorial,
-    showAttendanceTutorial,
+    practitionerIsOnLeave,
+    isToShowAttendanceTutorial,
   ]);
 
   const updatePractitionerUsePhotoReportPermission = useCallback(
@@ -454,11 +436,12 @@ export const ClassDashboard: React.FC = () => {
       setSelectedTabIndex(state?.activeTabIndex || 0);
       history.replace({
         state: {
+          ...state,
           activeTabIndex: undefined,
         },
       });
     }
-  }, [history, selectedTabIndex, state?.activeTabIndex]);
+  }, [history, selectedTabIndex, state, state?.activeTabIndex]);
 
   return (
     <>
@@ -495,11 +478,24 @@ export const ClassDashboard: React.FC = () => {
       >
         <div className={styles.dialogContent}>
           <AttendanceTutorial
-            onComplete={completeTutorial}
             onClose={() => closeAttendanceTutorial()}
             updatePractitionerProgress={updatePractitionerProgress}
           />
         </div>
+      </Dialog>
+      <Dialog
+        visible={showAttendanceWalkthrough}
+        position={DialogPosition.Middle}
+        className="px-4"
+      >
+        <InitialAttendanceTutorialModal
+          onStart={handleAttendanceWalkthroughLanguage}
+          onClose={() => {
+            setShowAttendanceWalkthrough(false);
+            handleDeclineAttendanceTutorial();
+            completeTutorial();
+          }}
+        />
       </Dialog>
     </>
   );

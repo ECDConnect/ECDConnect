@@ -5,12 +5,14 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
+  Card,
   Checkbox,
   Divider,
   Typography,
 } from '@ecdlink/ui';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
@@ -38,11 +40,11 @@ export const PractitionerSetup = ({
   const history = useHistory();
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
-  const { control, register, watch } = useForm({
+  const { control, register, watch, setValue, getValues } = useForm({
     resolver: yupResolver(setupPractitioner),
     defaultValues: {
       practitionerToProgramme: undefined,
-      allowPermissions: undefined,
+      allowPermissions: undefined || false,
     },
   });
 
@@ -72,20 +74,36 @@ export const PractitionerSetup = ({
   return (
     <>
       <div className="wrapper-with-sticky-button mt-4">
-        <div className="grid gap-4">
-          <div>
-            <Typography
-              type="h2"
-              className="inline"
-              text="Your programme information"
-            />
+        <div className="flex flex-col gap-11">
+          <div className="flex flex-col gap-11">
+            <div>
+              <Card
+                className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+                borderRaduis="xl"
+                shadowSize="lg"
+              >
+                <div className="">
+                  <Cebisa />
+                </div>
+                <Typography
+                  color="textDark"
+                  text={`Connect with your principal`}
+                  type={'h3'}
+                  align="center"
+                />
+              </Card>
+            </div>
           </div>
+        </div>
+        <div>
           <div>
-            <Divider dividerType="dashed" className="-my-1" />
-            <div className="py-4">
+            <div>
               <Typography
                 type="body"
-                text={`${classroom?.principal.firstName} has added you to`}
+                text={`${
+                  classroom?.principal.firstName ||
+                  classroom?.principal.firstName
+                } has added you to`}
               />
               <Typography
                 type="body"
@@ -94,7 +112,7 @@ export const PractitionerSetup = ({
                 text={classroom?.name}
               />
             </div>
-            <Divider dividerType="dashed" className="-my-1" />
+            <Divider dividerType="dashed" className="py-4" />
           </div>
           <div className={'w-full'}>
             <label className={''}>
@@ -110,9 +128,11 @@ export const PractitionerSetup = ({
                     options={yesNoOptions}
                     onOptionSelected={onChange}
                     selectedOptions={value}
-                    color="secondary"
+                    color="quatenary"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
+                    notSelectedColor="quatenaryBg"
+                    textColor="quatenary"
                   />
                 )}
               ></Controller>
@@ -127,6 +147,7 @@ export const PractitionerSetup = ({
                   ? 'You need to accept the agreement below to continue'
                   : `${classroom?.principal.firstName} will be notified and you will be removed from ${classroom?.name}.`
               }
+              className="my-4"
             />
           )}
 
@@ -134,23 +155,32 @@ export const PractitionerSetup = ({
             <>
               <Typography
                 type="h4"
-                text="Permission to share information with programme principal/owner/administrator"
+                text="Permission to share information with principal"
               />
-              <div className="flex">
-                <Checkbox
-                  register={register}
-                  nameProp="allowPermissions"
-                  className="flex-1"
-                  description="I accept that my information will be shared with the programme principal"
-                />
-                <Typography
-                  underline
-                  color="secondary"
-                  className="flex-0 ml-2 flex cursor-pointer items-center font-medium"
-                  type="body"
-                  text="Learn more"
-                  onClick={() => setViewPermissionToShare(true)}
-                />
+              <div
+                className={`${false && 'border-errorDark border'} ${
+                  false ? 'border-quatenary bg-quatenaryBg border' : 'bg-uiBg'
+                } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+              >
+                <div className="flex">
+                  <Checkbox
+                    register={register}
+                    checked={allowPermissions}
+                    nameProp="allowPermissions"
+                    className="mr-4 flex-1"
+                    description="I accept that my information will be shared with the programme principal"
+                  />
+                  &nbsp;
+                  <Button
+                    color={'secondaryAccent2'}
+                    type={'filled'}
+                    text="Read"
+                    textColor="secondary"
+                    className={'rounded-xl'}
+                    size={'small'}
+                    onClick={() => setViewPermissionToShare(true)}
+                  />
+                </div>
               </div>
             </>
           )}
@@ -161,7 +191,7 @@ export const PractitionerSetup = ({
             size="normal"
             className="mb-4 w-full"
             type="filled"
-            color="primary"
+            color="quatenary"
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"

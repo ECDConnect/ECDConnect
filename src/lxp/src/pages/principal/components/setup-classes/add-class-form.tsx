@@ -90,15 +90,21 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p.firstName && p.surname) {
-          return { label: `${p.firstName} ${p.surname}`, value: p.userId };
+        if ((p.firstName && p.surname) || p?.idNumber) {
+          return {
+            label: `${p.firstName || p?.idNumber} ${p.surname}`,
+            value: p.userId,
+          };
         }
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
 
     _list.push({
-      label: currentPractitioner?.user?.fullName || '',
+      label:
+        currentPractitioner?.user?.fullName ||
+        currentPractitioner?.user?.userName ||
+        '',
       value: currentPractitioner?.userId,
     });
 
@@ -116,7 +122,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     return isValid && meetingDays && meetingDays?.length > 1;
   };
 
-  const saveClassData = () => {
+  const saveClassData = async () => {
     const data = getClassFormValues();
     const today = new Date().toISOString();
     if (data) {

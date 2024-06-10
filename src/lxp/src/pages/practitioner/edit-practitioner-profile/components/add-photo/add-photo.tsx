@@ -7,6 +7,7 @@ import {
   Typography,
   DialogPosition,
   renderIcon,
+  Card,
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -17,6 +18,7 @@ import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { AddPhotoProps } from './add-photo.types';
 import { cloneDeep } from 'lodash';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 
 export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
   const user = useSelector(userSelectors.getUser);
@@ -73,24 +75,25 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
 
   return (
     <>
-      <Typography
-        text={userProfilePicture?.file ? 'Looking good!' : 'Add a Photo'}
-        type="h1"
-        color="primary"
-        className={'mt-3'}
-      />
-
-      <Typography
-        text={
-          userProfilePicture?.file
-            ? 'Edit your photo by tapping the camera icon or tap save'
-            : 'Add a photo of yourself so your coach and club will recognise you.'
-        }
-        type="body"
-        color="textDark"
-        className="font-medium"
-      />
-
+      <div className="flex w-full flex-col gap-11">
+        <div className="mt-6 flex w-full px-4">
+          <Card
+            className="bg-uiBg mb-6 flex w-full flex-col items-center gap-3 p-6"
+            borderRaduis="xl"
+            shadowSize="lg"
+          >
+            <div className="">
+              <Cebisa />
+            </div>
+            <Typography
+              color="textDark"
+              text={`Last step - add your photo!`}
+              type={'h3'}
+              align="center"
+            />
+          </Card>
+        </div>
+      </div>
       <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? ''}
@@ -104,8 +107,8 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
 
       <Button
         className="w-full"
-        color="primary"
-        type="outlined"
+        color="quatenary"
+        type="filled"
         onClick={() => {
           onSubmit(userProfilePicture?.file ? '' : undefined);
         }}
@@ -113,13 +116,13 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
       >
         {renderIcon(
           userProfilePicture?.file ? 'SaveIcon' : 'ClockIcon',
-          styles.iconPrimary
+          'mr-2 text-white w-5'
         )}
         <Typography
           type="h6"
           className="ml-2"
           text={userProfilePicture?.file ? 'Save' : 'Skip'}
-          color="primary"
+          color="white"
         />
       </Button>
       <Dialog
