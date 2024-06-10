@@ -36,6 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Id = classroom.Id,
                 Name = classroom.Name,
                 ImageUrl = classroom.ClassroomImageUrl,
+                PreschoolCode = classroom.PreschoolCode,
                 NumberOfAssistants = classroom.NumberOfAssistants,
                 NumberOfOtherAssistants = classroom.NumberOfOtherAssistants,
                 NumberOfPractitioners = classroom.NumberPractitioners,

@@ -1,5 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities.Classroom;
-using System;
+﻿using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
@@ -8,6 +7,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string ImageUrl { get; set; }
+        public string PreschoolCode { get; set; }
 
         public int? NumberOfPractitioners { get; set; }
         public int? NumberOfAssistants { get; set; }
