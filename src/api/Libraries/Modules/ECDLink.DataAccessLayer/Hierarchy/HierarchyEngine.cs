@@ -10,6 +10,8 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +23,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
     {
         private readonly ICacheService<ITenantCache> _cacheService;
         private readonly IGenericRepositoryFactory _repoFactory;
+        private readonly ILogger<HierarchyEngine> _logger;
 
         private IEnumerable<HierarchyEntity> HierarchyCache
         {
@@ -37,10 +40,13 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             }
         }
 
-        public HierarchyEngine(ICacheService<ITenantCache> cacheService, IGenericRepositoryFactory repoFactory)
+        public HierarchyEngine(ICacheService<ITenantCache> cacheService, IGenericRepositoryFactory repoFactory, ILogger<HierarchyEngine> logger)
         {
             _cacheService = cacheService;
             _repoFactory = repoFactory;
+            _logger = logger;
+            _logger.LogInformation("HierarchyEngine constructed");
+
         }
 
         public UserHierarchyEntity AddHierarchyEntity<TChild>(Guid parentId, Guid childId)
@@ -349,13 +355,24 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
         public Guid? GetAdminUserId()
         {
-            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();            
-            var entity = userHierarchyRepo.GetAll()
-                               .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator") && x.TenantId.Equals(TenantExecutionContext.Tenant.Id))
-                               .OrderBy(x => x.Key)
-                               .FirstOrDefault();
+            var value = _cacheService.GetCacheItem<List<Guid?>>(CacheKeyConstants.UserHierarchyAdminUserIdCache);
+            if (value == null)
+            {
+                var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
+                value = userHierarchyRepo.GetAll()
+                                   .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator") && x.TenantId.Equals(TenantExecutionContext.Tenant.Id) && x.Key == 1)
+                                   .OrderBy(x => x.Key)
+                                   .Select(x => x.UserId)
+                                   .ToList();
+                _cacheService.SetCacheItem(CacheKeyConstants.UserHierarchyAdminUserIdCache, value,
+                    new MemoryCacheEntryOptions()
+                        .SetSize(1)
+                        .SetAbsoluteExpiration(TimeSpan.FromSeconds(15 * 60))
+                        );
 
-            return entity?.UserId;
+
+            }
+            return value.Count == 0 ? null : value[0];
         }
 
         public Guid? GetIntegrationUserId()
