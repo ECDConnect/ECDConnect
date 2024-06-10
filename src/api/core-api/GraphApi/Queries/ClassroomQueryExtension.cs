@@ -3,10 +3,13 @@ using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Id = classroom.Id,
                 Name = classroom.Name,
                 ImageUrl = classroom.ClassroomImageUrl,
+                PreschoolCode = classroom.PreschoolCode,
                 NumberOfAssistants = classroom.NumberOfAssistants,
                 NumberOfOtherAssistants = classroom.NumberOfOtherAssistants,
                 NumberOfPractitioners = classroom.NumberPractitioners,
@@ -74,6 +78,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }).ToList(),
                 ClassProgrammes = x.ClassProgrammes.Where(x => x.IsActive).ToList(),
             }).ToList();
+        }
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        public bool ValidatePreSchoolCode(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, 
+            string preSchoolCode)
+        {
+            if (preSchoolCode == "")
+            {
+                throw new ArgumentException("Pre-school code is empty");
+            }
+
+            var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
+            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroom = classRepo.GetAll().Where(x => x.PreschoolCode == preSchoolCode).FirstOrDefault();
+            if (classroom == null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
