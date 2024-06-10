@@ -7,12 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Configuration\**" />
     <Compile Remove="Entities\Classroom\ProgressTracking\**" />
     <Compile Remove="Entities\Programme\**" />
+    <Compile Remove="Migrations\**" />
+    <EmbeddedResource Remove="Configuration\**" />
     <EmbeddedResource Remove="Entities\Classroom\ProgressTracking\**" />
     <EmbeddedResource Remove="Entities\Programme\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <None Remove="Configuration\**" />
     <None Remove="Entities\Classroom\ProgressTracking\**" />
     <None Remove="Entities\Programme\**" />
+    <None Remove="Migrations\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,11 +39,6 @@
     <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
     <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
     <ProjectReference Include="..\ECDLink.Security\ECDLink.Security.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Configuration\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

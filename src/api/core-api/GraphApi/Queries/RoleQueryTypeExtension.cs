@@ -26,8 +26,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IEnumerable<ApplicationIdentityRole> GetRoles([Service] ApplicationRoleManager roleManager)
         {
-            var tenantId = TenantExecutionContext.Tenant.Id;
-            var roles = roleManager.Roles.ToList().Where(x => x.TenantId == null || x.TenantId == tenantId).ToList();
+            //var tenantId = TenantExecutionContext.Tenant.Id;
+            var roles = roleManager.Roles.ToList();
             return roles;
         }
 

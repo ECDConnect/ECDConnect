@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
         {
             var roles = await userManager.GetRolesAsync(user);
 
-            return roleManager.Roles.Where(x => roles.Contains(x.Name)).ToList();
+            return roleManager.Roles.ToList();
         }
     }
 }
