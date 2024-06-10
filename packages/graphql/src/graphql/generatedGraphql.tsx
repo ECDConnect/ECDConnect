@@ -3303,6 +3303,7 @@ export type Coach = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isRegistered?: Maybe<Scalars['Boolean']>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   secondaryAreaOfOperation?: Maybe<Scalars['String']>;
   signingSignature?: Maybe<Scalars['String']>;
@@ -3326,6 +3327,7 @@ export type CoachFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<CoachFilterInput>>;
   practitionerVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
   secondaryAreaOfOperation?: InputMaybe<StringOperationFilterInput>;
@@ -3348,6 +3350,7 @@ export type CoachInput = {
   FranchisorId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  IsRegistered?: InputMaybe<Scalars['Boolean']>;
   PractitionerVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
   SecondaryAreaOfOperation?: InputMaybe<Scalars['String']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
@@ -3377,6 +3380,7 @@ export type CoachSortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isRegistered?: InputMaybe<SortEnumType>;
   secondaryAreaOfOperation?: InputMaybe<SortEnumType>;
   signingSignature?: InputMaybe<SortEnumType>;
   siteAddress?: InputMaybe<SiteAddressSortInput>;
@@ -11718,6 +11722,84 @@ export type PortalClinicMeetingModel = {
   totalSupportVisits: Scalars['Int'];
 };
 
+export type PortalCoachModel = {
+  __typename?: 'PortalCoachModel';
+  id: Scalars['UUID'];
+  insertedDate?: Maybe<Scalars['DateTime']>;
+  isRegistered: Scalars['Boolean'];
+  user?: Maybe<PortalCoachUserModel>;
+  userId?: Maybe<Scalars['UUID']>;
+};
+
+export type PortalCoachModelFilterInput = {
+  and?: InputMaybe<Array<PortalCoachModelFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  isRegistered?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<PortalCoachModelFilterInput>>;
+  user?: InputMaybe<PortalCoachUserModelFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+};
+
+export type PortalCoachModelSortInput = {
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isRegistered?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<PortalCoachUserModelSortInput>;
+  userId?: InputMaybe<SortEnumType>;
+};
+
+export type PortalCoachUserModel = {
+  __typename?: 'PortalCoachUserModel';
+  connectUsage?: Maybe<Scalars['String']>;
+  connectUsageColor?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  fullName?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  idNumber?: Maybe<Scalars['String']>;
+  insertedDate?: Maybe<Scalars['DateTime']>;
+  isActive: Scalars['Boolean'];
+  lastSeen: Scalars['DateTime'];
+  phoneNumber?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userName?: Maybe<Scalars['String']>;
+};
+
+export type PortalCoachUserModelFilterInput = {
+  and?: InputMaybe<Array<PortalCoachUserModelFilterInput>>;
+  connectUsage?: InputMaybe<StringOperationFilterInput>;
+  connectUsageColor?: InputMaybe<StringOperationFilterInput>;
+  email?: InputMaybe<StringOperationFilterInput>;
+  firstName?: InputMaybe<StringOperationFilterInput>;
+  fullName?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  idNumber?: InputMaybe<StringOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  lastSeen?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  or?: InputMaybe<Array<PortalCoachUserModelFilterInput>>;
+  phoneNumber?: InputMaybe<StringOperationFilterInput>;
+  surname?: InputMaybe<StringOperationFilterInput>;
+  userName?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type PortalCoachUserModelSortInput = {
+  connectUsage?: InputMaybe<SortEnumType>;
+  connectUsageColor?: InputMaybe<SortEnumType>;
+  email?: InputMaybe<SortEnumType>;
+  firstName?: InputMaybe<SortEnumType>;
+  fullName?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  idNumber?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  lastSeen?: InputMaybe<SortEnumType>;
+  phoneNumber?: InputMaybe<SortEnumType>;
+  surname?: InputMaybe<SortEnumType>;
+  userName?: InputMaybe<SortEnumType>;
+};
+
 export type PortalHealthCareWorkerModel = {
   __typename?: 'PortalHealthCareWorkerModel';
   connectUsage?: Maybe<Scalars['String']>;
@@ -13572,6 +13654,7 @@ export type Query = {
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
   allPortalClinics?: Maybe<Array<Maybe<Clinic>>>;
+  allPortalCoaches?: Maybe<Array<Maybe<PortalCoachModel>>>;
   allPortalPractitioners?: Maybe<Array<Maybe<PortalPractitionerModel>>>;
   allPractitionerInvites?: Maybe<Array<Scalars['DateTime']>>;
   allPractitioners?: Maybe<Array<Maybe<PractitionerModel>>>;
@@ -15610,6 +15693,14 @@ export type QueryAllNotificationsArgs = {
   order?: InputMaybe<Array<NotificationSortInput>>;
   protocol?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllPortalCoachesArgs = {
+  connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  order?: InputMaybe<Array<PortalCoachModelSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
+  where?: InputMaybe<PortalCoachModelFilterInput>;
 };
 
 export type QueryAllPortalPractitionersArgs = {

@@ -44,6 +44,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual ICollection<Visit> PractitionerVisits { get; set; }
         public string AboutInfo { get; set; }
         public Boolean? ClickedClubTab { get; set; } = false;
+        public Boolean? IsRegistered { get; set; } = false;
     }
 
     public interface CoachJoin<TKey>

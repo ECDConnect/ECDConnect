@@ -16,15 +16,18 @@ import {
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 import { Alert, Button } from '@ecdlink/ui';
+import { useTenant } from '../../hooks/useTenant';
+import { pluralize } from '../pages.utils';
 
 const acceptedFormats = ['xls', 'xlsx'];
 const allowedFileSize = 13631488;
 
 export default function UploadBulkUser(props: any) {
+  const tenant = useTenant();
   const { setValue, handleSubmit } = useForm();
   const history = useHistory();
   const { setNotification } = useNotifications();
-  // props.location.state?.component === 'team-leads'
+  // props.location.state?.component === 'practitioners'
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
   const [docErrors, setDocErrors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +51,7 @@ export default function UploadBulkUser(props: any) {
     const model = { ...values };
 
     if (model.templateFile?.file) {
-      if (props.location.state?.component === 'team-leads') {
+      if (props.location.state?.component === 'practitioners') {
         setIsLoading(true);
         await importTeamLeads({
           variables: {
@@ -116,7 +119,7 @@ export default function UploadBulkUser(props: any) {
       teamLeadsTemplateData &&
       teamLeadsTemplateData.teamLeadTemplateGenerator &&
       !templateDownloaded &&
-      props.location.state?.component === 'team-leads'
+      props.location.state?.component === 'practitioners'
     ) {
       const b64Data =
         teamLeadsTemplateData.teamLeadTemplateGenerator.base64File;
@@ -175,7 +178,7 @@ export default function UploadBulkUser(props: any) {
 
   const downloadContentTypeTemplate = async () => {
     setTemplateDownloaded(false);
-    if (props.location.state?.component === 'team-leads') {
+    if (props.location.state?.component === 'practitioners') {
       await getTeamLeadsExcelTemplateGenerator();
     } else {
       await getExcelTemplateGenerator();
@@ -201,9 +204,9 @@ export default function UploadBulkUser(props: any) {
         <div className="flex flex-col pt-10">
           <h1 className="text-xl">
             Step 1: Download the{' '}
-            {props.location.state?.component === 'team-leads'
-              ? 'Team Leads'
-              : 'CHWs'}{' '}
+            {props.location.state?.component === 'practitioners'
+              ? 'Practitioners'
+              : pluralize(tenant.modules.coachRoleName)}{' '}
             template
           </h1>
 
