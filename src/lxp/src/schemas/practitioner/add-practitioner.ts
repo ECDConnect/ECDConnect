@@ -37,5 +37,4 @@ export const addPractitionerSchema = Yup.object().shape({
       .required('Passport number is required')
       .matches(SA_PASSPORT_REGEX, 'Please enter a valid Passport number'),
   }),
-  surname: Yup.string().required(),
 });

@@ -93,9 +93,11 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
+        if ((p?.user?.firstName && p?.user?.surname) || p?.user?.userName) {
           return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            label: `${p?.user?.firstName || p?.user?.userName} ${
+              p?.user?.surname
+            }`,
             value: p.userId,
           };
         }

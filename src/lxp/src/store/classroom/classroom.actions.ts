@@ -141,16 +141,16 @@ export const upsertClassroom = createAsyncThunk<
         const input: ClassroomInput = {
           Id: classroom.id,
           UserId: classroom.principal.userId,
-          SiteAddressId: classroom.siteAddress?.id,
+          // SiteAddressId: classroom.siteAddress?.id,
           Name: classroom.name,
           ClassroomImageUrl: classroom.imageUrl,
           NumberPractitioners: classroom.numberOfPractitioners,
           NumberOfAssistants: classroom.numberOfPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
           IsActive: true, // All classrooms/groups on FE will be active
-          SiteAddress: classroom?.siteAddress
-            ? mapSiteAddress(classroom.siteAddress)
-            : null,
+          // SiteAddress: classroom?.siteAddress
+          //   ? mapSiteAddress(classroom.siteAddress)
+          //   : null,
           PreschoolFeeAmount: classroom.preschoolFeeAmount || 0,
           PreschoolFeeAmountLastUpdateDate:
             classroom.preschoolFeeAmountLastUpdateDate,

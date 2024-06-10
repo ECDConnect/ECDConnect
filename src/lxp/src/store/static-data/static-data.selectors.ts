@@ -6,6 +6,7 @@ import {
   HolidayDto,
   LanguageDto,
   NoteTypeDto,
+  PermissionDto,
   ProgrammeAttendanceReasonDto,
   ProgrammeTypeDto,
   ProvinceDto,
@@ -95,3 +96,6 @@ export const getWorkflowStatuses = (state: RootState): WorkflowStatusDto[] =>
 
 export const getNoteTypes = (state: RootState): NoteTypeDto[] =>
   state.staticData.noteTypes || [];
+
+export const getPermissions = (state: RootState): PermissionDto[] =>
+  state.staticData.permissions || [];

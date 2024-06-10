@@ -63,7 +63,6 @@ export class IncompletePractitionerInformationNotificationValidator
 
       const showNotificationForPractitionerFlow =
         (hasPractitionerRole || addedByPrincipal) &&
-        notRegistered &&
         practitionerState?.practitioner?.progress === 0;
       const showNotificationForPrincipalFlow =
         (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
@@ -145,16 +144,15 @@ export class IncompletePractitionerInformationNotificationValidator
         return [
           {
             reference: `practitioner-profile`,
-            title: 'Tell us more about you!',
-            message:
-              'Share more information about your programme to make Funda App useful for you.',
+            title: 'Join or add a preschool!',
+            message: 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
             priority: NotificationPriority.lower,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',
             color: 'primary',
-            actionText: 'Complete your profile',
+            actionText: 'Get started',
             viewType: 'Hub',
             routeConfig: {
               route: ROUTES.PRACTITIONER.PROFILE.EDIT,

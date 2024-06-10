@@ -15,6 +15,7 @@ import {
   WorkflowStatusDto,
   NoteTypeDto,
   ReasonForPractitionerLeavingProgrammeDto,
+  PermissionDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DocumentTypeService } from '@services/DocumentTypeService';
@@ -34,6 +35,7 @@ import { RelationsService } from '@services/RelationsService';
 import { WorkflowStatusService } from '@services/WorkflowStatusService';
 import { RootState, ThunkApiType } from '../types';
 import { ReasonForPractitionerLeavingProgrammeService } from '@/services/ReasonForPractitionerLeavingProgrammeService';
+import PermissionsService from '@/services/PermissionsService/PermissionsService';
 
 export const getRelations = createAsyncThunk<
   RelationDto[],
@@ -654,3 +656,36 @@ export const getNoteTypes = createAsyncThunk<
     }
   }
 );
+
+export const getPermissions = createAsyncThunk<
+  PermissionDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>('getPermissions', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    staticData: { permissions: permissionsCache },
+  } = getState();
+
+  if (!permissionsCache) {
+    try {
+      let permissions: PermissionDto[] | undefined;
+      if (userAuth?.auth_token) {
+        permissions = await new PermissionsService(
+          userAuth?.auth_token
+        ).getPermissions();
+      }
+
+      if (!permissions) {
+        return rejectWithValue('Error permissions');
+      }
+
+      return permissions;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  } else {
+    return permissionsCache;
+  }
+});

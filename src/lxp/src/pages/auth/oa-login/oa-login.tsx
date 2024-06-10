@@ -113,8 +113,8 @@ export const OaLogin: React.FC = () => {
         await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
       }
 
-      await resetAppStore();
-      await resetAuth();
+      // await resetAppStore();
+      // await resetAuth();
     }
   };
 
@@ -127,11 +127,10 @@ export const OaLogin: React.FC = () => {
       })
       .catch((error) => {
         setIsLoading(false);
-        setOpenVerifyPhoneNumber(true);
         return;
       });
 
-    if (checkUserAuthCode) {
+    if (checkUserAuthCode === true) {
       setOpenVerifyPhoneNumber(true);
       return;
     }

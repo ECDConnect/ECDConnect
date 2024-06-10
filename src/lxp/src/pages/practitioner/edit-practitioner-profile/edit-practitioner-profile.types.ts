@@ -1,8 +1,9 @@
 export enum EditPractitionerSteps {
   WELCOME = 0,
-  SETUP_PRACTITIONER = 1,
-  ADD_SIGNATURE = 2,
-  ADD_PHOTO = 3,
+  SET_PRACTITIONER_DETAILS = 1,
+  SETUP_PRACTITIONER = 2,
+  ADD_SIGNATURE = 3,
+  ADD_PHOTO = 4,
 }
 
 export enum SetupPractitionersPage {
