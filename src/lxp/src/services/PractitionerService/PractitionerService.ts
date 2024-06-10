@@ -478,6 +478,7 @@ class PractitionerService {
               fullName
               firstName
               surname
+              userName
               id
               email
               phoneNumber

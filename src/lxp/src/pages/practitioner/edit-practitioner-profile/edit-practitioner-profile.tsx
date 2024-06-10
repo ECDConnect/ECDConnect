@@ -183,7 +183,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           actionButtons={[
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Exit',
               onClick: () => {
                 onSubmit();
@@ -194,12 +194,12 @@ export const EditPractitionerProfile: React.FC = () => {
               leadingIcon: 'LoginIcon',
             },
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Continue editing',
               onClick: () => {
                 onCancel();
               },
-              textColour: 'primary',
+              textColour: 'quatenary',
               type: 'outlined',
               leadingIcon: 'PencilIcon',
             },

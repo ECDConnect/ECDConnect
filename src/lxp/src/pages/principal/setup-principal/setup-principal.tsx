@@ -42,6 +42,7 @@ import { useNotificationService } from '@/hooks/useNotificationService';
 import { notificationActions } from '@/store/notifications';
 import { PractitionerSignature } from '../components/practitioner-signature/practitioner-signature';
 import { SelectPractitionerRole } from '../components/select-practitioner-role/select-practitioner-role';
+import { PreschoolCodeCheck } from '../components/preschool-code-check/preschool-code-check';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -279,7 +280,9 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
-        return (
+        return isNotPrincipal ? (
+          <PreschoolCodeCheck onNext={setPage} />
+        ) : (
           <AddProgrammeForm
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}

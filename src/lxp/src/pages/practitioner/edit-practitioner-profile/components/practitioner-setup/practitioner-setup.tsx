@@ -20,7 +20,6 @@ import { setupPractitioner } from '@/schemas/practitioner/add-practitioner';
 import { userSelectors } from '@/store/user';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
 import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
