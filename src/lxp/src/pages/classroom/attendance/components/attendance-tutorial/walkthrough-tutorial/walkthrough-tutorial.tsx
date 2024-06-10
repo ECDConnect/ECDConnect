@@ -17,12 +17,18 @@ import { AttendanceTutorialProps, tabItems } from './walktrough-tutorial.types';
 import { useAppContext } from '@/walkthrougContext';
 import { useSetState } from 'react-use';
 import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const WalkthroughTutorial = ({
   onComplete,
   onClose,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
+
+  const history = useHistory();
+
   const tutorialCompleteClicks = 2;
   const tutorialResetClicks = 3;
   const [tutorialProgressClicks, setTutorialProgressClicks] =
@@ -84,7 +90,7 @@ export const WalkthroughTutorial = ({
 
   const {
     setState,
-    state: { tourActive },
+    state: { tourActive, stepIndex },
   } = useAppContext();
 
   useSetState(() => {
@@ -118,7 +124,7 @@ export const WalkthroughTutorial = ({
           <AttendanceListItem
             className={'bg-successBg mb-1'}
             item={attendanceItem}
-            walkthrough={true}
+            // walkthrough={true}
           />
 
           <div id="attendance-list-alone">
@@ -131,7 +137,12 @@ export const WalkthroughTutorial = ({
               item={attendanceItem2}
               onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) => {
                 updateItemAttendance(currentAttendanceItem);
-                setState({ enableButton: true });
+                setState({ enableButton: true, stepIndex: stepIndex + 1 });
+                if (stepIndex === 3) {
+                  history.push(ROUTES.CLASSROOM.ROOT, {
+                    activeTabIndex: TabsItems.ATTENDANCE,
+                  });
+                }
               }}
               walkthrough={true}
             />

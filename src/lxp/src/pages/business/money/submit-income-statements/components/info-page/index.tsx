@@ -4,6 +4,7 @@ import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformation } from '@ecdlink/graphql';
 import { MoreInformationPage, MoreInformationPageProps } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 interface InfoPageProps {
@@ -11,6 +12,8 @@ interface InfoPageProps {
   section: string;
   children?: React.ReactNode;
   childrenPosition?: MoreInformationPageProps['childrenPosition'];
+  closeText?: MoreInformationPageProps['closeText'];
+  closeIcon?: MoreInformationPageProps['closeIcon'];
   onClose: () => void;
 }
 
@@ -18,6 +21,8 @@ export const InfoPage = ({
   title,
   section,
   children,
+  closeIcon,
+  closeText,
   onClose,
   childrenPosition,
 }: InfoPageProps) => {
@@ -28,6 +33,8 @@ export const InfoPage = ({
 
   const userAuth = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
+
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     setIsLoading(true);
@@ -40,6 +47,15 @@ export const InfoPage = ({
       .catch(() => setIsLoading(false));
   }, [section, selectedLanguage, userAuth]);
 
+  useEffect(() => {
+    if (i18n.language !== selectedLanguage) {
+      i18n.changeLanguage(selectedLanguage);
+    }
+
+    // trigger only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <MoreInformationPage
       isClosable={false}
@@ -50,8 +66,13 @@ export const InfoPage = ({
       }))}
       moreInformation={!!data ? data[0] : {}}
       title={title}
+      closeText={closeText}
+      closeIcon={closeIcon}
       onClose={onClose}
-      setSelectedLanguage={setSelectedLanguage}
+      setSelectedLanguage={(language) => {
+        i18n.changeLanguage(language);
+        setSelectedLanguage(language);
+      }}
       childrenPosition={childrenPosition}
     >
       {children}
