@@ -5,6 +5,7 @@ using ECDLink.Tenancy.Services;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
+using System.Security.Policy;
 using System.Threading.Tasks;
 
 namespace ECDLink.Tenancy.Middleware
@@ -49,46 +50,20 @@ namespace ECDLink.Tenancy.Middleware
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
                                 .FirstOrDefault();
-            // Check url making request
-            var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (context.Request.Host.HasValue ? context.Request.Host.Value : String.Empty);
-
-            if (!string.IsNullOrWhiteSpace(refererUrl))
+            if (claim != null && claim.Value.Length > 0)
             {
-                var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
-                if (urlTenant != null && urlTenant != default(TenantInternalModel))
-                {
-                    tenant = urlTenant;
-                    path = "URL:" + refererUrl;
-                }
-            }
-            else
-            {
-                // If no url making the request, check the server the request was made to            
-                var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
-                if (host != default(TenantInternalModel))
-                {
-                    tenant = host;
-                    path = "Host:" + context.Request.Host.Value;
-                }
+                tenant = tenancyService.GetTenantByKey(claim.Value);
             }
 
-            // If there is a jwt, check it matches with the url resolved.
-            if (!string.IsNullOrEmpty(claim?.Value) && claim?.Value != "00000000-0000-0000-0000-000000000000" && tenant != null)
+            if (tenant == null)
             {
-                if (tenant.Id.ToString() == claim.Value)
-                {
-                    path = "JWT:" + claim?.Value;
-                }
-                else
-                {
-                    tenant = null;
-                }
-            }
+                // Check url making request
+                var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (context.Request.Host.HasValue ? context.Request.Host.Value : String.Empty);
 
-            if (tenant != null)
-            {
-                tenant.Path = path;
-                tenant.Host = context.Request.Host.Value;
+                if (!string.IsNullOrWhiteSpace(refererUrl))
+                {
+                    tenant = tenancyService.GetTenantByUrl(refererUrl);
+                }
             }
 
             return (tenant != null ? tenant : new TenantInternalModel());

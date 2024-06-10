@@ -33,7 +33,6 @@ import {
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { AttendanceComponentType } from './attendance.types';
-import AttendanceList from './components/attendance-list/attendance-list';
 import { AttendanceReport } from './components/attendance-report/attendance-report';
 import { AttendanceSummary } from './components/attendance-summary/attendance-summary';
 import { isWorkingDay } from '@/utils/common/date.utils';
@@ -41,12 +40,13 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 import { coachSelectors } from '@/store/coach';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useWindowSize } from '@reach/window-size';
+import { ClassDashboardRouteState } from '../class-dashboard/class-dashboard.types';
 
 const headerHeight = 121;
 
@@ -54,6 +54,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const { height } = useWindowSize();
   const dialog = useDialog();
   const coach = useSelector(coachSelectors.getCoach);
+  const location = useLocation<ClassDashboardRouteState>();
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
@@ -71,15 +72,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
   const children = useSelector(childrenSelectors.getChildren);
-  const allClassProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
-  );
 
-  const classProgrammes = allClassProgrammes.filter((el) => {
-    return classroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
-    });
-  });
+  const classProgrammes = classroomGroups
+    ?.flatMap((x) => x?.classProgrammes)
+    ?.filter((x) => x?.isActive);
 
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);
@@ -116,6 +112,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
     practitioner!
   );
+
+  // TODO: Implement permission check (W3)
+  const hasPermissionToEdit = true;
 
   const handleComebackDay = useCallback((date: Date) => {
     if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
@@ -189,6 +188,12 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   }, [practitionerIsOnLeave]);
 
   useEffect(() => {
+    if (location.state?.fromChildAttendanceReport && !seeRegister) {
+      setSeeRegister(true);
+    }
+  }, [seeRegister, history, location]);
+
+  useEffect(() => {
     if (!classroomGroups?.length) return;
 
     if (attendance === undefined) return;
@@ -234,10 +239,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       }
     }
 
-    const currentClassProgrammes = classProgrammes.filter(
-      (classProgramme) =>
-        classProgramme.classroomGroupId === currentDayClassroomGroup?.id
-    );
+    const currentClassProgrammes =
+      currentDayClassroomGroup?.classProgrammes.filter((x) => x.isActive) || [];
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
@@ -258,12 +261,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return setAttendanceComponentType('report');
     }
 
-    if (missedDays.length === 0) {
+    if (missedDays.length === 0 || !hasPermissionToEdit) {
       return setAttendanceComponentType('report');
     } else {
       return setAttendanceComponentType('summary');
     }
   }, [
+    hasPermissionToEdit,
     missedDays,
     allChildrenInsertedBeforeToday,
     attendance,
@@ -276,7 +280,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     publicHolidays,
     seeRegister,
     previousClassroomGroupId,
-    allClassProgrammes,
   ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
@@ -333,6 +336,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         return (
           <AttendanceSummary
             openReports={() => setAttendanceComponentType('report')}
+            openCompletedRegisters={() => setSeeRegister(true)}
             currentUserId={userData?.id || ''}
           />
         );
@@ -362,25 +366,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   }
 
   return (
-    <div
-      className={'flex flex-col p-4'}
-      style={{ height: height - headerHeight }}
-    >
+    <div className={'flex flex-col'} style={{ height: height - headerHeight }}>
       <AttendanceWrapper />
       {attendanceComponentType && getComponentToRender(attendanceComponentType)}
-      {attendanceComponentType === 'summary' && (
-        <Button
-          type="filled"
-          color="quatenary"
-          className={'mt-0'}
-          onClick={() => {
-            setSeeRegister(true);
-          }}
-          icon="EyeIcon"
-          text="See completed registers"
-          textColor="white"
-        />
-      )}
       <Dialog
         position={DialogPosition.Full}
         visible={seeRegister}
@@ -391,8 +379,16 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         <BannerWrapper
           title="Attendance registers"
           size="small"
-          onBack={() => setSeeRegister(false)}
-          className="p-4"
+          onBack={() => {
+            setSeeRegister(false);
+            history.replace({
+              ...location,
+              state: {
+                ...location.state,
+                fromChildAttendanceReport: false,
+              },
+            });
+          }}
         >
           <AttendanceReport
             isAllRegistersCompleted={isAllRegistersCompleted}

@@ -140,6 +140,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
             [Service] IDocumentManagementService documentManagementService,
+            [Service] ApplicationUserManager userManager,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildSiteAddressTokenModel siteAddress,
@@ -171,13 +172,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 // Fetch the child
                 var childEntity = childRepo.GetById(tokenModel.ChildId);
 
-                // Update
-                childEntity.User.GenderId = child.GenderId;
-                childEntity.User.DateOfBirth = child.DateOfBirth;
-                childEntity.User.IsSouthAfricanCitizen = child.IsSouthAfricanCitizen;
-                childEntity.User.RaceId = child.RaceId;
-                childEntity.User.VerifiedByHomeAffairs = child.VerifiedByHomeAffairs;
-
+                //// Update
                 childEntity.Allergies = child.Allergies;
                 childEntity.Disabilities = child.Disabilities;
                 childEntity.LanguageId = child.LanguageId;
@@ -215,6 +210,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 };
 
                 childRepo.Update(childEntity);
+
+
+                appUser.GenderId = child.GenderId;
+                appUser.DateOfBirth = child.DateOfBirth;
+                appUser.IsSouthAfricanCitizen = child.IsSouthAfricanCitizen;
+                appUser.RaceId = child.RaceId;
+                appUser.VerifiedByHomeAffairs = child.VerifiedByHomeAffairs;
+                await userManager.UpdateAsync(appUser);
 
                 if (registration != null)
                 {

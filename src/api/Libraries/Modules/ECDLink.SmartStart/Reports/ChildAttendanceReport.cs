@@ -36,23 +36,15 @@ namespace ECDLink.SmartStart.Reports
             return _attendanceService.GetMonthlyReport(monthlyAttendance);
         }
 
-        public List<ClassroomGroupChildAttendanceReportModel> GetClassroomAttendance(Guid classroomId, string userId, DateTime startMonth, DateTime endMonth)
+        public List<ClassroomGroupChildAttendanceReportModel> GetClassroomAttendance(string userId, DateTime startMonth, DateTime endMonth)
         {
             var classReports = new List<ClassroomGroupChildAttendanceReportModel>();
 
-            //get classroom
-            var classroom = _attendanceService.GetUserClassroom(userId, classroomId);
-
-            if (!classroom.ClassroomGroups.Any())
-            {
-                return null;
-            }
-
             //retrieve only groups the user is allowed to see
-            var groups = _attendanceService.GetUserClassroomGroups(userId);
+            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
             //var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
-            foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
+            foreach (var classroomGroup in classroomGroups.Where(x => classroomGroups.Select(y => y.UserId).Contains(x.UserId)))
             {
                 var learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
                 //get all children the user is allowed to see and run against hierarchy
@@ -185,11 +177,11 @@ namespace ECDLink.SmartStart.Reports
             return classReports;
         }
 
-        public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView(Guid classroomId, string userId, DateTime startMonth, DateTime endMonth)
+        public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView(string userId, DateTime startMonth, DateTime endMonth)
         {
             var overviewReport = new ClassroomGroupChildAttendanceReportOverviewModel();
             endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
-            overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classroomId, userId, startMonth, endMonth);
+            overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(userId, startMonth, endMonth);
 
             var totalAttendance = new SortedDictionary<int, int>();
             int totalExpectedAttendance = 0;

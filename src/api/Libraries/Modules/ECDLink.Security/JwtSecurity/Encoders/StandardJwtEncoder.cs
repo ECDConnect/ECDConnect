@@ -27,7 +27,7 @@ namespace ECDLink.Security.JwtSecurity.Encoders
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Sub, userId));
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, await Options.JtiGenerator()));
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Iat, Options.IssuedAt.ToEpochTime().ToString(), ClaimValueTypes.Integer64));
-            fullClaims.Add(new Claim(TenancyConstants.Jwt.TenantJwtClaim, TenantExecutionContext.Tenant.Id.ToString(), ClaimValueTypes.String));
+            fullClaims.Add(new Claim(TenancyConstants.Jwt.TenantJwtClaim, TenantExecutionContext.Tenant.GetClaimString(), ClaimValueTypes.String));
             
             // Create the JWT security token and encode it.
             var jwt = new JwtSecurityToken(

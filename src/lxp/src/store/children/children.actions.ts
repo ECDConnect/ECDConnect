@@ -16,8 +16,9 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-registration/caregiver-child-registration.types';
 import { ChildService } from '@services/ChildService';
 import { RootState, ThunkApiType } from '../types';
-import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
+import { OverrideCache } from '@/models/sync/override-cache';
 import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
+import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 
 export const ChildrenActions = {
   GET_CHILDREN: 'getChildren',
@@ -31,8 +32,8 @@ export const ChildrenActions = {
 };
 
 export const getChildren = createAsyncThunk<
-  { children: ChildDto[]; retrievedFromCache: boolean },
-  {} & RetrieveFromCache,
+  { children: ChildDto[] } & RetrieveFromCache,
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
   ChildrenActions.GET_CHILDREN,

@@ -75,6 +75,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     StoppedAttendance = y.StoppedAttendance,
                     IsActive = y.IsActive,
                 }).ToList(),
+                ClassProgrammes = x.ClassProgrammes.Where(x => x.IsActive).ToList(),
             }).ToList();
         }
 

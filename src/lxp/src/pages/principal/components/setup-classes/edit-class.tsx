@@ -105,8 +105,8 @@ export const EditClass = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meetEveryday, setValue, trigger]);
 
-  const classProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammesByClassroomGroupId(classToEdit.id)
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(classToEdit.id)
   );
 
   const isFormValid = () => {
@@ -115,13 +115,41 @@ export const EditClass = ({
   };
 
   const saveEditedClassroom = () => {
+    // Get updated classroom programmes
+    const updatedClassroomProgrammes = classroomGroup!.classProgrammes.map(
+      (programme) => {
+        const removed = !(meetingDays || []).includes(programme.meetingDay);
+        return {
+          ...programme,
+          isActive: !removed,
+          synced: !removed,
+        };
+      }
+    );
+
+    // Add new
+    (meetingDays as number[]).forEach((i) => {
+      if (!classToEdit.meetingDays.includes(i)) {
+        updatedClassroomProgrammes.push({
+          id: newGuid(),
+          classroomGroupId: classToEdit.id,
+          isFullDay: isFullDay || false,
+          meetingDay: i,
+          isActive: true,
+          programmeStartDate: new Date().toUTCString(),
+          synced: false,
+        });
+      }
+    });
+
     appDispatch(
       classroomsActions.updateClassroomGroup({
         id: classToEdit.id,
         name: name || '',
         classroomId: editClassroomId,
         userId: practitionerId!,
-        learners: [], // TODO - check this
+        learners: [], // Todo might need to check on this
+        classProgrammes: updatedClassroomProgrammes,
       })
     );
 
@@ -133,65 +161,12 @@ export const EditClass = ({
           id: classToEdit.id,
           name: name || '',
           userId: practitionerId!,
-          learners: [], // TODO - check this
+          learners: [],
         },
       })
     );
 
-    const progToEdit = classProgrammes.filter((c) =>
-      meetingDays?.includes(c.meetingDay)
-    );
-
-    const progToDelete = classProgrammes.filter(
-      (c) => !meetingDays?.includes(c.meetingDay)
-    );
-
-    const progToAdd: number[] = [];
-    (meetingDays as number[]).forEach((i) => {
-      if (!classToEdit.meetingDays.includes(i)) {
-        progToAdd.push(i);
-      }
-    });
-
-    for (const meetingDay of meetingDays as number[]) {
-      const _toUpdate = progToEdit.find((c) => c.meetingDay === meetingDay);
-
-      if (_toUpdate) {
-        // edit
-        const classProgrammeInputModel: ClassProgrammeDto = {
-          id: _toUpdate.id,
-          classroomGroupId: _toUpdate.classroomGroupId,
-          meetingDay: meetingDay,
-          isFullDay: Boolean(isFullDay),
-          programmeStartDate: _toUpdate.programmeStartDate,
-          isActive: true,
-        };
-
-        appDispatch(
-          classroomsActions.updateClassroomProgramme(classProgrammeInputModel)
-        );
-      }
-    }
-
-    for (const prog of progToDelete) {
-      appDispatch(classroomsActions.deleteClassroomProgramme(prog));
-    }
-
-    const today = new Date().toISOString();
-    for (const progAdd of progToAdd) {
-      const classroomProgrammeId = newGuid();
-      const newClassroomProgramme: ClassProgrammeDto = {
-        id: classroomProgrammeId,
-        classroomGroupId: classToEdit.id || '',
-        programmeStartDate: today,
-        meetingDay: progAdd,
-        isFullDay: Boolean(isFullDay),
-        isActive: true,
-      };
-      appDispatch(
-        classroomsActions.createClassroomProgramme(newClassroomProgramme)
-      );
-    }
+    appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
 
     onSubmit();
   };
@@ -204,14 +179,6 @@ export const EditClass = ({
         classroomId: editClassroomId,
       })
     );
-
-    classProgrammes.forEach((prog) => {
-      appDispatch(
-        classroomsActions.deleteClassroomProgramme({
-          ...prog,
-        })
-      );
-    });
 
     onSubmit();
   };

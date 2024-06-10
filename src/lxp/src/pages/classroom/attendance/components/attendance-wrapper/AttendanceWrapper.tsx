@@ -147,7 +147,7 @@ export default function AttendanceWrapper() {
         await updatePractitionerProgress();
       }
       history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: TabsItems.CLASSES,
+        activeTabIndex: TabsItems.ATTENDANCE,
       });
     }
   };

@@ -61,6 +61,14 @@ class ClassroomGroupService {
               stoppedAttendance
               isActive
             }
+            classProgrammes {
+              id
+              programmeStartDate
+              meetingDay
+              isFullDay
+              classroomGroupId
+              isActive
+            }
           }
         }
           `,

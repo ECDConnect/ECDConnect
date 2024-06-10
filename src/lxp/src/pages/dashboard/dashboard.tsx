@@ -839,22 +839,26 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClassroom = () => {
-    if (
-      ((classroom && classroom.id) ||
-        (classroomGroups && classroomGroups.length > 0)) &&
-      isRegistered &&
-      isProgress &&
-      isProgress > 0 &&
-      hasConsent &&
-      !missingProgramme &&
-      isWhiteLabel
-    ) {
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: TabsItems.CLASSES,
-      });
-    } else {
-      showCompleteProfileBlockingDialog();
-    }
+    // TODO: revert this change
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItems.CLASSES,
+    });
+    // if (
+    //   ((classroom && classroom.id) ||
+    //     (classroomGroups && classroomGroups.length > 0)) &&
+    //   isRegistered &&
+    //   isProgress &&
+    //   isProgress > 0 &&
+    //   hasConsent &&
+    //   !missingProgramme &&
+    //   isWhiteLabel
+    // ) {
+    //   history.push(ROUTES.CLASSROOM.ROOT, {
+    //     activeTabIndex: TabsItems.CLASSES,
+    //   });
+    // } else {
+    //   showCompleteProfileBlockingDialog();
+    // }
   };
 
   const goToCalendar = () => {

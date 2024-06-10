@@ -28,52 +28,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           List<TrackAttendanceModel> attendance
           )
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var tenantId = TenantExecutionContext.Tenant.Id;
             var dbEntities = new List<Attendance>();
 
-            if (attendance != null)
+            if (attendance == null)
             {
-                foreach (var attendanceElement in attendance)
+                return false;
+            }
+
+            foreach (var attendanceElement in attendance)
+            {
+                // Add Parent Record
+                dbEntities.Add(new Attendance
                 {
-                    // Add Parent Record
+                    ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
+                    ParentRecordId = attendanceElement.ProgrammeOwnerId,
+                    UserId = Guid.Parse(attendanceElement.ProgrammeOwnerId),
+                    WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
+                    MonthOfYear = attendanceElement.AttendanceDate.Month,
+                    Year = attendanceElement.AttendanceDate.Year,
+                    AttendanceDate = attendanceElement.AttendanceDate.Date,
+                    Attended = true,
+                    TenantId = tenantId
+                });
+
+                foreach (var attendee in attendanceElement.Attendees)
+                {
                     dbEntities.Add(new Attendance
                     {
                         ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
                         ParentRecordId = attendanceElement.ProgrammeOwnerId,
-                        UserId = Guid.Parse(attendanceElement.ProgrammeOwnerId),
+                        UserId = Guid.Parse(attendee.UserId),
                         WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
                         MonthOfYear = attendanceElement.AttendanceDate.Month,
                         Year = attendanceElement.AttendanceDate.Year,
-                        AttendanceDate = attendanceElement.AttendanceDate,
-                        Attended = true,
+                        AttendanceDate = attendanceElement.AttendanceDate.Date,
+                        Attended = attendee.Attended,
                         TenantId = tenantId
                     });
-
-                    foreach (var attendee in attendanceElement.Attendees)
-                    {
-                        dbEntities.Add(new Attendance
-                        {
-                            ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
-                            ParentRecordId = attendanceElement.ProgrammeOwnerId,
-                            UserId = Guid.Parse(attendee.UserId),
-                            WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
-                            MonthOfYear = attendanceElement.AttendanceDate.Month,
-                            Year = attendanceElement.AttendanceDate.Year,
-                            AttendanceDate = attendanceElement.AttendanceDate,
-                            Attended = attendee.Attended,
-                            TenantId = tenantId
-                        });
-                    }
                 }
-                var result = await trackingRepository.TrackAttendance(dbEntities);
-                if (result == true)
-                {
-                    var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-                    pointsEngineService.CalculateAttendanceSubmitted(applicationUserId.ToString(), DateTime.UtcNow);
-                }
-                return result;
             }
-            return false;
+
+            var result = await trackingRepository.TrackAttendance(dbEntities);
+
+            if (result == true)
+            {
+                var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+                pointsEngineService.CalculateAttendanceSubmitted(applicationUserId.ToString(), DateTime.UtcNow);
+            }
+
+            return result;
         }
     }
 }

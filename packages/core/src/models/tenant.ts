@@ -7,6 +7,18 @@ export interface TenantModel {
   siteAddress: string;
   tenantType: TenantType;
   themePath: string;
+  modules: {
+    attendanceEnabled: boolean;
+    businessEnabled: boolean;
+    calendarEnabled: boolean;
+    classroomActivitiesEnabled: boolean;
+    coachRoleEnabled: boolean;
+    coachRoleName: string;
+    prgoressEnabled: boolean;
+    trainingEnabled: boolean;
+  } | null;
+  googleAnalyticsTag: string;
+  googleTagManager: string;
 }
 
 export enum TenantType {

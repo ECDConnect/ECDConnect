@@ -5,12 +5,7 @@ namespace ECDLink.Tenancy.Services
 {
     public interface ITenantService
     {
-        public TenantInternalModel GetTenantById(string Id);
-
         public TenantInternalModel GetTenantByUrl(string url);
-
-        public TenantInternalModel AddTenant(TenantInternalModel model);
-
-        public IEnumerable<TenantInternalModel> GetAllTenants();
+        public TenantInternalModel GetTenantByKey(string key);
     }
 }

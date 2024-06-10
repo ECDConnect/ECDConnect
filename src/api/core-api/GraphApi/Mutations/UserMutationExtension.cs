@@ -223,6 +223,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 auditFields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber, ValueAfter = input.IdNumber });
                 user.IdNumber = input.IdNumber;
+            }
+
+            if (!string.IsNullOrWhiteSpace(input.UserName))
+            {
                 auditFields.Add(new AuditChanges() { FieldName = "Username", ValueBefore = user.UserName, ValueAfter = input.UserName });
                 user.UserName = input.UserName;
             }

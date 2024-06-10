@@ -101,7 +101,6 @@ export const Step18 = ({
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups.filter(
     (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
@@ -116,11 +115,9 @@ export const Step18 = ({
     | ClassroomGroupDto[]
     | undefined;
 
-  const currentClassProgrammes = classProgrammes?.filter((el) => {
-    return currentClassroomGroups?.some((f) => {
-      return f?.id === el?.classroomGroupId;
-    });
-  });
+  const currentClassProgrammes = currentClassroomGroups
+    ?.flatMap((x) => x.classProgrammes)
+    .filter((x) => x.isActive);
 
   const days = currentClassProgrammes?.map((item) => item?.meetingDay)?.sort();
 
