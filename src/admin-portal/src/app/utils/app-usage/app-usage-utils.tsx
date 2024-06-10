@@ -21,14 +21,14 @@ export const columnColor = (value?: string, valueColor?: string) => {
   const iconMapping = {
     [ConnectUsageName?.InvitationActive]: {
       icon: ClockIcon,
-      color: 'text-infoMain',
+      color: 'text-' + valueColor,
     },
     [ConnectUsageName?.InvitationExpired]: {
       icon: XCircleIcon,
-      color: 'text-errorMain',
+      color: 'text-' + valueColor,
     },
-    'Removed:': { icon: XCircleIcon, color: 'text-alertMain' },
-    default: { icon: CheckCircleIcon, color: 'text-successMain' },
+    'Removed:': { icon: XCircleIcon, color: 'text-' + valueColor },
+    default: { icon: CheckCircleIcon, color: 'text-' + valueColor },
   };
 
   const firstWord = value?.split(' ')[0];
@@ -39,11 +39,5 @@ export const columnColor = (value?: string, valueColor?: string) => {
     : 'default';
   const { icon, color } = iconMapping[key];
 
-  return (
-    <ColumnStatusIndicator
-      icon={icon}
-      iconColor={'text-' + valueColor}
-      text={value}
-    />
-  );
+  return <ColumnStatusIndicator icon={icon} iconColor={color} text={value} />;
 };

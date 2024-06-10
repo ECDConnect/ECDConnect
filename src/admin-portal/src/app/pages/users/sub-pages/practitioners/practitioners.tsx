@@ -455,7 +455,7 @@ export default function Practitioners() {
           item?.user?.userName ?? item?.idNumber ?? '-',
         fullName: `${item?.user?.firstName} ${item?.user?.surname}`,
         connectUsageComponent: item?.user?.connectUsage
-          ? columnColor(item.user.connectUsage)
+          ? columnColor(item.user.connectUsage, item.user.connectUsageColor)
           : '-',
         insertedDateFormatted: item?.user?.insertedDate
           ? format(new Date(item?.user?.insertedDate), 'dd/MM/yyyy')
