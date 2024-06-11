@@ -61,7 +61,7 @@ export const ProgrammeDashboard: React.FC = () => {
     programmeStartDate || new Date()
   );
   const currentProgramme = useSelector(
-    programmeSelectors.getProgrammesByDateAndClassroomGroupId({
+    programmeSelectors.getProgrammeByDateAndClassroomGroupId({
       date: selectedDate,
       classroomGroupId,
     })

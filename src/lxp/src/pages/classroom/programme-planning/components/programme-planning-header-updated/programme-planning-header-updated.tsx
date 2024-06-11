@@ -30,12 +30,10 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   theme,
   setSelectedDate,
   selectedDate,
-  // weekSummary,
+  weekSummary,
   isWeekendDay,
 }) => {
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
-
-  const weekSummary = false;
 
   const dailyProgramme = theme?.dailyProgrammes?.find((item) => {
     return isSameDay(new Date(item?.dayDate), new Date(selectedDate!));

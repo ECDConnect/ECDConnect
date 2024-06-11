@@ -40,7 +40,7 @@ export const getProgrammeByDate = (date: Date) =>
       )
   );
 
-export const getProgrammesByDateAndClassroomGroupId = ({
+export const getProgrammeByDateAndClassroomGroupId = ({
   date,
   classroomGroupId,
 }: {
