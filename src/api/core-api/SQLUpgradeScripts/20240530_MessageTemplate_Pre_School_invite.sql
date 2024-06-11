@@ -11,10 +11,6 @@ INSERT INTO public."MessageTemplate"
 VALUES('b67faf9a-748b-4cb6-9dba-18eebed9dd09', true, current_date, current_date, '', 'sms', 'oa-pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
 
 -- principal invite 
---WL
-INSERT INTO public."MessageTemplate"
-("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
-VALUES('bed227b9-da3b-49a1-98a0-a65302fe2d28', true, current_date, current_date, '', 'sms', 'wl-principal-invitation', '[[FirstName]] has invited you to join [[ApplicationName]], your assistant in brighter beginnings!  Sign up now to connect: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
 --OA
 INSERT INTO public."MessageTemplate"
 ("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
