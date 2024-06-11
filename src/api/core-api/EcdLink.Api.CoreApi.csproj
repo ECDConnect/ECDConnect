@@ -8,9 +8,13 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <Compile Remove="Migrations\**" />
     <Compile Remove="Tenancy\TempScripts\**" />
+    <Content Remove="Migrations\**" />
     <Content Remove="Tenancy\TempScripts\**" />
+    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="Tenancy\TempScripts\**" />
+    <None Remove="Migrations\**" />
     <None Remove="Tenancy\TempScripts\**" />
     <Compile Remove="Services\IntegrationService.cs" />
     <Compile Remove="Services\Interfaces\IIntegrationService.cs" />
@@ -21,6 +25,8 @@
   
  
   <ItemGroup>
+    
+    <PackageReference Include="AngleSharp" Version="1.1.2" />
     
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
     
@@ -38,7 +44,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
-    <PackageReference Include="HtmlSanitizer" Version="8.0.601" />
   </ItemGroup>
   
   <ItemGroup>
@@ -62,7 +67,6 @@
   
   <ItemGroup>
     <Folder Include="Middleware\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>
   
