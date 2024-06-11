@@ -13,18 +13,16 @@ namespace ECDLink.DataAccessLayer.Diagnostics
 
         public void OnNext(KeyValuePair<string, object> value)
         {
-
-            if (value.Key == CoreEventId.ContextInitialized.Name)
-            {
-                var payload = (ContextInitializedEventData)value.Value;
-                System.Diagnostics.Debug.WriteLine($"** EF is initialized {payload.Context.GetType().Name}, using connection string {payload.Context.Database.GetDbConnection().ConnectionString}");
-            }
-
-            if (value.Key == RelationalEventId.MigrationApplying.Name)
-            {
-                var payload = (MigratorEventData)value.Value;
-                System.Diagnostics.Debug.WriteLine($"** EF is applying a migration - {payload.Migrator}");
-            }
+            //if (value.Key == CoreEventId.ContextInitialized.Name)
+            //{
+            //    var payload = (ContextInitializedEventData)value.Value;
+            //    System.Diagnostics.Debug.WriteLine($"** EF is initialized {payload.Context.GetType().Name}, using connection string {payload.Context.Database.GetDbConnection().ConnectionString}");
+            //}
+            //if (value.Key == RelationalEventId.MigrationApplying.Name)
+            //{
+            //    var payload = (MigratorEventData)value.Value;
+            //    System.Diagnostics.Debug.WriteLine($"** EF is applying a migration - {payload.Migrator}");
+            //}
         }
     }
 }

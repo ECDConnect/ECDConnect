@@ -34,7 +34,7 @@ union select '72653e65-40a2-4c57-a251-0e35797b107f'::uuid, 'Coach Role', 'COACH 
 
 ALTER TABLE public."AspNetRoles" ADD "SystemName" varchar(256) NOT NULL DEFAULT '';
 
-update "AspNetRoles" set "SystemName" = "NormalizedName" ;
+update "AspNetRoles" set "SystemName" = "Name" ;
 
 CREATE TABLE public."TenantHasModule" (
 	"TenantId" uuid not null,
@@ -61,3 +61,8 @@ alter table public."Tenant" rename column "MoodleConfigVar" to "MoodleConfig";
 
 update "Tenant" set "TenantTypeId" = 3 where "Id" = '39077d0e-e443-4076-aaf2-978dc6805aa0';
 update "Tenant" set "TenantTypeId" = 1 where "Id" = '258a15e6-3736-45ea-875c-48d9377de4c8';
+
+insert into "TenantHasModule"("TenantId", "ModuleId")
+select '258a15e6-3736-45ea-875c-48d9377de4c8', "Id" from "Module" ;
+
+-- TENANT TABLE NEEDS MANUAL UPDATING

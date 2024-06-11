@@ -81,24 +81,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
-        public bool ValidatePreSchoolCode(
+        public Classroom ValidatePreSchoolCode(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory, 
             string preSchoolCode)
         {
             if (preSchoolCode == "")
             {
-                throw new ArgumentException("Pre-school code is empty");
+               throw new ArgumentException("Pre-school code is empty");
             }
-
             var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
-            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
-            var classroom = classRepo.GetAll().Where(x => x.PreschoolCode == preSchoolCode).FirstOrDefault();
-            if (classroom == null)
-            {
-                return true;
-            }
-            return false;
+            var classRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            return classRepo.GetAll().Where(x => x.PreschoolCode == preSchoolCode).FirstOrDefault();
         }
     }
 }
