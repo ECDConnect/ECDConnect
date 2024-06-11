@@ -20,6 +20,7 @@ using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
+using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -203,6 +204,9 @@ namespace ECDLink.DataAccessLayer.Context
 
         // User Help
         public DbSet<UserHelp> UserHelp { get; set; }
+
+        // Training
+        public DbSet<UserTrainingCourse> UserTrainingCourses {  get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

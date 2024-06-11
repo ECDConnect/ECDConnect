@@ -1,4 +1,5 @@
-﻿using ECDLink.Moodle.Managers;
+﻿using EcdLink.Api.CoreApi.Services.Training;
+using ECDLink.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +11,7 @@ namespace ECDLink.Moodle
     {
         public static void ConfigureMoodleServices(IServiceCollection services, IConfiguration config)
         {
-            services.AddTransient<MoodleManager>();
+            services.AddTransient<ITrainingService, TrainingService>();
             services.AddControllers();
         }
 
