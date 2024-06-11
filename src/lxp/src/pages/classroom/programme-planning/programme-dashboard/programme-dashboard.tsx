@@ -1,5 +1,5 @@
-import { ActionModal, DialogPosition } from '@ecdlink/ui';
-import { isSameDay } from 'date-fns';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
+import { isSameDay, parseISO } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import { programmeSelectors } from '@store/programme';
@@ -16,7 +16,7 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
 import walktroughImage from '../../../../assets/walktroughImage.png';
@@ -28,24 +28,32 @@ import {
 } from '@/store/content/programme-theme';
 import ROUTES from '@routes/routes';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '../../class-dashboard/class-dashboard.types';
+import { ProgrammeDashboardRouteParams } from './programme-dashboard.types';
 
 const { usePDF } = require('react-to-pdf');
-
-interface ProgrammeDashboardProps {
-  programmeStartDate: Date | undefined;
-}
 
 export interface iSkills {
   skill: string;
   totalChildren: number;
 }
 
-export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
-  programmeStartDate,
-}) => {
+export const ProgrammeDashboard: React.FC = () => {
+  // TODO: handle with date from state
+  const programmeStartDate = new Date();
+
+  const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
   const history = useHistory();
+
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(classroomGroupId)
+  );
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const user = useSelector(userSelectors.getUser);
+
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const [showReport, setShowReport] = useState(false);
@@ -53,8 +61,12 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
     programmeStartDate || new Date()
   );
   const currentProgramme = useSelector(
-    programmeSelectors.getProgrammeByDate(new Date(selectedDate))
+    programmeSelectors.getProgrammesByDateAndClassroomGroupId({
+      date: selectedDate,
+      classroomGroupId,
+    })
   );
+
   const currentDailyProgramme = currentProgramme?.dailyProgrammes.find(
     (dailyRoutine) => isSameDay(new Date(dailyRoutine?.dayDate), selectedDate)
   );
@@ -297,7 +309,17 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   //   });
   // };
   return (
-    <>
+    <BannerWrapper
+      size="small"
+      title="Activities"
+      subTitle={classroomGroup?.name}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.ACTIVITES,
+        } as ClassDashboardRouteState)
+      }
+      className="p-4"
+    >
       <DailyRoutine
         programme={currentProgramme}
         currentDailyProgramme={currentDailyProgramme}
@@ -313,7 +335,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
           </div>
         </div>
       )}
-    </>
+    </BannerWrapper>
   );
 };
 

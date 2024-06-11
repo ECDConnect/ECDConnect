@@ -40,6 +40,9 @@ const ROUTES = {
     ATTENDANCE: addPrefix('/attendance', {
       EDIT_REGISTERS: '/edit-registers',
     }),
+    ACTIVITIES: addPrefix('/activities', {
+      PROGRAMME_DASHBOARD: '/programme-dashboard/:classroomGroupId',
+    }),
     UPDATE_FEE: '/preschool-fee',
   }),
   TRAINING: '/training',

@@ -138,6 +138,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { OASignUpOrLogin } from '@/pages/auth/oa-sign-up/oa-sign-up-or-login';
 import { OaLogin } from '@/pages/auth/oa-login/oa-login';
 import { EditRegisters } from '@/pages/classroom/attendance/edit-registers/edit-registers';
+import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -541,6 +542,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.CLASSROOM.ATTENDANCE.EDIT_REGISTERS}
         component={EditRegisters}
+      />
+      <Route
+        exact
+        path={ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD}
+        component={ProgrammeDashboard}
       />
       <Route
         exact

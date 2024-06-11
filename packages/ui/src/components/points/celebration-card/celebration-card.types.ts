@@ -1,6 +1,7 @@
 import { Colours } from '../../../models/Colours';
 
 export type CelebrationCardProps = {
+  className?: string;
   image: JSX.Element;
   primaryMessage: string;
   secondaryMessage: string;
