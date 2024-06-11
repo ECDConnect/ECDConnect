@@ -225,6 +225,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var practitioner = await userManager.FindByIdAsync(practitionerUserId);
             await notificationManager.SendPrincipalInvitationAsync(user, practitioner.FullName, token);
+            await userManager.DeleteAsync(user);
 
             return token;
         }
