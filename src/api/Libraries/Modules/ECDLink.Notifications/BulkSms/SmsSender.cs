@@ -1,14 +1,12 @@
-using Azure.Core;
-using ECDLink.Abstractrions.Enums;
-using ECDLink.Abstractrions.Notifications;
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Notifications.MessageLogs;
-using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
+using ECDLink.Security.Api.Constants;
+using ECDLink.UrlShortner.Managers;
+using ECDLink.UrlShortner.Model;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -25,7 +23,7 @@ namespace ECDLink.Notifications.BulkSms
         private readonly IMessageLogger<BulkSmsMessage> _messageLogger;
         private HttpClient _smsClient;
         private ISystemSetting<BulkSmsOptions> _smsOptions;
-
+        private readonly ShortUrlManager _shortUrlManager;
 
         private HttpClient GetSmsClient
         {
@@ -51,12 +49,19 @@ namespace ECDLink.Notifications.BulkSms
             }
         }
 
-        public SmsSender(ISystemSetting<BulkSmsOptions> optionsAccessor, IMessageFactory messageFactory, TemplateProcessor templateProcessor, IMessageLogger<BulkSmsMessage> messageLogger, ILogger<SmsSenderBase> logger)
+        public SmsSender(
+            ISystemSetting<BulkSmsOptions> optionsAccessor, 
+            IMessageFactory messageFactory, 
+            TemplateProcessor templateProcessor, 
+            IMessageLogger<BulkSmsMessage> messageLogger, 
+            ILogger<SmsSenderBase> logger,
+            ShortUrlManager shortUrlManager)
                : base(messageFactory, templateProcessor, new BulkSmsMessage(), logger)
         {
             _smsOptions = optionsAccessor;
             _messageLogger = messageLogger;
             _fieldTransform = new Dictionary<string, string>();
+            _shortUrlManager = shortUrlManager;
         }
 
         override public async Task SendMessageAsync(CancellationToken cancellationToken = default)
@@ -93,14 +98,32 @@ namespace ECDLink.Notifications.BulkSms
             var response = await GetSmsClient.SendAsync(request, cancellationToken);
             
             _messageLogger.Log(_message as BulkSmsMessage, _messageTemplate.TemplateType);
+            
 
             if (response.IsSuccessStatusCode)
             {
+                _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
                 _logger.LogInformation("{0}", requestContentAsString);
             }
             else
             {
                 var responseContentAsString = await response.Content.ReadAsStringAsync();
+                var resultModel = JsonConvert.DeserializeObject<BulkSMSResultWrapperModel>(responseContentAsString);
+
+                if (resultModel.Status.StartsWith("5")) 
+                {
+                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_CONNECTION);
+                } else if (resultModel.Title == NotificationsConstants.BULKSMS_AUTH)
+                {
+                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
+                } else if (resultModel.Title == NotificationsConstants.BULKSMS_CREDITS)
+                {
+                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
+                } else
+                {
+                    _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_OPTED_OUT);
+                }
+                
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
                 throw new HttpRequestException();
             }
