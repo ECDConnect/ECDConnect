@@ -1,6 +1,8 @@
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
+using ECDLink.Notifications.Managers;
+using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
 using ECDLink.Security.Api.Constants;
@@ -22,6 +24,7 @@ namespace ECDLink.Notifications.SMSPortal
         private HttpClient _smsClient;
         private ISystemSetting<SMSPortalOptions> _smsOptions;
         private readonly ShortUrlManager _shortUrlManager;
+        private readonly MessageLogManager _messageLogManager;
 
         private HttpClient GetSmsClient
         {
@@ -47,11 +50,14 @@ namespace ECDLink.Notifications.SMSPortal
             IMessageFactory messageFactory, 
             TemplateProcessor templateProcessor, 
             ILogger<SmsSenderBase> logger,
-            ShortUrlManager shortUrlManager)
+            ShortUrlManager shortUrlManager,
+            MessageLogManager messageLogManager
+            )
             :base(messageFactory, templateProcessor, new SMSPortalMessage(), logger)
         {
             _smsOptions = optionsAccessor;
             _shortUrlManager = shortUrlManager;
+            _messageLogManager = messageLogManager;
         }
 
         override public async Task SendMessageAsync(CancellationToken cancellationToken = default)
@@ -92,6 +98,7 @@ namespace ECDLink.Notifications.SMSPortal
             if (response.IsSuccessStatusCode)
             {
                 _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
+                _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
                 _logger.LogInformation("{0}", requestContentAsString);
             }
             else
@@ -99,15 +106,18 @@ namespace ECDLink.Notifications.SMSPortal
                 if (resultModel.ErrorReport.OptedOuts > 0)
                 {
                     _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_OPTED_OUT);
-                } 
+                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_OPTED_OUT);
+                }
                 else if (resultModel.Messages == 0 && resultModel.RemainingBalance == 0)
                 {
                     _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
-                } else
+                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
+                }
+                else
                 {
                     _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
+                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
                 }
-
 
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
                 throw new HttpRequestException();

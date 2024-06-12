@@ -1,6 +1,7 @@
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
+using ECDLink.Notifications.Managers;
 using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
@@ -24,6 +25,7 @@ namespace ECDLink.Notifications.BulkSms
         private HttpClient _smsClient;
         private ISystemSetting<BulkSmsOptions> _smsOptions;
         private readonly ShortUrlManager _shortUrlManager;
+        private readonly MessageLogManager _messageLogManager;
 
         private HttpClient GetSmsClient
         {
@@ -55,13 +57,16 @@ namespace ECDLink.Notifications.BulkSms
             TemplateProcessor templateProcessor, 
             IMessageLogger<BulkSmsMessage> messageLogger, 
             ILogger<SmsSenderBase> logger,
-            ShortUrlManager shortUrlManager)
+            ShortUrlManager shortUrlManager,
+            MessageLogManager messageLogManager
+            )
                : base(messageFactory, templateProcessor, new BulkSmsMessage(), logger)
         {
             _smsOptions = optionsAccessor;
             _messageLogger = messageLogger;
             _fieldTransform = new Dictionary<string, string>();
             _shortUrlManager = shortUrlManager;
+            _messageLogManager = messageLogManager;
         }
 
         override public async Task SendMessageAsync(CancellationToken cancellationToken = default)
@@ -98,11 +103,11 @@ namespace ECDLink.Notifications.BulkSms
             var response = await GetSmsClient.SendAsync(request, cancellationToken);
             
             _messageLogger.Log(_message as BulkSmsMessage, _messageTemplate.TemplateType);
-            
 
             if (response.IsSuccessStatusCode)
             {
                 _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
+                _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
                 _logger.LogInformation("{0}", requestContentAsString);
             }
             else
@@ -113,15 +118,22 @@ namespace ECDLink.Notifications.BulkSms
                 if (resultModel.Status.StartsWith("5")) 
                 {
                     _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_CONNECTION);
-                } else if (resultModel.Title == NotificationsConstants.BULKSMS_AUTH)
+                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_CONNECTION);
+                } 
+                else if (resultModel.Title == NotificationsConstants.BULKSMS_AUTH)
                 {
                     _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
-                } else if (resultModel.Title == NotificationsConstants.BULKSMS_CREDITS)
+                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
+                } 
+                else if (resultModel.Title == NotificationsConstants.BULKSMS_CREDITS)
                 {
                     _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
-                } else
+                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
+                } 
+                else
                 {
                     _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_OPTED_OUT);
+                    _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_OPTED_OUT);
                 }
                 
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);

@@ -1,6 +1,8 @@
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
+using ECDLink.Notifications.Managers;
+using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
 using ECDLink.Security.Api.Constants;
@@ -18,6 +20,7 @@ namespace ECDLink.Notifications.iTouch
         private HttpClient _smsClient;
         private ISystemSetting<iTouchOptions> _smsOptions;
         private readonly ShortUrlManager _shortUrlManager;
+        private readonly MessageLogManager _messageLogManager;
 
         private HttpClient GetSmsClient
         {
@@ -37,11 +40,14 @@ namespace ECDLink.Notifications.iTouch
             IMessageFactory messageFactory, 
             TemplateProcessor templateProcessor, 
             ILogger<SmsSenderBase> logger,
-            ShortUrlManager shortUrlManager)
+            ShortUrlManager shortUrlManager,
+            MessageLogManager messageLogManager
+            )
             :base(messageFactory, templateProcessor, new iTouchMessage(), logger)
         {
             _smsOptions = optionsAccessor;
             _shortUrlManager = shortUrlManager;
+            _messageLogManager = messageLogManager;
         }
 
         override public async Task SendMessageAsync(CancellationToken cancellationToken = default)
@@ -95,6 +101,7 @@ namespace ECDLink.Notifications.iTouch
             if (success)
             {
                 _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
+                _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.SUCCESS);
                 _logger.LogInformation("{0}: {1}", requestContentAsString, responseContentAsString);
             }
             else
@@ -104,10 +111,12 @@ namespace ECDLink.Notifications.iTouch
                     if (parts[1] == NotificationsConstants.ITOUCH_ERROR_CODE_3)
                     {
                         _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
+                        _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_AUTHENTICATION);
                     }
                     else if (parts[1] == NotificationsConstants.ITOUCH_ERROR_CODE_8)
                     {
                         _shortUrlManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
+                        _messageLogManager.UpdateMessageNotificationResult(_model.Id, _messageTemplate.TemplateType, NotificationsConstants.FAILED_INSUFFICIENT_CREDITS);
                     }
                 }
                 _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
