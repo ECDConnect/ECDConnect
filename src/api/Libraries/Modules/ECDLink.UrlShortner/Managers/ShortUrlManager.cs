@@ -132,7 +132,6 @@ namespace ECDLink.UrlShortner.Managers
 
             if (messages.Any())
             {
-                //_entities.RemoveRange(messages);
                 foreach (var message in messages)
                 {
                     message.Clicked++;
@@ -164,6 +163,16 @@ namespace ECDLink.UrlShortner.Managers
                 .OrderBy(x => x.InsertedDate)
                 .Select(x => x.InsertedDate)
                 .ToList();
+        }
+
+        public void UpdateMessageNotificationResult(Guid userId, string messageType, int notificationResult)
+        {
+            var message = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) & x.IsActive).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            if (message != null)
+            {
+                message.NotificationResult = notificationResult;
+                _dbContext.SaveChanges();
+            }
         }
     }
 }

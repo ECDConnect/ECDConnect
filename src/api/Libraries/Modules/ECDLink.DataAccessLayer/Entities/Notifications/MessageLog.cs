@@ -32,6 +32,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string ToGroups { get; set; }
         public string Action { get; set; }
         public Guid? GroupingId { get; set; }
+        public int? NotificationResult { get; set; }
 
         [ForeignKey(nameof(Id))]
         public virtual MessageTemplate MessageTemplate { get; set; }
