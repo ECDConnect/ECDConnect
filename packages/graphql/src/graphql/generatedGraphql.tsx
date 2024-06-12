@@ -1682,6 +1682,7 @@ export type CircleTabClubs = {
 export type ClassProgramme = {
   __typename?: 'ClassProgramme';
   attendance?: Maybe<Array<Maybe<Attendance>>>;
+  classroomGroup?: Maybe<ClassroomGroup>;
   classroomGroupId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -1699,6 +1700,7 @@ export type ClassProgrammeAttendanceArgs = {
 
 export type ClassProgrammeFilterInput = {
   and?: InputMaybe<Array<ClassProgrammeFilterInput>>;
+  classroomGroup?: InputMaybe<ClassroomGroupFilterInput>;
   classroomGroupId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1712,6 +1714,7 @@ export type ClassProgrammeFilterInput = {
 };
 
 export type ClassProgrammeInput = {
+  ClassroomGroup?: InputMaybe<ClassroomGroupInput>;
   ClassroomGroupId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -1722,6 +1725,7 @@ export type ClassProgrammeInput = {
 };
 
 export type ClassProgrammeSortInput = {
+  classroomGroup?: InputMaybe<ClassroomGroupSortInput>;
   classroomGroupId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -2060,6 +2064,7 @@ export type ClassroomModel = {
   numberOfAssistants?: Maybe<Scalars['Int']>;
   numberOfOtherAssistants?: Maybe<Scalars['Int']>;
   numberOfPractitioners?: Maybe<Scalars['Int']>;
+  preschoolCode?: Maybe<Scalars['String']>;
   preschoolFeeAmount?: Maybe<Scalars['Float']>;
   preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
   principal?: Maybe<BasePractitionerModel>;
@@ -6857,6 +6862,7 @@ export type Mutation = {
   createUserHelp?: Maybe<UserHelp>;
   createUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   createUserPermission?: Maybe<UserPermission>;
+  createUserTrainingCourse?: Maybe<UserTrainingCourse>;
   createVisit?: Maybe<Visit>;
   createVisitBackReferral?: Maybe<VisitBackReferral>;
   createVisitData?: Maybe<VisitData>;
@@ -7010,6 +7016,7 @@ export type Mutation = {
   deleteUserHelp?: Maybe<Scalars['Boolean']>;
   deleteUserHierarchyEntity?: Maybe<Scalars['Boolean']>;
   deleteUserPermission?: Maybe<Scalars['Boolean']>;
+  deleteUserTrainingCourse?: Maybe<Scalars['Boolean']>;
   deleteVisit?: Maybe<Scalars['Boolean']>;
   deleteVisitBackReferral?: Maybe<Scalars['Boolean']>;
   deleteVisitData?: Maybe<Scalars['Boolean']>;
@@ -7338,6 +7345,7 @@ export type Mutation = {
   updateUserHelp?: Maybe<UserHelp>;
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   updateUserPermission?: Maybe<Array<Maybe<UserPermissionModel>>>;
+  updateUserTrainingCourse?: Maybe<UserTrainingCourse>;
   updateVisit?: Maybe<Visit>;
   updateVisitBackReferral?: Maybe<VisitBackReferral>;
   updateVisitData?: Maybe<VisitData>;
@@ -8288,6 +8296,10 @@ export type MutationCreateUserPermissionArgs = {
   input?: InputMaybe<UserPermissionInput>;
 };
 
+export type MutationCreateUserTrainingCourseArgs = {
+  input?: InputMaybe<UserTrainingCourseInput>;
+};
+
 export type MutationCreateVisitArgs = {
   input?: InputMaybe<VisitInput>;
 };
@@ -8968,6 +8980,10 @@ export type MutationDeleteUserHierarchyEntityArgs = {
 };
 
 export type MutationDeleteUserPermissionArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteUserTrainingCourseArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -10603,6 +10619,11 @@ export type MutationUpdateUserHierarchyEntityArgs = {
 export type MutationUpdateUserPermissionArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<UpdateUserPermissionInputModelInput>;
+};
+
+export type MutationUpdateUserTrainingCourseArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<UserTrainingCourseInput>;
 };
 
 export type MutationUpdateVisitArgs = {
@@ -13459,6 +13480,7 @@ export type Query = {
   GetAllUserHelp?: Maybe<Array<Maybe<UserHelp>>>;
   GetAllUserHierarchyEntity?: Maybe<Array<Maybe<UserHierarchyEntity>>>;
   GetAllUserPermission?: Maybe<Array<Maybe<UserPermission>>>;
+  GetAllUserTrainingCourse?: Maybe<Array<Maybe<UserTrainingCourse>>>;
   GetAllVisit?: Maybe<Array<Maybe<Visit>>>;
   GetAllVisitBackReferral?: Maybe<Array<Maybe<VisitBackReferral>>>;
   GetAllVisitData?: Maybe<Array<Maybe<VisitData>>>;
@@ -13602,6 +13624,7 @@ export type Query = {
   GetUserHelpById?: Maybe<UserHelp>;
   GetUserHierarchyEntityById?: Maybe<UserHierarchyEntity>;
   GetUserPermissionById?: Maybe<UserPermission>;
+  GetUserTrainingCourseById?: Maybe<UserTrainingCourse>;
   GetVisitBackReferralById?: Maybe<VisitBackReferral>;
   GetVisitById?: Maybe<Visit>;
   GetVisitDataById?: Maybe<VisitData>;
@@ -13813,6 +13836,7 @@ export type Query = {
   countUserHelp?: Maybe<Scalars['Int']>;
   countUserHierarchyEntity?: Maybe<Scalars['Int']>;
   countUserPermission?: Maybe<Scalars['Int']>;
+  countUserTrainingCourse?: Maybe<Scalars['Int']>;
   countUsers: Scalars['Int'];
   countVisit?: Maybe<Scalars['Int']>;
   countVisitBackReferral?: Maybe<Scalars['Int']>;
@@ -13834,7 +13858,7 @@ export type Query = {
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
   generateChildProgressReport?: Maybe<Scalars['String']>;
-  getMoodleSessionForUserId?: Maybe<Scalars['String']>;
+  getMoodleSessionForCurrentUser?: Maybe<Scalars['String']>;
   growthDataForInfant?: Maybe<Array<Maybe<VisitData>>>;
   hasContentTypeBeenTranslated: Scalars['Boolean'];
   healthCareWorkerByUserId?: Maybe<HealthCareWorkerModel>;
@@ -13940,6 +13964,7 @@ export type Query = {
   userCountForMessageCriteria: Scalars['Int'];
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
+  validatePreSchoolCode?: Maybe<Classroom>;
   visitAnswersForInfant?: Maybe<Array<Maybe<VisitData>>>;
   visitAnswersForMother?: Maybe<Array<Maybe<VisitData>>>;
   visitClientSummaryDataForMother?: Maybe<Progress_VisitDataStatus>;
@@ -14726,6 +14751,12 @@ export type QueryGetAllUserPermissionArgs = {
   where?: InputMaybe<UserPermissionFilterInput>;
 };
 
+export type QueryGetAllUserTrainingCourseArgs = {
+  order?: InputMaybe<Array<UserTrainingCourseSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<UserTrainingCourseFilterInput>;
+};
+
 export type QueryGetAllVisitArgs = {
   order?: InputMaybe<Array<VisitSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -15468,6 +15499,11 @@ export type QueryGetUserHierarchyEntityByIdArgs = {
 export type QueryGetUserPermissionByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<UserPermissionFilterInput>;
+};
+
+export type QueryGetUserTrainingCourseByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<UserTrainingCourseFilterInput>;
 };
 
 export type QueryGetVisitBackReferralByIdArgs = {
@@ -16453,6 +16489,11 @@ export type QueryCountUserPermissionArgs = {
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
+export type QueryCountUserTrainingCourseArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
 export type QueryCountUsersArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
@@ -16541,10 +16582,6 @@ export type QueryGenerateChildProgressReportArgs = {
   childId: Scalars['UUID'];
   classgroupId: Scalars['UUID'];
   reportDate: Scalars['DateTime'];
-};
-
-export type QueryGetMoodleSessionForUserIdArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGrowthDataForInfantArgs = {
@@ -16920,6 +16957,10 @@ export type QueryUsersArgs = {
   order?: InputMaybe<Array<ApplicationUserSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryValidatePreSchoolCodeArgs = {
+  preSchoolCode?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryVisitAnswersForInfantArgs = {
@@ -19301,6 +19342,55 @@ export type UserPermissionSortInput = {
   isActive?: InputMaybe<SortEnumType>;
   permission?: InputMaybe<PermissionSortInput>;
   permissionId?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
+  userId?: InputMaybe<SortEnumType>;
+};
+
+export type UserTrainingCourse = {
+  __typename?: 'UserTrainingCourse';
+  completedDate: Scalars['DateTime'];
+  courseName?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId: Scalars['UUID'];
+};
+
+export type UserTrainingCourseFilterInput = {
+  and?: InputMaybe<Array<UserTrainingCourseFilterInput>>;
+  completedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  courseName?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<UserTrainingCourseFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<ComparableGuidOperationFilterInput>;
+};
+
+export type UserTrainingCourseInput = {
+  CompletedDate: Scalars['DateTime'];
+  CourseName?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId: Scalars['UUID'];
+};
+
+export type UserTrainingCourseSortInput = {
+  completedDate?: InputMaybe<SortEnumType>;
+  courseName?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;

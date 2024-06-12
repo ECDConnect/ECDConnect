@@ -25,7 +25,7 @@ export const Training: React.FC = () => {
     if (userData?.id) {
       const data = await new PractitionerService(
         userAuth?.auth_token!
-      ).getMoodleSessionForUserId(userData?.id);
+      ).getMoodleSessionForCurrentUser();
       const bData = Boolean(data);
       setMoodleUserCreated(bData);
     }
@@ -84,7 +84,7 @@ export const Training: React.FC = () => {
           type="text"
           name="username"
           title="username"
-          defaultValue={userData?.idNumber + '@ecdconnect.co.za'}
+          defaultValue={userData?.id}
         />
         <input
           type="password"

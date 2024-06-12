@@ -1,6 +1,8 @@
-﻿namespace ECDLink.Moodle.Models
+﻿using ECDLink.Core.Models.Training;
+
+namespace ECDLink.Moodle.Models
 {
-    public class MoodleUser
+    public class MoodleUser : TrainingUser
     {
         public long Id { get; set; }
         public string UserName { get; set; }

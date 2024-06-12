@@ -44,7 +44,6 @@ namespace ECDLink.Tenancy.Middleware
 
         private TenantInternalModel GetTenant(HttpContext context, ITenantService tenancyService)
         {
-            string path = "";
             TenantInternalModel tenant = null;
 
             var claim = context.User.Claims

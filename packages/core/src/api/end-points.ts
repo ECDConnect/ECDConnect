@@ -20,4 +20,5 @@ export const APIs = {
   sendOAWLAuthCode: 'api/invitation/send-oa-wl-auth-code',
   verifyOAWLAuthCode: 'api/invitation/verify-oa-wl-auth-code',
   verifyOAWLAuthCodeStatus: 'api/invitation/verify-oa-wl-auth-code-status',
+  verifyOAPrincipalInvitation: 'api/invitation/verify-oa-principal-invitation',
 };
