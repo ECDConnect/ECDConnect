@@ -5,81 +5,35 @@ import {
   StackedList,
   BannerWrapper,
 } from '@ecdlink/ui';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   formatCurrency,
-  sumIncomeOrExpenseItems,
+  getStatementBalance,
 } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  getNextMonth,
-  getPreviousMonth,
-} from '@ecdlink/core';
-import { IncomeStatementDates } from '@/constants/Dates';
+import { IncomeStatementDto } from '@ecdlink/core';
 
 export type PreviousStatementsListProps = {
   statements: IncomeStatementDto[];
-  unsubmittedIncome: IncomeItemDto[];
-  unsubmittedExpenses: ExpenseItemDto[];
   onBack: () => void;
-  onActionClick: (statementId: string | undefined) => void;
+  onActionClick: (statementId: string) => void;
 };
 
 export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
   statements,
-  unsubmittedIncome,
-  unsubmittedExpenses,
   onBack,
   onActionClick,
 }) => {
   const { isOnline } = useOnlineStatus();
 
-  const submittedBalance = statements.reduce(function (total: number, current) {
-    return total + current.balance;
-  }, 0);
-
-  const yearBalance =
-    submittedBalance +
-    sumIncomeOrExpenseItems(unsubmittedIncome) -
-    sumIncomeOrExpenseItems(unsubmittedExpenses);
-
-  const isThisMonthSubmitted = useMemo(
-    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
-    [statements]
-  );
-  const isPreviousMonthSubmitted = useMemo(() => {
-    var currentMonth = new Date().getMonth();
-
-    if (currentMonth === 0) {
-      return !!statements?.find(
-        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
-      );
-    }
-
-    return !!statements?.find((x) => x.month === currentMonth);
-  }, [statements]);
-
-  // submit window open And last statement not submitted -> previous month
-  // submitted this month -> next month
-  // otherwise current month
-  const summaryDate = useMemo(() => {
-    var date = new Date();
-    if (isThisMonthSubmitted) {
-      return getNextMonth(date);
-    }
-    if (
-      !isPreviousMonthSubmitted &&
-      date.getDate() <= IncomeStatementDates.SubmitEndDay
-    ) {
-      return getPreviousMonth(date);
-    }
-
-    return date;
-  }, [isThisMonthSubmitted, isPreviousMonthSubmitted]);
+  const statementsBalance = statements.reduce(function (
+    total: number,
+    current
+  ) {
+    return total + getStatementBalance(current);
+  },
+  0);
 
   const prevStatementsItems = useMemo(() => {
     return [
@@ -95,20 +49,8 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
           notRounded: true,
         };
       }),
-      {
-        title: `${getMonthName(
-          summaryDate.getMonth()
-        )} ${summaryDate.getFullYear()}`,
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        text: '1',
-        onActionClick: () => onActionClick(undefined),
-        classNames: 'bg-uiBg',
-        notRounded: true,
-      },
     ];
-  }, [statements, onActionClick, unsubmittedIncome, unsubmittedExpenses]);
+  }, [statements, onActionClick]);
 
   return (
     <BannerWrapper
@@ -136,18 +78,18 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
         )}
         <Card
           className={`bg-${
-            yearBalance > 0 ? 'successMain' : 'tertiary'
+            statementsBalance > 0 ? 'successMain' : 'tertiary'
           } mt-2 flex items-center justify-between p-4`}
           shadowSize={'md'}
         >
           <Typography
-            text={yearBalance > 0 ? 'Profit' : 'Loss'}
+            text={statementsBalance > 0 ? 'Profit' : 'Loss'}
             type="body"
             color={'white'}
             className="w-9/12"
           />
           <Typography
-            text={`R ${formatCurrency(yearBalance)}`}
+            text={`R ${formatCurrency(statementsBalance)}`}
             color={'white'}
             type="h4"
             className="mr-4 w-5/12 text-right"

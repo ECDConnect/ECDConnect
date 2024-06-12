@@ -23,7 +23,7 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateChildrenRegistrationAdd(string userId);
         bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
-        bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
+        //bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
        
 
         // SS TODO: Pre-school fees on profile - development pending

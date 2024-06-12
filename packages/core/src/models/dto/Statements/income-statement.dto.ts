@@ -1,14 +1,12 @@
-import { ExpenseItemMinDto } from './expense-item.dto';
-import { IncomeItemMinDto } from './income-item.dto';
+import { ExpenseItemDto } from './expense-item.dto';
+import { IncomeItemDto } from './income-item.dto';
 
 export interface IncomeStatementDto {
   id: string;
   month: number;
   year: number;
-  incomeTotal: number;
-  expenseTotal: number;
-  balance: number;
-  incomeItems: IncomeItemMinDto[];
-  expenseItems: ExpenseItemMinDto[];
+  downloaded: boolean;
+  incomeItems: IncomeItemDto[];
+  expenseItems: ExpenseItemDto[];
   contactedByCoach: boolean;
 }

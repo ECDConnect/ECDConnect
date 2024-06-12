@@ -20,9 +20,8 @@ export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
 
   const incomeListDetailsItems = expenseItems?.map((item) => {
     return {
-      title: !!item.description
-        ? item.description
-        : format(Date.parse(item.datePaid || ''), 'dd/MM/yyyy'),
+      title:
+        item.notes ?? format(Date.parse(item.datePaid || ''), 'dd/MM/yyyy'),
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',

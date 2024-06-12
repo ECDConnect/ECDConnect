@@ -21,17 +21,14 @@ import {
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
-import {
-  isNumber,
-  moneyInputFormat,
-} from '@/utils/statements/statements-utils';
+import { moneyInputFormat } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { AddIncomeState } from '../../../add-amount.types';
-import { StatementsIncomeInput } from '@ecdlink/graphql';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import { IncomeItemDto } from '@ecdlink/core';
 
 export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
   setType,
@@ -108,16 +105,11 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
   };
 
   const sendIncomeUpdate = async () => {
-    const incomeInput: StatementsIncomeInput = {
-      Id: newGuid(),
-      IsActive: true,
-      UserId: userAuth?.id,
-      Submitted: false,
-      DateReceived: date,
-      Amount: donationWorth ? moneyInputFormat(donationWorth) : 0,
-      AmountExpected: donationWorth ? moneyInputFormat(donationWorth) : 0,
-      ChildCoverAmount: 0,
-      IncomeTypeId: incomeTypeValue?.id,
+    const incomeInput: IncomeItemDto = {
+      id: newGuid(),
+      dateReceived: date!,
+      amount: donationWorth ? moneyInputFormat(donationWorth) : 0,
+      incomeTypeId: incomeTypeValue!.id,
     };
 
     onSubmit(incomeInput);

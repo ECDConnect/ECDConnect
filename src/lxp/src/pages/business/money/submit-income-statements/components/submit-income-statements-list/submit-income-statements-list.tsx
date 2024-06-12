@@ -42,8 +42,8 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const userAuth = useSelector(authSelectors.getAuthUser);
 
-  const income = useSelector(statementsSelectors.getUnsubmittedIncomeItems);
-  const expenses = useSelector(statementsSelectors.getUnsubmittedExpenseItems);
+  // const income = useSelector(statementsSelectors.getUnsubmittedIncomeItems);
+  // const expenses = useSelector(statementsSelectors.getUnsubmittedExpenseItems);
 
   const currentDate = new Date();
   const date = format(currentDate, 'EEEE, d LLLL');
@@ -56,120 +56,120 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       : getPreviousMonth(currentDate);
 
   // Totals
-  const totalIncome = sumIncomeOrExpenseItems(income);
-  const totalExpenses = sumIncomeOrExpenseItems(expenses);
-  const totalBalance = totalIncome - totalExpenses;
+  // const totalIncome = sumIncomeOrExpenseItems(income);
+  // const totalExpenses = sumIncomeOrExpenseItems(expenses);
+  // const totalBalance = totalIncome - totalExpenses;
 
-  // Income values
-  const preschoolFees = useMemo(
-    () =>
-      income.filter((x) => x.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID),
-    [income]
-  );
-  const startupSupport = useMemo(
-    () =>
-      income.filter((x) => x.incomeTypeId === IncomeTypeIds.STARTUP_SUPPORT_ID),
-    [income]
-  );
-  const donationsOrVouchers = useMemo(
-    () => income.filter((x) => x.incomeTypeId === IncomeTypeIds.DONATION_ID),
-    [income]
-  );
-  const dbeSubsidy = useMemo(
-    () => income.filter((x) => x.incomeTypeId === IncomeTypeIds.DBE_SUBSIDY_ID),
-    [income]
-  );
-  const otherIncomeValues = useMemo(
-    () =>
-      income.filter((x) => x.incomeTypeId === IncomeTypeIds.OTHER_INCOME_ID),
-    [income]
-  );
+  // // Income values
+  // const preschoolFees = useMemo(
+  //   () =>
+  //     income.filter((x) => x.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID),
+  //   [income]
+  // );
+  // const startupSupport = useMemo(
+  //   () =>
+  //     income.filter((x) => x.incomeTypeId === IncomeTypeIds.STARTUP_SUPPORT_ID),
+  //   [income]
+  // );
+  // const donationsOrVouchers = useMemo(
+  //   () => income.filter((x) => x.incomeTypeId === IncomeTypeIds.DONATION_ID),
+  //   [income]
+  // );
+  // const dbeSubsidy = useMemo(
+  //   () => income.filter((x) => x.incomeTypeId === IncomeTypeIds.DBE_SUBSIDY_ID),
+  //   [income]
+  // );
+  // const otherIncomeValues = useMemo(
+  //   () =>
+  //     income.filter((x) => x.incomeTypeId === IncomeTypeIds.OTHER_INCOME_ID),
+  //   [income]
+  // );
 
   // Expense Values
-  const rent = useMemo(
-    () =>
-      expenses.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.RENT_EXPENSE_ID
-      ),
-    [expenses]
-  );
-  const food = useMemo(
-    () =>
-      expenses.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.FOOD_EXPENSE_ID
-      ),
-    [expenses]
-  );
-  const learningMaterials = useMemo(
-    () =>
-      expenses.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.LEARNING_MATERIALS_ID
-      ),
-    [expenses]
-  );
-  const maintenance = useMemo(
-    () =>
-      expenses.filter((x) => x.expenseTypeId === ExpenseTypeIds.MAINTENANCE_ID),
-    [expenses]
-  );
-  const otherExpenseValues = useMemo(
-    () =>
-      expenses.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.OTHER_EXPENSE_ID
-      ),
-    [expenses]
-  );
-  const utilities = useMemo(
-    () =>
-      expenses.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.UTILITIES_EXPENSE_ID
-      ),
-    [expenses]
-  );
-  const salary = useMemo(
-    () =>
-      expenses.filter(
-        (x) => x.expenseTypeId === ExpenseTypeIds.SALARY_EXPENSE_ID
-      ),
-    [expenses]
-  );
+  // const rent = useMemo(
+  //   () =>
+  //     expenses.filter(
+  //       (x) => x.expenseTypeId === ExpenseTypeIds.RENT_EXPENSE_ID
+  //     ),
+  //   [expenses]
+  // );
+  // const food = useMemo(
+  //   () =>
+  //     expenses.filter(
+  //       (x) => x.expenseTypeId === ExpenseTypeIds.FOOD_EXPENSE_ID
+  //     ),
+  //   [expenses]
+  // );
+  // const learningMaterials = useMemo(
+  //   () =>
+  //     expenses.filter(
+  //       (x) => x.expenseTypeId === ExpenseTypeIds.LEARNING_MATERIALS_ID
+  //     ),
+  //   [expenses]
+  // );
+  // const maintenance = useMemo(
+  //   () =>
+  //     expenses.filter((x) => x.expenseTypeId === ExpenseTypeIds.MAINTENANCE_ID),
+  //   [expenses]
+  // );
+  // const otherExpenseValues = useMemo(
+  //   () =>
+  //     expenses.filter(
+  //       (x) => x.expenseTypeId === ExpenseTypeIds.OTHER_EXPENSE_ID
+  //     ),
+  //   [expenses]
+  // );
+  // const utilities = useMemo(
+  //   () =>
+  //     expenses.filter(
+  //       (x) => x.expenseTypeId === ExpenseTypeIds.UTILITIES_EXPENSE_ID
+  //     ),
+  //   [expenses]
+  // );
+  // const salary = useMemo(
+  //   () =>
+  //     expenses.filter(
+  //       (x) => x.expenseTypeId === ExpenseTypeIds.SALARY_EXPENSE_ID
+  //     ),
+  //   [expenses]
+  // );
 
-  const submitStatement = async () => {
-    if (userAuth?.auth_token) {
-      appDispatch(
-        statementsThunkActions.submitIncomeStatement({
-          userId: userAuth?.id!,
-          month: submitMonth.getMonth() + 1, // +1 for 0 index
-          year: submitMonth.getFullYear(),
-          incomeItemIds: income.map((x) => x.id),
-          expenseItemIds: expenses.map((x) => x.id),
-        })
-      ).then((result) => {
-        if (result.meta.requestStatus === 'rejected') {
-          showMessage({
-            message: `Error submitting statement`,
-            type: 'error',
-          });
-        } else {
-          showMessage({
-            message: `Statement submitted`,
-            type: 'success',
-          });
+  // const submitStatement = async () => {
+  //   if (userAuth?.auth_token) {
+  //     appDispatch(
+  //       statementsThunkActions.submitIncomeStatement({
+  //         userId: userAuth?.id!,
+  //         month: submitMonth.getMonth() + 1, // +1 for 0 index
+  //         year: submitMonth.getFullYear(),
+  //         incomeItemIds: income.map((x) => x.id),
+  //         expenseItemIds: expenses.map((x) => x.id),
+  //       })
+  //     ).then((result) => {
+  //       if (result.meta.requestStatus === 'rejected') {
+  //         showMessage({
+  //           message: `Error submitting statement`,
+  //           type: 'error',
+  //         });
+  //       } else {
+  //         showMessage({
+  //           message: `Statement submitted`,
+  //           type: 'success',
+  //         });
 
-          // Refresh points - so we can show the celebration message
-          const oneYearAgo = new Date();
-          oneYearAgo.setMonth(currentDate.getMonth() - 12);
-          appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: userAuth?.id!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          );
-        }
-      });
-    }
-  };
+  //         // Refresh points - so we can show the celebration message
+  //         const oneYearAgo = new Date();
+  //         oneYearAgo.setMonth(currentDate.getMonth() - 12);
+  //         appDispatch(
+  //           pointsThunkActions.getPointsSummaryForUser({
+  //             userId: userAuth?.id!,
+  //             startDate: oneYearAgo,
+  //             endDate: currentDate,
+  //           })
+  //         );
+  //       }
+  //     });
+  //   }
+  // };
 
   const incomeItems = [
     {
@@ -180,7 +180,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(preschoolFees))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -191,7 +191,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(startupSupport))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -202,9 +202,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(
-        sumIncomeOrExpenseItems(donationsOrVouchers)
-      )}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -215,7 +213,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(dbeSubsidy))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -226,9 +224,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(
-        sumIncomeOrExpenseItems(otherIncomeValues)
-      )}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
   ];
@@ -242,7 +238,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(rent))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -253,7 +249,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(salary))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -264,7 +260,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(food))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -275,9 +271,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(
-        sumIncomeOrExpenseItems(learningMaterials)
-      )}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -288,7 +282,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(maintenance))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -299,9 +293,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(
-        sumIncomeOrExpenseItems(otherExpenseValues)
-      )}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
     {
@@ -312,7 +304,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () => {},
       classNames: 'bg-uiBg',
-      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(utilities))}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems([]))}`,
       notRounded: true,
     },
   ];
@@ -356,7 +348,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             className="w-8/12"
           />
           <Typography
-            text={`R ${formatCurrency(totalIncome)}`}
+            text={`R ${formatCurrency(0)}`}
             color={'white'}
             type="h4"
             className="mr-12 w-4/12 text-right"
@@ -378,7 +370,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             className="w-9/12"
           />
           <Typography
-            text={`R ${formatCurrency(totalExpenses)}`}
+            text={`R ${formatCurrency(0)}`}
             color={'white'}
             type="h4"
             className="mr-12 w-4/12 text-right"
@@ -396,7 +388,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={`R ${formatCurrency(totalBalance)}`}
+            text={`R ${formatCurrency(0)}`}
             color={'white'}
             type="h1"
             className="w-8/12 text-right"
@@ -439,7 +431,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                submitStatement();
+                //submitStatement();
                 setConfimSubmitIncomeValues(false);
                 history.push(ROUTES.BUSINESS, {
                   activeTabIndex: BusinessTabItems.MONEY,
