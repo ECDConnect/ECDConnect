@@ -40,6 +40,17 @@ export const getProgrammeByDate = (date: Date) =>
       )
   );
 
+export const getProgrammeByDateAndClassroomGroupId = ({
+  date,
+  classroomGroupId,
+}: {
+  date: Date;
+  classroomGroupId: string;
+}) =>
+  createSelector(getProgrammeByDate(date), (programme) =>
+    programme?.classroomGroupId === classroomGroupId ? programme : undefined
+  );
+
 export const getProgrammesAfterDate = (date: Date) =>
   createSelector(
     (state: RootState) => state.programmeData.programmes || [],

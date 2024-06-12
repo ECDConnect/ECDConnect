@@ -3,10 +3,10 @@ import {
   Button,
   Typography,
   DialogPosition,
-  renderIcon,
   Alert,
   Card,
   RoundIcon,
+  Divider,
 } from '@ecdlink/ui';
 import { DateFormats } from '../../../../../../constants/Dates';
 import {
@@ -15,7 +15,7 @@ import {
   getProgrammeWeeks,
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { DailyRoutineProps } from './daily-routine.types';
 import { useSelector } from 'react-redux';
 import { programmeRoutineSelectors } from '@store/content/programme-routine';
@@ -55,6 +55,8 @@ import { CustomSuccessCard } from '@/components/custom-success-card/custom-succe
 import { userSelectors } from '@/store/user';
 import format from 'date-fns/format';
 import { ReactComponent as NoProgressEmoticon } from '@/assets/ECD_Connect_emoji4.svg';
+import { ProgrammeThemeRouteState } from '../../../programme-theme/programme-theme.types';
+import { ProgrammeDashboardRouteParams } from '../../programme-dashboard.types';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -62,6 +64,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   setSelectedDate,
   selectedDate,
 }) => {
+  const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const programmeRoutine = useSelector(
@@ -86,6 +90,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const { isHoliday } = useHolidays();
   const [isCurrentDayHoliday, setIsCurrentDayHoliday] = useState(false);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
   const { createProgramme } = useProgrammePlanning();
   const [selectedActitivy, setSelectedActivity] = useState(0);
@@ -112,6 +117,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       );
     });
 
+  // TODO: Implement permission check (W3)
+  const hasPermissionToEdit = true;
+
   useEffect(() => {
     if (selectedDate) {
       setIsCurrentDayHoliday(isHoliday(selectedDate));
@@ -136,7 +144,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
         );
       }
-      history.push(ROUTES.PROGRAMMES.THEME);
+      history.push(ROUTES.PROGRAMMES.THEME, {
+        classroomGroupId,
+      } as ProgrammeThemeRouteState);
     } else {
       showOnlineOnly();
     }
@@ -207,7 +217,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           <ActivityDetails
             activityId={activityId}
             isSelected={true}
-            disabled={false}
+            disabled={!hasPermissionToEdit}
             onActivitySelected={() => {
               onClose();
               // onEditActivityItem(routineItem, day);
@@ -307,7 +317,13 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     activityId?: number
   ) => {
     if (!currentDailyProgramme) {
-      await createProgramme(selectedDate!, 'en-za', undefined, selectedDate!);
+      await createProgramme(
+        classroomGroupId,
+        selectedDate!,
+        'en-za',
+        undefined,
+        selectedDate!
+      );
     }
 
     if (day) {
@@ -479,7 +495,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       !currentDailyProgramme?.storyActivityId)
   ) {
     return (
-      <div className={'mb-20 flex flex-col pt-4'}>
+      <div className={'mb-20 flex flex-col'}>
         <ProgrammePlanningHeaderUpdated
           headerText={`Today's daily Routine`}
           subHeaderText={currentDate}
@@ -502,41 +518,46 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           <Typography
             className="mt-2 text-center"
             color="textMid"
-            text={`You did not plan for this day.`}
+            text={
+              hasPermissionToEdit
+                ? `You did not plan for this day.`
+                : 'No activity planned for this day.'
+            }
             type={'h1'}
           />
-          <Typography
-            className="mt-2 text-center"
-            color="textMid"
-            text={`You can only plan for future days`}
-            type={'body'}
-          />
-          <Button
-            color={'primary'}
-            type={'outlined'}
-            onClick={() =>
-              setSelectedDate && nextProgrammeDaysWithoutActivity?.length
-                ? setSelectedDate(
-                    new Date(nextProgrammeDaysWithoutActivity?.[0]?.dayDate!)
-                  )
-                : setSelectedDate && setSelectedDate(nextMonday(new Date()))
-            }
-            className={'w-25 mt-6 mb-4'}
-          >
-            {renderIcon('ClipboardListIcon', `w-5 h-5 text-primary`)}
-            <Typography
-              color={'primary'}
-              type={'help'}
-              weight={'normal'}
-              text={'Start planning'}
-            />
-          </Button>
+          {hasPermissionToEdit && (
+            <>
+              <Typography
+                className="mt-2 text-center"
+                color="textMid"
+                text={`You can only plan for future days`}
+                type={'body'}
+              />
+              <Button
+                color={'primary'}
+                type={'outlined'}
+                onClick={() =>
+                  setSelectedDate && nextProgrammeDaysWithoutActivity?.length
+                    ? setSelectedDate(
+                        new Date(
+                          nextProgrammeDaysWithoutActivity?.[0]?.dayDate!
+                        )
+                      )
+                    : setSelectedDate && setSelectedDate(nextMonday(new Date()))
+                }
+                className={'w-25 mt-6 mb-4'}
+                icon="ClipboardListIcon"
+                text="Start planning"
+                textColor="primary"
+              />
+            </>
+          )}
         </div>
       </div>
     );
   } else {
     return (
-      <div className={'mb-20 flex flex-col pt-4'}>
+      <div className={'mb-20 flex flex-col'}>
         <ProgrammePlanningHeaderUpdated
           headerText={`Today's daily Routine`}
           subHeaderText={currentDate}
@@ -575,17 +596,22 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             )
           ) : (
             <div className="mt-4">
-              {programmeRoutine?.routineItems.map((routineItem) => {
+              {programmeRoutine?.routineItems.map((routineItem, index) => {
                 if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
                   return (
-                    <ProgrammePlanningRoutineListItemUpdated
-                      key={`id_${routineItem.id}`}
-                      routineItem={routineItem}
-                      storyBookId={currentDailyProgramme?.storyBookId}
-                      day={currentDailyProgramme}
-                      selectedDate={selectedDate}
-                      onClick={() => onProgrammeClick(routineItem)}
-                    />
+                    <>
+                      <ProgrammePlanningRoutineListItemUpdated
+                        key={`id_${routineItem.id}`}
+                        routineItem={routineItem}
+                        storyBookId={currentDailyProgramme?.storyBookId}
+                        day={currentDailyProgramme}
+                        selectedDate={selectedDate}
+                        onClick={() => onProgrammeClick(routineItem)}
+                      />
+                      {index === programmeRoutine.routineItems.length - 1 && (
+                        <Divider className="-m-1 mb-4" />
+                      )}
+                    </>
                   );
                 }
                 return null;
@@ -649,20 +675,17 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             </Card>
           </div>
         )}
-        {!isPastDay() ? (
+        {!isPastDay() && hasPermissionToEdit && (
           <Button
             id="gtm-add-programme"
-            className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
-            size="small"
+            className={'absolute bottom-6 right-4 ml-2 mt-4 rounded-3xl'}
             type={'filled'}
-            color={'primary'}
+            color={'quatenary'}
             onClick={handleAddProgramme}
-          >
-            {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-            <Typography type={'small'} color={'white'} text={'Add new theme'} />
-          </Button>
-        ) : (
-          ''
+            icon="PlusIcon"
+            text="Add new theme"
+            textColor="white"
+          />
         )}
       </div>
     );

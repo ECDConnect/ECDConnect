@@ -131,6 +131,7 @@ class ProgrammeService {
         userProgrammes {
           id
           classroomId
+          classroomGroupId
           startDate
           endDate
           name

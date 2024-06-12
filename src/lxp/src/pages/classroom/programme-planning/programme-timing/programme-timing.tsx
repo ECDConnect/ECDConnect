@@ -1,18 +1,12 @@
-import {
-  LanguageDto,
-  getWeekDate,
-  useDialog,
-  getFirstFriday,
-} from '@ecdlink/core';
+import { LanguageDto, useDialog, getFirstFriday } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
   AlertProps,
   BannerWrapper,
+  Button,
   DialogPosition,
-  Divider,
   Dropdown,
-  FADButton,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
@@ -35,14 +29,30 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
-import { addDays, format } from 'date-fns';
+import { format } from 'date-fns';
 import { practitionerSelectors } from '@/store/practitioner';
 import walktroughImage from '../../../../assets/walktroughImage.png';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
+import { classroomsSelectors } from '@/store/classroom';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '../../class-dashboard/class-dashboard.types';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
+  const { state } = useLocation<ProgrammeTimingRouteState>();
+
+  useEffect(() => {
+    if (!state?.theme || !state?.classroomGroupId) {
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.ACTIVITES,
+      } as ClassDashboardRouteState);
+    }
+  }, [history, state?.classroomGroupId, state?.theme]);
+
   const { isOnline } = useOnlineStatus();
+
   const {
     createProgramme,
     getConflictingProgramme,
@@ -50,8 +60,11 @@ const ProgrammeTiming: React.FC = () => {
     getThemedProgrammeEndDate,
     getNoThemedProgrammeEndDate,
   } = useProgrammePlanning();
+
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(state.classroomGroupId)
+  );
   const languages = useSelector(staticDataSelectors.getLanguages);
-  const { state } = useLocation<ProgrammeTimingRouteState>();
   const [alertState, setAlertState] = useState<AlertProps>();
   const selectedTheme = state?.theme;
   const [isFormValid, setIsFormValid] = useState(false);
@@ -88,7 +101,9 @@ const ProgrammeTiming: React.FC = () => {
   const handleSave = async () => {
     const formValue = getValues();
     const validatedDate = validateStartDate(new Date(formValue.date));
-    const newProgramme = await createProgramme(
+
+    await createProgramme(
+      state.classroomGroupId,
       validatedDate,
       formValue.language,
       selectedTheme,
@@ -253,12 +268,19 @@ const ProgrammeTiming: React.FC = () => {
       size="medium"
       renderBorder={true}
       title={'Choose dates and language'}
+      subTitle={`Theme: ${selectedTheme.name}`}
       color={'primary'}
       onBack={handleBack}
       displayOffline={!isOnline}
+      className="flex flex-col p-4 pt-6"
     >
       <ProgrammeWrapper />
-      <div className="px-4 py-2">
+      <Typography
+        type="h1"
+        text={`Set up your theme for ${classroomGroup?.name}`}
+        color="textDark"
+      />
+      <>
         <div className="mt-3 flex">
           <StatusChip
             backgroundColour="infoDark"
@@ -267,7 +289,6 @@ const ProgrammeTiming: React.FC = () => {
             text={selectedTheme?.name || 'No theme'}
           />
         </div>
-        <Typography type="h1" text="Set up your programme" color={'primary'} />
         {!selectedTheme ? (
           <Alert
             className="mt-4"
@@ -323,7 +344,7 @@ const ProgrammeTiming: React.FC = () => {
         </div>
 
         {alertState && <Alert className="mt-4" {...alertState} />}
-        <div id="walkthrough-classroom-language">
+        <div id="walkthrough-classroom-language" className="mb-4">
           <Typography
             className="mt-4"
             type="body"
@@ -356,21 +377,17 @@ const ProgrammeTiming: React.FC = () => {
             }}
           />
         </div>
-        <Divider className="mt-4" />
-        <FADButton
-          title={'Save'}
-          icon={'SaveIcon'}
-          iconDirection={'left'}
-          textToggle={true}
-          type={'filled'}
-          color={'primary'}
-          shape={'normal'}
-          className="my-4 w-full"
-          size="small"
-          click={handleSave}
+        <Button
+          type="filled"
+          color="quatenary"
           disabled={!isFormValid}
+          onClick={handleSave}
+          icon="SaveIcon"
+          text="Save"
+          textColor="white"
+          className="mt-auto w-full"
         />
-      </div>
+      </>
     </BannerWrapper>
   );
 };

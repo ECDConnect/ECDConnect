@@ -85,7 +85,7 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
                   routineItem?.name !== DailyRoutineItemType.freePlay && (
                     <Typography
                       {...titleTypography}
-                      className={'text-textLight w-full'}
+                      className={'text-textMid w-full'}
                     />
                   )}
               </>
@@ -94,7 +94,9 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
         </div>
       )}
       <div
-        className={`flex ${isMessageRoutineItem} flex-row items-center justify-end`}
+        className={`flex ${isMessageRoutineItem} flex-row items-center justify-end ${
+          !showTitle && `border-primaryAccent2 ml-1 border-l p-3 pr-0 `
+        }`}
       >
         {overwritePostSlotRender !== undefined && overwritePostSlotRender()}
         {overwritePostSlotRender === undefined &&

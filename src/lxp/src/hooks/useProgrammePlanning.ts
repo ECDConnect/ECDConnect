@@ -43,6 +43,7 @@ export const useProgrammePlanning = () => {
   });
 
   const createProgramme = async (
+    classroomGroupId: string,
     startDate: Date,
     language: string,
     theme?: ProgrammeThemeDto,
@@ -57,7 +58,7 @@ export const useProgrammePlanning = () => {
       startDate: startDate.toISOString(),
       endDate: endDate?.toISOString() || '',
       dailyProgrammes: [],
-      classroomGroupId: practitionerClassroomGroups?.at(0)?.id,
+      classroomGroupId: classroomGroupId,
     };
 
     const dailyProgrammesResult = createProgrammeDailyProgrammes(
