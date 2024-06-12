@@ -248,7 +248,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] PersonnelService personnelManager,
-        string practitionerId, string principalId, bool accepted)
+            string practitionerId, 
+            string principalId, 
+            bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -257,89 +259,93 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             PrincipalInvitationStatus status = new PrincipalInvitationStatus();
 
             //reassign all practitioners to the new principal
-            if (principal != null && practitioner != null)
+            if (principal == null || practitioner == null)
             {
-                status.LinkedDate = practitioner.DateLinked;
-                if (accepted == false)
+                throw new ArgumentException("Principal or practitioner not found");
+            }
+            
+            status.LinkedDate = practitioner.DateLinked;
+            if (accepted == false)
+            {
+                //reset the classroomgroups away from this practitioner and back to teh principal
+                //if (principal.UserId != null && practitioner.UserId != null)
                 {
-                    //reset the classroomgroups away from this practitioner and back to teh principal
+                    //Reassign all classes and programmes back to principal
+                    reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
+                }
+
+                status.AcceptedDate = null;
+                int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
+                bool sendRejectedNotification = true;
+                //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
+                if (practitioner.DateToBeRemoved != null || practitioner.IsRegistered == null)
+                {
+                    practitioner.DateToBeRemoved = DateTime.Now;
+                    practitioner.DateAccepted = null;
+                    practitioner.DateLinked = null;
+                    practitioner.IsLeaving = true;
+                    //update and clear the principals details
+                    practitioner.PrincipalHierarchy = null;
+                    practitioner.ShareInfo = false;
+
+                    status.LeavingDate = DateTime.Now;
+                    status.Leaving = true;
+
+                    notificationService.ExpireNotificationsTypesForUser(principal.UserId.ToString(), TemplateTypeConstants.RejectedInvitation, practitioner.User.FirstName + " " + practitioner.User.Surname);
+
+                    //if the practitioner is not registered and the principal rescinds the invite
+                    if (practitioner.IsRegistered == null && principal.UserId.Equals(uId))
+                    {
+                        sendRejectedNotification = false;
+                    }   
+                }
+                else
+                {
+                    //reset the classroomgroups away from this practitioner and back to the principal
                     //if (principal.UserId != null && practitioner.UserId != null)
                     {
                         //Reassign all classes and programmes back to principal
                         reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
                     }
 
-                    status.AcceptedDate = null;
-                    int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
-                    bool sendRejectedNotification = true;
-                    //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
-                    if (practitioner.DateToBeRemoved != null || practitioner.IsRegistered == null)
-                    {
-                        practitioner.DateToBeRemoved = DateTime.Now;
-                        practitioner.DateAccepted = null;
-                        practitioner.DateLinked = null;
-                        practitioner.IsLeaving = true;
-                        //update and clear the principals details
-                        practitioner.PrincipalHierarchy = null;
-                        practitioner.ShareInfo = false;
+                    practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
+                    practitioner.DateAccepted = null;
+                    practitioner.IsLeaving = true;
 
-                        status.LeavingDate = DateTime.Now;
-                        status.Leaving = true;
-
-                        notificationService.ExpireNotificationsTypesForUser(principal.UserId.ToString(), TemplateTypeConstants.RejectedInvitation, practitioner.User.FirstName + " " + practitioner.User.Surname);
-
-                        //if the practitioner is not registered and the principal rescinds the invite
-                        if (practitioner.IsRegistered == null && principal.UserId.Equals(uId))
-                        {
-                            sendRejectedNotification = false;
-                        }   
-                    }
-                    else
-                    {
-                        //reset the classroomgroups away from this practitioner and back to the principal
-                        //if (principal.UserId != null && practitioner.UserId != null)
-                        {
-                            //Reassign all classes and programmes back to principal
-                            reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
-                        }
-
-                        practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
-                        practitioner.DateAccepted = null;
-                        practitioner.IsLeaving = true;
-
-                        status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
-                        status.Leaving = true;
-                    }
-                    if (sendRejectedNotification)
-                    {
-                        //send message of rejection
-                        string programmeName = personnelManager.GetSiteNameForPractitioner(principal.UserId.ToString());
-                        List<TagsReplacements> replacements = new List<TagsReplacements>
-                        {
-                            new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
-                            new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName },
-                            new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() },
-                            new TagsReplacements() { FindValue = "PractitionerUserId", ReplacementValue = practitioner.UserId.ToString() }
-                        };
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now.Date, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-                    }
+                    status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
+                    status.Leaving = true;
                 }
-                else
+                if (sendRejectedNotification)
                 {
-                    practitioner.DateToBeRemoved = null;
-                    practitioner.DateAccepted = DateTime.Now;
-                    practitioner.IsLeaving = false;
-
-                    status.LeavingDate = null;
-                    status.AcceptedDate = DateTime.Now;
-                    status.Leaving = false;
-
-                    notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
+                    //send message of rejection
+                    string programmeName = personnelManager.GetSiteNameForPractitioner(principal.UserId.ToString());
+                    List<TagsReplacements> replacements = new List<TagsReplacements>
+                    {
+                        new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
+                        new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName },
+                        new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() },
+                        new TagsReplacements() { FindValue = "PractitionerUserId", ReplacementValue = practitioner.UserId.ToString() }
+                    };
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now.Date, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
                 }
-                //update practitioner with column changes
-                practitionerRepo.Update(practitioner);
             }
-            else return null;
+            else
+            {
+                practitioner.PrincipalHierarchy = principal.UserId;
+                practitioner.DateToBeRemoved = null;
+                practitioner.DateAccepted = DateTime.Now;
+                practitioner.IsLeaving = false;
+
+                status.LeavingDate = null;
+                status.AcceptedDate = DateTime.Now;
+                status.Leaving = false;
+
+                notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
+            }
+
+            //update practitioner with column changes
+            practitionerRepo.Update(practitioner);
+            
 
             return status;
         }
