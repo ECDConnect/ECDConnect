@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EcdLink.Api.CoreApi.Services.Training
 {
-    public class TrainingService : ITrainingService
+    public class TrainingMoodleService : ITrainingService
     {
         private readonly IConfiguration _configuration;
         private readonly MoodleConfig _config;
@@ -26,9 +26,9 @@ namespace EcdLink.Api.CoreApi.Services.Training
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly Guid _adminUserId;
         private readonly ApplicationUserManager _userManager;
-        private readonly ILogger<TrainingService> _logger;
+        private readonly ILogger<TrainingMoodleService> _logger;
 
-        public TrainingService(IConfiguration configuration, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine, ApplicationUserManager userManager, ILogger<TrainingService> logger)
+        public TrainingMoodleService(IConfiguration configuration, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine, ApplicationUserManager userManager, ILogger<TrainingMoodleService> logger)
         {
             _configuration = configuration;
             _repoFactory = repoFactory;
