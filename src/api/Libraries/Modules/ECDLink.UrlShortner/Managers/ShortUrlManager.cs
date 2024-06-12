@@ -168,8 +168,11 @@ namespace ECDLink.UrlShortner.Managers
         public void UpdateMessageNotificationResult(Guid userId, string messageType, int notificationResult)
         {
             var message = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) & x.IsActive).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-            message.NotificationResult = notificationResult;
-            _dbContext.SaveChanges();
+            if (message != null)
+            {
+                message.NotificationResult = notificationResult;
+                _dbContext.SaveChanges();
+            }
         }
     }
 }

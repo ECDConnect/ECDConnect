@@ -23,11 +23,17 @@ namespace ECDLink.Notifications.Managers
 
         public void UpdateMessageNotificationResult(Guid userId, string messageType, int notificationResult)
         {
-           var user = _userManager.FindByIdAsync(userId).Result;
-            var message = _entities.Where(x => (x.To == user.Id.ToString() || x.To == user.PhoneNumber || x.To == user.Email) &&
-                                string.Equals(x.MessageTemplateType, messageType) & x.IsActive).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-            message.NotificationResult = notificationResult;
-            _dbContext.SaveChangesAsync();
+            var user = _userManager.FindByIdAsync(userId).Result;
+            if (user != null)
+            {
+                var message = _entities.Where(x => (x.To == user.Id.ToString() || x.To == user.PhoneNumber || x.To == user.Email) &&
+                                    string.Equals(x.MessageTemplateType, messageType) & x.IsActive).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+                if (message != null)
+                {
+                    message.NotificationResult = notificationResult;
+                    _dbContext.SaveChangesAsync();
+                }
+            }
         }
     }
 }
